@@ -99,9 +99,11 @@ enum CodeGeneratorResponse_Feature : int {
 
 PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN = static_cast<CodeGeneratorResponse_Feature>(0);
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX = static_cast<CodeGeneratorResponse_Feature>(2);
-constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
+inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN =
+    static_cast<CodeGeneratorResponse_Feature>(0);
+inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX =
+    static_cast<CodeGeneratorResponse_Feature>(2);
+inline constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
 CodeGeneratorResponse_Feature_descriptor();
 template <typename T>

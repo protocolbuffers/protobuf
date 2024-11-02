@@ -23,6 +23,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -30,6 +31,7 @@
 #include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/only_one_enum_test.pb.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
@@ -1457,6 +1459,19 @@ TEST(LiteTest, DownCastMessageInvalidReferenceType) {
                    CastType2::default_instance().GetTypeName()));
 }
 #endif  // GTEST_HAS_DEATH_TEST
+
+TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
+  EXPECT_TRUE(protobuf_unittest::OnlyOneEnum_IsValid(0));
+  EXPECT_TRUE(protobuf_unittest::OnlyOneEnum_IsValid(10));
+  EXPECT_FALSE(protobuf_unittest::OnlyOneEnum_IsValid(6));
+
+  // Traits also work
+  constexpr auto* data =
+      internal::EnumTraits<protobuf_unittest::OnlyOneEnum>::validation_data();
+  EXPECT_TRUE(internal::ValidateEnum(0, data));
+  EXPECT_TRUE(internal::ValidateEnum(10, data));
+  EXPECT_FALSE(internal::ValidateEnum(6, data));
+}
 
 }  // namespace
 }  // namespace protobuf

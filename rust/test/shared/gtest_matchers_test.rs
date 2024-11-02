@@ -5,16 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-google3::import! {
-  "//third_party/protobuf/rust:protobuf_gtest_matchers";
-}
-
-use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use googletest::prelude::*;
 use paste::paste;
+use protobuf::proto;
 use protobuf_gtest_matchers::proto_eq;
+use unittest_proto3_rust_proto::test_all_types::NestedMessage;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
-use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_eq_msgs_tests {
   ($(($type: ident, $name_ext: ident)),*) => {
@@ -50,14 +47,28 @@ macro_rules! generate_not_eq_msgs_tests {
     }
 }
 
-generate_eq_msgs_tests!(
-    (TestAllTypesEditions, editions),
-    (TestAllTypesProto3, proto3),
-    (TestAllTypesProto2, proto2)
-);
+generate_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
 
-generate_not_eq_msgs_tests!(
-    (TestAllTypesEditions, editions),
-    (TestAllTypesProto3, proto3),
-    (TestAllTypesProto2, proto2)
-);
+generate_not_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
+
+#[gtest]
+fn proto_eq_works_on_view() {
+    // This exercises the `impl<T> Matcher<T> for MessageMatcher<T>
+    // where T: MatcherEq + Copy` implementation.
+    let msg = proto!(TestAllTypesProto3 {
+        repeated_nested_message: [
+            NestedMessage { bb: 10 },
+            NestedMessage { bb: 20 },
+            NestedMessage { bb: 30 }
+        ]
+    });
+
+    expect_that!(
+        msg.repeated_nested_message(),
+        unordered_elements_are![
+            proto_eq(proto!(NestedMessage { bb: 10 }).as_view()),
+            proto_eq(proto!(NestedMessage { bb: 20 }).as_view()),
+            proto_eq(proto!(NestedMessage { bb: 30 }).as_view()),
+        ]
+    );
+}

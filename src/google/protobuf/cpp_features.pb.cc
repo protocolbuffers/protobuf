@@ -133,19 +133,6 @@ PROTOBUF_CONSTINIT const uint32_t CppFeatures_StringType_internal_data_[] = {
 bool CppFeatures_StringType_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr CppFeatures_StringType CppFeatures::STRING_TYPE_UNKNOWN;
-constexpr CppFeatures_StringType CppFeatures::VIEW;
-constexpr CppFeatures_StringType CppFeatures::CORD;
-constexpr CppFeatures_StringType CppFeatures::STRING;
-constexpr CppFeatures_StringType CppFeatures::StringType_MIN;
-constexpr CppFeatures_StringType CppFeatures::StringType_MAX;
-constexpr int CppFeatures::StringType_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class CppFeatures::_Internal {
@@ -435,10 +422,9 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >,
-                            11, false>
-            cpp(kCppFieldNumber, &::pb::_CppFeatures_default_instance_);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
+        ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
+        cpp(kCppFieldNumber, &::pb::_CppFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

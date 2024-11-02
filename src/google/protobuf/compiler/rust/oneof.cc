@@ -83,7 +83,9 @@ namespace rust {
 namespace {
 // A user-friendly rust type for a view of this field with lifetime 'msg.
 std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
-  if (field.options().has_ctype()) {
+  if (ctx.is_cpp() && field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
   }
   switch (GetRustFieldType(field.type())) {

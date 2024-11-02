@@ -33,13 +33,13 @@ namespace protobuf {
 
 inline constexpr Any::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : type_url_(
+      : _cached_size_{0},
+        type_url_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         value_(
             &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
-        _cached_size_{0} {}
+            ::_pbi::ConstantInitialized()) {}
 
 template <typename>
 PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
@@ -69,7 +69,7 @@ static constexpr const ::_pb::ServiceDescriptor**
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
@@ -79,11 +79,13 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.type_url_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Any, _impl_.value_),
+        0,
+        1,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, -1, -1, sizeof(::google::protobuf::Any)},
+        {0, 10, -1, sizeof(::google::protobuf::Any)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Any_default_instance_._instance,
@@ -130,6 +132,10 @@ bool Any::ParseAnyTypeUrl(::absl::string_view type_url,
 }
 class Any::_Internal {
  public:
+  using HasBits =
+      decltype(std::declval<Any>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_);
 };
 
 Any::Any(::google::protobuf::Arena* arena)
@@ -144,9 +150,10 @@ Any::Any(::google::protobuf::Arena* arena)
 inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Any& from_msg)
-      : type_url_(arena, from.type_url_),
-        value_(arena, from.value_),
-        _cached_size_{0} {}
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        type_url_(arena, from.type_url_),
+        value_(arena, from.value_) {}
 
 Any::Any(
     ::google::protobuf::Arena* arena,
@@ -167,9 +174,9 @@ Any::Any(
 inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : type_url_(arena),
-        value_(arena),
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        type_url_(arena),
+        value_(arena) {}
 
 inline void Any::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -231,7 +238,7 @@ const ::google::protobuf::internal::ClassData* Any::GetClassData() const {
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_),
     0, // no _extensions_
     2, 8,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -249,19 +256,19 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
   }, {{
     // bytes value = 2;
     {::_pbi::TcParser::FastBS1,
-     {18, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
+     {18, 1, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
     // string type_url = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
   }}, {{
     65535, 65535
   }}, {{
     // string type_url = 1;
-    {PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
     // bytes value = 2;
-    {PROTOBUF_FIELD_OFFSET(Any, _impl_.value_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kBytes | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(Any, _impl_.value_), _Internal::kHasBitsOffset + 1, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
@@ -278,8 +285,16 @@ PROTOBUF_NOINLINE void Any::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.type_url_.ClearToEmpty();
-  _impl_.value_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.type_url_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.value_.ClearNonDefaultToEmpty();
+    }
+  }
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -299,17 +314,21 @@ PROTOBUF_NOINLINE void Any::Clear() {
           (void)cached_has_bits;
 
           // string type_url = 1;
-          if (!this_._internal_type_url().empty()) {
-            const std::string& _s = this_._internal_type_url();
-            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
-            target = stream->WriteStringMaybeAliased(1, _s, target);
+          if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+            if (!this_._internal_type_url().empty()) {
+              const std::string& _s = this_._internal_type_url();
+              ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                  _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
+              target = stream->WriteStringMaybeAliased(1, _s, target);
+            }
           }
 
           // bytes value = 2;
-          if (!this_._internal_value().empty()) {
-            const std::string& _s = this_._internal_value();
-            target = stream->WriteBytesMaybeAliased(2, _s, target);
+          if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+            if (!this_._internal_value().empty()) {
+              const std::string& _s = this_._internal_value();
+              target = stream->WriteBytesMaybeAliased(2, _s, target);
+            }
           }
 
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -336,16 +355,21 @@ PROTOBUF_NOINLINE void Any::Clear() {
           (void)cached_has_bits;
 
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-           {
+          cached_has_bits = this_._impl_._has_bits_[0];
+          if (cached_has_bits & 0x00000003u) {
             // string type_url = 1;
-            if (!this_._internal_type_url().empty()) {
-              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                              this_._internal_type_url());
+            if (cached_has_bits & 0x00000001u) {
+              if (!this_._internal_type_url().empty()) {
+                total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                                this_._internal_type_url());
+              }
             }
             // bytes value = 2;
-            if (!this_._internal_value().empty()) {
-              total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
-                                              this_._internal_value());
+            if (cached_has_bits & 0x00000002u) {
+              if (!this_._internal_value().empty()) {
+                total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                                this_._internal_value());
+              }
             }
           }
           return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -360,12 +384,28 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (!from._internal_type_url().empty()) {
-    _this->_internal_set_type_url(from._internal_type_url());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      if (!from._internal_type_url().empty()) {
+        _this->_internal_set_type_url(from._internal_type_url());
+      } else {
+        if (_this->_impl_.type_url_.IsDefault()) {
+          _this->_internal_set_type_url("");
+        }
+      }
+    }
+    if (cached_has_bits & 0x00000002u) {
+      if (!from._internal_value().empty()) {
+        _this->_internal_set_value(from._internal_value());
+      } else {
+        if (_this->_impl_.value_.IsDefault()) {
+          _this->_internal_set_value("");
+        }
+      }
+    }
   }
-  if (!from._internal_value().empty()) {
-    _this->_internal_set_value(from._internal_value());
-  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -382,6 +422,7 @@ void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }

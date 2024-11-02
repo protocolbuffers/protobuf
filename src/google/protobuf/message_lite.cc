@@ -200,9 +200,6 @@ void MessageLite::LogInitializationErrorMessage() const {
 namespace internal {
 
 void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
-#if defined(ABSL_HAVE_EXCEPTIONS)
-  throw std::bad_cast();
-#endif
   const auto to_name = to.GetTypeName();
   if (internal::GetClassData(from)->is_dynamic) {
     ABSL_LOG(FATAL)

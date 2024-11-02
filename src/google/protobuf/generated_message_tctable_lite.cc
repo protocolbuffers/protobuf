@@ -20,7 +20,9 @@
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -71,6 +73,120 @@ void AlignFail(std::integral_constant<size_t, 8>, std::uintptr_t address) {
 const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return GenericFallbackImpl<MessageLite, std::string>(
       PROTOBUF_TC_PARAM_PASS);
+}
+
+namespace {
+bool ReadHas(const FieldEntry& entry, const MessageLite* msg) {
+  auto has_idx = static_cast<uint32_t>(entry.has_idx);
+  const auto& hasblock = TcParser::RefAt<const uint32_t>(msg, has_idx / 32 * 4);
+  return (hasblock & (uint32_t{1} << (has_idx % 32))) != 0;
+}
+}  // namespace
+
+void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
+                                       const TcParseTableBase* table) {
+  namespace fl = internal::field_layout;
+  if (table->has_bits_offset == 0) {
+    // Nothing to check
+    return;
+  }
+
+  for (const auto& entry : table->field_entries()) {
+    const auto print_error = [&] {
+      return absl::StrFormat("Type=%s Field=%d\n", msg->GetTypeName(),
+                             FieldNumber(table, &entry));
+    };
+    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) return;
+    const bool has_bit = ReadHas(entry, msg);
+    const void* base = msg;
+    const void* default_base = table->default_instance();
+    if ((entry.type_card & field_layout::kSplitMask) ==
+        field_layout::kSplitTrue) {
+      const size_t offset = table->field_aux(kSplitOffsetAuxIdx)->offset;
+      base = TcParser::RefAt<const void*>(base, offset);
+      default_base = TcParser::RefAt<const void*>(default_base, offset);
+    }
+    switch (entry.type_card & fl::kFkMask) {
+      case fl::kFkVarint:
+      case fl::kFkFixed:
+        // Numerics can have any value when the has bit is on.
+        if (has_bit) return;
+        switch (entry.type_card & fl::kRepMask) {
+          case fl::kRep8Bits:
+            ABSL_CHECK_EQ(RefAt<bool>(base, entry.offset),
+                          RefAt<bool>(default_base, entry.offset))
+                << print_error();
+            break;
+          case fl::kRep32Bits:
+            ABSL_CHECK_EQ(RefAt<uint32_t>(base, entry.offset),
+                          RefAt<uint32_t>(default_base, entry.offset))
+                << print_error();
+            break;
+          case fl::kRep64Bits:
+            ABSL_CHECK_EQ(RefAt<uint64_t>(base, entry.offset),
+                          RefAt<uint64_t>(default_base, entry.offset))
+                << print_error();
+            break;
+        }
+        break;
+
+      case fl::kFkString:
+        switch (entry.type_card & fl::kRepMask) {
+          case field_layout::kRepAString:
+            if (has_bit) {
+              // Must not point to the default.
+              ABSL_CHECK(!RefAt<ArenaStringPtr>(base, entry.offset).IsDefault())
+                  << print_error();
+            } else {
+              // We should technically check that the value matches the default
+              // value of the field, but the prototype does not actually contain
+              // this value. Non-empty defaults are loaded on access.
+            }
+            break;
+          case field_layout::kRepCord:
+            if (!has_bit) {
+              // If the has bit is off, it must match the default.
+              ABSL_CHECK_EQ(RefAt<absl::Cord>(base, entry.offset),
+                            RefAt<absl::Cord>(default_base, entry.offset))
+                  << print_error();
+            }
+            break;
+          case field_layout::kRepIString:
+            if (!has_bit) {
+              // If the has bit is off, it must match the default.
+              ABSL_CHECK_EQ(
+                  RefAt<InlinedStringField>(base, entry.offset).Get(),
+                  RefAt<InlinedStringField>(default_base, entry.offset).Get())
+                  << print_error();
+            }
+            break;
+          case field_layout::kRepSString:
+            Unreachable();
+        }
+        break;
+      case fl::kFkMessage:
+        switch (entry.type_card & fl::kRepMask) {
+          case fl::kRepMessage:
+          case fl::kRepGroup:
+            if (has_bit) {
+              ABSL_CHECK(RefAt<const MessageLite*>(base, entry.offset) !=
+                         nullptr)
+                  << print_error();
+            } else {
+              // An off has_bit does not imply a null pointer.
+              // We might have a previous instance that we cached.
+            }
+            break;
+          default:
+            Unreachable();
+        }
+        break;
+
+      default:
+        // All other types are not `optional`.
+        Unreachable();
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -224,6 +340,46 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
   auto field_index = static_cast<size_t>(field_entry - field_entries);
   return FindName(table->name_data(), table->num_field_entries + 1,
                   field_index + 1);
+}
+
+int TcParser::FieldNumber(const TcParseTableBase* table,
+                          const TcParseTableBase::FieldEntry* entry) {
+  // The data structure was not designed to be queried in this direction, so
+  // we have to do a linear search over the entries to see which one matches
+  // while keeping track of the field number.
+  // But it is fine because we are only using this for debug check messages.
+  size_t need_to_skip = entry - table->field_entries_begin();
+  const auto visit_bitmap = [&](uint32_t field_bitmap,
+                                int base_field_number) -> absl::optional<int> {
+    for (; field_bitmap != 0; field_bitmap &= field_bitmap - 1) {
+      if (need_to_skip == 0) {
+        return absl::countr_zero(field_bitmap) + base_field_number;
+      }
+      --need_to_skip;
+    }
+    return absl::nullopt;
+  };
+  if (auto number = visit_bitmap(~table->skipmap32, 1)) {
+    return *number;
+  }
+
+  for (const uint16_t* lookup_table = table->field_lookup_begin();
+       lookup_table[0] != 0xFFFF || lookup_table[1] != 0xFFFF;) {
+    uint32_t fstart = lookup_table[0] | (lookup_table[1] << 16);
+    lookup_table += 2;
+    const uint16_t num_skip_entries = *lookup_table++;
+    for (uint16_t i = 0; i < num_skip_entries; ++i) {
+      // for each group of 16 fields we have: a
+      // bitmap of 16 bits a 16-bit field-entry
+      // offset for the first of them.
+      if (auto number = visit_bitmap(static_cast<uint16_t>(~*lookup_table),
+                                     fstart + 16 * i)) {
+        return *number;
+      }
+      lookup_table += 2;
+    }
+  }
+  Unreachable();
 }
 
 PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
@@ -1403,6 +1559,19 @@ PROTOBUF_ALWAYS_INLINE inline bool IsValidUTF8(ArenaStringPtr& field) {
 }
 
 
+void EnsureArenaStringIsNotDefault(const MessageLite* msg,
+                                   ArenaStringPtr* field) {
+  // If we failed here we might have left the string in its IsDefault state, but
+  // already set the has bit which breaks the message invariants. We must make
+  // it consistent again. We do that by guaranteeing the string always exists.
+  if (field->IsDefault()) {
+    field->Set("", msg->GetArena());
+  }
+}
+// The rest do nothing.
+PROTOBUF_UNUSED void EnsureArenaStringIsNotDefault(const MessageLite* msg,
+                                                   void*) {}
+
 }  // namespace
 
 template <typename TagType, typename FieldType, TcParser::Utf8Type utf8>
@@ -1423,6 +1592,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
     ptr = ReadStringNoArena(msg, ptr, ctx, data.aux_idx(), table, field);
   }
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    EnsureArenaStringIsNotDefault(msg, &field);
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   switch (utf8) {
@@ -2180,7 +2350,10 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
         std::string* str = field.MutableNoCopy(nullptr);
         ptr = InlineGreedyStringParser(str, ptr, ctx);
       }
-      if (!ptr) break;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+        EnsureArenaStringIsNotDefault(msg, &field);
+        break;
+      }
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
     }

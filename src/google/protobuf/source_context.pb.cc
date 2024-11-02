@@ -29,10 +29,10 @@ namespace protobuf {
 
 inline constexpr SourceContext::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : file_name_(
+      : _cached_size_{0},
+        file_name_(
             &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
-        _cached_size_{0} {}
+            ::_pbi::ConstantInitialized()) {}
 
 template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
@@ -62,7 +62,7 @@ static constexpr const ::_pb::ServiceDescriptor**
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
@@ -71,11 +71,12 @@ const ::uint32_t
         ~0u,  // no _split_
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_.file_name_),
+        0,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, -1, -1, sizeof(::google::protobuf::SourceContext)},
+        {0, 9, -1, sizeof(::google::protobuf::SourceContext)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_SourceContext_default_instance_._instance,
@@ -112,6 +113,10 @@ namespace protobuf {
 
 class SourceContext::_Internal {
  public:
+  using HasBits =
+      decltype(std::declval<SourceContext>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
 };
 
 SourceContext::SourceContext(::google::protobuf::Arena* arena)
@@ -126,8 +131,9 @@ SourceContext::SourceContext(::google::protobuf::Arena* arena)
 inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::SourceContext& from_msg)
-      : file_name_(arena, from.file_name_),
-        _cached_size_{0} {}
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        file_name_(arena, from.file_name_) {}
 
 SourceContext::SourceContext(
     ::google::protobuf::Arena* arena,
@@ -148,8 +154,8 @@ SourceContext::SourceContext(
 inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : file_name_(arena),
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        file_name_(arena) {}
 
 inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -210,7 +216,7 @@ const ::google::protobuf::internal::ClassData* SourceContext::GetClassData() con
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_),
     0, // no _extensions_
     1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -228,13 +234,13 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
   }, {{
     // string file_name = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
   }}, {{
     65535, 65535
   }}, {{
     // string file_name = 1;
-    {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), 0, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
@@ -251,7 +257,11 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_name_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.file_name_.ClearNonDefaultToEmpty();
+  }
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -271,11 +281,13 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
           (void)cached_has_bits;
 
           // string file_name = 1;
-          if (!this_._internal_file_name().empty()) {
-            const std::string& _s = this_._internal_file_name();
-            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.SourceContext.file_name");
-            target = stream->WriteStringMaybeAliased(1, _s, target);
+          if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+            if (!this_._internal_file_name().empty()) {
+              const std::string& _s = this_._internal_file_name();
+              ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                  _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.SourceContext.file_name");
+              target = stream->WriteStringMaybeAliased(1, _s, target);
+            }
           }
 
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -303,9 +315,12 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 
            {
             // string file_name = 1;
-            if (!this_._internal_file_name().empty()) {
-              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                              this_._internal_file_name());
+            cached_has_bits = this_._impl_._has_bits_[0];
+            if (cached_has_bits & 0x00000001u) {
+              if (!this_._internal_file_name().empty()) {
+                total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                                this_._internal_file_name());
+              }
             }
           }
           return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -320,9 +335,17 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (!from._internal_file_name().empty()) {
-    _this->_internal_set_file_name(from._internal_file_name());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    if (!from._internal_file_name().empty()) {
+      _this->_internal_set_file_name(from._internal_file_name());
+    } else {
+      if (_this->_impl_.file_name_.IsDefault()) {
+        _this->_internal_set_file_name("");
+      }
+    }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -339,6 +362,7 @@ void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, &other->_impl_.file_name_, arena);
 }
 

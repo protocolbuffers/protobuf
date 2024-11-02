@@ -69,7 +69,7 @@ def protobuf_deps():
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = Label("//:third_party/zlib.BUILD"),
+            build_file = Label("//third_party:zlib.BUILD"),
             sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
             strip_prefix = "zlib-1.3.1",
             urls = [
@@ -84,7 +84,7 @@ def protobuf_deps():
             repo = "https://github.com/open-source-parsers/jsoncpp",
             commit = "89e2973c754a9c02a49974d839779b151e95afd6",  # 1.9.6
             sha256 = "02f0804596c1e18c064d890ac9497fa17d585e822fcacf07ff8a8aa0b344a7bd",
-            build_file = Label("//:third_party/jsoncpp.BUILD"),
+            build_file = Label("//third_party:jsoncpp.BUILD"),
         )
 
     if not native.existing_rule("rules_cc"):

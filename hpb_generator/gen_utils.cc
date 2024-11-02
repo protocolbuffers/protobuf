@@ -11,8 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -125,6 +128,21 @@ std::string ToCamelCase(const absl::string_view input, bool lower_first) {
   }
 
   return result;
+}
+
+std::string DefaultValue(const FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return absl::StrCat(field->default_value_int32());
+    case FieldDescriptor::CPPTYPE_INT64:
+      return absl::StrCat(field->default_value_int64());
+    default:
+      // TODO: b/375460289 - implement rest of scalars + msg
+      ABSL_LOG(WARNING) << "Unsupported default value type (in-progress): <"
+                        << field->cpp_type_name()
+                        << "> For field: " << field->full_name();
+      return "-1";
+  }
 }
 
 }  // namespace protobuf

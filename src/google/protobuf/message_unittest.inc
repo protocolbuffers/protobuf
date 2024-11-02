@@ -420,6 +420,12 @@ TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
   EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
 }
 
+TEST(MESSAGE_TEST_NAME, DefaultInstanceByteSizeLong) {
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().ByteSizeLong(), 0);
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().GetCachedSize(),
+            0);
+}
+
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
   const char encoded[] = {"\n\x3\x80\0\0"};
   UNITTEST::NestedTestAllTypes parsed;

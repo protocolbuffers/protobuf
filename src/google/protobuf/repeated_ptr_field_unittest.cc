@@ -458,37 +458,6 @@ TEST(RepeatedPtrField, ReserveDoesntLoseAllocated) {
   EXPECT_EQ(first, field.Add());
 }
 
-// Clearing elements is tricky with RepeatedPtrFields since the memory for
-// the elements is retained and reused.
-TEST(RepeatedPtrField, ClearedElements) {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  RepeatedPtrField<std::string> field;
-
-  std::string* original = field.Add();
-  *original = "foo";
-
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  field.RemoveLast();
-  EXPECT_TRUE(original->empty());
-  EXPECT_EQ(field.ClearedCount(), 1);
-
-  EXPECT_EQ(field.Add(),
-            original);  // Should return same string for reuse.
-  EXPECT_EQ(field.UnsafeArenaReleaseLast(), original);  // We take ownership.
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  EXPECT_NE(field.Add(), original);  // Should NOT return the same string.
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  field.UnsafeArenaAddAllocated(original);  // Give ownership back.
-  EXPECT_EQ(field.ClearedCount(), 0);
-  EXPECT_EQ(field.Mutable(1), original);
-
-  field.Clear();
-  EXPECT_EQ(field.ClearedCount(), 2);
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
 
 // Test all code paths in AddAllocated().
 TEST(RepeatedPtrField, AddAllocated) {
@@ -512,7 +481,6 @@ TEST(RepeatedPtrField, AddAllocated) {
   std::string* foo = new std::string("foo");
   field.AddAllocated(foo);
   EXPECT_EQ(index + 1, field.size());
-  EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(foo, &field.Get(index));
 
   // Last branch:  Field is not at capacity and there are no cleared objects.
@@ -521,7 +489,6 @@ TEST(RepeatedPtrField, AddAllocated) {
   field.AddAllocated(bar);
   ++index;
   EXPECT_EQ(index + 1, field.size());
-  EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(bar, &field.Get(index));
 
   // Third branch:  Field is not at capacity and there are no cleared objects.
@@ -530,7 +497,6 @@ TEST(RepeatedPtrField, AddAllocated) {
   std::string* baz = new std::string("baz");
   field.AddAllocated(baz);
   EXPECT_EQ(index + 1, field.size());
-  EXPECT_EQ(1, field.ClearedCount());
   EXPECT_EQ(baz, &field.Get(index));
 
   // Second branch:  Field is at capacity but has some cleared objects.
@@ -541,7 +507,6 @@ TEST(RepeatedPtrField, AddAllocated) {
   field.AddAllocated(moo);
   EXPECT_EQ(index + 1, field.size());
   // We should have discarded the cleared object.
-  EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(moo, &field.Get(index));
 }
 
@@ -937,7 +902,6 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           EXPECT_EQ(field.size(), sz + extra);
           for (int i = 0; i < extra; ++i) field.RemoveLast();
           EXPECT_EQ(field.size(), sz);
-          EXPECT_EQ(field.ClearedCount(), extra);
 
           // Create a catcher array and call ExtractSubrange.
           std::string* catcher[10];
@@ -959,9 +923,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
             EXPECT_EQ(field.Mutable(i), subject[i + num]);
 
           // Reinstate the cleared elements.
-          EXPECT_EQ(field.ClearedCount(), extra);
           for (int i = 0; i < extra; ++i) field.Add();
-          EXPECT_EQ(field.ClearedCount(), 0);
           EXPECT_EQ(field.size(), sz - num + extra);
 
           // Make sure the extra elements are all there (in some order).

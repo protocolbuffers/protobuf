@@ -24,7 +24,6 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -148,6 +147,10 @@ struct ReflectionSchema {
                sizeof(uint32_t));
   }
 
+  // Returns true iff the field object has usable hasbit offset.
+  // Note that this is not necessarily correlated with *field presence* :
+  // Fields with implicit presence (i.e. ones that don't expose has_foo API)
+  // can still have hasbits in their underlying implementation.
   bool HasHasbits() const { return has_bits_offset_ != -1; }
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.

@@ -30,6 +30,22 @@ where
     }
 }
 
+impl<T> Matcher<T> for MessageMatcher<T>
+where
+    T: MatcherEq + Copy,
+{
+    fn matches(&self, actual: T) -> MatcherResult {
+        actual.matches(&self.expected).into()
+    }
+
+    fn describe(&self, matcher_result: MatcherResult) -> Description {
+        match matcher_result {
+            MatcherResult::Match => format!("is equal to {:?}", self.expected).into(),
+            MatcherResult::NoMatch => format!("is not equal to {:?}", self.expected).into(),
+        }
+    }
+}
+
 pub fn proto_eq<T: MatcherEq>(expected: T) -> MessageMatcher<T> {
     MessageMatcher { expected }
 }

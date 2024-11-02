@@ -815,6 +815,7 @@ filegroup(
     name = "lite_test_proto_srcs",
     srcs = [
         "map_lite_unittest.proto",
+        "only_one_enum_test.proto",
         "unittest_import_lite.proto",
         "unittest_import_public_lite.proto",
         "unittest_lite.proto",
@@ -1583,9 +1584,12 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":descriptor_visitor",
         ":port",
+        ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",
+        "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",

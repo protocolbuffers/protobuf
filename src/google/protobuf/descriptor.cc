@@ -9798,9 +9798,27 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
+HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
+  // Do not generate hasbits for "real-oneof" and weak fields.
+  if (field->real_containing_oneof() || field->options().weak()) {
+    return HasbitMode::kNoHasbit;
+  }
+
+  // Explicit-presence fields always have true hasbits.
+  if (field->has_presence()) {
+    return HasbitMode::kTrueHasbit;
+  }
+
+  // Implicit presence fields.
+  if (!field->is_repeated()) {
+    return HasbitMode::kHintHasbit;
+  }
+  // We currently don't implement hasbits for implicit repeated fields.
+  return HasbitMode::kNoHasbit;
+}
+
 bool HasHasbit(const FieldDescriptor* field) {
-  return field->has_presence() && !field->real_containing_oneof() &&
-         !field->options().weak();
+  return GetFieldHasbitMode(field) != HasbitMode::kNoHasbit;
 }
 
 static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {

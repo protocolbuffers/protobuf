@@ -17,3 +17,8 @@ import "google/protobuf/compiler/hpb/tests/test_model.proto";
 extend TestModel {
   optional ThemeExtension styling = 13001;
 }
+
+extend TestModel {
+  optional int32 int32_ext = 13002 [default = 644];
+  optional int64 int64_ext = 13003 [default = 2147483648];
+}

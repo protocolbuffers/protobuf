@@ -262,9 +262,10 @@ class PROTOBUF_EXPORT Timestamp final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Timestamp& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::int64_t seconds_;
     ::int32_t nanos_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -293,6 +294,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timesta
 inline void Timestamp::clear_seconds() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = ::int64_t{0};
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline ::int64_t Timestamp::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.seconds)
@@ -300,6 +302,7 @@ inline ::int64_t Timestamp::seconds() const {
 }
 inline void Timestamp::set_seconds(::int64_t value) {
   _internal_set_seconds(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.seconds)
 }
 inline ::int64_t Timestamp::_internal_seconds() const {
@@ -315,6 +318,7 @@ inline void Timestamp::_internal_set_seconds(::int64_t value) {
 inline void Timestamp::clear_nanos() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::int32_t Timestamp::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.nanos)
@@ -322,6 +326,7 @@ inline ::int32_t Timestamp::nanos() const {
 }
 inline void Timestamp::set_nanos(::int32_t value) {
   _internal_set_nanos(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }
 inline ::int32_t Timestamp::_internal_nanos() const {

@@ -1512,15 +1512,6 @@ static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetDebugString(PyFileDescriptor* self) {
-  PyErr_Warn(nullptr,
-             "GetDebugString() API is deprecated. This API only "
-             "exists in protobuf c++ and does not exists in pure python, upb "
-             "or any other languages. GetDebugString() for python cpp "
-             "extension will be removed in Jan 2025");
-  return PyString_FromCppString(_GetDescriptor(self)->DebugString());
-}
-
 static PyObject* GetOptions(PyFileDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1569,7 +1560,6 @@ static PyGetSetDef Getters[] = {
 };
 
 static PyMethodDef Methods[] = {
-    {"GetDebugString", (PyCFunction)GetDebugString, METH_NOARGS},
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
     {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},

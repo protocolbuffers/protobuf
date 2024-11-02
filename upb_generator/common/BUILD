@@ -20,3 +20,24 @@ cc_library(
         "@com_google_absl//absl/strings:string_view",
     ],
 )
+
+cc_library(
+    name = "cpp_to_upb_def",
+    srcs = ["cpp_to_upb_def.cc"],
+    hdrs = ["cpp_to_upb_def.h"],
+    visibility = [
+        "//src/google/protobuf/compiler/hpb:__subpackages__",
+        "//third_party/kotlin/protobuf/generator/native:__subpackages__",
+    ],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:mini_table",
+        "//upb:reflection",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+    ],
+)

@@ -305,18 +305,6 @@ PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[]
 bool CodeGeneratorResponse_Feature_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_NONE;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_PROTO3_OPTIONAL;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_SUPPORTS_EDITIONS;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MIN;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MAX;
-constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class Version::_Internal {

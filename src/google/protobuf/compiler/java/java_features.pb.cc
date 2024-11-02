@@ -139,18 +139,6 @@ PROTOBUF_CONSTINIT const uint32_t JavaFeatures_Utf8Validation_internal_data_[] =
 bool JavaFeatures_Utf8Validation_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr JavaFeatures_Utf8Validation JavaFeatures::UTF8_VALIDATION_UNKNOWN;
-constexpr JavaFeatures_Utf8Validation JavaFeatures::DEFAULT;
-constexpr JavaFeatures_Utf8Validation JavaFeatures::VERIFY;
-constexpr JavaFeatures_Utf8Validation JavaFeatures::Utf8Validation_MIN;
-constexpr JavaFeatures_Utf8Validation JavaFeatures::Utf8Validation_MAX;
-constexpr int JavaFeatures::Utf8Validation_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class JavaFeatures::_Internal {
@@ -440,10 +428,9 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,
-                            11, false>
-            java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
+        ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
+        java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

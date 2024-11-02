@@ -822,6 +822,9 @@ class PROTOBUF_EXPORT TcParser final {
     };
   }
 
+  static void VerifyHasBitConsistency(const MessageLite* msg,
+                                      const TcParseTableBase* table);
+
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
@@ -1027,6 +1030,8 @@ class PROTOBUF_EXPORT TcParser final {
   static absl::string_view MessageName(const TcParseTableBase* table);
   static absl::string_view FieldName(const TcParseTableBase* table,
                                      const TcParseTableBase::FieldEntry*);
+  static int FieldNumber(const TcParseTableBase* table,
+                         const TcParseTableBase::FieldEntry*);
   static bool ChangeOneof(const TcParseTableBase* table,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
@@ -1151,6 +1156,9 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
   table -= 1;
   if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
     return table->post_loop_handler(msg, ptr, ctx);
+  }
+  if (ABSL_PREDICT_FALSE(PerformDebugChecks() && ptr == nullptr)) {
+    VerifyHasBitConsistency(msg, table);
   }
   return ptr;
 }

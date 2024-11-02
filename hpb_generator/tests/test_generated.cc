@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <climits>
 #include <cstdint>
 #include <iterator>
 #include <limits>
@@ -54,6 +55,8 @@ using ::hpb_unittest::protos::TestModel_Category_NEWS;
 using ::hpb_unittest::protos::TestModel_Category_VIDEO;
 using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
+using ::hpb_unittest::someotherpackage::protos::int32_ext;
+using ::hpb_unittest::someotherpackage::protos::int64_ext;
 using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
@@ -878,6 +881,21 @@ TEST(CppGeneratedCode, GetExtension) {
             hpb::GetExtension(&model, theme).value()->ext_name());
 }
 
+TEST(CppGeneratedCode, GetExtensionInt32WithDefault) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, int32_ext);
+  EXPECT_TRUE(res.ok());
+  EXPECT_EQ(*res, 644);
+}
+
+TEST(CppGeneratedCode, GetExtensionInt64WithDefault) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, int64_ext);
+  EXPECT_TRUE(res.ok());
+  int64_t expected = std::numeric_limits<int32_t>::max() + int64_t{1};
+  EXPECT_EQ(*res, expected);
+}
+
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
   TestModel model;
   ThemeExtension extension1;
@@ -1308,6 +1326,26 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena different_arena;
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
+}
+
+TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
+  hpb::Arena arena;
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto child = parent1.mutable_child();
+  child->set_peeps(12);
+
+  hpb::Arena other_arena;
+  auto parent2 = hpb::CreateMessage<Parent>(other_arena);
+  arena.Fuse(other_arena);
+
+  parent2.set_alias_child(child);
+
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.child()),
+            hpb::interop::upb::GetMessage(parent2.child()));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.child()));
 }
 
 TEST(CppGeneratedCode, SetAliasRepeated) {

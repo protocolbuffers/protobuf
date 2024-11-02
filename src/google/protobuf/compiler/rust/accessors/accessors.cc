@@ -27,14 +27,14 @@ namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     Context& ctx, const FieldDescriptor& field) {
-  // TODO: We do not support ctype=CORD fields or repeated
-  // ctype=STRING_PIECE fields on cpp kernel yet (upb doesn't care about ctype).
-  auto ctype = field.options().ctype();
-  if (ctx.is_cpp() &&
-      (ctype == FieldOptions::CORD || ctype == FieldOptions::STRING_PIECE) &&
-      field.is_repeated()) {
+  // TODO: We do not support repeated strings on C++ kernel if
+  // they are not string_view or string type.
+  if (ctx.is_cpp() && field.is_repeated() &&
+      field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
     return std::make_unique<UnsupportedField>(
-        "fields has an unsupported ctype");
+        "unsupported repeated string type");
   }
 
   if (field.is_map()) {
@@ -57,7 +57,8 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       return std::make_unique<SingularScalar>();
     case RustFieldType::BYTES:
     case RustFieldType::STRING:
-      if (ctype == FieldOptions::CORD) {
+      if (ctx.is_cpp() &&
+          field.cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         return std::make_unique<SingularCord>();
       }
       return std::make_unique<SingularString>();
