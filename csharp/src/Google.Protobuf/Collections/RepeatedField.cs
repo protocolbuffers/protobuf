@@ -53,7 +53,7 @@ namespace Google.Protobuf.Collections
             RepeatedField<T> clone = new RepeatedField<T>();
             if (array != EmptyArray)
             {
-                clone.array = (T[]) array.Clone();
+                clone.array = (T[])array.Clone();
                 if (clone.array is IDeepCloneable<T>[] cloneableArray)
                 {
                     for (int i = 0; i < count; i++)
@@ -623,7 +623,7 @@ namespace Google.Protobuf.Collections
         object IList.this[int index]
         {
             get => this[index];
-            set => this[index] = (T) value;
+            set => this[index] = (T)value;
         }
 
         int IList.Add(object value)
