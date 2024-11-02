@@ -36,9 +36,9 @@ namespace Google.Protobuf.Collections
             // specialization.
             if (default(T) == null)
             {
-                foreach (var value in source)
+                for (int i = 0; i < source.Length; i++)
                 {
-                    if (value == null)
+                    if (source[i] == null)
                     {
                         throw new ArgumentException("ReadOnlySpan contained null element", nameof(source));
                     }
