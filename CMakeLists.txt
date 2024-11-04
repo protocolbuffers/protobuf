@@ -2,6 +2,10 @@
 # to 3.26.
 cmake_minimum_required(VERSION 3.10...3.26)
 
+# airtime: start - CAR-2521 Use CMP0156 to handle duplicate libraries in link lines.
+cmake_policy(SET CMP0156 NEW)
+# airtime: end
+
 # Revert to old behavior for MSVC debug symbols.
 if(POLICY CMP0141)
   cmake_policy(SET CMP0141 OLD)
