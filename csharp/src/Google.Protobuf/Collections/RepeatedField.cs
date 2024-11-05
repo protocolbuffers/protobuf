@@ -283,7 +283,7 @@ namespace Google.Protobuf.Collections
         }
 
         // May increase the size of the internal array, but will never shrink it.
-        internal void EnsureSize(int size)
+        private void EnsureSize(int size)
         {
             if (array.Length < size)
             {
