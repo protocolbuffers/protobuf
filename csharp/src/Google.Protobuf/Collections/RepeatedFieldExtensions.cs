@@ -17,6 +17,7 @@ namespace Google.Protobuf
     /// </summary>
     public static class RepeatedFieldExtensions
     {
+        // Note: This method is an extension method to avoid ambiguous overload conflict with existing AddRange(IEnumerable<T>) when the source is an array.
         /// <summary>Adds the elements of the specified span to the end of the <see cref="RepeatedField{T}"/>.</summary>
         /// <typeparam name="T">The type of elements in the <see cref="RepeatedField{T}"/>.</typeparam>
         /// <param name="repeatedField">The list to which the elements should be added.</param>
