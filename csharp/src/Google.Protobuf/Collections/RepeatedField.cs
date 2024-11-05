@@ -34,8 +34,8 @@ namespace Google.Protobuf.Collections
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        internal T[] array = EmptyArray;
-        internal int count = 0;
+        private T[] array = EmptyArray;
+        private int count = 0;
 
         /// <summary>
         /// Creates a deep clone of this repeated field.
@@ -427,6 +427,37 @@ namespace Google.Protobuf.Collections
             {
                 Add(item);
             }
+        }
+
+        /// <summary>
+        /// Adds the elements of the specified span to the end of the collection.
+        /// </summary>
+        /// <param name="source">The span whose elements should be added to the end of the collection.</param>
+        internal void AddRangeSpan(ReadOnlySpan<T> source)
+        {
+            if (source.IsEmpty)
+            {
+                return;
+            }
+
+            // For reference types and nullable value types, we need to check that there are no nulls
+            // present. (This isn't a thread-safe approach, but we don't advertise this is thread-safe.)
+            // We expect the JITter to optimize this test to true/false, so it's effectively conditional
+            // specialization.
+            if (default(T) == null)
+            {
+                for (int i = 0; i < source.Length; i++)
+                {
+                    if (source[i] == null)
+                    {
+                        throw new ArgumentException("ReadOnlySpan contained null element", nameof(source));
+                    }
+                }
+            }
+
+            EnsureSize(count + source.Length);
+            source.CopyTo(array.AsSpan(count));
+            count += source.Length;
         }
 
         /// <summary>
