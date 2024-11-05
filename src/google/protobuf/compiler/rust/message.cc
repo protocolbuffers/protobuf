@@ -584,10 +584,7 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
               }
 
               fn to_map_value(self) -> $pbr$::MapValue {
-                  use $pb$::OwnedMessageInterop;
-                  $pbr$::MapValue::make_message(unsafe {
-                      $NonNull$::new_unchecked(self.__unstable_leak_raw_message() as *mut _)
-                  })
+                  $pbr$::MapValue::make_message(std::mem::ManuallyDrop::new(self).raw_msg())
               }
 
               unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
