@@ -446,6 +446,7 @@ cc_library(
         ":string_block",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:dynamic_annotations",
         "@com_google_absl//absl/base:prefetch",
         "@com_google_absl//absl/container:layout",
         "@com_google_absl//absl/log:absl_check",
