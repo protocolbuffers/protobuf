@@ -25,7 +25,7 @@ namespace Google.Protobuf
         public static void AddRange<T>(this RepeatedField<T> repeatedField, ReadOnlySpan<T> source)
         {
             ProtoPreconditions.CheckNotNull(repeatedField, nameof(repeatedField));
-            repeatedField.AddRange(source);
+            repeatedField.AddRangeSpan(source);
         }
     }
 }
