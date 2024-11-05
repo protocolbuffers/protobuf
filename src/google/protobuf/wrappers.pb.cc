@@ -443,7 +443,7 @@ DoubleValue::DoubleValue(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -676,7 +676,7 @@ FloatValue::FloatValue(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -909,7 +909,7 @@ Int64Value::Int64Value(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -1143,7 +1143,7 @@ UInt64Value::UInt64Value(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -1377,7 +1377,7 @@ Int32Value::Int32Value(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -1611,7 +1611,7 @@ UInt32Value::UInt32Value(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -1845,7 +1845,7 @@ BoolValue::BoolValue(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}
@@ -2067,7 +2067,7 @@ StringValue::StringValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
-inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::StringValue& from_msg)
       : _has_bits_{from._has_bits_},
@@ -2090,7 +2090,7 @@ StringValue::StringValue(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
-inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -2327,7 +2327,7 @@ BytesValue::BytesValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
-inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::BytesValue& from_msg)
       : _has_bits_{from._has_bits_},
@@ -2350,7 +2350,7 @@ BytesValue::BytesValue(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
-inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},

@@ -286,8 +286,7 @@ class PROTOBUF_EXPORT Any final
 
   private:
   const std::string& _internal_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
   std::string* _internal_mutable_type_url();
 
   public:
@@ -302,8 +301,7 @@ class PROTOBUF_EXPORT Any final
 
   private:
   const std::string& _internal_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
 
   public:
@@ -370,8 +368,8 @@ inline const std::string& Any::type_url() const
   return _internal_type_url();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -435,8 +433,8 @@ inline const std::string& Any::value() const
   return _internal_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());

@@ -128,7 +128,7 @@ SourceContext::SourceContext(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
-inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::SourceContext& from_msg)
       : _has_bits_{from._has_bits_},
@@ -151,7 +151,7 @@ SourceContext::SourceContext(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
-inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},

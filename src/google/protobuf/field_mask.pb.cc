@@ -121,7 +121,7 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
-inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::FieldMask& from_msg)
       : paths_{visibility, arena, from.paths_},
@@ -143,7 +143,7 @@ FieldMask::FieldMask(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
-inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : paths_{visibility, arena},

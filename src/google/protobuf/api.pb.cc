@@ -280,7 +280,7 @@ Api::Api(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
-inline PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Api& from_msg)
       : _has_bits_{from._has_bits_},
@@ -312,7 +312,7 @@ Api::Api(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
 }
-inline PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -784,7 +784,7 @@ Method::Method(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
-inline PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Method& from_msg)
       : _has_bits_{from._has_bits_},
@@ -817,7 +817,7 @@ Method::Method(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Method)
 }
-inline PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1277,7 +1277,7 @@ Mixin::Mixin(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
-inline PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Mixin& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1301,7 +1301,7 @@ Mixin::Mixin(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Mixin)
 }
-inline PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},

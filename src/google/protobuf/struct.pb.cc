@@ -347,7 +347,7 @@ Struct::Struct(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
-inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Struct& from_msg)
       : fields_{visibility, arena, from.fields_},
@@ -369,7 +369,7 @@ Struct::Struct(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
-inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : fields_{visibility, arena},
@@ -650,7 +650,7 @@ Value::Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
-inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Value& from_msg)
       : kind_{},
@@ -695,7 +695,7 @@ Value::Value(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
-inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : kind_{},
@@ -1085,7 +1085,7 @@ ListValue::ListValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
-inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::ListValue& from_msg)
       : values_{visibility, arena, from.values_},
@@ -1107,7 +1107,7 @@ ListValue::ListValue(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
-inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : values_{visibility, arena},

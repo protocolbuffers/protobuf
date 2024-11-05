@@ -140,7 +140,7 @@ Duration::Duration(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
-inline PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0} {}

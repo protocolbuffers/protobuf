@@ -435,7 +435,7 @@ Type::Type(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Type)
 }
-inline PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Type& from_msg)
       : _has_bits_{from._has_bits_},
@@ -467,7 +467,7 @@ Type::Type(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
-inline PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -933,7 +933,7 @@ Field::Field(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Field)
 }
-inline PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Field& from_msg)
       : _has_bits_{from._has_bits_},
@@ -967,7 +967,7 @@ Field::Field(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
 }
-inline PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1534,7 +1534,7 @@ Enum::Enum(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Enum)
 }
-inline PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Enum& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1565,7 +1565,7 @@ Enum::Enum(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
-inline PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -2000,7 +2000,7 @@ EnumValue::EnumValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValue)
 }
-inline PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::EnumValue& from_msg)
       : _has_bits_{from._has_bits_},
@@ -2025,7 +2025,7 @@ EnumValue::EnumValue(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
-inline PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -2344,7 +2344,7 @@ Option::Option(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Option)
 }
-inline PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Option& from_msg)
       : _has_bits_{from._has_bits_},
@@ -2371,7 +2371,7 @@ Option::Option(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
-inline PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},

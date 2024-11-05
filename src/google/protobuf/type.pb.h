@@ -392,8 +392,7 @@ class PROTOBUF_EXPORT Option final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -692,8 +691,7 @@ class PROTOBUF_EXPORT Field final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -708,8 +706,7 @@ class PROTOBUF_EXPORT Field final
 
   private:
   const std::string& _internal_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
   std::string* _internal_mutable_type_url();
 
   public:
@@ -724,8 +721,7 @@ class PROTOBUF_EXPORT Field final
 
   private:
   const std::string& _internal_json_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
   std::string* _internal_mutable_json_name();
 
   public:
@@ -740,8 +736,7 @@ class PROTOBUF_EXPORT Field final
 
   private:
   const std::string& _internal_default_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
   std::string* _internal_mutable_default_value();
 
   public:
@@ -1019,8 +1014,7 @@ class PROTOBUF_EXPORT EnumValue final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -1294,8 +1288,7 @@ class PROTOBUF_EXPORT Type final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -1310,8 +1303,7 @@ class PROTOBUF_EXPORT Type final
 
   private:
   const std::string& _internal_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const std::string& value);
   std::string* _internal_mutable_edition();
 
   public:
@@ -1581,8 +1573,7 @@ class PROTOBUF_EXPORT Enum final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -1597,8 +1588,7 @@ class PROTOBUF_EXPORT Enum final
 
   private:
   const std::string& _internal_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const std::string& value);
   std::string* _internal_mutable_edition();
 
   public:
@@ -1694,8 +1684,8 @@ inline const std::string& Type::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Type::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Type::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2036,8 +2026,8 @@ inline const std::string& Type::edition() const
   return _internal_edition();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Type::set_edition(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Type::set_edition(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2177,8 +2167,8 @@ inline const std::string& Field::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Field::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Field::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2242,8 +2232,8 @@ inline const std::string& Field::type_url() const
   return _internal_type_url();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Field::set_type_url(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Field::set_type_url(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2404,8 +2394,8 @@ inline const std::string& Field::json_name() const
   return _internal_json_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Field::set_json_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Field::set_json_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2469,8 +2459,8 @@ inline const std::string& Field::default_value() const
   return _internal_default_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Field::set_default_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Field::set_default_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2538,8 +2528,8 @@ inline const std::string& Enum::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Enum::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Enum::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2816,8 +2806,8 @@ inline const std::string& Enum::edition() const
   return _internal_edition();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Enum::set_edition(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Enum::set_edition(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2885,8 +2875,8 @@ inline const std::string& EnumValue::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void EnumValue::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void EnumValue::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -3027,8 +3017,8 @@ inline const std::string& Option::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Option::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Option::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());

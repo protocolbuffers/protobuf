@@ -767,8 +767,7 @@ class PROTOBUF_EXPORT Value final
 
   private:
   const std::string& _internal_string_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
 
   public:
@@ -1010,8 +1009,8 @@ inline const std::string& Value::string_value() const
   return _internal_string_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
