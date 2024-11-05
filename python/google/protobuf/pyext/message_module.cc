@@ -189,6 +189,17 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
     if (pyfile == nullptr) {
       return absl::InvalidArgumentError("DESCRIPTOR has no attribute 'file'");
     }
+    auto gen_d =
+        google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(
+            descriptor_full_name);
+    if (gen_d) {
+      Py_DECREF(pyfile);
+      Py_DECREF(fn);
+      google::protobuf::Message* msg = google::protobuf::MessageFactory::generated_factory()
+                                 ->GetPrototype(gen_d)
+                                 ->New();
+      return CreatePythonMessageMutator(msg, msg, py_msg);
+    }
     auto d = FindMessageDescriptor(pyfile, descriptor_full_name);
     Py_DECREF(pyfile);
     RETURN_IF_ERROR(d.status());
