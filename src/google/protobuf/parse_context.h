@@ -731,26 +731,24 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 // Falsely indicate that the specific value is modified at this location.  This
 // prevents code which depends on this value from being scheduled earlier.
 template <typename V1Type>
-PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
   asm("" : "+r"(value1));
   return value1;
 }
 
 template <typename V1Type, typename V2Type>
-PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1,
-                                                  V2Type value2) {
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
   asm("" : "+r"(value1) : "r"(value2));
   return value1;
 }
 
 // Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
-static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
-                                                    uint64_t start) {
+static PROTOBUF_ALWAYS_INLINE uint64_t Ubfx7(uint64_t data, uint64_t start) {
   return ValueBarrier((data >> start) & 0x7f);
 }
 
-PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
-    uint64_t data, uint64_t first_byte) {
+PROTOBUF_ALWAYS_INLINE uint64_t ExtractAndMergeTwoChunks(uint64_t data,
+                                                         uint64_t first_byte) {
   ABSL_DCHECK_LE(first_byte, 6U);
   uint64_t first = Ubfx7(data, first_byte * 8);
   uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
@@ -768,8 +766,8 @@ struct SlowPathEncodedInfo {
 // Performs multiple actions which are identical between 32 and 64 bit Varints
 // in order to compute the length of the encoded Varint and compute the new
 // of p.
-PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
-    const char* p) {
+PROTOBUF_ALWAYS_INLINE SlowPathEncodedInfo
+ComputeLengthAndUpdateP(const char* p) {
   SlowPathEncodedInfo result;
   // Load the last two bytes of the encoded Varint.
   std::memcpy(&result.last8, p + 2, sizeof(result.last8));
@@ -793,8 +791,8 @@ PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
   return result;
 }
 
-inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t>
-VarintParseSlowArm64(const char* p, uint64_t first8) {
+PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t> VarintParseSlowArm64(
+    const char* p, uint64_t first8) {
   constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
   constexpr uint64_t kFirstResultBitChunk2 = 2 * 7;
   constexpr uint64_t kFirstResultBitChunk4 = 4 * 7;
@@ -835,8 +833,8 @@ VarintParseSlowArm64(const char* p, uint64_t first8) {
 
 // See comments in VarintParseSlowArm64 for a description of the algorithm.
 // Differences in the 32 bit version are noted below.
-inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t>
-VarintParseSlowArm32(const char* p, uint64_t first8) {
+PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t> VarintParseSlowArm32(
+    const char* p, uint64_t first8) {
   constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
   constexpr uint64_t kFirstResultBitChunk1 = 1 * 7;
   constexpr uint64_t kFirstResultBitChunk3 = 3 * 7;
@@ -947,7 +945,7 @@ PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
          static_cast<T>(x >> ((-s) & (std::numeric_limits<T>::digits - 1)));
 }
 
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
@@ -970,8 +968,8 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   return res;
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
-                                                         uint32_t* out) {
+PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
+                                                  uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
   if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);
@@ -1106,7 +1104,7 @@ inline int32_t ReadVarintZigZag32(const char** p) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
   ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
@@ -1120,7 +1118,7 @@ ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
                                 const Func& func) {
   if (--depth_ < 0) return nullptr;

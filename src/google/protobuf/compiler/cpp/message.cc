@@ -2918,7 +2918,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
   p->Emit({{"init_impl", [&] { GenerateImplMemberInit(p, InitType::kArena); }},
            {"zero_init", [&] { GenerateZeroInitFields(p); }}},
           R"cc(
-            inline PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
+            PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
                 $pbi$::InternalVisibility visibility,
                 ::$proto_ns$::Arena* arena)
                 //~
@@ -3327,7 +3327,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
     p->Emit(
         {{"init", [&] { GenerateImplMemberInit(p, InitType::kArenaCopy); }}},
         R"cc(
-          inline PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
+          PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
               $pbi$::InternalVisibility visibility, ::$proto_ns$::Arena* arena,
               const Impl_& from, const $classtype$& from_msg)
               //~

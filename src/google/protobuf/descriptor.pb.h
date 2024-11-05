@@ -1040,8 +1040,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
 
   private:
   const std::string& _internal_name_part() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const std::string& value);
   std::string* _internal_mutable_name_part();
 
   public:
@@ -1316,8 +1315,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
 
   private:
   const std::string& _internal_leading_comments() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const std::string& value);
   std::string* _internal_mutable_leading_comments();
 
   public:
@@ -1333,8 +1331,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
 
   private:
   const std::string& _internal_trailing_comments() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const std::string& value);
   std::string* _internal_mutable_trailing_comments();
 
   public:
@@ -1583,8 +1580,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
 
   private:
   const std::string& _internal_source_file() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const std::string& value);
   std::string* _internal_mutable_source_file();
 
   public:
@@ -1826,8 +1822,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
 
   private:
   const std::string& _internal_deprecation_warning() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const std::string& value);
   std::string* _internal_mutable_deprecation_warning();
 
   public:
@@ -2065,8 +2060,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
 
   private:
   const std::string& _internal_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
 
   public:
@@ -2850,8 +2844,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
 
   private:
   const std::string& _internal_full_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const std::string& value);
   std::string* _internal_mutable_full_name();
 
   public:
@@ -2867,8 +2860,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
 
   private:
   const std::string& _internal_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const std::string& value);
   std::string* _internal_mutable_type();
 
   public:
@@ -3553,8 +3545,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
 
   private:
   const std::string& _internal_identifier_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const std::string& value);
   std::string* _internal_mutable_identifier_value();
 
   public:
@@ -3570,8 +3561,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
 
   private:
   const std::string& _internal_string_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
 
   public:
@@ -3587,8 +3577,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
 
   private:
   const std::string& _internal_aggregate_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const std::string& value);
   std::string* _internal_mutable_aggregate_value();
 
   public:
@@ -6454,8 +6443,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_java_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const std::string& value);
   std::string* _internal_mutable_java_package();
 
   public:
@@ -6471,8 +6459,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_java_outer_classname() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const std::string& value);
   std::string* _internal_mutable_java_outer_classname();
 
   public:
@@ -6488,8 +6475,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_go_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const std::string& value);
   std::string* _internal_mutable_go_package();
 
   public:
@@ -6505,8 +6491,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_objc_class_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const std::string& value);
   std::string* _internal_mutable_objc_class_prefix();
 
   public:
@@ -6522,8 +6507,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_csharp_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const std::string& value);
   std::string* _internal_mutable_csharp_namespace();
 
   public:
@@ -6539,8 +6523,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_swift_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const std::string& value);
   std::string* _internal_mutable_swift_prefix();
 
   public:
@@ -6556,8 +6539,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_php_class_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const std::string& value);
   std::string* _internal_mutable_php_class_prefix();
 
   public:
@@ -6573,8 +6555,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_php_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const std::string& value);
   std::string* _internal_mutable_php_namespace();
 
   public:
@@ -6590,8 +6571,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_php_metadata_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const std::string& value);
   std::string* _internal_mutable_php_metadata_namespace();
 
   public:
@@ -6607,8 +6587,7 @@ class PROTOBUF_EXPORT FileOptions final
 
   private:
   const std::string& _internal_ruby_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const std::string& value);
   std::string* _internal_mutable_ruby_package();
 
   public:
@@ -9376,8 +9355,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9604,8 +9582,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9621,8 +9598,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
 
   private:
   const std::string& _internal_input_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const std::string& value);
   std::string* _internal_mutable_input_type();
 
   public:
@@ -9638,8 +9614,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
 
   private:
   const std::string& _internal_output_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const std::string& value);
   std::string* _internal_mutable_output_type();
 
   public:
@@ -9952,8 +9927,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9969,8 +9943,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 
   private:
   const std::string& _internal_extendee() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const std::string& value);
   std::string* _internal_mutable_extendee();
 
   public:
@@ -9986,8 +9959,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 
   private:
   const std::string& _internal_type_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const std::string& value);
   std::string* _internal_mutable_type_name();
 
   public:
@@ -10003,8 +9975,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 
   private:
   const std::string& _internal_default_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
   std::string* _internal_mutable_default_value();
 
   public:
@@ -10020,8 +9991,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 
   private:
   const std::string& _internal_json_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
   std::string* _internal_mutable_json_name();
 
   public:
@@ -10309,8 +10279,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -10794,8 +10763,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11079,8 +11047,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11457,8 +11424,7 @@ class PROTOBUF_EXPORT DescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11826,8 +11792,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11843,8 +11808,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
 
   private:
   const std::string& _internal_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const std::string& value);
   std::string* _internal_mutable_package();
 
   public:
@@ -11860,8 +11824,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
 
   private:
   const std::string& _internal_syntax() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const std::string& value);
   std::string* _internal_mutable_syntax();
 
   public:
@@ -12423,8 +12386,8 @@ inline const std::string& FileDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -12492,8 +12455,8 @@ inline const std::string& FileDescriptorProto::package() const
   return _internal_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -13103,8 +13066,8 @@ inline const std::string& FileDescriptorProto::syntax() const
   return _internal_syntax();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -13421,8 +13384,8 @@ inline const std::string& DescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14025,8 +13988,8 @@ inline const std::string& ExtensionRangeOptions_Declaration::full_name() const
   return _internal_full_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14094,8 +14057,8 @@ inline const std::string& ExtensionRangeOptions_Declaration::type() const
   return _internal_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14450,8 +14413,8 @@ inline const std::string& FieldDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14605,8 +14568,8 @@ inline const std::string& FieldDescriptorProto::type_name() const
   return _internal_type_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14674,8 +14637,8 @@ inline const std::string& FieldDescriptorProto::extendee() const
   return _internal_extendee();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14743,8 +14706,8 @@ inline const std::string& FieldDescriptorProto::default_value() const
   return _internal_default_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14840,8 +14803,8 @@ inline const std::string& FieldDescriptorProto::json_name() const
   return _internal_json_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15037,8 +15000,8 @@ inline const std::string& OneofDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15266,8 +15229,8 @@ inline const std::string& EnumDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15597,8 +15560,8 @@ inline const std::string& EnumValueDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15794,8 +15757,8 @@ inline const std::string& ServiceDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16012,8 +15975,8 @@ inline const std::string& MethodDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16081,8 +16044,8 @@ inline const std::string& MethodDescriptorProto::input_type() const
   return _internal_input_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16150,8 +16113,8 @@ inline const std::string& MethodDescriptorProto::output_type() const
   return _internal_output_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16375,8 +16338,8 @@ inline const std::string& FileOptions::java_package() const
   return _internal_java_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16444,8 +16407,8 @@ inline const std::string& FileOptions::java_outer_classname() const
   return _internal_java_outer_classname();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16626,8 +16589,8 @@ inline const std::string& FileOptions::go_package() const
   return _internal_go_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16835,8 +16798,8 @@ inline const std::string& FileOptions::objc_class_prefix() const
   return _internal_objc_class_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16904,8 +16867,8 @@ inline const std::string& FileOptions::csharp_namespace() const
   return _internal_csharp_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16973,8 +16936,8 @@ inline const std::string& FileOptions::swift_prefix() const
   return _internal_swift_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17042,8 +17005,8 @@ inline const std::string& FileOptions::php_class_prefix() const
   return _internal_php_class_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17111,8 +17074,8 @@ inline const std::string& FileOptions::php_namespace() const
   return _internal_php_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17180,8 +17143,8 @@ inline const std::string& FileOptions::php_metadata_namespace() const
   return _internal_php_metadata_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17249,8 +17212,8 @@ inline const std::string& FileOptions::ruby_package() const
   return _internal_ruby_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17785,8 +17748,8 @@ inline const std::string& FieldOptions_EditionDefault::value() const
   return _internal_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17916,8 +17879,8 @@ inline const std::string& FieldOptions_FeatureSupport::deprecation_warning() con
   return _internal_deprecation_warning();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.deprecation_warning_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19680,8 +19643,8 @@ inline const std::string& UninterpretedOption_NamePart::name_part() const
   return _internal_name_part();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19830,8 +19793,8 @@ inline const std::string& UninterpretedOption::identifier_value() const
   return _internal_identifier_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19983,8 +19946,8 @@ inline const std::string& UninterpretedOption::string_value() const
   return _internal_string_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20052,8 +20015,8 @@ inline const std::string& UninterpretedOption::aggregate_value() const
   return _internal_aggregate_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20729,8 +20692,8 @@ inline const std::string& SourceCodeInfo_Location::leading_comments() const
   return _internal_leading_comments();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20798,8 +20761,8 @@ inline const std::string& SourceCodeInfo_Location::trailing_comments() const
   return _internal_trailing_comments();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -21033,8 +20996,8 @@ inline const std::string& GeneratedCodeInfo_Annotation::source_file() const
   return _internal_source_file();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArena());

@@ -390,8 +390,7 @@ PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
 }
 
 template <bool export_called_function>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(
-    PROTOBUF_TC_PARAM_DECL) {
+PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   TestMiniParseResult* test_out;
   if (export_called_function) {
     test_out = reinterpret_cast<TestMiniParseResult*>(
@@ -511,7 +510,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
 // Message fields
 //////////////////////////////////////////////////////////////////////////////
 
-inline PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
+PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
     const TcParseTableBase* table, Arena* arena) {
   return table->class_data->New(arena);
 }
@@ -523,7 +522,7 @@ MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
@@ -605,7 +604,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -681,7 +680,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastGtR2(PROTOBUF_TC_PARAM_DECL) {
 //////////////////////////////////////////////////////////////////////////////
 
 template <typename LayoutType, typename TagType>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -711,7 +710,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastF64S2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename LayoutType, typename TagType>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -746,7 +745,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastF64R2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename LayoutType, typename TagType>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -786,8 +785,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastF64P2(PROTOBUF_TC_PARAM_DECL) {
 namespace {
 
 template <typename Type>
-inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
-                                                      Type* value) {
+PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p, Type* value) {
   static_assert(sizeof(Type) == 4 || sizeof(Type) == 8,
                 "Only [u]int32_t and [u]int64_t please");
 #ifdef __aarch64__
@@ -807,8 +805,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
 
 // This overload is specifically for handling bool, because bools have very
 // different requirements and performance opportunities than ints.
-inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
-                                                      bool* value) {
+PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p, bool* value) {
   unsigned char byte = static_cast<unsigned char>(*p++);
   if (PROTOBUF_PREDICT_TRUE(byte == 0 || byte == 1)) {
     // This is the code path almost always taken,
@@ -877,8 +874,8 @@ inline int64_t ZigZagDecodeHelper<int64_t, true>(int64_t value) {
 
 // Prefetch the enum data, if necessary.
 // We can issue the prefetch before we start parsing the ints.
-inline PROTOBUF_ALWAYS_INLINE void PrefetchEnumData(
-    uint16_t xform_val, TcParseTableBase::FieldAux aux) {
+PROTOBUF_ALWAYS_INLINE void PrefetchEnumData(uint16_t xform_val,
+                                             TcParseTableBase::FieldAux aux) {
 }
 
 // When `xform_val` is a constant, we want to inline `ValidateEnum` because it
@@ -889,8 +886,8 @@ inline PROTOBUF_ALWAYS_INLINE void PrefetchEnumData(
 // way more common than the kTvEnum cases. It is also called from places that
 // already have out-of-line functions (like MpVarint) so an extra out-of-line
 // call to `ValidateEnum` does not affect much.
-inline PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(
-    int32_t val, uint16_t xform_val, TcParseTableBase::FieldAux aux) {
+PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(int32_t val, uint16_t xform_val,
+                                           TcParseTableBase::FieldAux aux) {
   if (xform_val == field_layout::kTvRange) {
     auto lo = aux.enum_range.start;
     return lo <= val && val < (lo + aux.enum_range.length);
@@ -905,7 +902,7 @@ inline PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(
 }  // namespace
 
 template <typename FieldType, typename TagType, bool zigzag>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -966,7 +963,7 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
 }
 
 template <typename FieldType>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
     PROTOBUF_TC_PARAM_DECL) {
   using TagType = uint8_t;
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
@@ -1049,7 +1046,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastZ64S2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename FieldType, typename TagType, bool zigzag>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1114,7 +1111,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastZ64R2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename FieldType, typename TagType, bool zigzag>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1216,7 +1213,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpUnknownEnumFallback(
 }
 
 template <typename TagType, uint16_t xform_val>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1258,7 +1255,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEvS2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, uint16_t xform_val>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1310,7 +1307,7 @@ PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg,
 }
 
 template <typename TagType, uint16_t xform_val>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1367,7 +1364,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEvP2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, uint8_t min>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1405,7 +1402,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEr1S2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, uint8_t min>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1447,7 +1444,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEr1R2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, uint8_t min>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1537,7 +1534,7 @@ namespace {
 // Here are overloads of ReadStringIntoArena, ReadStringNoArena and IsValidUTF8
 // for every string class for which we provide fast-table parser support.
 
-PROTOBUF_ALWAYS_INLINE inline const char* ReadStringIntoArena(
+PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(
     MessageLite* /*msg*/, const char* ptr, ParseContext* ctx,
     uint32_t /*aux_idx*/, const TcParseTableBase* /*table*/,
     ArenaStringPtr& field, Arena* arena) {
@@ -1554,7 +1551,7 @@ const char* ReadStringNoArena(MessageLite* /*msg*/, const char* ptr,
   return ctx->ReadString(ptr, size, field.MutableNoCopy(nullptr));
 }
 
-PROTOBUF_ALWAYS_INLINE inline bool IsValidUTF8(ArenaStringPtr& field) {
+PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
   return utf8_range::IsStructurallyValid(field.Get());
 }
 
@@ -1575,7 +1572,7 @@ PROTOBUF_UNUSED void EnsureArenaStringIsNotDefault(const MessageLite* msg,
 }  // namespace
 
 template <typename TagType, typename FieldType, TcParser::Utf8Type utf8>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1684,7 +1681,7 @@ const char* TcParser::FastUcS2(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename TagType, typename FieldType, TcParser::Utf8Type utf8>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2387,7 +2384,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
     const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
   int size = ReadSize(&ptr);
@@ -2685,7 +2682,7 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
   GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
 }
 
-PROTOBUF_ALWAYS_INLINE inline void TcParser::InitializeMapNodeEntry(
+PROTOBUF_ALWAYS_INLINE void TcParser::InitializeMapNodeEntry(
     void* obj, MapTypeCard type_card, UntypedMapBase& map,
     const TcParseTableBase::FieldAux* aux, bool is_key) {
   (void)is_key;

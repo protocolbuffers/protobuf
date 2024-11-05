@@ -312,7 +312,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Arena-safety semantics: this is guarded by the logic in
   // Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  inline PROTOBUF_NDEBUG_INLINE static void InternalSwap(
+  PROTOBUF_NDEBUG_INLINE static void InternalSwap(
       InlinedStringField* lhs, bool lhs_arena_dtor_registered,
       MessageLite* lhs_msg,  //
       InlinedStringField* rhs, bool rhs_arena_dtor_registered,
@@ -436,7 +436,7 @@ inline void InlinedStringField::SetNoArena(std::string&& value) {
   get_mutable()->assign(std::move(value));
 }
 
-inline PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
+PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
     InlinedStringField* lhs, bool lhs_arena_dtor_registered,
     MessageLite* lhs_msg,  //
     InlinedStringField* rhs, bool rhs_arena_dtor_registered,

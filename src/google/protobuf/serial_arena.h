@@ -131,8 +131,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  private:
-  static inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n,
-                                                                  size_t a) {
+  static PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n, size_t a) {
     // We are wasting space by over allocating align - 8 bytes. Compared to a
     // dedicated function that takes current alignment in consideration.  Such a
     // scheme would only waste (align - 8)/2 bytes on average, but requires a
@@ -141,7 +140,7 @@ class PROTOBUF_EXPORT SerialArena {
     return a <= 8 ? ArenaAlignDefault::Ceil(n) : ArenaAlignAs(a).Padded(n);
   }
 
-  static inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
+  static PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
     return (a <= ArenaAlignDefault::align)
                ? ArenaAlignDefault::CeilDefaultAligned(p)
                : ArenaAlignAs(a).CeilDefaultAligned(p);
@@ -409,7 +408,7 @@ class PROTOBUF_EXPORT SerialArena {
   CachedBlock** cached_blocks_ = nullptr;
 };
 
-inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
+PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   // Check how many unused instances are in the current block.
   size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
   if (PROTOBUF_PREDICT_TRUE(unused_bytes != 0)) {
@@ -421,7 +420,7 @@ inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   return false;
 }
 
-ABSL_ATTRIBUTE_RETURNS_NONNULL inline PROTOBUF_ALWAYS_INLINE void*
+ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_ALWAYS_INLINE void*
 SerialArena::AllocateFromStringBlock() {
   void* p;
   if (ABSL_PREDICT_TRUE(MaybeAllocateString(p))) return p;

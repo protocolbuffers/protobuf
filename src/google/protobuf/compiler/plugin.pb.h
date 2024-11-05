@@ -294,8 +294,7 @@ class PROTOC_EXPORT Version final
 
   private:
   const std::string& _internal_suffix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const std::string& value);
   std::string* _internal_mutable_suffix();
 
   public:
@@ -535,8 +534,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -552,8 +550,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
 
   private:
   const std::string& _internal_insertion_point() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const std::string& value);
   std::string* _internal_mutable_insertion_point();
 
   public:
@@ -569,8 +566,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
 
   private:
   const std::string& _internal_content() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
   std::string* _internal_mutable_content();
 
   public:
@@ -831,8 +827,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final
 
   private:
   const std::string& _internal_error() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_error(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_error(const std::string& value);
   std::string* _internal_mutable_error();
 
   public:
@@ -1135,8 +1130,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final
 
   private:
   const std::string& _internal_parameter() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const std::string& value);
   std::string* _internal_mutable_parameter();
 
   public:
@@ -1309,8 +1303,8 @@ inline const std::string& Version::suffix() const
   return _internal_suffix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Version::set_suffix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Version::set_suffix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.suffix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1446,8 +1440,8 @@ inline const std::string& CodeGeneratorRequest::parameter() const
   return _internal_parameter();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.parameter_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1705,8 +1699,8 @@ inline const std::string& CodeGeneratorResponse_File::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1774,8 +1768,8 @@ inline const std::string& CodeGeneratorResponse_File::insertion_point() const
   return _internal_insertion_point();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_insertion_point(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_insertion_point(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.insertion_point_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1843,8 +1837,8 @@ inline const std::string& CodeGeneratorResponse_File::content() const
   return _internal_content();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_content(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_content(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.content_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -2007,8 +2001,8 @@ inline const std::string& CodeGeneratorResponse::error() const
   return _internal_error();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.error_.Set(static_cast<Arg_&&>(arg), args..., GetArena());

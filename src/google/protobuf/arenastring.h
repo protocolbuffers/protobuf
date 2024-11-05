@@ -372,9 +372,9 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  inline PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
-                                                         ArenaStringPtr* lhs,
-                                                         Arena* arena);
+  PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
+                                                  ArenaStringPtr* lhs,
+                                                  Arena* arena);
 
   // Internal setter used only at parse time to directly set a donated string
   // value.
@@ -405,8 +405,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   // Swaps tagged pointer without debug hardening. This is to allow python
   // protobuf to maintain pointer stability even in DEBUG builds.
-  inline PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(
-      ArenaStringPtr* rhs, ArenaStringPtr* lhs) {
+  PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(ArenaStringPtr* rhs,
+                                                       ArenaStringPtr* lhs) {
     std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
   }
 
@@ -494,8 +494,9 @@ inline void ArenaStringPtr::SetBytes(const void* p, size_t n, Arena* arena) {
   Set(absl::string_view{static_cast<const char*>(p), n}, arena);
 }
 
-inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(
-    ArenaStringPtr* rhs, ArenaStringPtr* lhs, Arena* arena) {
+PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(ArenaStringPtr* rhs,
+                                                         ArenaStringPtr* lhs,
+                                                         Arena* arena) {
   // Silence unused variable warnings in release buildls.
   (void)arena;
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);

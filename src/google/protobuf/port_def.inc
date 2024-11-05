@@ -162,13 +162,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 // For functions we want to force inline.
 #if defined(PROTOBUF_NO_INLINE)
-# define PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_ALWAYS_INLINE inline
 #elif defined(__GNUC__)
-# define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
+#define PROTOBUF_ALWAYS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
-# define PROTOBUF_ALWAYS_INLINE __forceinline
+#define PROTOBUF_ALWAYS_INLINE inline __forceinline
 #else
-# define PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_ALWAYS_INLINE inline
 #endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE_CALL
@@ -196,7 +196,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #if defined(NDEBUG) || (defined(_MSC_VER) && !defined(_DEBUG))
 # define PROTOBUF_NDEBUG_INLINE PROTOBUF_ALWAYS_INLINE
 #else
-# define PROTOBUF_NDEBUG_INLINE
+#define PROTOBUF_NDEBUG_INLINE inline
 #endif
 
 // Note that PROTOBUF_NOINLINE is an attribute applied to functions, to prevent

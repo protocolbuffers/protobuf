@@ -324,7 +324,7 @@ Version::Version(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
-inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::Version& from_msg)
       : _has_bits_{from._has_bits_},
@@ -354,7 +354,7 @@ Version::Version(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
 }
-inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -673,7 +673,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
       : _has_bits_{from._has_bits_},
@@ -703,7 +703,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1096,7 +1096,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1125,7 +1125,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1451,7 +1451,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1482,7 +1482,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},

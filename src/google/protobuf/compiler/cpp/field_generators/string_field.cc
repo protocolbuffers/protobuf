@@ -254,35 +254,33 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v3 = p->WithVars(
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
-  p->Emit(
-      {{"donated",
-        [&] {
-          if (!is_inlined()) return;
-          p->Emit(R"cc(
-            inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
+  p->Emit({{"donated",
+            [&] {
+              if (!is_inlined()) return;
+              p->Emit(R"cc(
+                PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
+              )cc");
+            }}},
+          R"cc(
+            $DEPRECATED$ const std::string& $name$() const;
+            //~ Using `Arg_ = const std::string&` will make the type of `arg`
+            //~ default to `const std::string&`, due to reference collapse. This
+            //~ is necessary because there are a handful of users that rely on
+            //~ this default.
+            template <typename Arg_ = const std::string&, typename... Args_>
+            $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
+            $DEPRECATED$ std::string* $mutable_name$();
+            $DEPRECATED$ PROTOBUF_NODISCARD std::string* $release_name$();
+            $DEPRECATED$ void $set_allocated_name$(std::string* value);
+
+            private:
+            const std::string& _internal_$name$() const;
+            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(const std::string& value);
+            std::string* _internal_mutable_$name$();
+            $donated$;
+
+            public:
           )cc");
-        }}},
-      R"cc(
-        $DEPRECATED$ const std::string& $name$() const;
-        //~ Using `Arg_ = const std::string&` will make the type of `arg`
-        //~ default to `const std::string&`, due to reference collapse. This is
-        //~ necessary because there are a handful of users that rely on this
-        //~ default.
-        template <typename Arg_ = const std::string&, typename... Args_>
-        $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
-        $DEPRECATED$ std::string* $mutable_name$();
-        $DEPRECATED$ PROTOBUF_NODISCARD std::string* $release_name$();
-        $DEPRECATED$ void $set_allocated_name$(std::string* value);
-
-        private:
-        const std::string& _internal_$name$() const;
-        inline PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(
-            const std::string& value);
-        std::string* _internal_mutable_$name$();
-        $donated$;
-
-        public:
-      )cc");
 }
 
 void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
@@ -450,8 +448,8 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return _internal_$name_internal$();
         }
         template <typename Arg_, typename... Args_>
-        inline PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg,
-                                                             Args_... args) {
+        PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg,
+                                                      Args_... args) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;

@@ -75,8 +75,8 @@ PROTOBUF_EXPORT bool ValidateEnum(int value, const uint32_t* data);
 PROTOBUF_EXPORT std::vector<uint32_t> GenerateEnumData(
     absl::Span<const int32_t> values);
 
-inline PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
-                                                       const uint32_t* data) {
+PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
+                                                const uint32_t* data) {
   const int16_t min_seq = static_cast<int16_t>(data[0] & 0xFFFF);
   const uint16_t length_seq = static_cast<uint16_t>(data[0] >> 16);
   uint64_t adjusted =

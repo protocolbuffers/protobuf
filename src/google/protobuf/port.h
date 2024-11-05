@@ -43,7 +43,7 @@ namespace internal {
 struct MessageTraitsImpl;
 
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
+PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #if defined(__GNUC__)
   asm("" : : "r"(var));
 #else
@@ -57,14 +57,14 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 // Optimized implementation for clang where we can generate a relocation without
 // adding runtime instructions.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   // This injects a relocation in the code path without having to run code, but
   // we can only do it with a newer clang.
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
   static constexpr auto ptr =
       decltype(TraitsImpl::template value<T>)::StrongPointer();
   // This is identical to the implementation of StrongPointer() above, but it
@@ -76,12 +76,12 @@ inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
 // Portable fallback. It usually generates a single LEA instruction or
 // equivalent.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   StrongPointer(ptr);
 }
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
   return StrongPointer(
       decltype(TraitsImpl::template value<T>)::StrongPointer());
 }
@@ -323,7 +323,7 @@ inline constexpr bool IsLazyParsingSupported() {
 // past the end of message/valid memory, however we are doing this
 // inside inline asm block, since computing the invalid pointer
 // is a potential UB. Only insert prefetch once per function,
-inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
@@ -332,7 +332,7 @@ inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
 }
 
 // Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
-inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
@@ -341,8 +341,7 @@ inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
 }
 
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
-[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
-Unreachable() {
+[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
 #elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
@@ -360,7 +359,7 @@ Unreachable() {
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
+PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
   char protobuf_tsan_dummy =
       *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
   asm volatile("" : "+r"(protobuf_tsan_dummy));
@@ -370,12 +369,12 @@ inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
 // member is not important. We can unconditionally write to it without affecting
 // correctness of the rest of the class.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
+PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
   *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
 }
 #else
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
 // This trampoline allows calling from codegen without needing a #include to
