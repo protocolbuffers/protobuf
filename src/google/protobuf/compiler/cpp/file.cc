@@ -1686,6 +1686,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   }
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
+    IncludeFileAndExport("third_party/protobuf/map_type_handler.h", p);
     if (HasDescriptorMethods(file_, options_)) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);

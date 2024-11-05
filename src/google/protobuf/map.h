@@ -34,7 +34,6 @@
 #include <time.h>
 #endif
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
@@ -44,7 +43,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
