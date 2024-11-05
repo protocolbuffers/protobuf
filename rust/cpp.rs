@@ -589,6 +589,30 @@ macro_rules! impl_repeated_primitives {
 
 impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, ProtoBytes);
 
+extern "C" {
+    pub fn proto2_rust_RepeatedField_Message_new() -> RawRepeatedField;
+    pub fn proto2_rust_RepeatedField_Message_free(field: RawRepeatedField);
+    pub fn proto2_rust_RepeatedField_Message_size(field: RawRepeatedField) -> usize;
+    pub fn proto2_rust_RepeatedField_Message_get(
+        field: RawRepeatedField,
+        index: usize,
+    ) -> RawMessage;
+    pub fn proto2_rust_RepeatedField_Message_get_mut(
+        field: RawRepeatedField,
+        index: usize,
+    ) -> RawMessage;
+    pub fn proto2_rust_RepeatedField_Message_add(
+        field: RawRepeatedField,
+        prototype: RawMessage,
+    ) -> RawMessage;
+    pub fn proto2_rust_RepeatedField_Message_clear(field: RawRepeatedField);
+    pub fn proto2_rust_RepeatedField_Message_copy_from(
+        dst: RawRepeatedField,
+        src: RawRepeatedField,
+    );
+    pub fn proto2_rust_RepeatedField_Message_reserve(field: RawRepeatedField, additional: usize);
+}
+
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
     repeated: RepeatedView<E>,
