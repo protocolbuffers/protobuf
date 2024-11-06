@@ -4163,6 +4163,17 @@ UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
   return ret;
 }
 
+UPB_API_INLINE struct upb_Message* upb_Message_GetExtensionMessage(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    struct upb_Message* default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  struct upb_Message* ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -4544,6 +4555,10 @@ UPB_API_INLINE uint32_t upb_Message_GetExtensionUInt32(
 UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
     const upb_Message* msg, const upb_MiniTableExtension* f,
     uint64_t default_val);
+
+UPB_API_INLINE upb_Message* upb_Message_GetExtensionMessage(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    struct upb_Message* default_val);
 
 // Extension Setters ///////////////////////////////////////////////////////////
 
