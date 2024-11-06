@@ -625,7 +625,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                  data_size == 0
                      ? 0
                      : $kTagBytes$ + ::_pbi::WireFormatLite::Int32Size(
-                                         static_cast<int32_t>(data_size));
+                                         static_cast<::int32_t>(data_size));
                )cc");
              } else {
                p->Emit(R"cc(
