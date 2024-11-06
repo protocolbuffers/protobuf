@@ -1527,6 +1527,10 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
+  if (std::is_same<Message, Element>::value ||
+      std::is_same<MessageLite, Element>::value) {
+    ABSL_CHECK(false) << "DDD";
+  }
   return RepeatedPtrFieldBase::Reserve(new_size);
 }
 
