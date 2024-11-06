@@ -2032,7 +2032,8 @@ internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
   size_t total_size =
       last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
-  char* data = static_cast<char*>(::operator new(total_size));
+  char* data = static_cast<char*>(::operator new(total_size
+                                                 ));
   auto* res = ::new (data) FlatAlloc(ends);
   flat_allocs_.emplace_back(res);
 
