@@ -52,6 +52,10 @@ struct PrintOptions {
   // If set, int64 values that can be represented exactly as a double are
   // printed without quotes.
   bool unquote_int64_if_possible = false;
+  // If set, the fields are ordered by their location in the descriptor.
+  // Otherwise, the fields are ordered by their tag number.
+  // This is useful to control the order of fields in the output.
+  bool preserve_descriptor_field_order = false;
 };
 
 // Converts from protobuf message to JSON and appends it to |output|. This is a

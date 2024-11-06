@@ -49,6 +49,7 @@ using ::proto3::TestAny;
 using ::proto3::TestEnumValue;
 using ::proto3::TestMap;
 using ::proto3::TestMessage;
+using ::proto3::TestUnorderedMessage;
 using ::proto3::TestOneof;
 using ::proto3::TestWrapper;
 using ::testing::ContainsRegex;
@@ -1272,6 +1273,25 @@ TEST_P(JsonTest, FieldOrder) {
   ASSERT_OK(s);
   EXPECT_EQ(
       out, R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
+}
+
+TEST_P(JsonTest, PreserveDescriptorFieldOrder) {
+  TestUnorderedMessage m;
+  m.set_first(1);
+  m.set_second(2);
+  m.set_third(3);
+
+  EXPECT_THAT(
+      ToJson(m),
+      IsOkAndHolds(
+          R"({"second":2,"first":1,"third":3})"));
+
+  PrintOptions options;
+  options.preserve_descriptor_field_order = true;
+  EXPECT_THAT(
+      ToJson(m, options),
+      IsOkAndHolds(
+          R"({"first":1,"second":2,"third":3})"));
 }
 
 TEST_P(JsonTest, UnknownGroupField) {

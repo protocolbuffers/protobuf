@@ -56,6 +56,10 @@ struct WriterOptions {
   // in the unit tests; we intend to remove this setting eventually. See
   // b/234868512.
   bool allow_legacy_syntax = false;
+  // If set, the fields are ordered by their index in the descriptor.
+  // Otherwise, the fields are ordered by their tag number.
+  // This is useful to control the order of fields in the output.
+  bool preserve_descriptor_field_order = false;
 };
 
 template <typename Tuple, typename F, size_t... i>

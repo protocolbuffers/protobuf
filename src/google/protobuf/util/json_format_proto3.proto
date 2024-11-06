@@ -68,6 +68,12 @@ message TestMessage {
   optional MessageType optional_message_value = 51;
 }
 
+message TestUnorderedMessage {
+  int32 first = 10;
+  int32 second = 1;
+  int32 third = 100;
+}
+
 message TestOneof {
   // In JSON format oneof fields behave mostly the same as optional
   // fields except that:

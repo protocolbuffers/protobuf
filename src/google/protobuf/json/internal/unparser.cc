@@ -469,10 +469,12 @@ absl::Status WriteFields(JsonWriter& writer, const Msg<Traits>& msg,
   // Add extensions *before* sorting.
   Traits::FindAndAppendExtensions(msg, fields);
 
-  // Fields are guaranteed to be serialized in field number order.
-  absl::c_sort(fields, [](const auto& a, const auto& b) {
-    return Traits::FieldNumber(a) < Traits::FieldNumber(b);
-  });
+  if (!writer.options().preserve_descriptor_field_order) {
+    // Serialize in field number order.
+    absl::c_sort(fields, [](const auto& a, const auto& b) {
+      return Traits::FieldNumber(a) < Traits::FieldNumber(b);
+    });
+  }
 
   for (auto field : fields) {
     RETURN_IF_ERROR(WriteField<Traits>(writer, msg, field, first));

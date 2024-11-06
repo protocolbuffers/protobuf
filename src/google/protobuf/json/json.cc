@@ -36,6 +36,7 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.always_print_fields_with_no_presence =
       options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
+  opts.preserve_descriptor_field_order = options.preserve_descriptor_field_order;
 
   // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
@@ -91,6 +92,7 @@ absl::Status MessageToJsonString(const Message& message, std::string* output,
   opts.always_print_fields_with_no_presence =
       options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
+  opts.preserve_descriptor_field_order = options.preserve_descriptor_field_order;
 
   // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
