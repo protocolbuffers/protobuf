@@ -235,7 +235,7 @@ class PROTOBUF_EXPORT Mixin final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -250,7 +250,7 @@ class PROTOBUF_EXPORT Mixin final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_root(Arg_&& arg, Args_... args);
   std::string* mutable_root();
-  PROTOBUF_NODISCARD std::string* release_root();
+  [[nodiscard]] std::string* release_root();
   void set_allocated_root(std::string* value);
 
   private:
@@ -474,7 +474,7 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -489,7 +489,7 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_request_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_request_type_url();
-  PROTOBUF_NODISCARD std::string* release_request_type_url();
+  [[nodiscard]] std::string* release_request_type_url();
   void set_allocated_request_type_url(std::string* value);
 
   private:
@@ -504,7 +504,7 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_response_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_response_type_url();
-  PROTOBUF_NODISCARD std::string* release_response_type_url();
+  [[nodiscard]] std::string* release_response_type_url();
   void set_allocated_response_type_url(std::string* value);
 
   private:
@@ -797,7 +797,7 @@ class PROTOBUF_EXPORT Api final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -812,7 +812,7 @@ class PROTOBUF_EXPORT Api final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_version(Arg_&& arg, Args_... args);
   std::string* mutable_version();
-  PROTOBUF_NODISCARD std::string* release_version();
+  [[nodiscard]] std::string* release_version();
   void set_allocated_version(std::string* value);
 
   private:
@@ -825,7 +825,7 @@ class PROTOBUF_EXPORT Api final
   bool has_source_context() const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
+  [[nodiscard]] ::google::protobuf::SourceContext* release_source_context();
   ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);

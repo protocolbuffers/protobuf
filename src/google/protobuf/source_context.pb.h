@@ -224,7 +224,7 @@ class PROTOBUF_EXPORT SourceContext final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_file_name(Arg_&& arg, Args_... args);
   std::string* mutable_file_name();
-  PROTOBUF_NODISCARD std::string* release_file_name();
+  [[nodiscard]] std::string* release_file_name();
   void set_allocated_file_name(std::string* value);
 
   private:

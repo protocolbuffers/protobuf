@@ -281,7 +281,7 @@ class PROTOBUF_EXPORT Any final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
-  PROTOBUF_NODISCARD std::string* release_type_url();
+  [[nodiscard]] std::string* release_type_url();
   void set_allocated_type_url(std::string* value);
 
   private:
@@ -296,7 +296,7 @@ class PROTOBUF_EXPORT Any final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
-  PROTOBUF_NODISCARD std::string* release_value();
+  [[nodiscard]] std::string* release_value();
   void set_allocated_value(std::string* value);
 
   private:

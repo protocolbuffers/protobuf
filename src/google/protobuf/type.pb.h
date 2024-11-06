@@ -387,7 +387,7 @@ class PROTOBUF_EXPORT Option final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -400,7 +400,7 @@ class PROTOBUF_EXPORT Option final
   bool has_value() const;
   void clear_value() ;
   const ::google::protobuf::Any& value() const;
-  PROTOBUF_NODISCARD ::google::protobuf::Any* release_value();
+  [[nodiscard]] ::google::protobuf::Any* release_value();
   ::google::protobuf::Any* mutable_value();
   void set_allocated_value(::google::protobuf::Any* value);
   void unsafe_arena_set_allocated_value(::google::protobuf::Any* value);
@@ -686,7 +686,7 @@ class PROTOBUF_EXPORT Field final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -701,7 +701,7 @@ class PROTOBUF_EXPORT Field final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
-  PROTOBUF_NODISCARD std::string* release_type_url();
+  [[nodiscard]] std::string* release_type_url();
   void set_allocated_type_url(std::string* value);
 
   private:
@@ -716,7 +716,7 @@ class PROTOBUF_EXPORT Field final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_json_name(Arg_&& arg, Args_... args);
   std::string* mutable_json_name();
-  PROTOBUF_NODISCARD std::string* release_json_name();
+  [[nodiscard]] std::string* release_json_name();
   void set_allocated_json_name(std::string* value);
 
   private:
@@ -731,7 +731,7 @@ class PROTOBUF_EXPORT Field final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_default_value(Arg_&& arg, Args_... args);
   std::string* mutable_default_value();
-  PROTOBUF_NODISCARD std::string* release_default_value();
+  [[nodiscard]] std::string* release_default_value();
   void set_allocated_default_value(std::string* value);
 
   private:
@@ -1009,7 +1009,7 @@ class PROTOBUF_EXPORT EnumValue final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -1283,7 +1283,7 @@ class PROTOBUF_EXPORT Type final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -1298,7 +1298,7 @@ class PROTOBUF_EXPORT Type final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_edition(Arg_&& arg, Args_... args);
   std::string* mutable_edition();
-  PROTOBUF_NODISCARD std::string* release_edition();
+  [[nodiscard]] std::string* release_edition();
   void set_allocated_edition(std::string* value);
 
   private:
@@ -1311,7 +1311,7 @@ class PROTOBUF_EXPORT Type final
   bool has_source_context() const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
+  [[nodiscard]] ::google::protobuf::SourceContext* release_source_context();
   ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
@@ -1568,7 +1568,7 @@ class PROTOBUF_EXPORT Enum final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -1583,7 +1583,7 @@ class PROTOBUF_EXPORT Enum final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_edition(Arg_&& arg, Args_... args);
   std::string* mutable_edition();
-  PROTOBUF_NODISCARD std::string* release_edition();
+  [[nodiscard]] std::string* release_edition();
   void set_allocated_edition(std::string* value);
 
   private:
@@ -1596,7 +1596,7 @@ class PROTOBUF_EXPORT Enum final
   bool has_source_context() const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
+  [[nodiscard]] ::google::protobuf::SourceContext* release_source_context();
   ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);

@@ -762,7 +762,7 @@ class PROTOBUF_EXPORT Value final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
-  PROTOBUF_NODISCARD std::string* release_string_value();
+  [[nodiscard]] std::string* release_string_value();
   void set_allocated_string_value(std::string* value);
 
   private:
@@ -790,7 +790,7 @@ class PROTOBUF_EXPORT Value final
   public:
   void clear_struct_value() ;
   const ::google::protobuf::Struct& struct_value() const;
-  PROTOBUF_NODISCARD ::google::protobuf::Struct* release_struct_value();
+  [[nodiscard]] ::google::protobuf::Struct* release_struct_value();
   ::google::protobuf::Struct* mutable_struct_value();
   void set_allocated_struct_value(::google::protobuf::Struct* value);
   void unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value);
@@ -809,7 +809,7 @@ class PROTOBUF_EXPORT Value final
   public:
   void clear_list_value() ;
   const ::google::protobuf::ListValue& list_value() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ListValue* release_list_value();
+  [[nodiscard]] ::google::protobuf::ListValue* release_list_value();
   ::google::protobuf::ListValue* mutable_list_value();
   void set_allocated_list_value(::google::protobuf::ListValue* value);
   void unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value);
