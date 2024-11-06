@@ -5,13 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <climits>
 #include <cstdint>
 #include <iterator>
 #include <limits>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -58,6 +56,7 @@ using ::hpb_unittest::protos::ThemeExtension;
 using ::hpb_unittest::someotherpackage::protos::int32_ext;
 using ::hpb_unittest::someotherpackage::protos::int64_ext;
 using ::testing::ElementsAre;
+using ::testing::status::IsOkAndHolds;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -732,6 +731,24 @@ TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
   ::hpb::Ptr<TestModel> recursive_child = model.mutable_recursive_child();
   ::hpb::ClearExtension(recursive_child, theme);
   EXPECT_EQ(false, ::hpb::HasExtension(recursive_child, theme));
+}
+
+TEST(CppGeneratedCode, SetExtensionInt32) {
+  TestModel model;
+  EXPECT_EQ(false, hpb::HasExtension(&model, int32_ext));
+  int32_t val = 55;
+  auto x = hpb::SetExtension(&model, int32_ext, val);
+  EXPECT_EQ(true, hpb::HasExtension(&model, int32_ext));
+  EXPECT_THAT(hpb::GetExtension(&model, int32_ext), IsOkAndHolds(val));
+}
+
+TEST(CppGeneratedCode, SetExtensionInt64) {
+  TestModel model;
+  EXPECT_EQ(false, hpb::HasExtension(&model, int64_ext));
+  int64_t val = std::numeric_limits<int32_t>::max() + int64_t{1};
+  auto x = hpb::SetExtension(&model, int64_ext, val);
+  EXPECT_EQ(true, hpb::HasExtension(&model, int64_ext));
+  EXPECT_THAT(hpb::GetExtension(&model, int64_ext), IsOkAndHolds(val));
 }
 
 TEST(CppGeneratedCode, SetExtension) {

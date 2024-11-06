@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
@@ -55,6 +57,7 @@ struct UpbExtensionTrait<int32_t> {
   using DefaultType = int32_t;
   using ReturnType = int32_t;
   static constexpr auto kGetter = upb_Message_GetExtensionInt32;
+  static constexpr auto kSetter = upb_Message_SetExtensionInt32;
 };
 
 template <>
@@ -62,6 +65,7 @@ struct UpbExtensionTrait<int64_t> {
   using DefaultType = int64_t;
   using ReturnType = int64_t;
   static constexpr auto kGetter = upb_Message_GetExtensionInt64;
+  static constexpr auto kSetter = upb_Message_SetExtensionInt64;
 };
 
 // TODO: b/375460289 - flesh out non-promotional msg support that does
@@ -184,11 +188,18 @@ absl::Status SetExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
-  static_assert(!std::is_const_v<T>);
-  auto* message_arena = hpb::interop::upb::GetArena(message);
-  return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
-                                       message_arena, id.mini_table_ext(),
-                                       hpb::interop::upb::GetMessage(&value));
+  if constexpr (std::is_integral_v<Extension>) {
+    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
+        hpb::interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
+  } else {
+    static_assert(!std::is_const_v<T>);
+    auto* message_arena = hpb::interop::upb::GetArena(message);
+    return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
+                                         message_arena, id.mini_table_ext(),
+                                         hpb::interop::upb::GetMessage(&value));
+  }
 }
 
 template <typename T, typename Extension,
@@ -212,14 +223,21 @@ absl::Status SetExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
-  Extension ext = std::move(value);
-  static_assert(!std::is_const_v<T>);
-  auto* message_arena = hpb::interop::upb::GetArena(message);
-  auto* extension_arena = hpb::interop::upb::GetArena(&ext);
-  return ::hpb::internal::MoveExtension(hpb::interop::upb::GetMessage(message),
-                                        message_arena, id.mini_table_ext(),
-                                        hpb::interop::upb::GetMessage(&ext),
-                                        extension_arena);
+  if constexpr (std::is_integral_v<Extension>) {
+    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
+        hpb::interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
+  } else {
+    Extension ext = std::forward<Extension>(value);
+    static_assert(!std::is_const_v<T>);
+    auto* message_arena = hpb::interop::upb::GetArena(message);
+    auto* extension_arena = hpb::interop::upb::GetArena(&ext);
+    return ::hpb::internal::MoveExtension(
+        hpb::interop::upb::GetMessage(message), message_arena,
+        id.mini_table_ext(), hpb::interop::upb::GetMessage(&ext),
+        extension_arena);
+  }
 }
 
 template <typename T, typename Extension,
