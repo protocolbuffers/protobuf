@@ -442,7 +442,7 @@ namespace protobuf {
 #pragma clang diagnostic pop
 #endif  // __llvm__
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
-    _static_init2_ PROTOBUF_UNUSED =
+    _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fany_2eproto),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"
