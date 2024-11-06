@@ -960,11 +960,9 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed>
-      PROTOBUF_NODISCARD inline
-          typename _proto_TypeTraits::Singular::MutableType
-          ReleaseExtension(
-              const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                               _field_type, _is_packed>& id) {
+      [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+      ReleaseExtension(const $pbi$::ExtensionIdentifier<
+                       $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::Release(id.number(), _field_type, &$extensions$);

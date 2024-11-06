@@ -447,7 +447,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_NODISCARD Value<TypeHandler>* ReleaseLast() {
+  [[nodiscard]] Value<TypeHandler>* ReleaseLast() {
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
     Arena* arena = GetArena();
@@ -1094,7 +1094,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // If this RepeatedPtrField is on an arena, an object copy is required to pass
   // ownership back to the user (for compatible semantics). Use
   // UnsafeArenaReleaseLast() if this behavior is undesired.
-  PROTOBUF_NODISCARD Element* ReleaseLast();
+  [[nodiscard]] Element* ReleaseLast();
 
   // Adds an already-allocated object, skipping arena-ownership checks. The user
   // must guarantee that the given object is in the same arena as this

@@ -1035,7 +1035,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name_part(Arg_&& arg, Args_... args);
   std::string* mutable_name_part();
-  PROTOBUF_NODISCARD std::string* release_name_part();
+  [[nodiscard]] std::string* release_name_part();
   void set_allocated_name_part(std::string* value);
 
   private:
@@ -1310,7 +1310,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_leading_comments(Arg_&& arg, Args_... args);
   std::string* mutable_leading_comments();
-  PROTOBUF_NODISCARD std::string* release_leading_comments();
+  [[nodiscard]] std::string* release_leading_comments();
   void set_allocated_leading_comments(std::string* value);
 
   private:
@@ -1326,7 +1326,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_trailing_comments(Arg_&& arg, Args_... args);
   std::string* mutable_trailing_comments();
-  PROTOBUF_NODISCARD std::string* release_trailing_comments();
+  [[nodiscard]] std::string* release_trailing_comments();
   void set_allocated_trailing_comments(std::string* value);
 
   private:
@@ -1575,7 +1575,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_source_file(Arg_&& arg, Args_... args);
   std::string* mutable_source_file();
-  PROTOBUF_NODISCARD std::string* release_source_file();
+  [[nodiscard]] std::string* release_source_file();
   void set_allocated_source_file(std::string* value);
 
   private:
@@ -1817,7 +1817,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_deprecation_warning(Arg_&& arg, Args_... args);
   std::string* mutable_deprecation_warning();
-  PROTOBUF_NODISCARD std::string* release_deprecation_warning();
+  [[nodiscard]] std::string* release_deprecation_warning();
   void set_allocated_deprecation_warning(std::string* value);
 
   private:
@@ -2055,7 +2055,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
-  PROTOBUF_NODISCARD std::string* release_value();
+  [[nodiscard]] std::string* release_value();
   void set_allocated_value(std::string* value);
 
   private:
@@ -2541,11 +2541,9 @@ class PROTOBUF_EXPORT FeatureSet final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FeatureSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -2839,7 +2837,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_full_name(Arg_&& arg, Args_... args);
   std::string* mutable_full_name();
-  PROTOBUF_NODISCARD std::string* release_full_name();
+  [[nodiscard]] std::string* release_full_name();
   void set_allocated_full_name(std::string* value);
 
   private:
@@ -2855,7 +2853,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type(Arg_&& arg, Args_... args);
   std::string* mutable_type();
-  PROTOBUF_NODISCARD std::string* release_type();
+  [[nodiscard]] std::string* release_type();
   void set_allocated_type(std::string* value);
 
   private:
@@ -3540,7 +3538,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_identifier_value(Arg_&& arg, Args_... args);
   std::string* mutable_identifier_value();
-  PROTOBUF_NODISCARD std::string* release_identifier_value();
+  [[nodiscard]] std::string* release_identifier_value();
   void set_allocated_identifier_value(std::string* value);
 
   private:
@@ -3556,7 +3554,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
-  PROTOBUF_NODISCARD std::string* release_string_value();
+  [[nodiscard]] std::string* release_string_value();
   void set_allocated_string_value(std::string* value);
 
   private:
@@ -3572,7 +3570,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_aggregate_value(Arg_&& arg, Args_... args);
   std::string* mutable_aggregate_value();
-  PROTOBUF_NODISCARD std::string* release_aggregate_value();
+  [[nodiscard]] std::string* release_aggregate_value();
   void set_allocated_aggregate_value(std::string* value);
 
   private:
@@ -3911,11 +3909,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   SourceCodeInfo, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4405,7 +4401,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   bool has_overridable_features() const;
   void clear_overridable_features() ;
   const ::google::protobuf::FeatureSet& overridable_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_overridable_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_overridable_features();
   ::google::protobuf::FeatureSet* mutable_overridable_features();
   void set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
@@ -4420,7 +4416,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   bool has_fixed_features() const;
   void clear_fixed_features() ;
   const ::google::protobuf::FeatureSet& fixed_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_fixed_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_fixed_features();
   ::google::protobuf::FeatureSet* mutable_fixed_features();
   void set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
@@ -4657,7 +4653,7 @@ class PROTOBUF_EXPORT ServiceOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -4762,11 +4758,9 @@ class PROTOBUF_EXPORT ServiceOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5073,7 +5067,7 @@ class PROTOBUF_EXPORT OneofOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5167,11 +5161,9 @@ class PROTOBUF_EXPORT OneofOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5499,7 +5491,7 @@ class PROTOBUF_EXPORT MethodOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5615,11 +5607,9 @@ class PROTOBUF_EXPORT MethodOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5932,7 +5922,7 @@ class PROTOBUF_EXPORT MessageOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6081,11 +6071,9 @@ class PROTOBUF_EXPORT MessageOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6438,7 +6426,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_java_package(Arg_&& arg, Args_... args);
   std::string* mutable_java_package();
-  PROTOBUF_NODISCARD std::string* release_java_package();
+  [[nodiscard]] std::string* release_java_package();
   void set_allocated_java_package(std::string* value);
 
   private:
@@ -6454,7 +6442,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_java_outer_classname(Arg_&& arg, Args_... args);
   std::string* mutable_java_outer_classname();
-  PROTOBUF_NODISCARD std::string* release_java_outer_classname();
+  [[nodiscard]] std::string* release_java_outer_classname();
   void set_allocated_java_outer_classname(std::string* value);
 
   private:
@@ -6470,7 +6458,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_go_package(Arg_&& arg, Args_... args);
   std::string* mutable_go_package();
-  PROTOBUF_NODISCARD std::string* release_go_package();
+  [[nodiscard]] std::string* release_go_package();
   void set_allocated_go_package(std::string* value);
 
   private:
@@ -6486,7 +6474,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_objc_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_objc_class_prefix();
-  PROTOBUF_NODISCARD std::string* release_objc_class_prefix();
+  [[nodiscard]] std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(std::string* value);
 
   private:
@@ -6502,7 +6490,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_csharp_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_csharp_namespace();
-  PROTOBUF_NODISCARD std::string* release_csharp_namespace();
+  [[nodiscard]] std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(std::string* value);
 
   private:
@@ -6518,7 +6506,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_swift_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_swift_prefix();
-  PROTOBUF_NODISCARD std::string* release_swift_prefix();
+  [[nodiscard]] std::string* release_swift_prefix();
   void set_allocated_swift_prefix(std::string* value);
 
   private:
@@ -6534,7 +6522,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_php_class_prefix();
-  PROTOBUF_NODISCARD std::string* release_php_class_prefix();
+  [[nodiscard]] std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(std::string* value);
 
   private:
@@ -6550,7 +6538,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_namespace();
-  PROTOBUF_NODISCARD std::string* release_php_namespace();
+  [[nodiscard]] std::string* release_php_namespace();
   void set_allocated_php_namespace(std::string* value);
 
   private:
@@ -6566,7 +6554,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_metadata_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_metadata_namespace();
-  PROTOBUF_NODISCARD std::string* release_php_metadata_namespace();
+  [[nodiscard]] std::string* release_php_metadata_namespace();
   void set_allocated_php_metadata_namespace(std::string* value);
 
   private:
@@ -6582,7 +6570,7 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_ruby_package(Arg_&& arg, Args_... args);
   std::string* mutable_ruby_package();
-  PROTOBUF_NODISCARD std::string* release_ruby_package();
+  [[nodiscard]] std::string* release_ruby_package();
   void set_allocated_ruby_package(std::string* value);
 
   private:
@@ -6595,7 +6583,7 @@ class PROTOBUF_EXPORT FileOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6788,11 +6776,9 @@ class PROTOBUF_EXPORT FileOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7254,7 +7240,7 @@ class PROTOBUF_EXPORT FieldOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -7269,7 +7255,7 @@ class PROTOBUF_EXPORT FieldOptions final
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -7462,11 +7448,9 @@ class PROTOBUF_EXPORT FieldOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8057,7 +8041,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -8162,11 +8146,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8477,7 +8459,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -8492,7 +8474,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -8608,11 +8590,9 @@ class PROTOBUF_EXPORT EnumValueOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8924,7 +8904,7 @@ class PROTOBUF_EXPORT EnumOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -9051,11 +9031,9 @@ class PROTOBUF_EXPORT EnumOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9350,7 +9328,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -9363,7 +9341,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::OneofOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::OneofOptions* release_options();
+  [[nodiscard]] ::google::protobuf::OneofOptions* release_options();
   ::google::protobuf::OneofOptions* mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value);
@@ -9577,7 +9555,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -9593,7 +9571,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_input_type(Arg_&& arg, Args_... args);
   std::string* mutable_input_type();
-  PROTOBUF_NODISCARD std::string* release_input_type();
+  [[nodiscard]] std::string* release_input_type();
   void set_allocated_input_type(std::string* value);
 
   private:
@@ -9609,7 +9587,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_output_type(Arg_&& arg, Args_... args);
   std::string* mutable_output_type();
-  PROTOBUF_NODISCARD std::string* release_output_type();
+  [[nodiscard]] std::string* release_output_type();
   void set_allocated_output_type(std::string* value);
 
   private:
@@ -9622,7 +9600,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MethodOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MethodOptions* release_options();
+  [[nodiscard]] ::google::protobuf::MethodOptions* release_options();
   ::google::protobuf::MethodOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value);
@@ -9922,7 +9900,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -9938,7 +9916,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_extendee(Arg_&& arg, Args_... args);
   std::string* mutable_extendee();
-  PROTOBUF_NODISCARD std::string* release_extendee();
+  [[nodiscard]] std::string* release_extendee();
   void set_allocated_extendee(std::string* value);
 
   private:
@@ -9954,7 +9932,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_name(Arg_&& arg, Args_... args);
   std::string* mutable_type_name();
-  PROTOBUF_NODISCARD std::string* release_type_name();
+  [[nodiscard]] std::string* release_type_name();
   void set_allocated_type_name(std::string* value);
 
   private:
@@ -9970,7 +9948,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_default_value(Arg_&& arg, Args_... args);
   std::string* mutable_default_value();
-  PROTOBUF_NODISCARD std::string* release_default_value();
+  [[nodiscard]] std::string* release_default_value();
   void set_allocated_default_value(std::string* value);
 
   private:
@@ -9986,7 +9964,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_json_name(Arg_&& arg, Args_... args);
   std::string* mutable_json_name();
-  PROTOBUF_NODISCARD std::string* release_json_name();
+  [[nodiscard]] std::string* release_json_name();
   void set_allocated_json_name(std::string* value);
 
   private:
@@ -9999,7 +9977,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FieldOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions* release_options();
+  [[nodiscard]] ::google::protobuf::FieldOptions* release_options();
   ::google::protobuf::FieldOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value);
@@ -10274,7 +10252,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -10287,7 +10265,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumValueOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumValueOptions* release_options();
+  [[nodiscard]] ::google::protobuf::EnumValueOptions* release_options();
   ::google::protobuf::EnumValueOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value);
@@ -10507,7 +10485,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ExtensionRangeOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ExtensionRangeOptions* release_options();
+  [[nodiscard]] ::google::protobuf::ExtensionRangeOptions* release_options();
   ::google::protobuf::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
@@ -10758,7 +10736,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -10771,7 +10749,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ServiceOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ServiceOptions* release_options();
+  [[nodiscard]] ::google::protobuf::ServiceOptions* release_options();
   ::google::protobuf::ServiceOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value);
@@ -11042,7 +11020,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -11055,7 +11033,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumOptions* release_options();
+  [[nodiscard]] ::google::protobuf::EnumOptions* release_options();
   ::google::protobuf::EnumOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value);
@@ -11419,7 +11397,7 @@ class PROTOBUF_EXPORT DescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -11432,7 +11410,7 @@ class PROTOBUF_EXPORT DescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MessageOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MessageOptions* release_options();
+  [[nodiscard]] ::google::protobuf::MessageOptions* release_options();
   ::google::protobuf::MessageOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value);
@@ -11787,7 +11765,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
@@ -11803,7 +11781,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_package(Arg_&& arg, Args_... args);
   std::string* mutable_package();
-  PROTOBUF_NODISCARD std::string* release_package();
+  [[nodiscard]] std::string* release_package();
   void set_allocated_package(std::string* value);
 
   private:
@@ -11819,7 +11797,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_syntax(Arg_&& arg, Args_... args);
   std::string* mutable_syntax();
-  PROTOBUF_NODISCARD std::string* release_syntax();
+  [[nodiscard]] std::string* release_syntax();
   void set_allocated_syntax(std::string* value);
 
   private:
@@ -11832,7 +11810,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FileOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FileOptions* release_options();
+  [[nodiscard]] ::google::protobuf::FileOptions* release_options();
   ::google::protobuf::FileOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value);
@@ -11847,7 +11825,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   bool has_source_code_info() const;
   void clear_source_code_info() ;
   const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceCodeInfo* release_source_code_info();
+  [[nodiscard]] ::google::protobuf::SourceCodeInfo* release_source_code_info();
   ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
   void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
@@ -12171,11 +12149,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FileDescriptorSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,

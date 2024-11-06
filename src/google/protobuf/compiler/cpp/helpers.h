@@ -939,12 +939,10 @@ class PROTOC_EXPORT Formatter {
     Formatter* format_;
   };
 
-  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent() {
-    return ScopedIndenter(this);
-  }
+  [[nodiscard]] ScopedIndenter ScopedIndent() { return ScopedIndenter(this); }
   template <typename... Args>
-  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent(const char* format,
-                                                 const Args&&... args) {
+  [[nodiscard]] ScopedIndenter ScopedIndent(const char* format,
+                                            const Args&&... args) {
     (*this)(format, static_cast<Args&&>(args)...);
     return ScopedIndenter(this);
   }

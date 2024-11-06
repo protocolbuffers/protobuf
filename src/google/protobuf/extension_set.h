@@ -343,13 +343,13 @@ class PROTOBUF_EXPORT ExtensionSet {
   void UnsafeArenaSetAllocatedMessage(int number, FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(int number,
-                                                 const MessageLite& prototype);
+  [[nodiscard]] MessageLite* ReleaseMessage(int number,
+                                            const MessageLite& prototype);
   MessageLite* UnsafeArenaReleaseMessage(int number,
                                          const MessageLite& prototype);
 
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(
-      const FieldDescriptor* descriptor, MessageFactory* factory);
+  [[nodiscard]] MessageLite* ReleaseMessage(const FieldDescriptor* descriptor,
+                                            MessageFactory* factory);
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
@@ -418,7 +418,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #undef desc
 
   void RemoveLast(int number);
-  PROTOBUF_NODISCARD MessageLite* ReleaseLast(int number);
+  [[nodiscard]] MessageLite* ReleaseLast(int number);
   MessageLite* UnsafeArenaReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
@@ -634,7 +634,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
                                                 Arena* arena) = 0;
-    PROTOBUF_NODISCARD virtual MessageLite* ReleaseMessage(
+    [[nodiscard]] virtual MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
@@ -1540,8 +1540,9 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, nullptr, message);
   }
-  PROTOBUF_NODISCARD static inline MutableType Release(
-      int number, FieldType /* field_type */, ExtensionSet* set) {
+  [[nodiscard]] static inline MutableType Release(int number,
+                                                  FieldType /* field_type */,
+                                                  ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));
   }

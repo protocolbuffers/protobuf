@@ -515,8 +515,8 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  PROTOBUF_NODISCARD Message* ReleaseLast(Message* message,
-                                          const FieldDescriptor* field) const;
+  [[nodiscard]] Message* ReleaseLast(Message* message,
+                                     const FieldDescriptor* field) const;
 
   // Similar to ReleaseLast() without internal safety and ownershp checks. This
   // method should only be used when the objects are on the same arena or paired
@@ -716,7 +716,7 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  PROTOBUF_NODISCARD Message* ReleaseMessage(
+  [[nodiscard]] Message* ReleaseMessage(
       Message* message, const FieldDescriptor* field,
       MessageFactory* factory = nullptr) const;
 

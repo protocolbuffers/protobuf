@@ -164,7 +164,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     $DEPRECATED$ const $Submsg$& $name$() const;
-    $DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* $release_name$();
+    $DEPRECATED$ [[nodiscard]] $Submsg$* $release_name$();
     $DEPRECATED$ $Submsg$* $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* value);
