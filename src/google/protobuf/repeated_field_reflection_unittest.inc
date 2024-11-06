@@ -340,12 +340,6 @@ TEST(REFLECTION_TEST, RepeatedFieldRefForRegularFields) {
   }
   EXPECT_EQ(10, index);
 
-  // Test MutableRepeatedFieldRef::Reserve()
-  mrf_int32.Reserve(mrf_int32.size() + 1);
-  mrf_double.Reserve(mrf_double.size() + 1);
-  mrf_string.Reserve(mrf_string.size() + 1);
-  mrf_foreign_message.Reserve(mrf_foreign_message.size() + 1);
-
   // Test MutableRepeatedFieldRef::Add()
   mrf_int32.Add(1234);
   mrf_double.Add(1234.0);
