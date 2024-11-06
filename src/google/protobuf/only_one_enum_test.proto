@@ -12,4 +12,3 @@ enum OnlyOneEnum {
   ONLY_ONE_ENUM_DEFAULT = 0;
   ONLY_ONE_ENUM_VALID = 10;
 }
-

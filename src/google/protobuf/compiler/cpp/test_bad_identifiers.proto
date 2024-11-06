@@ -125,6 +125,7 @@ message TestConflictingSymbolNames {
   }
   message BadKnownNamesFieldsNoStandardDescriptor {
     option no_standard_descriptor_accessor = true;
+
     optional int32 descriptor = 3;
   }
   message BadKnownNamesTypes {
@@ -139,14 +140,14 @@ message TestConflictingSymbolNames {
     message Clear {}
     message IsInitialized {}
   }
-  message BadKnownNamesValues {  // NO_PROTO3
-    extensions 1 to 100;  // NO_PROTO3
-    extend BadKnownNamesValues {  // NO_PROTO3
-      optional int32 unknown_fields = 1;  // NO_PROTO3
+  message BadKnownNamesValues {                   // NO_PROTO3
+    extensions 1 to 100;                          // NO_PROTO3
+    extend BadKnownNamesValues {                  // NO_PROTO3
+      optional int32 unknown_fields = 1;          // NO_PROTO3
       optional int32 mutable_unknown_fields = 2;  // NO_PROTO3
-      optional int32 descriptor = 3;  // NO_PROTO3
-      optional int32 default_instance = 4;  // NO_PROTO3
-      optional int32 swap = 5;  // NO_PROTO3
+      optional int32 descriptor = 3;              // NO_PROTO3
+      optional int32 default_instance = 4;        // NO_PROTO3
+      optional int32 swap = 5;                    // NO_PROTO3
     }  // NO_PROTO3
   }  // NO_PROTO3
 
@@ -169,7 +170,8 @@ message TestConflictingSymbolNames {
   // For clashing local variables in Serialize and ByteSize calculation.
   optional string target = 38;
 
-  extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
+  extensions 1000 to max
+  [verification = UNVERIFIED];  // NO_PROTO3
 }
 
 // Special names as above, but at file scope.
@@ -185,11 +187,11 @@ message Clear {}
 message IsInitialized {}
 
 extend TestConflictingSymbolNames.BadKnownNamesValues {  // NO_PROTO3
-  optional int32 unknown_fields = 11;          // NO_PROTO3
-  optional int32 mutable_unknown_fields = 12;  // NO_PROTO3
-  optional int32 descriptor = 13;              // NO_PROTO3
-  optional int32 default_instance = 14;        // NO_PROTO3
-  optional int32 swap = 15;                    // NO_PROTO3
+  optional int32 unknown_fields = 11;                    // NO_PROTO3
+  optional int32 mutable_unknown_fields = 12;            // NO_PROTO3
+  optional int32 descriptor = 13;                        // NO_PROTO3
+  optional int32 default_instance = 14;                  // NO_PROTO3
+  optional int32 swap = 15;                              // NO_PROTO3
 }  // NO_PROTO3
 
 message TestConflictingSymbolNamesExtension {                      // NO_PROTO3
