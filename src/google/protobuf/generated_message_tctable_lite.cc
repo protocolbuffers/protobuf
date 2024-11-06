@@ -1566,8 +1566,8 @@ void EnsureArenaStringIsNotDefault(const MessageLite* msg,
   }
 }
 // The rest do nothing.
-PROTOBUF_UNUSED void EnsureArenaStringIsNotDefault(const MessageLite* msg,
-                                                   void*) {}
+[[maybe_unused]] void EnsureArenaStringIsNotDefault(const MessageLite* msg,
+                                                    void*) {}
 
 }  // namespace
 

@@ -855,7 +855,7 @@ void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
           }}},
         R"cc(
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY$priority$ static ::std::false_type
-              _static_init$priority$_ PROTOBUF_UNUSED =
+              _static_init$priority$_ [[maybe_unused]] =
                   ($expr$, ::std::false_type{});
         )cc");
     // Reset the vector because we might be generating many files.

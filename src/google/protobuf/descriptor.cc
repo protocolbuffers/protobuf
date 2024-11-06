@@ -4807,7 +4807,7 @@ DescriptorBuilder::DescriptorBuilder(
   // have to avoid registering these pre-main, because we need to ensure that
   // the linker --gc-sections step can strip out the full runtime if it is
   // unused.
-  PROTOBUF_UNUSED static std::true_type lazy_register =
+  [[maybe_unused]] static std::true_type lazy_register =
       (internal::ExtensionSet::RegisterMessageExtension(
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
