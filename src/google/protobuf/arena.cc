@@ -585,6 +585,13 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
     return SentryArenaBlock();
   }
   // Record user-owned block.
+#ifndef NDEBUG
+  // Touch block to verify it is addressable.
+  if (size > 0) {
+    static_cast<char*>(buf)[0] = 0;
+    static_cast<char*>(buf)[size - 1] = 0;
+  }
+#endif
   ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(buf, size);
   alloc_policy_.set_is_user_owned_initial_block(true);
   return new (buf) ArenaBlock{nullptr, size};
@@ -602,6 +609,13 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
   } else {
     mem = {buf, size};
     // Record user-owned block.
+#ifndef NDEBUG
+    // Touch block to verify it is addressable.
+    if (size > 0) {
+      static_cast<char*>(buf)[0] = 0;
+      static_cast<char*>(buf)[size - 1] = 0;
+    }
+#endif
     ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(buf, size);
     alloc_policy_.set_is_user_owned_initial_block(true);
   }
