@@ -2709,13 +2709,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
       @Override
       public Message.Builder newBuilder() {
-        throw new UnsupportedOperationException(
-            "newBuilderForField() called on a non-Message type.");
+        throw new UnsupportedOperationException("newBuilderForField() called on a repeated field.");
       }
 
       @Override
       public Message.Builder getBuilder(GeneratedMessage.Builder<?> builder) {
-        throw new UnsupportedOperationException("getFieldBuilder() called on a non-Message type.");
+        throw new UnsupportedOperationException("getFieldBuilder() called on a repeated field.");
       }
 
       @Override
