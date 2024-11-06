@@ -170,8 +170,9 @@ message TestConflictingSymbolNames {
   // For clashing local variables in Serialize and ByteSize calculation.
   optional string target = 38;
 
-  extensions 1000 to max
-  [verification = UNVERIFIED];  // NO_PROTO3
+  // clang-format off
+  extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
+  // clang-format on
 }
 
 // Special names as above, but at file scope.

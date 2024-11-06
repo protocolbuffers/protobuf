@@ -28,6 +28,7 @@
 #include "google/protobuf/unittest_embed_optimize_for.pb.h"
 #include "google/protobuf/unittest_optimize_for.pb.h"
 
+
 #define MESSAGE_TEST_NAME MessageTest
 #define GENERATED_DESCRIPTOR_TEST_NAME GeneratedDescriptorTest
 #define GENERATED_MESSAGE_TEST_NAME GeneratedMessageTest
@@ -74,6 +75,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingSymbolNames) {
   message.AddExtension(ExtensionMessage::repeated_int32_ext, 123);
   EXPECT_EQ(123, message.GetExtension(ExtensionMessage::repeated_int32_ext, 0));
 }
+
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestSwapNameIsNotMangledForFields) {
   // For backwards compatibility we do not mangle `swap`. It works thanks to
