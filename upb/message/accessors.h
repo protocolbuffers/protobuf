@@ -196,6 +196,10 @@ UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
     const upb_Message* msg, const upb_MiniTableExtension* f,
     uint64_t default_val);
 
+UPB_API_INLINE upb_Message* upb_Message_GetExtensionMessage(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    struct upb_Message* default_val);
+
 // Extension Setters ///////////////////////////////////////////////////////////
 
 UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
