@@ -970,7 +970,6 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
-
 namespace google {
 namespace protobuf {
 namespace internal {
