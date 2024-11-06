@@ -87,9 +87,6 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
-  void Reserve(Field* data, int size) const override {
-    MutableRepeatedField(data)->Reserve(size);
-  }
   void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
   }
@@ -145,9 +142,6 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   }
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
-  }
-  void Reserve(Field* data, int size) const override {
-    MutableRepeatedField(data)->Reserve(size);
   }
   void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
@@ -211,9 +205,6 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   }
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
-  }
-  void Reserve(Field* data, int size) const override {
-    MutableRepeatedField(data)->Reserve(size);
   }
   void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
