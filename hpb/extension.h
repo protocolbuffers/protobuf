@@ -300,8 +300,8 @@ decltype(auto) GetExtension(
 
 template <typename T, typename Extension>
 constexpr uint32_t ExtensionNumber(
-    ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
-  return ::hpb::internal::PrivateAccess::GetExtensionNumber(id);
+    const internal::ExtensionIdentifier<T, Extension>& id) {
+  return internal::PrivateAccess::GetExtensionNumber(id);
 }
 
 }  // namespace hpb
