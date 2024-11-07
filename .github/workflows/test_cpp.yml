@@ -141,17 +141,19 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17  -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17
           - name: Ninja
-            flags: -G Ninja -DCMAKE_CXX_STANDARD=17 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            flags: -G Ninja -DCMAKE_CXX_STANDARD=17
             continuous-only: true
           - name: Shared
-            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17
             continuous-only: true
           - name: C++20
-            flags: -DCMAKE_CXX_STANDARD=20 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            flags: -DCMAKE_CXX_STANDARD=20
+          - name: Package
+            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON
           - name: Fetch
-            flags: -DCMAKE_CXX_STANDARD=17
+            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -188,9 +190,10 @@ jobs:
           # Set defaults
           - type: package
             name: Install
-            flags: -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            flags: -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON
           - type: fetch
             name: Install (Fetch)
+            flags: -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
             continuous-only: true
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -252,7 +255,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=OFF
             -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
             mkdir examples/build \&\&
             cd examples/build \&\&
@@ -320,7 +323,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:56548bef786201330017eae685cc3d2fdb564fd2ca3b88e30e28d84572e4c5dd
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:d6028ab408c49932836cdc514116f06886d7f6868a4d430630aa52adc5aee2fc
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
@@ -426,8 +429,7 @@ jobs:
           - name: Windows CMake Install
             os: windows-2022
             install-flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
-              -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
