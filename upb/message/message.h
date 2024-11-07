@@ -13,7 +13,9 @@
 #define UPB_MESSAGE_MESSAGE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
@@ -30,6 +32,21 @@ extern "C" {
 
 // Creates a new message with the given mini_table on the given arena.
 UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
+
+//
+// Unknown data may be stored non-contiguously. Each segment stores a block of
+// unknown fields. To iterate over segments:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Use data
+//   }
+
+#define kUpb_Message_UnknownBegin 0
+
+bool upb_Message_NextUnknown(const upb_Message* msg, upb_StringView* data,
+                             uintptr_t* iter);
 
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
