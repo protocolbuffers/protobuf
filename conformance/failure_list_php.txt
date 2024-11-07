@@ -34,3 +34,4 @@ Required.*.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
 Required.*.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
 Required.*.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
 Required.*.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
+Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.

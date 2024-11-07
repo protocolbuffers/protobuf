@@ -2289,6 +2289,10 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("Int32FieldStringValueEscaped", REQUIRED,
                    R"({"optionalInt32": "2\u003147483647"})",
                    "optional_int32: 2147483647");
+  RunValidJsonTest("Int32FieldStringValueZero", REQUIRED,
+                   R"({"optionalInt32": "0"})", "optional_int32: 0");
+  RunValidJsonTest("Int32FieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalInt32": "1e5"})", "optional_int32: 100000");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailureForJson("Int32FieldTooLarge", REQUIRED,
@@ -2313,6 +2317,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalInt32": "12abc"})");
+  ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalInt32": "abc"})");
 
   // Parser reject empty string values.
   ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
@@ -2418,6 +2428,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("FloatFieldQuotedValue", REQUIRED,
                    R"({"optionalFloat": "1"})", "optional_float: 1");
+  RunValidJsonTest("FloatFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalFloat": "1.175494e-38"})",
+                   "optional_float: 1.175494e-38");
   // Special values.
   RunValidJsonTest("FloatFieldNan", REQUIRED, R"({"optionalFloat": "NaN"})",
                    "optional_float: nan");
@@ -2458,6 +2471,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldEmptyString", REQUIRED,
                             R"({"optionalFloat": ""})");
 
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalFloat": "12abc"})");
+  ExpectParseFailureForJson("FloatFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalFloat": "abc"})");
+
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
                    R"({"optionalDouble": 2.22507e-308})",
@@ -2474,6 +2493,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("DoubleFieldQuotedValue", REQUIRED,
                    R"({"optionalDouble": "1"})", "optional_double: 1");
+  RunValidJsonTest("DoubleFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalDouble": "2.22507e-308"})",
+                   "optional_double: 2.22507e-308");
   // Special values.
   RunValidJsonTest("DoubleFieldNan", REQUIRED, R"({"optionalDouble": "NaN"})",
                    "optional_double: nan");
@@ -2513,6 +2535,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Parsers should reject empty string values.
   ExpectParseFailureForJson("DoubleFieldEmptyString", REQUIRED,
                             R"({"optionalDouble": ""})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("DoubleFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalDouble": "12abc"})");
+  ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalDouble": "abc"})");
 
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
