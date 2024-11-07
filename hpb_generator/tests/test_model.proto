@@ -10,7 +10,6 @@ edition = "2023";
 package hpb_unittest;
 
 import "google/protobuf/compiler/hpb/tests/child_model.proto";
-import "google/protobuf/cpp_features.proto";
 
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
