@@ -23,18 +23,35 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
+bool IsSupportedField(Context& ctx, const FieldDescriptor& field) {
+  if (ctx.is_upb()) {
+    // All fields supported on upb kernel.
+    return true;
+  }
+
+  // TODO: We do not support repeated strings on C++ kernel if
+  // they are not string_view or string type.
+  if (field.is_repeated() &&
+      field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
+    return false;
+  }
+
+  // If cpp has made the accessors private, we can't make accessors on top.
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(field)) {
+    return false;
+  }
+
+  return true;
+}
+
 namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     Context& ctx, const FieldDescriptor& field) {
-  // TODO: We do not support repeated strings on C++ kernel if
-  // they are not string_view or string type.
-  if (ctx.is_cpp() && field.is_repeated() &&
-      field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
-      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
-    return std::make_unique<UnsupportedField>(
-        "unsupported repeated string type");
+  if (!IsSupportedField(ctx, field)) {
+    return std::make_unique<UnsupportedField>();
   }
 
   if (field.is_map()) {

@@ -635,13 +635,7 @@ class RepeatedStringView : public FieldGeneratorBase {
 };
 
 void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype = GetDeclaredStringType() != pb::CppFeatures::VIEW;
-
-  if (unknown_ctype) {
-    p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
-    )cc");
-  }
+  ABSL_DCHECK(GetDeclaredStringType() == pb::CppFeatures::VIEW);
 
   auto v1 = p->WithVars(AnnotatedAccessors(field_, {"", "_internal_"}));
   auto v2 = p->WithVars(

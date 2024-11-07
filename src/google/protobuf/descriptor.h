@@ -3035,6 +3035,14 @@ auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
 }
 #endif  // !SWIG
 
+// Whether the given string field should have the accessors be privatized due
+// to it being an unsupported type. If this returns true, cpp_string_type()
+// returns kString for the storage, the C++ Generator will not generate
+// public accessors for the type, but the field will sill be accessible via
+// reflection.
+PROTOBUF_EXPORT bool IsStringFieldWithPrivatizedAccessors(
+    const FieldDescriptor& field);
+
 }  // namespace cpp
 }  // namespace internal
 

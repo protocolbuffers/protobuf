@@ -15,6 +15,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/rust_field_type.h"
@@ -81,13 +82,28 @@ namespace rust {
 // }
 
 namespace {
+
+bool IsSupportedOneofFieldCase(Context& ctx, const FieldDescriptor& field) {
+  if (!IsSupportedField(ctx, field)) {
+    return false;
+  }
+
+  // In addition to any fields that are otherwise unsupported, if the
+  // oneof contains a string or bytes field which is not string_view or string
+  // representation (namely, Cord or StringPiece), we don't support it
+  // currently.
+  if (ctx.is_cpp() && field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kString &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kView) {
+    return false;
+  }
+  return true;
+}
+
 // A user-friendly rust type for a view of this field with lifetime 'msg.
 std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
-  if (ctx.is_cpp() && field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
-      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
-    return "";  // TODO: b/308792377 - ctype fields not supported yet.
-  }
+  ABSL_CHECK(IsSupportedOneofFieldCase(ctx, field));
+
   switch (GetRustFieldType(field.type())) {
     case RustFieldType::INT32:
     case RustFieldType::INT64:
@@ -121,10 +137,10 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
            [&] {
              for (int i = 0; i < oneof.field_count(); ++i) {
                auto& field = *oneof.field(i);
-               std::string rs_type = RsTypeNameView(ctx, field);
-               if (rs_type.empty()) {
+               if (!IsSupportedOneofFieldCase(ctx, field)) {
                  continue;
                }
+               std::string rs_type = RsTypeNameView(ctx, field);
                ctx.Emit({{"name", OneofCaseRsName(field)},
                          {"type", rs_type},
                          {"number", std::to_string(field.number())}},
@@ -159,6 +175,9 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
                  auto& field = *oneof.field(i);
+                 if (!IsSupportedOneofFieldCase(ctx, field)) {
+                   continue;
+                 }
                  ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($name$ = $number$,
@@ -169,6 +188,9 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
                  auto& field = *oneof.field(i);
+                 if (!IsSupportedOneofFieldCase(ctx, field)) {
+                   continue;
+                 }
                  ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($number$ => Some($case_enum_name$::$name$),
@@ -217,10 +239,10 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
         [&] {
           for (int i = 0; i < oneof.field_count(); ++i) {
             auto& field = *oneof.field(i);
-            std::string rs_type = RsTypeNameView(ctx, field);
-            if (rs_type.empty()) {
+            if (!IsSupportedOneofFieldCase(ctx, field)) {
               continue;
             }
+            std::string rs_type = RsTypeNameView(ctx, field);
             std::string field_name = FieldNameWithCollisionAvoidance(field);
             ctx.Emit(
                 {
