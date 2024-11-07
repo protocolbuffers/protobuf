@@ -25,6 +25,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/const_init.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -2870,7 +2871,7 @@ void* Reflection::MutableRawSplitImpl(Message* message,
 
 void* Reflection::MutableRawNonOneofImpl(Message* message,
                                          const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     return MutableRawSplitImpl(message, field);
   }
 
@@ -2880,7 +2881,7 @@ void* Reflection::MutableRawNonOneofImpl(Message* message,
 
 void* Reflection::MutableRawImpl(Message* message,
                                  const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
     return MutableRawNonOneofImpl(message, field);
   }
 

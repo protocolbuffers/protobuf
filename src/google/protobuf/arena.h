@@ -229,7 +229,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         },
         // Non arena-constructable
         [arena](auto&&... args) {
-          if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+          if (ABSL_PREDICT_FALSE(arena == nullptr)) {
             return new T(std::forward<Args>(args)...);
           }
           return new (arena->AllocateInternal<T>())
@@ -277,7 +277,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
@@ -518,7 +518,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                                          Args&&... args) {
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
@@ -532,7 +532,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_NDEBUG_INLINE static T* CreateArenaCompatible(Arena* arena) {
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       // Generated arena constructor T(Arena*) is protected. Call via
       // InternalHelper.
       return InternalHelper<T>::New();
@@ -583,7 +583,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   static void CreateInArenaStorage(T* ptr, Arena* arena, Args&&... args) {
     CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>(),
                                  std::forward<Args>(args)...);
-    if (PROTOBUF_PREDICT_TRUE(arena != nullptr)) {
+    if (ABSL_PREDICT_TRUE(arena != nullptr)) {
       RegisterDestructorInternal(ptr, arena, is_destructor_skippable<T>());
     }
   }

@@ -15,6 +15,7 @@
 #include <utility>
 
 // Must be included last.
+#include "absl/base/optimization.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -78,47 +79,47 @@ PROTOBUF_ALWAYS_INLINE const char* ShiftMixParseVarint(const char* p,
 
   int64_t res2, res3;  // accumulated result chunks
   res1 = next();
-  if (PROTOBUF_PREDICT_TRUE(res1 >= 0)) return p;
+  if (ABSL_PREDICT_TRUE(res1 >= 0)) return p;
   if (limit <= 1) goto limit0;
 
   // Densify all ops with explicit FALSE predictions from here on, except that
   // we predict length = 5 as a common length for fields like timestamp.
-  if (PROTOBUF_PREDICT_FALSE(VarintShl<1>(next(), res1, res2))) goto done1;
+  if (ABSL_PREDICT_FALSE(VarintShl<1>(next(), res1, res2))) goto done1;
   if (limit <= 2) goto limit1;
-  if (PROTOBUF_PREDICT_FALSE(VarintShl<2>(next(), res1, res3))) goto done2;
+  if (ABSL_PREDICT_FALSE(VarintShl<2>(next(), res1, res3))) goto done2;
   if (limit <= 3) goto limit2;
-  if (PROTOBUF_PREDICT_FALSE(VarintShlAnd<3>(next(), res1, res2))) goto done2;
+  if (ABSL_PREDICT_FALSE(VarintShlAnd<3>(next(), res1, res2))) goto done2;
   if (limit <= 4) goto limit2;
-  if (PROTOBUF_PREDICT_TRUE(VarintShlAnd<4>(next(), res1, res3))) goto done2;
+  if (ABSL_PREDICT_TRUE(VarintShlAnd<4>(next(), res1, res3))) goto done2;
   if (limit <= 5) goto limit2;
 
   if (kIs64BitVarint) {
-    if (PROTOBUF_PREDICT_FALSE(VarintShlAnd<5>(next(), res1, res2))) goto done2;
+    if (ABSL_PREDICT_FALSE(VarintShlAnd<5>(next(), res1, res2))) goto done2;
     if (limit <= 6) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(VarintShlAnd<6>(next(), res1, res3))) goto done2;
+    if (ABSL_PREDICT_FALSE(VarintShlAnd<6>(next(), res1, res3))) goto done2;
     if (limit <= 7) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(VarintShlAnd<7>(next(), res1, res2))) goto done2;
+    if (ABSL_PREDICT_FALSE(VarintShlAnd<7>(next(), res1, res2))) goto done2;
     if (limit <= 8) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(VarintShlAnd<8>(next(), res1, res3))) goto done2;
+    if (ABSL_PREDICT_FALSE(VarintShlAnd<8>(next(), res1, res3))) goto done2;
     if (limit <= 9) goto limit2;
   } else {
     // An overlong int32 is expected to span the full 10 bytes
-    if (PROTOBUF_PREDICT_FALSE(!(next() & 0x80))) goto done2;
+    if (ABSL_PREDICT_FALSE(!(next() & 0x80))) goto done2;
     if (limit <= 6) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(!(next() & 0x80))) goto done2;
+    if (ABSL_PREDICT_FALSE(!(next() & 0x80))) goto done2;
     if (limit <= 7) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(!(next() & 0x80))) goto done2;
+    if (ABSL_PREDICT_FALSE(!(next() & 0x80))) goto done2;
     if (limit <= 8) goto limit2;
-    if (PROTOBUF_PREDICT_FALSE(!(next() & 0x80))) goto done2;
+    if (ABSL_PREDICT_FALSE(!(next() & 0x80))) goto done2;
     if (limit <= 9) goto limit2;
   }
 
   // For valid 64bit varints, the 10th byte/ptr[9] should be exactly 1. In this
   // case, the continuation bit of ptr[8] already set the top bit of res3
   // correctly, so all we have to do is check that the expected case is true.
-  if (PROTOBUF_PREDICT_TRUE(next() == 1)) goto done2;
+  if (ABSL_PREDICT_TRUE(next() == 1)) goto done2;
 
-  if (PROTOBUF_PREDICT_FALSE(last() & 0x80)) {
+  if (ABSL_PREDICT_FALSE(last() & 0x80)) {
     // If the continue bit is set, it is an unterminated varint.
     return nullptr;
   }

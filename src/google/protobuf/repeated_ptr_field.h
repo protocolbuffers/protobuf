@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
@@ -218,7 +219,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
-    if (PROTOBUF_PREDICT_FALSE(arena_ != nullptr)) return;
+    if (ABSL_PREDICT_FALSE(arena_ != nullptr)) return;
 
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
@@ -296,7 +297,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: PrepareForParse() is true.
   void AddAllocatedForParse(void* value) {
     ABSL_DCHECK(PrepareForParse());
-    if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+    if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1) = value;
       ++rep()->allocated_size;
     } else {
@@ -791,7 +792,7 @@ void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
     return result;
   }
   Rep* r = rep();
-  if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+  if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
     InternalExtend(1);
     r = rep();
   } else {

@@ -716,8 +716,8 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
+                           0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
       // Explicit abort to let compilers know this code-path does not return
@@ -734,8 +734,8 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
+                           0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
       // Explicit abort to let compilers know this code-path does not return
@@ -907,7 +907,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <class MessageBaseT, class UnknownFieldsT>
   PROTOBUF_CC static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
       // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
       static constexpr UnknownFieldOps kOps = {
           WriteVarintToUnknown<UnknownFieldsT>,

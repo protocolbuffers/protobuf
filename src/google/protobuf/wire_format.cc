@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -734,7 +735,7 @@ struct WireFormat::MessageSetParser {
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
       ptr = ReadTag(ptr, &tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
         ctx->SetLastTag(tag);
         break;
@@ -758,7 +759,7 @@ struct WireFormat::MessageSetParser {
         ptr = WireFormat::_InternalParseAndMergeField(msg, ptr, ctx, tag,
                                                       reflection, field);
       }
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
     }
     return ptr;
   }
@@ -819,7 +820,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ReadTag(ptr, &tag);
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
     if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
       ctx->SetLastTag(tag);
       break;
@@ -840,7 +841,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
     }
 
     ptr = _InternalParseAndMergeField(msg, ptr, ctx, tag, reflection, field);
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
   }
   return ptr;
 }

@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -191,7 +192,7 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
       for (const FieldDescriptor* field = begin; field != end; ++field) {
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
           const Descriptor* message_type = field->message_type();
-          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+          if (ABSL_PREDICT_FALSE(message_type->options().map_entry())) {
             if (message_type->field(1)->cpp_type() ==
                 FieldDescriptor::CPPTYPE_MESSAGE) {
               const MapFieldBase* map_field =

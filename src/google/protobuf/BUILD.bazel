@@ -296,7 +296,10 @@ cc_library(
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
-    deps = [":port"],
+    deps = [
+        ":port",
+        "@com_google_absl//absl/base:core_headers",
+    ],
 )
 
 cc_test(

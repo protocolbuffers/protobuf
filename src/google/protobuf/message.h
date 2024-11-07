@@ -97,6 +97,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
@@ -1629,7 +1630,7 @@ const Type& Reflection::GetRawSplit(const Message& message,
 template <class Type>
 const Type& Reflection::GetRawNonOneof(const Message& message,
                                        const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     return GetRawSplit<Type>(message, field);
   }
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
@@ -1642,7 +1643,7 @@ const Type& Reflection::GetRaw(const Message& message,
   ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
 
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
     return GetRawNonOneof<Type>(message, field);
   }
 

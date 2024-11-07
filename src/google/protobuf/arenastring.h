@@ -58,7 +58,7 @@ class PROTOBUF_EXPORT LazyString {
   const std::string& get() const {
     // This check generates less code than a call-once invocation.
     auto* res = inited_.load(std::memory_order_acquire);
-    if (PROTOBUF_PREDICT_FALSE(res == nullptr)) return Init();
+    if (ABSL_PREDICT_FALSE(res == nullptr)) return Init();
     return *res;
   }
 

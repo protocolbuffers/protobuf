@@ -827,7 +827,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Erase(int key);
 
   size_t Size() const {
-    return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
   // For use as `PrefetchFunctor`s in `ForEach`.
@@ -870,7 +870,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // prefetches ahead.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                           std::move(func), std::move(prefetch_func));
       return;
@@ -881,7 +881,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // As above, but const.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                           std::move(func), std::move(prefetch_func));
       return;
@@ -901,7 +901,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                         std::move(func));
       return;
@@ -912,7 +912,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // As above, but const.
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                         std::move(func));
       return;

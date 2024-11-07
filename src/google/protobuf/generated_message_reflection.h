@@ -21,6 +21,7 @@
 #include <string>
 
 #include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
@@ -368,8 +369,8 @@ const std::string& NameOfDenseEnum(int v) {
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
   const std::string** cache = deci.cache.load(std::memory_order_acquire );
-  if (PROTOBUF_PREDICT_TRUE(cache != nullptr)) {
-    if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
+    if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];
     }
   }

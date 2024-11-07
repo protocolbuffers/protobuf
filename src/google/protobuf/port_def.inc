@@ -354,17 +354,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOC_EXPORT
 #endif
 
-#if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
-#error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
-#endif
-#if defined(__GNUC__)
-# define PROTOBUF_PREDICT_TRUE(x) (__builtin_expect(false || (x), true))
-# define PROTOBUF_PREDICT_FALSE(x) (__builtin_expect(false || (x), false))
-#else
-# define PROTOBUF_PREDICT_TRUE(x) (x)
-# define PROTOBUF_PREDICT_FALSE(x) (x)
-#endif
-
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
