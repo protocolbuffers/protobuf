@@ -7,12 +7,42 @@
 
 use googletest::prelude::*;
 use protobuf::prelude::*;
-use protobuf::View;
 
 use paste::paste;
+use protobuf::View;
+use protobuf_gtest_matchers::proto_eq;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
 use unittest_rust_proto::TestAllTypes;
+
+#[gtest]
+#[cfg(upb_kernel)]
+fn test_serialization_length_prefixed() {
+    let mut msg1 = TestAllTypes::new();
+    msg1.set_optional_int32(42);
+    let mut serialized = msg1.serialize_length_prefixed().unwrap();
+
+    // The length-prefixed serialization should be something longer than the normal
+    // serialization.
+    assert_that!(msg1.serialize().unwrap().len(), lt(serialized.len()));
+
+    let mut msg2 = TestAllTypes::new();
+    msg2.set_optional_int64(7);
+    let mut serialized2 = msg2.serialize_length_prefixed().unwrap();
+
+    // Make one vec with 2 length-prefixed serializations so we can test parsing
+    // them back sequentially.
+    serialized.append(&mut serialized2);
+
+    let mut data = serialized.as_slice();
+    let msg1_round_tripped = TestAllTypes::parse_length_prefixed(&mut data).unwrap();
+    let msg2_round_tripped = TestAllTypes::parse_length_prefixed(&mut data).unwrap();
+    assert_that!(0usize, eq(data.len()));
+    assert!(TestAllTypes::parse_length_prefixed(&mut data).is_err());
+
+    assert_that!(msg1_round_tripped, proto_eq(msg1));
+    assert_that!(msg2_round_tripped, proto_eq(msg2));
+}
 
 macro_rules! generate_parameterized_serialization_test {
     ($(($type: ident, $name_ext: ident)),*) => {

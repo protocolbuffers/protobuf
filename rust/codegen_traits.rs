@@ -74,6 +74,14 @@ pub(crate) mod create {
     use super::SealedInternal;
     pub trait Parse: SealedInternal + Sized {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
+
+        /// Performs a length-prefixed parse of `data`. This operation is
+        /// sometimes referred to as "delimited" parsing in other
+        /// protobuf implementations.
+        ///
+        /// On success, advances `data` will be advanced based on how many bytes
+        /// were consumed for the parse, on failure `data` will be unchanged.
+        fn parse_length_prefixed(serialized: &mut &[u8]) -> Result<Self, crate::ParseError>;
     }
 }
 
@@ -85,6 +93,8 @@ pub(crate) mod read {
 
     pub trait Serialize: SealedInternal {
         fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError>;
+
+        fn serialize_length_prefixed(&self) -> Result<Vec<u8>, crate::SerializeError>;
     }
 }
 
@@ -101,6 +111,17 @@ pub(crate) mod write {
 
     pub trait ClearAndParse: SealedInternal {
         fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), crate::ParseError>;
+
+        /// Replaces the `self` contents with the a length-prefix parse from
+        /// `data`. This operation is sometimes referred to as
+        /// "delimited" parsing in other protobuf implementations.
+        ///
+        /// On success, advances `data` will be advanced based on how many bytes
+        /// were consumed for the parse, on failure `data` will be unchanged.
+        fn clear_and_parse_length_prefixed(
+            &mut self,
+            data: &mut &[u8],
+        ) -> Result<(), crate::ParseError>;
     }
 
     pub trait MergeFrom: AsView + SealedInternal {

@@ -60,6 +60,35 @@ pub unsafe fn encode(
 
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
+
+        // SAFETY: upb guarantees that `buf` is valid to read for `len`.
+        Ok(unsafe { &*core::ptr::slice_from_raw_parts(buf, len) }.to_vec())
+    } else {
+        Err(status)
+    }
+}
+
+/// If Err, then EncodeStatus != Ok.
+///
+/// # Safety
+/// - `msg` must be associated with `mini_table`.
+pub unsafe fn encode_length_prefixed(
+    msg: RawMessage,
+    mini_table: *const upb_MiniTable,
+) -> Result<Vec<u8>, EncodeStatus> {
+    let arena = Arena::new();
+    let mut buf: *mut u8 = core::ptr::null_mut();
+    let mut len = 0usize;
+
+    // SAFETY:
+    // - `mini_table` is the one associated with `msg`.
+    // - `buf` and `buf_size` are legally writable.
+    let status =
+        unsafe { upb_EncodeLengthPrefixed(msg, mini_table, 0, arena.raw(), &mut buf, &mut len) };
+
+    if status == EncodeStatus::Ok {
+        assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
+
         // SAFETY: upb guarantees that `buf` is valid to read for `len`.
         Ok(unsafe { &*core::ptr::slice_from_raw_parts(buf, len) }.to_vec())
     } else {
@@ -95,11 +124,65 @@ pub unsafe fn decode(
     }
 }
 
+/// Decodes into the provided message (merge semantics).
+///
+/// On success, returns the number of bytes consumed.
+/// On Err, then DecodeStatus != Ok.
+///
+/// # Safety
+/// - `msg` must be mutable.
+/// - `msg` must be associated with `mini_table`.
+pub unsafe fn decode_length_prefixed(
+    buf: &[u8],
+    msg: RawMessage,
+    mini_table: *const upb_MiniTable,
+    arena: &Arena,
+) -> Result<usize, DecodeStatus> {
+    let len = buf.len();
+    let buf = buf.as_ptr();
+    let options = DecodeOption::CheckRequired as i32;
+
+    let mut num_bytes_read = 0usize;
+
+    // SAFETY:
+    // - `mini_table` is the one associated with `msg`
+    // - `buf` is legally readable for at least `buf_size` bytes.
+    // - `extreg` is null.
+    let status = unsafe {
+        upb_DecodeLengthPrefixed(
+            buf,
+            len,
+            msg,
+            &mut num_bytes_read,
+            mini_table,
+            core::ptr::null(),
+            options,
+            arena.raw(),
+        )
+    };
+    match status {
+        DecodeStatus::Ok => Ok(num_bytes_read),
+        _ => Err(status),
+    }
+}
+
 extern "C" {
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` and `buf_size` are legally writable.
     pub fn upb_Encode(
+        msg: RawMessage,
+        mini_table: *const upb_MiniTable,
+        options: i32,
+        arena: RawArena,
+        buf: *mut *mut u8,
+        buf_size: *mut usize,
+    ) -> EncodeStatus;
+
+    // SAFETY:
+    // - `mini_table` is the one associated with `msg`
+    // - `buf` and `buf_size` are legally writable.
+    pub fn upb_EncodeLengthPrefixed(
         msg: RawMessage,
         mini_table: *const upb_MiniTable,
         options: i32,
@@ -116,6 +199,21 @@ extern "C" {
         buf: *const u8,
         buf_size: usize,
         msg: RawMessage,
+        mini_table: *const upb_MiniTable,
+        extreg: *const upb_ExtensionRegistry,
+        options: i32,
+        arena: RawArena,
+    ) -> DecodeStatus;
+
+    // SAFETY:
+    // - `mini_table` is the one associated with `msg`
+    // - `buf` is legally readable for at least `buf_size` bytes.
+    // - `extreg` is either null or points at a valid upb_ExtensionRegistry.
+    pub fn upb_DecodeLengthPrefixed(
+        buf: *const u8,
+        buf_size: usize,
+        msg: RawMessage,
+        num_bytes_read: &mut usize,
         mini_table: *const upb_MiniTable,
         extreg: *const upb_ExtensionRegistry,
         options: i32,

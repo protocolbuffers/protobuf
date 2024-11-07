@@ -7,11 +7,9 @@
 
 #include "google/protobuf/compiler/rust/message.h"
 
-#include <string>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -78,9 +76,39 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit({{"minitable", UpbMiniTableName(msg)}},
                R"rs(
-        // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
+        // SAFETY:
+        // - `MINI_TABLE` is the one associated with `self.raw_msg()`.
+        // - `self.raw_msg()` is mutable.
         let encoded = unsafe {
           $pbr$::wire::encode(self.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::mini_table())
+        };
+        //~ TODO: This discards the info we have about the reason
+        //~ of the failure, we should try to keep it instead.
+        encoded.map_err(|_| $pb$::SerializeError)
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageSerializeLengthPrefixed(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({}, R"rs(
+        panic!("not implemented");
+      )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit({{"minitable", UpbMiniTableName(msg)}},
+               R"rs(
+        // SAFETY:
+        // - `MINI_TABLE` is the one associated with `self.raw_msg()`.
+        // - `self.raw_msg()` is mutable.
+        let encoded = unsafe {
+          $pbr$::wire::encode_length_prefixed(self.raw_msg(),
               <Self as $pbr$::AssociatedMiniTable>::mini_table())
         };
         //~ TODO: This discards the info we have about the reason
@@ -138,9 +166,8 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         let mut msg = Self::new();
 
         // SAFETY:
-        // - `data.as_ptr()` is valid to read for `data.len()`
-        // - `mini_table` is the one used to construct `msg.raw_msg()`
-        // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+        // - `msg` is mutable.
+        // - `mini_table` is the one associated with `msg.raw_msg()`
         let status = unsafe {
           $pbr$::wire::decode(
               data,
@@ -150,6 +177,50 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         };
         match status {
           Ok(_) => {
+            //~ This swap causes the old self.inner.arena to be moved into `msg`
+            //~ which we immediately drop, which will release any previous
+            //~ message that was held here.
+            $std$::mem::swap(self, &mut msg);
+            Ok(())
+          }
+          Err(_) => Err($pb$::ParseError)
+        }
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageClearAndParseLengthPrefixed(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({},
+               R"rs(
+          panic!("not implemented")
+        )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit(
+          R"rs(
+        let mut msg = Self::new();
+
+        // SAFETY:
+        // - `msg` is mutable.
+        // - `mini_table` is the one used to construct `msg.raw_msg()`
+        let result = unsafe {
+          $pbr$::wire::decode_length_prefixed(
+              *data,
+              msg.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+              msg.arena())
+        };
+        match result {
+          Ok(num_bytes_read) => {
+            let (_, advanced) = data.split_at(num_bytes_read);
+            *data = advanced;
+
             //~ This swap causes the old self.inner.arena to be moved into `msg`
             //~ which we immediately drop, which will release any previous
             //~ message that was held here.
@@ -624,8 +695,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       {{"Msg", RsSafeName(msg.name())},
        {"Msg::new", [&] { MessageNew(ctx, msg); }},
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+       {"Msg::serialize_length_prefixed",
+        [&] { MessageSerializeLengthPrefixed(ctx, msg); }},
        {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
        {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
+       {"Msg::clear_and_parse_length_prefixed",
+        [&] { MessageClearAndParseLengthPrefixed(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
@@ -752,6 +827,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           fn parse(serialized: &[u8]) -> $Result$<Self, $pb$::ParseError> {
             Self::parse(serialized)
           }
+
+          fn parse_length_prefixed(data: &mut &[u8]) -> $Result$<Self, $pb$::ParseError> {
+            let mut msg = Self::new();
+            $pb$::ClearAndParse::clear_and_parse_length_prefixed(&mut msg, data).map(|_| msg)
+          }
         }
 
         impl $std$::fmt::Debug for $Msg$ {
@@ -771,6 +851,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
           }
+
+          fn serialize_length_prefixed(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
+            $pb$::AsView::as_view(self).serialize_length_prefixed()
+          }
         }
 
         impl $pb$::Clear for $Msg$ {
@@ -782,6 +866,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::ClearAndParse for $Msg$ {
           fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
             $Msg::clear_and_parse$
+          }
+
+          fn clear_and_parse_length_prefixed(&mut self, data: &mut &[u8])
+              -> $Result$<(), $pb$::ParseError> {
+            $Msg::clear_and_parse_length_prefixed$
           }
         }
 
@@ -827,6 +916,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::Serialize for $Msg$View<'_> {
           fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $Msg::serialize$
+          }
+
+          fn serialize_length_prefixed(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
+            $Msg::serialize_length_prefixed$
           }
         }
 
@@ -907,6 +1000,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::Serialize for $Msg$Mut<'_> {
           fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
+          }
+
+          fn serialize_length_prefixed(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
+            $pb$::AsView::as_view(self).serialize_length_prefixed()
           }
         }
 
@@ -1250,35 +1347,34 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
     return;
   }
 
-  ctx.Emit(
-      {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-       {"Msg", RsSafeName(msg.name())},
-       {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
-       {"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
-       {"nested_msg_thunks",
-        [&] {
-          for (int i = 0; i < msg.nested_type_count(); ++i) {
-            GenerateThunksCc(ctx, *msg.nested_type(i));
-          }
-        }},
-       {"accessor_thunks",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorThunkCc(ctx, *msg.field(i));
-          }
-        }},
-       {"oneof_thunks",
-        [&] {
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
-          }
-        }}},
-      R"cc(
-        //~ $abi$ is a workaround for a syntax highlight bug in VSCode.
-        // However, ~ that confuses clang-format (it refuses to keep the
-        // newline after ~ `$abi${`). Disabling clang-format for the block.
-        // clang-format off
+  ctx.Emit({{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
+            {"Msg", RsSafeName(msg.name())},
+            {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
+            {"new_thunk", ThunkName(ctx, msg, "new")},
+            {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
+            {"nested_msg_thunks",
+             [&] {
+               for (int i = 0; i < msg.nested_type_count(); ++i) {
+                 GenerateThunksCc(ctx, *msg.nested_type(i));
+               }
+             }},
+            {"accessor_thunks",
+             [&] {
+               for (int i = 0; i < msg.field_count(); ++i) {
+                 GenerateAccessorThunkCc(ctx, *msg.field(i));
+               }
+             }},
+            {"oneof_thunks",
+             [&] {
+               for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+                 GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
+               }
+             }}},
+           R"cc(
+             //~ $abi$ is a workaround for a syntax highlight bug in VSCode.
+             // However, ~ that confuses clang-format (it refuses to keep the
+             // newline after ~ `$abi${`). Disabling clang-format for the block.
+             // clang-format off
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
 
@@ -1290,10 +1386,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
             $oneof_thunks$
         }  // extern $abi$
-        // clang-format on
+             // clang-format on
 
-        $nested_msg_thunks$
-      )cc");
+             $nested_msg_thunks$
+           )cc");
 }
 
 }  // namespace rust
