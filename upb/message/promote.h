@@ -53,13 +53,16 @@ typedef struct {
   const char* ptr;
   // Size of unknown field data.
   size_t len;
+  // Iterator position, for use with FindUnknown, NextUnknown, or DeleteUnknown
+  uintptr_t iter;
 } upb_FindUnknownRet;
 
-// Finds first occurrence of unknown data by tag id in message.
-// A depth_limit of zero means to just use the upb default depth limit.
+// Finds first occurrence of unknown data by tag id in message, starting from
+// the position indicated by iter; to start at the beginning, pass
+// kUpb_Message_UnknownBegin.
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
-                                           int depth_limit);
+                                           uintptr_t iter);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,

@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
@@ -78,7 +79,8 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
 
   // Check unknown fields, if available promote.
   int field_number = upb_MiniTableExtension_Number(ext_table);
-  upb_FindUnknownRet result = upb_Message_FindUnknown(msg, field_number, 0);
+  upb_FindUnknownRet result =
+      upb_Message_FindUnknown(msg, field_number, kUpb_Message_UnknownBegin);
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
   }
@@ -120,37 +122,38 @@ static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
 
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
-                                           int depth_limit) {
-  depth_limit = depth_limit ? depth_limit : 100;
-
-  size_t size;
+                                           uintptr_t iter) {
   upb_FindUnknownRet ret;
+  upb_StringView data;
+  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+    upb_EpsCopyInputStream stream;
+    const char* ptr = data.data;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
 
-  const char* ptr = upb_Message_GetUnknown(msg, &size);
-  upb_EpsCopyInputStream stream;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
+    while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+      uint32_t tag;
+      const char* unknown_begin = ptr;
+      ptr = upb_WireReader_ReadTag(ptr, &tag);
+      if (!ptr) return upb_FindUnknownRet_ParseError();
+      if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+        ret.status = kUpb_FindUnknown_Ok;
+        ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+        ptr = _upb_WireReader_SkipValue(ptr, tag, 0, &stream);
+        // Because we know that the input is a flat buffer, it is safe to
+        // perform pointer arithmetic on aliased pointers.
+        ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
+        ret.iter = iter;
+        return ret;
+      }
 
-  while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
-    uint32_t tag;
-    const char* unknown_begin = ptr;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
-    if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-      ret.status = kUpb_FindUnknown_Ok;
-      ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
-      ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-      // Because we know that the input is a flat buffer, it is safe to perform
-      // pointer arithmetic on aliased pointers.
-      ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
-      return ret;
+      ptr = _upb_WireReader_SkipValue(ptr, tag, 0, &stream);
+      if (!ptr) return upb_FindUnknownRet_ParseError();
     }
-
-    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
   }
   ret.status = kUpb_FindUnknown_NotPresent;
   ret.ptr = NULL;
   ret.len = 0;
+  ret.iter = kUpb_Message_UnknownBegin;
   return ret;
 }
 
@@ -251,9 +254,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
-    unknown =
-        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
-                                upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown = upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                      kUpb_Message_UnknownBegin);
     switch (unknown.status) {
       case kUpb_FindUnknown_Ok: {
         const char* unknown_data = unknown.ptr;
@@ -301,9 +303,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   do {
-    unknown =
-        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
-                                upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown = upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                      kUpb_Message_UnknownBegin);
     if (unknown.status == kUpb_FindUnknown_Ok) {
       upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
           unknown.ptr, unknown.len, mini_table,
@@ -340,9 +341,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   while (1) {
-    unknown =
-        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
-                                upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown = upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                      kUpb_Message_UnknownBegin);
     if (unknown.status != kUpb_FindUnknown_Ok) break;
     upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
         unknown.ptr, unknown.len, map_entry_mini_table,
