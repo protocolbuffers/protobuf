@@ -994,6 +994,18 @@ UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
   return ret;
 }
 
+UPB_API_INLINE upb_StringView upb_Message_GetExtensionString(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    upb_StringView default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_String ||
+             upb_MiniTableExtension_CType(e) == kUpb_CType_Bytes);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_StringView);
+  upb_StringView ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
 UPB_API_INLINE struct upb_Message* upb_Message_GetExtensionMessage(
     const struct upb_Message* msg, const upb_MiniTableExtension* e,
     struct upb_Message* default_val) {
