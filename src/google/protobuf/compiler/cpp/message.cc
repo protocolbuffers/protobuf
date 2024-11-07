@@ -93,9 +93,16 @@ std::string ConditionalToCheckBitmasks(
   return result + (return_success ? " == 0" : " != 0");
 }
 
+std::string PredictPresence(const FieldDescriptor* field,
+                            const Options& options) {
+  if (IsLikelyPresent(field, options)) return "ABSL_PREDICT_TRUE";
+  if (IsRarelyPresent(field, options)) return "ABSL_PREDICT_FALSE";
+  return "";
+}
+
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
-                        int* cached_has_word_index) {
+                        int* cached_has_word_index, const Options& options) {
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
@@ -105,10 +112,14 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                 cached_has_bits = $has_bits$[$index$];
               )cc");
     }
-    p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
-            R"cc(
-              if (cached_has_bits & $mask$) {
-            )cc");
+    p->Emit(
+        {
+            {"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
+            {"predict", PredictPresence(field, options)},
+        },
+        R"cc(
+          if ($predict$(cached_has_bits & $mask$)) {
+        )cc");
   } else {
     p->Emit(R"cc(
       if (has_$name$()) {
@@ -1339,21 +1350,25 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"mask",
-            absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
-           {"check_nondefault_and_emit_body",
-            [&] {
-              // Note that it's possible that the field has explicit presence.
-              // In that case, nondefault check will not be emitted but
-              // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
-                                       /*with_enclosing_braces_always=*/false);
-            }}},
-          R"cc(
-            if (cached_has_bits & $mask$) {
-              $check_nondefault_and_emit_body$;
-            }
-          )cc");
+  p->Emit(
+      {
+          {"mask",
+           absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
+          {"check_nondefault_and_emit_body",
+           [&] {
+             // Note that it's possible that the field has explicit presence.
+             // In that case, nondefault check will not be emitted but
+             // emit_body will still be emitted.
+             MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                                      /*with_enclosing_braces_always=*/false);
+           }},
+          {"predict", PredictPresence(field, options_)},
+      },
+      R"cc(
+        if ($predict$(cached_has_bits & $mask$)) {
+          $check_nondefault_and_emit_body$;
+        }
+      )cc");
 }
 
 void MessageGenerator::EmitUpdateByteSizeForField(
@@ -3205,7 +3220,8 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     } else {
       int index = has_bit_indices_[field->index()];
       std::string mask = absl::StrFormat("0x%08xu", 1u << (index % 32));
-      p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+      p->Emit({{"mask", mask}, {"predict", PredictPresence(field, options_)}},
+              "$predict$(cached_has_bits & $mask$)");
     }
   };
 
@@ -3635,7 +3651,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
         }
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if (ABSL_PREDICT_FALSE(cached_has_bits & 0x$1$u)) {\n",
+               chunk_mask_str);
         format.Indent();
       }
 
@@ -3668,8 +3685,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
         if (have_enclosing_if) {
-          PrintPresenceCheck(field, has_bit_indices_, p,
-                             &cached_has_word_index);
+          PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index,
+                             options_);
           format.Indent();
         }
 
@@ -4301,7 +4318,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if (ABSL_PREDICT_FALSE(cached_has_bits & 0x$1$u)) {\n",
+               chunk_mask_str);
         format.Indent();
       }
 
@@ -4333,9 +4351,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // Check hasbit, using cached bits.
           ABSL_CHECK(HasHasbit(field));
           int has_bit_index = has_bit_indices_[field->index()];
+          const std::string predict = PredictPresence(field, options_);
           const std::string mask = absl::StrCat(
               absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-          format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          if (predict.empty()) {
+            format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          } else {
+            format("if ($1$(cached_has_bits & 0x$2$u)) {\n", predict, mask);
+          }
           format.Indent();
 
           if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
@@ -4592,9 +4615,10 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                      "(this_.$has_bits$[$has_array_index$] & $has_mask$) != 0");
                }
              }},
+            {"predict", PredictPresence(field, options_)},
         },
         R"cc(
-          if ($cond$) {
+          if ($predict$($cond$)) {
             $body$;
           }
         )cc");
@@ -5160,7 +5184,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
                       p->Emit(
                           {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
-                          "if (cached_has_bits & $mask$)");
+                          "if (ABSL_PREDICT_FALSE(cached_has_bits & $mask$))");
                     }}},
                   R"cc(
                     $may_update_cached_has_word_index$;
