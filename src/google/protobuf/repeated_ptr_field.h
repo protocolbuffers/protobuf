@@ -897,6 +897,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
             internal::is_supported_string_type<Element>,
             internal::is_supported_message_type<Element>>::value,
         "We only support string and Message types in RepeatedPtrField.");
+    static_assert(alignof(Element) <= std::max(alignof(void*), alignof(double)),
+                  "Overaligned types are not supported");
   }
 
  public:
