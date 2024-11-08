@@ -8,6 +8,7 @@
 #include "google/protobuf/compiler/java/generator.h"
 
 #include <memory>
+#include <string>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
