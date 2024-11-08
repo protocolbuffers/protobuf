@@ -468,7 +468,7 @@ def build_targets(name):
     conformance_test(
         name = "conformance_test_cpp",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
-        failure_list = "//conformance:failure_list_python.txt",
+        failure_list = "//conformance:failure_list_python_cpp.txt",
         target_compatible_with = select({
             "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],
