@@ -1367,7 +1367,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedEndGroup() {
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
   ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_END_GROUP),
                              "UnmatchedEndGroup", REQUIRED);
   ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_END_GROUP),
@@ -1384,6 +1384,23 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedEndGroup() {
       absl::StrCat(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
                    len(2, "hello world")),
       "UnmatchedEndGroupWithData", REQUIRED);
+
+  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroup", REQUIRED);
+  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupUnknown", REQUIRED);
+  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupWrongType", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18, tag(1234, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, tag(202, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNested", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                   len(2, "hello world")),
+      "UnmatchedStartGroupWithData", REQUIRED);
 }
 
 template <typename MessageType>
@@ -1573,7 +1590,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
-    TestUnmatchedEndGroup();
+    TestUnmatchedGroup();
     TestUnknownWireType();
 
     int64_t kInt64Min = -9223372036854775808ULL;
