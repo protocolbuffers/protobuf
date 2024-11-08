@@ -97,6 +97,10 @@ void RepeatedPtrFieldBase::Reserve(int capacity) {
   }
 }
 
+void RepeatedPtrFieldBase::Reserve(int capacity, const MessageLite* prototype) {
+  return Reserve(capacity);
+}
+
 void RepeatedPtrFieldBase::DestroyProtos() {
   PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
 

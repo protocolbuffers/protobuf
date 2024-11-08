@@ -10,8 +10,10 @@
 
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 namespace google {
 namespace protobuf {
@@ -213,7 +215,10 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
     MutableRepeatedField(data)->RemoveLast();
   }
   void Reserve(Field* data, int size) const override {
-    MutableRepeatedField(data)->Reserve(size);
+    const Message* prototype =
+        reinterpret_cast<const MapFieldBase*>(data)->GetPrototype();
+    reinterpret_cast<RepeatedPtrFieldBase*>(MutableRepeatedField(data))
+        ->Reserve(size, prototype);
   }
   void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);

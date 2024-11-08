@@ -332,6 +332,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void CloseGap(int start, int num);
 
   void Reserve(int capacity);
+  // DO NOT SUBMIT: SFINAE out to only be enabled for MessageLite/Message.
+  void Reserve(int capacity, const MessageLite* prototype);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -549,6 +551,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // reinterpreting pointers as being to Message instead of a specific Message
   // subclass.
   friend class MapFieldBase;
+  friend class MapFieldAccessor;
   friend struct MapFieldTestPeer;
 
   // The table-driven MergePartialFromCodedStream implementation needs to
