@@ -117,6 +117,8 @@ class GenericTypeHandler;
 //
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
 //     static int SpaceUsedLong(const Type&);
+//
+//     static const Type& default_instance();
 //   };
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
@@ -839,6 +841,11 @@ class GenericTypeHandler {
   static inline size_t SpaceUsedLong(const Type& value) {
     return value.SpaceUsedLong();
   }
+
+  static const Type& default_instance() {
+    return *static_cast<const GenericType*>(
+        MessageTraits<Type>::default_instance());
+  }
 };
 
 template <>
@@ -874,6 +881,9 @@ class GenericTypeHandler<std::string> {
   static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
+  }
+  static const Type& default_instance() {
+    return GetEmptyStringAlreadyInited();
   }
 };
 
