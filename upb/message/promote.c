@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
@@ -122,31 +123,33 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit) {
   depth_limit = depth_limit ? depth_limit : 100;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
 
-  size_t size;
   upb_FindUnknownRet ret;
+  upb_StringView data;
+  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+    upb_EpsCopyInputStream stream;
+    const char* ptr = data.data;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
 
-  const char* ptr = upb_Message_GetUnknown(msg, &size);
-  upb_EpsCopyInputStream stream;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
+    while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+      uint32_t tag;
+      const char* unknown_begin = ptr;
+      ptr = upb_WireReader_ReadTag(ptr, &tag);
+      if (!ptr) return upb_FindUnknownRet_ParseError();
+      if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+        ret.status = kUpb_FindUnknown_Ok;
+        ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+        // Because we know that the input is a flat buffer, it is safe to
+        // perform pointer arithmetic on aliased pointers.
+        ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
+        return ret;
+      }
 
-  while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
-    uint32_t tag;
-    const char* unknown_begin = ptr;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
-    if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-      ret.status = kUpb_FindUnknown_Ok;
-      ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
       ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-      // Because we know that the input is a flat buffer, it is safe to perform
-      // pointer arithmetic on aliased pointers.
-      ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
-      return ret;
+      if (!ptr) return upb_FindUnknownRet_ParseError();
     }
-
-    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
   }
   ret.status = kUpb_FindUnknown_NotPresent;
   ret.ptr = NULL;
