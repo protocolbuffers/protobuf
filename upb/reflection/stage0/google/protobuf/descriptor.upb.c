@@ -10,7 +10,7 @@ static upb_Arena* upb_BootstrapArena() {
 
 const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$G";
+  static const char* mini_descriptor = "$PG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -374,7 +374,7 @@ const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefa
 
 const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$G";
+  static const char* mini_descriptor = "$PG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),

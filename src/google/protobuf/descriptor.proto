@@ -55,6 +55,13 @@ option optimize_for = SPEED;
 // files it parses.
 message FileDescriptorSet {
   repeated FileDescriptorProto file = 1;
+
+  // Extensions for tooling.
+  extensions 536000000 [declaration = {
+    number: 536000000
+    type: ".buf.descriptor.v1.FileDescriptorSetExtension"
+    full_name: ".buf.descriptor.v1.buf_file_descriptor_set_extension"
+  }];
 }
 
 // The full set of known editions.
@@ -1252,6 +1259,13 @@ message SourceCodeInfo {
     optional string trailing_comments = 4;
     repeated string leading_detached_comments = 6;
   }
+
+  // Extensions for tooling.
+  extensions 536000000 [declaration = {
+    number: 536000000
+    type: ".buf.descriptor.v1.SourceCodeInfoExtension"
+    full_name: ".buf.descriptor.v1.buf_source_code_info_extension"
+  }];
 }
 
 // Describes the relationship between generated code and its original source
