@@ -134,7 +134,7 @@ struct ChunkList::Chunk {
   // Cleanup nodes follow.
 };
 
-void ChunkList::AddFallback(void* elem, void (*destructor)(void*),
+void ChunkList::AddFallback(void* elem, cleanup::Callback destructor,
                             SerialArena& arena) {
   ABSL_DCHECK_EQ(next_, limit_);
   SizedPtr mem = AllocateCleanupChunk(arena.parent_.AllocPolicy(),
@@ -160,22 +160,22 @@ void ChunkList::Cleanup(const SerialArena& arena) {
     constexpr int kPrefetchDistance = 8;
     CleanupNode* prefetch = it;
     // Prefetch the first kPrefetchDistance nodes.
-    for (int i = 0; prefetch >= first && i < kPrefetchDistance;
-         --prefetch, ++i) {
+    for (int n = std::min(static_cast<int>(it - first), kPrefetchDistance - 1);
+         n > 0; --n, --prefetch) {
       prefetch->Prefetch();
     }
-    // For the middle nodes, run destructor and prefetch the node
-    // kPrefetchDistance after the current one.
-    for (; prefetch >= first; --it, --prefetch) {
-      it->Destroy();
-      prefetch->Prefetch();
-    }
-    // Note: we could consider prefetching `next` chunk earlier.
+    prefetch->Prefetch();
+    ABSL_DCHECK_GE(prefetch, first);
+
     absl::PrefetchToLocalCacheNta(c->next);
-    // Destroy the rest without prefetching.
-    for (; it >= first; --it) {
-      it->Destroy();
+    if constexpr (!PROTOBUF_TAILCALL) {
+      // If there are no tail calls, we need to iterate manually.
+      for (; it > first; --it) {
+        it->destructor(it, prefetch, first);
+      }
     }
+    it->destructor(it, prefetch, first);
+
     Chunk* next = c->next;
     deallocator({c, c->size});
     if (next == nullptr) return;
@@ -306,7 +306,7 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
+    size_t n, size_t align, cleanup::Callback destructor) {
   size_t required = AlignUpTo(n, align);
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
@@ -813,8 +813,8 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*)) {
+void* ThreadSafeArena::AllocateAlignedWithCleanup(
+    size_t n, size_t align, cleanup::Callback destructor) {
   SerialArena* arena;
   if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena->AllocateAlignedWithCleanup(n, align, destructor);
@@ -823,7 +823,7 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
   }
 }
 
-void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
+void ThreadSafeArena::AddCleanup(void* elem, cleanup::Callback cleanup) {
   GetSerialArena()->AddCleanup(elem, cleanup);
 }
 
@@ -837,7 +837,7 @@ SerialArena* ThreadSafeArena::GetSerialArena() {
 
 PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
+    size_t n, size_t align, cleanup::Callback destructor) {
   return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
       ->AllocateAlignedWithCleanup(n, align, destructor);
 }
@@ -984,8 +984,8 @@ void* Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*)) {
+void* Arena::AllocateAlignedWithCleanup(
+    size_t n, size_t align, internal::cleanup::Callback destructor) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
 }
 

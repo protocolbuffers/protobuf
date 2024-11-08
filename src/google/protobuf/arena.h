@@ -84,9 +84,12 @@ template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
 template <typename T>
-void arena_delete_object(void* object) {
-  delete reinterpret_cast<T*>(object);
-}
+struct Delete {
+  void operator()(void* p) const { delete reinterpret_cast<T*>(p); }
+};
+template <typename T>
+inline constexpr cleanup::Callback arena_delete_object =
+    &cleanup::arena_run_destroy<Delete<T>>;
 
 inline bool CanUseInternalSwap(Arena* lhs, Arena* rhs) {
   if (DebugHardenForceCopyInSwap()) {
@@ -320,7 +323,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                            MessageLite, T>;
     if (object != nullptr) {
       impl_.AddCleanup(static_cast<TypeToUse*>(object),
-                       &internal::arena_delete_object<TypeToUse>);
+                       internal::arena_delete_object<TypeToUse>);
     }
   }
 
@@ -332,7 +335,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
     if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
+      impl_.AddCleanup(object, internal::cleanup::arena_destruct_object<T>);
     }
   }
 
@@ -342,7 +345,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // the class destructor.
   PROTOBUF_ALWAYS_INLINE void OwnCustomDestructor(void* object,
                                                   void (*destruct)(void*)) {
-    impl_.AddCleanup(object, destruct);
+    // DO NOT SUBMIT: Is there a way to make this not as bad?
+    // DO NOT SUBMIT: We should add a private OwnCustomDestructor for our
+    // codegen to avoid this extra jump.
+    Create<std::unique_ptr<void, void (*)(void*)>>(this, object, destruct);
   }
 
   // Retrieves the arena associated with |value| if |value| is an arena-capable
@@ -543,13 +549,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T, bool trivial = std::is_trivially_destructible<T>::value>
   PROTOBUF_NDEBUG_INLINE void* AllocateInternal() {
-    if (trivial) {
+    if constexpr (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      // We avoid instantiating arena_destruct_object<T> in the trivial case.
-      constexpr auto dtor = &internal::cleanup::arena_destruct_object<
-          std::conditional_t<trivial, std::string, T>>;
-      return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
+      return AllocateAlignedWithCleanup(
+          sizeof(T), alignof(T), internal::cleanup::arena_destruct_object<T>);
     }
   }
 
@@ -633,7 +637,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void* Allocate(size_t n);
   void* AllocateForArray(size_t n);
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*));
+                                   internal::cleanup::Callback destructor);
 
   // Test only API.
   // It returns the objects that are in the cleanup list for the current

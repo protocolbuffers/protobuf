@@ -15,6 +15,8 @@
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -27,11 +29,8 @@ class SerialArena;
 
 namespace cleanup {
 
-// Helper function invoking the destructor of `object`
-template <typename T>
-void arena_destruct_object(void* object) {
-  reinterpret_cast<T*>(object)->~T();
-}
+struct CleanupNode;
+using Callback = void (*)(CleanupNode*, CleanupNode*, CleanupNode*);
 
 // CleanupNode contains the object (`elem`) that needs to be
 // destroyed, and the function to destroy it (`destructor`)
@@ -47,19 +46,52 @@ struct CleanupNode {
     absl::PrefetchToLocalCacheNta(elem);
   }
 
-  // Destroys the object referenced by the cleanup node.
-  ABSL_ATTRIBUTE_ALWAYS_INLINE void Destroy() { destructor(elem); }
-
   void* elem;
-  void (*destructor)(void*);
+  Callback destructor;
 };
+
+template <typename Destroy>
+void arena_run_destroy(CleanupNode* it, CleanupNode* prefetch,
+                       CleanupNode* first) {
+  static constexpr auto self = arena_run_destroy<Destroy>;
+  ABSL_DCHECK_GE(it, first);
+  ABSL_DCHECK_EQ(it->destructor, self);
+
+  for (;;) {
+    Destroy{}(it->elem);
+    if (it == first || !PROTOBUF_TAILCALL) {
+      return;
+    }
+
+    --it;
+    if (prefetch > first) {
+      prefetch->Prefetch();
+      --prefetch;
+    }
+    if (it->destructor != self) {
+      PROTOBUF_DEBUG_COUNTER("CleanupListInner.Diff").Inc();
+      PROTOBUF_MUSTTAIL return it->destructor(it, prefetch, first);
+    }
+    PROTOBUF_DEBUG_COUNTER("CleanupListInner.Same").Inc();
+  }
+}
+
+template <typename T>
+struct Destroy {
+  void operator()(void* p) const { reinterpret_cast<T*>(p)->~T(); }
+};
+
+// Helper function invoking the destructor of `object`
+template <typename T>
+inline constexpr Callback arena_destruct_object =
+    &arena_run_destroy<Destroy<T>>;
 
 // Manages the list of cleanup nodes in a chunked linked list. Chunks grow by
 // factors of two up to a limit. Trivially destructible, but Cleanup() must be
 // called before destruction.
 class ChunkList {
  public:
-  PROTOBUF_ALWAYS_INLINE void Add(void* elem, void (*destructor)(void*),
+  PROTOBUF_ALWAYS_INLINE void Add(void* elem, Callback destructor,
                                   SerialArena& arena) {
     if (ABSL_PREDICT_TRUE(next_ < limit_)) {
       AddFromExisting(elem, destructor);
@@ -76,9 +108,9 @@ class ChunkList {
   struct Chunk;
   friend class internal::SerialArena;
 
-  void AddFallback(void* elem, void (*destructor)(void*), SerialArena& arena);
+  void AddFallback(void* elem, Callback destructor, SerialArena& arena);
   ABSL_ATTRIBUTE_ALWAYS_INLINE void AddFromExisting(void* elem,
-                                                    void (*destructor)(void*)) {
+                                                    Callback destructor) {
     *next_++ = CleanupNode{elem, destructor};
   }
 

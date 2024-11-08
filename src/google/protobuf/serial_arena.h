@@ -227,7 +227,7 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*)) {
+                                   cleanup::Callback destructor) {
     n = ArenaAlignDefault::Ceil(n);
     char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.
@@ -245,7 +245,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   PROTOBUF_ALWAYS_INLINE
-  void AddCleanup(void* elem, void (*destructor)(void*)) {
+  void AddCleanup(void* elem, cleanup::Callback destructor) {
     cleanup_list_.Add(elem, destructor, *this);
     MaybePrefetchCleanup();
   }
@@ -363,8 +363,8 @@ class PROTOBUF_EXPORT SerialArena {
 
   void* AllocateAlignedFallback(size_t n);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*));
-  void AddCleanupFallback(void* elem, void (*destructor)(void*));
+                                           cleanup::Callback destructor);
+  void AddCleanupFallback(void* elem, cleanup::Callback destructor);
   inline void AllocateNewBlock(size_t n);
   inline void Init(ArenaBlock* b, size_t offset);
 
