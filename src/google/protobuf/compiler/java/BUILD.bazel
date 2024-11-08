@@ -93,8 +93,8 @@ cc_library(
 
 cc_library(
     name = "java_features_bootstrap",
-    srcs = ["java_features.pb.cc"],
-    hdrs = ["java_features.pb.h"],
+    srcs = ["//src/google/protobuf:java_features.pb.cc"],
+    hdrs = ["//src/google/protobuf:java_features.pb.h"],
     strip_include_prefix = "/src",
     visibility = ["//editions:__pkg__"],
     deps = [

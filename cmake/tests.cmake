@@ -230,7 +230,7 @@ set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h"
-  "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h")
+  "${protobuf_SOURCE_DIR}/src/google/protobuf/java_features.pb.h")
 
 # Exclude test library headers.
 list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}

@@ -389,6 +389,16 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+exports_files(
+    [
+        "java_features.pb.cc",
+        "java_features.pb.h",
+    ],
+    visibility = [
+        "//src/google/protobuf/compiler/java:__pkg__",
+    ],
+)
+
 ################################################################################
 # Python support
 ################################################################################

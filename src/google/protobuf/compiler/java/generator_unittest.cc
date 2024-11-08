@@ -12,7 +12,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
 namespace google {

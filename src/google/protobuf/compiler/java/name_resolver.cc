@@ -16,7 +16,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
