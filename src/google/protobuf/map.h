@@ -89,6 +89,10 @@ class DynamicMapField;
 
 class GeneratedMessageReflection;
 
+namespace v2 {
+class TableDriven;
+}  // namespace v2
+
 // The largest valid serialization for a message is INT_MAX, so we can't have
 // more than 32-bits worth of elements.
 using map_index_t = uint32_t;
@@ -608,6 +612,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
+  friend class v2::TableDriven;
 
   struct NodeAndBucket {
     NodeBase* node;
@@ -954,6 +959,7 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
+  friend class v2::TableDriven;
 
   PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
     TreeIterator tree_it;
@@ -1821,6 +1827,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
   friend class internal::RustMapHelper;
+  friend class internal::v2::TableDriven;
 };
 
 namespace internal {
