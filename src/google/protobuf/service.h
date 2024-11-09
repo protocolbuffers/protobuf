@@ -81,6 +81,7 @@
 
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/port.h"
 
 #ifdef SWIG
