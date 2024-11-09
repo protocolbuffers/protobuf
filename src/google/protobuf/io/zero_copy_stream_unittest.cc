@@ -42,7 +42,7 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gtest/gtest.h>
