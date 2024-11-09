@@ -275,30 +275,6 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
           }
         }
       }
-
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          // This is unsafe only for Rust 1.80 and below and thus can be dropped
-          // once our MSRV is 1.81+
-          #[allow(unused_unsafe)]
-          unsafe {
-            $std$::ptr::addr_of!($minitable$)
-          }
-        }
-      }
-
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          // This is unsafe only for Rust 1.80 and below and thus can be dropped
-          // once our MSRV is 1.81+
-          #[allow(unused_unsafe)]
-          unsafe {
-            $std$::ptr::addr_of!($minitable$)
-          }
-        }
-      }
     )rs");
   }
 }

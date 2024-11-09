@@ -14,7 +14,6 @@ rust_library(
     srcs = [
         "arena.rs",
         "array.rs",
-        "associated_mini_table.rs",
         "ctype.rs",
         "extension_registry.rs",
         "lib.rs",

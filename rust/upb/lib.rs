@@ -18,9 +18,6 @@ pub use array::{
     upb_Array_Size, RawArray,
 };
 
-mod associated_mini_table;
-pub use associated_mini_table::AssociatedMiniTable;
-
 mod ctype;
 pub use ctype::CType;
 
