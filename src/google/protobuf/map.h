@@ -71,6 +71,10 @@ struct PtrAndLen;
 }  // namespace rust
 
 namespace internal {
+namespace v2 {
+class TableDriven;
+};
+
 template <typename Key, typename T>
 class MapFieldLite;
 
@@ -298,7 +302,7 @@ enum class MapNodeSizeInfoT : uint32_t;
 inline uint16_t SizeFromInfo(MapNodeSizeInfoT node_size_info) {
   return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 16);
 }
-inline uint16_t ValueOffsetFromInfo(MapNodeSizeInfoT node_size_info) {
+inline constexpr uint16_t ValueOffsetFromInfo(MapNodeSizeInfoT node_size_info) {
   return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 0);
 }
 constexpr MapNodeSizeInfoT MakeNodeInfo(uint16_t size, uint16_t value_offset) {
