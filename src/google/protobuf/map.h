@@ -246,30 +246,17 @@ struct TransparentSupport {
 // that is convertible to absl::string_view.
 template <>
 struct TransparentSupport<std::string> {
-  // Use go/ranked-overloads for dispatching.
-  struct Rank0 {};
-  struct Rank1 : Rank0 {};
-  struct Rank2 : Rank1 {};
-  template <typename T, typename = std::enable_if_t<
-                            std::is_convertible<T, absl::string_view>::value>>
-  static absl::string_view ImplicitConvertImpl(T&& str, Rank2) {
-    absl::string_view ref = str;
-    return ref;
-  }
-  template <typename T, typename = std::enable_if_t<
-                            std::is_convertible<T, const std::string&>::value>>
-  static absl::string_view ImplicitConvertImpl(T&& str, Rank1) {
-    const std::string& ref = str;
-    return ref;
-  }
-  template <typename T>
-  static absl::string_view ImplicitConvertImpl(T&& str, Rank0) {
-    return {str.data(), str.size()};
-  }
-
   template <typename T>
   static absl::string_view ImplicitConvert(T&& str) {
-    return ImplicitConvertImpl(std::forward<T>(str), Rank2{});
+    if constexpr (std::is_convertible<T, absl::string_view>::value) {
+      absl::string_view res = str;
+      return res;
+    } else if constexpr (std::is_convertible<T, const std::string&>::value) {
+      const std::string& ref = str;
+      return ref;
+    } else {
+      return {str.data(), str.size()};
+    }
   }
 
   struct hash : public absl::Hash<absl::string_view> {
@@ -1576,16 +1563,33 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K, typename... Args>
   std::pair<iterator, bool> try_emplace(K&& k, Args&&... args)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    // Inserts a new element into the container if there is no element with the
-    // key in the container.
-    // The new element is:
-    //  (1) Constructed in-place with the given args, if mapped_type is not
-    //      arena constructible.
-    //  (2) Constructed in-place with the arena and then assigned with a
-    //      mapped_type temporary constructed with the given args, otherwise.
-    return ArenaAwareTryEmplace(Arena::is_arena_constructable<mapped_type>(),
-                                std::forward<K>(k),
+    // Case 1: `mapped_type` is arena constructible. A temporary object is
+    // created and then (if `Args` are not empty) assigned to a mapped value
+    // that was created with the arena.
+    if constexpr (Arena::is_arena_constructable<mapped_type>::value) {
+      if constexpr (sizeof...(Args) == 0) {
+        // case 1.1: "default" constructed (e.g. from arena only).
+        return TryEmplaceInternal(std::forward<K>(k));
+      } else {
+        // case 1.2: "default" constructed + copy/move assignment
+        auto p = TryEmplaceInternal(std::forward<K>(k));
+        if (p.second) {
+          if constexpr (std::is_same<void(typename std::decay<Args>::type...),
+                                     void(mapped_type)>::value) {
+            // Avoid the temporary when the input is the right type.
+            p.first->second = (std::forward<Args>(args), ...);
+          } else {
+            p.first->second = mapped_type(std::forward<Args>(args)...);
+          }
+        }
+        return p;
+      }
+    } else {
+      // Case 2: `mapped_type` is not arena constructible. Using in-place
+      // construction.
+      return TryEmplaceInternal(std::forward<K>(k),
                                 std::forward<Args>(args)...);
+    }
   }
   std::pair<iterator, bool> insert(init_type&& value)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1599,7 +1603,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename... Args>
   std::pair<iterator, bool> emplace(Args&&... args)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return EmplaceInternal(Rank0{}, std::forward<Args>(args)...);
+    // We try to construct `init_type` from `Args` with a fall back to
+    // `value_type`. The latter is less desired as it unconditionally makes a
+    // copy of `value_type::first`.
+    if constexpr (std::is_constructible<init_type, Args...>::value) {
+      return insert(init_type(std::forward<Args>(args)...));
+    } else {
+      return insert(value_type(std::forward<Args>(args)...));
+    }
   }
   template <class InputIt>
   void insert(InputIt first, InputIt last) {
@@ -1687,9 +1698,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
-  struct Rank1 {};
-  struct Rank0 : Rank1 {};
-
   // Linked-list nodes, as one would expect for a chaining hash table.
   struct Node : Base::KeyNode {
     using key_type = Key;
@@ -1722,20 +1730,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   size_t SpaceUsedInternal() const {
     return this->SpaceUsedInTable(sizeof(Node));
-  }
-
-  // We try to construct `init_type` from `Args` with a fall back to
-  // `value_type`. The latter is less desired as it unconditionally makes a copy
-  // of `value_type::first`.
-  template <typename... Args>
-  auto EmplaceInternal(Rank0, Args&&... args) ->
-      typename std::enable_if<std::is_constructible<init_type, Args...>::value,
-                              std::pair<iterator, bool>>::type {
-    return insert(init_type(std::forward<Args>(args)...));
-  }
-  template <typename... Args>
-  std::pair<iterator, bool> EmplaceInternal(Rank1, Args&&... args) {
-    return insert(value_type(std::forward<Args>(args)...));
   }
 
   template <typename K, typename... Args>
@@ -1775,47 +1769,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     ++this->num_elements_;
     return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
                           true);
-  }
-
-  // A helper function to perform an assignment of `mapped_type`.
-  // If the first argument is true, then it is a regular assignment.
-  // Otherwise, we first create a temporary and then perform an assignment.
-  template <typename V>
-  static void AssignMapped(std::true_type, mapped_type& mapped, V&& v) {
-    mapped = std::forward<V>(v);
-  }
-  template <typename... Args>
-  static void AssignMapped(std::false_type, mapped_type& mapped,
-                           Args&&... args) {
-    mapped = mapped_type(std::forward<Args>(args)...);
-  }
-
-  // Case 1: `mapped_type` is arena constructible. A temporary object is
-  // created and then (if `Args` are not empty) assigned to a mapped value
-  // that was created with the arena.
-  template <typename K>
-  std::pair<iterator, bool> ArenaAwareTryEmplace(std::true_type, K&& k) {
-    // case 1.1: "default" constructed (e.g. from arena only).
-    return TryEmplaceInternal(std::forward<K>(k));
-  }
-  template <typename K, typename... Args>
-  std::pair<iterator, bool> ArenaAwareTryEmplace(std::true_type, K&& k,
-                                                 Args&&... args) {
-    // case 1.2: "default" constructed + copy/move assignment
-    auto p = TryEmplaceInternal(std::forward<K>(k));
-    if (p.second) {
-      AssignMapped(std::is_same<void(typename std::decay<Args>::type...),
-                                void(mapped_type)>(),
-                   p.first->second, std::forward<Args>(args)...);
-    }
-    return p;
-  }
-  // Case 2: `mapped_type` is not arena constructible. Using in-place
-  // construction.
-  template <typename... Args>
-  std::pair<iterator, bool> ArenaAwareTryEmplace(std::false_type,
-                                                 Args&&... args) {
-    return TryEmplaceInternal(std::forward<Args>(args)...);
   }
 
   using Base::arena;

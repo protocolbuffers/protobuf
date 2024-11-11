@@ -581,31 +581,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // which needs to declare Map as friend of generated message.
   template <typename T, typename... Args>
   static void CreateInArenaStorage(T* ptr, Arena* arena, Args&&... args) {
-    CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>(),
-                                 std::forward<Args>(args)...);
-    if (ABSL_PREDICT_TRUE(arena != nullptr)) {
-      RegisterDestructorInternal(ptr, arena, is_destructor_skippable<T>());
+    if constexpr (is_arena_constructable<T>::value) {
+      InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
+    } else {
+      new (ptr) T(std::forward<Args>(args)...);
     }
-  }
 
-  template <typename T, typename... Args>
-  static void CreateInArenaStorageInternal(T* ptr, Arena* arena,
-                                           std::true_type, Args&&... args) {
-    InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
-  }
-  template <typename T, typename... Args>
-  static void CreateInArenaStorageInternal(T* ptr, Arena* /* arena */,
-                                           std::false_type, Args&&... args) {
-    new (ptr) T(std::forward<Args>(args)...);
-  }
-
-  template <typename T>
-  static void RegisterDestructorInternal(T* /* ptr */, Arena* /* arena */,
-                                         std::true_type) {}
-  template <typename T>
-  static void RegisterDestructorInternal(T* ptr, Arena* arena,
-                                         std::false_type) {
-    arena->OwnDestructor(ptr);
+    if constexpr (!is_destructor_skippable<T>::value) {
+      if (ABSL_PREDICT_TRUE(arena != nullptr)) {
+        arena->OwnDestructor(ptr);
+      }
+    }
   }
 
   // Implementation for GetArena(). Only message objects with
