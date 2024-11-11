@@ -55,17 +55,19 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
 
 bool upb_Message_NextUnknown(const upb_Message* msg, upb_StringView* data,
                              uintptr_t* iter) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in && *iter == kUpb_Message_UnknownBegin) {
-    data->size = in->unknown_end - message_overhead;
-    data->data = (char*)(in + 1);
-    (*iter)++;
-    return true;
-  } else {
-    data->size = 0;
-    data->data = NULL;
-    return false;
+    size_t len = in->unknown_end - message_overhead;
+    if (len != 0) {
+      data->size = len;
+      data->data = (const char*)(in + 1);
+      (*iter)++;
+      return true;
+    }
   }
+  data->size = 0;
+  data->data = NULL;
+  return false;
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
