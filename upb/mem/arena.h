@@ -44,6 +44,9 @@ UPB_API void upb_Arena_Free(upb_Arena* a);
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
+// Returns the upb_alloc used by the arena.
+UPB_API upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a);
+
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
