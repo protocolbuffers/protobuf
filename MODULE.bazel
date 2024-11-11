@@ -30,7 +30,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_cc",
-    version = "0.0.13",
+    version = "0.0.16",
 )
 
 bazel_dep(
@@ -40,7 +40,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_java",
-    version = "7.12.2",
+    version = "8.3.2",
 )
 
 bazel_dep(
