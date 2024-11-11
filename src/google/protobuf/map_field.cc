@@ -158,10 +158,15 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   size_t size = 0;
   if (auto* p = maybe_payload()) {
-    {
-      absl::MutexLock lock(&p->mutex);
-      size = SpaceUsedExcludingSelfNoLock();
-    }
+    absl::MutexLock lock(&p->mutex);
+    // Measure the map under the lock, because there could be some repeated
+    // field data that might be sync'd back into the map.
+    size = SpaceUsedExcludingSelfNoLock();
+    size += p->repeated_field.SpaceUsedExcludingSelfLong();
+    ConstAccess();
+  } else {
+    // Only measure the map without the repeated field, because it is not there.
+    size = SpaceUsedExcludingSelfNoLock();
     ConstAccess();
   }
   return size;
@@ -177,13 +182,6 @@ bool MapFieldBase::IsMapValid() const {
 bool MapFieldBase::IsRepeatedFieldValid() const {
   ConstAccess();
   return state() != STATE_MODIFIED_MAP;
-}
-
-void MapFieldBase::SetMapDirty() {
-  MutableAccess();
-  // These are called by (non-const) mutator functions. So by our API it's the
-  // callers responsibility to have these calls properly ordered.
-  payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SetRepeatedDirty() {
