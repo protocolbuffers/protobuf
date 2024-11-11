@@ -106,7 +106,7 @@ mod tests {
 
             let mut out = upb_MessageValue::zeroed();
             assert!(upb_Map_Get(map, upb_MessageValue { bool_val: true }, &mut out));
-            assert!(matches!(out, upb_MessageValue { double_val: 4.0 }));
+            assert_eq!(out.double_val, 4.0);
         }
     }
 }
