@@ -11,8 +11,6 @@ package hpb_unittest;
 
 import "google/protobuf/compiler/hpb/tests/no_package.proto";
 
-// option java_multiple_files = true;
-
 message MyMessage {
   MessageWithEnumUpbTest my_type = 1;
 }
