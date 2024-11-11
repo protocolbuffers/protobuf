@@ -8,7 +8,10 @@
 """Internal rules for building upb."""
 
 _DEFAULT_CPPOPTS = []
-_DEFAULT_COPTS = []
+_DEFAULT_COPTS = [
+    # this is a compile error in C++ clang and GNU C, but not clang C by default
+    "-Werror=incompatible-pointer-types",
+]
 
 _DEFAULT_CPPOPTS.extend([
     "-Wextra",
