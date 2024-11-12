@@ -69,7 +69,8 @@ class PROTOC_EXPORT Subprocess {
   // The file handles for our end of the child's pipes.  We close each and
   // set it to NULL when no longer needed.
   HANDLE child_stdin_;
-  HANDLE child_stdout_;
+  HANDLE child_stout_;
+  HANDLE child_stderr_;
 
 #else  // _WIN32
   pid_t child_pid_;
@@ -78,6 +79,7 @@ class PROTOC_EXPORT Subprocess {
   // set it to -1 when no longer needed.
   int child_stdin_;
   int child_stdout_;
+  int child_stderr_;
 
 #endif  // !_WIN32
 };

@@ -277,7 +277,7 @@ std::string Subprocess::Win32ErrorMessage(DWORD error_code) {
 #else  // _WIN32
 
 Subprocess::Subprocess()
-    : child_pid_(-1), child_stdin_(-1), child_stdout_(-1) {}
+    : child_pid_(-1), child_stdin_(-1), child_stdout_(-1), child_stderr_(-1) {}
 
 Subprocess::~Subprocess() {
   if (child_stdin_ != -1) {
@@ -285,6 +285,9 @@ Subprocess::~Subprocess() {
   }
   if (child_stdout_ != -1) {
     close(child_stdout_);
+  }
+  if (child_stderr_ != -1) {
+    close(child_stderr_);
   }
 }
 
@@ -305,9 +308,11 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // [0] is read end, [1] is write end.
   int stdin_pipe[2];
   int stdout_pipe[2];
+  int stderr_pipe[2];
 
   ABSL_CHECK(pipe(stdin_pipe) != -1);
   ABSL_CHECK(pipe(stdout_pipe) != -1);
+  ABSL_CHECK(pipe(stderr_pipe) != -1);
 
   char* argv[2] = {portable_strdup(program.c_str()), nullptr};
 
@@ -318,11 +323,14 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     // We are the child.
     dup2(stdin_pipe[0], STDIN_FILENO);
     dup2(stdout_pipe[1], STDOUT_FILENO);
+    dup2(stderr_pipe[1], STDERR_FILENO);
 
     close(stdin_pipe[0]);
     close(stdin_pipe[1]);
     close(stdout_pipe[0]);
     close(stdout_pipe[1]);
+    close(stderr_pipe[0]);
+    close(stderr_pipe[1]);
 
     switch (search_mode) {
       case SEARCH_PATH:
@@ -352,9 +360,11 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
     close(stdin_pipe[0]);
     close(stdout_pipe[1]);
+    close(stderr_pipe[1]);
 
     child_stdin_ = stdin_pipe[1];
     child_stdout_ = stdout_pipe[0];
+    child_stderr_ = stderr_pipe[0];
   }
 }
 
@@ -374,17 +384,21 @@ bool Subprocess::Communicate(const Message& input, Message* output,
     return false;
   }
   std::string output_data;
+  std::string output_error_data;
 
   int input_pos = 0;
-  int max_fd = std::max(child_stdin_, child_stdout_);
+  int max_fd = std::max(std::max(child_stdin_, child_stdout_), child_stderr_);
 
-  while (child_stdout_ != -1) {
+  while (child_stdout_ != -1 || child_stderr_ != -1) {
     fd_set read_fds;
     fd_set write_fds;
     FD_ZERO(&read_fds);
     FD_ZERO(&write_fds);
     if (child_stdout_ != -1) {
       FD_SET(child_stdout_, &read_fds);
+    }
+    if (child_stderr_ != -1) {
+      FD_SET(child_stderr_, &read_fds);
     }
     if (child_stdin_ != -1) {
       FD_SET(child_stdin_, &write_fds);
@@ -429,6 +443,19 @@ bool Subprocess::Communicate(const Message& input, Message* output,
         child_stdout_ = -1;
       }
     }
+
+    if (child_stderr_ != -1 && FD_ISSET(child_stderr_, &read_fds)) {
+      char buffer[4096];
+      int n = read(child_stderr_, buffer, sizeof(buffer));
+
+      if (n > 0) {
+        output_error_data.append(buffer, n);
+      } else {
+        // We're done reading.  Close.
+        close(child_stderr_);
+        child_stderr_ = -1;
+      }
+    }
   }
 
   if (child_stdin_ != -1) {
@@ -451,22 +478,31 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   if (WIFEXITED(status)) {
     if (WEXITSTATUS(status) != 0) {
       int error_code = WEXITSTATUS(status);
-      *error =
-          absl::Substitute("Plugin failed with status code $0.", error_code);
+      *error = absl::StrCat(
+          absl::Substitute(
+              "Plugin failed with status code $0.\nError output:\n",
+              error_code),
+          output_error_data);
       return false;
     }
   } else if (WIFSIGNALED(status)) {
     int signal = WTERMSIG(status);
-    *error = absl::Substitute("Plugin killed by signal $0.", signal);
+    *error = absl::StrCat(
+        absl::Substitute("Plugin killed by signal $0.\nError output:\n",
+                         signal),
+        output_error_data);
     return false;
   } else {
-    *error = "Neither WEXITSTATUS nor WTERMSIG is true?";
+    *error = absl::StrCat(
+        "Neither WEXITSTATUS nor WTERMSIG is true?\nError output:\n",
+        output_error_data);
     return false;
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = absl::StrCat("Plugin output is unparseable: ",
-                          absl::CEscape(output_data));
+    *error = absl::StrCat(
+        "Plugin output is unparseable: ", absl::CEscape(output_data),
+        "\n\nError output:\n", output_error_data);
     return false;
   }
 
