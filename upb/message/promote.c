@@ -110,8 +110,21 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   }
   ext->data.msg_val = extension_msg;
   value->msg_val = extension_msg;
-  const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
-  upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
+  // Adding to extensions may have invalidated our previous pointers to unknowns
+  // This second search won't be necessary once unknown iteration is pointer
+  // stable, because it'll be separate storage from extensions and won't realloc
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+    if (data.size < ofs) {
+      ofs -= data.size;
+    } else {
+      data.data += ofs;
+      data.size = result.len;
+      break;
+    }
+  }
+  upb_Message_DeleteUnknown(msg, &data, &iter);
   return kUpb_GetExtension_Ok;
 }
 
@@ -123,11 +136,10 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit) {
   depth_limit = depth_limit ? depth_limit : 100;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-
   upb_FindUnknownRet ret;
+  ret.iter = kUpb_Message_UnknownBegin;
   upb_StringView data;
-  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+  while (upb_Message_NextUnknown(msg, &data, &ret.iter)) {
     upb_EpsCopyInputStream stream;
     const char* ptr = data.data;
     upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
@@ -154,6 +166,7 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   ret.status = kUpb_FindUnknown_NotPresent;
   ret.ptr = NULL;
   ret.len = 0;
+  ret.iter = kUpb_Message_UnknownBegin;
   return ret;
 }
 
@@ -266,7 +279,9 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
                                                 decode_options, arena);
         if (ret.status == kUpb_UnknownToMessage_Ok) {
           message = ret.message;
-          upb_Message_DeleteUnknown(msg, unknown_data, unknown_size);
+          upb_StringView del =
+              upb_StringView_FromDataAndSize(unknown_data, unknown_size);
+          upb_Message_DeleteUnknown(msg, &del, &(unknown.iter));
         }
       } break;
       case kUpb_FindUnknown_ParseError:
@@ -322,7 +337,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         if (!upb_Array_Append(repeated_messages, value, arena)) {
           return kUpb_UnknownToMessage_OutOfMemory;
         }
-        upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
+        upb_StringView del =
+            upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
+        upb_Message_DeleteUnknown(msg, &del, &unknown.iter);
       } else {
         return ret.status;
       }
@@ -358,7 +375,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     bool insert_success = upb_Message_SetMapEntry(map, mini_table, field,
                                                   map_entry_message, arena);
     if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
-    upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
+    upb_StringView del =
+        upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
+    upb_Message_DeleteUnknown(msg, &del, &unknown.iter);
   }
   return kUpb_UnknownToMessage_Ok;
 }
