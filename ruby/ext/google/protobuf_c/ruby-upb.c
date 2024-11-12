@@ -3926,24 +3926,31 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
   }
 }
 
-void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
+bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
+                               uintptr_t* iter) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(*iter == kUpb_Message_UnknownBegin + 1);
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
 
 #ifndef NDEBUG
   size_t full_unknown_size;
   const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
-  UPB_ASSERT((uintptr_t)data >= (uintptr_t)full_unknown);
-  UPB_ASSERT((uintptr_t)data < (uintptr_t)(full_unknown + full_unknown_size));
-  UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
-  UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
+  UPB_ASSERT((uintptr_t)data->data >= (uintptr_t)full_unknown);
+  UPB_ASSERT((uintptr_t)data->data <
+             (uintptr_t)(full_unknown + full_unknown_size));
+  UPB_ASSERT((uintptr_t)(data->data + data->size) > (uintptr_t)data->data);
+  UPB_ASSERT((uintptr_t)(data->data + data->size) <=
+             (uintptr_t)internal_unknown_end);
 #endif
-
-  if ((data + len) != internal_unknown_end) {
-    memmove((char*)data, data + len, internal_unknown_end - data - len);
+  const char* end = data->data + data->size;
+  size_t offset = data->data - (const char*)in;
+  if (end != internal_unknown_end) {
+    memmove(UPB_PTR_AT(in, offset, char), end, internal_unknown_end - end);
   }
-  in->unknown_end -= len;
+  in->unknown_end -= data->size;
+  data->size = in->unknown_end - offset;
+  return data->size != 0;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
