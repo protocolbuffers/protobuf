@@ -85,6 +85,25 @@ config_setting(
 )
 
 config_setting(
+    name = "linux_s390x_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "linux-s390x"},
+)
+
+config_setting(
+    name = "linux_s390x_local",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+config_setting(
     name = "osx_x86_64_release",
     flag_values = {
         "//toolchain:release": "True",
@@ -328,6 +347,8 @@ py_wheel(
         ":linux_x86_64_release": "manylinux2014_x86_64",
         ":linux_aarch64_local": "linux_aarch64",
         ":linux_aarch64_release": "manylinux2014_aarch64",
+        ":linux_s390x_local": "linux_s390x",
+        ":linux_s390x_release": "manylinux2014_s390x",
         ":osx_universal2": "macosx_10_9_universal2",
         ":osx_aarch64": "macosx_11_0_arm64",
         ":windows_x86_32": "win32",
@@ -458,6 +479,7 @@ py_dist(
         "win64": "310",
         "linux-x86_64": "38",
         "linux-aarch_64": "38",
+        "linux-s390x": "38",
         "osx-universal2": "38",
     },
     # LINT.ThenChange(:python_tag)
