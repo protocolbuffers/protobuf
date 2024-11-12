@@ -18,33 +18,23 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
-/// Everything in `__public` is re-exported in `protobuf.rs`.
-/// These are the items protobuf users can access directly.
-#[doc(hidden)]
-pub mod __public {
-    pub use crate::codegen_traits::{
-        create::Parse,
-        interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
-        read::Serialize,
-        write::{Clear, ClearAndParse, MergeFrom},
-        Message, MessageMut, MessageView,
-    };
-    pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
-    pub use crate::r#enum::{Enum, UnknownEnumValue};
-    pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
-    pub use crate::optional::Optional;
-    pub use crate::proto;
-    pub use crate::proxied::{
-        AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy,
-        View, ViewProxy,
-    };
-    pub use crate::repeated::{
-        ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
-    };
-    pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
-    pub use crate::{ParseError, SerializeError};
-}
-pub use __public::*;
+pub use crate::codegen_traits::{
+    create::Parse,
+    interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
+    read::Serialize,
+    write::{Clear, ClearAndParse, MergeFrom},
+    Message, MessageMut, MessageView,
+};
+pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
+pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+pub use crate::optional::Optional;
+pub use crate::proxied::{
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    ViewProxy,
+};
+pub use crate::r#enum::{Enum, UnknownEnumValue};
+pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
 
 pub mod prelude;
 

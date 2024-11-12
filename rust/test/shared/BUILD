@@ -517,3 +517,27 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "no_internal_access_test_cpp",
+    srcs = ["no_internal_access_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_cpp_export",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "no_internal_access_test_upb",
+    srcs = ["no_internal_access_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "@crate_index//:googletest",
+    ],
+)
