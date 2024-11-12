@@ -142,8 +142,8 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
   upb_MessageValue val1;
 
   // Iterate over all extensions for msg1, and search msg2 for each extension.
-  size_t iter1 = kUpb_Extension_Begin;
-  while (UPB_PRIVATE(_upb_Message_NextExtension)(msg1, m, &e, &val1, &iter1)) {
+  size_t iter1 = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtension(msg1, &e, &val1, &iter1)) {
     const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
     if (!ext2) return false;
 

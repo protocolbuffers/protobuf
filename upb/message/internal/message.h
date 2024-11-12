@@ -15,11 +15,15 @@
 #ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
 #define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/types.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -100,6 +104,68 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* arena);
+
+#define kUpb_Message_UnknownBegin 0
+#define kUpb_Message_ExtensionBegin 0
+
+UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
+                                        upb_StringView* data, uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (in && *iter == kUpb_Message_UnknownBegin) {
+    size_t len = in->unknown_end - sizeof(upb_Message_Internal);
+    if (len != 0) {
+      data->size = len;
+      data->data = (const char*)(in + 1);
+      (*iter)++;
+      return true;
+    }
+  }
+  data->size = 0;
+  data->data = NULL;
+  return false;
+}
+
+UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
+  upb_StringView data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  return upb_Message_NextUnknown(msg, &data, &iter);
+}
+
+UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter) {
+  size_t count;
+  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+  size_t i = *iter;
+  if (i < count) {
+    // Extensions are stored in reverse wire order, so to iterate in wire order,
+    // we need to iterate backwards.
+    *out_e = exts[count - 1 - i].ext;
+    *out_v = exts[count - 1 - i].data;
+    *iter = i + 1;
+    return true;
+  }
+
+  return false;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter) {
+  size_t count;
+  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+  size_t i = *iter;
+  if (i < count) {
+    // Extensions are stored in reverse wire order
+    *out_e = exts[i].ext;
+    *out_v = exts[i].data;
+    *iter = i + 1;
+    return true;
+  }
+
+  return false;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

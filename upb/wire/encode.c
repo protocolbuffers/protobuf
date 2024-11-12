@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
@@ -27,6 +28,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -523,32 +525,33 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
   }
 }
 
-static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
+static void encode_msgset_item(upb_encstate* e,
+                               const upb_MiniTableExtension* ext,
+                               const upb_MessageValue ext_val) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
-  encode_message(e, ext->data.msg_val,
-                 upb_MiniTableExtension_GetSubMessage(ext->ext), &size);
+  encode_message(e, ext_val.msg_val, upb_MiniTableExtension_GetSubMessage(ext),
+                 &size);
   encode_varint(e, size);
   encode_tag(e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
-  encode_varint(e, upb_MiniTableExtension_Number(ext->ext));
+  encode_varint(e, upb_MiniTableExtension_Number(ext));
   encode_tag(e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
-static void encode_ext(upb_encstate* e, const upb_Extension* ext,
-                       bool is_message_set) {
+static void encode_ext(upb_encstate* e, const upb_MiniTableExtension* ext,
+                       upb_MessageValue ext_val, bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
-    encode_msgset_item(e, ext);
+    encode_msgset_item(e, ext, ext_val);
   } else {
     upb_MiniTableSubInternal sub;
-    if (upb_MiniTableField_IsSubMessage(&ext->ext->UPB_PRIVATE(field))) {
-      sub.UPB_PRIVATE(submsg) = &ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
+    if (upb_MiniTableField_IsSubMessage(&ext->UPB_PRIVATE(field))) {
+      sub.UPB_PRIVATE(submsg) = &ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
     } else {
-      sub.UPB_PRIVATE(subenum) =
-          ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
+      sub.UPB_PRIVATE(subenum) = ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
     }
-    encode_field(e, &ext->data.UPB_PRIVATE(ext_msg_val), &sub,
-                 &ext->ext->UPB_PRIVATE(field));
+    encode_field(e, &ext_val.UPB_PRIVATE(ext_msg_val), &sub,
+                 &ext->UPB_PRIVATE(field));
   }
 }
 
@@ -568,7 +571,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     size_t unknown_size = 0;
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_StringView unknown;
-    // Need to write in reverse order, but list is single-linked; scan to
+    // Need to write in reverse order, but iteration is in-order; scan to
     // reserve capacity up front, then write in-order
     while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
       unknown_size += unknown.size;
@@ -585,24 +588,33 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   }
 
   if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
-    /* Encode all extensions together. Unlike C++, we do not attempt to keep
-     * these in field number order relative to normal fields or even to each
-     * other. */
-    size_t ext_count;
-    const upb_Extension* ext =
-        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
-    if (ext_count) {
-      if (e->options & kUpb_EncodeOption_Deterministic) {
-        _upb_sortedmap sorted;
-        _upb_mapsorter_pushexts(&e->sorter, ext, ext_count, &sorted);
-        while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-        }
-        _upb_mapsorter_popmap(&e->sorter, &sorted);
-      } else {
-        const upb_Extension* end = ext + ext_count;
-        for (; ext != end; ext++) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in) {
+      /* Encode all extensions together. Unlike C++, we do not attempt to keep
+       * these in field number order relative to normal fields or even to each
+       * other. */
+      size_t ext_count = upb_Message_ExtensionCount(msg);
+      if (ext_count) {
+        if (e->options & kUpb_EncodeOption_Deterministic) {
+          _upb_sortedmap sorted;
+          if (!_upb_mapsorter_pushexts(&e->sorter, in, ext_count, &sorted)) {
+            // TODO: b/378744096 - handle alloc failure
+          }
+          const upb_Extension* ext;
+          while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+            encode_ext(e, ext->ext, ext->data,
+                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+          }
+          _upb_mapsorter_popmap(&e->sorter, &sorted);
+        } else {
+          const upb_MiniTableExtension* ext;
+          upb_MessageValue ext_val;
+          uintptr_t iter = kUpb_Message_ExtensionBegin;
+          while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+              msg, &ext, &ext_val, &iter)) {
+            encode_ext(e, ext, ext_val,
+                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+          }
         }
       }
     }
