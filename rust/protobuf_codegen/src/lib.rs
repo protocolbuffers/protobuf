@@ -93,6 +93,11 @@ impl CodeGen {
         } else {
             protoc_gen_upb_minitable_path().expect("To be a supported platform")
         };
+
+        for include in &self.includes {
+            println!("cargo:rerun-if-changed={}", include.display());
+        }
+
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
             .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
             .arg(format!(
@@ -119,6 +124,7 @@ impl CodeGen {
         for entry in WalkDir::new(&self.output_dir) {
             if let Ok(entry) = entry {
                 let path = entry.path();
+                println!("cargo:rerun-if-changed={}", path.display());
                 let file_name = path.file_name().unwrap().to_str().unwrap();
                 if file_name.ends_with(".upb_minitable.c") {
                     cc_build.file(path);
