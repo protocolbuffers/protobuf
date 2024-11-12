@@ -5,10 +5,6 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
-# Second self-reference that makes it possible to load proto rules from @protobuf.
-# buildifier: disable=duplicated-name
-local_repository(name = "protobuf", path = ".")
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -94,6 +90,12 @@ apple_rules_dependencies()
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 
 apple_support_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
 
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
