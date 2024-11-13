@@ -722,12 +722,20 @@ PHP_METHOD(Message, mergeFromJsonString) {
   }
 
   upb_Status_Clear(&status);
-  if (!upb_JsonDecode(data, data_len, intern->msg, intern->desc->msgdef,
-                      DescriptorPool_GetSymbolTable(), options, arena,
-                      &status)) {
-    zend_throw_exception_ex(NULL, 0, "Error occurred during parsing: %s",
-                            upb_Status_ErrorMessage(&status));
-    return;
+  int result = upb_JsonDecodeDetectingNonconformance(
+      data, data_len, intern->msg, intern->desc->msgdef,
+      DescriptorPool_GetSymbolTable(), options, arena, &status);
+
+  switch (result) {
+    case kUpb_JsonDecodeResult_Ok:
+      break;
+    case kUpb_JsonDecodeResult_OkWithEmptyStringNumerics:
+      zend_error(E_USER_WARNING, "%s", upb_Status_ErrorMessage(&status));
+      return;
+    case kUpb_JsonDecodeResult_Error:
+      zend_throw_exception_ex(NULL, 0, "Error occurred during parsing: %s",
+                              upb_Status_ErrorMessage(&status));
+      return;
   }
 }
 
