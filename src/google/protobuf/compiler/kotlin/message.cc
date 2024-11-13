@@ -129,8 +129,8 @@ void MessageGenerator::GenerateMembers(io::Printer* printer) const {
   printer->Print(
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
-      "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
-      "}._build()\n",
+      "  $message_kt$.Dsl._create($message$.newBuilder()).apply(block)"
+      "._build()\n",
       "camelcase_name", name_resolver_->GetKotlinFactoryName(descriptor_),
       "message_kt",
       java::EscapeKotlinKeywords(
@@ -167,7 +167,7 @@ void MessageGenerator::GenerateTopLevelMembers(io::Printer* printer) const {
   printer->Print(
       "public inline fun $message$.copy(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
-      "  $message_kt$.Dsl._create(this.toBuilder()).apply { block() "
+      "  $message_kt$.Dsl._create(this.toBuilder()).apply(block)"
       "}._build()\n\n",
       "message",
       java::EscapeKotlinKeywords(
