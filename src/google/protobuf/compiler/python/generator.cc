@@ -708,67 +708,6 @@ void Generator::PrintMessageDescriptors() const {
   }
 }
 
-void Generator::PrintServiceDescriptors() const {
-  for (int i = 0; i < file_->service_count(); ++i) {
-    PrintServiceDescriptor(*file_->service(i));
-  }
-}
-
-void Generator::PrintServices() const {
-  for (int i = 0; i < file_->service_count(); ++i) {
-    PrintServiceClass(*file_->service(i));
-    PrintServiceStub(*file_->service(i));
-    printer_->Print("\n");
-  }
-}
-
-void Generator::PrintServiceDescriptor(
-    const ServiceDescriptor& descriptor) const {
-  absl::flat_hash_map<absl::string_view, std::string> m;
-  m["service_name"] = ModuleLevelServiceDescriptorName(descriptor);
-  m["name"] = descriptor.name();
-  m["file"] = kDescriptorKey;
-  printer_->Print(m, "$service_name$ = $file$.services_by_name['$name$']\n");
-}
-
-void Generator::PrintDescriptorKeyAndModuleName(
-    const ServiceDescriptor& descriptor) const {
-  std::string name = ModuleLevelServiceDescriptorName(descriptor);
-  printer_->Print("$descriptor_key$ = $descriptor_name$,\n", "descriptor_key",
-                  kDescriptorKey, "descriptor_name", name);
-  std::string module_name = ModuleName(file_->name());
-  if (!opensource_runtime_) {
-    module_name =
-        std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
-  }
-  printer_->Print("__module__ = '$module_name$'\n", "module_name", module_name);
-}
-
-void Generator::PrintServiceClass(const ServiceDescriptor& descriptor) const {
-  // Print the service.
-  printer_->Print(
-      "$class_name$ = service_reflection.GeneratedServiceType("
-      "'$class_name$', (_service.Service,), dict(\n",
-      "class_name", descriptor.name());
-  printer_->Indent();
-  Generator::PrintDescriptorKeyAndModuleName(descriptor);
-  printer_->Print("))\n\n");
-  printer_->Outdent();
-}
-
-void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
-  // Print the service stub.
-  printer_->Print(
-      "$class_name$_Stub = "
-      "service_reflection.GeneratedServiceStubType("
-      "'$class_name$_Stub', ($class_name$,), dict(\n",
-      "class_name", descriptor.name());
-  printer_->Indent();
-  Generator::PrintDescriptorKeyAndModuleName(descriptor);
-  printer_->Print("))\n\n");
-  printer_->Outdent();
-}
-
 // Prints statement assigning ModuleLevelDescriptorName(message_descriptor)
 // to a Python Descriptor object for message_descriptor.
 //
@@ -1009,18 +948,6 @@ void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
   const char file_descriptor_template[] =
       "$descriptor_name$.message_types_by_name['$message_name$'] = "
       "$message_descriptor_name$\n";
-  printer_->Print(m, file_descriptor_template);
-}
-
-void Generator::AddServiceToFileDescriptor(
-    const ServiceDescriptor& descriptor) const {
-  absl::flat_hash_map<absl::string_view, std::string> m;
-  m["descriptor_name"] = kDescriptorKey;
-  m["service_name"] = descriptor.name();
-  m["service_descriptor_name"] = ModuleLevelServiceDescriptorName(descriptor);
-  const char file_descriptor_template[] =
-      "$descriptor_name$.services_by_name['$service_name$'] = "
-      "$service_descriptor_name$\n";
   printer_->Print(m, file_descriptor_template);
 }
 
