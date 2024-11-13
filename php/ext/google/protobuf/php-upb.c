@@ -3944,6 +3944,14 @@ bool upb_Message_NextUnknown(const upb_Message* msg, upb_StringView* data,
   return false;
 }
 
+bool upb_Message_HasUnknown(const upb_Message* msg) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (in) {
+    return in->unknown_end > message_overhead;
+  }
+  return false;
+}
+
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
