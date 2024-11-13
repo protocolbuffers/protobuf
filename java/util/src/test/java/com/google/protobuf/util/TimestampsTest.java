@@ -11,7 +11,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.protobuf.util.DurationsTest.duration;
 import static org.junit.Assert.fail;
 
+import com.google.common.annotations.GwtIncompatible;
 import com.google.common.collect.Lists;
+import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.text.ParseException;
@@ -51,6 +53,8 @@ public class TimestampsTest {
       Timestamp.newBuilder().setSeconds(Long.MIN_VALUE).setNanos(Integer.MIN_VALUE).build();
 
   @Test
+  @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ObjCIncompatible
   public void testNow() {
     Timestamp now = Timestamps.now();
     long epochSeconds = System.currentTimeMillis() / 1000;
@@ -59,6 +63,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ObjCIncompatible
   public void testNowWithSubMillisecondPrecision() {
     try {
       // throws if we're not on Java9+
@@ -110,6 +116,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampStringFormat() throws Exception {
     Timestamp start = Timestamps.parse("0001-01-01T00:00:00Z");
     Timestamp end = Timestamps.parse("9999-12-31T23:59:59.999999999Z");
@@ -159,6 +167,8 @@ public class TimestampsTest {
   private volatile boolean stopParsingThreads = false;
   private volatile String errorMessage = "";
 
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   private class ParseTimestampThread extends Thread {
     private final String[] strings;
     private final Timestamp[] values;
@@ -192,6 +202,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampConcurrentParsing() throws Exception {
     String[] timestampStrings =
         new String[] {
@@ -225,6 +237,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatValueTooSmall() throws Exception {
     try {
       // Value too small.
@@ -237,6 +251,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatValueTooLarge() throws Exception {
     try {
       // Value too large.
@@ -249,6 +265,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatNanosTooSmall() throws Exception {
     try {
       // Invalid nanos value.
@@ -260,6 +278,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatNanosTooLarge() throws Exception {
     try {
       // Invalid nanos value.
@@ -271,6 +291,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatDateTooSmall() {
     try {
       Timestamps.parse("0000-01-01T00:00:00Z");
@@ -288,6 +310,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatDateTooLarge() {
     try {
       Timestamps.parse("10000-01-01T00:00:00Z");
@@ -304,6 +328,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatMissingT() {
     try {
       Timestamps.parse("1970-01-01 00:00:00Z");
@@ -320,6 +346,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidFormatMissingZ() {
     try {
       Timestamps.parse("1970-01-01T00:00:00");
@@ -336,6 +364,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidOffset() {
     try {
       Timestamps.parse("1970-01-01T00:00:00+0000");
@@ -352,6 +382,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidOffsetWithDot() {
     try {
       Timestamps.parse("2021-08-19T10:24:25-07.:00");
@@ -368,6 +400,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidTrailingText() {
     try {
       Timestamps.parse("1970-01-01T00:00:00Z0");
@@ -384,6 +418,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampInvalidNanoSecond() {
     try {
       Timestamps.parse("1970-01-01T00:00:00.ABCZ");
@@ -400,6 +436,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testTimestampConversion() throws Exception {
     Timestamp timestamp = Timestamps.parse("1970-01-01T00:00:01.111111111Z");
     assertThat(Timestamps.toNanos(timestamp)).isEqualTo(1111111111);
@@ -431,6 +469,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testFromDate() {
     Date date = new Date(1111);
     Timestamp timestamp = Timestamps.fromDate(date);
@@ -438,6 +478,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Calendar is not supported in non JVM java.time")
+  @J2ObjCIncompatible
   public void testFromDate_after9999CE() {
     // protobuf still requires Java 7 so no java.time :-(
     Calendar calendar = Calendar.getInstance();
@@ -454,6 +496,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Calendar is not supported in non JVM java.time")
+  @J2ObjCIncompatible
   public void testFromDate_beforeYear1() {
     // protobuf still requires Java 7 so no java.time :-(
     Calendar calendar = Calendar.getInstance();
@@ -470,6 +514,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Calendar is not supported in non JVM java.time")
+  @J2ObjCIncompatible
   public void testFromDate_after2262CE() {
     // protobuf still requires Java 7 so no java.time :-(
     Calendar calendar = Calendar.getInstance();
@@ -484,6 +530,8 @@ public class TimestampsTest {
   /* Timestamp only stores integral seconds in the Date parent class and stores the nanosecond
    * adjustment in the Timestamp class. */
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testFromSqlTimestampSubMillisecondPrecision() {
     java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(1111);
     sqlTimestamp.setNanos(sqlTimestamp.getNanos() + 234567);
@@ -492,6 +540,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testFromSqlTimestamp() {
     Date date = new java.sql.Timestamp(1111);
     Timestamp timestamp = Timestamps.fromDate(date);
@@ -499,6 +549,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testFromSqlTimestamp_beforeEpoch() {
     Date date = new java.sql.Timestamp(-1111);
     Timestamp timestamp = Timestamps.fromDate(date);
@@ -506,6 +558,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testFromSqlTimestamp_beforeEpochWholeSecond() {
     Date date = new java.sql.Timestamp(-2000);
     Timestamp timestamp = Timestamps.fromDate(date);
@@ -513,6 +567,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimeOperations() throws Exception {
     Timestamp start = Timestamps.parse("0001-01-01T00:00:00Z");
     Timestamp end = Timestamps.parse("9999-12-31T23:59:59.999999999Z");
@@ -603,6 +659,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testOverflowsArithmeticException() throws Exception {
     try {
       Timestamps.toNanos(Timestamps.parse("9999-12-31T23:59:59.999999999Z"));
@@ -702,6 +760,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testMaxNanosecondsConversion() {
     assertThat(Timestamps.toString(Timestamps.fromNanos(Long.MAX_VALUE)))
         .isEqualTo("2262-04-11T23:47:16.854775807Z");
@@ -726,6 +786,8 @@ public class TimestampsTest {
   }
 
   @Test
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public void testMinNanosecondsConversion() {
     assertThat(Timestamps.toString(Timestamps.fromNanos(Long.MIN_VALUE)))
         .isEqualTo("1677-09-21T00:12:43.145224192Z");

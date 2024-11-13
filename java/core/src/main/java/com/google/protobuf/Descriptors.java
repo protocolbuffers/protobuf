@@ -1297,6 +1297,8 @@ public final class Descriptors {
       // since these are used before feature resolution when parsing java feature set defaults
       // (custom options) into unknown fields.
       if (type == Type.MESSAGE
+          && !(messageType != null && messageType.toProto().getOptions().getMapEntry())
+          && !(containingType != null && containingType.toProto().getOptions().getMapEntry())
           && this.features != null
           && getFeatures().getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
         return Type.GROUP;
@@ -1476,8 +1478,7 @@ public final class Descriptors {
      * been upgraded to editions.
      */
     boolean isGroupLike() {
-      if (getFeatures().getMessageEncoding()
-          != DescriptorProtos.FeatureSet.MessageEncoding.DELIMITED) {
+      if (getType() != Type.GROUP) {
         // Groups are always tag-delimited.
         return false;
       }
@@ -1614,6 +1615,15 @@ public final class Descriptors {
     private final FileDescriptor file;
     private final Descriptor extensionScope;
     private final boolean isProto3Optional;
+
+    private enum Sensitivity {
+      UNKNOWN,
+      SENSITIVE,
+      NOT_SENSITIVE
+    }
+
+    // Caches the result of isSensitive() for performance reasons.
+    private volatile Sensitivity sensitivity = Sensitivity.UNKNOWN;
 
     // Possibly initialized during cross-linking.
     private Type type;
@@ -1787,6 +1797,67 @@ public final class Descriptors {
       file.pool.addSymbol(this);
     }
 
+    @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
+    private boolean isOptionSensitive(FieldDescriptor field, Object value) {
+      if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
+        if (field.isRepeated()) {
+          for (EnumValueDescriptor v : (List<EnumValueDescriptor>) value) {
+            if (v.getOptions().getDebugRedact()) {
+              return true;
+            }
+          }
+        } else {
+          if (((EnumValueDescriptor) value).getOptions().getDebugRedact()) {
+            return true;
+          }
+        }
+      } else if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+        if (field.isRepeated()) {
+          for (Message m : (List<Message>) value) {
+            for (Map.Entry<FieldDescriptor, Object> entry : m.getAllFields().entrySet()) {
+              if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+                return true;
+              }
+            }
+          }
+        } else {
+          for (Map.Entry<FieldDescriptor, Object> entry :
+              ((Message) value).getAllFields().entrySet()) {
+            if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    // Lazily calculates if the field is marked as sensitive. Is only called upon the first
+    // access of the isSensitive() method.
+    boolean isSensitive() {
+      if (sensitivity == Sensitivity.UNKNOWN) {
+        // If the field is directly marked with debug_redact=true, then it is sensitive.
+        synchronized (this) {
+          if (sensitivity == Sensitivity.UNKNOWN) {
+            boolean isSensitive = proto.getOptions().getDebugRedact();
+            if (!isSensitive) {
+              // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
+              // either directly or indirectly via a message option.
+              for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+                  proto.getOptions().getAllFields().entrySet()) {
+                if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+                  isSensitive = true;
+                  break;
+                }
+              }
+            }
+            sensitivity = isSensitive ? Sensitivity.SENSITIVE : Sensitivity.NOT_SENSITIVE;
+          }
+        }
+      }
+      return sensitivity == Sensitivity.SENSITIVE;
+    }
+
     /** See {@link FileDescriptor#resolveAllFeatures}. */
     private void resolveAllFeatures() throws DescriptorValidationException {
       resolveFeatures(proto.getOptions().getFeatures());
@@ -1900,7 +1971,9 @@ public final class Descriptors {
           }
         }
 
-        if (getJavaType() == JavaType.MESSAGE) {
+        // Use raw type since inferred type considers messageType which may not be fully cross
+        // linked yet.
+        if (type.getJavaType() == JavaType.MESSAGE) {
           if (!(typeDescriptor instanceof Descriptor)) {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not a message type.");
@@ -1910,7 +1983,7 @@ public final class Descriptors {
           if (proto.hasDefaultValue()) {
             throw new DescriptorValidationException(this, "Messages can't have default values.");
           }
-        } else if (getJavaType() == JavaType.ENUM) {
+        } else if (type.getJavaType() == JavaType.ENUM) {
           if (!(typeDescriptor instanceof EnumDescriptor)) {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not an enum type.");
@@ -1920,7 +1993,7 @@ public final class Descriptors {
           throw new DescriptorValidationException(this, "Field with primitive type has type_name.");
         }
       } else {
-        if (getJavaType() == JavaType.MESSAGE || getJavaType() == JavaType.ENUM) {
+        if (type.getJavaType() == JavaType.MESSAGE || type.getJavaType() == JavaType.ENUM) {
           throw new DescriptorValidationException(
               this, "Field with message or enum type missing type_name.");
         }
@@ -1941,7 +2014,7 @@ public final class Descriptors {
         }
 
         try {
-          switch (getType()) {
+          switch (type) {
             case INT32:
             case SINT32:
             case SFIXED32:
@@ -2016,7 +2089,7 @@ public final class Descriptors {
         if (isRepeated()) {
           defaultValue = Collections.emptyList();
         } else {
-          switch (getJavaType()) {
+          switch (type.getJavaType()) {
             case ENUM:
               // We guarantee elsewhere that an enum type always has at least
               // one possible value.
@@ -2026,7 +2099,7 @@ public final class Descriptors {
               defaultValue = null;
               break;
             default:
-              defaultValue = getJavaType().defaultDefault;
+              defaultValue = type.getJavaType().defaultDefault;
               break;
           }
         }
@@ -2107,9 +2180,9 @@ public final class Descriptors {
      * present in all runtimes; as of writing, we know that:
      *
      * <ul>
-     *   <li> C++, Java, and C++-based Python share this quirk.
-     *   <li> UPB and UPB-based Python do not.
-     *   <li> PHP and Ruby treat all enums as open regardless of declaration.
+     *   <li>C++, Java, and C++-based Python share this quirk.
+     *   <li>UPB and UPB-based Python do not.
+     *   <li>PHP and Ruby treat all enums as open regardless of declaration.
      * </ul>
      *
      * <p>Care should be taken when using this function to respect the target runtime's enum
@@ -2340,7 +2413,7 @@ public final class Descriptors {
         new Comparator<EnumValueDescriptor>() {
           @Override
           public int compare(EnumValueDescriptor o1, EnumValueDescriptor o2) {
-            return Integer.valueOf(o1.getNumber()).compareTo(o2.getNumber());
+            return Integer.compare(o1.getNumber(), o2.getNumber());
           }
         };
 
@@ -2789,6 +2862,35 @@ public final class Descriptors {
         validateFeatures();
         return;
       }
+
+      // Java features from a custom pool (i.e. buildFrom) may end up in unknown fields or
+      // use a different descriptor from the generated pool used by the Java runtime.
+      boolean hasPossibleCustomJavaFeature = false;
+      for (FieldDescriptor f : unresolvedFeatures.getExtensionFields().keySet()) {
+        if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
+            && f != JavaFeaturesProto.java_.getDescriptor()) {
+          hasPossibleCustomJavaFeature = true;
+          continue;
+        }
+      }
+      boolean hasPossibleUnknownJavaFeature =
+          !unresolvedFeatures.getUnknownFields().isEmpty()
+              && (unresolvedFeatures
+                      .getUnknownFields()
+                      .hasField(JavaFeaturesProto.java_.getNumber())
+              );
+      if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        registry.add(JavaFeaturesProto.java_);
+        ByteString bytes = unresolvedFeatures.toByteString();
+        try {
+          unresolvedFeatures = FeatureSet.parseFrom(bytes, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new DescriptorValidationException(
+              this, "Failed to parse features with Java feature extension registry.", e);
+        }
+      }
+
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
@@ -2819,6 +2921,13 @@ public final class Descriptors {
           && (getFile().getEdition() == Edition.EDITION_PROTO2
               || getFile().getEdition() == Edition.EDITION_PROTO3)) {
         getFile().resolveAllFeaturesImmutable();
+      }
+      if (this.features == null) {
+        throw new NullPointerException(
+            String.format(
+                "Features not yet loaded for %s. This may be caused by a known issue for proto2"
+                    + " dependency descriptors obtained from proto1 (b/362326130)",
+                getFullName()));
       }
       return this.features;
     }

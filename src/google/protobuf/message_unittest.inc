@@ -18,9 +18,10 @@
 #include <sys/types.h>
 
 #include <cmath>
-#include <functional>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <vector>
+#include <string>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -28,10 +29,13 @@
 #include <fstream>
 #include <sstream>
 
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
@@ -48,6 +52,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -142,8 +147,12 @@ TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
-  std::string filename =
-      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
+  std::string filename = absl::StrCat(TestTempDir(), "/golden_message");
+  UNITTEST::TestAllTypes expected_message;
+  TestUtil::SetAllFields(&expected_message);
+  ABSL_CHECK_OK(File::SetContents(
+      filename, expected_message.SerializeAsString(), true));
+
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -155,8 +164,12 @@ TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
-  std::string filename = TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_packed_fields_message");
+  std::string filename = absl::StrCat(TestTempDir(), "/golden_message");
+  UNITTEST::TestPackedTypes expected_message;
+  TestUtil::SetPackedFields(&expected_message);
+  ABSL_CHECK_OK(File::SetContents(
+      filename, expected_message.SerializeAsString(), true));
+
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -353,6 +366,29 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
 }
 
+TEST(MESSAGE_TEST_NAME, ExplicitLazyBadLengthDelimitedSize) {
+  std::string serialized;
+
+  // This is a regression test for a bug in lazy field verification.  It
+  // requires invalid wire format to trigger the bug.
+
+  // NestedMessage optional_lazy_message = 27 [lazy=true];
+  uint32_t tag = internal::WireFormatLite::MakeTag(
+      1, internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  ASSERT_LT(tag, INT8_MAX);
+  serialized.push_back(tag);
+  serialized.push_back(6);
+
+  // bytes bytes_field = 1;
+  serialized.push_back(tag);
+
+  // To trigger this bug, we need an overlong size.
+  serialized.append(5, 0xff);
+
+  UNITTEST::TestLazyMessage parsed;
+  EXPECT_FALSE(parsed.ParseFromString(serialized));
+}
+
 TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {
   UNITTEST::NestedTestAllTypes original, parsed;
   original.mutable_lazy_child()
@@ -382,6 +418,12 @@ TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
   EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
   EXPECT_TRUE(message.has_lazy_child());
   EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
+}
+
+TEST(MESSAGE_TEST_NAME, DefaultInstanceByteSizeLong) {
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().ByteSizeLong(), 0);
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().GetCachedSize(),
+            0);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
@@ -750,88 +792,103 @@ TEST(MESSAGE_TEST_NAME, InitializationErrorString) {
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
 }
 
-TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
+TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
-  EXPECT_EQ(&test_all_types, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
-                                 test_all_types_pointer));
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestRequired>(
-                         test_all_types_pointer));
+  EXPECT_EQ(&test_all_types,
+            DynamicCastMessage<UNITTEST::TestAllTypes>(test_all_types_pointer));
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<UNITTEST::TestRequired>(test_all_types_pointer));
 
   const MessageLite* test_all_types_pointer_const = &test_all_types;
-  EXPECT_EQ(&test_all_types,
-            DynamicCastToGenerated<const UNITTEST::TestAllTypes>(
-                test_all_types_pointer_const));
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<const UNITTEST::TestRequired>(
+  EXPECT_EQ(&test_all_types, DynamicCastMessage<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+  EXPECT_EQ(nullptr, DynamicCastMessage<const UNITTEST::TestRequired>(
                          test_all_types_pointer_const));
 
   MessageLite* test_all_types_pointer_nullptr = nullptr;
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(nullptr, DynamicCastMessage<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
 
   MessageLite& test_all_types_pointer_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DynamicCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_ref));
 
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DynamicCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
 }
 
-TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW(DynamicCastMessage<UNITTEST::TestRequired>(
                    test_all_types_pointer_const_ref),
-               "Cannot downcast " + test_all_types.GetTypeName() + " to " +
-                   UNITTEST::TestRequired::default_instance().GetTypeName());
+               std::bad_cast);
+#else
+  ASSERT_DEATH(
+      DynamicCastMessage<UNITTEST::TestRequired>(
+          test_all_types_pointer_const_ref),
+      absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
+                   UNITTEST::TestRequired::default_instance().GetTypeName()));
+#endif
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
-  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
-                                 test_all_types_pointer));
+  EXPECT_EQ(&test_all_types,
+            DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_pointer));
 
   const MessageLite* test_all_types_pointer_const = &test_all_types;
-  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, DownCastMessage<const UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const));
 
   MessageLite* test_all_types_pointer_nullptr = nullptr;
-  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(nullptr, DownCastMessage<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
 
   MessageLite& test_all_types_pointer_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_ref));
 
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidPointerType) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
-      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
-          UNITTEST::TestRequired::default_instance().GetTypeName());
+      DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
+      absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
+                   UNITTEST::TestRequired::default_instance().GetTypeName()));
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
 
-  MessageLite& test_all_types_pointer = test_all_types;
+  MessageLite& test_all_types_ref = test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
-      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
-          UNITTEST::TestRequired::default_instance().GetTypeName());
+      DownCastMessage<UNITTEST::TestRequired>(test_all_types_ref),
+      absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
+                   UNITTEST::TestRequired::default_instance().GetTypeName()));
+}
+
+TEST(MESSAGE_TEST_NAME, MessageDebugStringMatchesBehindPointerAndLitePointer) {
+  UNITTEST::TestAllTypes test_all_types;
+  test_all_types.set_optional_string("foo");
+  Message* msg_full_pointer = &test_all_types;
+  MessageLite* msg_lite_pointer = &test_all_types;
+  ASSERT_EQ(test_all_types.DebugString(), msg_full_pointer->DebugString());
+  ASSERT_EQ(test_all_types.DebugString(), msg_lite_pointer->DebugString());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -1287,6 +1344,15 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, MessageTraitsWork) {
+  EXPECT_EQ(
+      &UNITTEST::TestAllTypes::default_instance(),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::default_instance());
+  EXPECT_EQ(
+      internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
+}
+
 
 TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   UNITTEST::TestExtensionRangeSerialize in_message;
@@ -1506,7 +1572,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
 
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_packed : {false, true}) {
     SCOPED_TRACE(use_packed);
     for (bool use_tail_field : {false, true}) {
@@ -1603,7 +1669,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParserForUnknownEnumValue) {
   // For unknown enum values, for consistency we must include the
   // int32_t enum value in the unknown field set, which might not be exactly the
   // same as the input.
-  PROTOBUF_UNUSED auto* descriptor = non_dynamic.descriptor();
+  [[maybe_unused]] auto* descriptor = non_dynamic.descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::EnumParseTester>();
@@ -1656,7 +1722,7 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
       GetFields<UNITTEST::BoolParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1720,7 +1786,7 @@ TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
       GetFields<UNITTEST::Int32ParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1785,7 +1851,7 @@ TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
       GetFields<UNITTEST::Int64ParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1889,7 +1955,7 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
       "abcdefghijklmnopqrstuvwxyz"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  PROTOBUF_UNUSED const auto* const descriptor =
+  [[maybe_unused]] const auto* const descriptor =
       UNITTEST::StringParseTester::descriptor();
 
   const std::vector<const FieldDescriptor*> fields =

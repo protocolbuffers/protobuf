@@ -53,7 +53,7 @@ class FieldMaskTest(unittest.TestCase):
     mask = field_mask_pb2.FieldMask()
     msg_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
     mask.AllFieldsFromDescriptor(msg_descriptor)
-    self.assertEqual(79, len(mask.paths))
+    self.assertEqual(80, len(mask.paths))
     self.assertTrue(mask.IsValidForDescriptor(msg_descriptor))
     for field in msg_descriptor.fields:
       self.assertTrue(field.name in mask.paths)

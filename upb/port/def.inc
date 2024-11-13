@@ -47,6 +47,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef UINTPTR_MAX
 Error, UINTPTR_MAX is undefined
@@ -87,6 +88,12 @@ Error, UINTPTR_MAX is undefined
 #else
 #define UPB_API
 #define UPB_API_INLINE UPB_INLINE
+#endif
+
+#ifdef EXPORT_UPBC
+#define UPBC_API UPB_EXPORT
+#else
+#define UPBC_API
 #endif
 
 #define UPB_MALLOC_ALIGN 8
@@ -171,10 +178,17 @@ Error, UINTPTR_MAX is undefined
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
-/* UPB_SETJMP() / UPB_LONGJMP(): avoid setting/restoring signal mask. */
-#ifdef __APPLE__
-#define UPB_SETJMP(buf) _setjmp(buf)
-#define UPB_LONGJMP(buf, val) _longjmp(buf, val)
+/* UPB_SETJMP() / UPB_LONGJMP() */
+// Android uses a custom libc that does not implement all of posix, but it has
+// had sigsetjmp/siglongjmp forever on arm and since API 12 on x86. Apple has
+// sigsetjmp, but does not define the posix feature test macro.
+#if defined(__APPLE__) || defined(_POSIX_C_SOURCE) || defined(__ANDROID__)
+// avoid setting/restoring signal mask, which involves costly syscalls
+#define UPB_SETJMP(buf) sigsetjmp(buf, 0)
+#define UPB_LONGJMP(buf, val) siglongjmp(buf, val)
+#elif defined(WASM_WAMR)
+#define UPB_SETJMP(buf) 0
+#define UPB_LONGJMP(buf, val) abort()
 #else
 #define UPB_SETJMP(buf) setjmp(buf)
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
@@ -330,14 +344,11 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DEPRECATED
 #endif
 
-// begin:google_only
-// #define UPB_IS_GOOGLE3
-// end:google_only
-
-#if defined(UPB_IS_GOOGLE3) && !defined(UPB_BOOTSTRAP_STAGE0)
+#if defined(UPB_IS_GOOGLE3) && \
+    (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
-#elif defined(UPB_BOOTSTRAP_STAGE0)
+#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
 #define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
@@ -345,8 +356,94 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
-#ifdef UPB_TRACING_ENABLED
-#ifdef NDEBUG
-error UPB_TRACING_ENABLED Tracing should be disabled in production builds
+#undef UPB_IS_GOOGLE3
+
+// Linker arrays combine elements from multiple translation units into a single
+// array that can be iterated over at runtime.
+//
+// It is an alternative to pre-main "registration" functions.
+//
+// Usage:
+//
+//   // In N translation units.
+//   UPB_LINKARR_APPEND(foo_array) static int elems[3] = {1, 2, 3};
+//
+//   // At runtime:
+//   UPB_LINKARR_DECLARE(foo_array, int);
+//
+//   void f() {
+//     const int* start = UPB_LINKARR_START(foo_array);
+//     const int* stop = UPB_LINKARR_STOP(foo_array);
+//     for (const int* p = start; p < stop; p++) {
+//       // Windows can introduce zero padding, so we have to skip zeroes.
+//       if (*p != 0) {
+//         vec.push_back(*p);
+//       }
+//     }
+//   }
+
+#if defined(__ELF__) || defined(__wasm__)
+
+#define UPB_LINKARR_APPEND(name)                          \
+  __attribute__((retain, used, section("linkarr_" #name), \
+                 no_sanitize("address")))
+#define UPB_LINKARR_DECLARE(name, type)     \
+  extern type const __start_linkarr_##name; \
+  extern type const __stop_linkarr_##name;  \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#elif defined(__MACH__)
+
+/* As described in: https://stackoverflow.com/a/22366882 */
+#define UPB_LINKARR_APPEND(name)                              \
+  __attribute__((retain, used, section("__DATA,__la_" #name), \
+                 no_sanitize("address")))
+#define UPB_LINKARR_DECLARE(name, type)           \
+  extern type const __start_linkarr_##name __asm( \
+      "section$start$__DATA$__la_" #name);        \
+  extern type const __stop_linkarr_##name __asm(  \
+      "section$end$__DATA$"                       \
+      "__la_" #name);                             \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#elif defined(_MSC_VER) && defined(__clang__)
+
+/* See:
+ *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+ *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+ *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+
+// Usage of __attribute__ here probably means this is Clang-specific, and would
+// not work on MSVC.
+#define UPB_LINKARR_APPEND(name)         \
+  __declspec(allocate("la_" #name "$j")) \
+  __attribute__((retain, used, no_sanitize("address")))
+#define UPB_LINKARR_DECLARE(name, type)                               \
+  __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
+  __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#else
+
+// Linker arrays are not supported on this platform.  Make appends a no-op but
+// don't define the other macros.
+#define UPB_LINKARR_APPEND(name)
+
 #endif
+
+// Future versions of upb will include breaking changes to some APIs.
+// This macro can be set to enable these API changes ahead of time, so that
+// user code can be updated before upgrading versions of protobuf.
+#ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Properly enforce closed enums in python.
+// Owner: mkruskal@
+#define UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT 1
+
 #endif

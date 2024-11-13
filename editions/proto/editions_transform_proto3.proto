@@ -9,6 +9,8 @@ syntax = "proto3";
 
 package protobuf_editions_test;
 
+option java_api_version = 1;
+
 enum TestEnumProto3 {
   TEST_ENUM_PROTO3_UNKNOWN = 0;
   TEST_ENUM_PROTO3_VALUE = 1;

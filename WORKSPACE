@@ -5,10 +5,6 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
-# Second self-reference that makes it possible to load proto rules from @protobuf.
-# buildifier: disable=duplicated-name
-local_repository(name = "protobuf", path = ".")
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -25,6 +21,10 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -37,10 +37,10 @@ http_archive(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
-    strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
+    sha256 = "7315acb6bf10e99f332c8a43f00d5fbb1ee6ca48c52f6b936991b216c586aaad",
+    strip_prefix = "googletest-1.15.0",
     urls = [
-        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
+        "https://github.com/google/googletest/releases/download/v1.15.0/googletest-1.15.0.tar.gz" # 2024-07-15
     ],
 )
 
@@ -59,6 +59,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
+    name = "protobuf_maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     # For updating instructions, see:
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
@@ -69,7 +70,7 @@ maven_install(
     ],
 )
 
-load("@maven//:defs.bzl", "pinned_maven_install")
+load("@protobuf_maven//:defs.bzl", "pinned_maven_install")
 
 pinned_maven_install()
 
@@ -90,26 +91,32 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
+
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
 rules_cc_dependencies()
 
 # For `kt_jvm_library`
-load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
 kotlin_repositories()
 
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
 http_archive(
     name = "rules_ruby",
     urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+      "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip"
     ],
-    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
-    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
+    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
 )
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
@@ -177,9 +184,9 @@ install_deps()
 
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
-    strip_prefix = "rules_fuzzing-0.4.1",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
+    sha256 = "77206c54b71f4dd5335123a6ff2a8ea688eca5378d34b4838114dff71652cf26",
+    strip_prefix = "rules_fuzzing-0.5.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.1/rules_fuzzing-0.5.1.zip"],
     patches = ["//third_party:rules_fuzzing.patch"],
     patch_args = ["-p1"],
 )
@@ -198,8 +205,8 @@ fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "9ecd0f2144f0a24e6bc71ebcc50a1ee5128cedeceb32187004532c9710cb2334",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.29.1/rules_rust-v0.29.1.tar.gz"],
+    integrity = "sha256-BCrPtzRpstGEj+FI2Bw0IsYepHqeGQDxyew29R6OcZM=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.51.0/rules_rust-v0.51.0.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
@@ -216,7 +223,7 @@ crates_repository(
     packages = {
         "googletest": crate.spec(
             git = "https://github.com/google/googletest-rust",
-            rev = "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f",
+            rev = "b407f3b5774defb8917d714bfb7af485e117d621",
         ),
         "paste": crate.spec(
           version = ">=1",
@@ -234,10 +241,39 @@ http_archive(
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
 )
 
-# Needed as a dependency of @com_google_protobuf_v25.x, which was before
-# utf8_range was merged in.
+# Needed as a dependency of @com_google_protobuf_v25.0
+load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps="protobuf_deps")
+protobuf_v25_deps()
+
+# Needed for testing only
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
-    name = "utf8_range",
-    strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
-    url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
+    name = "rules_testing",
+    sha256 = "02c62574631876a4e3b02a1820cb51167bb9cdcdea2381b2fa9d9b8b11c407c4",
+    strip_prefix = "rules_testing-0.6.0",
+    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.6.0/rules_testing-v0.6.0.tar.gz",
 )
+
+# For checking breaking changes to well-known types from the previous release version.
+load("//:protobuf_version.bzl", "PROTOBUF_PREVIOUS_RELEASE")
+
+http_archive(
+    name = "com_google_protobuf_previous_release",
+    strip_prefix = "protobuf-" + PROTOBUF_PREVIOUS_RELEASE,
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
+)
+
+http_archive(
+    name = "rules_buf",
+    integrity = "sha256-Hr64Q/CaYr0E3ptAjEOgdZd1yc+cBjp7OG1wzuf3DIs=",
+    strip_prefix = "rules_buf-0.3.0",
+    urls = [
+        "https://github.com/bufbuild/rules_buf/archive/refs/tags/v0.3.0.zip",
+    ],
+)
+
+load("@rules_buf//buf:repositories.bzl", "rules_buf_dependencies", "rules_buf_toolchains")
+
+rules_buf_dependencies()
+
+rules_buf_toolchains(version = "v1.32.1")

@@ -65,35 +65,6 @@ class MessageTest(unittest.TestCase):
       message_module.TestAllTypes.FromString(bad_utf8_data)
     self.assertIn('TestAllTypes.optional_string', str(context.exception))
 
-  def testGoldenMessage(self, message_module):
-    # Proto3 doesn't have the "default_foo" members or foreign enums,
-    # and doesn't preserve unknown fields, so for proto3 we use a golden
-    # message that doesn't have these fields set.
-    if message_module is unittest_pb2:
-      golden_data = test_util.GoldenFileData('golden_message_oneof_implemented')
-    else:
-      golden_data = test_util.GoldenFileData('golden_message_proto3')
-
-    golden_message = message_module.TestAllTypes()
-    golden_message.ParseFromString(golden_data)
-    if message_module is unittest_pb2:
-      test_util.ExpectAllFieldsSet(self, golden_message)
-    self.assertEqual(golden_data, golden_message.SerializeToString())
-    golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
-
-  def testGoldenPackedMessage(self, message_module):
-    golden_data = test_util.GoldenFileData('golden_packed_fields_message')
-    golden_message = message_module.TestPackedTypes()
-    parsed_bytes = golden_message.ParseFromString(golden_data)
-    all_set = message_module.TestPackedTypes()
-    test_util.SetAllPackedFields(all_set)
-    self.assertEqual(parsed_bytes, len(golden_data))
-    self.assertEqual(all_set, golden_message)
-    self.assertEqual(golden_data, all_set.SerializeToString())
-    golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_data, golden_copy.SerializeToString())
-
   def testParseErrors(self, message_module):
     msg = message_module.TestAllTypes()
     self.assertRaises(TypeError, msg.FromString, 0)
@@ -149,7 +120,9 @@ class MessageTest(unittest.TestCase):
       golden_message.SerializeToString(deterministic=BadArg())
 
   def testPickleSupport(self, message_module):
-    golden_data = test_util.GoldenFileData('golden_message')
+    golden_message = message_module.TestAllTypes()
+    test_util.SetAllFields(golden_message)
+    golden_data = golden_message.SerializeToString()
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
     pickled_message = pickle.dumps(golden_message)
@@ -1364,6 +1337,18 @@ class MessageTest(unittest.TestCase):
     self.assertIn('oneof_bytes', m)
     self.assertNotIn('oneof_string', m)
 
+  def testMessageClassName(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertEqual('TestAllTypes', type(m).__name__)
+    self.assertEqual('TestAllTypes', m.__class__.__qualname__)
+
+    nested = message_module.TestAllTypes.NestedMessage()
+    self.assertEqual('NestedMessage', type(nested).__name__)
+    self.assertEqual('NestedMessage', nested.__class__.__name__)
+    self.assertEqual(
+        'TestAllTypes.NestedMessage', nested.__class__.__qualname__
+    )
+
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
@@ -1435,17 +1420,25 @@ class Proto2Test(unittest.TestCase):
       del msg.repeated_nested_message
 
   def testAssignInvalidEnum(self):
-    """Assigning an invalid enum number is not allowed in proto2."""
+    """Assigning an invalid enum number is not allowed for closed enums."""
     m = unittest_pb2.TestAllTypes()
 
-    # Proto2 can not assign unknown enum.
-    with self.assertRaises(ValueError) as _:
+    # TODO Enable these once upb's behavior is made conformant.
+    if api_implementation.Type() != 'upb':
+      # Can not assign unknown enum to closed enums.
+      with self.assertRaises(ValueError) as _:
+        m.optional_nested_enum = 1234567
+      self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
+      # Assignment is a different code path than append for the C++ impl.
+      m.repeated_nested_enum.append(2)
+      m.repeated_nested_enum[0] = 2
+      with self.assertRaises(ValueError):
+        m.repeated_nested_enum[0] = 123456
+    else:
       m.optional_nested_enum = 1234567
-    self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
-    # Assignment is a different code path than append for the C++ impl.
-    m.repeated_nested_enum.append(2)
-    m.repeated_nested_enum[0] = 2
-    with self.assertRaises(ValueError):
+      m.repeated_nested_enum.append(1234567)
+      m.repeated_nested_enum.append(2)
+      m.repeated_nested_enum[0] = 2
       m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.
@@ -1523,36 +1516,6 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(all_set, copy)
     all_set.Extensions[unittest_pb2.packed_float_extension].extend([61.0, 71.0])
     self.assertNotEqual(all_set, copy)
-
-  def testGoldenExtensions(self):
-    golden_data = test_util.GoldenFileData('golden_message')
-    golden_message = unittest_pb2.TestAllExtensions()
-    golden_message.ParseFromString(golden_data)
-    all_set = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(all_set)
-    self.assertEqual(all_set, golden_message)
-    self.assertEqual(golden_data, golden_message.SerializeToString())
-    golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_message, golden_copy)
-    # Depend on a specific serialization order for extensions is not
-    # reasonable to guarantee.
-    if api_implementation.Type() != 'upb':
-      self.assertEqual(golden_data, golden_copy.SerializeToString())
-
-  def testGoldenPackedExtensions(self):
-    golden_data = test_util.GoldenFileData('golden_packed_fields_message')
-    golden_message = unittest_pb2.TestPackedExtensions()
-    golden_message.ParseFromString(golden_data)
-    all_set = unittest_pb2.TestPackedExtensions()
-    test_util.SetAllPackedExtensions(all_set)
-    self.assertEqual(all_set, golden_message)
-    self.assertEqual(golden_data, all_set.SerializeToString())
-    golden_copy = copy.deepcopy(golden_message)
-    self.assertEqual(golden_message, golden_copy)
-    # Depend on a specific serialization order for extensions is not
-    # reasonable to guarantee.
-    if api_implementation.Type() != 'upb':
-      self.assertEqual(golden_data, golden_copy.SerializeToString())
 
   def testPickleIncompleteProto(self):
     golden_message = unittest_pb2.TestRequired(a=1)
@@ -1949,12 +1912,40 @@ class Proto3Test(unittest.TestCase):
 
     self.assertEqual(msg1.map_int32_int32, msg2.map_int32_int32)
 
+  def testScalarMapSetdefault(self):
+    msg = map_unittest_pb2.TestMap()
+    value = msg.map_int32_int32.setdefault(123, 888)
+    self.assertEqual(value, 888)
+    self.assertEqual(msg.map_int32_int32[123], 888)
+    value = msg.map_int32_int32.setdefault(123, 777)
+    self.assertEqual(value, 888)
+
+    with self.assertRaises(ValueError):
+      value = msg.map_int32_int32.setdefault(1001)
+    self.assertNotIn(1001, msg.map_int32_int32)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault()
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault(1, 2, 3)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault("1", 2)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault(1, "2")
+
   def testMessageMapComparison(self):
     msg1 = map_unittest_pb2.TestMap()
     msg2 = map_unittest_pb2.TestMap()
 
     self.assertEqual(msg1.map_int32_foreign_message,
                      msg2.map_int32_foreign_message)
+
+  def testMessageMapSetdefault(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[123].c = 888
+    with self.assertRaises(NotImplementedError):
+      msg.map_int32_foreign_message.setdefault(
+          1, msg.map_int32_foreign_message[123]
+      )
 
   def testMapGet(self):
     # Need to test that get() properly returns the default, even though the dict

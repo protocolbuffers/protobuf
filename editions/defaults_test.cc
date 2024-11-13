@@ -53,7 +53,7 @@ TEST(DefaultsTest, Check2023) {
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -72,7 +72,7 @@ TEST(DefaultsTest, CheckFuture) {
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99997_TEST_ONLY);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -103,11 +103,11 @@ TEST(DefaultsTest, CheckFuture) {
 TEST(DefaultsTest, CheckFarFuture) {
   auto defaults = ReadDefaults("test_defaults_far_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 6);
+  ASSERT_EQ(defaults->defaults().size(), 7);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -152,7 +152,7 @@ TEST(DefaultsTest, Embedded) {
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
@@ -176,7 +176,7 @@ TEST(DefaultsTest, EmbeddedBase64) {
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
@@ -200,13 +200,14 @@ class OverridableDefaultsTest : public ::testing::Test {
   }
 };
 
-// TODO Enable these once they become fixed internally.
+
 TEST_F(OverridableDefaultsTest, Proto2) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 1);
-  const auto& defaults = feature_defaults->defaults(0);
-  ASSERT_EQ(defaults.edition(), EDITION_PROTO2);
+  auto defaults = feature_defaults->defaults(0);
+  ASSERT_EQ(defaults.edition(), EDITION_LEGACY);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
@@ -216,8 +217,9 @@ TEST_F(OverridableDefaultsTest, Proto3) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 2);
-  const auto& defaults = feature_defaults->defaults(1);
+  auto defaults = feature_defaults->defaults(1);
   ASSERT_EQ(defaults.edition(), EDITION_PROTO3);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
@@ -230,8 +232,9 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 3);
-  const auto& defaults = feature_defaults->defaults(2);
+  auto defaults = feature_defaults->defaults(2);
   ASSERT_EQ(defaults.edition(), EDITION_2023);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -248,3 +251,5 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

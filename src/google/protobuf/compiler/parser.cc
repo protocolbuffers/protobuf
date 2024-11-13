@@ -1565,9 +1565,8 @@ bool Parser::ParseOption(Message* options,
   }
 
   UninterpretedOption* uninterpreted_option =
-      DownCastToGenerated<UninterpretedOption>(
-          options->GetReflection()->AddMessage(options,
-                                               uninterpreted_option_field));
+      DownCastMessage<UninterpretedOption>(options->GetReflection()->AddMessage(
+          options, uninterpreted_option_field));
 
   // Parse dot-separated name.
   {

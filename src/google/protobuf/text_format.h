@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -440,6 +440,7 @@ class PROTOBUF_EXPORT TextFormat {
     // particular Descriptor.
     // Returns "true" if the registration succeeded, or "false" if there is
     // already a printer for that Descriptor.
+    // Takes ownership of the printer on successful registration.
     bool RegisterMessagePrinter(const Descriptor* descriptor,
                                 const MessagePrinter* printer);
 

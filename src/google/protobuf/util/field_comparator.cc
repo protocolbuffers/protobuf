@@ -138,6 +138,14 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
 bool SimpleFieldComparator::CompareWithDifferencer(
     MessageDifferencer* differencer, const Message& message1,
     const Message& message2, const util::FieldContext* field_context) {
+  const Descriptor* descriptor1 = message1.GetDescriptor();
+  const Descriptor* descriptor2 = message2.GetDescriptor();
+  if (descriptor1 != descriptor2) {
+    ABSL_DLOG(FATAL) << "Comparison between two messages with different "
+                     << "descriptors. " << descriptor1->full_name() << " vs "
+                     << descriptor2->full_name();
+    return false;
+  }
   return differencer->Compare(message1, message2, false,
                               field_context->parent_fields());
 }

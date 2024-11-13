@@ -96,7 +96,8 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
@@ -154,6 +155,9 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
+namespace v2 {
+class V2TableGenTester;
+}  // namespace v2
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -246,7 +250,6 @@ inline void MaybePoisonAfterClear(Message* root);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -259,7 +262,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
-  Message* New(Arena* arena) const override = 0;
+  Message* New(Arena* arena) const {
+    return static_cast<Message*>(MessageLite::New(arena));
+  }
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.
@@ -342,12 +347,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
-
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   void Clear() override;
 
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // Introspection ---------------------------------------------------
 
@@ -364,29 +370,39 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr Message() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  using MessageLite::MessageLite;
+
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
-  static Metadata GetMetadataImpl(const ClassDataFull& data);
+  static Metadata GetMetadataImpl(const internal::ClassDataFull& data);
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
 
-  inline explicit Message(Arena* arena) : MessageLite(arena) {}
-  size_t ComputeUnknownFieldsSize(size_t total_size,
-                                  internal::CachedSize* cached_size) const;
-  size_t MaybeComputeUnknownFieldsSize(size_t total_size,
-                                       internal::CachedSize* cached_size) const;
+  size_t ComputeUnknownFieldsSize(
+      size_t total_size, const internal::CachedSize* cached_size) const;
+  size_t MaybeComputeUnknownFieldsSize(
+      size_t total_size, const internal::CachedSize* cached_size) const;
 
   // Reflection based version for reflection based types.
+  static absl::string_view GetTypeNameImpl(const internal::ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+  void ClearImpl();
+  static size_t ByteSizeLongImpl(const MessageLite& msg);
+  static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream);
 
   static const internal::TcParseTableBase* GetTcParseTableImpl(
       const MessageLite& msg);
 
   static size_t SpaceUsedLongImpl(const MessageLite& msg_lite);
 
-  static const DescriptorMethods kDescriptorMethods;
+  static const internal::DescriptorMethods kDescriptorMethods;
 
 };
 
@@ -464,6 +480,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Returns true if the given message is a default message instance.
   bool IsDefaultInstance(const Message& message) const {
+    ABSL_DCHECK_EQ(message.GetReflection(), this);
     return schema_.IsDefaultInstance(message);
   }
 
@@ -499,8 +516,8 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  PROTOBUF_NODISCARD Message* ReleaseLast(Message* message,
-                                          const FieldDescriptor* field) const;
+  [[nodiscard]] Message* ReleaseLast(Message* message,
+                                     const FieldDescriptor* field) const;
 
   // Similar to ReleaseLast() without internal safety and ownershp checks. This
   // method should only be used when the objects are on the same arena or paired
@@ -700,7 +717,7 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  PROTOBUF_NODISCARD Message* ReleaseMessage(
+  [[nodiscard]] Message* ReleaseMessage(
       Message* message, const FieldDescriptor* field,
       MessageFactory* factory = nullptr) const;
 
@@ -1117,6 +1134,8 @@ class PROTOBUF_EXPORT Reflection final {
                                  bool is_string) const;
 
   friend class MapReflectionTester;
+  friend class internal::v2::V2TableGenTester;
+
   // Returns true if key is in map. Returns false if key is not in map field.
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,
                       const MapKey& key) const;
@@ -1216,11 +1235,34 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldInlined(field);
   }
 
-  bool HasBit(const Message& message, const FieldDescriptor* field) const;
-  void SetBit(Message* message, const FieldDescriptor* field) const;
-  inline void ClearBit(Message* message, const FieldDescriptor* field) const;
-  inline void SwapBit(Message* message1, Message* message2,
-                      const FieldDescriptor* field) const;
+  // For "proto3 non-optional" primitive fields, aka implicit-presence fields,
+  // returns true if the field is populated, i.e., nonzero. False otherwise.
+  bool IsSingularFieldNonEmpty(const Message& message,
+                               const FieldDescriptor* field) const;
+  // Returns whether the field is present if there are usable hasbits in the
+  // field schema. (Note that in some cases hasbits are merely a hint to
+  // indicate "possible presence", and another empty-check is required).
+  bool IsFieldPresentGivenHasbits(const Message& message,
+                                  const FieldDescriptor* field,
+                                  const uint32_t* hasbits,
+                                  uint32_t hasbit_index) const;
+  // Returns true if the field is considered to be present.
+  // Requires the input to be 'singular' i.e. non-extension, non-oneof, non-weak
+  // field.
+  // For explicit presence fields, a field is present iff the hasbit is set.
+  // For implicit presence fields, a field is present iff it is nonzero.
+  bool HasFieldSingular(const Message& message,
+                        const FieldDescriptor* field) const;
+  void SetHasBit(Message* message, const FieldDescriptor* field) const;
+  inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
+  // Naively swaps the hasbit without checking for field existence.
+  // For explicit presence fields, the hasbit is swapped normally.
+  // For implicit presence fields, the hasbit is swapped without checking for
+  // field emptiness. That is, the destination message may have hasbit set even
+  // if the field is empty. This should still result in correct behaviour due to
+  // HasbitMode being set to kHintHasbits for implicit presence fields.
+  inline void NaiveSwapHasBit(Message* message1, Message* message2,
+                              const FieldDescriptor* field) const;
 
   inline const uint32_t* GetInlinedStringDonatedArray(
       const Message& message) const;
@@ -1448,45 +1490,19 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
-// Tries to downcast this message from MessageLite to Message.  Returns nullptr
-// if this class is not an instance of Message. eg if the message was defined
-// with optimized_for=LITE_RUNTIME. This works even if RTTI is disabled.
-inline const Message* DynamicCastToMessage(const MessageLite* lite) {
-  return lite == nullptr || internal::GetClassData(*lite)->is_lite
+// Specializations to handle cast to `Message`. We can check the `is_lite` bit
+// in the class data.
+template <>
+inline const Message* DynamicCastMessage(const MessageLite* from) {
+  return from == nullptr || internal::GetClassData(*from)->is_lite
              ? nullptr
-             : static_cast<const Message*>(lite);
+             : static_cast<const Message*>(from);
 }
-inline Message* DynamicCastToMessage(MessageLite* lite) {
-  return const_cast<Message*>(
-      DynamicCastToMessage(static_cast<const MessageLite*>(lite)));
-}
-inline const Message& DynamicCastToMessage(const MessageLite& lite) {
-  auto* res = DynamicCastToMessage(&lite);
-  ABSL_CHECK(res != nullptr)
-      << "Cannot to `Message` type " << lite.GetTypeName();
-  return *res;
-}
-inline Message& DynamicCastToMessage(MessageLite& lite) {
-  return const_cast<Message&>(
-      DynamicCastToMessage(static_cast<const MessageLite&>(lite)));
-}
-
-// A lightweight function for downcasting a MessageLite to Message. It should
-// only be used when the caller is certain that the argument is a Message
-// object.
-inline const Message* DownCastToMessage(const MessageLite* lite) {
-  ABSL_CHECK(lite == nullptr || DynamicCastToMessage(lite) != nullptr);
-  return static_cast<const Message*>(lite);
-}
-inline Message* DownCastToMessage(MessageLite* lite) {
-  return const_cast<Message*>(
-      DownCastToMessage(static_cast<const MessageLite*>(lite)));
-}
-inline const Message& DownCastToMessage(const MessageLite& lite) {
-  return *DownCastToMessage(&lite);
-}
-inline Message& DownCastToMessage(MessageLite& lite) {
-  return *DownCastToMessage(&lite);
+template <>
+inline const Message* DownCastMessage(const MessageLite* from) {
+  ABSL_DCHECK(DynamicCastMessage<Message>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to Message";
+  return static_cast<const Message*>(from);
 }
 
 // =============================================================================
@@ -1614,7 +1630,7 @@ const Type& Reflection::GetRawSplit(const Message& message,
 template <class Type>
 const Type& Reflection::GetRawNonOneof(const Message& message,
                                        const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     return GetRawSplit<Type>(message, field);
   }
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
@@ -1627,7 +1643,7 @@ const Type& Reflection::GetRaw(const Message& message,
   ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
 
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
     return GetRawNonOneof<Type>(message, field);
   }
 

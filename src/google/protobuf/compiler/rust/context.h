@@ -46,6 +46,7 @@ inline absl::string_view KernelRsName(Kernel kernel) {
 struct Options {
   Kernel kernel;
   std::string mapping_file_path;
+  bool strip_nonfunctional_codegen = false;
 
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
@@ -69,20 +70,12 @@ class RustGeneratorContext {
                      &f) != files_in_current_crate_.end();
   }
 
-  absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
-    auto it = import_path_to_crate_name_.find(import_path);
-    if (it == import_path_to_crate_name_.end()) {
-      ABSL_LOG(FATAL) << "Path " << import_path
-                      << " not found in crate mapping. Crate mapping has "
-                      << import_path_to_crate_name_.size() << " entries";
-    }
-    return it->second;
-  }
-
  private:
   const std::vector<const FileDescriptor*>& files_in_current_crate_;
   const absl::flat_hash_map<std::string, std::string>&
       import_path_to_crate_name_;
+
+  friend class Context;
 };
 
 // A context for generating a particular kind of definition.
@@ -125,6 +118,22 @@ class Context {
             io::Printer::SourceLocation loc =
                 io::Printer::SourceLocation::current()) const {
     printer_->Emit(vars, format, loc);
+  }
+
+  absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
+    if (opts_->strip_nonfunctional_codegen) {
+      return "test";
+    }
+    auto it =
+        rust_generator_context_->import_path_to_crate_name_.find(import_path);
+    if (it == rust_generator_context_->import_path_to_crate_name_.end()) {
+      ABSL_LOG(FATAL)
+          << "Path " << import_path
+          << " not found in crate mapping. Crate mapping has "
+          << rust_generator_context_->import_path_to_crate_name_.size()
+          << " entries";
+    }
+    return it->second;
   }
 
  private:

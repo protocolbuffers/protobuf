@@ -238,9 +238,9 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             "IhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUiFgoUTnVsbEh5cG90aGVz",
             "aXNQcm90bzMiLwoORW51bU9ubHlQcm90bzMiHQoEQm9vbBIKCgZrRmFsc2UQ",
             "ABIJCgVrVHJ1ZRABKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9PEAAS",
-            "DwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQksKMWNvbS5nb29n",
-            "bGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5wcm90bzNIAaIC",
-            "DkVkaXRpb25zUHJvdG8zkgMCCAJiCGVkaXRpb25zcOgH"));
+            "DwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQk4KMWNvbS5nb29n",
+            "bGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5wcm90bzNIAfgB",
+            "AaICDkVkaXRpb25zUHJvdG8zkgMCCAJiCGVkaXRpb25zcOgH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.Proto3.ForeignEnum), }, null, new pbr::GeneratedClrTypeInfo[] {

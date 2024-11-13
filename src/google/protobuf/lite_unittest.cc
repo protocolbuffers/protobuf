@@ -11,7 +11,9 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <gmock/gmock.h>
@@ -21,6 +23,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -28,10 +31,12 @@
 #include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/only_one_enum_test.pb.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -958,6 +963,18 @@ TYPED_TEST(LiteTest, AllLite43) {
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
+
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.set_oneof_bytes_cord("bytes cord");
+    io::CodedInputStream input_stream(
+        reinterpret_cast<const ::uint8_t*>(serialized.data()),
+        serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+
 }
 
 // Verify that we can successfully parse fields of various types within oneof
@@ -1042,6 +1059,18 @@ TYPED_TEST(LiteTest, AllLite44) {
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
     }
+  }
+
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_bytes_cord("bytes cord");
+    std::string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
+    EXPECT_EQ("bytes cord", std::string(parsed.oneof_bytes_cord()));
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
   }
 
   std::cout << "PASS" << std::endl;
@@ -1163,6 +1192,7 @@ TYPED_TEST(LiteTest, EnumValueToName) {
   EXPECT_EQ("", protobuf_unittest::ForeignEnumLite_Name(0));
   EXPECT_EQ("", protobuf_unittest::ForeignEnumLite_Name(999));
 }
+
 
 TYPED_TEST(LiteTest, NestedEnumValueToName) {
   EXPECT_EQ("FOO", protobuf_unittest::TestAllTypesLite::NestedEnum_Name(
@@ -1326,92 +1356,125 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
   }
 }
 
-// Two arbitary types
+// Two arbitrary types
 using CastType1 = protobuf_unittest::TestAllTypesLite;
 using CastType2 = protobuf_unittest::TestPackedTypesLite;
 
-TEST(LiteTest, DynamicCastToGenerated) {
+TEST(LiteTest, DynamicCastMessage) {
   CastType1 test_type_1;
 
   MessageLite* test_type_1_pointer = &test_type_1;
-  EXPECT_EQ(&test_type_1,
-            DynamicCastToGenerated<CastType1>(test_type_1_pointer));
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<CastType2>(test_type_1_pointer));
+  EXPECT_EQ(&test_type_1, DynamicCastMessage<CastType1>(test_type_1_pointer));
+  EXPECT_EQ(nullptr, DynamicCastMessage<CastType2>(test_type_1_pointer));
 
   const MessageLite* test_type_1_pointer_const = &test_type_1;
   EXPECT_EQ(&test_type_1,
-            DynamicCastToGenerated<const CastType1>(test_type_1_pointer_const));
+            DynamicCastMessage<const CastType1>(test_type_1_pointer_const));
   EXPECT_EQ(nullptr,
-            DynamicCastToGenerated<const CastType2>(test_type_1_pointer_const));
+            DynamicCastMessage<const CastType2>(test_type_1_pointer_const));
 
   MessageLite* test_type_1_pointer_nullptr = nullptr;
   EXPECT_EQ(nullptr,
-            DynamicCastToGenerated<CastType1>(test_type_1_pointer_nullptr));
+            DynamicCastMessage<CastType1>(test_type_1_pointer_nullptr));
 
   MessageLite& test_type_1_pointer_ref = test_type_1;
   EXPECT_EQ(&test_type_1,
-            &DynamicCastToGenerated<CastType1>(test_type_1_pointer_ref));
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_ref));
 
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
   EXPECT_EQ(&test_type_1,
-            &DynamicCastToGenerated<CastType1>(test_type_1_pointer_const_ref));
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_const_ref));
+
+  std::shared_ptr<MessageLite> shared(new CastType1);
+  EXPECT_EQ(1, shared.use_count());
+  std::shared_ptr<CastType1> shared_1 = DynamicCastMessage<CastType1>(shared);
+  // Check that both shared_ptr instances are pointing to the same control
+  // block by checking use_count().
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_1.get(), shared.get());
+  std::shared_ptr<CastType2> shared_2 = DynamicCastMessage<CastType2>(shared);
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_2, nullptr);
 }
 
-#if GTEST_HAS_DEATH_TEST
-TEST(LiteTest, DynamicCastToGeneratedInvalidReferenceType) {
+TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
   CastType1 test_type_1;
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
-  ASSERT_DEATH(DynamicCastToGenerated<CastType2>(test_type_1_pointer_const_ref),
-               "Cannot downcast " + test_type_1.GetTypeName() + " to " +
-                   CastType2::default_instance().GetTypeName());
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW(DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+               std::bad_cast);
+#elif defined(GTEST_HAS_DEATH_TEST)
+  ASSERT_DEATH(
+      DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
+#else
+  (void)test_type_1;
+  (void)test_type_1_pointer_const_ref;
+  GTEST_SKIP() << "Can't test the failure.";
+#endif
 }
-#endif  // GTEST_HAS_DEATH_TEST
 
-TEST(LiteTest, DownCastToGeneratedValidType) {
+TEST(LiteTest, DownCastMessageValidType) {
   CastType1 test_type_1;
 
   MessageLite* test_type_1_pointer = &test_type_1;
-  EXPECT_EQ(&test_type_1, DownCastToGenerated<CastType1>(test_type_1_pointer));
+  EXPECT_EQ(&test_type_1, DownCastMessage<CastType1>(test_type_1_pointer));
 
   const MessageLite* test_type_1_pointer_const = &test_type_1;
   EXPECT_EQ(&test_type_1,
-            DownCastToGenerated<const CastType1>(test_type_1_pointer_const));
+            DownCastMessage<const CastType1>(test_type_1_pointer_const));
 
   MessageLite* test_type_1_pointer_nullptr = nullptr;
-  EXPECT_EQ(nullptr,
-            DownCastToGenerated<CastType1>(test_type_1_pointer_nullptr));
+  EXPECT_EQ(nullptr, DownCastMessage<CastType1>(test_type_1_pointer_nullptr));
 
   MessageLite& test_type_1_pointer_ref = test_type_1;
-  EXPECT_EQ(&test_type_1,
-            &DownCastToGenerated<CastType1>(test_type_1_pointer_ref));
+  EXPECT_EQ(&test_type_1, &DownCastMessage<CastType1>(test_type_1_pointer_ref));
 
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
   EXPECT_EQ(&test_type_1,
-            &DownCastToGenerated<CastType1>(test_type_1_pointer_const_ref));
+            &DownCastMessage<CastType1>(test_type_1_pointer_const_ref));
 }
 
 #if GTEST_HAS_DEATH_TEST
-TEST(LiteTest, DownCastToGeneratedInvalidPointerType) {
+TEST(LiteTest, DownCastMessageInvalidPointerType) {
   CastType1 test_type_1;
 
   MessageLite* test_type_1_pointer = &test_type_1;
 
-  ASSERT_DEBUG_DEATH(DownCastToGenerated<CastType2>(test_type_1_pointer),
-                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
-                         CastType2::default_instance().GetTypeName());
+  ASSERT_DEBUG_DEATH(
+      DownCastMessage<CastType2>(test_type_1_pointer),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
 }
 
-TEST(LiteTest, DownCastToGeneratedInvalidReferenceType) {
+TEST(LiteTest, DownCastMessageInvalidReferenceType) {
   CastType1 test_type_1;
 
   MessageLite& test_type_1_pointer = test_type_1;
 
-  ASSERT_DEBUG_DEATH(DownCastToGenerated<CastType2>(test_type_1_pointer),
-                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
-                         CastType2::default_instance().GetTypeName());
+  ASSERT_DEBUG_DEATH(
+      DownCastMessage<CastType2>(test_type_1_pointer),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
 }
 #endif  // GTEST_HAS_DEATH_TEST
+
+TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
+  EXPECT_TRUE(protobuf_unittest::OnlyOneEnum_IsValid(0));
+  EXPECT_TRUE(protobuf_unittest::OnlyOneEnum_IsValid(10));
+  EXPECT_FALSE(protobuf_unittest::OnlyOneEnum_IsValid(6));
+
+  // Traits also work
+  constexpr auto* data =
+      internal::EnumTraits<protobuf_unittest::OnlyOneEnum>::validation_data();
+  EXPECT_TRUE(internal::ValidateEnum(0, data));
+  EXPECT_TRUE(internal::ValidateEnum(10, data));
+  EXPECT_FALSE(internal::ValidateEnum(6, data));
+}
 
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

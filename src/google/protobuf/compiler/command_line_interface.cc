@@ -11,32 +11,23 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-
-#include "absl/algorithm/container.h"
-#include "absl/base/attributes.h"
-#include "absl/base/log_severity.h"
-#include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/log/globals.h"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
-#include "absl/strings/str_cat.h"
-#include "absl/types/span.h"
-#include "google/protobuf/compiler/versions.h"
-#include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/descriptor_visitor.h"
-#include "google/protobuf/feature_resolver.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-
-#include "google/protobuf/stubs/platform_macros.h"
-
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 #ifdef major
 #undef major
 #endif
@@ -45,20 +36,10 @@
 #endif
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include <errno.h>
-
-#include <fstream>
-#include <iostream>
-
-#include <limits.h>  // For PATH_MAX
-
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -66,27 +47,44 @@
 #include <sys/sysctl.h>
 #endif
 
+#include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/log_severity.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/container/flat_hash_set.h"
+#include "absl/log/globals.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/text_format.h"
 
 
@@ -94,9 +92,7 @@
 #include "google/protobuf/io/io_win32.h"
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include "absl/strings/ascii.h"
-#endif
+#include "google/protobuf/stubs/platform_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -398,10 +394,6 @@ class CommandLineInterface::ErrorPrinter
                          std::ostream& out) {
     std::string dfile;
     if (
-#ifndef PROTOBUF_OPENSOURCE
-        // Print full path when running under MSVS
-        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
-#endif  // !PROTOBUF_OPENSOURCE
         tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {
@@ -1326,6 +1318,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+  if (!EnforceProtocEditionsSupport(parsed_files)) {
+    return 1;
+  }
+
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1528,10 +1524,6 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  // Override maximum_edition if experimental_editions is true.
-  Edition maximum_edition =
-      !experimental_editions_ ? PROTOBUF_MAXIMUM_EDITION : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if (!experimental_editions_ &&
@@ -1540,20 +1532,20 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
       // Only validate min/max edition on generators that advertise editions
       // support.  Generators still under development will always use the
       // correct values.
-      if (output.generator->GetMinimumEdition() != minimum_edition) {
+      if (output.generator->GetMinimumEdition() != ProtocMinimumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a minimum edition "
                         << output.generator->GetMinimumEdition()
                         << " which is not the protoc minimum "
-                        << minimum_edition << ".";
+                        << ProtocMinimumEdition() << ".";
         return false;
       }
-      if (output.generator->GetMaximumEdition() != maximum_edition) {
+      if (output.generator->GetMaximumEdition() != ProtocMaximumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a maximum edition "
                         << output.generator->GetMaximumEdition()
                         << " which is not the protoc maximum "
-                        << maximum_edition << ".";
+                        << ProtocMaximumEdition() << ".";
         return false;
       }
     }
@@ -1568,9 +1560,9 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
     }
   }
   absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
-                                       feature_extensions, minimum_edition,
-                                       maximum_edition);
+      FeatureResolver::CompileDefaults(
+          FeatureSet::descriptor(), feature_extensions, ProtocMinimumEdition(),
+          MaximumKnownEdition());
   if (!defaults.ok()) {
     ABSL_LOG(ERROR) << defaults.status();
     return false;
@@ -1600,7 +1592,7 @@ bool CommandLineInterface::ParseInputFiles(
     // exclusively reading from descriptor sets, we can eliminate this failure
     // condition.
     for (const auto& input_file : input_files_) {
-      descriptor_pool->AddUnusedImportTrackFile(input_file);
+      descriptor_pool->AddDirectInputFile(input_file);
     }
   }
 
@@ -1647,7 +1639,7 @@ bool CommandLineInterface::ParseInputFiles(
       }
     }
   }
-  descriptor_pool->ClearUnusedImportTrackFiles();
+  descriptor_pool->ClearDirectInputFiles();
   return result;
 }
 
@@ -2621,6 +2613,31 @@ bool CommandLineInterface::EnforceEditionsSupport(
   return true;
 }
 
+bool CommandLineInterface::EnforceProtocEditionsSupport(
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    Edition edition =
+        ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
+    if (CanSkipEditionCheck(fd->name())) {
+      // Legacy proto2/proto3 or exempted files don't need any checks.
+      continue;
+    }
+
+    if (edition > ProtocMaximumEdition()) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $1, which is later than the protoc "
+          "maximum supported edition $2.",
+          fd->name(), edition, ProtocMaximumEdition());
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -2872,23 +2889,24 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
   // Check for errors.
-  if (!response.error().empty()) {
-    // Generator returned an error.
-    *error = response.error();
-    return false;
-  }
+  bool success = true;
   if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
                                     parsed_files)) {
-    return false;
+    success = false;
   }
   if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
                               static_cast<Edition>(response.minimum_edition()),
                               static_cast<Edition>(response.maximum_edition()),
                               parsed_files)) {
-    return false;
+    success = false;
+  }
+  if (!response.error().empty()) {
+    // Generator returned an error.
+    *error = response.error();
+    success = false;
   }
 
-  return true;
+  return success;
 }
 
 bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
@@ -3040,11 +3058,11 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
   std::vector<const FieldDescriptor*> extensions;
   pool.FindAllExtensions(feature_set, &extensions);
 
-  Edition minimum = PROTOBUF_MINIMUM_EDITION;
+  Edition minimum = ProtocMinimumEdition();
   if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
     minimum = edition_defaults_minimum_;
   }
-  Edition maximum = PROTOBUF_MAXIMUM_EDITION;
+  Edition maximum = ProtocMaximumEdition();
   if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
     maximum = edition_defaults_maximum_;
   }
@@ -3167,10 +3185,10 @@ void GatherOccupiedFieldRanges(
 // Utility function for PrintFreeFieldNumbers.
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
-void FormatFreeFieldNumbers(const std::string& name,
+void FormatFreeFieldNumbers(absl::string_view name,
                             const absl::btree_set<FieldRange>& ranges) {
   std::string output;
-  absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
+  absl::StrAppendFormat(&output, "%-35s free:", name);
   int next_free_number = 1;
   for (const auto& range : ranges) {
     // This happens when groups re-use parent field numbers, in which
@@ -3212,3 +3230,5 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

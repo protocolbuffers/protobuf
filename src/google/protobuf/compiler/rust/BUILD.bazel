@@ -46,6 +46,7 @@ cc_library(
     name = "crate_mapping",
     srcs = ["crate_mapping.cc"],
     hdrs = ["crate_mapping.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
@@ -86,11 +87,11 @@ cc_library(
         ":enum",
         ":naming",
         ":oneof",
+        ":upb_helpers",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "//src/google/protobuf/compiler/rust/accessors",
-        "//upb_generator:mangle",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
@@ -178,6 +179,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -191,10 +193,12 @@ cc_library(
         ":context",
         ":naming",
         ":rust_field_type",
+        ":upb_helpers",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "//src/google/protobuf/compiler/rust/accessors",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -204,6 +208,7 @@ cc_library(
     name = "relative_path",
     srcs = ["relative_path.cc"],
     hdrs = ["relative_path.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "@com_google_absl//absl/algorithm:container",
@@ -226,12 +231,30 @@ cc_library(
     name = "rust_field_type",
     srcs = ["rust_field_type.cc"],
     hdrs = ["rust_field_type.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/rust:__subpackages__",
     ],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "upb_helpers",
+    srcs = ["upb_helpers.cc"],
+    hdrs = ["upb_helpers.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//upb_generator/minitable:names",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )

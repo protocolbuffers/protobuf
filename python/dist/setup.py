@@ -11,7 +11,6 @@
 import glob
 import os
 import sys
-import sysconfig
 
 from setuptools import setup, Extension, find_packages
 
@@ -59,6 +58,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     namespace_packages=['google'],
     packages=find_packages(),

@@ -500,4 +500,32 @@ TEST(GeneratedCode, OneofClear) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, OneofAccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTable* table =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // oneof_uint32
+  const upb_MiniTableField* oneofField =
+      upb_MiniTable_FindFieldByNumber(table, 111);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(oneofField));
+
+  const upb_MiniTableField* oneOfFirstFetch =
+      upb_Message_WhichOneof((upb_Message*)msg, table, oneofField);
+  // one of not set, so should initially yield nullptr
+  EXPECT_EQ(oneOfFirstFetch, nullptr);
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_uint32(msg, 522);
+  const upb_MiniTableField* oneOfSecondFetch =
+      upb_Message_WhichOneof((upb_Message*)msg, table, oneofField);
+  // this oneof has now been set, so should yield the MiniTableField
+  EXPECT_EQ(oneOfSecondFetch, oneofField);
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace

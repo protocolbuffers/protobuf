@@ -24,12 +24,16 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
+#include "absl/base/casts.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -80,16 +84,15 @@ namespace internal {
 
 class InternalMetadata;
 
+namespace v2 {
+class TableDriven;
+}  // namespace v2
+
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
 // store these values, which is important to keep the layout of
 // ExtensionSet::Extension small.
 typedef uint8_t FieldType;
-
-// A function which, given an integer value, returns true if the number
-// matches one of the defined values for the corresponding enum type.  This
-// is used with RegisterEnumExtension, below.
-typedef bool EnumValidityFunc(int number);
 
 // Version of the above which takes an argument.  This is needed to deal with
 // extensions that are not compiled in.
@@ -134,8 +137,15 @@ struct ExtensionInfo {
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
+    // TODO: Fully remove the function pointer approach.
     EnumValidityFuncWithArg* func;
     const void* arg;
+
+    bool IsValid(int value) const {
+      return func != nullptr ? func(arg, value)
+                             : internal::ValidateEnum(
+                                   value, static_cast<const uint32_t*>(arg));
+    }
   };
 
   struct MessageInfo {
@@ -223,7 +233,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                 bool is_packed);
   static void RegisterEnumExtension(const MessageLite* extendee, int number,
                                     FieldType type, bool is_repeated,
-                                    bool is_packed, EnumValidityFunc* is_valid);
+                                    bool is_packed,
+                                    const uint32_t* validation_data);
   static void RegisterMessageExtension(const MessageLite* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
@@ -332,13 +343,13 @@ class PROTOBUF_EXPORT ExtensionSet {
   void UnsafeArenaSetAllocatedMessage(int number, FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(int number,
-                                                 const MessageLite& prototype);
+  [[nodiscard]] MessageLite* ReleaseMessage(int number,
+                                            const MessageLite& prototype);
   MessageLite* UnsafeArenaReleaseMessage(int number,
                                          const MessageLite& prototype);
 
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(
-      const FieldDescriptor* descriptor, MessageFactory* factory);
+  [[nodiscard]] MessageLite* ReleaseMessage(const FieldDescriptor* descriptor,
+                                            MessageFactory* factory);
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
@@ -407,7 +418,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #undef desc
 
   void RemoveLast(int number);
-  PROTOBUF_NODISCARD MessageLite* ReleaseLast(int number);
+  [[nodiscard]] MessageLite* ReleaseLast(int number);
   MessageLite* UnsafeArenaReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
@@ -477,7 +488,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-
   uint8_t* _InternalSerialize(const MessageLite* extendee,
                               int start_field_number, int end_field_number,
                               uint8_t* target,
@@ -488,6 +498,16 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     return _InternalSerializeImpl(extendee, start_field_number,
                                   end_field_number, target, stream);
+  }
+
+  // Same as _InternalSerialize, but do not verify the range of field numbers.
+  uint8_t* _InternalSerializeAll(const MessageLite* extendee, uint8_t* target,
+                                 io::EpsCopyOutputStream* stream) const {
+    if (flat_size_ == 0) {
+      assert(!is_large());
+      return target;
+    }
+    return _InternalSerializeAllImpl(extendee, target, stream);
   }
 
   // Like above but serializes in MessageSet format.
@@ -531,6 +551,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   // as .dll.
   int SpaceUsedExcludingSelf() const;
 
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
+    return PROTOBUF_FIELD_OFFSET(ExtensionSet, arena_);
+  }
+
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
@@ -538,18 +562,21 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Type>
   friend class RepeatedPrimitiveTypeTraits;
 
-  template <typename Type, bool IsValid(int)>
+  template <typename Type>
   friend class EnumTypeTraits;
 
-  template <typename Type, bool IsValid(int)>
+  template <typename Type>
   friend class RepeatedEnumTypeTraits;
 
   friend class google::protobuf::Reflection;
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
+  friend class google::protobuf::internal::v2::TableDriven;
 
   friend void internal::InitializeLazyExtensionSet();
+
+  static bool FieldTypeIsPointer(FieldType type);
 
   const int32_t& GetRefInt32(int number, const int32_t& default_value) const;
   const int64_t& GetRefInt64(int number, const int64_t& default_value) const;
@@ -568,11 +595,27 @@ class PROTOBUF_EXPORT ExtensionSet {
   const bool& GetRefRepeatedBool(int number, int index) const;
   const int& GetRefRepeatedEnum(int number, int index) const;
 
+  size_t GetMessageByteSizeLong(int number) const;
+  uint8_t* InternalSerializeMessage(int number, const MessageLite* prototype,
+                                    uint8_t* target,
+                                    io::EpsCopyOutputStream* stream) const;
+
   // Implementation of _InternalSerialize for non-empty map_.
   uint8_t* _InternalSerializeImpl(const MessageLite* extendee,
                                   int start_field_number, int end_field_number,
                                   uint8_t* target,
                                   io::EpsCopyOutputStream* stream) const;
+  // Implementation of _InternalSerializeAll for non-empty map_.
+  uint8_t* _InternalSerializeAllImpl(const MessageLite* extendee,
+                                     uint8_t* target,
+                                     io::EpsCopyOutputStream* stream) const;
+  // Implementation of _InternalSerialize for large map_.
+  // Extracted as a separate method to avoid inlining and to reuse in
+  // _InternalSerializeAllImpl.
+  uint8_t* _InternalSerializeImplLarge(const MessageLite* extendee,
+                                       int start_field_number,
+                                       int end_field_number, uint8_t* target,
+                                       io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
   class PROTOBUF_EXPORT LazyMessageExtension {
    public:
@@ -591,7 +634,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
                                                 Arena* arena) = 0;
-    PROTOBUF_NODISCARD virtual MessageLite* ReleaseMessage(
+    [[nodiscard]] virtual MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
@@ -607,6 +650,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
+
+    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
+        const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
                            const LazyMessageExtension& other, Arena* arena,
@@ -632,18 +678,53 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
   static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
       maybe_create_lazy_extension_;
+
+  // We can't directly use std::atomic for Extension::cached_size because
+  // Extension needs to be trivially copyable.
+  class TrivialAtomicInt {
+   public:
+    int operator()() const {
+      return reinterpret_cast<const AtomicT*>(int_)->load(
+          std::memory_order_relaxed);
+    }
+    void set(int v) {
+      reinterpret_cast<AtomicT*>(int_)->store(v, std::memory_order_relaxed);
+    }
+
+   private:
+    using AtomicT = std::atomic<int>;
+    alignas(AtomicT) char int_[sizeof(AtomicT)];
+  };
+
   struct Extension {
+    // Some helper methods for operations on a single Extension.
+    uint8_t* InternalSerializeFieldWithCachedSizesToArray(
+        const MessageLite* extendee, const ExtensionSet* extension_set,
+        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
+    uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
+        const MessageLite* extendee, const ExtensionSet* extension_set,
+        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
+    size_t ByteSize(int number) const;
+    size_t MessageSetItemByteSize(int number) const;
+    void Clear();
+    int GetSize() const;
+    void Free();
+    size_t SpaceUsedExcludingSelfLong() const;
+    bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
+                       int number, Arena* arena) const;
+    const void* PrefetchPtr() const {
+      ABSL_DCHECK_EQ(is_pointer, is_repeated || FieldTypeIsPointer(type));
+      // We don't want to prefetch invalid/null pointers so if there isn't a
+      // pointer to prefetch, then return `this`.
+      return is_pointer ? absl::bit_cast<const void*>(ptr) : this;
+    }
+
     // The order of these fields packs Extension into 24 bytes when using 8
     // byte alignment. Consider this when adding or removing fields here.
-    union {
-      int32_t int32_t_value;
-      int64_t int64_t_value;
-      uint32_t uint32_t_value;
-      uint64_t uint64_t_value;
-      float float_value;
-      double double_value;
-      bool bool_value;
-      int enum_value;
+
+    // We need a separate named union for pointer values to allow for
+    // prefetching the pointer without undefined behavior.
+    union Pointer {
       std::string* string_value;
       MessageLite* message_value;
       LazyMessageExtension* lazymessage_value;
@@ -660,8 +741,23 @@ class PROTOBUF_EXPORT ExtensionSet {
       RepeatedPtrField<MessageLite>* repeated_message_value;
     };
 
+    union {
+      int32_t int32_t_value;
+      int64_t int64_t_value;
+      uint32_t uint32_t_value;
+      uint64_t uint64_t_value;
+      float float_value;
+      double double_value;
+      bool bool_value;
+      int enum_value;
+      Pointer ptr;
+    };
+
     FieldType type;
     bool is_repeated;
+
+    // Whether the extension is a pointer. This is used for prefetching.
+    bool is_pointer : 1;
 
     // For singular types, indicates if the extension is "cleared".  This
     // happens when an extension is set and then later cleared by the caller.
@@ -669,66 +765,39 @@ class PROTOBUF_EXPORT ExtensionSet {
     // removing it from the map, we just set is_cleared = true.  This has no
     // meaning for repeated types; for those, the size of the RepeatedField
     // simply becomes zero when cleared.
-    bool is_cleared : 4;
+    bool is_cleared : 1;
 
     // For singular message types, indicates whether lazy parsing is enabled
     // for this extension. This field is only valid when type == TYPE_MESSAGE
     // and !is_repeated because we only support lazy parsing for singular
     // message types currently. If is_lazy = true, the extension is stored in
     // lazymessage_value. Otherwise, the extension will be message_value.
-    bool is_lazy : 4;
+    bool is_lazy : 1;
 
     // For repeated types, this indicates if the [packed=true] option is set.
     bool is_packed;
 
     // For packed fields, the size of the packed data is recorded here when
     // ByteSize() is called then used during serialization.
-    // TODO:  Use atomic<int> when C++ supports it.
-    mutable int cached_size;
+    mutable TrivialAtomicInt cached_size;
 
     // The descriptor for this extension, if one exists and is known.  May be
     // nullptr.  Must not be nullptr if the descriptor for the extension does
     // not live in the same pool as the descriptor for the containing type.
     const FieldDescriptor* descriptor;
-
-    // Some helper methods for operations on a single Extension.
-    uint8_t* InternalSerializeFieldWithCachedSizesToArray(
-        const MessageLite* extendee, const ExtensionSet* extension_set,
-        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        const MessageLite* extendee, const ExtensionSet* extension_set,
-        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    size_t ByteSize(int number) const;
-    size_t MessageSetItemByteSize(int number) const;
-    void Clear();
-    int GetSize() const;
-    void Free();
-    size_t SpaceUsedExcludingSelfLong() const;
-    bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
-                       int number, Arena* arena) const;
   };
 
-  // The Extension struct is small enough to be passed by value, so we use it
-  // directly as the value type in mappings rather than use pointers.  We use
+  // The Extension struct is small enough to be passed by value so we use it
+  // directly as the value type in mappings rather than use pointers. We use
   // sorted maps rather than hash-maps because we expect most ExtensionSets will
-  // only contain a small number of extension.  Also, we want AppendToList and
-  // deterministic serialization to order fields by field number.
+  // only contain a small number of extensions, and we want AppendToList and
+  // deterministic serialization to order fields by field number. In flat mode,
+  // the number of elements is small enough that linear search is faster than
+  // binary search.
 
   struct KeyValue {
     int first;
     Extension second;
-
-    struct FirstComparator {
-      bool operator()(const KeyValue& lhs, const KeyValue& rhs) const {
-        return lhs.first < rhs.first;
-      }
-      bool operator()(const KeyValue& lhs, int key) const {
-        return lhs.first < key;
-      }
-      bool operator()(int key, const KeyValue& rhs) const {
-        return key < rhs.first;
-      }
-    };
   };
 
   using LargeMap = absl::btree_map<int, Extension>;
@@ -758,35 +827,97 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Erase(int key);
 
   size_t Size() const {
-    return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
-  // Similar to std::for_each.
+  // For use as `PrefetchFunctor`s in `ForEach`.
+  struct Prefetch {
+    void operator()(const void* ptr) const { absl::PrefetchToLocalCache(ptr); }
+  };
+  struct PrefetchNta {
+    void operator()(const void* ptr) const {
+      absl::PrefetchToLocalCacheNta(ptr);
+    }
+  };
+
+  template <typename Iterator, typename KeyValueFunctor,
+            typename PrefetchFunctor>
+  static void ForEachPrefetchImpl(Iterator it, Iterator end,
+                                  KeyValueFunctor func,
+                                  PrefetchFunctor prefetch_func) {
+    // Note: based on arena's ChunkList::Cleanup().
+    // Prefetch distance 16 performs better than 8 in load tests.
+    constexpr int kPrefetchDistance = 16;
+    Iterator prefetch = it;
+    // Prefetch the first kPrefetchDistance extensions.
+    for (int i = 0; prefetch != end && i < kPrefetchDistance; ++prefetch, ++i) {
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // For the middle extensions, call func and then prefetch the extension
+    // kPrefetchDistance after the current one.
+    for (; prefetch != end; ++it, ++prefetch) {
+      func(it->first, it->second);
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // Call func on the rest without prefetching.
+    for (; it != end; ++it) func(it->first, it->second);
+  }
+
+  // Similar to std::for_each, but returning void.
   // Each Iterator is decomposed into ->first and ->second fields, so
   // that the KeyValueFunctor can be agnostic vis-a-vis KeyValue-vs-std::pair.
+  // Applies a functor to the <int, Extension&> pairs in sorted order and
+  // prefetches ahead.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                          std::move(func), std::move(prefetch_func));
+      return;
+    }
+    ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                        std::move(prefetch_func));
+  }
+  // As above, but const.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) const {
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                          std::move(func), std::move(prefetch_func));
+      return;
+    }
+    ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                        std::move(prefetch_func));
+  }
+
+  // As above, but without prefetching. This is for use in cases where we never
+  // use the pointed-to extension values in `func`.
   template <typename Iterator, typename KeyValueFunctor>
-  static KeyValueFunctor ForEach(Iterator begin, Iterator end,
-                                 KeyValueFunctor func) {
+  static void ForEachNoPrefetch(Iterator begin, Iterator end,
+                                KeyValueFunctor func) {
     for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
-    return std::move(func);
   }
 
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+  void ForEachNoPrefetch(KeyValueFunctor func) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                        std::move(func));
+      return;
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
-  // Applies a functor to the <int, const Extension&> pairs in sorted order.
+  // As above, but const.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+  void ForEachNoPrefetch(KeyValueFunctor func) const {
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                        std::move(func));
+      return;
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
   // Merges existing Extension from other_extension
@@ -1275,14 +1406,14 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 
 // ExtensionSet represents enums using integers internally, so we have to
 // static_cast around.
-template <typename Type, bool IsValid(int)>
+template <typename Type>
 class EnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
   using InitType = ConstType;
   static const ConstType& FromInitType(const InitType& v) { return v; }
-  typedef EnumTypeTraits<Type, IsValid> Singular;
+  typedef EnumTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = false;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
@@ -1296,19 +1427,20 @@ class EnumTypeTraits {
   }
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->SetEnum(number, field_type, value, nullptr);
   }
 };
 
-template <typename Type, bool IsValid(int)>
+template <typename Type>
 class RepeatedEnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
   using InitType = ConstType;
   static const ConstType& FromInitType(const InitType& v) { return v; }
-  typedef RepeatedEnumTypeTraits<Type, IsValid> Repeated;
+  typedef RepeatedEnumTypeTraits<Type> Repeated;
   static constexpr bool kLifetimeBound = false;
 
   typedef RepeatedField<Type> RepeatedFieldType;
@@ -1323,12 +1455,14 @@ class RepeatedEnumTypeTraits {
   }
   static inline void Set(int number, int index, ConstType value,
                          ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->SetRepeatedEnum(number, index, value);
   }
   static inline void Add(int number, FieldType field_type, bool is_packed,
                          ConstType value, ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->AddEnum(number, field_type, is_packed, value, nullptr);
   }
   static inline const RepeatedField<Type>& GetRepeated(
@@ -1406,8 +1540,9 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, nullptr, message);
   }
-  PROTOBUF_NODISCARD static inline MutableType Release(
-      int number, FieldType /* field_type */, ExtensionSet* set) {
+  [[nodiscard]] static inline MutableType Release(int number,
+                                                  FieldType /* field_type */,
+                                                  ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));
   }

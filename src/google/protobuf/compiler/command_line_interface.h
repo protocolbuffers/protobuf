@@ -27,6 +27,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -232,6 +233,9 @@ class PROTOC_EXPORT CommandLineInterface {
       Edition minimum_edition, Edition maximum_edition,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  bool EnforceProtocEditionsSupport(
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -339,6 +343,7 @@ class PROTOC_EXPORT CommandLineInterface {
       RepeatedPtrField<FileDescriptorProto>* output,
       const TransitiveDependencyOptions& options =
           TransitiveDependencyOptions());
+
 
   // -----------------------------------------------------------------
 

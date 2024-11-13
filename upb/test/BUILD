@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -19,9 +20,7 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "parse_text_proto",
@@ -68,7 +67,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    visibility = ["//upb:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 upb_minitable_proto_library(
@@ -326,7 +325,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -357,4 +355,3 @@ filegroup(
     ),
     visibility = ["//upb:__pkg__"],
 )
-# end:github_only

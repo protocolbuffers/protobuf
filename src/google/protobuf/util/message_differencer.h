@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -739,7 +739,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     bool report_modified_aggregates_;
     const Message* message1_;
     const Message* message2_;
-    MessageDifferencer::UnpackAnyField unpack_any_field_;
   };
 
  private:

@@ -55,6 +55,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:fixed_array",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -207,6 +208,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:port",
         "//src/google/protobuf:source_context_cc_proto",

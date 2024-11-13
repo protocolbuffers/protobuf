@@ -9,7 +9,7 @@
 
 #import "GPBExtensionRegistry.h"
 
-@class GPBMessage;
+#import "GPBMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

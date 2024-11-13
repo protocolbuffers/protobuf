@@ -195,10 +195,7 @@ def _IsGroupLike(field):
     True if this field is group-like, false otherwise.
   """
   # Groups are always tag-delimited.
-  if (
-      field._GetFeatures().message_encoding
-      != descriptor._FEATURESET_MESSAGE_ENCODING_DELIMITED
-  ):
+  if field.type != descriptor.FieldDescriptor.TYPE_GROUP:
     return False
 
   # Group fields always are always the lowercase type name.
@@ -1809,7 +1806,7 @@ def ParseFloat(text):
       try:
         return float(text.rstrip('f'))
       except ValueError:
-        raise ValueError('Couldn\'t parse float: %s' % text)
+        raise ValueError("Couldn't parse float: %s" % text)
 
 
 def ParseBool(text):

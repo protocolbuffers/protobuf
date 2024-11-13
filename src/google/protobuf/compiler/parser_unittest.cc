@@ -226,7 +226,7 @@ TEST_F(ParserTest, StopAfterSyntaxIdentifierWithErrors) {
   EXPECT_EQ("1:9: Expected syntax identifier.\n", error_collector_.text_);
 }
 
-TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
+TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
   SetupParser("message A {}");
   FileDescriptorProto file;
   CaptureTestStderr();
@@ -2627,7 +2627,7 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedError) {
       " to start from the outermost scope.\n");
 }
 
-TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
+TEST_F(ParserValidationErrorTest, ResolvedUndefinedOptionError) {
   // Build descriptor message in test pool
   FileDescriptorProto descriptor_proto;
   DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
@@ -2695,7 +2695,7 @@ class CompareDescriptorNames {
   }
 };
 
-// Sorts nested DescriptorProtos of a DescriptoProto, by name.
+// Sorts nested DescriptorProtos of a DescriptorProto, by name.
 void SortMessages(DescriptorProto* descriptor_proto) {
   int size = descriptor_proto->nested_type_size();
   // recursively sort; we can't guarantee the order of nested messages either
@@ -2764,7 +2764,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   original_file->CopyTo(&expected);
   StripEmptyOptions(expected);
 
-  // Get the DebugString of the unittest.proto FileDecriptor, which includes
+  // Get the DebugString of the unittest.proto FileDescriptor, which includes
   // all other descriptor types
   std::string debug_string = original_file->DebugString();
 
@@ -2776,7 +2776,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   ASSERT_EQ("", error_collector_.text_) << "Failed to parse:\n" << debug_string;
 
   // We now have a FileDescriptorProto, but to compare with the expected we
-  // need to link to a FileDecriptor, then output back to a proto. We'll
+  // need to link to a FileDescriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
   parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
@@ -2824,7 +2824,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   ASSERT_EQ("", error_collector_.text_);
 
   // We now have a FileDescriptorProto, but to compare with the expected we
-  // need to link to a FileDecriptor, then output back to a proto. We'll
+  // need to link to a FileDescriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
   parsed.set_name(original_file->name());
 

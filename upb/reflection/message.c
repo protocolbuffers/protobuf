@@ -41,8 +41,8 @@ bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
   }
 }
 
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o) {
+const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                const upb_OneofDef* o) {
   const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
   if (upb_OneofDef_IsSynthetic(o)) {
     UPB_ASSERT(upb_OneofDef_FieldCount(o) == 1);
@@ -138,7 +138,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
   size_t i = *iter;
   size_t n = upb_MiniTable_FieldCount(mt);
-  const upb_MessageValue zero = {0};
+  upb_MessageValue zero = upb_MessageValue_Zero();
   UPB_UNUSED(ext_pool);
 
   // Iterate over normal fields, returning the first one that is set.

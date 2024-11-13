@@ -1,6 +1,7 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_license//rules:license.bzl", "license")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
@@ -12,7 +13,21 @@ load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "PrivacyInfo.xcprivacy",
+])
+
+license(
+    name = "license",
+    package_name = "protobuf",
+    license_text = ":LICENSE",
+)
+
+exports_files(
+    ["MODULE.bazel"],
+    visibility = ["//cmake:__pkg__"],
+)
 
 ################################################################################
 # Well Known Types Proto Library Rules
@@ -256,7 +271,7 @@ alias(
 
 alias(
     name = "protobuf_nowkt",
-    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
+    actual = "//src/google/protobuf",
     deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
@@ -418,6 +433,7 @@ proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
         "//:compiler_plugin_proto",
+        "//:cpp_features_proto",
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
@@ -440,6 +456,16 @@ alias(
     name = "protobuf_objc",
     actual = "//objectivec",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Rust support
+################################################################################
+
+alias(
+    name = "protobuf_rust",
+    actual = "//rust:protobuf",
     visibility = ["//visibility:public"],
 )
 
@@ -620,54 +646,4 @@ filegroup(
     name = "bzl_srcs",
     srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
-)
-
-################################################################################
-# Packaging rules
-################################################################################
-
-# Files included in all source distributions
-pkg_files(
-    name = "common_dist_files",
-    srcs = glob(
-        [
-            "*.bzl",
-            "cmake/*.cmake",
-            "cmake/*.in",
-            "editors/*",
-        ],
-        allow_empty = True,
-    ) + [
-        "BUILD.bazel",
-        "CMakeLists.txt",
-        "CONTRIBUTORS.txt",
-        "LICENSE",
-        "README.md",
-        "WORKSPACE",
-        "cmake/README.md",
-        "generate_descriptor_proto.sh",
-        "maven_install.json",
-        "//third_party:BUILD.bazel",
-        "//third_party:zlib.BUILD",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-# Additional files for C#
-pkg_files(
-    name = "csharp_dist_files",
-    srcs = [
-        "global.json",
-    ],
-    visibility = ["//pkg:__pkg__"],
-)
-
-# Additional files for ObjC
-pkg_files(
-    name = "objectivec_dist_files",
-    srcs = [
-        "Protobuf.podspec",
-    ],
-    visibility = ["//pkg:__pkg__"],
 )

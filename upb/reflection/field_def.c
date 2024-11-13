@@ -252,8 +252,7 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
 
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
   // Groups are always tag-delimited.
-  if (UPB_DESC(FeatureSet_message_encoding)(upb_FieldDef_ResolvedFeatures(f)) !=
-      UPB_DESC(FeatureSet_DELIMITED)) {
+  if (f->type_ != kUpb_FieldType_Group) {
     return false;
   }
 
@@ -591,20 +590,6 @@ static bool _upb_FieldDef_InferLegacyFeatures(
     ret = true;
   }
 
-// begin:google_only
-// #ifndef UPB_BOOTSTRAP_STAGE0
-//   if (syntax == kUpb_Syntax_Proto3 &&
-//       UPB_DESC(FieldOptions_has_enforce_utf8)(options) &&
-//       !UPB_DESC(FieldOptions_enforce_utf8)(options)) {
-//     int val = UPB_DESC(FeatureSet_UNVERIFIED);
-//     UPB_DESC(FeatureSet_set_utf8_validation(features, val));
-//     ret = true;
-//   }
-// #endif
-//   // clang-format off
-// end:google_only
-  // clang-format on
-
   return ret;
 }
 
@@ -649,7 +634,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                            f->full_name);
     }
 
-    if (oneof_index >= upb_MessageDef_OneofCount(m)) {
+    if (oneof_index < 0 || oneof_index >= upb_MessageDef_OneofCount(m)) {
       _upb_DefBuilder_Errf(ctx, "oneof_index out of range (%s)", f->full_name);
     }
 
@@ -690,12 +675,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
   f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
-  if (f->type_ == kUpb_FieldType_Message &&
-      // TODO: remove once we can deprecate kUpb_FieldType_Group.
-      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_DELIMITED)) {
-    f->type_ = kUpb_FieldType_Group;
-  }
 
   if (has_type) {
     switch (f->type_) {
@@ -716,7 +695,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     }
   }
 
-  if (!has_type && has_type_name) {
+  if ((!has_type && has_type_name) || f->type_ == kUpb_FieldType_Message) {
     f->type_ =
         UPB_FIELD_TYPE_UNSPECIFIED;  // We'll assign this in resolve_subdef()
   } else {
@@ -866,8 +845,15 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
           break;
         case UPB_DEFTYPE_MSG:
           f->sub.msgdef = def;
-          f->type_ = kUpb_FieldType_Message;  // It appears there is no way of
-                                              // this being a group.
+          f->type_ = kUpb_FieldType_Message;
+          // TODO: remove once we can deprecate
+          // kUpb_FieldType_Group.
+          if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+                  UPB_DESC(FeatureSet_DELIMITED) &&
+              !upb_MessageDef_IsMapEntry(def) &&
+              !(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
+            f->type_ = kUpb_FieldType_Group;
+          }
           f->has_presence = !upb_FieldDef_IsRepeated(f);
           break;
         default:
@@ -982,9 +968,9 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
       const upb_MiniTableEnum* subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
       sub = upb_MiniTableSub_FromEnum(subenum);
     }
-    bool ok2 = upb_MiniTableExtension_Init(desc.data, desc.size, mut_ext,
-                                           upb_MessageDef_MiniTable(f->msgdef),
-                                           sub, ctx->status);
+    bool ok2 = _upb_MiniTableExtension_Init(desc.data, desc.size, mut_ext,
+                                            upb_MessageDef_MiniTable(f->msgdef),
+                                            sub, ctx->platform, ctx->status);
     if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
   }
 

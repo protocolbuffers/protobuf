@@ -16,7 +16,7 @@ conda:
   environment: python/docs/environment.yml
 
 python:
-  version: 3.7
+  version: 3.8
   install:
     - method: setuptools
       path: python

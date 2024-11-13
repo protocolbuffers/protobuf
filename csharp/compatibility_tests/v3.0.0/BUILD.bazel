@@ -10,7 +10,7 @@ inline_sh_test(
         "src/**/*.cs*",  # .cs and .csproj
         "protos/**/*.proto",
     ]) + [
-        "//:well_known_protos",
+        "//:well_known_type_protos",
         "//csharp:srcs",
     ],
 )

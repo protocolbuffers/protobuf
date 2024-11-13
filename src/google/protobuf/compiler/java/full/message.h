@@ -55,9 +55,6 @@ class ImmutableMessageGenerator : public MessageGenerator {
 
   // Returns an estimate of the number of bytes the printed code will compile to
   int GenerateStaticVariableInitializers(io::Printer* printer) override;
-  void GenerateKotlinDsl(io::Printer* printer) const override;
-  void GenerateKotlinMembers(io::Printer* printer) const override;
-  void GenerateTopLevelKotlinMembers(io::Printer* printer) const override;
 
  private:
   void GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate);
@@ -76,8 +73,6 @@ class ImmutableMessageGenerator : public MessageGenerator {
   void GenerateParser(io::Printer* printer);
   void GenerateParsingConstructor(io::Printer* printer);
   void GenerateMutableCopy(io::Printer* printer);
-  void GenerateKotlinExtensions(io::Printer* printer) const;
-  void GenerateKotlinOrNull(io::Printer* printer) const;
   void GenerateAnyMethods(io::Printer* printer);
 
   Context* context_;

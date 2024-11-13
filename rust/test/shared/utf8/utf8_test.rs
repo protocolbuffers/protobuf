@@ -13,8 +13,10 @@
 // behavior. Do not assume that the Protobuf team is intentional about these
 // behaviors while b/304774814 is open.
 
-use feature_verify_rust_proto::Verify;
 use googletest::prelude::*;
+use protobuf::prelude::*;
+
+use feature_verify_rust_proto::Verify;
 use no_features_proto2_rust_proto::NoFeaturesProto2;
 use no_features_proto3_rust_proto::NoFeaturesProto3;
 use protobuf::{ParseError, ProtoStr};
@@ -34,7 +36,7 @@ fn make_non_utf8_proto_str() -> &'static ProtoStr {
     }
 }
 
-#[test]
+#[gtest]
 fn test_proto2() {
     let non_utf8_str = make_non_utf8_proto_str();
 
@@ -45,15 +47,14 @@ fn test_proto2() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // No error on parsing.
     let parsed_result = NoFeaturesProto2::parse(&serialized_nonutf8);
     assert_that!(parsed_result, ok(anything()));
 }
 
-#[test]
+#[gtest]
 fn test_proto3() {
     let non_utf8_str = make_non_utf8_proto_str();
 
@@ -64,15 +65,14 @@ fn test_proto3() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // Error on parsing.
     let parsed_result = NoFeaturesProto3::parse(&serialized_nonutf8);
     assert_that!(parsed_result, err(matches_pattern!(&ParseError)));
 }
 
-#[test]
+#[gtest]
 fn test_verify() {
     let non_utf8_str = make_non_utf8_proto_str();
 
@@ -83,8 +83,7 @@ fn test_verify() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // Error on parsing.
     let parsed_result = Verify::parse(&serialized_nonutf8);

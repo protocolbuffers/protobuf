@@ -19,7 +19,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import unittest
 
 from google.protobuf.internal import test_bad_identifiers_pb2
-from google.protobuf import service
 from google.protobuf import symbol_database
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
@@ -282,12 +281,6 @@ class GeneratorTest(unittest.TestCase):
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "TestMessage"))
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "FOO"))
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "test_extension"))
-
-    # Make sure unittest_no_generic_services_pb2 has no services subclassing
-    # Proto2 Service class.
-    if hasattr(unittest_no_generic_services_pb2, "TestService"):
-      self.assertFalse(issubclass(unittest_no_generic_services_pb2.TestService,
-                                  service.Service))
 
   def testMessageTypesByName(self):
     file_type = unittest_pb2.DESCRIPTOR

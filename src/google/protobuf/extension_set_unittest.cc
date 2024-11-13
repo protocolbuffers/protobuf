@@ -11,11 +11,11 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
@@ -27,12 +27,13 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -147,7 +148,7 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                 new unittest::ForeignMessage());
 
-  // SetAllocatedExtension with nullptr is equivalent to ClearExtenion.
+  // SetAllocatedExtension with nullptr is equivalent to ClearExtension.
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                 nullptr);
   EXPECT_FALSE(
@@ -841,10 +842,12 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     const size_t old_capacity =                                                \
         message->GetRepeatedExtension(unittest::repeated_##type##_extension)   \
             .Capacity();                                                       \
-    EXPECT_GE(                                                                 \
-        old_capacity,                                                          \
-        (RepeatedFieldLowerClampLimit<cpptype, std::max(sizeof(cpptype),       \
-                                                        sizeof(void*))>()));   \
+    if (sizeof(cpptype) > 1) {                                                 \
+      EXPECT_GE(                                                               \
+          old_capacity,                                                        \
+          (RepeatedFieldLowerClampLimit<cpptype, std::max(sizeof(cpptype),     \
+                                                          sizeof(void*))>())); \
+    }                                                                          \
     for (int i = 0; i < 16; ++i) {                                             \
       message->AddExtension(unittest::repeated_##type##_extension, value);     \
     }                                                                          \
@@ -1181,7 +1184,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
   EXPECT_DEBUG_DEATH(
       message.SetExtension(unittest::optional_foreign_enum_extension,
                            static_cast<unittest::ForeignEnum>(53)),
-      "IsValid");
+      "ValidateEnum");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
@@ -1190,6 +1193,9 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.
 
   FileDescriptorProto dynamic_proto;
+  unittest::TestDynamicExtensions::descriptor()->file()->CopyHeadingTo(
+      &dynamic_proto);
+  dynamic_proto.clear_dependency();
   dynamic_proto.set_name("dynamic_extensions_test.proto");
   dynamic_proto.add_dependency(
       unittest::TestAllExtensions::descriptor()->file()->name());
@@ -1323,11 +1329,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     const Message& sub_message =
         message.GetReflection()->GetMessage(message, message_extension);
     const unittest::ForeignMessage* typed_sub_message =
-#if PROTOBUF_RTTI
-        dynamic_cast<const unittest::ForeignMessage*>(&sub_message);
-#else
-        static_cast<const unittest::ForeignMessage*>(&sub_message);
-#endif
+        google::protobuf::DynamicCastMessage<unittest::ForeignMessage>(&sub_message);
     ASSERT_TRUE(typed_sub_message != nullptr);
     EXPECT_EQ(456, typed_sub_message->c());
   }
@@ -1448,3 +1450,5 @@ TEST(ExtensionSetTest, Descriptor) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

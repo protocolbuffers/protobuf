@@ -13,6 +13,7 @@
 #ifndef GOOGLE_PROTOBUF_PORT_H__
 #define GOOGLE_PROTOBUF_PORT_H__
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -39,8 +40,10 @@ class MessageLite;
 
 namespace internal {
 
+struct MessageTraitsImpl;
+
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
+PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #if defined(__GNUC__)
   asm("" : : "r"(var));
 #else
@@ -54,28 +57,33 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 // Optimized implementation for clang where we can generate a relocation without
 // adding runtime instructions.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   // This injects a relocation in the code path without having to run code, but
   // we can only do it with a newer clang.
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 
-template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
-  return StrongPointer<decltype(ptr), ptr>();
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  static constexpr auto ptr =
+      decltype(TraitsImpl::template value<T>)::StrongPointer();
+  // This is identical to the implementation of StrongPointer() above, but it
+  // has to be explicitly inlined here or else Clang 19 will raise an error in
+  // some configurations.
+  asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 #else   // .reloc
 // Portable fallback. It usually generates a single LEA instruction or
 // equivalent.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   StrongPointer(ptr);
 }
 
-template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  return StrongPointer(T::template GetStrongPointerForType<T>());
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  return StrongPointer(
+      decltype(TraitsImpl::template value<T>)::StrongPointer());
 }
 #endif  // .reloc
 
@@ -240,15 +248,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-// Returns true if debug string hardening is required
-inline constexpr bool DebugHardenStringValues() {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return true;
-#else
-  return false;
-#endif
-}
-
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -259,9 +258,61 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+constexpr bool PerformDebugChecks() {
+#if defined(NDEBUG) && !defined(PROTOBUF_ASAN) && !defined(PROTOBUF_MSAN) && \
+    !defined(PROTOBUF_TSAN)
+  return false;
+#else
+  return true;
+#endif
+}
+
+// Force copy the default string to a string field so that non-optimized builds
+// have harder-to-rely-on address stability.
+constexpr bool DebugHardenForceCopyDefaultString() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInRelease() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInSwap() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInMove() {
+  return false;
+}
+
+constexpr bool DebugHardenForceAllocationOnConstruction() {
+  return false;
+}
+
+constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
+// Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
+// detect if a range of memory is not valid when we expect it to be. The
+// volatile keyword is necessary here to prevent the compiler from optimizing
+// away the memory reads below.
+inline void AssertBytesAreReadable(const volatile char* p, int n) {
+  if (PerformDebugChecks()) {
+    for (int i = 0; i < n; ++i) {
+      p[i];
+    }
+  }
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+
+inline constexpr bool IsLazyParsingSupported() {
+  // We need 3 bits for pointer tagging in lazy parsing.
+  return PtrIsAtLeast8BAligned();
+}
 
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
@@ -272,7 +323,7 @@ inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
 // past the end of message/valid memory, however we are doing this
 // inside inline asm block, since computing the invalid pointer
 // is a potential UB. Only insert prefetch once per function,
-inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
@@ -280,9 +331,17 @@ inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
 }
 
+// Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 320);
+}
+
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
-[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
-Unreachable() {
+[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
 #elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
@@ -300,7 +359,7 @@ Unreachable() {
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
+PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
   char protobuf_tsan_dummy =
       *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
   asm volatile("" : "+r"(protobuf_tsan_dummy));
@@ -310,12 +369,12 @@ inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
 // member is not important. We can unconditionally write to it without affecting
 // correctness of the rest of the class.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
+PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
   *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
 }
 #else
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
 // This trampoline allows calling from codegen without needing a #include to
@@ -324,7 +383,104 @@ inline void PrefetchToLocalCache(const void* ptr) {
   absl::PrefetchToLocalCache(ptr);
 }
 
+template <typename T>
+constexpr T* Launder(T* p) {
+#if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
+  return std::launder(p);
+#elif ABSL_HAVE_BUILTIN(__builtin_launder)
+  return __builtin_launder(p);
+#else
+  return p;
+#endif
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return true;
+}
+#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return __is_bitwise_cloneable(T);
+}
+#else
+constexpr bool EnableCustomNew() { return false; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return false;
+}
+#endif
+
 constexpr bool IsOss() { return true; }
+
+// Counter library for debugging internal protobuf logic.
+// It allows instrumenting code that has different options (eg fast vs slow
+// path) to get visibility into how much we are hitting each path.
+// When compiled with -DPROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS, the counters
+// register an atexit handler to dump the table. Otherwise, they are a noop and
+// have not runtime cost.
+//
+// Usage:
+//
+// if (do_fast) {
+//   PROTOBUF_DEBUG_COUNTER("Foo.Fast").Inc();
+//   ...
+// } else {
+//   PROTOBUF_DEBUG_COUNTER("Foo.Slow").Inc();
+//   ...
+// }
+class PROTOBUF_EXPORT RealDebugCounter {
+ public:
+  explicit RealDebugCounter(absl::string_view name) { Register(name); }
+  // Lossy increment.
+  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
+  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+
+ private:
+  void Register(absl::string_view name);
+  std::atomic<size_t> counter_{};
+};
+
+// When the feature is not enabled, the type is a noop.
+class NoopDebugCounter {
+ public:
+  explicit constexpr NoopDebugCounter() = default;
+  constexpr void Inc() {}
+};
+
+// Default empty string object. Don't use this directly. Instead, call
+// GetEmptyString() to get the reference. This empty string is aligned with a
+// minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
+#if defined(__cpp_lib_constexpr_string)
+// Take advantage of C++20 constexpr support in std::string.
+class alignas(8) GlobalEmptyString {
+ public:
+  const std::string& get() const { return value_; }
+  // Nothing to init, or destroy.
+  std::string* Init() const { return nullptr; }
+
+ private:
+  std::string value_;
+};
+PROTOBUF_EXPORT extern const GlobalEmptyString fixed_address_empty_string;
+#else
+class alignas(8) GlobalEmptyString {
+ public:
+  const std::string& get() const {
+    return *reinterpret_cast<const std::string*>(internal::Launder(buffer_));
+  }
+  std::string* Init() {
+    return ::new (static_cast<void*>(buffer_)) std::string();
+  }
+
+ private:
+  alignas(std::string) char buffer_[sizeof(std::string)];
+};
+PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

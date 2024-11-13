@@ -203,11 +203,6 @@ typedef struct {
   upb_Arena* arena;
 } PyUpb_Arena;
 
-// begin:google_only
-// static upb_alloc* global_alloc = &upb_alloc_global;
-// end:google_only
-
-// begin:github_only
 #ifdef __GLIBC__
 #include <malloc.h>  // malloc_trim()
 #endif
@@ -216,7 +211,7 @@ typedef struct {
 // memory to the OS.  Without this call, we appear to leak memory, at least
 // as measured in RSS.
 //
-// We opt not to use this instead of PyMalloc (which would also solve the
+// We opt to use this instead of PyMalloc (which would also solve the
 // problem) because the latter requires the GIL to be held.  This would make
 // our messages unsafe to share with other languages that could free at
 // unpredictable
@@ -240,8 +235,7 @@ static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   }
 }
 static upb_alloc trim_alloc = {&upb_trim_allocfunc};
-static const upb_alloc* global_alloc = &trim_alloc;
-// end:github_only
+static upb_alloc* global_alloc = &trim_alloc;
 
 static upb_Arena* PyUpb_NewArena(void) {
   return upb_Arena_Init(NULL, 0, global_alloc);

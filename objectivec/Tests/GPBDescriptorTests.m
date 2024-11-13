@@ -5,11 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import <objc/runtime.h>
 
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBTestUtilities.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestObjc.pbobjc.h"
 #import "objectivec/Tests/UnittestObjcOptions.pbobjc.h"

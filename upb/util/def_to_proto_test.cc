@@ -276,28 +276,6 @@ TEST(FuzzTest, DefaultWithValidHexEscapePrintable) {
            })pb"));
 }
 
-// begin:google_only
-// TEST(FuzzTest, DependencyWithEmbeddedNull) {
-//   RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file {
-//                                                  name: "a"
-//                                                  dependency: "a\000"
-//                                                  options { cc_api_version: 0 }
-//                                                  weak_dependency: 0
-//                                                })pb"));
-// }
-//
-// TEST(FuzzTest, NanInOptions) {
-//   RoundTripDescriptor(
-//       ParseTextProtoOrDie(R"pb(file {
-//                                  name: ""
-//                                  service {
-//                                    name: "A"
-//                                    options { failure_detection_delay: nan }
-//                                  }
-//                                })pb"));
-// }
-// end:google_only
-
 TEST(FuzzTest, PackageStartsWithNumber) {
   RoundTripDescriptor(
       ParseTextProtoOrDie(R"pb(file { name: "" package: "0" })pb"));
@@ -331,6 +309,17 @@ TEST(FuzzTest, RoundTripDescriptorRegressionOneofSameName) {
                oneof_decl { name: "k" }
              }
            })pb"));
+}
+
+TEST(FuzzTest, NegativeOneofIndex) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             message_type {
+               name: "A"
+               field { name: "A" number: 0 type_name: "" oneof_index: -1 }
+             }
+           }
+      )pb"));
 }
 
 }  // namespace upb_test

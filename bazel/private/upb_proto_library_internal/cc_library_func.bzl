@@ -1,28 +1,11 @@
 """A function to compile C/C++ code, like cc_library() but from Starlark."""
 
-# begin:google_only
-# load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
-#
-# def upb_use_cpp_toolchain():
-#     return [
-#         config_common.toolchain_type(
-#             "@bazel_tools//tools/cpp:cc_runtimes_toolchain_type",
-#             mandatory = False,
-#         ),
-#     ] + use_cpp_toolchain()
-#
-# end:google_only
-
-# begin:github_only
-# Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 
 def upb_use_cpp_toolchain():
-    return ["@bazel_tools//tools/cpp:toolchain_type"]
+    return use_cpp_toolchain()
 
-# end:github_only
-
-def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
+def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = []):
     """Like cc_library(), but callable from rules.
 
     Args:
@@ -31,22 +14,12 @@ def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
       hdrs: Public headers that can be #included from other rules.
       srcs: C/C++ source files.
       copts: Additional options for cc compilation.
-      includes: Additional include paths.
       dep_ccinfos: CcInfo providers of dependencies we should build/link against.
+      includes: Additional include paths.
 
     Returns:
       CcInfo provider for this compilation.
     """
-
-    # begin:google_only
-    #     cc_runtimes_toolchain = ctx.toolchains["@bazel_tools//tools/cpp:cc_runtimes_toolchain_type"]
-    #     if cc_runtimes_toolchain:
-    #         dep_ccinfos += [
-    #             target[CcInfo]
-    #             for target in cc_runtimes_toolchain.cc_runtimes_info.runtimes
-    #         ]
-    #
-    # end:google_only
 
     compilation_contexts = [info.compilation_context for info in dep_ccinfos]
     linking_contexts = [info.linking_context for info in dep_ccinfos]

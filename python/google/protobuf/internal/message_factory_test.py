@@ -65,7 +65,7 @@ class MessageFactoryTest(unittest.TestCase):
     result = cls.FromString(reserialized)
     self.assertEqual(msg, result)
 
-  def testGetPrototype(self):
+  def testGetMessageClass(self):
     db = descriptor_database.DescriptorDatabase()
     pool = descriptor_pool.DescriptorPool(db)
     db.Add(self.factory_test1_fd)

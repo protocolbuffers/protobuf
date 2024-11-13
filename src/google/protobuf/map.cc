@@ -8,14 +8,16 @@
 #include "google/protobuf/map.h"
 
 #include <algorithm>
-#include <functional>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <string>
-#include <type_traits>
 
-#include "absl/hash/hash.h"
-#include "absl/strings/string_view.h"
+#include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -48,10 +50,6 @@ void UntypedMapBase::EraseFromTree(map_index_t b,
     DestroyTree(tree);
     table_[b] = TableEntryPtr{};
   }
-}
-
-map_index_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
-  return BucketNumberFromHash(key.Hash());
 }
 
 void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
@@ -120,12 +118,12 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (alloc_.arena() == nullptr) {
-    const auto loop = [=](auto destroy_node) {
+    const auto loop = [&, this](auto destroy_node) {
       const TableEntryPtr* table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
         NodeBase* node =
-            PROTOBUF_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
+            ABSL_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
                 ? DestroyTree(TableEntryToTree(table[b]))
                 : TableEntryToNode(table[b]);
 
@@ -162,14 +160,14 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
       case kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
+              ->DestroyInstance();
         });
         break;
       case kKeyIsString | kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
+              ->DestroyInstance();
         });
         break;
       case kUseDestructFunc:

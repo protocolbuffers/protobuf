@@ -3,8 +3,9 @@
 load("@rules_python//python:py_info.bzl", "PyInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-ProtoLangToolchainInfo = proto_common.ProtoLangToolchainInfo
+_PY_PROTO_TOOLCHAIN = Label("//bazel/private:python_toolchain_type")
 
 _PyProtoInfo = provider(
     doc = "Encapsulates information needed by the Python proto rules.",
@@ -48,7 +49,14 @@ def _py_proto_aspect_impl(target, ctx):
                 proto.path,
             ))
 
-    proto_lang_toolchain_info = ctx.attr._aspect_proto_toolchain[ProtoLangToolchainInfo]
+    if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[_PY_PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("No toolchains registered for '%s'." % _PY_PROTO_TOOLCHAIN)
+        proto_lang_toolchain_info = toolchain.proto
+    else:
+        proto_lang_toolchain_info = getattr(ctx.attr, "_aspect_proto_toolchain")[proto_common.ProtoLangToolchainInfo]
+
     api_deps = [proto_lang_toolchain_info.runtime]
 
     generated_sources = []
@@ -110,14 +118,15 @@ def _py_proto_aspect_impl(target, ctx):
 
 _py_proto_aspect = aspect(
     implementation = _py_proto_aspect_impl,
-    attrs = {
+    attrs = toolchains.if_legacy_toolchain({
         "_aspect_proto_toolchain": attr.label(
             default = "//python:python_toolchain",
         ),
-    },
+    }),
     attr_aspects = ["deps"],
     required_providers = [ProtoInfo],
     provides = [_PyProtoInfo],
+    toolchains = toolchains.use_toolchain(_PY_PROTO_TOOLCHAIN),
 )
 
 def _py_proto_library_rule(ctx):

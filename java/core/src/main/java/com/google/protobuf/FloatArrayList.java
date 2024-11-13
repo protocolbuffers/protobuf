@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
+import static java.lang.Math.max;
 
 import com.google.protobuf.Internal.FloatList;
 import java.util.Arrays;
@@ -22,7 +23,9 @@ import java.util.RandomAccess;
 final class FloatArrayList extends AbstractProtobufList<Float>
     implements FloatList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final FloatArrayList EMPTY_LIST = new FloatArrayList(new float[0], 0, false);
+  private static final float[] EMPTY_ARRAY = new float[0];
+
+  private static final FloatArrayList EMPTY_LIST = new FloatArrayList(EMPTY_ARRAY, 0, false);
 
   public static FloatArrayList emptyList() {
     return EMPTY_LIST;
@@ -39,7 +42,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
 
   /** Constructs a new mutable {@code FloatArrayList} with default capacity. */
   FloatArrayList() {
-    this(new float[DEFAULT_CAPACITY], 0, true);
+    this(EMPTY_ARRAY, 0, true);
   }
 
   /**
@@ -100,7 +103,8 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new FloatArrayList(Arrays.copyOf(array, capacity), size, true);
+    float[] newArray = capacity == 0 ? EMPTY_ARRAY : Arrays.copyOf(array, capacity);
+    return new FloatArrayList(newArray, size, true);
   }
 
   @Override
@@ -169,8 +173,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   public void addFloat(float element) {
     ensureIsMutable();
     if (size == array.length) {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       float[] newArray = new float[length];
 
       System.arraycopy(array, 0, newArray, 0, size);
@@ -191,8 +194,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
     } else {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       float[] newArray = new float[length];
 
       // Copy the first part directly
@@ -252,6 +254,30 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     size--;
     modCount++;
     return value;
+  }
+
+  /** Ensures the backing array can fit at least minCapacity elements. */
+  void ensureCapacity(int minCapacity) {
+    if (minCapacity <= array.length) {
+      return;
+    }
+    if (array.length == 0) {
+      array = new float[max(minCapacity, DEFAULT_CAPACITY)];
+      return;
+    }
+    // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
+    // exactly the requested capacity, but must exponentially grow instead. This is similar
+    // behaviour to ArrayList.
+    int n = array.length;
+    while (n < minCapacity) {
+      n = growSize(n);
+    }
+    array = Arrays.copyOf(array, n);
+  }
+
+  private static int growSize(int previousSize) {
+    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
+    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
   }
 
   /**

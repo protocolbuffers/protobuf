@@ -122,6 +122,17 @@ UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
   return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
 }
 
+UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
+    const struct upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableField* f) {
+  uint32_t field_number = upb_Message_WhichOneofFieldNumber(msg, f);
+  if (field_number == 0) {
+    // No field in the oneof is set.
+    return NULL;
+  }
+  return upb_MiniTable_FindFieldByNumber(m, field_number);
+}
+
 // LINT.ThenChange(GoogleInternalName2)
 
 // Returns false if the message is missing any of its required fields.
@@ -628,6 +639,13 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
+UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
+                                                    const upb_MiniTableField* f,
+                                                    struct upb_Message* value) {
+  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
+  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+}
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value) {
@@ -796,8 +814,8 @@ UPB_API_INLINE bool upb_Message_SetInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetMessage(struct upb_Message* msg,
                                            const upb_MiniTableField* f,
                                            struct upb_Message* value) {
-  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(f));
+  upb_Message_SetBaseFieldMessage(msg, f, value);
 }
 
 // Sets the value of a `string` or `bytes` field. The bytes of the value are not
@@ -896,6 +914,107 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     return NULL;
   }
   return upb_Array_MutableDataPtr(arr);
+}
+
+UPB_API_INLINE bool upb_Message_GetExtensionBool(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    bool default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Bool);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_1Byte);
+  bool ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE double upb_Message_GetExtensionDouble(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    double default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Double);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_8Byte);
+  double ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE float upb_Message_GetExtensionFloat(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    float default_val) {
+  float ret;
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Float);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_4Byte);
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE int32_t upb_Message_GetExtensionInt32(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    int32_t default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Int32 ||
+             upb_MiniTableExtension_CType(e) == kUpb_CType_Enum);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_4Byte);
+  int32_t ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE int64_t upb_Message_GetExtensionInt64(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    int64_t default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Int64);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_8Byte);
+  int64_t ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE uint32_t upb_Message_GetExtensionUInt32(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    uint32_t default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_UInt32);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_4Byte);
+  uint32_t ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    uint64_t default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_UInt64);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_8Byte);
+  uint64_t ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE upb_StringView upb_Message_GetExtensionString(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    upb_StringView default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_String ||
+             upb_MiniTableExtension_CType(e) == kUpb_CType_Bytes);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_StringView);
+  upb_StringView ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE struct upb_Message* upb_Message_GetExtensionMessage(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    struct upb_Message* default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  struct upb_Message* ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
 }
 
 #ifdef __cplusplus

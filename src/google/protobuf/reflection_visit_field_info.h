@@ -18,6 +18,7 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -116,8 +117,8 @@ struct DynamicFieldInfoHelper {
   static absl::string_view GetStringView(const Reflection* reflection,
                                          const Message& message,
                                          const FieldDescriptor* field) {
-    auto ctype = cpp::EffectiveStringCType(field);
-    ABSL_DCHECK_NE(ctype, FieldOptions::CORD);
+    auto string_type = field->cpp_string_type();
+    ABSL_DCHECK(string_type != FieldDescriptor::CppStringType::kCord);
     ABSL_DCHECK(!is_oneof || reflection->HasOneofField(message, field));
     auto str = Get<ArenaStringPtr>(reflection, message, field);
     ABSL_DCHECK(!str.IsDefault());
@@ -151,13 +152,13 @@ struct DynamicExtensionInfoHelper {
 #define PROTOBUF_REPEATED_FIELD_METHODS(NAME, FIELD_TYPE, VAR)              \
   static const RepeatedField<FIELD_TYPE>* GetRepeated##NAME(                \
       const Extension& ext) {                                               \
-    return ext.repeated_##VAR##_value;                                      \
+    return ext.ptr.repeated_##VAR##_value;                                  \
   }                                                                         \
   static RepeatedField<FIELD_TYPE>* MutableRepeated##NAME(Extension& ext) { \
-    return ext.repeated_##VAR##_value;                                      \
+    return ext.ptr.repeated_##VAR##_value;                                  \
   }                                                                         \
   static void ClearRepeated##NAME(Extension& ext) {                         \
-    return ext.repeated_##VAR##_value->Clear();                             \
+    return ext.ptr.repeated_##VAR##_value->Clear();                         \
   }
 
   PROTOBUF_REPEATED_FIELD_METHODS(Int32, int32_t, int32_t);
@@ -174,13 +175,13 @@ struct DynamicExtensionInfoHelper {
 #define PROTOBUF_REPEATED_PTR_FIELD_METHODS(FIELD_TYPE, NAME, VAR)             \
   static const RepeatedPtrField<FIELD_TYPE>* GetRepeated##NAME(                \
       const Extension& ext) {                                                  \
-    return ext.repeated_##VAR##_value;                                         \
+    return ext.ptr.repeated_##VAR##_value;                                     \
   }                                                                            \
   static RepeatedPtrField<FIELD_TYPE>* MutableRepeated##NAME(Extension& ext) { \
-    return ext.repeated_##VAR##_value;                                         \
+    return ext.ptr.repeated_##VAR##_value;                                     \
   }                                                                            \
   static void ClearRepeated##NAME(Extension& ext) {                            \
-    return ext.repeated_##VAR##_value->Clear();                                \
+    return ext.ptr.repeated_##VAR##_value->Clear();                            \
   }
 
   PROTOBUF_REPEATED_PTR_FIELD_METHODS(std::string, String, string);
@@ -189,49 +190,49 @@ struct DynamicExtensionInfoHelper {
 #undef PROTOBUF_REPEATED_PTR_FIELD_METHODS
 
   static absl::string_view GetStringView(const Extension& ext) {
-    return *ext.string_value;
+    return *ext.ptr.string_value;
   }
   static void SetStringView(Extension& ext, absl::string_view value) {
-    ext.string_value->assign(value.data(), value.size());
+    ext.ptr.string_value->assign(value.data(), value.size());
   }
   static void ClearStringView(Extension& ext) {
     ext.is_cleared = true;
-    ext.string_value->clear();
+    ext.ptr.string_value->clear();
   }
 
   static const Message& GetMessage(const Extension& ext) {
-    return DownCastToMessage(*ext.message_value);
+    return DownCastMessage<Message>(*ext.ptr.message_value);
   }
   static Message& MutableMessage(Extension& ext) {
-    return DownCastToMessage(*ext.message_value);
+    return DownCastMessage<Message>(*ext.ptr.message_value);
   }
   static void ClearMessage(Extension& ext) {
     ext.is_cleared = true;
-    ext.message_value->Clear();
+    ext.ptr.message_value->Clear();
   }
 
   static const Message& GetLazyMessage(const Extension& ext,
                                        const Message& prototype, Arena* arena) {
-    return DownCastToMessage(
-        ext.lazymessage_value->GetMessage(prototype, arena));
+    return DownCastMessage<Message>(
+        ext.ptr.lazymessage_value->GetMessage(prototype, arena));
   }
   static const Message& GetLazyMessageIgnoreUnparsed(const Extension& ext,
                                                      const Message& prototype,
                                                      Arena* arena) {
-    return DownCastToMessage(
-        ext.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
+    return DownCastMessage<Message>(
+        ext.ptr.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
   }
   static Message& MutableLazyMessage(Extension& ext, const Message& prototype,
                                      Arena* arena) {
-    return DownCastToMessage(
-        *ext.lazymessage_value->MutableMessage(prototype, arena));
+    return DownCastMessage<Message>(
+        *ext.ptr.lazymessage_value->MutableMessage(prototype, arena));
   }
   static void ClearLazyMessage(Extension& ext) {
     ext.is_cleared = true;
-    return ext.lazymessage_value->Clear();
+    return ext.ptr.lazymessage_value->Clear();
   }
   static size_t ByteSizeLongLazyMessage(const Extension& ext) {
-    return ext.lazymessage_value->ByteSizeLong();
+    return ext.ptr.lazymessage_value->ByteSizeLong();
   }
 };
 
@@ -1136,6 +1137,13 @@ struct RepeatedGroupDynamicExtensionInfo
 // users from a similar dispatch without creating KeyInfo or ValueInfo per type.
 template <FieldDescriptor::CppType cpp_type, typename T>
 inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if encased in a switch statement. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/qo51cKe7b
+  // This is fixed in GCC 10.1+.
+  (void)type;   // Suppress -Wunused-but-set-parameter
+  (void)value;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (cpp_type == FieldDescriptor::CPPTYPE_INT32) {
     static_assert(std::is_same_v<T, int32_t>, "type mismatch");
     switch (type) {
@@ -1216,7 +1224,7 @@ PROTOBUF_MAP_KEY_INFO(Int64, int64_t, INT64);
 PROTOBUF_MAP_KEY_INFO(UInt32, uint32_t, UINT32);
 PROTOBUF_MAP_KEY_INFO(UInt64, uint64_t, UINT64);
 PROTOBUF_MAP_KEY_INFO(Bool, bool, BOOL);
-PROTOBUF_MAP_KEY_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_KEY_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_KEY_INFO
 
@@ -1244,7 +1252,7 @@ PROTOBUF_MAP_VALUE_INFO(Bool, bool, BOOL);
 PROTOBUF_MAP_VALUE_INFO(Enum, int, ENUM);
 PROTOBUF_MAP_VALUE_INFO(Float, float, FLOAT);
 PROTOBUF_MAP_VALUE_INFO(Double, double, DOUBLE);
-PROTOBUF_MAP_VALUE_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_VALUE_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_VALUE_INFO
 

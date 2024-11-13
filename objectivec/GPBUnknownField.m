@@ -5,42 +5,85 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
 
-#import "GPBArray.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
-#import "GPBUnknownFieldSet.h"
+#import "GPBUnknownFields.h"
+#import "GPBUnknownFields_PackagePrivate.h"
+#import "GPBWireFormat.h"
 
-@implementation GPBUnknownField {
- @protected
-  int32_t number_;
-  GPBUInt64Array *mutableVarintList_;
-  GPBUInt32Array *mutableFixed32List_;
-  GPBUInt64Array *mutableFixed64List_;
-  NSMutableArray<NSData *> *mutableLengthDelimitedList_;
-  NSMutableArray<GPBUnknownFieldSet *> *mutableGroupList_;
-}
+#define ASSERT_FIELD_TYPE(type)                               \
+  if (type_ != type) {                                        \
+    [NSException raise:NSInternalInconsistencyException       \
+                format:@"GPBUnknownField is the wrong type"]; \
+  }
+
+@implementation GPBUnknownField
 
 @synthesize number = number_;
-@synthesize varintList = mutableVarintList_;
-@synthesize fixed32List = mutableFixed32List_;
-@synthesize fixed64List = mutableFixed64List_;
-@synthesize lengthDelimitedList = mutableLengthDelimitedList_;
-@synthesize groupList = mutableGroupList_;
+@synthesize type = type_;
 
-- (instancetype)initWithNumber:(int32_t)number {
+- (instancetype)initWithNumber:(int32_t)number varint:(uint64_t)varint {
   if ((self = [super init])) {
     number_ = number;
+    type_ = GPBUnknownFieldTypeVarint;
+    storage_.intValue = varint;
+  }
+  return self;
+}
+
+- (instancetype)initWithNumber:(int32_t)number fixed32:(uint32_t)fixed32 {
+  if ((self = [super init])) {
+    number_ = number;
+    type_ = GPBUnknownFieldTypeFixed32;
+    storage_.intValue = fixed32;
+  }
+  return self;
+}
+
+- (instancetype)initWithNumber:(int32_t)number fixed64:(uint64_t)fixed64 {
+  if ((self = [super init])) {
+    number_ = number;
+    type_ = GPBUnknownFieldTypeFixed64;
+    storage_.intValue = fixed64;
+  }
+  return self;
+}
+
+- (instancetype)initWithNumber:(int32_t)number lengthDelimited:(nonnull NSData *)data {
+  if ((self = [super init])) {
+    number_ = number;
+    type_ = GPBUnknownFieldTypeLengthDelimited;
+    storage_.lengthDelimited = [data copy];
+  }
+  return self;
+}
+
+- (instancetype)initWithNumber:(int32_t)number group:(nonnull GPBUnknownFields *)group {
+  if ((self = [super init])) {
+    number_ = number;
+    type_ = GPBUnknownFieldTypeGroup;
+    // Taking ownership of the group; so retain, not copy.
+    storage_.group = [group retain];
   }
   return self;
 }
 
 - (void)dealloc {
-  [mutableVarintList_ release];
-  [mutableFixed32List_ release];
-  [mutableFixed64List_ release];
-  [mutableLengthDelimitedList_ release];
-  [mutableGroupList_ release];
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+    case GPBUnknownFieldTypeFixed32:
+    case GPBUnknownFieldTypeFixed64:
+      break;
+    case GPBUnknownFieldTypeLengthDelimited:
+      [storage_.lengthDelimited release];
+      break;
+    case GPBUnknownFieldTypeGroup:
+      [storage_.group release];
+      break;
+  }
 
   [super dealloc];
 }
@@ -51,22 +94,49 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
+- (uint64_t)varint {
+  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeVarint);
+  return storage_.intValue;
+}
+
+- (uint32_t)fixed32 {
+  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeFixed32);
+  return (uint32_t)storage_.intValue;
+}
+
+- (uint64_t)fixed64 {
+  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeFixed64);
+  return storage_.intValue;
+}
+
+- (NSData *)lengthDelimited {
+  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLengthDelimited);
+  return storage_.lengthDelimited;
+}
+
+- (GPBUnknownFields *)group {
+  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeGroup);
+  return storage_.group;
+}
+
 - (id)copyWithZone:(NSZone *)zone {
-  GPBUnknownField *result = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
-  result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
-  result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
-  result->mutableLengthDelimitedList_ = [mutableLengthDelimitedList_ mutableCopyWithZone:zone];
-  result->mutableVarintList_ = [mutableVarintList_ copyWithZone:zone];
-  if (mutableGroupList_.count) {
-    result->mutableGroupList_ =
-        [[NSMutableArray allocWithZone:zone] initWithCapacity:mutableGroupList_.count];
-    for (GPBUnknownFieldSet *group in mutableGroupList_) {
-      GPBUnknownFieldSet *copied = [group copyWithZone:zone];
-      [result->mutableGroupList_ addObject:copied];
-      [copied release];
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+    case GPBUnknownFieldTypeFixed32:
+    case GPBUnknownFieldTypeFixed64:
+    case GPBUnknownFieldTypeLengthDelimited:
+      // In these modes, the object isn't mutable, so just return self.
+      return [self retain];
+    case GPBUnknownFieldTypeGroup: {
+      // The `GPBUnknownFields` for the group is mutable, so a new instance of this object and
+      // the group is needed.
+      GPBUnknownFields *copyGroup = [storage_.group copyWithZone:zone];
+      GPBUnknownField *copy = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
+                                                                             group:copyGroup];
+      [copyGroup release];
+      return copy;
     }
   }
-  return result;
 }
 
 - (BOOL)isEqual:(id)object {
@@ -74,220 +144,58 @@
   if (![object isKindOfClass:[GPBUnknownField class]]) return NO;
   GPBUnknownField *field = (GPBUnknownField *)object;
   if (number_ != field->number_) return NO;
-  BOOL equalVarint = (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
-                     [mutableVarintList_ isEqual:field->mutableVarintList_];
-  if (!equalVarint) return NO;
-  BOOL equalFixed32 = (mutableFixed32List_.count == 0 && field->mutableFixed32List_.count == 0) ||
-                      [mutableFixed32List_ isEqual:field->mutableFixed32List_];
-  if (!equalFixed32) return NO;
-  BOOL equalFixed64 = (mutableFixed64List_.count == 0 && field->mutableFixed64List_.count == 0) ||
-                      [mutableFixed64List_ isEqual:field->mutableFixed64List_];
-  if (!equalFixed64) return NO;
-  BOOL equalLDList =
-      (mutableLengthDelimitedList_.count == 0 && field->mutableLengthDelimitedList_.count == 0) ||
-      [mutableLengthDelimitedList_ isEqual:field->mutableLengthDelimitedList_];
-  if (!equalLDList) return NO;
-  BOOL equalGroupList = (mutableGroupList_.count == 0 && field->mutableGroupList_.count == 0) ||
-                        [mutableGroupList_ isEqual:field->mutableGroupList_];
-  if (!equalGroupList) return NO;
-  return YES;
+  if (type_ != field->type_) return NO;
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+    case GPBUnknownFieldTypeFixed32:
+    case GPBUnknownFieldTypeFixed64:
+      return storage_.intValue == field->storage_.intValue;
+    case GPBUnknownFieldTypeLengthDelimited:
+      return [storage_.lengthDelimited isEqual:field->storage_.lengthDelimited];
+    case GPBUnknownFieldTypeGroup:
+      return [storage_.group isEqual:field->storage_.group];
+  }
 }
 
 - (NSUInteger)hash {
-  // Just mix the hashes of the possible sub arrays.
   const int prime = 31;
-  NSUInteger result = prime + [mutableVarintList_ hash];
-  result = prime * result + [mutableFixed32List_ hash];
-  result = prime * result + [mutableFixed64List_ hash];
-  result = prime * result + [mutableLengthDelimitedList_ hash];
-  result = prime * result + [mutableGroupList_ hash];
-  return result;
-}
-
-- (void)writeToOutput:(GPBCodedOutputStream *)output {
-  NSUInteger count = mutableVarintList_.count;
-  if (count > 0) {
-    [output writeUInt64Array:number_ values:mutableVarintList_ tag:0];
-  }
-  count = mutableFixed32List_.count;
-  if (count > 0) {
-    [output writeFixed32Array:number_ values:mutableFixed32List_ tag:0];
-  }
-  count = mutableFixed64List_.count;
-  if (count > 0) {
-    [output writeFixed64Array:number_ values:mutableFixed64List_ tag:0];
-  }
-  count = mutableLengthDelimitedList_.count;
-  if (count > 0) {
-    [output writeBytesArray:number_ values:mutableLengthDelimitedList_];
-  }
-  count = mutableGroupList_.count;
-  if (count > 0) {
-    [output writeUnknownGroupArray:number_ values:mutableGroupList_];
-  }
-}
-
-- (size_t)serializedSize {
-  __block size_t result = 0;
-  int32_t number = number_;
-  [mutableVarintList_
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeUInt64Size(number, value);
-      }];
-
-  [mutableFixed32List_
-      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeFixed32Size(number, value);
-      }];
-
-  [mutableFixed64List_
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeFixed64Size(number, value);
-      }];
-
-  for (NSData *data in mutableLengthDelimitedList_) {
-    result += GPBComputeBytesSize(number, data);
-  }
-
-  for (GPBUnknownFieldSet *set in mutableGroupList_) {
-    result += GPBComputeUnknownGroupSize(number, set);
-  }
-
-  return result;
-}
-
-- (void)writeAsMessageSetExtensionToOutput:(GPBCodedOutputStream *)output {
-  for (NSData *data in mutableLengthDelimitedList_) {
-    [output writeRawMessageSetExtension:number_ value:data];
-  }
-}
-
-- (size_t)serializedSizeAsMessageSetExtension {
-  size_t result = 0;
-  for (NSData *data in mutableLengthDelimitedList_) {
-    result += GPBComputeRawMessageSetExtensionSize(number_, data);
+  NSUInteger result = prime * number_ + type_;
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+    case GPBUnknownFieldTypeFixed32:
+    case GPBUnknownFieldTypeFixed64:
+      result = prime * result + (NSUInteger)storage_.intValue;
+      break;
+    case GPBUnknownFieldTypeLengthDelimited:
+      result = prime * result + [storage_.lengthDelimited hash];
+      break;
+    case GPBUnknownFieldTypeGroup:
+      result = prime * result + [storage_.group hash];
   }
   return result;
 }
 
 - (NSString *)description {
   NSMutableString *description =
-      [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
-  [mutableVarintList_
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        [description appendFormat:@"\t%llu\n", value];
-      }];
-
-  [mutableFixed32List_
-      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        [description appendFormat:@"\t%u\n", value];
-      }];
-
-  [mutableFixed64List_
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        [description appendFormat:@"\t%llu\n", value];
-      }];
-
-  for (NSData *data in mutableLengthDelimitedList_) {
-    [description appendFormat:@"\t%@\n", data];
+      [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d", [self class], self, number_];
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+      [description appendFormat:@" varint: %llu", storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed32:
+      [description appendFormat:@" fixed32: %u", (uint32_t)storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed64:
+      [description appendFormat:@" fixed64: %llu", storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeLengthDelimited:
+      [description appendFormat:@" fixed64: %@", storage_.lengthDelimited];
+      break;
+    case GPBUnknownFieldTypeGroup:
+      [description appendFormat:@" group: %@", storage_.group];
+      break;
   }
-
-  for (GPBUnknownFieldSet *set in mutableGroupList_) {
-    [description appendFormat:@"\t%@\n", set];
-  }
-  [description appendString:@"}"];
   return description;
-}
-
-- (void)mergeFromField:(GPBUnknownField *)other {
-  GPBUInt64Array *otherVarintList = other.varintList;
-  if (otherVarintList.count > 0) {
-    if (mutableVarintList_ == nil) {
-      mutableVarintList_ = [otherVarintList copy];
-    } else {
-      [mutableVarintList_ addValuesFromArray:otherVarintList];
-    }
-  }
-
-  GPBUInt32Array *otherFixed32List = other.fixed32List;
-  if (otherFixed32List.count > 0) {
-    if (mutableFixed32List_ == nil) {
-      mutableFixed32List_ = [otherFixed32List copy];
-    } else {
-      [mutableFixed32List_ addValuesFromArray:otherFixed32List];
-    }
-  }
-
-  GPBUInt64Array *otherFixed64List = other.fixed64List;
-  if (otherFixed64List.count > 0) {
-    if (mutableFixed64List_ == nil) {
-      mutableFixed64List_ = [otherFixed64List copy];
-    } else {
-      [mutableFixed64List_ addValuesFromArray:otherFixed64List];
-    }
-  }
-
-  NSArray *otherLengthDelimitedList = other.lengthDelimitedList;
-  if (otherLengthDelimitedList.count > 0) {
-    if (mutableLengthDelimitedList_ == nil) {
-      mutableLengthDelimitedList_ = [otherLengthDelimitedList mutableCopy];
-    } else {
-      [mutableLengthDelimitedList_ addObjectsFromArray:otherLengthDelimitedList];
-    }
-  }
-
-  NSArray *otherGroupList = other.groupList;
-  if (otherGroupList.count > 0) {
-    if (mutableGroupList_ == nil) {
-      mutableGroupList_ = [[NSMutableArray alloc] initWithCapacity:otherGroupList.count];
-    }
-    // Make our own mutable copies.
-    for (GPBUnknownFieldSet *group in otherGroupList) {
-      GPBUnknownFieldSet *copied = [group copy];
-      [mutableGroupList_ addObject:copied];
-      [copied release];
-    }
-  }
-}
-
-- (void)addVarint:(uint64_t)value {
-  if (mutableVarintList_ == nil) {
-    mutableVarintList_ = [[GPBUInt64Array alloc] initWithValues:&value count:1];
-  } else {
-    [mutableVarintList_ addValue:value];
-  }
-}
-
-- (void)addFixed32:(uint32_t)value {
-  if (mutableFixed32List_ == nil) {
-    mutableFixed32List_ = [[GPBUInt32Array alloc] initWithValues:&value count:1];
-  } else {
-    [mutableFixed32List_ addValue:value];
-  }
-}
-
-- (void)addFixed64:(uint64_t)value {
-  if (mutableFixed64List_ == nil) {
-    mutableFixed64List_ = [[GPBUInt64Array alloc] initWithValues:&value count:1];
-  } else {
-    [mutableFixed64List_ addValue:value];
-  }
-}
-
-- (void)addLengthDelimited:(NSData *)value {
-  if (mutableLengthDelimitedList_ == nil) {
-    mutableLengthDelimitedList_ = [[NSMutableArray alloc] initWithObjects:&value count:1];
-  } else {
-    [mutableLengthDelimitedList_ addObject:value];
-  }
-}
-
-- (void)addGroup:(GPBUnknownFieldSet *)value {
-  if (mutableGroupList_ == nil) {
-    mutableGroupList_ = [[NSMutableArray alloc] initWithObjects:&value count:1];
-  } else {
-    [mutableGroupList_ addObject:value];
-  }
 }
 
 #pragma clang diagnostic pop

@@ -8,20 +8,20 @@
 use bad_names_rust_proto::*;
 use googletest::prelude::*;
 
-#[test]
+#[gtest]
 fn test_reserved_keyword_in_accessors() {
     let msg = Self__mangled_because_ident_isnt_a_legal_raw_identifier::new();
     let res = msg.self__mangled_because_ident_isnt_a_legal_raw_identifier().r#for();
     assert_that!(res, eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_reserved_keyword_in_messages() {
     let _ = r#enum::new();
     let _ = Ref::new().r#const();
 }
 
-#[test]
+#[gtest]
 fn test_collision_in_accessors() {
     let mut m = AccessorsCollide::new();
     m.set_x_mut_5(false);

@@ -10,16 +10,7 @@
 #import "GPBRuntimeTypes.h"
 #import "GPBWireFormat.h"
 
-@class GPBBoolArray;
-@class GPBDoubleArray;
-@class GPBEnumArray;
-@class GPBFloatArray;
-@class GPBMessage;
-@class GPBInt32Array;
-@class GPBInt64Array;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
-@class GPBUnknownFieldSet;
+#import "GPBArray.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -589,31 +580,6 @@ __attribute__((objc_subclassing_restricted))
 - (void)writeGroupNoTag:(int32_t)fieldNumber
                   value:(GPBMessage *)value;
 
-/**
- * Write a GPBUnknownFieldSet for the given field number.
- *
- * @param fieldNumber The field number assigned to the value.
- * @param value       The value to write out.
- **/
-- (void)writeUnknownGroup:(int32_t)fieldNumber
-                    value:(GPBUnknownFieldSet *)value;
-/**
- * Write an array of GPBUnknownFieldSet for the given field number.
- *
- * @param fieldNumber The field number assigned to the values.
- * @param values      The values to write out.
- **/
-- (void)writeUnknownGroupArray:(int32_t)fieldNumber
-                        values:(NSArray<GPBUnknownFieldSet*> *)values;
-/**
- * Write a GPBUnknownFieldSet without any tag (but does write the endGroup tag).
- *
- * @param fieldNumber The field number assigned to the value.
- * @param value       The value to write out.
- **/
-- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
-                         value:(GPBUnknownFieldSet *)value;
-
 //%PDDM-EXPAND-END _WRITE_DECLS()
 
 // clang-format on
@@ -741,6 +707,5 @@ NS_ASSUME_NONNULL_END
 //%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage)
 //%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
 //%_WRITE_GROUP_DECLS(Group, GPBMessage)
-//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet)
 
 // clang-format on

@@ -11,6 +11,7 @@
 #include "python/protobuf.h"
 #include "upb/message/compare.h"
 #include "upb/message/map.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "utf8_range.h"
 
@@ -179,8 +180,12 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_EnumDef* e,
   } else {
     int32_t i32;
     if (!PyUpb_GetInt32(obj, &i32)) return false;
+#ifdef UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT
+    if (upb_EnumDef_IsClosed(e) && !upb_EnumDef_CheckNumber(e, i32)) {
+#else
     if (upb_FileDef_Syntax(upb_EnumDef_File(e)) == kUpb_Syntax_Proto2 &&
         !upb_EnumDef_CheckNumber(e, i32)) {
+#endif
       PyErr_Format(PyExc_ValueError, "invalid enumerator %d", (int)i32);
       return false;
     }
