@@ -92,8 +92,8 @@ static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
     [kUpb_FieldType_Bytes] = _upb_mapsorter_cmpstr,
 };
 
-static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
-                                  int size) {
+bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
+                           int size) {
   sorted->start = s->size;
   sorted->pos = sorted->start;
   sorted->end = sorted->start + size;
@@ -135,24 +135,11 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
   return true;
 }
 
-static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
+int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Extension* const* a = _a;
   const upb_Extension* const* b = _b;
   uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
   uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
   assert(a_num != b_num);
   return a_num < b_num ? -1 : 1;
-}
-
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
-                             size_t count, _upb_sortedmap* sorted) {
-  if (!_upb_mapsorter_resize(s, sorted, count)) return false;
-
-  for (size_t i = 0; i < count; i++) {
-    s->entries[sorted->start + i] = &exts[i];
-  }
-
-  qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
-        _upb_mapsorter_cmpext);
-  return true;
 }

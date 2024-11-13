@@ -172,11 +172,15 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   }
 
   if (ext_pool) {
-    // Return any extensions that are set.
-    size_t count;
-    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-    if (i - n < count) {
-      ext += count - 1 - (i - n);
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (!in) return false;
+
+    for (; (i - n) < in->size; i++) {
+      uintptr_t tagged_ptr = in->extensions_and_unknowns[i - n];
+      if (tagged_ptr == 0 || (tagged_ptr & 1) == 0) {
+        continue;
+      }
+      const upb_Extension* ext = (const upb_Extension*)(tagged_ptr & ~1);
       memcpy(out_val, &ext->data, sizeof(*out_val));
       *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
       *iter = i;

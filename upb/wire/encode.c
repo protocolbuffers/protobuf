@@ -568,7 +568,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     size_t unknown_size = 0;
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_StringView unknown;
-    // Need to write in reverse order, but list is single-linked; scan to
+    // Need to write in reverse order, but iteration is in-order; scan to
     // reserve capacity up front, then write in-order
     while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
       unknown_size += unknown.size;
@@ -585,24 +585,53 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   }
 
   if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
-    /* Encode all extensions together. Unlike C++, we do not attempt to keep
-     * these in field number order relative to normal fields or even to each
-     * other. */
-    size_t ext_count;
-    const upb_Extension* ext =
-        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
-    if (ext_count) {
-      if (e->options & kUpb_EncodeOption_Deterministic) {
-        _upb_sortedmap sorted;
-        _upb_mapsorter_pushexts(&e->sorter, ext, ext_count, &sorted);
-        while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-        }
-        _upb_mapsorter_popmap(&e->sorter, &sorted);
-      } else {
-        const upb_Extension* end = ext + ext_count;
-        for (; ext != end; ext++) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in) {
+      /* Encode all extensions together. Unlike C++, we do not attempt to keep
+       * these in field number order relative to normal fields or even to each
+       * other. */
+      size_t ext_count = 0;
+      for (size_t i = 0; i < in->size; ++i) {
+        ext_count += in->extensions_and_unknowns[i] & 1;
+      }
+      if (ext_count) {
+        if (e->options & kUpb_EncodeOption_Deterministic) {
+          _upb_sortedmap sorted;
+          if (!_upb_mapsorter_resize(&e->sorter, &sorted, ext_count)) {
+            // TODO handle OOM
+          }
+          size_t i = in->size;
+          size_t entries_added = 0;
+          while (i-- != 0) {
+            uintptr_t tagged_ptr = in->extensions_and_unknowns[i];
+            if ((tagged_ptr & 1) == 1) {
+              const upb_Extension* msg_ext =
+                  (const upb_Extension*)(tagged_ptr & ~1);
+              e->sorter.entries[sorted.start + entries_added++] = msg_ext;
+            }
+          }
+          qsort(&e->sorter.entries[sorted.start], ext_count,
+                sizeof(e->sorter.entries), _upb_mapsorter_cmpext);
+          const upb_Extension* ext;
+          while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+            encode_ext(e, ext,
+                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+          }
+          _upb_mapsorter_popmap(&e->sorter, &sorted);
+        } else {
+          size_t i = in->size;
+          while (i-- != 0) {
+            uintptr_t tagged_ptr = in->extensions_and_unknowns[i];
+            if (tagged_ptr == 0) {
+              continue;
+            }
+            if ((tagged_ptr & 1) == 1) {
+              const upb_Extension* msg_ext =
+                  (const upb_Extension*)(tagged_ptr & ~(uintptr_t)1);
+              encode_ext(e, msg_ext,
+                         m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+            }
+          }
         }
       }
     }

@@ -64,6 +64,11 @@ Error, UINTPTR_MAX is undefined
  */
 #define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
+#define UPB_SIZEOF_FLEX(type, member, count) \
+  (UPB_MAX(sizeof(type),                     \
+           (offsetof(type, member) +         \
+            count * (offsetof(type, member[1]) - offsetof(type, member[0])))))
+
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.

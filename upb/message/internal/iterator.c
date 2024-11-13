@@ -63,15 +63,16 @@ bool UPB_PRIVATE(_upb_Message_NextExtension)(
     const upb_Message* msg, const upb_MiniTable* m,
     const upb_MiniTableExtension** out_e, upb_MessageValue* out_v,
     size_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-
-  if (++i < count) {
-    *out_e = exts[i].ext;
-    *out_v = exts[i].data;
-    *iter = i;
-    return true;
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  for (; (*iter) < in->size; (*iter)++) {
+    if ((in->extensions_and_unknowns[*iter] & 1) == 1) {
+      const upb_Extension* ext =
+          (const upb_Extension*)(in->extensions_and_unknowns[(*iter)++] & ~1);
+      *out_e = ext->ext;
+      *out_v = ext->data;
+      return true;
+    }
   }
 
   return false;

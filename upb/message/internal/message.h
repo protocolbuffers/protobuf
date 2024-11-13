@@ -15,6 +15,7 @@
 #ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
 #define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,26 +38,11 @@ extern const double kUpb_NaN;
 // extensions. We can change this without breaking binary compatibility.
 
 typedef struct upb_Message_Internal {
-  // Total size of this structure, including the data that follows.
-  // Must be aligned to 8, which is alignof(upb_Extension)
-  uint32_t size;
-
-  /* Offsets relative to the beginning of this structure.
-   *
-   * Unknown data grows forward from the beginning to unknown_end.
-   * Extension data grows backward from size to ext_begin.
-   * When the two meet, we're out of data and have to realloc.
-   *
-   * If we imagine that the final member of this struct is:
-   *   char data[size - overhead];  // overhead = sizeof(upb_Message_Internal)
-   *
-   * Then we have:
-   *   unknown data: data[0 .. (unknown_end - overhead)]
-   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
-  uint32_t unknown_end;
-  uint32_t ext_begin;
-  // Data follows, as if there were an array:
-  //   char data[size - sizeof(upb_Message_Internal)];
+  // Total number of entries set in extensions_and_unknowns
+  size_t size;
+  size_t capacity;
+  // Tagged pointers to upb_StringView or upb_Extension
+  uintptr_t extensions_and_unknowns[];
 } upb_Message_Internal;
 
 #ifdef UPB_TRACING_ENABLED
@@ -98,8 +84,10 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
                                            upb_Arena* arena,
                                            upb_StringView data[], size_t count);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena);
+// Ensures at least one slot is available in the extensions_and_unknowns member
+// of this message.
+bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
+                                           upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

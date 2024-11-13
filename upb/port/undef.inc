@@ -9,6 +9,7 @@
 
 #undef UPB_SIZE
 #undef UPB_PTR_AT
+#undef UPB_SIZEOF_FLEX
 #undef UPB_MAPTYPE_STRING
 #undef UPB_EXPORT
 #undef UPB_INLINE
