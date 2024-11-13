@@ -506,7 +506,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
         // If the packages already differ, exit early.
         return res < 0;
       } else if (lhs_parts.first.size() == rhs_parts.first.size()) {
-        return lhs_parts.second < rhs_parts.second;
+        return lhs_parts.second.data() != nullptr && rhs_parts.second.data() != nullptr && lhs_parts.second < rhs_parts.second;
       }
       return AsString(lhs) < AsString(rhs);
     }
