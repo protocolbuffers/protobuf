@@ -48,6 +48,8 @@ UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
 bool upb_Message_NextUnknown(const upb_Message* msg, upb_StringView* data,
                              uintptr_t* iter);
 
+bool upb_Message_HasUnknown(const upb_Message* msg);
+
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
