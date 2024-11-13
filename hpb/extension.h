@@ -127,18 +127,16 @@ upb_ExtensionRegistry* GetUpbExtensions(
 
 class ExtensionRegistry {
  public:
-  ExtensionRegistry(
-      const std::vector<const upb_MiniTableExtension*>& extensions,
-      const upb::Arena& arena)
-      : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
+  explicit ExtensionRegistry(const upb::Arena& arena)
+      : registry_(upb_ExtensionRegistry_New(arena.ptr())) {}
+
+  template <typename ExtensionIdentifier>
+  void AddExtension(const ExtensionIdentifier& id) {
     if (registry_) {
-      for (const auto extension : extensions) {
-        const auto* ext = extension;
-        bool success = upb_ExtensionRegistry_AddArray(registry_, &ext, 1);
-        if (!success) {
-          registry_ = nullptr;
-          break;
-        }
+      auto* extension = id.mini_table_ext();
+      bool success = upb_ExtensionRegistry_AddArray(registry_, &extension, 1);
+      if (!success) {
+        registry_ = nullptr;
       }
     }
   }

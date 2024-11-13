@@ -1019,11 +1019,11 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   ::upb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  std::vector<const upb_MiniTableExtension*> exts{
-      theme.mini_table_ext(), other_ext.mini_table_ext(),
-      ThemeExtension::theme_extension.mini_table_ext()};
 
-  ::hpb::ExtensionRegistry extensions(exts, arena);
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(theme);
+  extensions.AddExtension(other_ext);
+  extensions.AddExtension(ThemeExtension::theme_extension);
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
@@ -1287,8 +1287,8 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   std::string data = std::string(::hpb::Serialize(&source, arena).value());
 
   // Test with ExtensionRegistry
-  std::vector<const upb_MiniTableExtension*> exts{theme.mini_table_ext()};
-  hpb::ExtensionRegistry extensions(exts, arena);
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(theme);
   TestModel parsed_model = ::hpb::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
