@@ -11,7 +11,8 @@
             "objectivec": "4.30-dev",
             "php": "4.30-dev",
             "python": "6.30-dev",
-            "ruby": "4.30-dev"
+            "ruby": "4.30-dev",
+            "rust": "4.30-dev"
         }
     }
 }
