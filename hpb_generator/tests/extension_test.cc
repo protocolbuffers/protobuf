@@ -25,6 +25,7 @@ using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
 using ::hpb_unittest::someotherpackage::protos::int32_ext;
 using ::hpb_unittest::someotherpackage::protos::int64_ext;
+using ::hpb_unittest::someotherpackage::protos::repeated_int32_ext;
 
 using ::testing::status::IsOkAndHolds;
 
@@ -401,6 +402,15 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
 TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
   EXPECT_EQ(12003, ::hpb::ExtensionNumber(ThemeExtension::theme_extension));
+}
+
+// TODO: b/379687607 - Just a stub for now, to plumb RepeatedWrapper through
+TEST(CppGeneratedCode, GetExtensionRepeatedScalars) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, repeated_int32_ext);
+  EXPECT_TRUE(res.ok());
+  // EXPECT_EQ((*res).size(), 0);
+  // auto added = res.Add(11);
 }
 
 }  // namespace

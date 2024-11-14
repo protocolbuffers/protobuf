@@ -20,6 +20,7 @@
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
+#include "google/protobuf/hpb/repeated_wrapper.h"
 #include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
@@ -66,6 +67,15 @@ struct UpbExtensionTrait<int64_t> {
   using ReturnType = int64_t;
   static constexpr auto kGetter = upb_Message_GetExtensionInt64;
   static constexpr auto kSetter = upb_Message_SetExtensionInt64;
+};
+
+// TODO: b/379687607 - Return RepeatedField<int32_t> instead of int32_t
+template <>
+struct UpbExtensionTrait<RepeatedPrimitiveTypeTrait<int32_t>> {
+  using DefaultType = int32_t;
+  using ReturnType = int32_t;
+  static constexpr auto kGetter = upb_Message_GetExtensionInt32;
+  static constexpr auto kSetter = upb_Message_SetExtensionInt32;
 };
 
 // TODO: b/375460289 - flesh out non-promotional msg support that does
@@ -291,6 +301,10 @@ GetExtension(
             hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
             default_val);
     return res;
+  } else if constexpr (std::is_same_v<Extension,
+                                      hpb::internal::RepeatedPrimitiveTypeTrait<
+                                          int32_t>>) {
+    return 1;
   } else {
     upb_MessageValue value;
     const bool ok = ::hpb::internal::GetOrPromoteExtension(
