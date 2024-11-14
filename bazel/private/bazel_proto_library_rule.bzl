@@ -236,8 +236,8 @@ proto_library = rule(
     # TODO: proto_common docs are missing
     # TODO: ProtoInfo link doesn't work and docs are missing
     doc = """
-<p>If using Bazel, please load the rule from <a href="https://github.com/bazelbuild/rules_proto">
-https://github.com/bazelbuild/rules_proto</a>.
+<p>If using Bazel, please load the rule from <a href="https://github.com/protocolbuffers/protobuf">
+https://github.com/protocolbuffers/protobuf</a> (see the bazel/ subdirectory).
 
 <p>Use <code>proto_library</code> to define libraries of protocol buffers which
 may be used from multiple languages. A <code>proto_library</code> may be listed
