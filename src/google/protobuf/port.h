@@ -454,7 +454,7 @@ class NoopDebugCounter {
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
-#if defined(__cpp_lib_constexpr_string)
+#if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
 // Take advantage of C++20 constexpr support in std::string.
 class alignas(8) GlobalEmptyString {
  public:
