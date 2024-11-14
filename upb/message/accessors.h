@@ -203,6 +203,9 @@ UPB_API_INLINE upb_Message* upb_Message_GetExtensionMessage(
     const upb_Message* msg, const upb_MiniTableExtension* f,
     struct upb_Message* default_val);
 
+UPB_API_INLINE const upb_Array* upb_Message_GetExtensionArray(
+    const upb_Message* msg, const upb_MiniTableExtension* f);
+
 // Extension Setters ///////////////////////////////////////////////////////////
 
 UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
