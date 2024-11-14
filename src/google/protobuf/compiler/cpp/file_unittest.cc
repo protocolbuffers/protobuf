@@ -47,6 +47,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestVerifyBigFieldNumberUint32.Nested",
       "TestUnpackedTypes",
       "TestUnpackedExtensions",
+      "TestString",
       "TestReservedFields",
       "TestRequiredOpenEnum",
       "TestRequiredOneof.NestedMessage",

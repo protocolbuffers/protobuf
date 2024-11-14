@@ -41,6 +41,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -57,6 +58,9 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+using ::testing::IsEmpty;
+using ::testing::Not;
 
 namespace google {
 namespace protobuf {
@@ -889,6 +893,17 @@ TEST(MESSAGE_TEST_NAME, MessageDebugStringMatchesBehindPointerAndLitePointer) {
   MessageLite* msg_lite_pointer = &test_all_types;
   ASSERT_EQ(test_all_types.DebugString(), msg_full_pointer->DebugString());
   ASSERT_EQ(test_all_types.DebugString(), msg_lite_pointer->DebugString());
+}
+
+TEST(MESSAGE_TEST_NAME, CordFieldGetsProperlyRegisteredInTheArena) {
+  Arena arena;
+  auto* msg = Arena::Create<UNITTEST::TestCord>(&arena);
+  // Very large input that needs allocation.
+  msg->set_optional_bytes_cord(std::string(1000, 'x'));
+  // Something should be registered for destruction.
+  EXPECT_THAT(internal::ArenaTestPeer::PeekCleanupListForTesting(&arena),
+              Not(IsEmpty()));
+  // We expect memory leaks here if the Cord was not properly destroyed.
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
