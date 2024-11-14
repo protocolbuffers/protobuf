@@ -30,6 +30,9 @@
 namespace hpb {
 class ExtensionRegistry;
 
+template <typename T>
+class RepeatedField;
+
 namespace internal {
 
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
@@ -68,10 +71,20 @@ struct UpbExtensionTrait<int64_t> {
   static constexpr auto kSetter = upb_Message_SetExtensionInt64;
 };
 
+// Use a template with SFINAE to delay instantiation until types are complete.
+template <typename T>
+struct UpbExtensionTrait<hpb::RepeatedField<T>,
+                         std::enable_if_t<std::is_same_v<T, int32_t>>> {
+  using DefaultType = std::false_type;
+  using ReturnType = RepeatedField<T>::CProxy;
+  static constexpr auto kGetter = upb_Message_GetExtensionArray;
+};
+
 // TODO: b/375460289 - flesh out non-promotional msg support that does
 // not return an error if missing but the default msg
 template <typename T>
-struct UpbExtensionTrait<T> {
+struct UpbExtensionTrait<
+    T, std::enable_if_t<!std::is_same_v<T, hpb::RepeatedField<int32_t>>>> {
   using DefaultType = std::false_type;
   using ReturnType = Ptr<const T>;
 };
@@ -292,6 +305,11 @@ GetExtension(
             hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
             default_val);
     return res;
+  } else if constexpr (std::is_same_v<Extension, hpb::RepeatedField<int32_t>>) {
+    auto upb_arr = hpb::internal::UpbExtensionTrait<Extension>::kGetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext());
+    return typename hpb::internal::UpbExtensionTrait<Extension>::ReturnType(
+        upb_arr, hpb::interop::upb::GetArena(message));
   } else {
     upb_MessageValue value;
     const bool ok = ::hpb::internal::GetOrPromoteExtension(
