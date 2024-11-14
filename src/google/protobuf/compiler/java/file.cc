@@ -240,6 +240,17 @@ bool FileGenerator::Validate(std::string* error) {
         << "name for the .proto file to be safe.";
   }
 
+  // Check that no field is a closed enum with implicit presence. For normal
+  // cases this will be rejected by protoc before the generator is invoked, but
+  // for cases like legacy_closed_enum it may reach the generator.
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const FieldDescriptor& field) {
+    if (field.enum_type() != nullptr && !SupportUnknownEnumValue(&field) &&
+        !field.has_presence() && !field.is_repeated()) {
+      absl::StrAppend(error, "Field ", field.full_name(),
+                      " has a closed enum type with implicit presence.\n");
+    }
+  });
+
   // Print a warning if optimize_for = LITE_RUNTIME is used.
   if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME &&
       !options_.enforce_lite) {
