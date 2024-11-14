@@ -850,13 +850,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   bool bytes = field_->type() == FieldDescriptor::TYPE_BYTES;
   p->Emit(
       {
-          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-          {"GetExtraArg",
-           [&] {
-             p->Emit(opts_->safe_boundary_check
-                         ? ", $pbi$::GetEmptyStringAlreadyInited()"
-                         : "");
-           }},
+          GetEmitRepeatedFieldGetterSub(*opts_, p),
           {"bytes_tag",
            [&] {
              if (bytes) {
@@ -878,7 +872,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $WeakDescriptorSelfPin$;
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          return _internal_$name_internal$().$Get$(index$GetExtraArg$);
+          return $getter$;
         }
         inline std::string* $Msg$::mutable_$name$(int index)
             ABSL_ATTRIBUTE_LIFETIME_BOUND {

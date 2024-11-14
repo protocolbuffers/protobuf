@@ -1183,6 +1183,24 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
 
+// Emit the repeated field getter for the custom options.
+// If safe_boundary_check is specified, it calls the internal checked getter.
+inline auto GetEmitRepeatedFieldGetterSub(const Options& options,
+                                          io::Printer* p) {
+  return io::Printer::Sub{
+      "getter",
+      [&options, p] {
+        if (options.safe_boundary_check) {
+          p->Emit(R"cc(
+            $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
+          )cc");
+        } else {
+          p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
+        }
+      }}
+      .WithSuffix("");
+}
+
 // Priority used for static initializers.
 enum InitPriority {
   kInitPriority101,

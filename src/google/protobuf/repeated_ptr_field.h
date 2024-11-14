@@ -62,7 +62,6 @@ namespace internal {
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 
-
 }  // namespace internal
 
 namespace internal {
@@ -117,6 +116,8 @@ class GenericTypeHandler;
 //
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
 //     static int SpaceUsedLong(const Type&);
+//
+//     static const Type& default_instance();
 //   };
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
@@ -839,6 +840,11 @@ class GenericTypeHandler {
   static inline size_t SpaceUsedLong(const Type& value) {
     return value.SpaceUsedLong();
   }
+
+  static const Type& default_instance() {
+    return *static_cast<const GenericType*>(
+        MessageTraits<Type>::default_instance());
+  }
 };
 
 template <>
@@ -874,6 +880,10 @@ class GenericTypeHandler<std::string> {
   static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
+  }
+
+  static const Type& default_instance() {
+    return GetEmptyStringAlreadyInited();
   }
 };
 
@@ -1178,7 +1188,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
 
-
  private:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -1310,7 +1319,6 @@ inline Element& RepeatedPtrField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
-
 
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::Mutable(int index)
@@ -1966,6 +1974,18 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  private:
   RepeatedPtrField<T>* field_;
 };
+
+// A utility function for logging that doesn't need any template types.
+void LogIndexOutOfBounds(int index, int size);
+
+template <typename T>
+const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+    LogIndexOutOfBounds(index, field.size());
+    return GenericTypeHandler<T>::default_instance();
+  }
+  return field.Get(index);
+}
 
 }  // namespace internal
 

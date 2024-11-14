@@ -783,26 +783,17 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit(
-      {
-          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-          {"GetExtraArg",
-           [&] {
-             p->Emit(opts_->safe_boundary_check
-                         ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
-                         : "");
-           }},
-      },
-      R"cc(
-        inline const $Submsg$& $Msg$::$name$(int index) const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $annotate_get$;
-          // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          $StrongRef$;
-          return _internal_$name_internal$().$Get$(index$GetExtraArg$);
-        }
-      )cc");
+  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
+          R"cc(
+            inline const $Submsg$& $Msg$::$name$(int index) const
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $annotate_get$;
+              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+              $StrongRef$;
+              return $getter$;
+            }
+          )cc");
   p->Emit(R"cc(
     inline $Submsg$* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
