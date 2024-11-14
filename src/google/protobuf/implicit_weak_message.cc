@@ -76,6 +76,7 @@ constexpr ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         GetClearImpl<ImplicitWeakMessage>(),
         &ByteSizeLongImpl,
         &_InternalSerializeImpl,
+        &ByteSizeLongImpl,
         PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
         true,
     },

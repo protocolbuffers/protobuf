@@ -666,6 +666,7 @@ struct DynamicMessageFactory::TypeInfo {
           static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
           DynamicMessage::ByteSizeLongImpl,
           DynamicMessage::_InternalSerializeImpl,
+          DynamicMessage::ByteSizeLongImpl,
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,
       },

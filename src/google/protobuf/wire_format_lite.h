@@ -759,6 +759,26 @@ class PROTOBUF_EXPORT WireFormatLite {
   // wire if we encode the data as a length delimited field.
   static inline size_t LengthDelimitedSize(size_t length);
 
+  // v2 wireformat helpers for ByteSize.
+  template <typename T>
+  static size_t RepeatedNumericByteSizeV2(size_t tag_size,
+                                          const RepeatedField<T>& value) {
+    return value.empty() ? 0 : tag_size + value.size() * sizeof(T);
+  }
+
+  template <typename RepeatedT>
+  static size_t RepeatedStringByteSizeV2(size_t tag_size,
+                                         const RepeatedT& value) {
+    if (value.empty()) return 0;
+
+    size_t total_bytes = 0;
+    for (const auto& each : value) {
+      total_bytes += each.size();
+    }
+    // Add size for length (sizeof(uint32_t)) per element.
+    return tag_size + value.size() * sizeof(uint32_t) + total_bytes;
+  }
+
  private:
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and

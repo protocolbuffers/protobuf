@@ -114,6 +114,14 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateByteSizeV2(io::Printer* p) const override {
+    // |tag|1B| |field_number|4B| |payload...|
+    p->Emit({{"size", 1 + 4 + sizeof(int)}},
+            R"cc(
+              total_size += $size$;
+            )cc");
+  }
+
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ $kDefault$,
@@ -365,6 +373,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
 
  private:
   const Options* opts_;
@@ -551,6 +560,15 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
         std::size_t tag_size = $tag_size$;
         total_size += data_size + tag_size;
       )cc");
+}
+
+void RepeatedEnum::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |count|4B| |length|4B| |payload|...
+  p->Emit({{"tag_size", 1 + 4 + 4}},
+          R"cc(
+            total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+                $tag_size$, this_._internal_$name$());
+          )cc");
 }
 }  // namespace
 

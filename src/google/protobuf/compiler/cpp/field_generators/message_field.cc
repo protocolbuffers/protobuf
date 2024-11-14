@@ -116,6 +116,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
@@ -418,6 +419,14 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
+void SingularMessage::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |length|4B| |payload...|
+  p->Emit({{"meta_size", kV2TagSize + kV2FieldNumberSize + kV2LengthSize}},
+          R"cc(
+            total_size += $meta_size$ + this_.$field_$->ByteSizeV2Impl();
+          )cc");
+}
+
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
@@ -712,6 +721,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
 
@@ -991,6 +1001,21 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
           total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
         }
       )cc");
+}
+
+void RepeatedMessage::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |count|4B| |length|4B| |payload|...
+  p->Emit({{"meta_size", kV2TagSize + kV2FieldNumberSize + kV2CountSize},
+           {"length", kV2LengthSize}},
+          R"cc(
+            if (this_._internal_$name$().size() > 0) {
+              size_t total_bytes = $meta_size$ + $length$ * this_._internal_$name$().size();
+              for (const auto& msg : this_._internal$_weak$_$name$()) {
+                total_bytes += msg.ByteSizeV2Impl();
+              }
+              total_size += total_bytes;
+            }
+          )cc");
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

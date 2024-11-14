@@ -531,6 +531,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   size_t ByteSize() const;
+  size_t ByteSizeV2() const;
 
   // Like ByteSize() but uses MessageSet format.
   size_t MessageSetByteSize() const;
