@@ -242,7 +242,7 @@ There are three main ways of loading a MiniTable:
     links against these, the MiniTable will be placed into `.rodata` (or
     `.data.rel.ro`) in the binary. The MiniTable can then be obtained from a
     generated function. In Blaze/Bazel these files can be generated and linked
-    using the `upb_proto_library()` rule.
+    using the `upb_proto_c_library()` rule.
 2.  **From MiniDescriptors:** The user can build MiniDescriptors into MiniTables
     at runtime. MiniDescriptors are a compact upb-specific wire format designed
     specially for this purpose. The user can call `upb_MiniTable_Build()` at
