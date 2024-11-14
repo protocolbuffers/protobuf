@@ -57,8 +57,10 @@ template <typename T>
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
+}  // extern "C"
 namespace google {
 namespace protobuf {
 namespace compiler {

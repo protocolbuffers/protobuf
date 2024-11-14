@@ -44,6 +44,7 @@
 #include "absl/log/scoped_mock_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -14103,6 +14104,28 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
 }
 
 // ===================================================================
+
+// This is effectively a static_assert ensuring that the generated
+// descriptor_table variable is marked extern "C". The compiler will give us an
+// error if the generated declaration does not match this one. We need this
+// variable to be extern "C" so that we can refer to it from Rust.
+//
+// If this causes a linker error, it is likely because the name mangling
+// changed. That can be fixed by updating to the new name from the generated
+// code for unittest.proto.
+
+#define DESCRIPTOR_TABLE_NAME \
+  descriptor_table_google_2fprotobuf_2funittest_2eproto
+
+extern "C" {
+extern const ::google::protobuf::internal::DescriptorTable DESCRIPTOR_TABLE_NAME;
+}
+
+TEST(DescriptorTableExternLinkageTest, DescriptorTableExternLinkageTest) {
+  // The goal of this assertion is just to verify that the descriptor_table
+  // variable declaration above still refers to a real thing.
+  EXPECT_TRUE(absl::EndsWith(DESCRIPTOR_TABLE_NAME.filename, "unittest.proto"));
+}
 
 
 }  // namespace descriptor_unittest

@@ -1769,9 +1769,14 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   )cc");
 
   if (HasDescriptorMethods(file_, options_)) {
+    // The DescriptorTable needs to be extern "C" so that we can access it from
+    // Rust. We do not attempt to read the contents of the table in Rust, but
+    // just use the symbol to force-link the C++ generated code when necessary.
     p->Emit(R"cc(
+      extern "C" {
       $dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable
           $desc_table$;
+      }  // extern "C"
     )cc");
   }
 }
