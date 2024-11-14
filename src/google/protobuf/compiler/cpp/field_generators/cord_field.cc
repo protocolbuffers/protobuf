@@ -69,6 +69,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateByteSizeV2(io::Printer* printer) const override;
   void GenerateAggregateInitializer(io::Printer* printer) const override;
   void GenerateConstexprAggregateInitializer(
       io::Printer* printer) const override;
@@ -249,7 +250,6 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
 }
 
-
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -278,6 +278,14 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "total_size += $tag_size$ +\n"
       "  $pbi$::WireFormatLite::$declared_type$Size(\n"
       "    this_._internal_$name$());\n");
+}
+
+void CordFieldGenerator::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |length|4B| |payload...|
+  p->Emit({{"tag_size", kV2SingularLengthPrefixedFieldTagSize}},
+          R"cc(
+            total_size += $tag_size$ + this_._internal_$name$().size();
+          )cc");
 }
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(

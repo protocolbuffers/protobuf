@@ -124,6 +124,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBody(io::Printer* p);
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
+  void GenerateByteSizeV2(io::Printer* p);
   void GenerateClassData(io::Printer* p);
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
@@ -200,8 +201,10 @@ class MessageGenerator {
   std::vector<uint32_t> RequiredFieldsBitMask() const;
 
   // Helper functions to reduce nesting levels of deep Emit calls.
+  template <bool kIsV2 = false>
   void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
                                           io::Printer* p) const;
+  template <bool kIsV2 = false>
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 

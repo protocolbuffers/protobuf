@@ -1295,10 +1295,16 @@ class AccessorVerifier {
 
 }  // namespace
 
+template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
-    field_generators_.get(field).GenerateByteSize(p);
+    const auto& gen = field_generators_.get(field);
+    if constexpr (!kIsV2) {
+      gen.GenerateByteSize(p);
+    } else {
+      gen.GenerateByteSizeV2(p);
+    }
   };
 
   if (!HasHasbit(field)) {
@@ -1334,6 +1340,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
           )cc");
 }
 
+template <bool kIsV2>
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
@@ -1354,7 +1361,7 @@ void MessageGenerator::EmitUpdateByteSizeForField(
                   )cc");
         }},
        {"check_and_update_byte_size_for_field",
-        [&]() { EmitCheckAndUpdateByteSizeForField(field, p); }}},
+        [&]() { EmitCheckAndUpdateByteSizeForField<kIsV2>(field, p); }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
@@ -2481,6 +2488,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
     GenerateByteSize(p);
     p->Emit("\n");
+
 
     GenerateClassSpecificMergeImpl(p);
     p->Emit("\n");
@@ -5264,6 +5272,262 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_weak_fields$;
           $handle_unknown_fields$;
         }
+      )cc");
+}
+
+void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
+
+  if (descriptor_->options().message_set_wire_format()) {
+    // TODO: correctly handle message sets.
+    p->Emit(
+        R"cc(
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+          ::size_t $classname$::ByteSizeV2MessageImpl(const MessageLite& base) {
+            const $classname$& this_ = static_cast<const $classname$&>(base);
+            $WeakDescriptorSelfPin$;
+            $annotate_bytesize$;
+            // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
+            ::size_t total_size = this_.$extensions$.MessageSetByteSize();
+            if (this_.$have_unknown_fields$) {
+              total_size += ::_pbi::ComputeUnknownMessageSetItemsSize(
+                  this_.$unknown_fields$);
+            }
+            this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
+            return total_size;
+          }
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+        )cc");
+    return;
+  }
+
+  std::vector<FieldChunk> chunks = CollectFields(
+      optimized_order_, options_,
+      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
+        return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
+               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
+               ShouldSplit(a, options_) == ShouldSplit(b, options_);
+      });
+
+  p->Emit(
+      {{"handle_extension_set",
+        [&] {
+          if (descriptor_->extension_range_count() == 0) return;
+          p->Emit(R"cc(
+            total_size += this_.$extensions$.ByteSizeV2();
+          )cc");
+        }},
+       {"prefetch",
+        [&] {
+          // See comment in third_party/protobuf/port.h for details,
+          // on how much we are prefetching. Only insert prefetch once per
+          // function, since advancing is actually slower. We sometimes
+          // prefetch more than sizeof(message), because it helps with
+          // next message on arena.
+          bool generate_prefetch = false;
+          // Skip trivial messages with 0 or 1 fields, unless they are
+          // repeated, to reduce codesize.
+          switch (optimized_order_.size()) {
+            case 1:
+              generate_prefetch = optimized_order_[0]->is_repeated();
+              break;
+            case 0:
+              break;
+            default:
+              generate_prefetch = true;
+          }
+          if (!generate_prefetch || !IsPresentMessage(descriptor_, options_)) {
+            return;
+          }
+          p->Emit(R"cc(
+            ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+          )cc");
+        }},
+       {"handle_fields",
+        [&] {
+          auto it = chunks.begin();
+          auto end = chunks.end();
+          int cached_has_word_index = -1;
+
+          while (it != end) {
+            auto next =
+                FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+            bool has_haswords_check =
+                MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                                       cached_has_word_index, "this_.", p);
+
+            while (it != next) {
+              const auto& fields = it->fields;
+              const bool check_has_byte =
+                  fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
+                  !IsLikelyPresent(fields.back(), options_);
+              p->Emit(
+                  {{"update_byte_size_for_chunk",
+                    [&] {
+                      // Go back and emit checks for each of the fields we
+                      // processed.
+                      for (const auto* field : fields) {
+                        EmitUpdateByteSizeForField</*kIsV2=*/true>(
+                            field, p, cached_has_word_index);
+                      }
+                    }},
+                   {"may_update_cached_has_word_index",
+                    [&] {
+                      if (!check_has_byte) return;
+                      if (cached_has_word_index == HasWordIndex(fields.front()))
+                        return;
+
+                      cached_has_word_index = HasWordIndex(fields.front());
+                      p->Emit({{"index", cached_has_word_index}},
+                              R"cc(
+                                cached_has_bits = this_.$has_bits$[$index$];
+                              )cc");
+                    }},
+                   {"check_if_chunk_present",
+                    [&] {
+                      if (!check_has_byte) {
+                        return;
+                      }
+
+                      // Emit an if() that will let us skip the whole chunk
+                      // if none are set.
+                      uint32_t chunk_mask =
+                          GenChunkMask(fields, has_bit_indices_);
+
+                      // Check (up to) 8 has_bits at a time if we have more
+                      // than one field in this chunk.  Due to field layout
+                      // ordering, we may check _has_bits_[last_chunk * 8 /
+                      // 32] multiple times.
+                      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+                      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+
+                      p->Emit(
+                          {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
+                          "if (cached_has_bits & $mask$)");
+                    }}},
+                  R"cc(
+                    $may_update_cached_has_word_index$;
+                    $check_if_chunk_present$ {
+                      //~ Force newline.
+                      $update_byte_size_for_chunk$;
+                    }
+                  )cc");
+
+              // To next chunk.
+              ++it;
+            }
+
+            if (has_haswords_check) {
+              p->Emit(R"cc(
+                }
+              )cc");
+
+              // Reset here as it may have been updated in just closed if
+              // statement.
+              cached_has_word_index = -1;
+            }
+          }
+        }},
+       {"handle_oneof_fields",
+        [&] {
+          // Fields inside a oneof don't use _has_bits_ so we count them in a
+          // separate pass.
+          for (auto oneof : OneOfRange(descriptor_)) {
+            p->Emit(
+                {{"oneof_name", oneof->name()},
+                 {"oneof_case_name", absl::AsciiStrToUpper(oneof->name())},
+                 {"case_per_field",
+                  [&] {
+                    for (auto field : FieldRange(oneof)) {
+                      PrintFieldComment(Formatter{p}, field, options_);
+                      p->Emit(
+                          {{"field_name",
+                            UnderscoresToCamelCase(field->name(), true)},
+                           {"field_byte_size",
+                            [&] {
+                              field_generators_.get(field).GenerateByteSizeV2(
+                                  p);
+                            }}},
+                          R"cc(
+                            case k$field_name$: {
+                              $field_byte_size$;
+                              break;
+                            }
+                          )cc");
+                    }
+                  }}},
+                R"cc(
+                  switch (this_.$oneof_name$_case()) {
+                    $case_per_field$;
+                    case $oneof_case_name$_NOT_SET: {
+                      break;
+                    }
+                  }
+                )cc");
+          }
+        }},
+       {"handle_weak_fields",
+        [&] {
+          if (num_weak_fields_ == 0) return;
+          // TagSize + MessageSize
+          p->Emit(R"cc(
+            total_size += this_.$weak_field_map$.ByteSizeV2();
+          )cc");
+        }},
+       {"handle_unknown_fields",
+        [&] {
+          if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+            // We go out of our way to put the computation of the uncommon
+            // path of unknown fields in tail position. This allows for
+            // better code generation of this function for simple protos.
+            p->Emit(R"cc(
+              return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                         &this_.$cached_size$);
+            )cc");
+          } else {
+            // We update _cached_size_ even though this is a const method.
+            // Because const methods might be called concurrently this needs
+            // to be atomic operations or the program is undefined.  In
+            // practice, since any concurrent writes will be writing the
+            // exact same value, normal writes will work on all common
+            // processors. We use a dedicated wrapper class to abstract away
+            // the underlying atomic. This makes it easier on platforms where
+            // even relaxed memory order might have perf impact to replace it
+            // with ordinary loads and stores.
+            p->Emit(R"cc(
+              if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
+                total_size += this_.$unknown_fields$.size();
+              }
+              this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
+              return total_size;
+            )cc");
+          }
+        }}},
+      R"cc(
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+        ::size_t $classname$::ByteSizeV2MessageImpl(const MessageLite& base) {
+          const $classname$& this_ = static_cast<const $classname$&>(base);
+          $WeakDescriptorSelfPin$;
+          $annotate_bytesize$;
+          // @@protoc_insertion_point(message_byte_size_start:$full_name$)
+          ::size_t total_size = 0;
+          $handle_extension_set$;
+
+          $uint32$ cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
+
+          $prefetch$;
+          $handle_fields$;
+          $handle_oneof_fields$;
+          $handle_weak_fields$;
+          $handle_unknown_fields$;
+        }
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       )cc");
 }
 

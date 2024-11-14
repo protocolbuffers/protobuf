@@ -1027,6 +1027,19 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1237,6 +1250,19 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1518,6 +1544,19 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1796,6 +1835,19 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -2032,6 +2084,19 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -2247,6 +2312,19 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -2843,6 +2921,19 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -3097,6 +3188,19 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -3302,6 +3406,19 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -3512,6 +3629,19 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -3809,6 +3939,19 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -4185,6 +4328,19 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -4388,6 +4544,19 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -4619,6 +4788,19 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -5030,6 +5212,19 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -5428,6 +5623,19 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -5873,6 +6081,19 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -6336,6 +6557,19 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -7052,6 +7286,19 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -7717,6 +7964,19 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -7947,6 +8207,19 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -8398,6 +8671,19 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -8839,6 +9125,19 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -9276,6 +9575,19 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -9495,6 +9807,19 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -9776,6 +10101,19 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -10189,6 +10527,19 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -10421,6 +10772,19 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -10648,6 +11012,19 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -10886,6 +11263,19 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -11168,6 +11558,19 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -11546,6 +11949,19 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -11971,6 +12387,19 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  private:
+  static ::size_t ByteSizeV2Impl(const ::google::protobuf::MessageLite& msg) {
+    return 2 + ByteSizeV2MessageImpl(msg);
+  }
+  static ::size_t ByteSizeV2MessageImpl(const ::google::protobuf::MessageLite& msg);
+
+  public:
+  ::size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+  ::size_t ByteSizeV2Message() const { return ByteSizeV2MessageImpl(*this); }
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
