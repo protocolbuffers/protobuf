@@ -11,7 +11,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -25,7 +24,12 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/v2/constants.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -285,6 +289,7 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
                                     this_._internal_$name$());
   )cc");
 }
+
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
@@ -643,6 +648,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
         total_size += tag_size + data_size;
       )cc");
 }
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
@@ -661,3 +667,5 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

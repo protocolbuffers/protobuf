@@ -5,10 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -18,6 +20,10 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/v2/constants.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -313,6 +319,46 @@ void Map::GenerateByteSize(io::Printer* p) const {
         }
       )cc");
 }
+
+bool IsFixedWidth(const FieldDescriptor* field) {
+  auto cpp_type = field->cpp_type();
+  return cpp_type == FieldDescriptor::CPPTYPE_INT32 ||
+         cpp_type == FieldDescriptor::CPPTYPE_INT64 ||
+         cpp_type == FieldDescriptor::CPPTYPE_UINT32 ||
+         cpp_type == FieldDescriptor::CPPTYPE_UINT64 ||
+         cpp_type == FieldDescriptor::CPPTYPE_DOUBLE ||
+         cpp_type == FieldDescriptor::CPPTYPE_FLOAT ||
+         cpp_type == FieldDescriptor::CPPTYPE_BOOL ||
+         cpp_type == FieldDescriptor::CPPTYPE_ENUM;
+}
+
+enum MapFieldType {
+  kKey,
+  kValue,
+};
+
+// Emits code for either key (first) or value (second) of a map entry as its
+// size is variable (string or message). It assumes the map is iterated via
+// "entry".
+void EmitUpdateByteSizeV2ForVariableMapType(const FieldDescriptor* field,
+                                            MapFieldType type, io::Printer* p) {
+  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING ||
+              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
+
+  auto v = p->WithVars({{"name", type == kKey ? "first" : "second"}});
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    p->Emit(
+        R"cc(
+          map_size += entry.$name$.size();
+        )cc");
+  } else {
+    p->Emit(
+        R"cc(
+          map_size += entry.$name$.ByteSizeV2Message();
+        )cc");
+  }
+}
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
@@ -325,3 +371,5 @@ std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -759,6 +759,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   // wire if we encode the data as a length delimited field.
   static inline size_t LengthDelimitedSize(size_t length);
 
+
  private:
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and

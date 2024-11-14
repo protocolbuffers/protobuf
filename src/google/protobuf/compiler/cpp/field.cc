@@ -33,6 +33,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/v2/constants.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -41,6 +42,7 @@ namespace compiler {
 namespace cpp {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
+
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);

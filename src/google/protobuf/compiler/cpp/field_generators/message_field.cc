@@ -26,6 +26,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -418,6 +421,7 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
                   $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
   )cc");
 }
+
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
@@ -997,6 +1001,7 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
       )cc");
 }
 
+
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
@@ -1040,3 +1045,5 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

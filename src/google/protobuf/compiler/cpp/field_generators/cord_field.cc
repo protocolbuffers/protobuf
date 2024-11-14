@@ -26,6 +26,9 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -249,7 +252,6 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
 }
 
-
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -279,6 +281,7 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "  $pbi$::WireFormatLite::$declared_type$Size(\n"
       "    this_._internal_$name$());\n");
 }
+
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
@@ -473,3 +476,5 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
