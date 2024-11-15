@@ -2574,8 +2574,8 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -2624,7 +2624,7 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const
 
   _this->_internal_mutable_file()->MergeFrom(
       from._internal_file());
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2638,8 +2638,7 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileDescriptorSet&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_file()))
@@ -5194,8 +5193,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -5283,7 +5282,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, c
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5297,8 +5296,7 @@ void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const ExtensionRangeOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -8576,8 +8574,8 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -8800,7 +8798,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8814,8 +8812,7 @@ void FileOptions::CopyFrom(const FileOptions& from) {
 PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -9156,8 +9153,8 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9263,7 +9260,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -9277,8 +9274,7 @@ void MessageOptions::CopyFrom(const MessageOptions& from) {
 PROTOBUF_NOINLINE bool MessageOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MessageOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -10355,8 +10351,8 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -10529,7 +10525,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -10543,8 +10539,7 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
 PROTOBUF_NOINLINE bool FieldOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FieldOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -10798,8 +10793,8 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -10868,7 +10863,7 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -10882,8 +10877,7 @@ void OneofOptions::CopyFrom(const OneofOptions& from) {
 PROTOBUF_NOINLINE bool OneofOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const OneofOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -11183,8 +11177,8 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -11276,7 +11270,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11290,8 +11284,7 @@ void EnumOptions::CopyFrom(const EnumOptions& from) {
 PROTOBUF_NOINLINE bool EnumOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -11609,8 +11602,8 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -11709,7 +11702,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11723,8 +11716,7 @@ void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumValueOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -11996,8 +11988,8 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -12075,7 +12067,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12089,8 +12081,7 @@ void ServiceOptions::CopyFrom(const ServiceOptions& from) {
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const ServiceOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -12389,8 +12380,8 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -12476,7 +12467,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12490,8 +12481,7 @@ void MethodOptions::CopyFrom(const MethodOptions& from) {
 PROTOBUF_NOINLINE bool MethodOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MethodOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -13532,8 +13522,8 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -13626,7 +13616,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -13640,8 +13630,7 @@ void FeatureSet::CopyFrom(const FeatureSet& from) {
 PROTOBUF_NOINLINE bool FeatureSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FeatureSet&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   return true;
@@ -14925,8 +14914,8 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
           }
 
           // All extensions.
-          target = this_._impl_._extensions_._InternalSerializeAll(
-              internal_default_instance(), target, stream);
+          target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                            target, stream);
           if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -14975,7 +14964,7 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
 
   _this->_internal_mutable_location()->MergeFrom(
       from._internal_location());
-  _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(&default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -14989,8 +14978,7 @@ void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const SourceCodeInfo&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(
-          internal_default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
     return false;
   }
   return true;

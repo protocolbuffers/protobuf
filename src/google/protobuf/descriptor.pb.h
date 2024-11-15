@@ -928,10 +928,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
     return default_instance().GetMetadata().reflection;
   }
   static const UninterpretedOption_NamePart& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UninterpretedOption_NamePart* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption_NamePart*>(
+    return *reinterpret_cast<const UninterpretedOption_NamePart*>(
         &_UninterpretedOption_NamePart_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 24;
@@ -1147,10 +1144,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
     return default_instance().GetMetadata().reflection;
   }
   static const SourceCodeInfo_Location& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SourceCodeInfo_Location* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo_Location*>(
+    return *reinterpret_cast<const SourceCodeInfo_Location*>(
         &_SourceCodeInfo_Location_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 29;
@@ -1432,10 +1426,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
     return default_instance().GetMetadata().reflection;
   }
   static const GeneratedCodeInfo_Annotation& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
+    return *reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
         &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 31;
@@ -1713,10 +1704,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions_FeatureSupport& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions_FeatureSupport* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_FeatureSupport*>(
+    return *reinterpret_cast<const FieldOptions_FeatureSupport*>(
         &_FieldOptions_FeatureSupport_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 17;
@@ -1953,10 +1941,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions_EditionDefault& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions_EditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_EditionDefault*>(
+    return *reinterpret_cast<const FieldOptions_EditionDefault*>(
         &_FieldOptions_EditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 16;
@@ -2167,10 +2152,7 @@ class PROTOBUF_EXPORT FeatureSet final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSet& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSet* internal_default_instance() {
-    return reinterpret_cast<const FeatureSet*>(
+    return *reinterpret_cast<const FeatureSet*>(
         &_FeatureSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 26;
@@ -2732,10 +2714,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
     return default_instance().GetMetadata().reflection;
   }
   static const ExtensionRangeOptions_Declaration& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ExtensionRangeOptions_Declaration* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
+    return *reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
         &_ExtensionRangeOptions_Declaration_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 5;
@@ -2990,10 +2969,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumDescriptorProto_EnumReservedRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
+    return *reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
         &_EnumDescriptorProto_EnumReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 9;
@@ -3199,10 +3175,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto_ReservedRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto_ReservedRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ReservedRange*>(
+    return *reinterpret_cast<const DescriptorProto_ReservedRange*>(
         &_DescriptorProto_ReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -3408,10 +3381,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
     return default_instance().GetMetadata().reflection;
   }
   static const UninterpretedOption& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UninterpretedOption* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption*>(
+    return *reinterpret_cast<const UninterpretedOption*>(
         &_UninterpretedOption_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 25;
@@ -3709,10 +3679,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
     return default_instance().GetMetadata().reflection;
   }
   static const SourceCodeInfo& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SourceCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo*>(
+    return *reinterpret_cast<const SourceCodeInfo*>(
         &_SourceCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 30;
@@ -4094,10 +4061,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
     return default_instance().GetMetadata().reflection;
   }
   static const GeneratedCodeInfo& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const GeneratedCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo*>(
+    return *reinterpret_cast<const GeneratedCodeInfo*>(
         &_GeneratedCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 32;
@@ -4296,10 +4260,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSetDefaults_FeatureSetEditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
+    return *reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
         &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 27;
@@ -4531,10 +4492,7 @@ class PROTOBUF_EXPORT ServiceOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const ServiceOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ServiceOptions* internal_default_instance() {
-    return reinterpret_cast<const ServiceOptions*>(
+    return *reinterpret_cast<const ServiceOptions*>(
         &_ServiceOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 22;
@@ -4946,10 +4904,7 @@ class PROTOBUF_EXPORT OneofOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const OneofOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const OneofOptions* internal_default_instance() {
-    return reinterpret_cast<const OneofOptions*>(
+    return *reinterpret_cast<const OneofOptions*>(
         &_OneofOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 19;
@@ -5348,10 +5303,7 @@ class PROTOBUF_EXPORT MethodOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const MethodOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MethodOptions* internal_default_instance() {
-    return reinterpret_cast<const MethodOptions*>(
+    return *reinterpret_cast<const MethodOptions*>(
         &_MethodOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 23;
@@ -5796,10 +5748,7 @@ class PROTOBUF_EXPORT MessageOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const MessageOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MessageOptions* internal_default_instance() {
-    return reinterpret_cast<const MessageOptions*>(
+    return *reinterpret_cast<const MessageOptions*>(
         &_MessageOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 15;
@@ -6263,10 +6212,7 @@ class PROTOBUF_EXPORT FileOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const FileOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileOptions* internal_default_instance() {
-    return reinterpret_cast<const FileOptions*>(
+    return *reinterpret_cast<const FileOptions*>(
         &_FileOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 14;
@@ -6982,10 +6928,7 @@ class PROTOBUF_EXPORT FieldOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions*>(
+    return *reinterpret_cast<const FieldOptions*>(
         &_FieldOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 18;
@@ -7647,10 +7590,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSetDefaults& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSetDefaults* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults*>(
+    return *reinterpret_cast<const FeatureSetDefaults*>(
         &_FeatureSetDefaults_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 28;
@@ -7881,10 +7821,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const ExtensionRangeOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ExtensionRangeOptions* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions*>(
+    return *reinterpret_cast<const ExtensionRangeOptions*>(
         &_ExtensionRangeOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 6;
@@ -8335,10 +8272,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumValueOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumValueOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumValueOptions*>(
+    return *reinterpret_cast<const EnumValueOptions*>(
         &_EnumValueOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 21;
@@ -8780,10 +8714,7 @@ class PROTOBUF_EXPORT EnumOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumOptions*>(
+    return *reinterpret_cast<const EnumOptions*>(
         &_EnumOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 20;
@@ -9221,10 +9152,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const OneofDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const OneofDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const OneofDescriptorProto*>(
+    return *reinterpret_cast<const OneofDescriptorProto*>(
         &_OneofDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 8;
@@ -9444,10 +9372,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const MethodDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MethodDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const MethodDescriptorProto*>(
+    return *reinterpret_cast<const MethodDescriptorProto*>(
         &_MethodDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 13;
@@ -9729,10 +9654,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FieldDescriptorProto*>(
+    return *reinterpret_cast<const FieldDescriptorProto*>(
         &_FieldDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 7;
@@ -10144,10 +10066,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumValueDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumValueDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumValueDescriptorProto*>(
+    return *reinterpret_cast<const EnumValueDescriptorProto*>(
         &_EnumValueDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 11;
@@ -10380,10 +10299,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto_ExtensionRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
+    return *reinterpret_cast<const DescriptorProto_ExtensionRange*>(
         &_DescriptorProto_ExtensionRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -10611,10 +10527,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const ServiceDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ServiceDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const ServiceDescriptorProto*>(
+    return *reinterpret_cast<const ServiceDescriptorProto*>(
         &_ServiceDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 12;
@@ -10853,10 +10766,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto*>(
+    return *reinterpret_cast<const EnumDescriptorProto*>(
         &_EnumDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 10;
@@ -11139,10 +11049,7 @@ class PROTOBUF_EXPORT DescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto*>(
+    return *reinterpret_cast<const DescriptorProto*>(
         &_DescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -11521,10 +11428,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const FileDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorProto*>(
+    return *reinterpret_cast<const FileDescriptorProto*>(
         &_FileDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -11950,10 +11854,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final
     return default_instance().GetMetadata().reflection;
   }
   static const FileDescriptorSet& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileDescriptorSet* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorSet*>(
+    return *reinterpret_cast<const FileDescriptorSet*>(
         &_FileDescriptorSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

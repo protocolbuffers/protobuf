@@ -165,10 +165,7 @@ class PROTOC_EXPORT JavaFeatures final
     return default_instance().GetMetadata().reflection;
   }
   static const JavaFeatures& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const JavaFeatures* internal_default_instance() {
-    return reinterpret_cast<const JavaFeatures*>(
+    return *reinterpret_cast<const JavaFeatures*>(
         &_JavaFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

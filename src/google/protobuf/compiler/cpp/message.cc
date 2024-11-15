@@ -1139,27 +1139,6 @@ void MessageGenerator::GenerateSingularFieldHasBits(
             return value;
           }
         )cc");
-  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    // Message fields have a has_$name$() method.
-    if (IsLazy(field, options_, scc_analyzer_)) {
-      p->Emit(R"cc(
-        inline bool $classname$::_internal_has_$name$() const {
-          return !$field$.IsCleared();
-        }
-      )cc");
-    } else {
-      p->Emit(R"cc(
-        inline bool $classname$::_internal_has_$name$() const {
-          return this != internal_default_instance() && $field$ != nullptr;
-        }
-      )cc");
-    }
-    p->Emit(R"cc(
-      inline bool $classname$::has_$name$() const {
-        $annotate_has$;
-        return _internal_has_$name$();
-      }
-    )cc");
   }
 }
 
@@ -2201,15 +2180,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $descriptor_accessor$;
           $get_descriptor$;
           static const $classname$& default_instance() {
-            return *internal_default_instance();
-          }
-          $decl_oneof$;
-          //~ TODO make this private, while still granting other
-          //~ protos access.
-          static inline const $classname$* internal_default_instance() {
-            return reinterpret_cast<const $classname$*>(
+            return *reinterpret_cast<const $classname$*>(
                 &_$classname$_default_instance_);
           }
+          $decl_oneof$;
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
           $decl_any_methods$;
           friend void swap($classname$& a, $classname$& b) { a.Swap(&b); }
@@ -4441,9 +4415,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   // Merging of extensions and unknown fields is done last, to maximize
   // the opportunity for tail calls.
   if (descriptor_->extension_range_count() > 0) {
-    format(
-        "_this->$extensions$.MergeFrom(internal_default_instance(), "
-        "from.$extensions$);\n");
+    p->Emit(R"cc(
+      _this->$extensions$.MergeFrom(&default_instance(), from.$extensions$);
+    )cc");
   }
 
   format(
@@ -4615,7 +4589,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
       R"cc(
         // Extension range [$start$, $end$)
         target = this_.$extensions$._InternalSerialize(
-            internal_default_instance(), $start$, $end$, target, stream);
+            &default_instance(), $start$, $end$, target, stream);
       )cc");
 }
 
@@ -4624,8 +4598,8 @@ void MessageGenerator::GenerateSerializeAllExtensions(io::Printer* p) {
   p->Emit(
       R"cc(
         // All extensions.
-        target = this_.$extensions$._InternalSerializeAll(
-            internal_default_instance(), target, stream);
+        target = this_.$extensions$._InternalSerializeAll(&default_instance(),
+                                                          target, stream);
       )cc");
 }
 
@@ -4648,7 +4622,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
         $annotate_serialize$ target =
             this_.$extensions$
                 .InternalSerializeMessageSetWithCachedSizesToArray(
-                    internal_default_instance(), target, stream);
+                    &default_instance(), target, stream);
         target = ::_pbi::InternalSerializeUnknownMessageSetItemsToArray(
             this_.$unknown_fields$, target, stream);
         return target;
@@ -5325,8 +5299,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (descriptor_->extension_range_count() == 0) return;
              p->Emit(R"cc(
-               if (!this_.$extensions$.IsInitialized(
-                       internal_default_instance())) {
+               if (!this_.$extensions$.IsInitialized(&default_instance())) {
                  return false;
                }
              )cc");

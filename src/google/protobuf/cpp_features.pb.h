@@ -166,10 +166,7 @@ class PROTOBUF_EXPORT CppFeatures final
     return default_instance().GetMetadata().reflection;
   }
   static const CppFeatures& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CppFeatures* internal_default_instance() {
-    return reinterpret_cast<const CppFeatures*>(
+    return *reinterpret_cast<const CppFeatures*>(
         &_CppFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

@@ -185,10 +185,7 @@ class PROTOC_EXPORT Version final
     return default_instance().GetMetadata().reflection;
   }
   static const Version& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Version* internal_default_instance() {
-    return reinterpret_cast<const Version*>(
+    return *reinterpret_cast<const Version*>(
         &_Version_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -425,10 +422,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorResponse_File& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CodeGeneratorResponse_File* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorResponse_File*>(
+    return *reinterpret_cast<const CodeGeneratorResponse_File*>(
         &_CodeGeneratorResponse_File_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -679,10 +673,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorResponse& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CodeGeneratorResponse* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorResponse*>(
+    return *reinterpret_cast<const CodeGeneratorResponse*>(
         &_CodeGeneratorResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -959,10 +950,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorRequest& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CodeGeneratorRequest* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorRequest*>(
+    return *reinterpret_cast<const CodeGeneratorRequest*>(
         &_CodeGeneratorRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
