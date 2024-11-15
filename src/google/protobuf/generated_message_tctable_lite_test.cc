@@ -25,6 +25,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -916,10 +917,10 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
 // This test checks that the parser doesn't overflow an int32 when computing the
 // array's new length.
 TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
-#ifdef PROTOBUF_MSAN
-  // This test attempts to allocate 8GB of memory, which OOMs MSAN.
-  return;
-#endif
+  if constexpr (internal::HasAnySanitizer()) {
+    GTEST_SKIP() << "This test attempts to allocate 8GB of memory, which OOMs "
+                    "in sanitizer mode.";
+  }
 
 #ifdef _WIN32
   // This test OOMs on Windows.  I think this is because Windows is committing

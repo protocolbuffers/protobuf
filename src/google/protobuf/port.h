@@ -29,6 +29,10 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#include <sanitizer/asan_interface.h>
+#endif
+
 // must be last
 #include "google/protobuf/port_def.inc"
 
@@ -258,9 +262,18 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+constexpr bool HasAnySanitizer() {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
 constexpr bool PerformDebugChecks() {
-#if defined(NDEBUG) && !defined(PROTOBUF_ASAN) && !defined(PROTOBUF_MSAN) && \
-    !defined(PROTOBUF_TSAN)
+  if (HasAnySanitizer()) return true;
+#if defined(NDEBUG)
   return false;
 #else
   return true;
@@ -355,13 +368,45 @@ PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
 }
 #endif
 
-#ifdef PROTOBUF_TSAN
+constexpr bool HasMemoryPoisoning() {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Poison memory region when supported by sanitizer config.
+inline void PoisonMemoryRegion(const void* p, size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_POISON_MEMORY_REGION(p, n);
+#else
+  // Nothing
+#endif
+}
+
+inline void UnpoisonMemoryRegion(const void* p, size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_UNPOISON_MEMORY_REGION(p, n);
+#else
+  // Nothing
+#endif
+}
+
+inline bool IsMemoryPoisoned(const void* p) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return __asan_address_is_poisoned(p);
+#else
+  return false;
+#endif
+}
+
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>
 PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
-  char protobuf_tsan_dummy =
-      *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
+  char protobuf_tsan_dummy = impl->_tsan_detect_race;
   asm volatile("" : "+r"(protobuf_tsan_dummy));
 }
 
@@ -370,7 +415,7 @@ PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
 // correctness of the rest of the class.
 template <typename T>
 PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
-  *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
+  impl->_tsan_detect_race = 0;
 }
 #else
 PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}

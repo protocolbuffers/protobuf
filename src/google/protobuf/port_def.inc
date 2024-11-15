@@ -503,56 +503,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_HAVE_ATTRIBUTE_WEAK 0
 #endif
 
-// Macros to detect sanitizers.
-#ifdef PROTOBUF_ASAN
-#error PROTOBUF_ASAN was previously defined
-#endif
-#ifdef PROTOBUF_MSAN
-#error PROTOBUF_MSAN was previously defined
-#endif
-#ifdef PROTOBUF_TSAN
-#error PROTOBUF_TSAN was previously defined
-#endif
-#if defined(__clang__)
-#if ABSL_HAVE_FEATURE(address_sanitizer)
-#    define PROTOBUF_ASAN 1
-#  endif
-#if ABSL_HAVE_FEATURE(thread_sanitizer)
-#    define PROTOBUF_TSAN 1
-#  endif
-#if ABSL_HAVE_FEATURE(memory_sanitizer)
-#    define PROTOBUF_MSAN 1
-#  endif
-#elif defined(__GNUC__)
-// Double-guard is needed for -Wundef:
-#  ifdef __SANITIZE_ADDRESS__
-#  if    __SANITIZE_ADDRESS__
-#    define PROTOBUF_ASAN 1
-#  endif
-#  endif
-#  ifdef __SANITIZE_THREAD__
-#  if    __SANITIZE_THREAD__
-#    define PROTOBUF_TSAN 1
-#  endif
-#  endif
-#  ifdef __SANITIZE_MEMORY__
-#  if    __SANITIZE_MEMORY__
-#    define PROTOBUF_ASAN 1
-#  endif
-#  endif
-#endif
-
-#ifdef PROTOBUF_ASAN
-#include <sanitizer/asan_interface.h>
-#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
-#else  // PROTOBUF_ASAN
-#define PROTOBUF_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
-#endif  // PROTOBUF_ASAN
-
-#ifdef PROTOBUF_TSAN
-#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
+// Variable used to inject artificial language races to detect API level races.
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
+#define PROTOBUF_TSAN_DECLARE_MEMBER char _tsan_detect_race = 0;
 #else
 #define PROTOBUF_TSAN_DECLARE_MEMBER
 #endif

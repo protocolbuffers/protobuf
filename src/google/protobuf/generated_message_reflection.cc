@@ -1374,7 +1374,7 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
 
   for (auto it : nodes) {
     (void)it;
-    PROTOBUF_POISON_MEMORY_REGION(it.ptr, it.size);
+    internal::PoisonMemoryRegion(it.ptr, it.size);
   }
 }
 

@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -437,7 +438,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // thread calls either ConstAccess() or MutableAccess(), on the same
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
-#if defined(PROTOBUF_TSAN)
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
   void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
   void MutableAccess() {
     if (seq1_ & 1) {
