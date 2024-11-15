@@ -7,6 +7,7 @@
 
 #include "upb/message/message.h"
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -38,10 +39,34 @@ upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
                                           size_t len, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
+  // valid proto field
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
   in->unknown_end += len;
+  return true;
+}
+
+bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
+                                           upb_Arena* arena,
+                                           upb_StringView data[],
+                                           size_t count) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(count > 0);
+  size_t total_len = 0;
+  for (size_t i = 0; i < count; i++) {
+    total_len += data[i].size;
+  }
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, total_len, arena)) return false;
+
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  for (size_t i = 0; i < count; i++) {
+    memcpy(UPB_PTR_AT(in, in->unknown_end, char), data[i].data, data[i].size);
+    in->unknown_end += data[i].size;
+  }
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
+  // valid proto field
   return true;
 }
 
