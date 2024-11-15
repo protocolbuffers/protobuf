@@ -369,6 +369,7 @@ const char* _upb_Decoder_DecodeKnownGroup(upb_Decoder* d, const char* ptr,
                                   field->UPB_PRIVATE(number));
 }
 
+#define kUpb_Decoder_EncodeVarint32MaxSize 5
 static char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
   do {
     uint8_t byte = val & 0x7fU;
@@ -395,7 +396,7 @@ bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr, upb_Message* msg,
   upb_Message* unknown_msg =
       field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->unknown_msg
                                                              : msg;
-  char buf[20];
+  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
   char* end = buf;
   end = upb_Decoder_EncodeVarint32(tag, end);
   end = upb_Decoder_EncodeVarint32(v, end);
@@ -671,7 +672,7 @@ static const char* _upb_Decoder_DecodeToMap(
     if (status != kUpb_EncodeStatus_Ok) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
-    char delim_buf[20];
+    char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
     char* delim_end = delim_buf;
     delim_end = upb_Decoder_EncodeVarint32(tag, delim_end);
     delim_end = upb_Decoder_EncodeVarint32(size, delim_end);
@@ -839,7 +840,7 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
                                                  uint32_t type_id,
                                                  const char* message_data,
                                                  uint32_t message_size) {
-  char buf[60];
+  char buf[6 * kUpb_Decoder_EncodeVarint32MaxSize];
   char* ptr = buf;
   ptr = upb_Decoder_EncodeVarint32(kStartItemTag, ptr);
   ptr = upb_Decoder_EncodeVarint32(kTypeIdTag, ptr);
