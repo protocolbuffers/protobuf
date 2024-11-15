@@ -16,10 +16,11 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -1880,6 +1882,699 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   }
 }
 
+  });
+  Arena arena_obj;
+  // Delay deallocations until after the loop to prevent the allocator from
+  // reusing the just-freed memory on the next iteration.
+  std::vector<char*> recycle_bin;
+  static_assert(kMinAlign <= kMaxAlign, "Real code always complies");
+  for (Arena* arena : {static_cast<Arena*>(nullptr), &arena_obj}) {
+    for (size_t num_elements = kMinElements; num_elements <= kMaxElements;
+         (num_elements < 10) ? (num_elements += 1) : (num_elements += 10)) {
+      const size_t array_bytes = num_elements * kSize;
+      for (size_t align = kMinAlign; align <= kMaxAlign; align *= 2) {
+        SCOPED_TRACE(absl::Substitute("arena=$0 num_elements=$1 align=$2",
+                                      arena, num_elements, align));
+        char* const arr = Arena::CreateArray<char>(arena, array_bytes);
+        EXPECT_EQ(arr != nullptr, num_elements != 0);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(arr) % align, 0)
+            << "arr=" << (void*)arr;
+#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
+        // Touch the expected span of addresses to have the sanitizers verify
+        // that the returned memory is not poisoned.
+        T* const arr_t = reinterpret_cast<T* const>(arr);
+        for (size_t i = 0; i < num_elements; ++i) {
+          arr_t[i] = 0xAB;
+        }
+#endif
+        if (arena == nullptr) {
+          recycle_bin.push_back(arr);
+        }
+      }
+    }
+  }
+
+  for (auto* ptr : recycle_bin) {
+    delete[] ptr;
+  }
+}
+
+struct InitializationVerifier {
+  static constexpr int kDefaultScalar = 0x11;
+  static constexpr int kDefaultArray = 0x22;
+
+  static void* operator new(size_t, void* ptr) { return ptr; }
+
+  static void* operator new(size_t n) {
+    void* ret = ::operator new(n);
+    memset(ret, kDefaultScalar, n);
+    return ret;
+  }
+
+  // Ignore the possible alignment param. Need this just so
+  // `Arena::CreateArray()` compiles.
+  static void* operator new[](size_t n, ...) {
+    void* ret = ::operator new[](n);
+    memset(ret, kDefaultArray, n);
+    return ret;
+  }
+
+  int a;
+};
+
+TEST(ArenaTest, ArenaValueInitialization) {
+  std::unique_ptr<InitializationVerifier> scalar(
+      Arena::Create<InitializationVerifier>(nullptr));
+  // Create value initializes.
+  EXPECT_EQ(scalar->a, 0);
+
+  int pattern;
+  memset(&pattern, InitializationVerifier::kDefaultArray, sizeof(pattern));
+
+  std::unique_ptr<InitializationVerifier[]> array(
+      Arena::CreateArray<InitializationVerifier>(nullptr, 2));
+  // CreateArray default initializes.
+  EXPECT_EQ(array[0].a, pattern);
+  EXPECT_EQ(array[1].a, pattern);
+}
+
+TEST(ArenaTest, b237489184) {
+  google::protobuf::ArenaOptions arena_options;
+  arena_options.start_block_size = 1;
+  arena_options.max_block_size = 10;
+  google::protobuf::Arena arena{arena_options};
+  // Fill our first block
+  arena.OwnCustomDestructor(
+      &arena, +[](void*) {});
+  // then put a custom destructor on our second block
+  arena.OwnCustomDestructor(
+      &arena, +[](void*) {});
+  // asan errors on `~Arena`
+}
+
+// Helper for BM_MultiThreadedAlloc.  Synchronously creates a new
+// arena after every K iterations to prevent unbounded memory growth.
+class ArenaManager {
+ public:
+  ArenaManager() = default;
+
+  // Called by benchmark setup code to initialize number of threads.
+  void Init(const benchmark::State& state) {
+    absl::MutexLock l(&mu_);
+    num_threads_ = state.threads();
+    num_waiting_ = 0;
+    phase_ = 0;
+    delete arena_;
+    arena_ = nullptr;
+  }
+
+  // Wait until all benchmark threads have made this call and then
+  // returns a new arena to all of them.
+  Arena* GetNextArena(bool initial_block) {
+    mu_.Lock();
+    num_waiting_++;
+    if (num_waiting_ == num_threads_) {
+      // Last thread in switches to a new arena.
+      delete arena_;
+      if (initial_block) {
+        arena_ = new Arena(initial_block_, kDefaultStartBlockSize);
+      } else {
+        arena_ = new Arena;
+      }
+      phase_++;
+      num_waiting_ = 0;
+    } else {
+      // Wait until last thread switches to a new arena.
+      int64_t current = phase_;
+      auto switched = [this, current] { return phase_ != current; };
+      mu_.Await(absl::Condition(&switched));
+    }
+    Arena* result = arena_;
+    mu_.Unlock();
+    return result;
+  }
+
+ private:
+  absl::Mutex mu_;
+  int num_threads_ = 0;
+  int num_waiting_ = 0;
+  int64_t phase_ = 0;
+  static constexpr size_t kDefaultStartBlockSize = 256;
+  char initial_block_[kDefaultStartBlockSize];
+  Arena* arena_ = nullptr;
+};
+
+ArenaManager* ArenaManagerSingleton() {
+  static auto* arena_manager = new ArenaManager;
+  return arena_manager;
+}
+
+// Synchronously creates a new list of arenas after every K iterations to
+// prevent unbounded memory growth.  On average, each thread is assigned one
+// arena.
+class MultiArenaManager {
+ public:
+  // Re-initializes the arena manager to expect |num_threads_| threads.
+  // Called by benchmark setup code.
+  void Init(const benchmark::State& state) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+    num_threads_ = state.threads();
+    num_waiting_ = 0;
+    phase_ = 0;
+    // Has to be before resetting the initial block in case arenas reference it.
+    arena_list_.clear();
+    initial_block_ =
+        std::make_unique<char[]>(kDefaultStartBlockSize * num_threads_);
+  }
+
+  // Waits until all benchmark threads have made this call and then
+  // refreshes the arena list.
+  void UpdateArenaList(bool initial_block) ABSL_LOCKS_EXCLUDED(mu_) {
+    absl::MutexLock l(&mu_);
+    num_waiting_++;
+    if (num_waiting_ == num_threads_) {
+      // Last thread in switches to a new arena list.
+      arena_list_.clear();
+      if (initial_block) {
+        for (int i = 0; i < num_threads_; i++) {
+          char* block = &initial_block_[kDefaultStartBlockSize * i];
+          arena_list_.push_back(
+              std::make_unique<Arena>(block, kDefaultStartBlockSize));
+        }
+      } else {
+        for (int i = 0; i < num_threads_; i++) {
+          arena_list_.push_back(std::make_unique<Arena>());
+        }
+      }
+      phase_++;
+      num_waiting_ = 0;
+    } else {
+      // Waits until last thread switches to a new arena.
+      int64_t current = phase_;
+      auto switched = [this, current]() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mu_) {
+        return phase_ != current;
+      };
+      mu_.Await(absl::Condition(&switched));
+    }
+  }
+
+  // Gets a random arena from the list.
+  // When calling this thread, UpdateArenaList guarantees no change to
+  // arena_list_.
+  Arena* GetRandomArena() {
+    return arena_list_.at(rand() % num_threads_).get();
+  }
+
+  int GetThreadNum() const { return num_threads_; }
+
+ private:
+  absl::Mutex mu_;
+  int num_threads_ = 0;
+  int num_waiting_ ABSL_GUARDED_BY(mu_) = 0;
+  int64_t phase_ ABSL_GUARDED_BY(mu_) = 0;
+  static constexpr size_t kDefaultStartBlockSize = 256;
+  std::unique_ptr<char[]> initial_block_;
+  std::vector<std::unique_ptr<Arena>> arena_list_;
+};
+
+MultiArenaManager* MultiArenaManagerSingleton() {
+  static auto* arena_manager = new MultiArenaManager;
+  return arena_manager;
+}
+
+static void RunAlloc(benchmark::State& state, bool initial_block,
+                     int minimum_number_of_arenas) {
+  // We use an initial block if (initial_block != 0).
+  int i = 0;
+  for (auto s : state) {
+    auto arena = ArenaManagerSingleton()->GetNextArena(initial_block);
+    const int left =
+        std::min<int>(state.max_iterations - i, minimum_number_of_arenas);
+    i += left;
+    for (int j = 0; j < left; j++) {
+      benchmark::DoNotOptimize(arena);
+      Arena::CreateArray<char>(arena, 64);
+    }
+  }
+}
+
+static void BM_Alloc(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAlloc(state,
+           /*initial_block=*/false, minimum_number_of_arenas);
+}
+BENCHMARK(BM_Alloc)->ThreadRange(1, 32)->Arg(1000)->Arg(10000)->Setup(
+    [](const benchmark::State& state) {
+      ArenaManagerSingleton()->Init(state);
+    });
+
+static void BM_Alloc_InitialBlock(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAlloc(state,
+           /*initial_block=*/true, minimum_number_of_arenas);
+}
+BENCHMARK(BM_Alloc_InitialBlock)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      ArenaManagerSingleton()->Init(state);
+    });
+
+static void RunAllocMultiArena(benchmark::State& state, bool initial_block,
+                               int minimum_number_of_arenas) {
+  // We use an initial block if (initial_block != 0).
+  int i = 0;
+  for (auto s : state) {
+    state.PauseTiming();
+    MultiArenaManagerSingleton()->UpdateArenaList(initial_block);
+    std::vector<Arena*> arena_list;
+    // MultiArenaManager has num_threads arenas. Fetch that many,
+    // in random order. This is approximately a random permutation
+    // of the available arenas, but not quite since it allows dups.
+    int thread_num = MultiArenaManagerSingleton()->GetThreadNum();
+    for (int j = 0; j < thread_num; j++) {
+      auto* arena = MultiArenaManagerSingleton()->GetRandomArena();
+      arena_list.push_back(arena);
+    }
+    state.ResumeTiming();
+
+    const int left =
+        std::min<int>(state.max_iterations - i, minimum_number_of_arenas);
+    i += left;
+    for (int j = 0; j < left; j++) {
+      auto* arena = arena_list.at(j % thread_num);
+      auto* array = Arena::CreateArray<char>(arena, 64);
+      benchmark::DoNotOptimize(array);
+    }
+  }
+}
+
+static void BM_AllocMultiArena(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAllocMultiArena(state,
+                     /*initial_block=*/false, minimum_number_of_arenas);
+}
+BENCHMARK(BM_AllocMultiArena)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      MultiArenaManagerSingleton()->Init(state);
+    });
+
+static void BM_AllocMultiArena_InitialBlock(benchmark::State& state) {
+  const int minimum_number_of_arenas = state.range(0);
+
+  RunAllocMultiArena(state,
+                     /*initial_block=*/true, minimum_number_of_arenas);
+}
+BENCHMARK(BM_AllocMultiArena_InitialBlock)
+    ->ThreadRange(1, 32)
+    ->Arg(1000)
+    ->Arg(10000)
+    ->Setup([](const benchmark::State& state) {
+      MultiArenaManagerSingleton()->Init(state);
+    });
+
+static void BM_MemoryUsage(benchmark::State& state) {
+  BenchmarkMemoryUsage(testing::kAllThreadUsage);
+  for (auto s : state) {
+    auto arena = std::make_unique<Arena>();
+    auto* array = Arena::CreateArray<char>(arena.get(), 1);
+    benchmark::DoNotOptimize(array);
+  }
+}
+BENCHMARK(BM_MemoryUsage);
+
+static void BM_CreateDestroy(benchmark::State& state) {
+  for (auto s : state) {
+    Arena arena;
+    benchmark::DoNotOptimize(arena);
+  }
+}
+BENCHMARK(BM_CreateDestroy);
+
+static void BM_CreateDestroy_InitialBlock(benchmark::State& state) {
+  const int kBufSize = Arena::kBlockOverhead + 64;
+  char buf[kBufSize];
+  for (auto s : state) {
+    Arena arena(buf, kBufSize);
+    benchmark::DoNotOptimize(arena);
+  }
+}
+BENCHMARK(BM_CreateDestroy_InitialBlock);
+
+static void BM_CreateAllocDestroy(benchmark::State& state) {
+  for (auto s : state) {
+    Arena arena;
+    Arena::CreateArray<char>(&arena, 7);
+  }
+}
+BENCHMARK(BM_CreateAllocDestroy);
+
+static void BM_CreateAllocDestroy_InitialBlock(benchmark::State& state) {
+  const int kBufSize = Arena::kBlockOverhead + 64;
+  char buf[kBufSize];
+
+  for (auto s : state) {
+    Arena arena(buf, kBufSize);
+    Arena::CreateArray<char>(&arena, 7);
+  }
+}
+BENCHMARK(BM_CreateAllocDestroy_InitialBlock);
+
+// We should make sure we do something with the returned memory. Otherwise
+// the compiler will perform an optimization thats unrealistic to happen
+// in normal use of arena allocation.
+inline void Use(void* ptr) { *static_cast<uint64_t*>(ptr) = 0; }
+
+PROTOBUF_NOINLINE
+static void Impl_ArenaAlloc(google::protobuf::Arena* arena, int n_allocs_div_10) {
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+    Use(google::protobuf::Arena::CreateArray<char>(arena, sizeof(uint64_t)));
+  }
+}
+
+static void BM_ArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+  char buf[1024];
+  for (auto s : state) {
+    google::protobuf::Arena arena(buf, sizeof(buf));
+    Impl_ArenaAlloc(&arena, n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_ArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+PROTOBUF_NOINLINE
+static void Impl_ArenaAllocWithCleanup(google::protobuf::Arena* arena,
+                                       int n_allocs_div_10) {
+  struct X {
+    uint64_t data;
+    ~X() { ABSL_BLOCK_TAIL_CALL_OPTIMIZATION(); }
+  };
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+    Use(google::protobuf::Arena::Create<X>(arena));
+  }
+}
+
+static void BM_ArenaAllocWithCleanup(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+  char buf[1024];
+  for (auto s : state) {
+    google::protobuf::Arena arena(buf, sizeof(buf));
+    Impl_ArenaAllocWithCleanup(&arena, n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_ArenaAllocWithCleanup)->Arg(0)->Arg(10)->Arg(100);
+
+void BM_ParseRepeatedStringFieldArena(benchmark::State& state) {
+  TestAllTypes original;
+  for (int i = 0; i < state.range(0); i++) {
+    original.add_repeated_string("abc");
+  }
+  const std::string data = original.SerializeAsString();
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    arena_message->ParseFromString(data);
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+    }
+  }
+}
+BENCHMARK(BM_ParseRepeatedStringFieldArena)->Arg(10)->Arg(100)->Arg(1000);
+
+void BM_ArenaParseRepeatedPtrField(benchmark::State& state) {
+  TestAllTypes original;
+  for (int i = 0; i < state.range(0); i++) {
+    auto* nested = original.add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  const std::string data = original.SerializeAsString();
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    arena_message->ParseFromString(data);
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+    }
+  }
+}
+BENCHMARK(BM_ArenaParseRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+void BM_ArenaMergeFromRepeatedPtrField(benchmark::State& state) {
+  Arena arena;
+  constexpr int kResetLimit = 10;
+  auto* original = Arena::Create<TestAllTypes>(&arena);
+  for (int i = 0; i < state.range(0); i++) {
+    auto* nested = original->add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  // Used to restore original after resetting arena.
+  const std::string data = original->SerializeAsString();
+  for (auto s : state) {
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
+    arena_message->MergeFrom(*original);
+    // Avoids memory in arena from ever increasing.
+    if (state.iterations() % kResetLimit == 0) {
+      arena.Reset();
+      original = Arena::Create<TestAllTypes>(&arena);
+      original->ParseFromString(data);
+    }
+  }
+}
+BENCHMARK(BM_ArenaMergeFromRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+static void BM_CopyConstructorRepeatedPtrField(benchmark::State& state) {
+  const int n_elems = state.range(0);
+
+  TestAllTypes original;
+  for (int i = 0; i < n_elems; i++) {
+    auto* nested = original.add_repeated_foreign_message();
+    nested->set_c(1);
+  }
+  for (auto s : state) {
+    TestAllTypes message(original);
+    benchmark::DoNotOptimize(message);
+  }
+}
+BENCHMARK(BM_CopyConstructorRepeatedPtrField)->Arg(10)->Arg(100)->Arg(1000);
+
+namespace internal {
+class ArenaBenchmark {
+ public:
+  static auto GetSerialArena(ThreadSafeArena& arena) {
+    return arena.GetSerialArenaFallback(0);
+  }
+  static uint64_t ExpectLifecycleIdIncrementLocally(uint64_t prev) {
+    uint64_t curr = ThreadSafeArena::thread_cache().next_lifecycle_id;
+    if (prev == 0) return curr;
+    EXPECT_LT(curr - prev, ThreadSafeArena::ThreadCache::kPerThreadIds);
+    return curr;
+  }
+};
+}  // namespace internal
+
+TEST(ArenaTest, IncrementLifecycleIdLocally) {
+  Arena arena;
+  int num_reset = 1000;
+  uint64_t prev = 0;
+  while (--num_reset >= 0) {
+    arena.Reset();
+    prev = internal::ArenaBenchmark::ExpectLifecycleIdIncrementLocally(prev);
+
+    auto* msg = Arena::Create<TestAllTypes>(&arena);
+    TestUtil::SetAllFields(msg);
+    TestUtil::ExpectAllFieldsSet(*msg);
+  }
+}
+
+// Helper class that places (scopes) an `AllocateAtLeast` hook for the current
+// thread, multiplies the requested size by a provided `multiplier`, and counts
+// the number of `AllocAtLeast` invocations for the scoped execution.
+class ScopedAllocAtLeastHook {
+ public:
+  // Sets `internal:allocate_at_least_hook` to this instance.
+  explicit ScopedAllocAtLeastHook(size_t multiplier) : multiplier_(multiplier) {
+    internal::SetAllocateAtLeastHook(&ScopedAllocAtLeastHook::Hook, this);
+  }
+
+  // Sets `internal:allocate_at_least_hook` to null
+  ~ScopedAllocAtLeastHook() { internal::SetAllocateAtLeastHook(nullptr); }
+
+  // Returns the number of allocations executed inside this scope.
+  size_t allocation_count() const { return alloc_count_; }
+
+ private:
+  static internal::SizedPtr Hook(size_t size, void* context) {
+    auto self = static_cast<ScopedAllocAtLeastHook*>(context);
+    ++self->alloc_count_;
+    size *= self->multiplier_;
+    return {::operator new(size), size};
+  }
+
+  int alloc_count_ = 0;
+  const size_t multiplier_;
+};
+
+TEST(ArenaTest, UsesExtraSizeReturnedByAllocateAtLeastForNewBlocks) {
+  if (!internal::HaveAllocateAtLeastHook()) {
+    GTEST_SKIP() << "AllocateAtLeastHook() not available";
+  }
+
+  // We test that AllocateAtLeast is used properly by counting the total
+  // count of AllocateAtLeast() calls for a fixed number of times, and compare
+  // those counts with and without returning quadruple the size requested
+  std::array<int, 2> new_block_count{0};
+  for (int run = 0; run < 2; ++run) {
+    ScopedAllocAtLeastHook hook(run == 0 ? 1 : 4);
+
+    // Hit 'NewBlock' logic in arena allocate
+    Arena arena;
+    for (int i = 0; i < 100; ++i) {
+      arena.AllocateAligned(128);
+    }
+    new_block_count[run] = hook.allocation_count();
+  }
+  EXPECT_LT(new_block_count[1], new_block_count[0]);
+}
+
+TEST(ArenaTest, UsesExtraSizeReturnedByAllocateAtLeastForThreadArenaArray) {
+  if (!internal::HaveAllocateAtLeastHook()) {
+    GTEST_SKIP() << "AllocateAtLeastHook() not available";
+  }
+
+  // We test that AllocateAtLeast is used properly by counting the total
+  // count of AllocateAtLeast() calls for a fixed number of times, and compare
+  // those counts with and without returning quadruple the size requested
+  // Hit 'NewSerialArena` logic.
+  std::array<std::atomic<int>, 2> new_thread_count{0};
+  for (int run = 0; run < 2; ++run) {
+    // The counts for single AllocateAligned are identical, but the array
+    // allocation for SerialArena pointers should be less allocs.
+    Arena arena;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < 256; ++i) {
+      threads.emplace_back([&] {
+        ScopedAllocAtLeastHook hook(run == 0 ? 1 : 4);
+        arena.AllocateAligned(8);
+        new_thread_count[run] += hook.allocation_count();
+      });
+    }
+    for (auto& thread : threads) {
+      thread.join();
+    }
+  }
+  EXPECT_LT(new_thread_count[1], new_thread_count[0]);
+}
+
+TEST(ArenaTest, AllStringBlockSizesEmplaceCorrectly) {
+  // Allocate buffer large enough to fit exponentially growing string
+  // blocks up to 64K, which should cover any reasonable max size.
+  std::vector<char> arena_block(64 << 10);
+  ArenaOptions options;
+  options.initial_block = arena_block.data();
+  options.initial_block_size = arena_block.size();
+  Arena arena(options);
+  int runs = (64 << 10) / sizeof(std::string);
+  for (int i = 0; i < runs; ++i) {
+    Arena::Create<std::string>(&arena);
+  }
+}
+
+PROTOBUF_NOINLINE
+static void Impl_SerialArenaAlloc(internal::SerialArena* serial,
+                                  int n_allocs_div_10) {
+  for (int i = 0; i < n_allocs_div_10; i++) {
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+    Use(serial->AllocateAligned(sizeof(uint64_t)));
+  }
+}
+
+static void BM_SerialArenaAlloc(benchmark::State& state) {
+  const int n_allocs = state.range(0);
+
+  ABSL_CHECK_EQ((n_allocs % 10), 0);
+  int n_allocs_div_10 = n_allocs / 10;
+
+  char mem[1024];
+  for (auto s : state) {
+    internal::ThreadSafeArena arena(mem, sizeof(mem));
+    Impl_SerialArenaAlloc(internal::ArenaBenchmark::GetSerialArena(arena),
+                          n_allocs_div_10);
+  }
+}
+BENCHMARK(BM_SerialArenaAlloc)->Arg(0)->Arg(10)->Arg(100);
+
+template <bool use_arena>
+static void BM_RepeatedStringAdd(benchmark::State& state) {
+  const auto count = static_cast<size_t>(state.range(0));
+  const std::string long_string(sizeof(std::string), 'a');
+  for (auto s : state) {
+    Arena arena;
+    auto res =
+        MakeArenaSafeUnique<TestRepeatedString>(use_arena ? &arena : nullptr);
+    for (uint32_t i = 0; i < count; ++i) {
+      *res->add_repeated_string1() = "aaa";
+      *res->add_repeated_string2() = long_string;
+
+      *res->add_repeated_bytes11() = "aaa";
+      *res->add_repeated_bytes12() = long_string;
+    }
+  }
+}
+
+static void BM_RepeatedStringAddWithArena(benchmark::State& state) {
+  BM_RepeatedStringAdd<true>(state);
+}
+
+static void BM_RepeatedStringAddWithoutArena(benchmark::State& state) {
+  BM_RepeatedStringAdd<false>(state);
+}
+
+BENCHMARK(BM_RepeatedStringAddWithArena)->Arg(0)->Arg(10)->Arg(100);
+BENCHMARK(BM_RepeatedStringAddWithoutArena)->Arg(0)->Arg(10)->Arg(100);
+
+
 
 }  // namespace protobuf
 }  // namespace google
