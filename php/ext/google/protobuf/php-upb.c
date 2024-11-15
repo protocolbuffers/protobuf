@@ -4267,6 +4267,7 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
 
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -4520,12 +4521,12 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
 
   // Clone unknowns.
-  size_t unknown_size = 0;
-  const char* ptr = upb_Message_GetUnknown(src, &unknown_size);
-  if (unknown_size != 0) {
-    UPB_ASSERT(ptr);
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView unknowns;
+  while (upb_Message_NextUnknown(src, &unknowns, &iter)) {
     // Make a copy into destination arena.
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, ptr, unknown_size, arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknowns.data, unknowns.size,
+                                              arena)) {
       return NULL;
     }
   }
@@ -6224,11 +6225,14 @@ static upb_Message* _upb_Decoder_ReuseSubMessage(
   upb_Message* existing =
       UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(tagged);
   upb_Message* promoted = _upb_Decoder_NewSubMessage(d, subs, field, target);
-  size_t size;
-  const char* unknown = upb_Message_GetUnknown(existing, &size);
-  upb_DecodeStatus status = upb_Decode(unknown, size, promoted, subl, d->extreg,
-                                       d->options, &d->arena);
-  if (status != kUpb_DecodeStatus_Ok) _upb_Decoder_ErrorJmp(d, status);
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView unknown;
+  while (upb_Message_NextUnknown(existing, &unknown, &iter)) {
+    upb_DecodeStatus status =
+        upb_Decode(unknown.data, unknown.size, promoted, subl, d->extreg,
+                   d->options, &d->arena);
+    if (status != kUpb_DecodeStatus_Ok) _upb_Decoder_ErrorJmp(d, status);
+  }
   return promoted;
 }
 
@@ -6594,10 +6598,7 @@ static const char* _upb_Decoder_DecodeToMap(
 
   ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, subs, field,
                                       val->size);
-  // check if ent had any unknown fields
-  size_t size;
-  upb_Message_GetUnknown(&ent.message, &size);
-  if (size != 0) {
+  if (upb_Message_HasUnknown(&ent.message)) {
     char* buf;
     size_t size;
     uint32_t tag =
@@ -7937,11 +7938,22 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   }
 
   if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
-    size_t unknown_size;
-    const char* unknown = upb_Message_GetUnknown(msg, &unknown_size);
-
-    if (unknown) {
-      encode_bytes(e, unknown, unknown_size);
+    size_t unknown_size = 0;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView unknown;
+    // Need to write in reverse order, but list is single-linked; scan to
+    // reserve capacity up front, then write in-order
+    while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
+      unknown_size += unknown.size;
+    }
+    if (unknown_size != 0) {
+      encode_reserve(e, unknown_size);
+      char* ptr = e->ptr;
+      iter = kUpb_Message_UnknownBegin;
+      while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
+        memcpy(ptr, unknown.data, unknown.size);
+        ptr += unknown.size;
+      }
     }
   }
 
