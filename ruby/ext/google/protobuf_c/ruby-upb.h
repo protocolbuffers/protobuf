@@ -2313,11 +2313,20 @@ UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
-// Adds unknown data (serialized protobuf data) to the given message.
+// Adds unknown data (serialized protobuf data) to the given message. The data
+// must represent one or more complete and well formed proto fields.
 // The data is copied into the message instance.
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
                                           const char* data, size_t len,
                                           upb_Arena* arena);
+
+// Adds unknown data (serialized protobuf data) to the given message.
+// The data is copied into the message instance. Data when concatenated together
+// must represent one or more complete and well formed proto fields, but the
+// individual spans may point only to partial fields.
+bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
+                                           upb_Arena* arena,
+                                           upb_StringView data[], size_t count);
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* arena);
