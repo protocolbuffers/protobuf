@@ -37,6 +37,8 @@
 #include "upb/test/fuzz_util.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/types.h"
 
 void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));

@@ -394,7 +394,7 @@ bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr, upb_Message* msg,
   const uint32_t tag =
       ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
   upb_Message* unknown_msg =
-      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->unknown_msg
+      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->original_msg
                                                              : msg;
   char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
   char* end = buf;
@@ -1181,7 +1181,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
     if (UPB_UNLIKELY(!ext)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
-    d->unknown_msg = msg;
+    d->original_msg = msg;
     msg = (upb_Message*)&ext->data;
     if (upb_MiniTableField_IsSubMessage(&ext->ext->UPB_PRIVATE(field))) {
       ext_sub.UPB_PRIVATE(submsg) =
@@ -1226,7 +1226,8 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   // Since unknown fields are the uncommon case, we do a little extra work here
   // to walk backwards through the buffer to find the field start.  This frees
   // up a register in the fast paths (when the field is known), which leads to
-  // significant speedups in benchmarks.
+  // significant speedups in benchmarks. Note that ptr may point into the slop
+  // space, beyond the normal end of the input buffer.
   const char* start = ptr;
 
   if (wire_type == kUpb_WireType_Delimited) ptr += val.size;
@@ -1252,15 +1253,20 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
     start = _upb_Decoder_ReverseSkipVarint(start, tag);
     assert(start == d->debug_tagstart);
 
+    const char* input_start =
+        upb_EpsCopyInputStream_GetInputPtr(&d->input, start);
     if (wire_type == kUpb_WireType_StartGroup) {
-      d->unknown = start;
-      d->unknown_msg = msg;
       ptr = _upb_Decoder_DecodeUnknownGroup(d, ptr, field_number);
-      start = d->unknown;
-      d->unknown = NULL;
     }
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, start, ptr - start,
-                                              &d->arena)) {
+    // Normally, bounds checks for fixed or varint fields are performed after
+    // the field is parsed; it's OK for the field to overrun the end of the
+    // buffer, because it'll just read into slop space. However, because this
+    // path reads bytes from the input buffer rather than the patch buffer,
+    // bounds checks are needed before adding the unknown field.
+    _upb_Decoder_IsDone(d, &ptr);
+    const char* input_ptr = upb_EpsCopyInputStream_GetInputPtr(&d->input, ptr);
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+            msg, input_start, input_ptr - input_start, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == kUpb_WireType_StartGroup) {
@@ -1393,7 +1399,6 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                               options & kUpb_DecodeOption_AliasString);
 
   decoder.extreg = extreg;
-  decoder.unknown = NULL;
   decoder.depth = depth ? depth : kUpb_WireFormat_DefaultDepthLimit;
   decoder.end_group = DECODE_NOGROUP;
   decoder.options = (uint16_t)options;
