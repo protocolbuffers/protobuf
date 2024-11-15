@@ -501,6 +501,7 @@ TEST(MessageTest, MapField) {
   // parse into second instance
   upb_test_TestMapFieldExtra* test_msg_extra2 =
       upb_test_TestMapFieldExtra_parse(serialized, size, arena.ptr());
+  ASSERT_NE(nullptr, test_msg_extra2);
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }
