@@ -124,10 +124,7 @@ class PROTOBUF_EXPORT Duration final
     return default_instance().GetMetadata().reflection;
   }
   static const Duration& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Duration* internal_default_instance() {
-    return reinterpret_cast<const Duration*>(
+    return *reinterpret_cast<const Duration*>(
         &_Duration_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

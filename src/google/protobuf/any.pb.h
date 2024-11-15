@@ -124,10 +124,7 @@ class PROTOBUF_EXPORT Any final
     return default_instance().GetMetadata().reflection;
   }
   static const Any& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Any* internal_default_instance() {
-    return reinterpret_cast<const Any*>(
+    return *reinterpret_cast<const Any*>(
         &_Any_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

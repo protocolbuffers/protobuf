@@ -181,10 +181,7 @@ class PROTOBUF_EXPORT ListValue final
     return default_instance().GetMetadata().reflection;
   }
   static const ListValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ListValue* internal_default_instance() {
-    return reinterpret_cast<const ListValue*>(
+    return *reinterpret_cast<const ListValue*>(
         &_ListValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -382,10 +379,7 @@ class PROTOBUF_EXPORT Struct final
     return default_instance().GetMetadata().reflection;
   }
   static const Struct& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Struct* internal_default_instance() {
-    return reinterpret_cast<const Struct*>(
+    return *reinterpret_cast<const Struct*>(
         &_Struct_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -625,7 +619,8 @@ class PROTOBUF_EXPORT Value final
     return default_instance().GetMetadata().reflection;
   }
   static const Value& default_instance() {
-    return *internal_default_instance();
+    return *reinterpret_cast<const Value*>(
+        &_Value_default_instance_);
   }
   enum KindCase {
     kNullValue = 1,
@@ -636,10 +631,6 @@ class PROTOBUF_EXPORT Value final
     kListValue = 6,
     KIND_NOT_SET = 0,
   };
-  static inline const Value* internal_default_instance() {
-    return reinterpret_cast<const Value*>(
-        &_Value_default_instance_);
-  }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Value& a, Value& b) { a.Swap(&b); }
   inline void Swap(Value* other) {

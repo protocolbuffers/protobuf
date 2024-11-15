@@ -124,10 +124,7 @@ class PROTOBUF_EXPORT FieldMask final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldMask& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldMask* internal_default_instance() {
-    return reinterpret_cast<const FieldMask*>(
+    return *reinterpret_cast<const FieldMask*>(
         &_FieldMask_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

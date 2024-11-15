@@ -124,10 +124,7 @@ class PROTOBUF_EXPORT Empty final
     return default_instance().GetMetadata().reflection;
   }
   static const Empty& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Empty* internal_default_instance() {
-    return reinterpret_cast<const Empty*>(
+    return *reinterpret_cast<const Empty*>(
         &_Empty_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

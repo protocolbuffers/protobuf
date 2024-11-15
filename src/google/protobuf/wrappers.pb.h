@@ -156,10 +156,7 @@ class PROTOBUF_EXPORT UInt64Value final
     return default_instance().GetMetadata().reflection;
   }
   static const UInt64Value& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UInt64Value* internal_default_instance() {
-    return reinterpret_cast<const UInt64Value*>(
+    return *reinterpret_cast<const UInt64Value*>(
         &_UInt64Value_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -351,10 +348,7 @@ class PROTOBUF_EXPORT UInt32Value final
     return default_instance().GetMetadata().reflection;
   }
   static const UInt32Value& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UInt32Value* internal_default_instance() {
-    return reinterpret_cast<const UInt32Value*>(
+    return *reinterpret_cast<const UInt32Value*>(
         &_UInt32Value_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 5;
@@ -546,10 +540,7 @@ class PROTOBUF_EXPORT StringValue final
     return default_instance().GetMetadata().reflection;
   }
   static const StringValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const StringValue* internal_default_instance() {
-    return reinterpret_cast<const StringValue*>(
+    return *reinterpret_cast<const StringValue*>(
         &_StringValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 7;
@@ -746,10 +737,7 @@ class PROTOBUF_EXPORT Int64Value final
     return default_instance().GetMetadata().reflection;
   }
   static const Int64Value& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Int64Value* internal_default_instance() {
-    return reinterpret_cast<const Int64Value*>(
+    return *reinterpret_cast<const Int64Value*>(
         &_Int64Value_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -941,10 +929,7 @@ class PROTOBUF_EXPORT Int32Value final
     return default_instance().GetMetadata().reflection;
   }
   static const Int32Value& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Int32Value* internal_default_instance() {
-    return reinterpret_cast<const Int32Value*>(
+    return *reinterpret_cast<const Int32Value*>(
         &_Int32Value_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -1136,10 +1121,7 @@ class PROTOBUF_EXPORT FloatValue final
     return default_instance().GetMetadata().reflection;
   }
   static const FloatValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FloatValue* internal_default_instance() {
-    return reinterpret_cast<const FloatValue*>(
+    return *reinterpret_cast<const FloatValue*>(
         &_FloatValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -1331,10 +1313,7 @@ class PROTOBUF_EXPORT DoubleValue final
     return default_instance().GetMetadata().reflection;
   }
   static const DoubleValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DoubleValue* internal_default_instance() {
-    return reinterpret_cast<const DoubleValue*>(
+    return *reinterpret_cast<const DoubleValue*>(
         &_DoubleValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -1526,10 +1505,7 @@ class PROTOBUF_EXPORT BytesValue final
     return default_instance().GetMetadata().reflection;
   }
   static const BytesValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const BytesValue* internal_default_instance() {
-    return reinterpret_cast<const BytesValue*>(
+    return *reinterpret_cast<const BytesValue*>(
         &_BytesValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 8;
@@ -1726,10 +1702,7 @@ class PROTOBUF_EXPORT BoolValue final
     return default_instance().GetMetadata().reflection;
   }
   static const BoolValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const BoolValue* internal_default_instance() {
-    return reinterpret_cast<const BoolValue*>(
+    return *reinterpret_cast<const BoolValue*>(
         &_BoolValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 6;

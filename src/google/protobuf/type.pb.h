@@ -286,10 +286,7 @@ class PROTOBUF_EXPORT Option final
     return default_instance().GetMetadata().reflection;
   }
   static const Option& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Option* internal_default_instance() {
-    return reinterpret_cast<const Option*>(
+    return *reinterpret_cast<const Option*>(
         &_Option_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -503,10 +500,7 @@ class PROTOBUF_EXPORT Field final
     return default_instance().GetMetadata().reflection;
   }
   static const Field& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Field* internal_default_instance() {
-    return reinterpret_cast<const Field*>(
+    return *reinterpret_cast<const Field*>(
         &_Field_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -890,10 +884,7 @@ class PROTOBUF_EXPORT EnumValue final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumValue* internal_default_instance() {
-    return reinterpret_cast<const EnumValue*>(
+    return *reinterpret_cast<const EnumValue*>(
         &_EnumValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -1121,10 +1112,7 @@ class PROTOBUF_EXPORT Type final
     return default_instance().GetMetadata().reflection;
   }
   static const Type& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Type* internal_default_instance() {
-    return reinterpret_cast<const Type*>(
+    return *reinterpret_cast<const Type*>(
         &_Type_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -1429,10 +1417,7 @@ class PROTOBUF_EXPORT Enum final
     return default_instance().GetMetadata().reflection;
   }
   static const Enum& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Enum* internal_default_instance() {
-    return reinterpret_cast<const Enum*>(
+    return *reinterpret_cast<const Enum*>(
         &_Enum_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;

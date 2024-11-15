@@ -124,10 +124,7 @@ class PROTOBUF_EXPORT Timestamp final
     return default_instance().GetMetadata().reflection;
   }
   static const Timestamp& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Timestamp* internal_default_instance() {
-    return reinterpret_cast<const Timestamp*>(
+    return *reinterpret_cast<const Timestamp*>(
         &_Timestamp_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;

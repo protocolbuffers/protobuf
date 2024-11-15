@@ -134,10 +134,7 @@ class PROTOBUF_EXPORT Mixin final
     return default_instance().GetMetadata().reflection;
   }
   static const Mixin& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Mixin* internal_default_instance() {
-    return reinterpret_cast<const Mixin*>(
+    return *reinterpret_cast<const Mixin*>(
         &_Mixin_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -351,10 +348,7 @@ class PROTOBUF_EXPORT Method final
     return default_instance().GetMetadata().reflection;
   }
   static const Method& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Method* internal_default_instance() {
-    return reinterpret_cast<const Method*>(
+    return *reinterpret_cast<const Method*>(
         &_Method_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -640,10 +634,7 @@ class PROTOBUF_EXPORT Api final
     return default_instance().GetMetadata().reflection;
   }
   static const Api& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Api* internal_default_instance() {
-    return reinterpret_cast<const Api*>(
+    return *reinterpret_cast<const Api*>(
         &_Api_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
