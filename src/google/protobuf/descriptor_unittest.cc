@@ -10117,6 +10117,19 @@ TEST_F(FeaturesTest, FieldCppStringType) {
               }
             }
           } $0
+          extension_range { start: 100 end: 200 }
+        }
+        extension {
+          name: "cord_ext"
+          number: 100
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          options {
+            features {
+              [pb.cpp] { string_type: CORD }
+            }
+          }
+          extendee: "Foo"
         }
       )pb",
       ""
@@ -10127,12 +10140,15 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   const FieldDescriptor* str = message->field(1);
   const FieldDescriptor* cord = message->field(2);
   const FieldDescriptor* cord_bytes = message->field(3);
+  const FieldDescriptor* cord_ext = file->extension(0);
 
   EXPECT_EQ(view->cpp_string_type(), FieldDescriptor::CppStringType::kView);
   EXPECT_EQ(str->cpp_string_type(), FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(cord_bytes->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
   EXPECT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(cord_ext->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
 
 }
 

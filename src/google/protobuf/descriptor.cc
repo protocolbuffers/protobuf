@@ -9877,7 +9877,8 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
               .GetExtension(pb::cpp)
               .string_type() == pb::CppFeatures::CORD &&
       (field.type() != FieldDescriptor::TYPE_BYTES || field.is_repeated() ||
-       field.is_extension())) {
+       field.is_extension())
+  ) {
     return true;
   }
 
