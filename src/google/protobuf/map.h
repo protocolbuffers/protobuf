@@ -31,11 +31,6 @@
 #include "absl/memory/memory.h"
 #include "google/protobuf/message_lite.h"
 
-#if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__) && \
-    (!defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE))
-#include <time.h>
-#endif
-
 #include "absl/base/attributes.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
@@ -563,7 +558,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   explicit constexpr UntypedMapBase(Arena* arena)
       : num_elements_(0),
         num_buckets_(internal::kGlobalEmptyTableSize),
-        seed_(0),
         index_of_first_non_null_(internal::kGlobalEmptyTableSize),
         table_(const_cast<TableEntryPtr*>(internal::kGlobalEmptyTable)),
         alloc_(arena) {}
@@ -581,7 +575,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void InternalSwap(UntypedMapBase* other) {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
-    std::swap(seed_, other->seed_);
     std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
     std::swap(table_, other->table_);
     std::swap(alloc_, other->alloc_);
@@ -621,7 +614,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return false;
 #else
     // Doing modulo with a prime mixes the bits more.
-    return (reinterpret_cast<uintptr_t>(node) ^ seed_) % 13 > 6;
+    return absl::HashOf(node, table_) % 13 > 6;
 #endif
   }
 
@@ -708,12 +701,12 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   map_index_t VariantBucketNumber(absl::string_view key) const {
-    return static_cast<map_index_t>(absl::HashOf(seed_, key) &
+    return static_cast<map_index_t>(absl::HashOf(key, table_) &
                                     (num_buckets_ - 1));
   }
 
   map_index_t VariantBucketNumber(uint64_t key) const {
-    return static_cast<map_index_t>(absl::HashOf(key ^ seed_) &
+    return static_cast<map_index_t>(absl::HashOf(key, table_) &
                                     (num_buckets_ - 1));
   }
 
@@ -723,34 +716,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
     return result;
-  }
-
-  // Return a randomish value.
-  map_index_t Seed() const {
-    uint64_t s = 0;
-#if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
-#if defined(__APPLE__) && \
-    (!defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE))
-    // Use a commpage-based fast time function on Apple environments (MacOS,
-    // iOS, tvOS, watchOS, etc), if we think the system headers expose it.
-    s = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
-#elif defined(__x86_64__) && defined(__GNUC__)
-    uint32_t hi, lo;
-    asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
-    s = ((static_cast<uint64_t>(hi) << 32) | lo);
-#elif defined(__aarch64__) && defined(__GNUC__)
-    // There is no rdtsc on ARMv8. CNTVCT_EL0 is the virtual counter of the
-    // system timer. It runs at a different frequency than the CPU's, but is
-    // the best source of time-based entropy we get.
-    uint64_t virtual_timer_value;
-    asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
-    s = virtual_timer_value;
-#endif
-#endif  // !defined(GOOGLE_PROTOBUF_NO_RDTSC)
-    // Add entropy from the address of the map and the address of the table
-    // array.
-    return static_cast<map_index_t>(
-        absl::HashOf(s, table_, static_cast<const void*>(this)));
   }
 
   enum {
@@ -812,7 +777,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   map_index_t num_elements_;
   map_index_t num_buckets_;
-  map_index_t seed_;
   map_index_t index_of_first_non_null_;
   TableEntryPtr* table_;  // an array with num_buckets_ entries
   Allocator alloc_;
@@ -1096,7 +1060,6 @@ class KeyMapBase : public UntypedMapBase {
       // Just overwrite with a new one. No need to transfer or free anything.
       num_buckets_ = index_of_first_non_null_ = kMinTableSize;
       table_ = CreateEmptyTable(num_buckets_);
-      seed_ = Seed();
       return;
     }
 
