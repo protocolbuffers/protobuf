@@ -57,7 +57,6 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
-        "internal/compare_unknown.c",
         "internal/extension.c",
         "internal/message.c",
         "value.h",
@@ -65,7 +64,6 @@ cc_library(
     hdrs = [
         "internal/accessors.h",
         "internal/array.h",
-        "internal/compare_unknown.h",
         "internal/extension.h",
         "internal/map.h",
         "internal/map_sorter.h",
@@ -110,9 +108,11 @@ cc_library(
     name = "compare",
     srcs = [
         "compare.c",
+        "internal/compare_unknown.c",
     ],
     hdrs = [
         "compare.h",
+        "internal/compare_unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -121,8 +121,11 @@ cc_library(
         ":iterator",
         ":message",
         "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire_reader",
         "//upb/mini_table:internal",
     ],
 )
@@ -288,10 +291,16 @@ cc_test(
     name = "compare_unknown_test",
     srcs = ["internal/compare_unknown_test.cc"],
     deps = [
+        ":compare",
         ":internal",
+        ":message",
+        "//upb:base",
+        "//upb:mem",
         "//upb:port",
+        "//upb:wire",
         "//upb:wire_reader",
         "//upb/base:internal",
+        "//upb/test:test_messages_proto2_upb_proto",
         "@com_google_absl//absl/types:variant",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
