@@ -128,7 +128,6 @@ void SetPrimitiveVariables(
 
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
-    (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
         absl::StrCat(GenerateSetBitToLocal(messageBitIndex), ";");
@@ -243,7 +242,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
         variables_,
         "@java.lang.Override\n"
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_message$;\n"
+        "  return $is_field_present_message$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
