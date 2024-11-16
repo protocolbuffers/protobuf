@@ -120,7 +120,8 @@ void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
-// The data is copied into the message instance.
+// If alias is set, will keep a view to the provided data; otherwise a copy is
+// made.
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
                                           const char* data, size_t len,
                                           upb_Arena* arena, bool alias);
