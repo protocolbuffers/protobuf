@@ -41,11 +41,6 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
-// Returns an array of extensions for this message.
-// Note: the array is ordered in reverse relative to the order of creation.
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
-    const struct upb_Message* msg, size_t* count);
-
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(

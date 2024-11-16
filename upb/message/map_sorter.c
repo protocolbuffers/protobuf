@@ -8,13 +8,16 @@
 #include "upb/message/internal/map_sorter.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/mini_table/extension.h"
@@ -148,13 +151,16 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              size_t count, _upb_sortedmap* sorted) {
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
-  const upb_Extension* exts =
-      UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
-
-  for (size_t i = 0; i < count; i++) {
-    s->entries[sorted->start + i] = &exts[i];
+  size_t i = in->size;
+  size_t entries_added = 0;
+  while (i-- != 0) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      s->entries[sorted->start + entries_added++] = msg_ext;
+    }
   }
-  qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
+  qsort(&s->entries[sorted->start], entries_added, sizeof(*s->entries),
         _upb_mapsorter_cmpext);
   return true;
 }

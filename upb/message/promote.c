@@ -83,8 +83,6 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
   }
-  size_t len;
-  size_t ofs = result.ptr - upb_Message_GetUnknown(msg, &len);
   // Decode and promote from unknown.
   const upb_MiniTable* extension_table =
       upb_MiniTableExtension_GetSubMessage(ext_table);
@@ -110,21 +108,10 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   }
   ext->data.msg_val = extension_msg;
   value->msg_val = extension_msg;
-  // Adding to extensions may have invalidated our previous pointers to unknowns
-  // This second search won't be necessary once unknown iteration is pointer
-  // stable, because it'll be separate storage from extensions and won't realloc
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  while (upb_Message_NextUnknown(msg, &data, &iter)) {
-    if (data.size < ofs) {
-      ofs -= data.size;
-    } else {
-      data.data += ofs;
-      data.size = result.len;
-      break;
-    }
-  }
-  upb_Message_DeleteUnknown(msg, &data, &iter);
+  // Our storage may have been reallocated by adding the extension, but our
+  // iterators are stable.
+  upb_StringView data = upb_StringView_FromDataAndSize(result.ptr, result.len);
+  upb_Message_DeleteUnknown(msg, &data, &result.iter);
   return kUpb_GetExtension_Ok;
 }
 
@@ -176,16 +163,20 @@ static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
                                                upb_Arena* arena) {
   upb_Message* empty =
       UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(*tagged);
-  size_t unknown_size;
-  const char* unknown_data = upb_Message_GetUnknown(empty, &unknown_size);
   upb_Message* promoted = upb_Message_New(mini_table, arena);
   if (!promoted) return kUpb_DecodeStatus_OutOfMemory;
-  upb_DecodeStatus status = upb_Decode(unknown_data, unknown_size, promoted,
-                                       mini_table, NULL, decode_options, arena);
-  if (status == kUpb_DecodeStatus_Ok) {
-    *tagged = UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(promoted, false);
+  upb_StringView unknown_data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown(empty, &unknown_data, &iter)) {
+    upb_DecodeStatus status =
+        upb_Decode(unknown_data.data, unknown_data.size, promoted, mini_table,
+                   NULL, decode_options, arena);
+    if (status != kUpb_DecodeStatus_Ok) {
+      return status;
+    }
   }
-  return status;
+  *tagged = UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(promoted, false);
+  return kUpb_DecodeStatus_Ok;
 }
 
 upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,

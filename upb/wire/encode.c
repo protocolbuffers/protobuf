@@ -593,9 +593,13 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
       /* Encode all extensions together. Unlike C++, we do not attempt to keep
        * these in field number order relative to normal fields or even to each
        * other. */
-      size_t ext_count = upb_Message_ExtensionCount(msg);
-      if (ext_count) {
+      uintptr_t iter = kUpb_Message_ExtensionBegin;
+      const upb_MiniTableExtension* ext;
+      upb_MessageValue ext_val;
+      if (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
+                                                         &iter)) {
         if (e->options & kUpb_EncodeOption_Deterministic) {
+          size_t ext_count = upb_Message_ExtensionCount(msg);
           _upb_sortedmap sorted;
           if (!_upb_mapsorter_pushexts(&e->sorter, in, ext_count, &sorted)) {
             // TODO: b/378744096 - handle alloc failure
@@ -607,14 +611,11 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
           }
           _upb_mapsorter_popmap(&e->sorter, &sorted);
         } else {
-          const upb_MiniTableExtension* ext;
-          upb_MessageValue ext_val;
-          uintptr_t iter = kUpb_Message_ExtensionBegin;
-          while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-              msg, &ext, &ext_val, &iter)) {
+          do {
             encode_ext(e, ext, ext_val,
                        m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-          }
+          } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+              msg, &ext, &ext_val, &iter));
         }
       }
     }
