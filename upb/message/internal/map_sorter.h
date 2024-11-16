@@ -83,6 +83,10 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
                              size_t count, _upb_sortedmap* sorted);
 
+bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted, int size);
+
+int _upb_mapsorter_cmpext(const void* _a, const void* _b);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

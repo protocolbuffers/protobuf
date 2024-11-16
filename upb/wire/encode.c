@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
@@ -27,6 +28,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -568,7 +570,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     size_t unknown_size = 0;
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_StringView unknown;
-    // Need to write in reverse order, but list is single-linked; scan to
+    // Need to write in reverse order, but iteration is in-order; scan to
     // reserve capacity up front, then write in-order
     while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
       unknown_size += unknown.size;
@@ -585,24 +587,50 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   }
 
   if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
-    /* Encode all extensions together. Unlike C++, we do not attempt to keep
-     * these in field number order relative to normal fields or even to each
-     * other. */
-    size_t ext_count;
-    const upb_Extension* ext =
-        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
-    if (ext_count) {
-      if (e->options & kUpb_EncodeOption_Deterministic) {
-        _upb_sortedmap sorted;
-        _upb_mapsorter_pushexts(&e->sorter, ext, ext_count, &sorted);
-        while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-        }
-        _upb_mapsorter_popmap(&e->sorter, &sorted);
-      } else {
-        const upb_Extension* end = ext + ext_count;
-        for (; ext != end; ext++) {
-          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in) {
+      /* Encode all extensions together. Unlike C++, we do not attempt to keep
+       * these in field number order relative to normal fields or even to each
+       * other. */
+      size_t ext_count = 0;
+      for (size_t i = 0; i < in->size; ++i) {
+        ext_count += upb_TaggedAuxPtr_IsExtension(in->aux_data[i]);
+      }
+      if (ext_count) {
+        if (e->options & kUpb_EncodeOption_Deterministic) {
+          _upb_sortedmap sorted;
+          if (!_upb_mapsorter_resize(&e->sorter, &sorted, ext_count)) {
+            // TODO handle OOM
+          }
+          size_t i = in->size;
+          size_t entries_added = 0;
+          while (i-- != 0) {
+            upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+            if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+              const upb_Extension* msg_ext =
+                  upb_TaggedAuxPtr_Extension(tagged_ptr);
+              e->sorter.entries[sorted.start + entries_added++] = msg_ext;
+            }
+          }
+          qsort(&e->sorter.entries[sorted.start], ext_count,
+                sizeof(e->sorter.entries), _upb_mapsorter_cmpext);
+          const upb_Extension* ext;
+          while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+            encode_ext(e, ext,
+                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+          }
+          _upb_mapsorter_popmap(&e->sorter, &sorted);
+        } else {
+          size_t i = in->size;
+          while (i-- != 0) {
+            upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+            if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+              const upb_Extension* msg_ext =
+                  upb_TaggedAuxPtr_Extension(tagged_ptr);
+              encode_ext(e, msg_ext,
+                         m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+            }
+          }
         }
       }
     }

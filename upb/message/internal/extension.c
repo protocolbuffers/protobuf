@@ -7,6 +7,7 @@
 
 #include "upb/message/internal/extension.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/mem/arena.h"
@@ -20,31 +21,20 @@
 
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* e) {
-  size_t n;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return NULL;
 
-  // For now we use linear search exclusively to find extensions.
-  // If this becomes an issue due to messages with lots of extensions,
-  // we can introduce a table of some sort.
-  for (size_t i = 0; i < n; i++) {
-    if (ext[i].ext == e) {
-      return &ext[i];
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (ext->ext == e) {
+        return ext;
+      }
     }
   }
 
   return NULL;
-}
-
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
-    const struct upb_Message* msg, size_t* count) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (in) {
-    *count = (in->size - in->ext_begin) / sizeof(upb_Extension);
-    return UPB_PTR_AT(in, in->ext_begin, void);
-  } else {
-    *count = 0;
-    return NULL;
-  }
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
@@ -52,12 +42,25 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), a))
-    return NULL;
+
+  if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  in->ext_begin -= sizeof(upb_Extension);
-  ext = UPB_PTR_AT(in, in->ext_begin, void);
+  ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext);
   return ext;
+}
+
+void upb_Message_ReplaceUnknownWithExtension(struct upb_Message* msg,
+                                             uintptr_t iter,
+                                             const upb_Extension* ext) {
+  UPB_ASSERT(iter != 0);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  UPB_ASSERT(in);
+  size_t index = iter - 1;
+  upb_TaggedAuxPtr tagged_ptr = in->aux_data[index];
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(tagged_ptr));
+  in->aux_data[index] = upb_TaggedAuxPtr_MakeExtension(ext);
 }

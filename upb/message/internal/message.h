@@ -15,9 +15,11 @@
 #ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
 #define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/mini_table/message.h"
@@ -36,27 +38,52 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
-typedef struct upb_Message_Internal {
-  // Total size of this structure, including the data that follows.
-  // Must be aligned to 8, which is alignof(upb_Extension)
-  uint32_t size;
+typedef struct upb_TaggedAuxPtr {
+  uintptr_t ptr;
+} upb_TaggedAuxPtr;
 
-  /* Offsets relative to the beginning of this structure.
-   *
-   * Unknown data grows forward from the beginning to unknown_end.
-   * Extension data grows backward from size to ext_begin.
-   * When the two meet, we're out of data and have to realloc.
-   *
-   * If we imagine that the final member of this struct is:
-   *   char data[size - overhead];  // overhead = sizeof(upb_Message_Internal)
-   *
-   * Then we have:
-   *   unknown data: data[0 .. (unknown_end - overhead)]
-   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
-  uint32_t unknown_end;
-  uint32_t ext_begin;
-  // Data follows, as if there were an array:
-  //   char data[size - sizeof(upb_Message_Internal)];
+UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr == 0;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr & 1;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr != 0) && ((ptr.ptr & 1) == 0);
+}
+
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~1ULL);
+}
+
+UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_StringView*)(ptr.ptr);
+}
+
+UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null() {
+  return (upb_TaggedAuxPtr){.ptr = 0};
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
+  return (upb_TaggedAuxPtr){.ptr = (uintptr_t)e | 1};
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
+  return (upb_TaggedAuxPtr){.ptr = (uintptr_t)sv};
+}
+
+typedef struct upb_Message_Internal {
+  // Total number of entries set in aux_data
+  size_t size;
+  size_t capacity;
+  // Tagged pointers to upb_StringView or upb_Extension
+  upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
 
 #ifdef UPB_TRACING_ENABLED
@@ -98,8 +125,9 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
                                            upb_Arena* arena,
                                            upb_StringView data[], size_t count);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena);
+// Ensures at least one slot is available in the aux_data of this message.
+bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
+                                           upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
