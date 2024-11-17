@@ -67,7 +67,8 @@ final class LongArrayList extends AbstractProtobufList<Long>
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }
