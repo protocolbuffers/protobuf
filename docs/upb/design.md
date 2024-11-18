@@ -237,12 +237,12 @@ because both the code size and the runtime memory overhead will be less than
 
 There are three main ways of loading a MiniTable:
 
-1.  **From C generated code:** The upb code generator can emit `.upb.c` files that
-    contain the MiniTables as global constant variables. When the main program
-    links against these, the MiniTable will be placed into `.rodata` (or
-    `.data.rel.ro`) in the binary. The MiniTable can then be obtained from a
-    generated function. In Blaze/Bazel these files can be generated and linked
-    using the `upb_proto_library()` rule.
+1.  **From C generated code:** The upb code generator can emit
+    `.upb_minitable.c` files that contain the MiniTables as global constant
+    variables. When the main program links against these, the MiniTable will be
+    placed into `.rodata` (or `.data.rel.ro`) in the binary. The MiniTable can
+    then be obtained from a generated function. In Blaze/Bazel these files can
+    be generated and linked using the `upb_minitable_proto_library()` rule.
 2.  **From MiniDescriptors:** The user can build MiniDescriptors into MiniTables
     at runtime. MiniDescriptors are a compact upb-specific wire format designed
     specially for this purpose. The user can call `upb_MiniTable_Build()` at
