@@ -153,7 +153,7 @@ _upb_cc_proto_library_aspect = aspect(
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
-                "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb:generated_cpp_support",
                 "//hpb:generated_hpb_support",
                 "@com_google_absl//absl/log:absl_check",
                 "@com_google_absl//absl/strings",

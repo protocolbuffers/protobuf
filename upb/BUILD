@@ -91,7 +91,7 @@ cc_library(
 
 # Common support code for C++ generated code.
 cc_library(
-    name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_cpp_support",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         ":port_inc",
