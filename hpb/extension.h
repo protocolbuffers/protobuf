@@ -141,10 +141,23 @@ class ExtensionRegistry {
     }
   }
 
+  static const ExtensionRegistry& generated_registry() {
+    static const ExtensionRegistry* r = NewGeneratedRegistry();
+    return *r;
+  }
+
  private:
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
+
+  // TODO: b/379100963 - Introduce ShutdownHpbLibrary
+  static const ExtensionRegistry* NewGeneratedRegistry() {
+    static upb::Arena* global_arena = new upb::Arena();
+    ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
+    upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
+    return registry;
+  }
 };
 
 template <typename T, typename Extendee, typename Extension,

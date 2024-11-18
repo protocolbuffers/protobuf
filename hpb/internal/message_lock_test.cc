@@ -122,11 +122,16 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
-  ::upb::Arena arena;
+  upb::Arena arena;
   hpb::ExtensionRegistry registry(arena);
   registry.AddExtension(theme);
   registry.AddExtension(ThemeExtension::theme_extension);
   TestConcurrentExtensionAccess(registry);
+}
+
+TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceGlobalInstance) {
+  upb::Arena arena;
+  TestConcurrentExtensionAccess(hpb::ExtensionRegistry::generated_registry());
 }
 
 }  // namespace
