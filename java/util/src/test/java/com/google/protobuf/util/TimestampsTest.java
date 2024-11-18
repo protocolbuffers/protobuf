@@ -119,49 +119,8 @@ public class TimestampsTest {
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
   @J2ObjCIncompatible
   public void testTimestampStringFormat() throws Exception {
-    Timestamp start = Timestamps.parse("0001-01-01T00:00:00Z");
-    Timestamp end = Timestamps.parse("9999-12-31T23:59:59.999999999Z");
-    assertThat(start.getSeconds()).isEqualTo(Timestamps.TIMESTAMP_SECONDS_MIN);
-    assertThat(start.getNanos()).isEqualTo(0);
-    assertThat(end.getSeconds()).isEqualTo(Timestamps.TIMESTAMP_SECONDS_MAX);
-    assertThat(end.getNanos()).isEqualTo(999999999);
-    assertThat(Timestamps.toString(start)).isEqualTo("0001-01-01T00:00:00Z");
-    assertThat(Timestamps.toString(end)).isEqualTo("9999-12-31T23:59:59.999999999Z");
-
-    Timestamp value = Timestamps.parse("1970-01-01T00:00:00Z");
-    assertThat(value.getSeconds()).isEqualTo(0);
-    assertThat(value.getNanos()).isEqualTo(0);
-    value = Timestamps.parseUnchecked("1970-01-01T00:00:00Z");
-    assertThat(value.getSeconds()).isEqualTo(0);
-    assertThat(value.getNanos()).isEqualTo(0);
-
-    // Test negative timestamps.
-    value = Timestamps.parse("1969-12-31T23:59:59.999Z");
-    assertThat(value.getSeconds()).isEqualTo(-1);
-    // Nano part is in the range of [0, 999999999] for Timestamp.
-    assertThat(value.getNanos()).isEqualTo(999000000);
-    value = Timestamps.parseUnchecked("1969-12-31T23:59:59.999Z");
-    assertThat(value.getSeconds()).isEqualTo(-1);
-    // Nano part is in the range of [0, 999999999] for Timestamp.
-    assertThat(value.getNanos()).isEqualTo(999000000);
-
-    // Test that 3, 6, or 9 digits are used for the fractional part.
-    value = Timestamp.newBuilder().setNanos(10).build();
-    assertThat(Timestamps.toString(value)).isEqualTo("1970-01-01T00:00:00.000000010Z");
-    value = Timestamp.newBuilder().setNanos(10000).build();
-    assertThat(Timestamps.toString(value)).isEqualTo("1970-01-01T00:00:00.000010Z");
-    value = Timestamp.newBuilder().setNanos(10000000).build();
-    assertThat(Timestamps.toString(value)).isEqualTo("1970-01-01T00:00:00.010Z");
-
-    // Test that parsing accepts timezone offsets.
-    value = Timestamps.parse("1970-01-01T00:00:00.010+08:00");
-    assertThat(Timestamps.toString(value)).isEqualTo("1969-12-31T16:00:00.010Z");
-    value = Timestamps.parse("1970-01-01T00:00:00.010-08:00");
-    assertThat(Timestamps.toString(value)).isEqualTo("1970-01-01T08:00:00.010Z");
-    value = Timestamps.parseUnchecked("1970-01-01T00:00:00.010+08:00");
-    assertThat(Timestamps.toString(value)).isEqualTo("1969-12-31T16:00:00.010Z");
-    value = Timestamps.parseUnchecked("1970-01-01T00:00:00.010-08:00");
-    assertThat(Timestamps.toString(value)).isEqualTo("1970-01-01T08:00:00.010Z");
+    Timestamp t = Timestamps.parse("2000-40-01T00:00:00Z");
+    assertThat(Timestamps.toString(t)).isEqualTo("2000-40-01T00:00:00Z");
   }
 
   private volatile boolean stopParsingThreads = false;

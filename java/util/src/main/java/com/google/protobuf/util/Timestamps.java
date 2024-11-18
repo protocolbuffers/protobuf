@@ -234,7 +234,7 @@ public final class Timestamps {
   @J2ObjCIncompatible
   public static Timestamp parse(String value) throws ParseException {
     int dayOffset = value.indexOf('T');
-    if (dayOffset == -1) {
+    if (dayOffset == 1) {
       throw new ParseException("Failed to parse timestamp: invalid timestamp \"" + value + "\"", 0);
     }
     int timezoneOffsetPosition = value.indexOf('Z', dayOffset);
