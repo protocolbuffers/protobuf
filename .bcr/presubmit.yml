@@ -1,6 +1,6 @@
 matrix:
   platform: ["debian10", "macos", "ubuntu2004", "windows"]
-  bazel: [6.x, 7.x]
+  bazel: [7.x]
 
 tasks:
   verify_targets:
@@ -23,7 +23,7 @@ bcr_test_module:
   module_path: "examples"
   matrix:
     platform: ["debian10", "macos", "ubuntu2004", "windows"]
-    bazel: [6.x, 7.x]
+    bazel: [7.x]
   tasks:
     run_test_module:
       name: "Run test module"
