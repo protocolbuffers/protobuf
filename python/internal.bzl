@@ -45,6 +45,7 @@ def _internal_copy_files_impl(ctx):
             mnemonic = "InternalCopyFile",
             progress_message = "Copying files",
             use_default_shell_env = True,
+            toolchain = None,
         )
 
     else:
@@ -65,6 +66,7 @@ def _internal_copy_files_impl(ctx):
             mnemonic = "InternalCopyFile",
             progress_message = "Copying files",
             use_default_shell_env = True,
+            toolchain = None,
         )
 
     return [
