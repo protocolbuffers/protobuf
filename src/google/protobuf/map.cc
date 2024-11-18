@@ -27,108 +27,19 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const TableEntryPtr kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
-
-NodeBase* UntypedMapBase::DestroyTree(Tree* tree) {
-  NodeBase* head = tree->empty() ? nullptr : tree->begin()->second;
-  if (alloc_.arena() == nullptr) {
-    delete tree;
-  }
-  return head;
-}
-
-void UntypedMapBase::EraseFromTree(map_index_t b,
-                                   typename Tree::iterator tree_it) {
-  ABSL_DCHECK(TableEntryIsTree(b));
-  Tree* tree = TableEntryToTree(table_[b]);
-  if (tree_it != tree->begin()) {
-    NodeBase* prev = std::prev(tree_it)->second;
-    prev->next = prev->next->next;
-  }
-  tree->erase(tree_it);
-  if (tree->empty()) {
-    DestroyTree(tree);
-    table_[b] = TableEntryPtr{};
-  }
-}
-
-void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
-                                        NodeBase* node) {
-  if (TableEntryIsNonEmptyList(b)) {
-    // To save in binary size, we delegate to an out-of-line function to do
-    // the conversion.
-    table_[b] = ConvertToTree(TableEntryToNode(table_[b]), get_key);
-  }
-  ABSL_DCHECK(TableEntryIsTree(b))
-      << (void*)table_[b] << " " << (uintptr_t)table_[b];
-
-  Tree* tree = TableEntryToTree(table_[b]);
-  auto it = tree->try_emplace(get_key(node), node).first;
-  // Maintain the linked list of the nodes in the tree.
-  // For simplicity, they are in the same order as the tree iteration.
-  if (it != tree->begin()) {
-    NodeBase* prev = std::prev(it)->second;
-    prev->next = node;
-  }
-  auto next = std::next(it);
-  node->next = next != tree->end() ? next->second : nullptr;
-}
-
-void UntypedMapBase::TransferTree(Tree* tree, GetKey get_key) {
-  NodeBase* node = DestroyTree(tree);
-  do {
-    NodeBase* next = node->next;
-
-    map_index_t b = VariantBucketNumber(get_key(node));
-    // This is similar to InsertUnique, but with erasure.
-    if (TableEntryIsEmpty(b)) {
-      InsertUniqueInList(b, node);
-      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
-    } else if (TableEntryIsNonEmptyList(b) && !TableEntryIsTooLong(b)) {
-      InsertUniqueInList(b, node);
-    } else {
-      InsertUniqueInTree(b, get_key, node);
-    }
-
-    node = next;
-  } while (node != nullptr);
-}
-
-TableEntryPtr UntypedMapBase::ConvertToTree(NodeBase* node, GetKey get_key) {
-  auto* tree = Arena::Create<Tree>(alloc_.arena(), typename Tree::key_compare(),
-                                   typename Tree::allocator_type(alloc_));
-  for (; node != nullptr; node = node->next) {
-    tree->try_emplace(get_key(node), node);
-  }
-  ABSL_DCHECK_EQ(MapTreeLengthThreshold(), tree->size());
-
-  // Relink the nodes.
-  NodeBase* next = nullptr;
-  auto it = tree->end();
-  do {
-    node = (--it)->second;
-    node->next = next;
-    next = node;
-  } while (it != tree->begin());
-
-  return TreeToTableEntry(tree);
-}
+NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
 void UntypedMapBase::ClearTable(const ClearInput input) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (alloc_.arena() == nullptr) {
     const auto loop = [&, this](auto destroy_node) {
-      const TableEntryPtr* table = table_;
+      NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
-        NodeBase* node =
-            ABSL_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
-                ? DestroyTree(TableEntryToTree(table[b]))
-                : TableEntryToNode(table[b]);
-
-        while (node != nullptr) {
+        for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
+          absl::PrefetchToLocalCacheNta(next);
           destroy_node(node);
           SizedDelete(node, SizeFromInfo(input.size_info));
           node = next;
@@ -177,23 +88,12 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   }
 
   if (input.reset_table) {
-    std::fill(table_, table_ + num_buckets_, TableEntryPtr{});
+    std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
     index_of_first_non_null_ = num_buckets_;
   } else {
     DeleteTable(table_, num_buckets_);
   }
-}
-
-auto UntypedMapBase::FindFromTree(map_index_t b, VariantKey key,
-                                  Tree::iterator* it) const -> NodeAndBucket {
-  Tree* tree = TableEntryToTree(table_[b]);
-  auto tree_it = tree->find(key);
-  if (it != nullptr) *it = tree_it;
-  if (tree_it != tree->end()) {
-    return {tree_it->second, b};
-  }
-  return {nullptr, b};
 }
 
 size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
@@ -202,14 +102,6 @@ size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
   size += sizeof(void*) * num_buckets_;
   // All the nodes.
   size += sizeof_node * num_elements_;
-  // For each tree, count the overhead of those nodes.
-  // Two buckets at a time because we only care about trees.
-  for (map_index_t b = 0; b < num_buckets_; ++b) {
-    if (TableEntryIsTree(b)) {
-      size += sizeof(Tree);
-      size += sizeof(Tree::value_type) * TableEntryToTree(table_[b])->size();
-    }
-  }
   return size;
 }
 

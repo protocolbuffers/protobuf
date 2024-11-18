@@ -235,6 +235,26 @@ class PROTOBUF_EXPORT MapKey {
   friend class MapIterator;
   friend class internal::DynamicMapField;
 
+  template <typename H>
+  friend auto AbslHashValue(H state, const MapKey& key) {
+    switch (key.type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        return H::combine(std::move(state), key.GetStringValue());
+      case FieldDescriptor::CPPTYPE_INT64:
+        return H::combine(std::move(state), key.GetInt64Value());
+      case FieldDescriptor::CPPTYPE_INT32:
+        return H::combine(std::move(state), key.GetInt32Value());
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return H::combine(std::move(state), key.GetUInt64Value());
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return H::combine(std::move(state), key.GetUInt32Value());
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return H::combine(std::move(state), key.GetBoolValue());
+      default:
+        internal::Unreachable();
+    }
+  }
+
   union KeyValue {
     KeyValue() {}
     absl::string_view string_value;
@@ -256,18 +276,6 @@ namespace internal {
 
 template <>
 struct is_internal_map_key_type<MapKey> : std::true_type {};
-
-template <>
-struct RealKeyToVariantKey<MapKey> {
-  VariantKey operator()(const MapKey& value) const;
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<MapKey> {
-  VariantKey operator()(const MapKey& value) const {
-    return RealKeyToVariantKey<MapKey>{}(value);
-  }
-};
 
 }  // namespace internal
 

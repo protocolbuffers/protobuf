@@ -87,6 +87,11 @@ struct MoveTestKey {
   MoveTestKey(MoveTestKey&& other) noexcept
       : data(other.data), copies(other.copies) {}
 
+  template <typename H>
+  friend auto AbslHashValue(H state, const MoveTestKey& m) {
+    return H::combine(std::move(state), m.data);
+  }
+
   friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
     return lhs.data == rhs.data;
   }
@@ -314,26 +319,8 @@ namespace protobuf {
 namespace internal {
 
 template <>
-struct RealKeyToVariantKey<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
 struct TransparentSupport<MoveTestKey> {
   using hash = absl::Hash<MoveTestKey>;
-
-  static bool Equals(const MoveTestKey& a, const MoveTestKey& b) {
-    return a == b;
-  }
 
   template <typename K>
   using key_arg = MoveTestKey;
@@ -504,7 +491,6 @@ TEST_F(MapImplTest, IteratorBasic) {
 static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
-
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;

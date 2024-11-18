@@ -105,8 +105,6 @@ class DynamicMapKey {
 
   google::protobuf::MapKey ToMapKey() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  VariantKey ToVariantKey() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-
   bool IsString() const {
     return absl::holds_alternative<std::string>(variant_);
   }
@@ -134,34 +132,7 @@ template <>
 struct is_internal_map_key_type<DynamicMapKey> : std::true_type {};
 
 template <>
-struct RealKeyToVariantKey<DynamicMapKey> : public RealKeyToVariantKey<MapKey> {
-  // Bring in for heterogeneous lookups.
-  using RealKeyToVariantKey<MapKey>::operator();
-
-  VariantKey operator()(const DynamicMapKey& value) const {
-    return value.ToVariantKey();
-  }
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<DynamicMapKey>
-    : public RealKeyToVariantKeyAlternative<MapKey> {
-  using RealKeyToVariantKeyAlternative<MapKey>::operator();
-
-  VariantKey operator()(const DynamicMapKey& value) const {
-    return RealKeyToVariantKey<DynamicMapKey>{}(value);
-  }
-};
-
-template <>
 struct TransparentSupport<DynamicMapKey> {
-  using hash = absl::Hash<DynamicMapKey>;
-
-  template <typename T, typename U>
-  static bool Equals(T&& t, U&& u) {
-    return ToView(t) == ToView(u);
-  }
-
   template <typename K>
   using key_arg = K;
 
@@ -220,10 +191,6 @@ google::protobuf::MapKey DynamicMapKey::ToMapKey() const {
   google::protobuf::MapKey result;
   absl::visit(DynamicMapKeyToMapKey{&result}, variant_);
   return result;
-}
-
-VariantKey DynamicMapKey::ToVariantKey() const {
-  return absl::visit([](const auto& alt) { return VariantKey(alt); }, variant_);
 }
 
 class DynamicMapField final
