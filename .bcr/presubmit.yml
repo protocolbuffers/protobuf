@@ -10,7 +10,6 @@ tasks:
     build_flags:
     - '--host_cxxopt=-std=c++14'
     - '--cxxopt=-std=c++14'
-    - '--experimental_google_legacy_api'
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
@@ -33,6 +32,5 @@ bcr_test_module:
       build_flags:
       - '--host_cxxopt=-std=c++14'
       - '--cxxopt=-std=c++14'
-      - '--experimental_google_legacy_api'
       build_targets:
       - "//..."
