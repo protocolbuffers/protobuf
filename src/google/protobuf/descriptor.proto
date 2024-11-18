@@ -131,9 +131,15 @@ message FileDescriptorProto {
   // The supported values are "proto2", "proto3", and "editions".
   //
   // If `edition` is present, this value must be "editions".
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional string syntax = 12;
 
   // The edition of the proto file.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional Edition edition = 14;
 }
 
@@ -546,6 +552,9 @@ message FileOptions {
   optional string ruby_package = 45;
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
 
   // The parser stores options it doesn't recognize here.
@@ -632,6 +641,9 @@ message MessageOptions {
   optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 12;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -772,6 +784,9 @@ message FieldOptions {
   repeated EditionDefault edition_defaults = 20;
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 21;
 
   // Information about the support window of a feature.
@@ -808,6 +823,9 @@ message FieldOptions {
 
 message OneofOptions {
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 1;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -840,6 +858,9 @@ message EnumOptions {
   optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 7;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -857,6 +878,9 @@ message EnumValueOptions {
   optional bool deprecated = 1 [default = false];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 2;
 
   // Indicate that fields annotated with this enum value should not be printed
@@ -877,6 +901,9 @@ message EnumValueOptions {
 message ServiceOptions {
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 34;
 
   // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
@@ -922,6 +949,9 @@ message MethodOptions {
       [default = IDEMPOTENCY_UNKNOWN];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 35;
 
   // The parser stores options it doesn't recognize here. See above.
