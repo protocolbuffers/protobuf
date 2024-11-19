@@ -2104,7 +2104,7 @@ DescriptorPool::DescriptorPool()
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2119,7 +2119,7 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2133,7 +2133,7 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -8045,7 +8045,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->enforce_extension_declarations_) {
+    if (pool_->EnforceCustomExtensionDeclarations()) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {

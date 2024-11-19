@@ -2041,6 +2041,18 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 168);
 
+#ifndef SWIG
+enum class ExtDeclEnforcementLevel : uint8_t {
+  // No enforcement.
+  kNoEnforcement = 0,
+  // All extensions excluding descriptor.proto extensions
+  // (go/extension-declarations#descriptor-proto)
+  kCustomExtensions = 1,
+  // All extensions including descriptor.proto extensions.
+  kAllExtensions = 2,
+};
+#endif  // !SWIG
+
 // ===================================================================
 
 // Used to construct descriptors.
@@ -2266,8 +2278,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   // This enforcement is disabled by default because it requires full
   // descriptors with source-retention options, which are generally not
   // available at runtime.
-  void EnforceExtensionDeclarations(bool enforce) {
+  void EnforceExtensionDeclarations(google::protobuf::ExtDeclEnforcementLevel enforce) {
     enforce_extension_declarations_ = enforce;
+  }
+
+  bool EnforceDescriptorExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+           ExtDeclEnforcementLevel::kAllExtensions;
+  }
+
+  bool EnforceCustomExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kAllExtensions ||
+           enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kCustomExtensions;
   }
 
 #ifndef SWIG
@@ -2484,7 +2508,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  bool enforce_extension_declarations_;
+  ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   mutable bool build_started_ = false;

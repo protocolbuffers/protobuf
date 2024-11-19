@@ -1253,12 +1253,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return EXIT_FAILURE;
   }
 
-  // Enforce extension declarations only when compiling. We want to skip
-  // this enforcement when protoc is just being invoked to encode or decode
-  // protos.
-  if (mode_ == MODE_COMPILE
-  ) {
-    descriptor_pool->EnforceExtensionDeclarations(true);
+  // Enforce extension declarations only when compiling. We want to skip this
+  // enforcement when protoc is just being invoked to encode or decode
+  // protos. If allowlist is disabled, we will not check for descriptor
+  // extensions declarations, either.
+  if (mode_ == MODE_COMPILE) {
+      descriptor_pool->EnforceExtensionDeclarations(
+          ExtDeclEnforcementLevel::kCustomExtensions);
   }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
                        &parsed_files)) {
