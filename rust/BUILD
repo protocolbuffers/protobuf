@@ -249,16 +249,20 @@ config_setting(
     },
 )
 
+# Note: strip_prefix.from_pkg() should work for this below, but has surprising behavior in bazel
+# with filegroups and so we only use strip_prefix.from_root() and this constant instead.
+SRC_ROOT = "rust"
+
 pkg_files(
     name = "rust_protobuf_src",
     srcs = glob(["*"]),
-    strip_prefix = strip_prefix.from_pkg(""),
+    strip_prefix = strip_prefix.from_root(SRC_ROOT),
 )
 
 pkg_files(
     name = "crate_root_files",
-    srcs = glob(["cargo/**/*"]),
-    strip_prefix = strip_prefix.from_pkg("/cargo"),
+    srcs = ["//rust/cargo:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/cargo"),
 )
 
 pkg_filegroup(
@@ -297,8 +301,8 @@ pkg_tar(
 
 pkg_files(
     name = "protobuf_codegen_files",
-    srcs = glob(["protobuf_codegen/src/*"]) + ["protobuf_codegen/Cargo.toml"],
-    strip_prefix = strip_prefix.from_pkg("/protobuf_codegen"),
+    srcs = ["//rust/protobuf_codegen:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/protobuf_codegen"),
 )
 
 pkg_tar(
@@ -323,8 +327,8 @@ pkg_tar(
 
 pkg_files(
     name = "codegen_example_files",
-    srcs = glob(["protobuf_codegen/example/**/*"]),
-    strip_prefix = strip_prefix.from_pkg("/protobuf_codegen/example"),
+    srcs = ["//rust/protobuf_codegen/example:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/protobuf_codegen/example"),
 )
 
 pkg_tar(
