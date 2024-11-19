@@ -1422,6 +1422,19 @@ TEST(ExtensionSetTest, ConstInit) {
   EXPECT_EQ(set.NumExtensions(), 0);
 }
 
+// Make sure that is_cleared is set correctly for repeated fields.
+TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
+  unittest::TestAllExtensions msg;
+  ExtensionSet set;
+  const auto* desc =
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "repeated_int32_extension");
+  ASSERT_NE(desc, nullptr);
+  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
+                              desc);
+  EXPECT_EQ(set.NumExtensions(), 1);
+}
+
 TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
   unittest::TestAllExtensions msg;
   size_t l = msg.SpaceUsedLong();

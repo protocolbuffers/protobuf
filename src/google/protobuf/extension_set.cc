@@ -385,6 +385,7 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
     extension->is_pointer = true;
     extension->type = field_type;
     extension->is_packed = packed;
+    ABSL_DCHECK(!extension->is_cleared);
 
     switch (WireFormatLite::FieldTypeToCppType(
         static_cast<WireFormatLite::FieldType>(field_type))) {

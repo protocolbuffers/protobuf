@@ -762,9 +762,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     // For singular types, indicates if the extension is "cleared".  This
     // happens when an extension is set and then later cleared by the caller.
     // We want to keep the Extension object around for reuse, so instead of
-    // removing it from the map, we just set is_cleared = true.  This has no
-    // meaning for repeated types; for those, the size of the RepeatedField
-    // simply becomes zero when cleared.
+    // removing it from the map, we just set is_cleared = true.
+    //
+    // This is always set to false for repeated types.
+    // The size of the RepeatedField simply becomes zero when cleared.
     bool is_cleared : 1;
 
     // For singular message types, indicates whether lazy parsing is enabled
