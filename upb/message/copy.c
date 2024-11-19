@@ -286,7 +286,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   while (upb_Message_NextUnknown(src, &unknowns, &iter)) {
     // Make a copy into destination arena.
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknowns.data, unknowns.size,
-                                              arena)) {
+                                              arena, false)) {
       return NULL;
     }
   }

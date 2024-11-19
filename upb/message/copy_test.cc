@@ -314,7 +314,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   std::string unknown_data(data, len);
   // Add unknown data.
   UPB_PRIVATE(_upb_Message_AddUnknown)
-  (UPB_UPCAST(msg), data, len, source_arena);
+  (UPB_UPCAST(msg), data, len, source_arena, false);
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
