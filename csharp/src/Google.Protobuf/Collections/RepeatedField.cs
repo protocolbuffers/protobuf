@@ -433,6 +433,7 @@ namespace Google.Protobuf.Collections
         /// Adds the elements of the specified span to the end of the collection.
         /// </summary>
         /// <param name="source">The span whose elements should be added to the end of the collection.</param>
+        [SecuritySafeCritical]
         internal void AddRangeSpan(ReadOnlySpan<T> source)
         {
             if (source.IsEmpty)

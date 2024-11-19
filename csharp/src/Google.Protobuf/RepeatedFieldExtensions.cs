@@ -8,6 +8,7 @@
 #endregion
 
 using System;
+using System.Security;
 using Google.Protobuf.Collections;
 
 // Note: The choice of the namespace here is important because it's rare that people will directly reference Google.Protobuf.Collections
@@ -27,6 +28,7 @@ namespace Google.Protobuf
         /// <param name="repeatedField">The list to which the elements should be added.</param>
         /// <param name="source">The span whose elements should be added to the end of the <see cref="RepeatedField{T}"/>.</param>
         /// <exception cref="ArgumentNullException">The <paramref name="repeatedField"/> is null.</exception>
+        [SecuritySafeCritical]
         public static void AddRange<T>(this RepeatedField<T> repeatedField, ReadOnlySpan<T> source)
         {
             ProtoPreconditions.CheckNotNull(repeatedField, nameof(repeatedField));
