@@ -251,20 +251,14 @@ config_setting(
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    strip_prefix = strip_prefix.from_root("rust"),
-    visibility = ["//:__pkg__"],
+    srcs = glob(["*"]),
+    strip_prefix = strip_prefix.from_pkg(""),
 )
 
 pkg_files(
     name = "crate_root_files",
     srcs = glob(["cargo/**/*"]),
-    strip_prefix = strip_prefix.from_root("rust/cargo"),
-    visibility = ["//:__pkg__"],
+    strip_prefix = strip_prefix.from_pkg("/cargo"),
 )
 
 pkg_filegroup(
@@ -304,7 +298,7 @@ pkg_tar(
 pkg_files(
     name = "protobuf_codegen_files",
     srcs = glob(["protobuf_codegen/src/*"]) + ["protobuf_codegen/Cargo.toml"],
-    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen"),
+    strip_prefix = strip_prefix.from_pkg("/protobuf_codegen"),
 )
 
 pkg_tar(
@@ -315,7 +309,6 @@ pkg_tar(
         "//:LICENSE",
     ],
     tags = ["manual"],
-    visibility = ["//rust:__pkg__"],
 )
 
 pkg_tar(
@@ -326,13 +319,12 @@ pkg_tar(
         "//:LICENSE",
     ],
     tags = ["manual"],
-    visibility = ["//rust:__pkg__"],
 )
 
 pkg_files(
     name = "codegen_example_files",
     srcs = glob(["protobuf_codegen/example/**/*"]),
-    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen/example"),
+    strip_prefix = strip_prefix.from_pkg("/protobuf_codegen/example"),
 )
 
 pkg_tar(
@@ -341,7 +333,6 @@ pkg_tar(
         ":codegen_example_files",
         "//:LICENSE",
     ],
-    visibility = ["//rust:__pkg__"],
 )
 
 # Bundle all protoc binaries for all platforms. Requires the toolchains to be installed.
