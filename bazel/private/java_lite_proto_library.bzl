@@ -83,6 +83,8 @@ _java_lite_proto_aspect = aspect(
                  toolchains.use_toolchain(_JAVA_LITE_PROTO_TOOLCHAIN),
 )
 
+java_lite_proto_aspect = _java_lite_proto_aspect
+
 def _rule_impl(ctx):
     """Merges results of `java_proto_aspect` in `deps`.
 
