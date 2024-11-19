@@ -2323,7 +2323,7 @@ void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 // The data is copied into the message instance.
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
                                           const char* data, size_t len,
-                                          upb_Arena* arena);
+                                          upb_Arena* arena, bool alias);
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance. Data when concatenated together

@@ -3926,7 +3926,8 @@ upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
 }
 
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
-                                          size_t len, upb_Arena* arena) {
+                                          size_t len, upb_Arena* arena,
+                                          bool alias) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
@@ -4858,7 +4859,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   while (upb_Message_NextUnknown(src, &unknowns, &iter)) {
     // Make a copy into destination arena.
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknowns.data, unknowns.size,
-                                              arena)) {
+                                              arena, false)) {
       return NULL;
     }
   }
@@ -6671,7 +6672,7 @@ bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr, upb_Message* msg,
   end = upb_Decoder_EncodeVarint32(v, end);
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
-                                            &d->arena)) {
+                                            &d->arena, false)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return false;
@@ -7534,8 +7535,9 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
     // bounds checks are needed before adding the unknown field.
     _upb_Decoder_IsDone(d, &ptr);
     const char* input_ptr = upb_EpsCopyInputStream_GetInputPtr(&d->input, ptr);
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-            msg, input_start, input_ptr - input_start, &d->arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, input_start,
+                                              input_ptr - input_start,
+                                              &d->arena, d->input.aliasing)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == kUpb_WireType_StartGroup) {
