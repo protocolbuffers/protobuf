@@ -1866,6 +1866,32 @@ class Proto3Tests(unittest.TestCase):
         '  }\n'
         '}\n')
 
+  def testPrintStructInAny(self):
+    packed_message = struct_pb2.Struct()
+    packed_message['name'] = 'Jim'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    print(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        )
+    )
+    self.assertEqual(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
+        'any_value {\n'
+        '  [type.googleapis.com/google.protobuf.Struct] {\n'
+        '    fields {\n'
+        '      key: "name"\n'
+        '      value {\n'
+        '        string_value: "Jim"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n',
+    )
+
   def testTopAnyMessage(self):
     packed_msg = unittest_pb2.OneString()
     msg = any_pb2.Any()
