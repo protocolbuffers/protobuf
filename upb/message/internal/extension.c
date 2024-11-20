@@ -40,7 +40,7 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
     *count = (in->size - in->ext_begin) / sizeof(upb_Extension);
-    return UPB_PTR_AT(in, in->ext_begin, void);
+    return UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
   } else {
     *count = 0;
     return NULL;

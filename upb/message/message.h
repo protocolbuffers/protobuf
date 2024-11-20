@@ -17,8 +17,11 @@
 
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -42,13 +45,15 @@ UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
 //   while (upb_Message_NextUnknown(msg, &data, &iter)) {
 //     // Use data
 //   }
+// Iterates in the order unknown fields were parsed.
 
 #define kUpb_Message_UnknownBegin 0
+#define kUpb_Message_ExtensionBegin 0
 
-bool upb_Message_NextUnknown(const upb_Message* msg, upb_StringView* data,
-                             uintptr_t* iter);
+UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
+                                        upb_StringView* data, uintptr_t* iter);
 
-bool upb_Message_HasUnknown(const upb_Message* msg);
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
@@ -79,6 +84,17 @@ bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Iterates extensions in wire order
+UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter);
+
+// Iterates extensions in reverse wire order
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);

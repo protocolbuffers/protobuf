@@ -25,11 +25,10 @@
 extern "C" {
 #endif
 
-#define kUpb_Message_ExtensionBegin 0;
-
-bool upb_Message_NextExtension(const upb_Message* msg,
-                               const upb_MiniTableExtension** result,
-                               uintptr_t* iter);
+// Same as upb_Message_NextExtension but iterates in reverse wire order
+bool upb_Message_NextExtensionReverse(const upb_Message* msg,
+                                      const upb_MiniTableExtension** result,
+                                      uintptr_t* iter);
 // Returns the minitable with the given field number, or NULL on failure.
 const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
     const upb_Message* msg, uint32_t field_number);
