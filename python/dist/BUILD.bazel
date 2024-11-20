@@ -301,7 +301,6 @@ genrule(
 py_wheel(
     name = "binary_wheel",
     abi = select({
-        "//python:full_api_3.8": "cp38",
         "//python:full_api_3.9": "cp39",
         "//conditions:default": "abi3",
     }),
@@ -310,7 +309,6 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -334,11 +332,10 @@ py_wheel(
         ":windows_x86_64": "win_amd64",
         "//conditions:default": "any",
     }),
-    python_requires = ">=3.8",
+    python_requires = ">=3.9",
     # LINT.IfChange(python_tag)
     python_tag = selects.with_or({
-        ("//python:limited_api_3.8", "//python:full_api_3.8"): "cp38",
-        "//python:full_api_3.9": "cp39",
+        ("//python:limited_api_3.9", "//python:full_api_3.9"): "cp39",
         "//python:limited_api_3.10": "cp310",
         "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
@@ -372,7 +369,6 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -386,7 +382,7 @@ py_wheel(
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = "any",
-    python_requires = ">=3.8",
+    python_requires = ">=3.9",
     python_tag = "py3",
     strip_path_prefixes = [
         "python/",
@@ -442,7 +438,6 @@ py_dist(
     # Windows needs version-specific wheels until 3.10.
     # LINT.IfChange(full_api_version)
     full_api_versions = [
-        "38",
         "39",
     ],
     # LINT.ThenChange(:python_tag)
@@ -456,9 +451,9 @@ py_dist(
     limited_api_wheels = {
         "win32": "310",
         "win64": "310",
-        "linux-x86_64": "38",
-        "linux-aarch_64": "38",
-        "osx-universal2": "38",
+        "linux-x86_64": "39",
+        "linux-aarch_64": "39",
+        "osx-universal2": "39",
     },
     # LINT.ThenChange(:python_tag)
     pure_python_wheel = ":pure_python_wheel",

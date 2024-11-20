@@ -266,6 +266,6 @@ system_python = repository_rule(
     implementation = _system_python_impl,
     local = True,
     attrs = {
-        "minimum_python_version": attr.string(default = "3.8"),
+        "minimum_python_version": attr.string(default = "3.9"),
     },
 )

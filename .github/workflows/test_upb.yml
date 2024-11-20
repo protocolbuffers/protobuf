@@ -188,26 +188,22 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
-          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
@@ -283,7 +279,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.8", "3.13"]
+        python-version: ["3.9", "3.13"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
