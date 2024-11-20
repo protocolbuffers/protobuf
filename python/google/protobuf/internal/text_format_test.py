@@ -1411,6 +1411,23 @@ class Proto2Tests(TextFormatBase):
         '  text: \"bar\"\n'
         '}\n')
 
+  def testMessageSetExtensionNotFirst(self):
+    desc = message_set_extensions_pb2.TestMessageSetExtension1.DESCRIPTOR
+    self.assertEqual('first_extension', desc.extensions[0].name)
+    self.assertEqual('message_set_extension', desc.extensions[1].name)
+    message = message_set_extensions_pb2.TestMessageSet()
+    ext = (
+        message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+    )
+    message.Extensions[ext].i = 123
+    expected_str = (
+        '[google.protobuf.internal.TestMessageSetExtension1] {\n  i: 123\n}\n'
+    )
+    self.CompareToGoldenText(text_format.MessageToString(message), expected_str)
+    parsed = message_set_extensions_pb2.TestMessageSet()
+    text_format.Parse(expected_str, parsed)
+    self.CompareToGoldenText(text_format.MessageToString(parsed), expected_str)
+
   def testPrintMessageSetByFieldNumber(self):
     out = text_format.TextWriter(False)
     message = unittest_mset_pb2.TestMessageSetContainer()
