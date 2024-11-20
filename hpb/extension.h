@@ -320,6 +320,23 @@ constexpr uint32_t ExtensionNumber(
   return internal::PrivateAccess::GetExtensionNumber(id);
 }
 
+template <typename T>
+absl::StatusOr<T> Parse(absl::string_view bytes,
+                        const hpb::ExtensionRegistry& extension_registry,
+                        int options = 0) {
+  T message;
+  auto* arena = hpb::interop::upb::GetArena(&message);
+  upb_DecodeStatus status =
+      upb_Decode(bytes.data(), bytes.size(), message.msg(),
+                 ::hpb::interop::upb::GetMiniTable(&message),
+                 ::hpb::internal::GetUpbExtensions(extension_registry),
+                 /* options= */ 0, arena);
+  if (status == kUpb_DecodeStatus_Ok) {
+    return message;
+  }
+  return MessageDecodeError(status);
+}
+
 }  // namespace hpb
 
 #endif  // GOOGLE_PROTOBUF_HPB_EXTENSION_H__
