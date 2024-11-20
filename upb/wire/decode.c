@@ -828,7 +828,7 @@ static void upb_Decoder_AddKnownMessageSetItem(
   }
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
-      &ext->ext->UPB_PRIVATE(field), (upb_TaggedMessagePtr*)&ext->data);
+      &ext->ext->UPB_PRIVATE(field), &ext->data.tagged_msg_val);
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
       d->extreg, d->options, &d->arena);
@@ -1182,7 +1182,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = (upb_Message*)&ext->data;
+    msg = &ext->data.UPB_PRIVATE(ext_msg_val);
     if (upb_MiniTableField_IsSubMessage(&ext->ext->UPB_PRIVATE(field))) {
       ext_sub.UPB_PRIVATE(submsg) =
           &ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);

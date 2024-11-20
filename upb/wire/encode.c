@@ -547,7 +547,7 @@ static void encode_ext(upb_encstate* e, const upb_Extension* ext,
       sub.UPB_PRIVATE(subenum) =
           ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
     }
-    encode_field(e, (upb_Message*)&ext->data, &sub,
+    encode_field(e, &ext->data.UPB_PRIVATE(ext_msg_val), &sub,
                  &ext->ext->UPB_PRIVATE(field));
   }
 }
