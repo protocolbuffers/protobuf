@@ -96,7 +96,7 @@ ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
 }
 
 template <typename T>
-absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
+absl::StatusOr<T> Parse(absl::string_view bytes) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
