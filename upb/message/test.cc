@@ -7,8 +7,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -22,6 +24,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
+#include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"

@@ -381,6 +381,7 @@ cc_test(
         "//upb:eps_copy_input_stream",
         "//upb:json",
         "//upb:mem",
+        "//upb:message_compare",
         "//upb:mini_table",
         "//upb:reflection",
         "//upb:wire",
