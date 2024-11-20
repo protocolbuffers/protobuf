@@ -1244,6 +1244,56 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 #include <string.h>
 
 
+#ifndef UPB_MESSAGE_INTERNAL_TYPES_H_
+#define UPB_MESSAGE_INTERNAL_TYPES_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+#define UPB_OPAQUE(x) x##_opaque
+
+struct upb_Message {
+  union {
+    uintptr_t UPB_OPAQUE(internal);  // tagged pointer, low bit == frozen
+    double d;  // Forces same size for 32-bit/64-bit builds
+  };
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ShallowFreeze)(
+    struct upb_Message* msg) {
+  msg->UPB_OPAQUE(internal) |= 1ULL;
+}
+
+UPB_API_INLINE bool upb_Message_IsFrozen(const struct upb_Message* msg) {
+  return (msg->UPB_OPAQUE(internal) & 1ULL) != 0;
+}
+
+UPB_INLINE struct upb_Message_Internal* UPB_PRIVATE(_upb_Message_GetInternal)(
+    const struct upb_Message* msg) {
+  const uintptr_t tmp = msg->UPB_OPAQUE(internal) & ~1ULL;
+  return (struct upb_Message_Internal*)tmp;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetInternal)(
+    struct upb_Message* msg, struct upb_Message_Internal* internal) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  msg->UPB_OPAQUE(internal) = (uintptr_t)internal;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#undef UPB_OPAQUE
+
+
+#endif /* UPB_MESSAGE_INTERNAL_TYPES_H_ */
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -1268,6 +1318,14 @@ typedef union {
   // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
   // information.
   uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
+
+  // For an extension field, we are essentially treating ext->data (a
+  // upb_MessageValue) as if it were a message with one field that lives at
+  // offset 0. This works because upb_MessageValue is precisely one value that
+  // can hold any type of data. Recall that an extension can be of any type
+  // (scalar, repeated, or message). For a message extension, that will be a
+  // single upb_Message* at offset 0 of the upb_MessageValue.
+  struct upb_Message UPB_PRIVATE(ext_msg_val);
 } upb_MessageValue;
 
 UPB_API_INLINE upb_MessageValue upb_MessageValue_Zero(void) {
@@ -2342,56 +2400,6 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */
-
-#ifndef UPB_MESSAGE_INTERNAL_TYPES_H_
-#define UPB_MESSAGE_INTERNAL_TYPES_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-#define UPB_OPAQUE(x) x##_opaque
-
-struct upb_Message {
-  union {
-    uintptr_t UPB_OPAQUE(internal);  // tagged pointer, low bit == frozen
-    double d;  // Forces same size for 32-bit/64-bit builds
-  };
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE void UPB_PRIVATE(_upb_Message_ShallowFreeze)(
-    struct upb_Message* msg) {
-  msg->UPB_OPAQUE(internal) |= 1ULL;
-}
-
-UPB_API_INLINE bool upb_Message_IsFrozen(const struct upb_Message* msg) {
-  return (msg->UPB_OPAQUE(internal) & 1ULL) != 0;
-}
-
-UPB_INLINE struct upb_Message_Internal* UPB_PRIVATE(_upb_Message_GetInternal)(
-    const struct upb_Message* msg) {
-  const uintptr_t tmp = msg->UPB_OPAQUE(internal) & ~1ULL;
-  return (struct upb_Message_Internal*)tmp;
-}
-
-UPB_INLINE void UPB_PRIVATE(_upb_Message_SetInternal)(
-    struct upb_Message* msg, struct upb_Message_Internal* internal) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  msg->UPB_OPAQUE(internal) = (uintptr_t)internal;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#undef UPB_OPAQUE
-
-
-#endif /* UPB_MESSAGE_INTERNAL_TYPES_H_ */
 
 // Must be last.
 
