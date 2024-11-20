@@ -95,7 +95,7 @@ std::string ConditionalToCheckBitmasks(
 
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
-                        int* cached_has_word_index) {
+                        int* cached_has_word_index, const Options& options) {
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
@@ -105,10 +105,25 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                 cached_has_bits = $has_bits$[$index$];
               )cc");
     }
-    p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
-            R"cc(
-              if (cached_has_bits & $mask$) {
-            )cc");
+    const AccessInfoMap* info_map = options.access_info_map;
+    if (IsProfileDriven(options) && info_map->InProfile(field)) {
+      p->Emit(
+          {
+              {"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
+              {"probability",
+               absl::StrFormat("%.3f", GetPresenceProbability(field, options))},
+          },
+          R"cc(
+            if (__builtin_expect_with_probability(
+                    (cached_has_bits & $mask$) != 0, 1, $probability$)) {
+          )cc");
+    } else {
+      p->Emit(
+          {{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
+          R"cc(
+            if (cached_has_bits & $mask$) {
+          )cc");
+    }
   } else {
     p->Emit(R"cc(
       if (has_$name$()) {
@@ -1317,21 +1332,48 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"mask",
-            absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
-           {"check_nondefault_and_emit_body",
-            [&] {
-              // Note that it's possible that the field has explicit presence.
-              // In that case, nondefault check will not be emitted but
-              // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
-                                       /*with_enclosing_braces_always=*/false);
-            }}},
-          R"cc(
-            if (cached_has_bits & $mask$) {
-              $check_nondefault_and_emit_body$;
-            }
-          )cc");
+  const AccessInfoMap* info_map = options_.access_info_map;
+  if (IsProfileDriven(options_) && info_map->InProfile(field)) {
+    p->Emit(
+        {
+            {"mask",
+             absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
+            {"check_nondefault_and_emit_body",
+             [&] {
+               // Note that it's possible that the field has explicit presence.
+               // In that case, nondefault check will not be emitted but
+               // emit_body will still be emitted.
+               MayEmitIfNonDefaultCheck(p, "this_.", field,
+                                        std::move(emit_body),
+                                        /*with_enclosing_braces_always=*/false);
+             }},
+            {"probability",
+             absl::StrFormat("%.3f", GetPresenceProbability(field, options_))},
+        },
+        R"cc(
+          if (__builtin_expect_with_probability((cached_has_bits & $mask$) != 0,
+                                                1, $probability$)) {
+            $check_nondefault_and_emit_body$;
+          }
+        )cc");
+  } else {
+    p->Emit({{"mask",
+              absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
+             {"check_nondefault_and_emit_body",
+              [&] {
+                // Note that it's possible that the field has explicit presence.
+                // In that case, nondefault check will not be emitted but
+                // emit_body will still be emitted.
+                MayEmitIfNonDefaultCheck(
+                    p, "this_.", field, std::move(emit_body),
+                    /*with_enclosing_braces_always=*/false);
+              }}},
+            R"cc(
+              if (cached_has_bits & $mask$) {
+                $check_nondefault_and_emit_body$;
+              }
+            )cc");
+  }
 }
 
 void MessageGenerator::EmitUpdateByteSizeForField(
@@ -3177,7 +3219,17 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     } else {
       int index = has_bit_indices_[field->index()];
       std::string mask = absl::StrFormat("0x%08xu", 1u << (index % 32));
-      p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+      const AccessInfoMap* info_map = options_.access_info_map;
+      if (IsProfileDriven(options_) && info_map->InProfile(field)) {
+        p->Emit(
+            {{"mask", mask},
+             {"probability", absl::StrFormat("%.3f", GetPresenceProbability(
+                                                         field, options_))}},
+            "__builtin_expect_with_probability((cached_has_bits & $mask$) != 0,"
+            " 1, $probability$)");
+      } else {
+        p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+      }
     }
   };
 
@@ -3607,7 +3659,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
         }
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if (ABSL_PREDICT_FALSE(cached_has_bits & 0x$1$u)) {\n",
+               chunk_mask_str);
         format.Indent();
       }
 
@@ -3640,8 +3693,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
         if (have_enclosing_if) {
-          PrintPresenceCheck(field, has_bit_indices_, p,
-                             &cached_has_word_index);
+          PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index,
+                             options_);
           format.Indent();
         }
 
@@ -4273,7 +4326,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if (ABSL_PREDICT_FALSE(cached_has_bits & 0x$1$u)) {\n",
+               chunk_mask_str);
         format.Indent();
       }
 
@@ -4305,9 +4359,19 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // Check hasbit, using cached bits.
           ABSL_CHECK(HasHasbit(field));
           int has_bit_index = has_bit_indices_[field->index()];
+          const std::string probability =
+              absl::StrFormat("%.3f", GetPresenceProbability(field, options_));
           const std::string mask = absl::StrCat(
               absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-          format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          const AccessInfoMap* info_map = options_.access_info_map;
+          if (IsProfileDriven(options_) && info_map->InProfile(field)) {
+            format(
+                "if (__builtin_expect_with_probability((cached_has_bits & "
+                "0x$1$u) != 0, 1, $2$)) {\n",
+                mask, probability);
+          } else {
+            format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          }
           format.Indent();
 
           if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
@@ -4544,32 +4608,66 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
   PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field)) {
-    p->Emit(
-        {
-            {"body",
-             [&]() {
-               MayEmitIfNonDefaultCheck(p, "this_.", field,
-                                        std::move(emit_body),
-                                        /*with_enclosing_braces_always=*/false);
-             }},
-            {"cond",
-             [&] {
-               int has_bit_index = HasBitIndex(field);
-               auto v = p->WithVars(HasBitVars(field));
-               // Attempt to use the state of cached_has_bits, if possible.
-               if (cached_has_bits_index == has_bit_index / 32) {
-                 p->Emit("cached_has_bits & $has_mask$");
-               } else {
-                 p->Emit(
-                     "(this_.$has_bits$[$has_array_index$] & $has_mask$) != 0");
-               }
-             }},
-        },
-        R"cc(
-          if ($cond$) {
-            $body$;
-          }
-        )cc");
+    const AccessInfoMap* info_map = options_.access_info_map;
+    if (IsProfileDriven(options_) && info_map->InProfile(field)) {
+      p->Emit(
+          {
+              {"body",
+               [&]() {
+                 MayEmitIfNonDefaultCheck(
+                     p, "this_.", field, std::move(emit_body),
+                     /*with_enclosing_braces_always=*/false);
+               }},
+              {"cond",
+               [&] {
+                 int has_bit_index = HasBitIndex(field);
+                 auto v = p->WithVars(HasBitVars(field));
+                 // Attempt to use the state of cached_has_bits, if possible.
+                 if (cached_has_bits_index == has_bit_index / 32) {
+                   p->Emit("(cached_has_bits & $has_mask$) != 0");
+                 } else {
+                   p->Emit(
+                       "(this_.$has_bits$[$has_array_index$] & "
+                       "$has_mask$) != 0");
+                 }
+               }},
+              {"probability", absl::StrFormat("%.3f", GetPresenceProbability(
+                                                          field, options_))},
+          },
+          R"cc(
+            if (__builtin_expect_with_probability($cond$, , 1, $probability$)) {
+              $body$;
+            }
+          )cc");
+    } else {
+      p->Emit(
+          {
+              {"body",
+               [&]() {
+                 MayEmitIfNonDefaultCheck(
+                     p, "this_.", field, std::move(emit_body),
+                     /*with_enclosing_braces_always=*/false);
+               }},
+              {"cond",
+               [&] {
+                 int has_bit_index = HasBitIndex(field);
+                 auto v = p->WithVars(HasBitVars(field));
+                 // Attempt to use the state of cached_has_bits, if possible.
+                 if (cached_has_bits_index == has_bit_index / 32) {
+                   p->Emit("cached_has_bits & $has_mask$");
+                 } else {
+                   p->Emit(
+                       "(this_.$has_bits$[$has_array_index$] & $has_mask$) != "
+                       "0");
+                 }
+               }},
+          },
+          R"cc(
+            if ($cond$) {
+              $body$;
+            }
+          )cc");
+    }
   } else if (field->is_optional()) {
     MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
@@ -5077,6 +5175,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           auto it = chunks.begin();
           auto end = chunks.end();
           int cached_has_word_index = -1;
+          const AccessInfoMap* info_map = options_.access_info_map;
 
           while (it != end) {
             auto next =
@@ -5087,9 +5186,29 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
             while (it != next) {
               const auto& fields = it->fields;
+              // Checking presence for all fields to avoid emitting a has_byte
+              // check when at least one field is likely present.
+              //
+              // Also plumbing in the actual presence probability into the byte
+              // check. Since it's harder to compute the aggregate presence
+              // probability, we express the absence probability as
+              // (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end we express
+              // the aggregate presence probability as
+              // (1 - all_absent_probability).
+              float all_absent_probability = 1.0;
+              bool at_least_one_field_present = false;
+              bool all_fields_in_profile = IsProfileDriven(options_);
+              for (const auto* field : fields) {
+                all_absent_probability *=
+                    1 - GetPresenceProbability(field, options_);
+                at_least_one_field_present |= IsLikelyPresent(field, options_);
+                if (all_fields_in_profile) {
+                  all_fields_in_profile &= info_map->InProfile(field);
+                }
+              }
               const bool check_has_byte =
                   fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
-                  !IsLikelyPresent(fields.back(), options_);
+                  !at_least_one_field_present;
               p->Emit(
                   {{"update_byte_size_for_chunk",
                     [&] {
@@ -5130,9 +5249,20 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                       ABSL_DCHECK_LE(2, popcnt(chunk_mask));
                       ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-                      p->Emit(
-                          {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
-                          "if (cached_has_bits & $mask$)");
+                      if (!all_fields_in_profile) {
+                        p->Emit(
+                            {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
+                            "if (cached_has_bits & $mask$)");
+                      } else {
+                        p->Emit(
+                            {{"mask", absl::StrFormat("0x%08xu", chunk_mask)},
+                             {"probability",
+                              absl::StrFormat("%.3f",
+                                              1 - all_absent_probability)}},
+                            "if (__builtin_expect_with_probability("
+                            "(cached_has_bits & $mask$) != 0, 1, "
+                            "$probability$))");
+                      }
                     }}},
                   R"cc(
                     $may_update_cached_has_word_index$;

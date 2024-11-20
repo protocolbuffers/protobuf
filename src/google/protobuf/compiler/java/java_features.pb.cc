@@ -290,7 +290,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     ::memset(&_impl_.utf8_validation_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.use_old_outer_classname_default_) -
         reinterpret_cast<char*>(&_impl_.utf8_validation_)) + sizeof(_impl_.use_old_outer_classname_default_));
@@ -389,7 +389,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
