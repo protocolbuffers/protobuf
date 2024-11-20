@@ -13141,9 +13141,15 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
       return _upb_DefType_Unpack(v, UPB_DEFTYPE_FIELD);
     case UPB_DEFTYPE_MSG: {
       const upb_MessageDef* m = _upb_DefType_Unpack(v, UPB_DEFTYPE_MSG);
-      return _upb_MessageDef_InMessageSet(m)
-                 ? upb_MessageDef_NestedExtension(m, 0)
-                 : NULL;
+      if (_upb_MessageDef_InMessageSet(m)) {
+        for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
+          const upb_FieldDef* ext = upb_MessageDef_NestedExtension(m, i);
+          if (upb_FieldDef_MessageSubDef(ext) == m) {
+            return ext;
+          }
+        }
+      }
+      return NULL;
     }
     default:
       break;
