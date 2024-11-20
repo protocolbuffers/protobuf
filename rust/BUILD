@@ -69,6 +69,18 @@ PROTOBUF_SHARED = [
     # go/keep-sorted end
 ]
 
+# All Rust source files; this is used for packaging up a crate.
+ALL_RUST_SRCS = PROTOBUF_SHARED + [
+    # go/keep-sorted start
+    "cpp.rs",
+    "gtest_matchers.rs",
+    "gtest_matchers_impl.rs",
+    "protobuf.rs",
+    "upb.rs",
+    "utf8.rs",
+    # go/keep-sorted end
+]
+
 # The Rust Protobuf runtime using the upb kernel.
 #
 # `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
@@ -255,7 +267,7 @@ SRC_ROOT = "rust"
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = glob(["*"]),
+    srcs = ALL_RUST_SRCS,
     strip_prefix = strip_prefix.from_root(SRC_ROOT),
 )
 

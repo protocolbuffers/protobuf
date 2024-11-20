@@ -7,8 +7,8 @@
 
 [package]
 name = "protobuf"
-version = "4.27.3-beta.0"
-edition = "2021"
+version = "{VERSION}"
+edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 links = "libupb"
 license = "BSD-3-Clause"
 rust-version = "1.74"
