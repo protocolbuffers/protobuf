@@ -130,6 +130,42 @@ TEST(REFLECTION_TEST, RegularFields) {
 #endif  // GTEST_HAS_DEATH_TEST
 }
 
+TEST(REFLECTION_TEST, CordFields) {
+  TestAllTypes message;
+  const Reflection* refl = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+
+  for (int i = 0; i < 10; ++i) {
+    message.add_repeated_cord(StrFunc(i, 3));
+  }
+
+  // Get FieldDescriptors for all the fields of interest.
+  const FieldDescriptor* fd_repeated_string =
+      desc->FindFieldByName("repeated_string");
+  const FieldDescriptor* fd_repeated_cord =
+      desc->FindFieldByName("repeated_cord");
+
+  // Get const and mutable RepeatedField objects.
+  const RepeatedField<absl::Cord>& rf_cord =
+      refl->GetRepeatedField<absl::Cord>(message, fd_repeated_cord);
+  RepeatedField<absl::Cord>* mrf_cord =
+      refl->MutableRepeatedField<absl::Cord>(&message, fd_repeated_cord);
+
+  // Make sure we can do gets and sets through the RepeatedField objects.
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_EQ(std::string(rf_cord.Get(i)), StrFunc(i, 3));
+    *mrf_cord->Mutable(i) = StrFunc(i, -3);
+    EXPECT_EQ(std::string(message.repeated_cord(i)), StrFunc(i, -3));
+  }
+
+  // Make sure subtypes are checked correctly at runtime.
+  EXPECT_DEATH(
+      refl->GetRepeatedPtrField<std::string>(message, fd_repeated_cord),
+      "subtype mismatch");
+  EXPECT_DEATH(refl->GetRepeatedField<absl::Cord>(message, fd_repeated_string),
+               "subtype mismatch");
+}
+
 
 TEST(REFLECTION_TEST, ExtensionFields) {
   TestAllExtensions extended_message;
