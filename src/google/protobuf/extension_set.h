@@ -817,6 +817,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   // finds the already-existing Extension for that key (returns false).
   // The Extension* will point to the new-or-found Extension.
   std::pair<Extension*, bool> Insert(int key);
+  // Same as insert for the large map.
+  std::pair<Extension*, bool> InternalInsertIntoLargeMap(int key);
 
   // Grows the flat_capacity_.
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.

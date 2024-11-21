@@ -21,6 +21,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
@@ -1744,25 +1745,44 @@ ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(int key) {
       const_this->FindOrNullInLargeMap(key));
 }
 
+ABSL_ATTRIBUTE_NOINLINE
+std::pair<ExtensionSet::Extension*, bool>
+ExtensionSet::InternalInsertIntoLargeMap(int key) {
+  ABSL_DCHECK(is_large());
+  auto maybe = map_.large->insert({key, Extension()});
+  return {&maybe.first->second, maybe.second};
+}
+
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
   if (ABSL_PREDICT_FALSE(is_large())) {
-    auto maybe = map_.large->insert({key, Extension()});
-    return {&maybe.first->second, maybe.second};
+    return InternalInsertIntoLargeMap(key);
   }
-  KeyValue* end = flat_end();
-  KeyValue* it = flat_begin();
-  for (; it != end && it->first <= key; ++it) {
-    if (it->first == key) return {&it->second, false};
+  uint16_t i = flat_size_;
+  KeyValue* flat = map_.flat;
+  // Iterating from the back to benefit the case where the keys are inserted in
+  // increasing order.
+  for (; i > 0; --i) {
+    int map_key = flat[i - 1].first;
+    if (map_key == key) {
+      return {&flat[i - 1].second, false};
+    }
+    if (map_key < key) {
+      break;
+    }
   }
-  if (flat_size_ < flat_capacity_) {
-    std::copy_backward(it, end, end + 1);
-    ++flat_size_;
-    it->first = key;
-    it->second = Extension();
-    return {&it->second, true};
+  if (flat_size_ == flat_capacity_) {
+    GrowCapacity(flat_size_ + 1);
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      return InternalInsertIntoLargeMap(key);
+    }
+    flat = map_.flat;  // Reload flat pointer after GrowCapacity.
   }
-  GrowCapacity(flat_size_ + 1);
-  return Insert(key);
+
+  std::copy_backward(flat + i, flat + flat_size_, flat + flat_size_ + 1);
+  ++flat_size_;
+  flat[i].first = key;
+  flat[i].second = Extension();
+  return {&flat[i].second, true};
 }
 
 void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
