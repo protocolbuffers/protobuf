@@ -412,7 +412,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     if constexpr (std::is_same_v<T, bool>) {
       return TypeKind::kBool;
     } else if constexpr (std::is_same_v<T, int32_t> ||
-                         std::is_same_v<T, uint32_t>) {
+                         std::is_same_v<T, uint32_t> || std::is_enum_v<T>) {
+      static_assert(sizeof(T) == 4,
+                    "Only enums with the right underlying type are supported.");
       return TypeKind::kU32;
     } else if constexpr (std::is_same_v<T, int64_t> ||
                          std::is_same_v<T, uint64_t>) {

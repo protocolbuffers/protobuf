@@ -298,13 +298,31 @@ void TestGetTypeInfoDynamic(void (*)(Key...), void (*)(Value...)) {
 }
 
 TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
+  enum SomeEnum : int {};
+
   TestGetTypeInfoDynamic(
+      static_cast<void (*)(bool, int32_t, uint32_t, int64_t, uint64_t,
+                           std::string)>(nullptr),
       static_cast<void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
-                           double, std::string)>(nullptr),
-      static_cast<void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
-                           double, std::string,
+                           double, std::string, SomeEnum,
                            protobuf_unittest::TestEmptyMessage,
                            protobuf_unittest::TestAllTypes)>(nullptr));
+}
+
+TEST(MapTest, StaticTypeKindWorks) {
+  enum SomeEnum : int {};
+
+  using UMB = UntypedMapBase;
+  EXPECT_EQ(UMB::TypeKind::kBool, UMB::StaticTypeKind<bool>());
+  EXPECT_EQ(UMB::TypeKind::kU32, UMB::StaticTypeKind<int32_t>());
+  EXPECT_EQ(UMB::TypeKind::kU32, UMB::StaticTypeKind<uint32_t>());
+  EXPECT_EQ(UMB::TypeKind::kU32, UMB::StaticTypeKind<SomeEnum>());
+  EXPECT_EQ(UMB::TypeKind::kU64, UMB::StaticTypeKind<int64_t>());
+  EXPECT_EQ(UMB::TypeKind::kU64, UMB::StaticTypeKind<uint64_t>());
+  EXPECT_EQ(UMB::TypeKind::kString, UMB::StaticTypeKind<std::string>());
+  EXPECT_EQ(UMB::TypeKind::kMessage,
+            UMB::StaticTypeKind<protobuf_unittest::TestAllTypes>());
+  EXPECT_EQ(UMB::TypeKind::kUnknown, UMB::StaticTypeKind<void**>());
 }
 
 TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
