@@ -209,6 +209,11 @@ struct MapTestPeer {
   static int CalculateHiCutoff(int num_buckets) {
     return Map<int, int>::CalculateHiCutoff(num_buckets);
   }
+
+  template <typename Map>
+  static auto GetTypeInfo() {
+    return Map::GetTypeInfo();
+  }
 };
 
 namespace {

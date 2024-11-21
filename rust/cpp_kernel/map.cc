@@ -17,21 +17,17 @@ namespace protobuf {
 namespace rust {
 namespace {
 
-// LINT.IfChange(map_ffi)
-enum class MapValueTag : uint8_t {
-  kBool,
-  kU32,
-  kU64,
-  kString,
-  kMessage,
-};
+using MapValueTag = internal::UntypedMapBase::TypeKind;
 
+// LINT.IfChange(map_ffi)
 struct MapValue {
   MapValueTag tag;
   union {
     bool b;
     uint32_t u32;
     uint64_t u64;
+    float f32;
+    double f64;
     std::string* s;
     google::protobuf::MessageLite* message;
   };
@@ -65,6 +61,14 @@ void GetSizeAndAlignment(MapValue value, uint16_t* size, uint8_t* alignment) {
     case MapValueTag::kU64:
       *size = sizeof(uint64_t);
       *alignment = alignof(uint64_t);
+      break;
+    case MapValueTag::kFloat:
+      *size = sizeof(float);
+      *alignment = alignof(float);
+      break;
+    case MapValueTag::kDouble:
+      *size = sizeof(double);
+      *alignment = alignof(double);
       break;
     case MapValueTag::kString:
       *size = sizeof(std::string);
@@ -149,6 +153,12 @@ bool Insert(internal::UntypedMapBase* m, Key key, MapValue value) {
     case MapValueTag::kU64:
       *static_cast<uint64_t*>(value_ptr) = value.u64;
       break;
+    case MapValueTag::kFloat:
+      *static_cast<float*>(value_ptr) = value.f32;
+      break;
+    case MapValueTag::kDouble:
+      *static_cast<double*>(value_ptr) = value.f64;
+      break;
     case MapValueTag::kString:
       new (value_ptr) std::string(std::move(*value.s));
       delete value.s;
@@ -195,6 +205,12 @@ void PopulateMapValue(MapValueTag tag, void* data, MapValue& output) {
       break;
     case MapValueTag::kU64:
       output.u64 = *static_cast<const uint64_t*>(data);
+      break;
+    case MapValueTag::kFloat:
+      output.f32 = *static_cast<const float*>(data);
+      break;
+    case MapValueTag::kDouble:
+      output.f64 = *static_cast<const double*>(data);
       break;
     case MapValueTag::kString:
       output.s = static_cast<std::string*>(data);
@@ -294,8 +310,16 @@ void proto2_rust_thunk_UntypedMapIterator_increment(
   iter->PlusPlus();
 }
 
-google::protobuf::internal::UntypedMapBase* proto2_rust_map_new() {
-  return new google::protobuf::internal::UntypedMapBase(/* arena = */ nullptr);
+google::protobuf::internal::UntypedMapBase* proto2_rust_map_new(
+    google::protobuf::rust::MapValue key_prototype,
+    google::protobuf::rust::MapValue value_prototype) {
+  return new google::protobuf::internal::UntypedMapBase(
+      /* arena = */ nullptr,
+      google::protobuf::internal::UntypedMapBase::GetTypeInfoDynamic(
+          key_prototype.tag, value_prototype.tag,
+          value_prototype.tag == google::protobuf::rust::MapValueTag::kMessage
+              ? value_prototype.message
+              : nullptr));
 }
 
 size_t proto2_rust_map_size(google::protobuf::internal::UntypedMapBase* m) {

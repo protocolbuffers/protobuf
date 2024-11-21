@@ -7,6 +7,7 @@
 
 #include "google/protobuf/map.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -269,6 +270,41 @@ TEST(MapTest, SizeTypeIsSizeT) {
   size_t x = 0;
   x = std::max(M().size(), x);
   (void)x;
+}
+
+template <typename Key, typename Value>
+void TestGetTypeInfoDynamicImpl() {
+  const MessageLite* value_prototype = nullptr;
+  if constexpr (std::is_base_of_v<MessageLite, Value>) {
+    value_prototype = &Value::default_instance();
+  }
+  const auto type_info = MapTestPeer::GetTypeInfo<Map<Key, Value>>();
+  const auto dyn_type_info = internal::UntypedMapBase::GetTypeInfoDynamic(
+      type_info.key_type, type_info.value_type, value_prototype);
+  EXPECT_EQ(dyn_type_info.node_size, type_info.node_size);
+  EXPECT_EQ(dyn_type_info.value_offset, type_info.value_offset);
+  EXPECT_EQ(dyn_type_info.key_type, type_info.key_type);
+  EXPECT_EQ(dyn_type_info.value_type, type_info.value_type);
+}
+
+template <typename... Key, typename... Value>
+void TestGetTypeInfoDynamic(void (*)(Key...), void (*)(Value...)) {
+  (
+      []() {
+        using K = Key;
+        (TestGetTypeInfoDynamicImpl<K, Value>(), ...);
+      }(),
+      ...);
+}
+
+TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
+  TestGetTypeInfoDynamic(
+      static_cast<void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
+                           double, std::string)>(nullptr),
+      static_cast<void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
+                           double, std::string,
+                           protobuf_unittest::TestEmptyMessage,
+                           protobuf_unittest::TestAllTypes)>(nullptr));
 }
 
 TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {

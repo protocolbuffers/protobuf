@@ -393,10 +393,62 @@ class PROTOBUF_EXPORT UntypedMapBase {
  public:
   using size_type = size_t;
 
-  explicit constexpr UntypedMapBase(Arena* arena)
+  // Possible types that a key/value can take.
+  // LINT.IfChange(map_ffi)
+  enum class TypeKind : uint8_t {
+    kBool,     // bool
+    kU32,      // int32_t, uint32_t, enums
+    kU64,      // int64_t, uint64_t
+    kFloat,    // float
+    kDouble,   // double
+    kString,   // std::string
+    kMessage,  // Derived from MessageLite
+    kUnknown,  // For DynamicMapField for now
+  };
+  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
+
+  template <typename T>
+  static constexpr TypeKind StaticTypeKind() {
+    if constexpr (std::is_same_v<T, bool>) {
+      return TypeKind::kBool;
+    } else if constexpr (std::is_same_v<T, int32_t> ||
+                         std::is_same_v<T, uint32_t>) {
+      return TypeKind::kU32;
+    } else if constexpr (std::is_same_v<T, int64_t> ||
+                         std::is_same_v<T, uint64_t>) {
+      return TypeKind::kU64;
+    } else if constexpr (std::is_same_v<T, float>) {
+      return TypeKind::kFloat;
+    } else if constexpr (std::is_same_v<T, double>) {
+      return TypeKind::kDouble;
+    } else if constexpr (std::is_same_v<T, std::string>) {
+      return TypeKind::kString;
+    } else if constexpr (std::is_base_of_v<MessageLite, T>) {
+      return TypeKind::kMessage;
+    } else {
+      return TypeKind::kUnknown;
+    }
+  }
+
+  struct TypeInfo {
+    // Equivalent to `sizeof(Node)` in the derived type.
+    uint16_t node_size;
+    // Equivalent to `offsetof(Node, kv.second)` in the derived type.
+    uint8_t value_offset;
+    TypeKind key_type : 4;
+    TypeKind value_type : 4;
+  };
+  static_assert(sizeof(TypeInfo) == 4);
+
+  static TypeInfo GetTypeInfoDynamic(
+      TypeKind key_type, TypeKind value_type,
+      const MessageLite* value_prototype_if_message);
+
+  explicit constexpr UntypedMapBase(Arena* arena, TypeInfo type_info)
       : num_elements_(0),
         num_buckets_(internal::kGlobalEmptyTableSize),
         index_of_first_non_null_(internal::kGlobalEmptyTableSize),
+        type_info_(type_info),
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
         alloc_(arena) {}
 
@@ -414,6 +466,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
     std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
+    std::swap(type_info_, other->type_info_);
     std::swap(table_, other->table_);
     std::swap(alloc_, other->alloc_);
   }
@@ -557,6 +610,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
+  TypeInfo type_info_;
   NodeBase** table_;  // an array with num_buckets_ entries
   Allocator alloc_;
 };
@@ -952,12 +1006,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using size_type = size_t;
   using hasher = absl::Hash<typename TS::ViewType>;
 
-  constexpr Map() : Base(nullptr) { StaticValidityCheck(); }
+  constexpr Map() : Base(nullptr, GetTypeInfo()) { StaticValidityCheck(); }
   Map(const Map& other) : Map(nullptr, other) {}
 
   // Internal Arena constructors: do not use!
   // TODO: remove non internal ctors
-  explicit Map(Arena* arena) : Base(arena) { StaticValidityCheck(); }
+  explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
+    StaticValidityCheck();
+  }
   Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
   Map(internal::InternalVisibility, Arena* arena, const Map& other)
       : Map(arena, other) {}
@@ -997,7 +1053,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
  private:
-  Map(Arena* arena, const Map& other) : Base(arena) {
+  Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
     insert(other.begin(), other.end());
   }
@@ -1385,6 +1441,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
     value_type kv;
   };
+
+  static constexpr auto GetTypeInfo() {
+    return internal::UntypedMapBase::TypeInfo{
+        sizeof(Node),
+        PROTOBUF_FIELD_OFFSET(Node, kv.second),
+        internal::UntypedMapBase::StaticTypeKind<Key>(),
+        internal::UntypedMapBase::StaticTypeKind<T>(),
+    };
+  }
 
   void DestroyNode(Node* node) {
     if (this->alloc_.arena() == nullptr) {

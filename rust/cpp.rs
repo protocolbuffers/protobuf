@@ -790,23 +790,28 @@ impl UntypedMapIterator {
 #[doc(hidden)]
 #[repr(u8)]
 #[derive(Debug, PartialEq)]
+// Copy of UntypedMapBase::TypeKind
 pub enum MapValueTag {
     Bool,
     U32,
     U64,
+    F32,
+    F64,
     String,
     Message,
+    Unknown,
 }
-
-// For the purposes of FFI, we treat all numeric types of a given size the same
-// way. For example, u32, i32, and f32 values are all represented as a u32.
-// Likewise, u64, i64, and f64 values are all stored in a u64.
+// For the purposes of FFI, we treat all integral types of a given size the same
+// way. For example, u32 and i32 values are all represented as a u32.
+// Likewise, u64 and i64 values are all stored in a u64.
 #[doc(hidden)]
 #[repr(C)]
 pub union MapValueUnion {
     pub b: bool,
     pub u: u32,
     pub uu: u64,
+    pub f: f32,
+    pub ff: f64,
     // Generally speaking, if s is set then it should not be None. However, we
     // do set it to None in the special case where the MapValue is just a
     // "prototype" (see below). In that scenario, we just want to indicate the
@@ -836,6 +841,14 @@ impl MapValue {
 
     fn make_u64(uu: u64) -> Self {
         MapValue { tag: MapValueTag::U64, val: MapValueUnion { uu } }
+    }
+
+    pub fn make_f32(f: f32) -> Self {
+        MapValue { tag: MapValueTag::F32, val: MapValueUnion { f } }
+    }
+
+    fn make_f64(ff: f64) -> Self {
+        MapValue { tag: MapValueTag::F64, val: MapValueUnion { ff } }
     }
 
     fn make_string(s: CppStdString) -> Self {
@@ -921,27 +934,27 @@ impl CppMapTypeConversions for i64 {
 
 impl CppMapTypeConversions for f32 {
     fn get_prototype() -> MapValue {
-        MapValue::make_u32(0)
+        MapValue::make_f32(0f32)
     }
     fn to_map_value(self) -> MapValue {
-        MapValue::make_u32(self.to_bits())
+        MapValue::make_f32(self)
     }
     unsafe fn from_map_value<'a>(value: MapValue) -> View<'a, Self> {
-        debug_assert_eq!(value.tag, MapValueTag::U32);
-        unsafe { Self::from_bits(value.val.u) }
+        debug_assert_eq!(value.tag, MapValueTag::F32);
+        unsafe { value.val.f }
     }
 }
 
 impl CppMapTypeConversions for f64 {
     fn get_prototype() -> MapValue {
-        MapValue::make_u64(0)
+        MapValue::make_f64(0.0)
     }
     fn to_map_value(self) -> MapValue {
-        MapValue::make_u64(self.to_bits())
+        MapValue::make_f64(self)
     }
     unsafe fn from_map_value<'a>(value: MapValue) -> View<'a, Self> {
-        debug_assert_eq!(value.tag, MapValueTag::U64);
-        unsafe { Self::from_bits(value.val.uu) }
+        debug_assert_eq!(value.tag, MapValueTag::F64);
+        unsafe { value.val.ff }
     }
 }
 
@@ -1099,11 +1112,16 @@ generate_map_key_impl!(
 
 impl<Key, Value> ProxiedInMapValue<Key> for Value
 where
-    Key: Proxied + MapKey,
+    Key: Proxied + MapKey + CppMapTypeConversions,
     Value: Proxied + CppMapTypeConversions,
 {
     fn map_new(_private: Private) -> Map<Key, Self> {
-        unsafe { Map::from_inner(Private, InnerMap::new(proto2_rust_map_new())) }
+        unsafe {
+            Map::from_inner(
+                Private,
+                InnerMap::new(proto2_rust_map_new(Key::get_prototype(), Value::get_prototype())),
+            )
+        }
     }
 
     unsafe fn map_free(_private: Private, map: &mut Map<Key, Self>) {
@@ -1241,7 +1259,7 @@ impl_map_primitives!(
 extern "C" {
     fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
 
-    pub fn proto2_rust_map_new() -> RawMap;
+    pub fn proto2_rust_map_new(key_prototype: MapValue, value_prototype: MapValue) -> RawMap;
     pub fn proto2_rust_map_size(m: RawMap) -> usize;
     pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
 }
