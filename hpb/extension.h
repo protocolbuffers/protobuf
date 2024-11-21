@@ -301,7 +301,7 @@ GetExtension(
           upb_MiniTableExtension_Number(id.mini_table_ext()));
     }
     return Ptr<const Extension>(::hpb::interop::upb::MakeCHandle<Extension>(
-        (upb_Message*)value.msg_val, hpb::interop::upb::GetArena(message)));
+        value.msg_val, hpb::interop::upb::GetArena(message)));
   }
 }
 
