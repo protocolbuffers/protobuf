@@ -1065,10 +1065,11 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed>
       inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
-      MutableRepeatedExtension(
-          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id)
-          ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          PROTOBUF_NONNULL
+          MutableRepeatedExtension(
+              const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                               _field_type, _is_packed>& id)
+              ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list_mutable$;
         return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
@@ -1451,8 +1452,8 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           template <typename = void>
           explicit PROTOBUF_CONSTEXPR $classname$(
               ::$proto_ns$::internal::ConstantInitialized);
-          explicit $classname$(::$proto_ns$::Arena* arena);
-          static const $classname$* internal_default_instance() {
+          explicit $classname$(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
+          static const $classname$* PROTOBUF_NONNULL internal_default_instance() {
             return reinterpret_cast<const $classname$*>(
                 &_$classname$_default_instance_);
           }
@@ -1468,9 +1469,10 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           $parse_decls$;
           $decl_annotate$;
 
-          const $pbi$::ClassData* GetClassData() const PROTOBUF_FINAL;
-          static void* PlacementNew_(const void*, void* mem,
-                                     ::$proto_ns$::Arena* arena);
+          const $pbi$::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+          static void* PROTOBUF_NONNULL PlacementNew_(
+              const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
           static constexpr auto InternalNewImpl_();
         };
         $dllexport_decl $extern const $pbi$::ClassDataFull $classname$_class_data_;
@@ -1565,7 +1567,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                     };
                     static_assert(std::is_trivially_copy_constructible<Split>::value);
                     static_assert(std::is_trivially_destructible<Split>::value);
-                    Split* _split_;
+                    Split* PROTOBUF_NONNULL _split_;
                   )cc");
         }},
        {"oneof_members",
@@ -1638,11 +1640,15 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           //~ outline dtor.
           inline explicit constexpr Impl_(
               ::$proto_ns$::internal::ConstantInitialized) noexcept;
-          inline explicit Impl_($pbi$::InternalVisibility visibility,
-                                ::$proto_ns$::Arena* arena);
-          inline explicit Impl_($pbi$::InternalVisibility visibility,
-                                ::$proto_ns$::Arena* arena, const Impl_& from,
-                                const $classname$& from_msg);
+          inline explicit Impl_(
+              //~
+              $pbi$::InternalVisibility visibility,
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
+          inline explicit Impl_(
+              //~
+              $pbi$::InternalVisibility visibility,
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+              const $classname$& from_msg);
           //~ Members assumed to align to 8 bytes:
           $extension_set$;
           $tracker$;
@@ -1669,7 +1675,9 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
   p->Emit(
-      {{"any_methods",
+      {{"nonnull", "PROTOBUF_NONNULL"},
+       {"nullable", "PROTOBUF_NULLABLE"},
+       {"any_methods",
         [&] {
           if (HasDescriptorMethods(descriptor_->file(), options_)) {
             p->Emit(
@@ -1686,14 +1694,16 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                         message, type_url_prefix, mutable_type_url(),
                         _internal_mutable_value());
                   }
-                  bool UnpackTo(::$proto_ns$::Message* message) const {
+                  bool UnpackTo(::$proto_ns$::Message* $nonnull$ message) const {
                     return ::$proto_ns$::internal::InternalUnpackTo(
                         _internal_type_url(), _internal_value(), message);
                   }
                   static bool GetAnyFieldDescriptors(
                       const ::$proto_ns$::Message& message,
-                      const ::$proto_ns$::FieldDescriptor** type_url_field,
-                      const ::$proto_ns$::FieldDescriptor** value_field);
+                      const ::$proto_ns$::FieldDescriptor* $nullable$* $nonnull$
+                          type_url_field,
+                      const ::$proto_ns$::FieldDescriptor* $nullable$* $nonnull$
+                          value_field);
                   template <
                       typename T,
                       class = typename std::enable_if<!std::is_convertible<
@@ -1716,7 +1726,7 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                       typename T,
                       class = typename std::enable_if<!std::is_convertible<
                           T, const ::$proto_ns$::Message&>::value>::type>
-                  bool UnpackTo(T* message) const {
+                  bool UnpackTo(T* $nonnull$ message) const {
                     return ::$proto_ns$::internal::InternalUnpackTo<T>(
                         _internal_type_url(), _internal_value(), message);
                   }
@@ -1737,7 +1747,7 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                         _internal_mutable_value());
                   }
                   template <typename T>
-                  bool UnpackTo(T* message) const {
+                  bool UnpackTo(T* $nonnull$ message) const {
                     return ::$proto_ns$::internal::InternalUnpackTo(
                         _internal_type_url(), _internal_value(), message);
                   }
@@ -1755,7 +1765,7 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
           return ::$proto_ns$::internal::InternalIs<T>(_internal_type_url());
         }
         static bool ParseAnyTypeUrl(::absl::string_view type_url,
-                                    std::string* full_type_name);
+                                    std::string* $nonnull$ full_type_name);
       )cc");
 }
 
@@ -1783,6 +1793,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         }},
        {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
        {"decl_verify_func", [&] { GenerateVerifyDecl(p); }},
+       {"nnull", "PROTOBUF_NONNULL"},
        {"descriptor_accessor",
         [&] {
           // Only generate this member if it's not disabled.
@@ -1792,7 +1803,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
 
           p->Emit(R"cc(
-            static const ::$proto_ns$::Descriptor* descriptor() {
+            static const ::$proto_ns$::Descriptor* $nnull$ descriptor() {
               return GetDescriptor();
             }
           )cc");
@@ -1810,10 +1821,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
 
           p->Emit(R"cc(
-            static const ::$proto_ns$::Descriptor* GetDescriptor() {
+            static const ::$proto_ns$::Descriptor* $nnull$ GetDescriptor() {
               return default_instance().GetMetadata().descriptor;
             }
-            static const ::$proto_ns$::Reflection* GetReflection() {
+            static const ::$proto_ns$::Reflection* $nnull$ GetReflection() {
               return default_instance().GetMetadata().reflection;
             }
           )cc");
@@ -1939,22 +1950,24 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
               static ::size_t ByteSizeLong(const ::$proto_ns$::MessageLite& msg);
-              static $uint8$* _InternalSerialize(
-                  const MessageLite& msg, $uint8$* target,
-                  ::$proto_ns$::io::EpsCopyOutputStream* stream);
+              static $uint8$* $nnull$ _InternalSerialize(
+                  const MessageLite& msg, $uint8$* $nnull$ target,
+                  ::$proto_ns$::io::EpsCopyOutputStream* $nnull$ stream);
 
               public:
               ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-              $uint8$* _InternalSerialize(
-                  $uint8$* target,
-                  ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+              $uint8$* $nnull$ _InternalSerialize(
+                  $uint8$* $nnull$ target,
+                  ::$proto_ns$::io::EpsCopyOutputStream* $nnull$ stream) const {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
               ::size_t ByteSizeLong() const final;
-              $uint8$* _InternalSerialize(
-                  $uint8$* target,
-                  ::$proto_ns$::io::EpsCopyOutputStream* stream) const final;
+              $uint8$* $nnull$ _InternalSerialize(
+                  //~
+                  $uint8$* $nnull$ target,
+                  ::$proto_ns$::io::EpsCopyOutputStream* $nnull$
+                      stream) const final;
 #endif  // PROTOBUF_CUSTOM_VTABLE
             )cc");
           }
@@ -1976,9 +1989,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 int GetCachedSize() const { return $cached_size$.Get(); }
 
                 private:
-                void SharedCtor(::$proto_ns$::Arena* arena);
+                void SharedCtor(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
                 static void SharedDtor(MessageLite& self);
-                void InternalSwap($classname$* other);
+                void InternalSwap($classname$* $nnull$ other);
               )cc");
         }},
        {"arena_dtor",
@@ -1987,7 +2000,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             case ArenaDtorNeeds::kOnDemand:
               p->Emit(R"cc(
                 private:
-                static void ArenaDtor(void* object);
+                static void ArenaDtor(void* $nnull$ object);
                 static void OnDemandRegisterArenaDtor(
                     MessageLite& msg, ::$proto_ns$::Arena& arena) {
                   auto& this_ = static_cast<$classname$&>(msg);
@@ -2002,7 +2015,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             case ArenaDtorNeeds::kRequired:
               p->Emit(R"cc(
                 private:
-                static void ArenaDtor(void* object);
+                static void ArenaDtor(void* $nnull$ object);
               )cc");
               break;
             case ArenaDtorNeeds::kNone:
@@ -2108,9 +2121,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!NeedsPostLoopHandler(descriptor_, options_)) return;
           p->Emit(R"cc(
-            static const char* PostLoopHandler(MessageLite* msg,
-                                               const char* ptr,
-                                               $pbi$::ParseContext* ctx);
+            static const char* PROTOBUF_NULLABLE PostLoopHandler(
+                MessageLite* $nnull$ msg, const char* PROTOBUF_NULLABLE ptr,
+                $pbi$::ParseContext* $nnull$ ctx);
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
@@ -2136,7 +2149,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           //~ Define a derived `operator delete` to avoid dynamic dispatch when
           //~ the type is statically known
-          void operator delete($classname$* msg, std::destroying_delete_t) {
+          void operator delete($classname$* $nnull$ msg, std::destroying_delete_t) {
             SharedDtor(*msg);
             $pbi$::SizedDelete(msg, sizeof($classname$));
           }
@@ -2171,7 +2184,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             $annotate_unknown_fields$;
             return $unknown_fields$;
           }
-          inline $unknown_fields_type$* mutable_unknown_fields()
+          inline $unknown_fields_type$* $nnull$ mutable_unknown_fields()
               ABSL_ATTRIBUTE_LIFETIME_BOUND {
             $annotate_mutable_unknown_fields$;
             return $mutable_unknown_fields$;
@@ -2187,7 +2200,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           static constexpr int kIndexInFileMessages = $index_in_file_messages$;
           $decl_any_methods$;
           friend void swap($classname$& a, $classname$& b) { a.Swap(&b); }
-          inline void Swap($classname$* other) {
+          inline void Swap($classname$* $nnull$ other) {
             if (other == this) return;
             if ($pbi$::CanUseInternalSwap(GetArena(), other->GetArena())) {
               InternalSwap(other);
@@ -2195,7 +2208,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               $pbi$::GenericSwap(this, other);
             }
           }
-          void UnsafeArenaSwap($classname$* other) {
+          void UnsafeArenaSwap($classname$* $nnull$ other) {
             if (other == this) return;
             $DCHK$(GetArena() == other->GetArena());
             InternalSwap(other);
@@ -2203,7 +2216,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const {
+          $classname$* $nnull$
+          New(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;
@@ -2226,16 +2240,24 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ deriving from protos to give access to this constructor,
           //~ breaking the invariants we rely on.
          protected:
-          explicit $classname$(::$proto_ns$::Arena* arena);
-          $classname$(::$proto_ns$::Arena* arena, const $classname$& from);
-          $classname$(::$proto_ns$::Arena* arena, $classname$&& from) noexcept
+          explicit $classname$(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
+          $classname$(
+              //~
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena,
+              const $classname$& from);
+          $classname$(
+              //~
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena,
+              $classname$&& from) noexcept
               : $classname$(arena) {
             *this = ::std::move(from);
           }
           $arena_dtor$;
-          const $pbi$::ClassData* GetClassData() const PROTOBUF_FINAL;
-          static void* PlacementNew_(const void*, void* mem,
-                                     ::$proto_ns$::Arena* arena);
+          const $pbi$::ClassData* $nnull$ GetClassData() const PROTOBUF_FINAL;
+          static void* $nnull$ PlacementNew_(
+              //~
+              const void* $nnull$, void* $nnull$ mem,
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena);
           static constexpr auto InternalNewImpl_();
 
          public:
@@ -2340,38 +2362,40 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
 
   if (IsMapEntryMessage(descriptor_)) {
-    p->Emit({{"annotate_accessors",
-              [&] {
-                if (!options_.annotate_accessor) return;
-                for (auto f : FieldRange(descriptor_)) {
-                  p->Emit({{"field", FieldName(f)}},
-                          R"cc(
-                            volatile bool $classname$::$field$_AccessedNoStrip;
-                          )cc");
-                }
-              }},
-             {"verify",
-              [&] {
-                // Delegates generating verify function as only a subset of map
-                // entry messages need it; i.e. UTF8 string key/value or message
-                // type value.
-                GenerateVerify(p);
-              }},
-             {"class_data", [&] { GenerateClassData(p); }}},
-            R"cc(
+    p->Emit(
+        {{"annotate_accessors",
+          [&] {
+            if (!options_.annotate_accessor) return;
+            for (auto f : FieldRange(descriptor_)) {
+              p->Emit({{"field", FieldName(f)}},
+                      R"cc(
+                        volatile bool $classname$::$field$_AccessedNoStrip;
+                      )cc");
+            }
+          }},
+         {"verify",
+          [&] {
+            // Delegates generating verify function as only a subset of map
+            // entry messages need it; i.e. UTF8 string key/value or message
+            // type value.
+            GenerateVerify(p);
+          }},
+         {"class_data", [&] { GenerateClassData(p); }}},
+        R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              $classname$::$classname$()
-                  : SuperType($classname$_class_data_.base()) {}
-              $classname$::$classname$(::$proto_ns$::Arena* arena)
-                  : SuperType(arena, $classname$_class_data_.base()) {}
+          $classname$::$classname$()
+              : SuperType($classname$_class_data_.base()) {}
+          $classname$::$classname$(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena)
+              : SuperType(arena, $classname$_class_data_.base()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
-              $classname$::$classname$() : SuperType() {}
-              $classname$::$classname$(::$proto_ns$::Arena* arena) : SuperType(arena) {}
+          $classname$::$classname$() : SuperType() {}
+          $classname$::$classname$(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena)
+              : SuperType(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
-              $annotate_accessors$;
-              $verify$;
-              $class_data$;
-            )cc");
+          $annotate_accessors$;
+          $verify$;
+          $class_data$;
+        )cc");
     parse_function_generator_->GenerateDataDefinitions(p);
     return;
   }
@@ -2394,7 +2418,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
             R"cc(
               $any_field_descriptor$;
               bool $classname$::ParseAnyTypeUrl(::absl::string_view type_url,
-                                                std::string* full_type_name) {
+                                                std::string* PROTOBUF_NONNULL
+                                                    full_type_name) {
                 return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);
               }
             )cc");
@@ -2535,9 +2560,10 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
                     [&] {
                     }}},
                   R"cc(
-                    const char* $classname$::PostLoopHandler(
-                        MessageLite* msg, const char* ptr,
-                        ::_pbi::ParseContext* ctx) {
+                    const char* PROTOBUF_NULLABLE $classname$::PostLoopHandler(
+                        MessageLite* PROTOBUF_NONNULL msg,
+                        const char* PROTOBUF_NULLABLE ptr,
+                        ::_pbi::ParseContext* PROTOBUF_NONNULL ctx) {
                       $classname$* _this = static_cast<$classname$*>(msg);
                       $annotate_deserialize$;
                       $required$;
@@ -2892,11 +2918,11 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
           R"cc(
             PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
                 $pbi$::InternalVisibility visibility,
-                ::$proto_ns$::Arena* arena)
+                ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena)
                 //~
                 $init_impl$ {}
 
-            inline void $classname$::SharedCtor(::_pb::Arena* arena) {
+            inline void $classname$::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
               new (&_impl_) Impl_(internal_visibility(), arena);
               $zero_init$;
             }
@@ -3045,7 +3071,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
            }},
       },
       R"cc(
-        void $classname$::ArenaDtor(void* object) {
+        void $classname$::ArenaDtor(void* PROTOBUF_NONNULL object) {
           $classname$* _this = reinterpret_cast<$classname$*>(object);
           $field_dtors$;
           $split_field_dtors$;
@@ -3299,8 +3325,9 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
         {{"init", [&] { GenerateImplMemberInit(p, InitType::kArenaCopy); }}},
         R"cc(
           PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
-              $pbi$::InternalVisibility visibility, ::$proto_ns$::Arena* arena,
-              const Impl_& from, const $classtype$& from_msg)
+              $pbi$::InternalVisibility visibility,
+              ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+              const $classtype$& from_msg)
               //~
               $init$ {}
         )cc");
@@ -3354,7 +3381,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
           R"cc(
             $classname$::$classname$(
                 //~ force alignment
-                ::$proto_ns$::Arena* arena,
+                ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena,
                 //~ force alignment
                 const $classname$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -3406,7 +3433,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
            }},
       },
       R"cc(
-        $classname$::$classname$(::$proto_ns$::Arena* arena)
+        $classname$::$classname$(::$proto_ns$::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             : $superclass$(arena, $classname$_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3426,7 +3453,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     p->Emit(R"cc(
       $classname$::$classname$(
           //~ Force alignment
-          ::$proto_ns$::Arena* arena, const $classname$& from)
+          ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena, const $classname$& from)
           : $classname$(arena) {
         MergeFrom(from);
       }
@@ -3435,7 +3462,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     p->Emit(R"cc(
       $classname$::$classname$(
           //~ Force alignment
-          ::$proto_ns$::Arena* arena, const $classname$& from)
+          ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena, const $classname$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           : $superclass$(arena, $classname$_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3485,13 +3512,17 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   Formatter format(p);
   if (ShouldGenerateExternSpecializations(options_) &&
       ShouldGenerateClass(descriptor_, options_)) {
+    // clang-format off
     p->Emit(R"cc(
-      template void* Arena::DefaultConstruct<$classtype$>(Arena*);
+      template void* PROTOBUF_NONNULL Arena::DefaultConstruct<$classtype$>(Arena* PROTOBUF_NULLABLE);
     )cc");
+    // clang-format on
     if (!IsMapEntryMessage(descriptor_)) {
+      // clang-format off
       p->Emit(R"cc(
-        template void* Arena::CopyConstruct<$classtype$>(Arena*, const void*);
+        template void* PROTOBUF_NONNULL Arena::CopyConstruct<$classtype$>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
       )cc");
+      // clang-format on
     }
   }
 }
@@ -3750,8 +3781,8 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
   Formatter format(p);
 
   format(
-      "void $classname$::InternalSwap($classname$* PROTOBUF_RESTRICT other) "
-      "{\n");
+      "void $classname$::InternalSwap($classname$* PROTOBUF_RESTRICT "
+      "PROTOBUF_NONNULL other) {\n");
   format.Indent();
   format("using std::swap;\n");
   format("$WeakDescriptorSelfPin$");
@@ -3978,8 +4009,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   // object might be too large for arena seeding.
   // We mark `inline` to avoid library bloat if the function is unused.
   p->Emit(R"cc(
-    inline void* $classname$::PlacementNew_(const void*, void* mem,
-                                            ::$proto_ns$::Arena* arena) {
+    inline void* PROTOBUF_NONNULL $classname$::PlacementNew_(
+        const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+        ::$proto_ns$::Arena* PROTOBUF_NULLABLE arena) {
       return ::new (mem) $classname$(arena);
     }
   )cc");
@@ -4135,7 +4167,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                   $classname$_class_data_ =
                       $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $classname$::GetClassData() const {
+          const $pbi$::ClassData* PROTOBUF_NONNULL $classname$::GetClassData() const {
             $pin_weak_descriptor$;
             $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
             $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
@@ -4180,7 +4212,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $classname$::GetClassData() const {
+          const $pbi$::ClassData* PROTOBUF_NONNULL $classname$::GetClassData() const {
             return $classname$_class_data_.base();
           }
         )cc");
@@ -4609,14 +4641,15 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
     // Special-case MessageSet.
     p->Emit(R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      $uint8$* $classname$::_InternalSerialize(
-          const MessageLite& base, $uint8$* target,
-          ::$proto_ns$::io::EpsCopyOutputStream* stream) {
+      $uint8$* PROTOBUF_NONNULL $classname$::_InternalSerialize(
+          const MessageLite& base, $uint8$* PROTOBUF_NONNULL target,
+          ::$proto_ns$::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
         const $classname$& this_ = static_cast<const $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-      $uint8$* $classname$::_InternalSerialize(
-          $uint8$* target,
-          ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+      $uint8$* PROTOBUF_NONNULL $classname$::_InternalSerialize(
+          $uint8$* PROTOBUF_NONNULL target,
+          ::$proto_ns$::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+              stream) const {
         const $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
         $annotate_serialize$ target =
@@ -4656,14 +4689,15 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       },
       R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        $uint8$* $classname$::_InternalSerialize(
-            const MessageLite& base, $uint8$* target,
-            ::$proto_ns$::io::EpsCopyOutputStream* stream) {
+        $uint8$* PROTOBUF_NONNULL $classname$::_InternalSerialize(
+            const MessageLite& base, $uint8$* PROTOBUF_NONNULL target,
+            ::$proto_ns$::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
           const $classname$& this_ = static_cast<const $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
         $uint8$* $classname$::_InternalSerialize(
-            $uint8$* target,
-            ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
+            $uint8$* PROTOBUF_NONNULL target,
+            ::$proto_ns$::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                stream) const {
           const $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $annotate_serialize$;

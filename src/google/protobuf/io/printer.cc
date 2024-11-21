@@ -158,6 +158,10 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
     if (format.is_raw_string) {
       size_t comment_index = line_text.find(options_.ignored_comment_start);
       if (comment_index != absl::string_view::npos) {
+        // If the first lines are an ignored comment, consider that a
+        // first line as well (since we consumed the indent for that line during
+        // the raw_string_indent processing).
+        if (is_first) is_first = false;
         line_text = line_text.substr(0, comment_index);
         if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
           continue;

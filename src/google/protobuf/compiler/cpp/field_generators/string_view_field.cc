@@ -642,23 +642,24 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"set_", "add_"}, AnnotationCollector::kSet));
   auto v3 = p->WithVars(
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
+  auto v4 = p->WithVars({{"nonnull", "PROTOBUF_NONNULL"}});
 
   p->Emit(R"cc(
     $DEPRECATED$ absl::string_view $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, const std::string& value);
     $DEPRECATED$ void $set_name$(int index, std::string&& value);
-    $DEPRECATED$ void $set_name$(int index, const char* value);
+    $DEPRECATED$ void $set_name$(int index, const char* $nonnull$ value);
     $DEPRECATED$ void $set_name$(int index, absl::string_view value);
     $DEPRECATED$ void $add_name$(const std::string& value);
     $DEPRECATED$ void $add_name$(std::string&& value);
-    $DEPRECATED$ void $add_name$(const char* value);
+    $DEPRECATED$ void $add_name$(const char* $nonnull$ value);
     $DEPRECATED$ void $add_name$(absl::string_view value);
     $DEPRECATED$ const $pb$::RepeatedPtrField<std::string>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $mutable_name$();
+    $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $nonnull$ $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<std::string>& _internal_$name$() const;
-    $pb$::RepeatedPtrField<std::string>* _internal_mutable_$name$();
+    $pb$::RepeatedPtrField<std::string>* $nonnull$ _internal_mutable_$name$();
 
     public:
   )cc");
@@ -687,7 +688,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
               $annotate_set$;
               // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
             }
-            inline void $Msg$::set_$name$(int index, const char* value) {
+            inline void $Msg$::set_$name$(int index, const char* PROTOBUF_NONNULL value) {
               $WeakDescriptorSelfPin$;
               $DCHK$(value != nullptr);
               _internal_mutable_$name_internal$()->Mutable(index)->assign(value);
@@ -715,7 +716,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
               $annotate_add$;
               // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
             }
-            inline void $Msg$::add_$name$(const char* value) {
+            inline void $Msg$::add_$name$(const char* PROTOBUF_NONNULL value) {
               $WeakDescriptorSelfPin$;
               $DCHK$(value != nullptr);
               $TsanDetectConcurrentMutation$;
@@ -738,7 +739,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
               // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
               return _internal_$name_internal$();
             }
-            inline ::$proto_ns$::RepeatedPtrField<std::string>*
+            inline ::$proto_ns$::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
             $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $WeakDescriptorSelfPin$;
               $annotate_mutable_list$;
@@ -754,7 +755,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedPtrField<std::string>*
+      inline $pb$::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
@@ -772,7 +773,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline ::$proto_ns$::RepeatedPtrField<std::string>*
+      inline ::$proto_ns$::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
