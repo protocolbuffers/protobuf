@@ -5416,6 +5416,8 @@ UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
 
+uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
+
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   uint32_t max_depth = upb_DecodeOptions_GetMaxDepth(decode_options);
@@ -5515,6 +5517,8 @@ UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
 UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
+
+uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options);
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
