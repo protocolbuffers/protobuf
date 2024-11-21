@@ -192,7 +192,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit(R"cc(
-      $dllexport_decl $const ::$proto_ns$::EnumDescriptor*
+      $dllexport_decl $const ::$proto_ns$::EnumDescriptor* PROTOBUF_NONNULL
       $Msg_Enum$_descriptor();
     )cc");
   } else {
@@ -250,14 +250,16 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit(R"cc(
-      inline bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value) {
+      inline bool $Msg_Enum$_Parse(absl::string_view name,
+                                   $Msg_Enum$* PROTOBUF_NONNULL value) {
         return ::$proto_ns$::internal::ParseNamedEnum<$Msg_Enum$>(
             $Msg_Enum$_descriptor(), name, value);
       }
     )cc");
   } else {
     p->Emit(R"cc(
-      bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value);
+      bool $Msg_Enum$_Parse(absl::string_view name,
+                            $Msg_Enum$* PROTOBUF_NONNULL value);
     )cc");
   }
 }
@@ -274,7 +276,8 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
   }
   p->Emit(R"cc(
     template <>
-    inline const EnumDescriptor* GetEnumDescriptor<$::Msg_Enum$>() {
+    inline const EnumDescriptor* PROTOBUF_NONNULL
+    GetEnumDescriptor<$::Msg_Enum$>() {
       return $::Msg_Enum$_descriptor();
     }
   )cc");
@@ -329,7 +332,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   if (has_reflection_) {
     p->Emit(R"cc(
-      static inline const ::$proto_ns$::EnumDescriptor* $Enum$_descriptor() {
+      static inline const ::$proto_ns$::EnumDescriptor* PROTOBUF_NONNULL
+      $Enum$_descriptor() {
         return $Msg_Enum$_descriptor();
       }
     )cc");
@@ -340,7 +344,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
     static inline $return_type$ $Enum$_Name(T value) {
       return $Msg_Enum$_Name(value);
     }
-    static inline bool $Enum$_Parse(absl::string_view name, $Enum_$* value) {
+    static inline bool $Enum$_Parse(absl::string_view name,
+                                    $Enum_$* PROTOBUF_NONNULL value) {
       return $Msg_Enum$_Parse(name, value);
     }
   )cc");
@@ -351,7 +356,8 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit({{"idx", idx}}, R"cc(
-      const ::$proto_ns$::EnumDescriptor* $Msg_Enum$_descriptor() {
+      const ::$proto_ns$::EnumDescriptor* PROTOBUF_NONNULL
+      $Msg_Enum$_descriptor() {
         ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);
         return $file_level_enum_descriptors$[$idx$];
       }
@@ -543,7 +549,8 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
                              : $Msg_Enum$_strings[idx].get();
           }
 
-          bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value) {
+          bool $Msg_Enum$_Parse(absl::string_view name,
+                                $Msg_Enum$* PROTOBUF_NONNULL value) {
             int int_value;
             bool success = ::$proto_ns$::internal::LookUpEnumValue(
                 $Msg_Enum$_entries, $num_declared$, name, &int_value);

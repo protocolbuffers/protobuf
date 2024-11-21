@@ -713,6 +713,24 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  };\n");
 }
 
+TEST_F(PrinterTest, EmitWithIndentAndIgnoredCommentOnFirstLine) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      //~ This is a comment.
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "  class Foo {\n"
+            "    int x, y, z;\n"
+            "  };\n");
+}
+
 TEST_F(PrinterTest, EmitWithPreprocessor) {
   {
     Printer printer(output());

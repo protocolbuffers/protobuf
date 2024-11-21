@@ -130,7 +130,8 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
 };
 namespace pb {
-const ::google::protobuf::EnumDescriptor* JavaFeatures_Utf8Validation_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+JavaFeatures_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0];
 }
@@ -149,7 +150,7 @@ class JavaFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
 };
 
-JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
+JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -159,7 +160,7 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
 JavaFeatures::JavaFeatures(
-    ::google::protobuf::Arena* arena, const JavaFeatures& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -171,10 +172,10 @@ JavaFeatures::JavaFeatures(
 }
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void JavaFeatures::SharedCtor(::_pb::Arena* arena) {
+inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, utf8_validation_),
@@ -194,8 +195,9 @@ inline void JavaFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* PROTOBUF_NONNULL JavaFeatures::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JavaFeatures(arena);
 }
 constexpr auto JavaFeatures::InternalNewImpl_() {
@@ -230,7 +232,7 @@ PROTOBUF_CONSTINIT PROTOC_EXPORT
         JavaFeatures_class_data_ =
             JavaFeatures::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* JavaFeatures::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL JavaFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(JavaFeatures_class_data_.tc_table);
   return JavaFeatures_class_data_.base();
@@ -300,14 +302,15 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::uint8_t* JavaFeatures::_InternalSerialize(
-            const MessageLite& base, ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+        ::uint8_t* PROTOBUF_NONNULL JavaFeatures::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+            ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
           const JavaFeatures& this_ = static_cast<const JavaFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
         ::uint8_t* JavaFeatures::_InternalSerialize(
-            ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+            ::uint8_t* PROTOBUF_NONNULL target,
+            ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                stream) const {
           const JavaFeatures& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           // @@protoc_insertion_point(serialize_to_array_start:pb.JavaFeatures)
@@ -412,7 +415,7 @@ void JavaFeatures::CopyFrom(const JavaFeatures& from) {
 }
 
 
-void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
+void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

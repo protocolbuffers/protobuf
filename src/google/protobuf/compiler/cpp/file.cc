@@ -1488,14 +1488,17 @@ class FileGenerator::ForwardDeclarations {
         // in callers by having duplicate definitions of the template.
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
+        // clang-format off
         p->Emit(R"cc(
-          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
+          extern template void* PROTOBUF_NONNULL Arena::DefaultConstruct<$class$>(Arena* PROTOBUF_NULLABLE);
         )cc");
+        // clang-format on
         if (!IsMapEntryMessage(c.second)) {
+          // clang-format off
           p->Emit(R"cc(
-            extern template void* Arena::CopyConstruct<$class$>(Arena*,
-                                                                const void*);
+            extern template void* PROTOBUF_NONNULL Arena::CopyConstruct<$class$>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
           )cc");
+          // clang-format on
         }
         // We can't make a constexpr pointer to the global if we have DLL
         // linkage so skip this.

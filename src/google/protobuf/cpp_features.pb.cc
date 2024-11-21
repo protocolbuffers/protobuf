@@ -124,7 +124,8 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
 };
 namespace pb {
-const ::google::protobuf::EnumDescriptor* CppFeatures_StringType_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+CppFeatures_StringType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0];
 }
@@ -143,7 +144,7 @@ class CppFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
 };
 
-CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
+CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -153,7 +154,7 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
 CppFeatures::CppFeatures(
-    ::google::protobuf::Arena* arena, const CppFeatures& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -165,10 +166,10 @@ CppFeatures::CppFeatures(
 }
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
+inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, string_type_),
@@ -188,8 +189,9 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* CppFeatures::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CppFeatures(arena);
 }
 constexpr auto CppFeatures::InternalNewImpl_() {
@@ -224,7 +226,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         CppFeatures_class_data_ =
             CppFeatures::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* CppFeatures::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CppFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CppFeatures_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(CppFeatures_class_data_.tc_table);
   return CppFeatures_class_data_.base();
@@ -294,14 +296,15 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::uint8_t* CppFeatures::_InternalSerialize(
-            const MessageLite& base, ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+        ::uint8_t* PROTOBUF_NONNULL CppFeatures::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+            ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
           const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
         ::uint8_t* CppFeatures::_InternalSerialize(
-            ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+            ::uint8_t* PROTOBUF_NONNULL target,
+            ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                stream) const {
           const CppFeatures& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           // @@protoc_insertion_point(serialize_to_array_start:pb.CppFeatures)
@@ -406,7 +409,7 @@ void CppFeatures::CopyFrom(const CppFeatures& from) {
 }
 
 
-void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
+void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

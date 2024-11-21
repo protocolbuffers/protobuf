@@ -203,11 +203,11 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
     $DEPRECATED$ const $Map$& $name$() const;
-    $DEPRECATED$ $Map$* $mutable_name$();
+    $DEPRECATED$ $Map$* PROTOBUF_NONNULL $mutable_name$();
 
     private:
     const $Map$& $_internal_name$() const;
-    $Map$* $_internal_mutable_name$();
+    $Map$* PROTOBUF_NONNULL $_internal_mutable_name$();
 
     public:
   )cc");
@@ -229,14 +229,15 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::_internal_mutable_$name_internal$() {
+    inline $Map$* PROTOBUF_NONNULL $Msg$::_internal_mutable_$name_internal$() {
       $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $Map$* PROTOBUF_NONNULL $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
