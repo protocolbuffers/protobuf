@@ -986,17 +986,26 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
       final Object value = extensions.getField(descriptor);
+      T result = null;
       if (value == null) {
         if (descriptor.isRepeated()) {
-          return (T) ProtobufArrayList.emptyList();
+          result = (T) ProtobufArrayList.emptyList();
         } else if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-          return (T) extension.getMessageDefaultInstance();
+          result = (T) extension.getMessageDefaultInstance();
         } else {
-          return (T) extension.fromReflectionType(descriptor.getDefaultValue());
+          result = (T) extension.fromReflectionType(descriptor.getDefaultValue());
         }
       } else {
-        return (T) extension.fromReflectionType(value);
+        result = (T) extension.fromReflectionType(value);
       }
+
+      // If the lazy field is corrupted, we need to invalidate the memoized size in case the
+      // corrupted message data was replaced with an empty ByteString and yet a previous serialized
+      // size was memoized.
+      if (extensions.lazyFieldCorrupted(descriptor)) {
+        setMemoizedSerializedSize(-1);
+      }
+      return result;
     }
 
     /** Get one element of a repeated extension. */

@@ -269,6 +269,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return o;
   }
 
+  /** Returns true if the field is a lazy field and it is corrupted. */
+  boolean lazyFieldCorrupted(final T descriptor) {
+    Object o = fields.get(descriptor);
+    return o instanceof LazyField && ((LazyField) o).isCorrupted();
+  }
+
   /**
    * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,Object)}.
    */
