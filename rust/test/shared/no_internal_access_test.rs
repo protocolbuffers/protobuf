@@ -1,7 +1,7 @@
-use googletest::gtest;
+
 use protobuf::{__internal, __runtime};
 
-#[gtest]
+#[googletest::test]
 #[allow(clippy::unit_cmp)]
 fn test_no_internal_access() {
     // This test is to ensure that the `__internal` and `__runtime` mods are

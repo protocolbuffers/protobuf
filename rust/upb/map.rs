@@ -51,9 +51,9 @@ extern "C" {
 mod tests {
     use super::super::Arena;
     use super::*;
-    use googletest::gtest;
+    
 
-    #[gtest]
+    #[googletest::test]
     fn assert_map_linked() {
         use crate::assert_linked;
         assert_linked!(upb_Map_New);
@@ -65,7 +65,7 @@ mod tests {
         assert_linked!(upb_Map_Next);
     }
 
-    #[gtest]
+    #[googletest::test]
     fn map_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {

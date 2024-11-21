@@ -68,9 +68,9 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use googletest::gtest;
+    
 
-    #[gtest]
+    #[googletest::test]
     fn assert_text_linked() {
         use crate::assert_linked;
         assert_linked!(upb_DebugString);

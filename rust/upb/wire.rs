@@ -126,9 +126,9 @@ extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use googletest::gtest;
+    
 
-    #[gtest]
+    #[googletest::test]
     fn assert_wire_linked() {
         use crate::assert_linked;
         assert_linked!(upb_Encode);
