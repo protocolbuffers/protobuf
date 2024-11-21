@@ -87,8 +87,7 @@ inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN =
 inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX =
     static_cast<CppFeatures_StringType>(3);
 inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
-CppFeatures_StringType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
 template <typename T>
 const std::string& CppFeatures_StringType_Name(T value) {
   static_assert(std::is_same<T, CppFeatures_StringType>::value ||
@@ -102,7 +101,8 @@ inline const std::string& CppFeatures_StringType_Name(CppFeatures_StringType val
                                                  0, 3>(
       static_cast<int>(value));
 }
-inline bool CppFeatures_StringType_Parse(absl::string_view name, CppFeatures_StringType* value) {
+inline bool CppFeatures_StringType_Parse(
+    absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(
       CppFeatures_StringType_descriptor(), name, value);
 }
@@ -119,7 +119,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   ~CppFeatures() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CppFeatures* msg, std::destroying_delete_t) {
+  void operator delete(CppFeatures* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CppFeatures));
   }
@@ -150,18 +150,18 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const CppFeatures& default_instance() {
@@ -170,7 +170,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }
-  inline void Swap(CppFeatures* other) {
+  inline void Swap(CppFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -178,7 +178,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CppFeatures* other) {
+  void UnsafeArenaSwap(CppFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -186,7 +186,8 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  CppFeatures* New(::google::protobuf::Arena* arena = nullptr) const {
+  CppFeatures* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -207,29 +208,31 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(CppFeatures* other);
+  void InternalSwap(CppFeatures* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(
@@ -237,15 +240,18 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
  protected:
-  explicit CppFeatures(::google::protobuf::Arena* arena);
-  CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
-  CppFeatures(::google::protobuf::Arena* arena, CppFeatures&& from) noexcept
+  explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
+  CppFeatures(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      CppFeatures&& from) noexcept
       : CppFeatures(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -264,14 +270,15 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   static constexpr StringType StringType_MIN = CppFeatures_StringType_StringType_MIN;
   static constexpr StringType StringType_MAX = CppFeatures_StringType_StringType_MAX;
   static constexpr int StringType_ARRAYSIZE = CppFeatures_StringType_StringType_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor* StringType_descriptor() {
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL StringType_descriptor() {
     return CppFeatures_StringType_descriptor();
   }
   template <typename T>
   static inline const std::string& StringType_Name(T value) {
     return CppFeatures_StringType_Name(value);
   }
-  static inline bool StringType_Parse(absl::string_view name, StringType* value) {
+  static inline bool StringType_Parse(
+      absl::string_view name, StringType* PROTOBUF_NONNULL value) {
     return CppFeatures_StringType_Parse(name, value);
   }
 
@@ -332,11 +339,13 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const CppFeatures& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const CppFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     int string_type_;
@@ -471,7 +480,7 @@ namespace protobuf {
 template <>
 struct is_proto_enum<::pb::CppFeatures_StringType> : std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor<::pb::CppFeatures_StringType>() {
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::CppFeatures_StringType>() {
   return ::pb::CppFeatures_StringType_descriptor();
 }
 
