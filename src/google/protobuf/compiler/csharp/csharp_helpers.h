@@ -98,7 +98,7 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
   if (!IsDescriptorProto(descriptor->file())) {
     return false;
   }
-  const std::string name = descriptor->name();
+  const absl::string_view name = descriptor->name();
   return name == "FileOptions" ||
       name == "MessageOptions" ||
       name == "FieldOptions" ||

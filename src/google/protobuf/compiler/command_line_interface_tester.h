@@ -25,6 +25,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/testing/file.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -76,12 +77,10 @@ class CommandLineInterfaceTester : public testing::Test {
   // Creates a subdirectory within temp_directory_.
   void CreateTempDir(absl::string_view name);
 
-#ifdef PROTOBUF_OPENSOURCE
   // Changes working directory to temp directory.
   void SwitchToTempDirectory() {
     File::ChangeWorkingDirectory(temp_directory_);
   }
-#endif  // !PROTOBUF_OPENSOURCE
 
   // -----------------------------------------------------------------
   // Methods to check the test results (called after Run()).

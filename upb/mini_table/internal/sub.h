@@ -11,6 +11,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+typedef union {
+  const struct upb_MiniTable* const* UPB_PRIVATE(submsg);
+  const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
+} upb_MiniTableSubInternal;
+
 union upb_MiniTableSub {
   const struct upb_MiniTable* UPB_PRIVATE(submsg);
   const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);

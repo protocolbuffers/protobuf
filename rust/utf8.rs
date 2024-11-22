@@ -30,7 +30,7 @@ use std::str::from_utf8_unchecked;
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use googletest::prelude::*;
 /// use utf8::Utf8Chunks;
 ///
@@ -133,7 +133,7 @@ impl fmt::Debug for Debug<'_> {
 /// This can be used to create functionality similar to
 /// [`String::from_utf8_lossy`] without allocating heap memory:
 ///
-/// ```
+/// ```ignore
 /// use utf8::Utf8Chunks;
 ///
 /// fn from_utf8_lossy<F>(input: &[u8], mut push: F) where F: FnMut(&str) {

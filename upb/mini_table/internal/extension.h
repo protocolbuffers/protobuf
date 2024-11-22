@@ -8,6 +8,7 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 #define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/base/descriptor_constants.h"
@@ -41,12 +42,20 @@ upb_MiniTableExtension_Number(const struct upb_MiniTableExtension* e) {
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const struct upb_MiniTableExtension* e) {
+  if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
+    return NULL;
+  }
   return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
 }
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+}
+
+UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field));
 }
 
 #ifdef __cplusplus

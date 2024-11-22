@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package main;
 
-import "google/protobuf/rust/test/imported_types.proto";
+import "rust/test/imported_types.proto";
 
 message MsgWithFieldsWithImportedTypes {
   optional imported_types.ImportedMessage imported_message_field = 1;

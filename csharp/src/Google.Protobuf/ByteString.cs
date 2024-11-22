@@ -117,6 +117,9 @@ namespace Google.Protobuf
         /// <returns>A base64 representation of this <c>ByteString</c>.</returns>
         public string ToBase64()
         {
+#if NET5_0_OR_GREATER
+            return Convert.ToBase64String(bytes.Span);
+#else
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
             {
                 // Fast path. ByteString was created with an array, so pass the underlying array.
@@ -127,6 +130,7 @@ namespace Google.Protobuf
                 // Slow path. BytesString is not an array. Convert memory and pass result to ToBase64String.
                 return Convert.ToBase64String(bytes.ToArray());
             }
+#endif
         }
 
         /// <summary>

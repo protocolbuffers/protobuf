@@ -90,7 +90,7 @@ class DslListTest {
       .addEqualityGroup(
         DslList<Int, DummyProxy>(emptyList()),
         DslList<String, DummyProxy>(emptyList()),
-        emptyList<Int>()
+        emptyList<Int>(),
       )
       .testEquals()
   }

@@ -97,7 +97,9 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
     }
   }
 
-  private static boolean equals(Object a, Object b) {
+  private static boolean equals(
+          Object a,
+      Object b) {
     if (a instanceof byte[] && b instanceof byte[]) {
       return Arrays.equals((byte[]) a, (byte[]) b);
     }
@@ -129,7 +131,8 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   /** Checks whether two map fields are equal. */
   @SuppressWarnings("unchecked")
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(
+          Object object) {
     return (object instanceof Map) && equals(this, (Map<K, V>) object);
   }
 

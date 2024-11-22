@@ -21,6 +21,9 @@ final class NewInstanceSchemas {
   }
 
   private static NewInstanceSchema loadSchemaForFullRuntime() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       Class<?> clazz = Class.forName("com.google.protobuf.NewInstanceSchemaFull");
       return (NewInstanceSchema) clazz.getDeclaredConstructor().newInstance();
@@ -28,4 +31,6 @@ final class NewInstanceSchemas {
       return null;
     }
   }
+
+  private NewInstanceSchemas() {}
 }

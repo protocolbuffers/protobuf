@@ -108,10 +108,8 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
           source_arena);
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
       nested, kTestNestedInt32);
-  upb_Message_SetMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      nested_message_field, UPB_UPCAST(nested));
+  upb_Message_SetMessage(UPB_UPCAST(msg), nested_message_field,
+                         UPB_UPCAST(nested));
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
@@ -316,7 +314,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   std::string unknown_data(data, len);
   // Add unknown data.
   UPB_PRIVATE(_upb_Message_AddUnknown)
-  (UPB_UPCAST(msg), data, len, source_arena);
+  (UPB_UPCAST(msg), data, len, source_arena, false);
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
@@ -328,12 +326,13 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   upb_Arena_Free(unknown_arena);
   upb_Arena_Free(encode_arena);
   // Read unknown data from clone and verify.
-  size_t cloned_length;
-  const char* cloned_unknown_data =
-      upb_Message_GetUnknown(UPB_UPCAST(clone), &cloned_length);
-  EXPECT_EQ(cloned_length, len);
-  EXPECT_EQ(memcmp(cloned_unknown_data, unknown_data.c_str(), cloned_length),
-            0);
+  std::string cloned_unknown_data;
+  upb_StringView unknown;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown(UPB_UPCAST(clone), &unknown, &iter)) {
+    cloned_unknown_data.append(unknown.data, unknown.size);
+  }
+  EXPECT_EQ(unknown_data, cloned_unknown_data);
   upb_Arena_Free(clone_arena);
 }
 

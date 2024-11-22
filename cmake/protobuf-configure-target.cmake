@@ -52,4 +52,21 @@ function(protobuf_configure_target target)
     if (HAVE_ZLIB)
         target_compile_definitions("${target}" PRIVATE -DHAVE_ZLIB)
     endif ()
+
+
+endfunction ()
+
+function(protobuf_configure_unity_target target)
+    if(protobuf_USE_UNITY_BUILD)
+        # UNITY_BUILD available in CMake >=3.18.
+        if(${CMAKE_VERSION} VERSION_GREATER 3.18 OR ${CMAKE_VERSION} VERSION_EQUAL 3.18)
+            # If protobuf_USE_UNITY_BUILD is set to ON, set target to use Unity builds.
+            set_target_properties("${target}"
+                PROPERTIES 
+                UNITY_BUILD ON
+                UNITY_BUILD_MODE BATCH
+                UNITY_BUILD_BATCH_SIZE 50
+            )
+        endif()
+    endif()
 endfunction ()

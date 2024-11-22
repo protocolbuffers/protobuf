@@ -7,13 +7,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using Google.Protobuf.Collections;
+using Google.Protobuf.TestProtos;
+using Google.Protobuf.WellKnownTypes;
+using NUnit.Framework;
 using System;
 using System.IO;
-using Google.Protobuf.TestProtos;
-using NUnit.Framework;
 using System.Linq;
-using Google.Protobuf.WellKnownTypes;
-using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -97,6 +97,25 @@ namespace Google.Protobuf
             Assert.Throws<ArgumentNullException>(() => message.OneofString = null);
             Assert.Throws<ArgumentNullException>(() => message.SingleBytes = null);
             Assert.Throws<ArgumentNullException>(() => message.OneofBytes = null);
+        }
+
+        [Test]
+        public void Roundtrip_UnpairedSurrogate()
+        {
+            var message = new TestAllTypes { SingleString = "\ud83d" };
+
+            Assert.AreEqual("\ud83d", message.SingleString);
+
+            // The serialized bytes contain the replacement character.
+            var bytes = message.ToByteArray();
+            CollectionAssert.AreEqual(bytes, new byte[] { 0x72, 3, 0xEF, 0xBF, 0xBD });
+        }
+
+        [Test]
+        public void ParseInvalidUtf8Rejected()
+        {
+            var payload = new byte[] { 0x72, 1, 0x80 };
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(payload));
         }
 
         [Test]

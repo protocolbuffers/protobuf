@@ -7,6 +7,7 @@
 #include "google/protobuf/reflection_tester.h"
 
 #include <array>
+#include <string>
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -22,7 +23,7 @@ namespace protobuf {
 MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  std::string package = base_descriptor->file()->package();
+  const absl::string_view package = base_descriptor->file()->package();
 
   map_enum_foo_ =
       pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_FOO"));
@@ -402,6 +403,7 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
   MapValueConstRef map_val_const;
 
   // Add first element.
+  std::string map_key_string;
   MapKey map_key;
   map_key.SetInt32Value(0);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_int32_int32"),
@@ -476,7 +478,8 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                                  map_key, &map_val));
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string());
+  map_key_string = long_string();
+  map_key.SetStringValue(map_key_string);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_string_string"),
                                           map_key, &map_val_const));
   EXPECT_TRUE(reflection->InsertOrLookupMapValue(
@@ -576,7 +579,8 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(true);
 
-  map_key.SetStringValue(long_string_2());
+  map_key_string = long_string_2();
+  map_key.SetStringValue(map_key_string);
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
   map_val.SetStringValue(long_string_2());
@@ -659,6 +663,7 @@ void MapReflectionTester::ModifyMapFieldsViaReflection(Message* message) {
   Message* sub_foreign_message;
 
   // Modify the second element
+  std::string map_key_string;
   MapKey map_key;
   map_key.SetInt32Value(1);
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F("map_int32_int32"),
@@ -725,7 +730,8 @@ void MapReflectionTester::ModifyMapFieldsViaReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string_2());
+  map_key_string = long_string_2();
+  map_key.SetStringValue(map_key_string);
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
   map_val.SetStringValue("2");

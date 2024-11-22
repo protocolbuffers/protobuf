@@ -91,7 +91,7 @@ TEST(REFLECTION_TEST, RegularFields) {
     EXPECT_EQ(rf_double.Get(i), Func(i, 2));
     EXPECT_EQ(rpf_string.Get(i), StrFunc(i, 5));
     EXPECT_EQ(rpf_foreign_message.Get(i).c(), Func(i, 6));
-    EXPECT_EQ(DownCast<const ForeignMessage*>(&rpf_message.Get(i))->c(),
+    EXPECT_EQ(DownCastMessage<ForeignMessage>(&rpf_message.Get(i))->c(),
               Func(i, 6));
 
     // Check gets through mutable objects.
@@ -99,7 +99,7 @@ TEST(REFLECTION_TEST, RegularFields) {
     EXPECT_EQ(mrf_double->Get(i), Func(i, 2));
     EXPECT_EQ(mrpf_string->Get(i), StrFunc(i, 5));
     EXPECT_EQ(mrpf_foreign_message->Get(i).c(), Func(i, 6));
-    EXPECT_EQ(DownCast<const ForeignMessage*>(&mrpf_message->Get(i))->c(),
+    EXPECT_EQ(DownCastMessage<ForeignMessage>(&mrpf_message->Get(i))->c(),
               Func(i, 6));
 
     // Check sets through mutable objects.
@@ -111,7 +111,8 @@ TEST(REFLECTION_TEST, RegularFields) {
     EXPECT_EQ(message.repeated_double(i), Func(i, -2));
     EXPECT_EQ(message.repeated_string(i), StrFunc(i, -5));
     EXPECT_EQ(message.repeated_foreign_message(i).c(), Func(i, -6));
-    DownCast<ForeignMessage*>(mrpf_message->Mutable(i))->set_c(Func(i, 7));
+    DownCastMessage<ForeignMessage>(mrpf_message->Mutable(i))
+        ->set_c(Func(i, 7));
     EXPECT_EQ(message.repeated_foreign_message(i).c(), Func(i, 7));
   }
 
@@ -271,7 +272,7 @@ TEST(REFLECTION_TEST, RepeatedFieldRefForRegularFields) {
     ForeignMessage scratch_space;
     EXPECT_EQ(rf_foreign_message.Get(i, &scratch_space).c(), Func(i, 6));
     EXPECT_EQ(
-        DownCast<const ForeignMessage&>(rf_message.Get(i, &scratch_space)).c(),
+        DownCastMessage<ForeignMessage>(rf_message.Get(i, &scratch_space)).c(),
         Func(i, 6));
 
     // Check gets through mutable objects.
@@ -280,7 +281,7 @@ TEST(REFLECTION_TEST, RepeatedFieldRefForRegularFields) {
     EXPECT_EQ(mrf_string.Get(i), StrFunc(i, 5));
     EXPECT_EQ(mrf_foreign_message.Get(i, &scratch_space).c(), Func(i, 6));
     EXPECT_EQ(
-        DownCast<const ForeignMessage&>(mrf_message.Get(i, &scratch_space)).c(),
+        DownCastMessage<ForeignMessage>(mrf_message.Get(i, &scratch_space)).c(),
         Func(i, 6));
 
     // Check sets through mutable objects.

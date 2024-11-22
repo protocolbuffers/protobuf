@@ -96,7 +96,7 @@
   protobuf '("true" "false"))
 
 (c-lang-defconst c-other-decl-kwds
-  protobuf '("package" "import" "syntax"))
+  protobuf '("package" "import" "syntax" "edition"))
 
 (c-lang-defconst c-other-kwds
   protobuf '("default" "max"))

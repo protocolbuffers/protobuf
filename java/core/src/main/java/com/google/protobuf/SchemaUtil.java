@@ -38,6 +38,7 @@ final class SchemaUtil {
     // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
+        && !Protobuf.assumeLiteRuntime
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
@@ -276,8 +277,8 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeMessageList(int fieldNumber, List<?> value, Writer writer, Schema schema)
-      throws IOException {
+  public static void writeMessageList(
+      int fieldNumber, List<?> value, Writer writer, Schema<?> schema) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeMessageList(fieldNumber, value, schema);
     }
@@ -299,7 +300,7 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer, Schema schema)
+  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer, Schema<?> schema)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeGroupList(fieldNumber, value, schema);
@@ -643,7 +644,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeMessage(int fieldNumber, Object value, Schema schema) {
+  static int computeSizeMessage(int fieldNumber, Object value, Schema<?> schema) {
     if (value instanceof LazyFieldLite) {
       return CodedOutputStream.computeLazyFieldSize(fieldNumber, (LazyFieldLite) value);
     } else {
@@ -668,7 +669,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeMessageList(int fieldNumber, List<?> list, Schema schema) {
+  static int computeSizeMessageList(int fieldNumber, List<?> list, Schema<?> schema) {
     final int length = list.size();
     if (length == 0) {
       return 0;
@@ -709,7 +710,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeGroupList(int fieldNumber, List<MessageLite> list, Schema schema) {
+  static int computeSizeGroupList(int fieldNumber, List<MessageLite> list, Schema<?> schema) {
     final int length = list.size();
     if (length == 0) {
       return 0;
@@ -781,6 +782,9 @@ final class SchemaUtil {
   }
 
   private static Class<?> getGeneratedMessageClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
@@ -791,6 +795,9 @@ final class SchemaUtil {
   }
 
   private static Class<?> getUnknownFieldSetSchemaClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       return Class.forName("com.google.protobuf.UnknownFieldSetSchema");
     } catch (Throwable e) {

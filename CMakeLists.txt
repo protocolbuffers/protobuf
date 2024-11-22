@@ -35,6 +35,11 @@ option(protobuf_BUILD_LIBUPB "Build libupb" ON)
 option(protobuf_DISABLE_RTTI "Remove runtime type information in the binaries" OFF)
 option(protobuf_TEST_XML_OUTDIR "Output directory for XML logs from tests." "")
 option(protobuf_ALLOW_CCACHE "Adjust build flags to allow for ccache support." OFF)
+option(protobuf_FORCE_FETCH_DEPENDENCIES "Force all dependencies to be downloaded from GitHub.  Local installations will be ignored." OFF)
+option(protobuf_LOCAL_DEPENDENCIES_ONLY "Prevent downloading any dependencies from GitHub. If this option is set, the dependency must be available locally as an installed package." OFF)
+
+# We support Unity (Jumbo) builds best-effort.
+option(protobuf_USE_UNITY_BUILD "Enable Unity (Jumbo) build for" OFF)
 if (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
 else (BUILD_SHARED_LIBS)
@@ -81,7 +86,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "5.28.0")
+set(protobuf_VERSION_STRING "5.30.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -103,18 +108,21 @@ string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\5"
   protobuf_VERSION_PRERELEASE "${protobuf_VERSION_STRING}")
 
-message(STATUS "${protobuf_VERSION_PRERELEASE}")
+if (protobuf_FORCE_FETCH_DEPENDENCIES AND protobuf_LOCAL_DEPENDENCIES_ONLY)
+  message(FATAL_ERROR "Conflicting options protobuf_FORCE_FETCH_DEPENDENCIES and protobuf_LOCAL_DEPENDENCIES_ONLY both set")
+endif()
 
 # Package version
 set(protobuf_VERSION
   "${protobuf_VERSION_MINOR}.${protobuf_VERSION_PATCH}")
 
 if(protobuf_VERSION_PRERELEASE)
+  message(STATUS "${protobuf_VERSION_PRERELEASE}")
   set(protobuf_VERSION "${protobuf_VERSION}.${protobuf_VERSION_PRERELEASE}")
 else()
   set(protobuf_VERSION "${protobuf_VERSION}.0")
 endif()
-message(STATUS "${protobuf_VERSION}")
+message(STATUS "protobuf version: ${protobuf_VERSION}")
 
 if(protobuf_VERBOSE)
   message(STATUS "Configuration script parsing status [")
@@ -149,14 +157,6 @@ endif()
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
-
-# We can install dependencies from submodules if we're running
-# CMake v3.13 or newer.
-if(CMAKE_VERSION VERSION_LESS 3.13)
-  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
-else()
-  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
-endif()
 
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
@@ -203,31 +203,11 @@ if (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "SHARED")
 else (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "STATIC")
-  # The CMAKE_<LANG>_FLAGS(_<BUILD_TYPE>)? is meant to be user controlled.
-  # Prior to CMake 3.15, the MSVC runtime library was pushed into the same flags
-  # making programmatic control difficult.  Prefer the functionality in newer
-  # CMake versions when available.
-  if(${CMAKE_VERSION} VERSION_GREATER 3.15 OR ${CMAKE_VERSION} VERSION_EQUAL 3.15)
-    if (protobuf_MSVC_STATIC_RUNTIME)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
-    else()
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
-    endif()
+  set(ABSL_MSVC_STATIC_RUNTIME ON)
+  if (protobuf_MSVC_STATIC_RUNTIME)
+      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
   else()
-    # In case we are building static libraries, link also the runtime library statically
-    # so that MSVCR*.DLL is not required at runtime.
-    # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
-    # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
-    # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
-    if (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
-      foreach(flag_var
-          CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-          CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-        if(${flag_var} MATCHES "/MD")
-          string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-        endif(${flag_var} MATCHES "/MD")
-      endforeach(flag_var)
-    endif (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
   endif()
 endif (protobuf_BUILD_SHARED_LIBS)
 
@@ -285,12 +265,6 @@ include_directories(
   ${protobuf_SOURCE_DIR}
   ${protobuf_BINARY_DIR}/src
   ${protobuf_SOURCE_DIR}/src)
-
-set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
-set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
-
-set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library")
-set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package")
 
 if (protobuf_BUILD_TESTS)
   include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)

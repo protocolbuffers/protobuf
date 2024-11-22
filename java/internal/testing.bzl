@@ -45,6 +45,7 @@ def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.pro
         deps = deps,
         resources = data,
         data = data,
+        testonly = True,
     )
     test_names = []
     prefix = name.replace("-", "_") + "TestSuite"

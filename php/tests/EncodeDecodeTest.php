@@ -683,6 +683,21 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString(hex2bin('7201'));
     }
 
+    public function testDecodeInvalidStringDataBadUtf8()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('720180'));
+    }
+
+    public function testDecodeValidStringData()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('720161'));
+        $this->assertSame('a', $m->getOptionalString());
+    }
+
     public function testDecodeInvalidBytesLengthMiss()
     {
         $this->expectException(Exception::class);

@@ -45,12 +45,6 @@ class IoTest : public testing::Test {
   // WriteStuff() writes.
   void ReadStuff(upb_ZeroCopyInputStream* input, bool read_eof = true);
 
-  // Similar to WriteStuff, but performs more sophisticated testing.
-  int WriteStuffLarge(upb_ZeroCopyOutputStream* output);
-  // Reads and tests a stream that should have been written to
-  // via WriteStuffLarge().
-  void ReadStuffLarge(upb_ZeroCopyInputStream* input);
-
   static const int kBlockSizes[];
   static const int kBlockSizeCount;
 };
@@ -155,35 +149,6 @@ void IoTest::ReadStuff(upb_ZeroCopyInputStream* input, bool read_eof) {
     uint8_t byte;
     EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
   }
-}
-
-int IoTest::WriteStuffLarge(upb_ZeroCopyOutputStream* output) {
-  WriteString(output, "Hello world!\n");
-  WriteString(output, "Some te");
-  WriteString(output, "xt.  Blah blah.");
-  WriteString(output, std::string(100000, 'x'));  // A very long string
-  WriteString(output, std::string(100000, 'y'));  // A very long string
-  WriteString(output, "01234567890123456789");
-
-  const int result = upb_ZeroCopyOutputStream_ByteCount(output);
-  EXPECT_EQ(result, 200055);
-  return result;
-}
-
-// Reads text from an input stream and expects it to match what WriteStuff()
-// writes.
-void IoTest::ReadStuffLarge(upb_ZeroCopyInputStream* input) {
-  ReadString(input, "Hello world!\nSome text.  ");
-  EXPECT_TRUE(upb_ZeroCopyInputStream_Skip(input, 5));
-  ReadString(input, "blah.");
-  EXPECT_TRUE(upb_ZeroCopyInputStream_Skip(input, 100000 - 10));
-  ReadString(input, std::string(10, 'x') + std::string(100000 - 20000, 'y'));
-  EXPECT_TRUE(upb_ZeroCopyInputStream_Skip(input, 20000 - 10));
-  ReadString(input, "yyyyyyyyyy01234567890123456789");
-  EXPECT_EQ(upb_ZeroCopyInputStream_ByteCount(input), 200055);
-
-  uint8_t byte;
-  EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
 }
 
 // ===================================================================

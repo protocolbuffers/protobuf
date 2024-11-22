@@ -12,14 +12,11 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -27,7 +24,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -168,10 +167,10 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
    : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
                           : PROTOBUF_PICK_FUNCTION(fn##S))
 
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                       \
-  (field->options().ctype() == FieldOptions::CORD               \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                         \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
+#define PROTOBUF_PICK_STRING_FUNCTION(fn)                            \
+  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord \
+       ? PROTOBUF_PICK_FUNCTION(fn##cS)                              \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)      \
                                : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
@@ -304,10 +303,12 @@ bool IsFieldEligibleForFastParsing(
   switch (field->type()) {
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() == FieldOptions::STRING) {
+    case FieldDescriptor::TYPE_BYTES: {
+      auto ctype = field->cpp_string_type();
+      if (ctype == FieldDescriptor::CppStringType::kString ||
+          ctype == FieldDescriptor::CppStringType::kView) {
         // strings are fine...
-      } else if (field->options().ctype() == FieldOptions::CORD) {
+      } else if (ctype == FieldDescriptor::CppStringType::kCord) {
         // Cords are worth putting into the fast table, if they're not repeated
         if (field->is_repeated()) return false;
       } else {
@@ -321,6 +322,7 @@ bool IsFieldEligibleForFastParsing(
         aux_idx = entry.inlined_string_idx;
       }
       break;
+    }
 
     case FieldDescriptor::TYPE_ENUM: {
       uint8_t rmax_value;
@@ -373,7 +375,7 @@ absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
 }
 
 uint32_t RecodeTagForFastParsing(uint32_t tag) {
-  ABSL_DCHECK_LE(tag, 0x3FFF);
+  ABSL_DCHECK_LE(tag, 0x3FFFu);
   // Construct the varint-coded tag. If it is more than 7 bits, we need to
   // shift the high bits and add a continue bit.
   if (uint32_t hibits = tag & 0xFFFFFF80) {
@@ -423,7 +425,7 @@ void PopulateFastFields(
     important_fields |= uint32_t{1} << fast_idx;
   }
 
-  for (int i = 0; i < field_entries.size(); ++i) {
+  for (size_t i = 0; i < field_entries.size(); ++i) {
     const auto& entry = field_entries[i];
     const auto& options = fields[i];
     if (!IsFieldEligibleForFastParsing(entry, options, message_options)) {
@@ -606,7 +608,6 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
 
 uint16_t MakeTypeCardForField(
     const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::FieldOptions& options,
     cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
@@ -760,12 +761,13 @@ uint16_t MakeTypeCardForField(
   // Fill in extra information about string and bytes field representations.
   if (field->type() == FieldDescriptor::TYPE_BYTES ||
       field->type() == FieldDescriptor::TYPE_STRING) {
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (field->cpp_string_type()) {
+      case FieldDescriptor::CppStringType::kCord:
         // `Cord` is always used, even for repeated fields.
         type_card |= fl::kRepCord;
         break;
-      case FieldOptions::STRING:
+      case FieldDescriptor::CppStringType::kView:
+      case FieldDescriptor::CppStringType::kString:
         if (field->is_repeated()) {
           // A repeated string field uses RepeatedPtrField<std::string>
           // (unless it has a ctype option; see above).
@@ -775,8 +777,6 @@ uint16_t MakeTypeCardForField(
           type_card |= fl::kRepAString;
         }
         break;
-      default:
-        Unreachable();
     }
   }
 
@@ -898,9 +898,8 @@ TailCallTableInfo::TailCallTableInfo(
     auto& entry = field_entries.back();
     entry.utf8_check_mode =
         cpp::GetUtf8CheckMode(field, message_options.is_lite);
-    entry.type_card =
-        MakeTypeCardForField(field, entry.hasbit_idx >= 0, message_options,
-                             options, entry.utf8_check_mode);
+    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
+                                           options, entry.utf8_check_mode);
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->type() == FieldDescriptor::TYPE_GROUP) {
@@ -911,9 +910,8 @@ TailCallTableInfo::TailCallTableInfo(
         if (message_options.uses_codegen) {
           // If we don't use codegen we can't add these.
           auto* map_value = field->message_type()->map_value();
-          if (auto* sub = map_value->message_type()) {
-            aux_entries.push_back({kCreateInArena});
-            aux_entries.back().desc = sub;
+          if (map_value->message_type() != nullptr) {
+            aux_entries.push_back({kSubTable, {map_value}});
           } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
                      !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
             aux_entries.push_back({kEnumValidator, {map_value}});

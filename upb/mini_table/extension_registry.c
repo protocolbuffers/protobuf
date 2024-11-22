@@ -70,6 +70,24 @@ failure:
   return false;
 }
 
+#ifdef UPB_LINKARR_DECLARE
+
+UPB_LINKARR_DECLARE(upb_AllExts, upb_MiniTableExtension);
+
+bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
+  const upb_MiniTableExtension* start = UPB_LINKARR_START(upb_AllExts);
+  const upb_MiniTableExtension* stop = UPB_LINKARR_STOP(upb_AllExts);
+  for (const upb_MiniTableExtension* p = start; p < stop; p++) {
+    // Windows can introduce zero padding, so we have to skip zeroes.
+    if (upb_MiniTableExtension_Number(p) != 0) {
+      if (!upb_ExtensionRegistry_Add(r, p)) return false;
+    }
+  }
+  return true;
+}
+
+#endif  // UPB_LINKARR_DECLARE
+
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
   char buf[EXTREG_KEY_SIZE];

@@ -1,5 +1,9 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library", "objc_library")
+load("@rules_cc//cc:defs.bzl", "objc_library")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_py_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 package(

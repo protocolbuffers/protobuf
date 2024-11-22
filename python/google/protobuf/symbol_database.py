@@ -51,24 +51,6 @@ class SymbolDatabase():
     """Initializes a new SymbolDatabase."""
     self.pool = pool or descriptor_pool.DescriptorPool()
 
-  def GetPrototype(self, descriptor):
-    warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
-                  'use message_factory.GetMessageClass() instead. '
-                  'SymbolDatabase.GetPrototype() will be removed soon.')
-    return message_factory.GetMessageClass(descriptor)
-
-  def CreatePrototype(self, descriptor):
-    warnings.warn('Directly call CreatePrototype() is wrong. Please use '
-                  'message_factory.GetMessageClass() instead. '
-                  'SymbolDatabase.CreatePrototype() will be removed soon.')
-    return message_factory._InternalCreateMessageClass(descriptor)
-
-  def GetMessages(self, files):
-    warnings.warn('SymbolDatabase.GetMessages() is deprecated. Please use '
-                  'message_factory.GetMessageClassedForFiles() instead. '
-                  'SymbolDatabase.GetMessages() will be removed soon.')
-    return message_factory.GetMessageClassedForFiles(files, self.pool)
-
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.
 

@@ -412,6 +412,13 @@ class ScalarMap(MutableMapping[_K, _V]):
   def __repr__(self) -> str:
     return repr(self._values)
 
+  def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    if value == None:
+      raise ValueError('The value for scalar map setdefault must be set.')
+    if key not in self._values:
+      self.__setitem__(key, value)
+    return self[key]
+
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
     self._values.update(other._values)
     self._message_listener.Modified()
@@ -525,6 +532,12 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def __repr__(self) -> str:
     return repr(self._values)
+
+  def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    raise NotImplementedError(
+        'Set message map value directly is not supported, call'
+        ' my_map[key].foo = 5'
+    )
 
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     # pylint: disable=protected-access

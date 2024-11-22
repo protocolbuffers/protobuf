@@ -47,7 +47,7 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
   upb_Status_SetErrorMessage(e->status, msg);
-  longjmp(e->err, 1);
+  UPB_LONGJMP(e->err, 1);
 }
 
 UPB_PRINTF(2, 3)
@@ -56,7 +56,7 @@ UPB_NORETURN static void jsonenc_errf(jsonenc* e, const char* fmt, ...) {
   va_start(argp, fmt);
   upb_Status_VSetErrorFormat(e->status, fmt, argp);
   va_end(argp);
-  longjmp(e->err, 1);
+  UPB_LONGJMP(e->err, 1);
 }
 
 static upb_Arena* jsonenc_arena(jsonenc* e) {

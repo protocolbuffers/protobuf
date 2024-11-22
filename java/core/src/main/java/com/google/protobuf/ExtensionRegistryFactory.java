@@ -48,7 +48,8 @@ final class ExtensionRegistryFactory {
   }
 
   static boolean isFullRegistry(ExtensionRegistryLite registry) {
-    return EXTENSION_REGISTRY_CLASS != null
+    return !Protobuf.assumeLiteRuntime
+        && EXTENSION_REGISTRY_CLASS != null
         && EXTENSION_REGISTRY_CLASS.isAssignableFrom(registry.getClass());
   }
 

@@ -16,7 +16,6 @@ foreach(generator upb upbdefs upb_minitable)
   )
   target_include_directories(protoc-gen-${generator} PRIVATE ${bootstrap_cmake_dir})
   target_link_libraries(protoc-gen-${generator}
-    ${protobuf_LIB_PROTOBUF}
     ${protobuf_LIB_UPB}
     ${protobuf_ABSL_USED_TARGETS}
   )

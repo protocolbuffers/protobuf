@@ -7,12 +7,14 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -30,19 +32,19 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"RsType", RsTypePath(ctx, field)},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"getter",
            [&] {
              if (ctx.is_upb()) {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
-                        $getter_thunk$(
-                          self.raw_msg(),
-                          /* optional size pointer */ std::ptr::null(),
-                        ) }
-                        .map_or_else(
+                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                        $pbr$::upb_Message_GetArray(
+                          self.raw_msg(), f)
+                      }.map_or_else(
                           $pbr$::empty_array::<$RsType$>,
                           |raw| unsafe {
                             $pb$::RepeatedView::from_raw($pbi$::Private, raw)
@@ -51,7 +53,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     }
                   )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
                         $pb$::RepeatedView::from_raw(
@@ -63,7 +65,6 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
              }
            }},
-          {"clearer_thunk", ThunkName(ctx, field, "clear")},
           {"getter_mut",
            [&] {
              if (accessor_case == AccessorCase::VIEW) {
@@ -73,29 +74,32 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
+                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                        let raw_array = $pbr$::upb_Message_GetOrCreateMutableArray(
+                              self.raw_msg(),
+                              f,
+                              self.arena().raw(),
+                            ).unwrap();
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            $pbi$::Private,
-                            $getter_mut_thunk$(
-                              self.raw_msg(),
-                              /* optional size pointer */ std::ptr::null(),
-                              self.arena().raw(),
-                            ),
-                            self.arena(),
+                            raw_array, self.arena(),
                           ),
                         )
                       }
                     }
                   )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(
+                   {{"getter_mut_thunk", ThunkName(ctx, field, "get_mut")}},
+                   R"rs(
                       pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                         unsafe {
                           $pb$::RepeatedMut::from_inner(
                             $pbi$::Private,
                             $pbr$::InnerRepeatedMut::new(
-                              $pbi$::Private,
                               $getter_mut_thunk$(self.raw_msg()),
                             ),
                           )
@@ -109,12 +113,43 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (accessor_case == AccessorCase::VIEW) {
                return;
              }
-             ctx.Emit({}, R"rs(
-                pub fn set_$raw_field_name$(&mut self, src: $pb$::RepeatedView<'_, $RsType$>) {
-                  // TODO: Implement IntoProxied and avoid copying.
-                  self.$field$_mut().copy_from(src);
-                }
-              )rs");
+             if (ctx.is_upb()) {
+               ctx.Emit(R"rs(
+                    pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
+                      let minitable_field = unsafe {
+                        $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$
+                        )
+                      };
+                      let val = src.into_proxied($pbi$::Private);
+                      let inner = val.inner($pbi$::Private);
+
+                      self.arena().fuse(inner.arena());
+                      unsafe {
+                          let value_ptr: *const *const std::ffi::c_void =
+                              &(inner.raw().as_ptr() as *const std::ffi::c_void);
+                          $pbr$::upb_Message_SetBaseField(self.raw_msg(),
+                            minitable_field,
+                            value_ptr as *const std::ffi::c_void);
+                      }
+                    }
+                  )rs");
+             } else {
+               ctx.Emit(
+                   {{"move_setter_thunk", ThunkName(ctx, field, "move_set")}},
+                   R"rs(
+                      pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
+                        // Prevent the memory from being deallocated. The setter
+                        // transfers ownership of the memory to the parent message.
+                        let val = std::mem::ManuallyDrop::new(src.into_proxied($pbi$::Private));
+                        unsafe {
+                          $move_setter_thunk$(self.raw_msg(),
+                            val.inner($pbi$::Private).raw());
+                        }
+                      }
+                    )rs");
+             }
            }},
       },
       R"rs(
@@ -126,8 +161,11 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void RepeatedField::InExternC(Context& ctx,
                               const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"move_setter_thunk", ThunkName(ctx, field, "move_set")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
@@ -141,18 +179,17 @@ void RepeatedField::InExternC(Context& ctx,
                     fn $getter_thunk$(
                       raw_msg: $pbr$::RawMessage,
                       size: *const usize,
-                    ) -> Option<$pbr$::RawRepeatedField>;
+                    ) -> $Option$<$pbr$::RawRepeatedField>;
                   )rs");
                } else {
                  ctx.Emit(R"rs(
                     fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::RawRepeatedField;
                     fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::RawRepeatedField;
+                    fn $move_setter_thunk$(raw_msg: $pbr$::RawMessage, value: $pbr$::RawRepeatedField);
                   )rs");
                }
-             }},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")}},
+             }}},
            R"rs(
-          fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
           $getter$
         )rs");
 }
@@ -190,28 +227,34 @@ const char* CppRepeatedContainerType(const FieldDescriptor& field) {
 
 void RepeatedField::InThunkCc(Context& ctx,
                               const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit({{"field", cpp::FieldName(&field)},
             {"ElementType", CppElementType(field)},
             {"ContainerType", CppRepeatedContainerType(field)},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"repeated_copy_from_thunk",
              ThunkName(ctx, field, "repeated_copy_from")},
+            {"move_setter_thunk", ThunkName(ctx, field, "move_set")},
             {"impls",
              [&] {
                ctx.Emit(
                    R"cc(
-                     void $clearer_thunk$($QualifiedMsg$* msg) {
-                       msg->clear_$field$();
-                     }
-                     $ContainerType$<$ElementType$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
+                     $ContainerType$<$ElementType$>* $getter_mut_thunk$(
+                         $QualifiedMsg$* msg) {
                        return msg->mutable_$field$();
                      }
                      const $ContainerType$<$ElementType$>* $getter_thunk$(
                          const $QualifiedMsg$* msg) {
                        return &msg->$field$();
+                     }
+                     void $move_setter_thunk$(
+                         $QualifiedMsg$* msg,
+                         $ContainerType$<$ElementType$>* value) {
+                       *msg->mutable_$field$() = std::move(*value);
+                       delete value;
                      }
                    )cc");
              }}},

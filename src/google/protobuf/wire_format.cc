@@ -11,10 +11,15 @@
 
 #include "google/protobuf/wire_format.h"
 
-#include <stack>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -22,14 +27,12 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -544,12 +547,12 @@ bool WireFormat::ParseAndMergeField(
         if (strict_utf8_check) {
           if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                                 WireFormatLite::PARSE,
-                                                field->full_name().c_str())) {
+                                                field->full_name())) {
             return false;
           }
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
@@ -560,7 +563,7 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           absl::Cord value;
           if (!WireFormatLite::ReadBytes(input, &value)) return false;
           message_reflection->SetString(message, field, value);
@@ -732,7 +735,7 @@ struct WireFormat::MessageSetParser {
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
       ptr = ReadTag(ptr, &tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
         ctx->SetLastTag(tag);
         break;
@@ -756,7 +759,7 @@ struct WireFormat::MessageSetParser {
         ptr = WireFormat::_InternalParseAndMergeField(msg, ptr, ctx, tag,
                                                       reflection, field);
       }
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
     }
     return ptr;
   }
@@ -765,6 +768,44 @@ struct WireFormat::MessageSetParser {
   const Descriptor* descriptor;
   const Reflection* reflection;
 };
+
+static const char* HandleMessage(Message* msg, const char* ptr,
+                                 internal::ParseContext* ctx, uint64_t tag,
+                                 const Reflection* reflection,
+                                 const FieldDescriptor* field) {
+  Message* sub_message;
+  if (field->is_repeated()) {
+    sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
+  } else {
+    sub_message = reflection->MutableMessage(msg, field, ctx->data().factory);
+  }
+
+  if (WireFormatLite::GetTagWireType(tag) ==
+      WireFormatLite::WIRETYPE_START_GROUP) {
+    return ctx->ParseGroup(sub_message, ptr, tag);
+  } else {
+    ABSL_DCHECK(WireFormatLite::GetTagWireType(tag) ==
+                WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  }
+
+  ptr = ctx->ParseMessage(sub_message, ptr);
+
+  // For map entries, if the value is an unknown enum we have to push it
+  // into the unknown field set and remove it from the list.
+  if (ptr != nullptr && field->is_map()) {
+    auto* value_field = field->message_type()->map_value();
+    auto* enum_type = value_field->enum_type();
+    if (enum_type != nullptr &&
+        !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
+        enum_type->FindValueByNumber(sub_message->GetReflection()->GetEnumValue(
+            *sub_message, value_field)) == nullptr) {
+      reflection->MutableUnknownFields(msg)->AddLengthDelimited(
+          field->number(), sub_message->SerializeAsString());
+      reflection->RemoveLast(msg, field);
+    }
+  }
+  return ptr;
+}
 
 const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
                                        internal::ParseContext* ctx) {
@@ -779,7 +820,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ReadTag(ptr, &tag);
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
     if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
       ctx->SetLastTag(tag);
       break;
@@ -800,7 +841,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
     }
 
     ptr = _InternalParseAndMergeField(msg, ptr, ctx, tag, reflection, field);
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
   }
   return ptr;
 }
@@ -965,7 +1006,7 @@ const char* WireFormat::_InternalParseAndMergeField(
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         absl::Cord value;
         ptr = ctx->ReadCord(ptr, size, &value);
         if (ptr == nullptr) return nullptr;
@@ -979,12 +1020,12 @@ const char* WireFormat::_InternalParseAndMergeField(
         if (strict_utf8_check) {
           if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                                 WireFormatLite::PARSE,
-                                                field->full_name().c_str())) {
+                                                field->full_name())) {
             return nullptr;
           }
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
       }
       if (field->is_repeated()) {
@@ -995,46 +1036,9 @@ const char* WireFormat::_InternalParseAndMergeField(
       return ptr;
     }
 
-    case FieldDescriptor::TYPE_GROUP: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
-      } else {
-        sub_message =
-            reflection->MutableMessage(msg, field, ctx->data().factory);
-      }
-
-      return ctx->ParseGroup(sub_message, ptr, tag);
-    }
-
-    case FieldDescriptor::TYPE_MESSAGE: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
-      } else {
-        sub_message =
-            reflection->MutableMessage(msg, field, ctx->data().factory);
-      }
-      ptr = ctx->ParseMessage(sub_message, ptr);
-
-      // For map entries, if the value is an unknown enum we have to push it
-      // into the unknown field set and remove it from the list.
-      if (ptr != nullptr && field->is_map()) {
-        auto* value_field = field->message_type()->map_value();
-        auto* enum_type = value_field->enum_type();
-        if (enum_type != nullptr &&
-            !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
-            enum_type->FindValueByNumber(
-                sub_message->GetReflection()->GetEnumValue(
-                    *sub_message, value_field)) == nullptr) {
-          reflection->MutableUnknownFields(msg)->AddLengthDelimited(
-              field->number(), sub_message->SerializeAsString());
-          reflection->RemoveLast(msg, field);
-        }
-      }
-
-      return ptr;
-    }
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      return HandleMessage(msg, ptr, ctx, tag, reflection, field);
   }
 
   // GCC 8 complains about control reaching end of non-void function here.
@@ -1229,6 +1233,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     return InternalSerializeMessageSetItem(field, message, target, stream);
   }
 
+
   // For map fields, we can use either repeated field reflection or map
   // reflection.  Our choice has some subtle effects.  If we use repeated field
   // reflection here, then the repeated field representation becomes
@@ -1414,17 +1419,17 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
         if (strict_utf8_check) {
           WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                            WireFormatLite::SERIALIZE,
-                                           field->full_name().c_str());
+                                           field->full_name());
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
         target = stream->WriteString(field->number(), value, target);
         break;
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           absl::Cord value = message_reflection->GetCord(message, field);
           target = stream->WriteString(field->number(), value, target);
           break;
@@ -1704,7 +1709,26 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     HANDLE_FIXED_TYPE(BOOL, Bool)
 
     HANDLE_TYPE(GROUP, Group, Message)
-    HANDLE_TYPE(MESSAGE, Message, Message)
+
+    case FieldDescriptor::TYPE_MESSAGE: {
+      if (field->is_repeated()) {
+        for (size_t j = 0; j < count; ++j) {
+          data_size += WireFormatLite::MessageSize(
+              message_reflection->GetRepeatedMessage(message, field, j));
+        }
+        break;
+      }
+      if (field->is_extension()) {
+        data_size += WireFormatLite::LengthDelimitedSize(
+            message_reflection->GetExtensionSet(message).GetMessageByteSizeLong(
+                field->number()));
+        break;
+      }
+      data_size += WireFormatLite::MessageSize(
+          message_reflection->GetMessage(message, field));
+      break;
+    }
+
 #undef HANDLE_TYPE
 #undef HANDLE_FIXED_TYPE
 
@@ -1725,7 +1749,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         for (size_t j = 0; j < count; j++) {
           absl::Cord value = message_reflection->GetCord(message, field);
           data_size += WireFormatLite::StringSize(value);

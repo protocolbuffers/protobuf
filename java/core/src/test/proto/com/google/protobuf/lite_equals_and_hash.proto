@@ -30,7 +30,6 @@ message Foo {
     MyGroup mygroup = 5 [features.message_encoding = DELIMITED];
   }
 
-  // LINT: ALLOW_GROUPS
   message MyGroup {
     int32 value = 1;
   }

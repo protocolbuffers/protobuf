@@ -179,8 +179,8 @@ TEST(GeneratedCode, ScalarsProto2) {
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
 
   EXPECT_EQ(0, upb_Message_GetInt32(UPB_UPCAST(msg), optional_int32_field, 0));
-  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
-                       nullptr);
+  upb_Message_SetBaseFieldInt32(UPB_UPCAST(msg), optional_int32_field,
+                                kTestInt32);
   EXPECT_EQ(true,
             upb_Message_HasBaseField(UPB_UPCAST(msg), optional_int32_field));
   EXPECT_EQ(kTestInt32,
@@ -196,8 +196,8 @@ TEST(GeneratedCode, ScalarsProto2) {
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
   EXPECT_EQ(0,
             upb_Message_GetUInt32(UPB_UPCAST(msg), optional_uint32_field, 0));
-  upb_Message_SetUInt32(UPB_UPCAST(msg), optional_uint32_field, kTestUInt32,
-                        nullptr);
+  upb_Message_SetBaseFieldUInt32(UPB_UPCAST(msg), optional_uint32_field,
+                                 kTestUInt32);
   EXPECT_EQ(kTestUInt32,
             upb_Message_GetUInt32(UPB_UPCAST(msg), optional_uint32_field, 0));
   EXPECT_EQ(
@@ -219,15 +219,15 @@ TEST(GeneratedCode, ScalarProto3) {
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
-  upb_Message_SetInt64(UPB_UPCAST(msg), optional_int64_field, -1, nullptr);
+  upb_Message_SetBaseFieldInt64(UPB_UPCAST(msg), optional_int64_field, -1);
   EXPECT_EQ(
       -1, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
   EXPECT_EQ(-1, upb_Message_GetInt64(UPB_UPCAST(msg), optional_int64_field, 0));
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
-  upb_Message_SetUInt64(UPB_UPCAST(msg), optional_uint64_field, kTestUInt64,
-                        nullptr);
+  upb_Message_SetBaseFieldUInt64(UPB_UPCAST(msg), optional_uint64_field,
+                                 kTestUInt64);
   EXPECT_EQ(
       kTestUInt64,
       protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
@@ -265,8 +265,8 @@ TEST(GeneratedCode, Strings) {
       false,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
           msg));
-  upb_Message_SetString(UPB_UPCAST(msg), optional_string_field,
-                        upb_StringView_FromString(kTestStr2), nullptr);
+  upb_Message_SetBaseFieldString(UPB_UPCAST(msg), optional_string_field,
+                                 upb_StringView_FromString(kTestStr2));
   EXPECT_EQ(true,
             upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
@@ -327,12 +327,10 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message* new_nested_message = UPB_UPCAST(
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
           arena));
-  upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
-                       nullptr);
-  upb_Message_SetMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, new_nested_message);
+  upb_Message_SetBaseFieldInt32(new_nested_message, nested_message_a_field,
+                                123);
+  upb_Message_SetMessage(UPB_UPCAST(msg), optional_message_field,
+                         new_nested_message);
 
   upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
       UPB_UPCAST(msg),
@@ -475,6 +473,58 @@ TEST(GeneratedCode, EnumClosedCheck) {
   const upb_MiniTableField* closedEnumField = &table->UPB_PRIVATE(fields)[1];
   EXPECT_EQ(upb_MiniTableField_Type(closedEnumField), kUpb_FieldType_Enum);
   EXPECT_TRUE(upb_MiniTableField_IsClosedEnum(closedEnumField));
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, OneofClear) {
+  upb_Arena* arena = upb_Arena_New();
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTable* table =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // oneof_uint32
+  const upb_MiniTableField* oneofField =
+      upb_MiniTable_FindFieldByNumber(table, 111);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(oneofField));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_uint32(msg, 522);
+  EXPECT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_oneof_uint32(msg));
+
+  upb_Message_ClearOneof((upb_Message*)msg, table, oneofField);
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_oneof_uint32(msg));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, OneofAccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTable* table =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // oneof_uint32
+  const upb_MiniTableField* oneofField =
+      upb_MiniTable_FindFieldByNumber(table, 111);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(oneofField));
+
+  const upb_MiniTableField* oneOfFirstFetch =
+      upb_Message_WhichOneof((upb_Message*)msg, table, oneofField);
+  // one of not set, so should initially yield nullptr
+  EXPECT_EQ(oneOfFirstFetch, nullptr);
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_uint32(msg, 522);
+  const upb_MiniTableField* oneOfSecondFetch =
+      upb_Message_WhichOneof((upb_Message*)msg, table, oneofField);
+  // this oneof has now been set, so should yield the MiniTableField
+  EXPECT_EQ(oneOfSecondFetch, oneofField);
+
   upb_Arena_Free(arena);
 }
 

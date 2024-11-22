@@ -163,7 +163,7 @@ int utf8_range(const unsigned char *data, int len)
             range = vorrq_u8(range, tmp2);
 
             /*
-             * Now we have below range indices caluclated
+             * Now we have below range indices calculated
              * Correct cases:
              * - 8 for C0~FF
              * - 3 for 1st byte after F0~FF

@@ -6,12 +6,16 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import <Foundation/Foundation.h>
-#import "GPBTestUtilities.h"
 
 #import "GPBCodedInputStream.h"
+#import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
+#import "GPBUnknownFields.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
+#import "GPBWireFormat.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 
 @interface CodedInputStreamTests : GPBTestCase
@@ -266,21 +270,62 @@
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
 
-  // Create two parallel inputs.  Parse one as unknown fields while using
-  // skipField() to skip each field on the other.  Expect the same tags.
-  GPBCodedInputStream* input1 = [GPBCodedInputStream streamWithData:rawBytes];
-  GPBCodedInputStream* input2 = [GPBCodedInputStream streamWithData:rawBytes];
-  GPBUnknownFieldSet* unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  TestEmptyMessage* empty = [TestEmptyMessage parseFromData:rawBytes error:NULL];
+  XCTAssertNotNil(empty);
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:empty] autorelease];
+  NSMutableArray<NSNumber*>* fieldNumbers = [NSMutableArray arrayWithCapacity:ufs.count];
+  for (GPBUnknownField* field in ufs) {
+    GPBWireFormat wireFormat;
+    switch (field.type) {
+      case GPBUnknownFieldTypeFixed32:
+        wireFormat = GPBWireFormatFixed32;
+        break;
+      case GPBUnknownFieldTypeFixed64:
+        wireFormat = GPBWireFormatFixed64;
+        break;
+      case GPBUnknownFieldTypeVarint:
+        wireFormat = GPBWireFormatVarint;
+        break;
+      case GPBUnknownFieldTypeLengthDelimited:
+        wireFormat = GPBWireFormatLengthDelimited;
+        break;
+      case GPBUnknownFieldTypeGroup:
+        wireFormat = GPBWireFormatStartGroup;
+        break;
+    }
+    uint32_t tag = GPBWireFormatMakeTag(field.number, wireFormat);
+    [fieldNumbers addObject:@(tag)];
+  }
 
+  // Check the tags compared to what's in the UnknownFields to confirm the stream is
+  // skipping as expected (this covers the tags within a group also).
+  GPBCodedInputStream* input2 = [GPBCodedInputStream streamWithData:rawBytes];
+
+  NSUInteger idx = 0;
   while (YES) {
-    int32_t tag = [input1 readTag];
-    XCTAssertEqual(tag, [input2 readTag]);
+    int32_t tag = [input2 readTag];
     if (tag == 0) {
+      XCTAssertEqual(idx, fieldNumbers.count);
       break;
     }
-    [unknownFields mergeFieldFrom:tag input:input1];
+    XCTAssertEqual(tag, [fieldNumbers[idx] intValue]);
     [input2 skipField:tag];
+    ++idx;
   }
+}
+
+- (void)testLimit {
+  TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
+  NSData* rawBytes = message.data;
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:rawBytes];
+  XCTAssertEqual([input bytesUntilLimit], rawBytes.length);
+  [input pushLimit:8];
+  XCTAssertEqual([input bytesUntilLimit], 8u);
+  [input popLimit:3];
+  XCTAssertEqual([input bytesUntilLimit], 3u);
+  [input readTag];
+  XCTAssertEqual([input position], 1u);
+  XCTAssertEqual([input bytesUntilLimit], 2u);
 }
 
 - (void)testReadHugeBlob {
@@ -428,6 +473,104 @@
     // cases, so don't actually check the string for exact equality.
     XCTAssertTrue(message.defaultString.length > 0, @"Loop %zd", i);
   }
+}
+
+- (void)assertReadByteToEndGroupFails:(NSData*)data {
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  uint32_t tag = [input readTag];
+  XCTAssertThrows(GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy(
+      &input->state_, GPBWireFormatGetTagFieldNumber(tag)));
+}
+
+- (void)assertReadByteToEndGroup:(NSData*)data value:(NSData*)value {
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  uint32_t tag = [input readTag];
+  NSData* readValue = GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy(
+      &input->state_, GPBWireFormatGetTagFieldNumber(tag));
+  XCTAssertNotNil(readValue);
+  XCTAssertEqualObjects(readValue, value);
+  [readValue release];
+}
+
+static NSData* DataForGroupsOfDepth(NSUInteger depth) {
+  NSMutableData* data = [NSMutableData dataWithCapacity:0];
+
+  uint32_t byte = 35;  // 35 = 0b100011 -> field 4/start group
+  for (NSUInteger i = 0; i < depth; ++i) {
+    [data appendBytes:&byte length:1];
+  }
+
+  byte = 8;  // 8 = 0b1000, -> field 1/varint
+  [data appendBytes:&byte length:1];
+  byte = 1;  // 1 -> varint value of 1
+  [data appendBytes:&byte length:1];
+
+  byte = 36;  // 36 = 0b100100 -> field 4/end group
+  for (NSUInteger i = 0; i < depth; ++i) {
+    [data appendBytes:&byte length:1];
+  }
+  return data;
+}
+
+- (void)testBytesToEndGroup {
+  // 35 = 0b100011 -> field 4/start group
+  // 36 = 0b100100 -> field 4/end group
+  // 43 = 0b101011 -> field 5/end group
+  // 44 = 0b101100 -> field 5/end group
+  // 8 = 0b1000, 1 -> field 1/varint, value of 1
+  // 21 = 0b10101, 0x78, 0x56, 0x34, 0x12 -> field 2/fixed32, value of 0x12345678
+  // 25 = 0b11001, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12 -> field 3/fixed64,
+  //                                                                 value of 0x123456789abcdef0LL
+  // 50 = 0b110010, 0x0 -> field 6/length delimited, length 0
+  // 50 = 0b110010, 0x1, 42 -> field 6/length delimited, length 1, byte 42
+  // 0 -> field 0 which is invalid/varint
+  // 15 = 0b1111 -> field 1, wire type 7 which is invalid
+
+  [self assertReadByteToEndGroup:bytes(35, 36) value:bytes(36)];              // empty group
+  [self assertReadByteToEndGroup:bytes(35, 8, 1, 36) value:bytes(8, 1, 36)];  // varint
+  [self assertReadByteToEndGroup:bytes(35, 21, 0x78, 0x56, 0x34, 0x12, 36)    // fixed32
+                           value:bytes(21, 0x78, 0x56, 0x34, 0x12, 36)];
+  [self assertReadByteToEndGroup:bytes(35, 25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
+                                       36)  // fixed64
+                           value:bytes(25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12, 36)];
+  [self assertReadByteToEndGroup:bytes(35, 50, 0, 36)
+                           value:bytes(50, 0, 36)];  // length delimited, length 0
+  [self assertReadByteToEndGroup:bytes(35, 50, 1, 42, 36)
+                           value:bytes(50, 1, 42, 36)];  // length delimited, length 1, byte 42
+  [self assertReadByteToEndGroup:bytes(35, 43, 44, 36) value:bytes(43, 44, 36)];  // Sub group
+  [self assertReadByteToEndGroup:bytes(35, 8, 1, 43, 8, 1, 44,
+                                       36)  // varint and sub group with varint
+                           value:bytes(8, 1, 43, 8, 1, 44, 36)];
+
+  [self assertReadByteToEndGroupFails:bytes(35, 0, 36)];                 // Invalid field number
+  [self assertReadByteToEndGroupFails:bytes(35, 15, 36)];                // Invalid wire type
+  [self assertReadByteToEndGroupFails:bytes(35, 21, 0x78, 0x56, 0x34)];  // truncated fixed32
+  [self assertReadByteToEndGroupFails:bytes(35, 25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56,
+                                            0x34)];  // truncated fixed64
+
+  // Missing end group
+  [self assertReadByteToEndGroupFails:bytes(35)];
+  [self assertReadByteToEndGroupFails:bytes(35, 8, 1)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43, 8, 1)];
+
+  // Wrong end group
+  [self assertReadByteToEndGroupFails:bytes(35, 44)];
+  [self assertReadByteToEndGroupFails:bytes(35, 8, 1, 44)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43, 36)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43, 8, 1, 36)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43, 44, 44)];
+  [self assertReadByteToEndGroupFails:bytes(35, 43, 8, 1, 44, 44)];
+
+  // This is the same limit as within GPBCodedInputStream.
+  const NSUInteger kDefaultRecursionLimit = 100;
+  // That depth parses.
+  NSData* testData = DataForGroupsOfDepth(kDefaultRecursionLimit);
+  [self assertReadByteToEndGroup:testData
+                           value:[testData subdataWithRange:NSMakeRange(1, testData.length - 1)]];
+  // One more level deep fails.
+  testData = DataForGroupsOfDepth(kDefaultRecursionLimit + 1);
+  [self assertReadByteToEndGroupFails:testData];
 }
 
 @end

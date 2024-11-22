@@ -5,9 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <limits.h>
+
+#include <cstdlib>
+#include <string>
+#include <utility>
+
 #include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
-#include "absl/strings/str_cat.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -18,11 +23,6 @@
 namespace google {
 namespace protobuf {
 namespace {
-
-TEST(AnyMetadataTest, ConstInit) {
-  PROTOBUF_CONSTINIT static internal::AnyMetadata metadata(nullptr, nullptr);
-  (void)metadata;
-}
 
 TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny submessage;
@@ -40,9 +40,9 @@ TEST(AnyTest, TestPackAndUnpack) {
 }
 
 TEST(AnyTest, TestPackFromSerializationExceedsSizeLimit) {
-#if defined(_MSC_VER) && defined(_M_IX86)
-  GTEST_SKIP() << "This toolchain can't allocate that much memory.";
-#endif
+  if (sizeof(size_t) == 4) {
+    GTEST_SKIP() << "This toolchain can't allocate that much memory.";
+  }
   protobuf_unittest::TestAny submessage;
   submessage.mutable_text()->resize(INT_MAX, 'a');
   protobuf_unittest::TestAny message;

@@ -88,17 +88,6 @@ typedef NS_ENUM(NSInteger, GPBWellKnownTypesErrorCode) {
  **/
 - (instancetype)initWithTimeInterval:(NSTimeInterval)timeInterval;
 
-// These next two methods are deprecated because GBPDuration has no need of a
-// "base" time. The older methods were about symmetry with GBPTimestamp, but
-// the unix epoch usage is too confusing.
-
-/** Deprecated, use timeInterval instead. */
-@property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970
-    __attribute__((deprecated("Use timeInterval")));
-/** Deprecated, use initWithTimeInterval: instead. */
-- (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970
-    __attribute__((deprecated("Use initWithTimeInterval:")));
-
 @end
 
 #pragma mark - GPBAny

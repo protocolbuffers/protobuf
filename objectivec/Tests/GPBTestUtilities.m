@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBTestUtilities.h"
-
 #import "objectivec/Tests/MapUnittest.pbobjc.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestImport.pbobjc.h"

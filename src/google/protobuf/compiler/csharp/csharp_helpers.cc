@@ -208,9 +208,9 @@ std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
 // editions are like groups, but have a real name, so we use that.
 std::string GetFieldName(const FieldDescriptor* descriptor) {
   if (internal::cpp::IsGroupLike(*descriptor)) {
-    return descriptor->message_type()->name();
+    return std::string(descriptor->message_type()->name());
   } else {
-    return descriptor->name();
+    return std::string(descriptor->name());
   }
 }
 

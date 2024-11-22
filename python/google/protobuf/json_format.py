@@ -497,6 +497,7 @@ def ParseDict(
 
 
 _INT_OR_FLOAT = (int, float)
+_LIST_LIKE = (list, tuple)
 
 
 class _Parser(object):
@@ -638,7 +639,7 @@ class _Parser(object):
           )
         elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
           message.ClearField(field.name)
-          if not isinstance(value, list):
+          if not isinstance(value, _LIST_LIKE):
             raise ParseError(
                 'repeated field {0} must be in [] which is {1} at {2}'.format(
                     name, value, path
@@ -752,8 +753,8 @@ class _Parser(object):
     """Convert a JSON representation into Value message."""
     if isinstance(value, dict):
       self._ConvertStructMessage(value, message.struct_value, path)
-    elif isinstance(value, list):
-      self._ConvertListValueMessage(value, message.list_value, path)
+    elif isinstance(value, _LIST_LIKE):
+      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
     elif value is None:
       message.null_value = 0
     elif isinstance(value, bool):
@@ -769,9 +770,9 @@ class _Parser(object):
           )
       )
 
-  def _ConvertListValueMessage(self, value, message, path):
+  def _ConvertListOrTupleValueMessage(self, value, message, path):
     """Convert a JSON representation into ListValue message."""
-    if not isinstance(value, list):
+    if not isinstance(value, _LIST_LIKE):
       raise ParseError(
           'ListValue must be in [] which is {0} at {1}'.format(value, path)
       )
@@ -1052,7 +1053,7 @@ _WKTJSONMETHODS = {
     ],
     'google.protobuf.ListValue': [
         '_ListValueMessageToJsonObject',
-        '_ConvertListValueMessage',
+        '_ConvertListOrTupleValueMessage',
     ],
     'google.protobuf.Struct': [
         '_StructMessageToJsonObject',

@@ -10,7 +10,7 @@ package com.google.protobuf;
 import com.google.protobuf.MapEntryLite.Metadata;
 import java.util.Map;
 
-class MapFieldSchemaFull implements MapFieldSchema {
+final class MapFieldSchemaFull implements MapFieldSchema {
   @Override
   public Map<?, ?> forMutableMapData(Object mapField) {
     return ((MapField<?, ?>) mapField).getMutableMap();

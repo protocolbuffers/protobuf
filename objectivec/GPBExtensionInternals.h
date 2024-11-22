@@ -7,11 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBCodedOutputStream.h"
 #import "GPBDescriptor.h"
 
-@class GPBCodedOutputStream;
+size_t GPBComputeExtensionSerializedSizeIncludingTag(
+    GPBExtensionDescriptor *extension, id value);
 
-size_t GPBComputeExtensionSerializedSizeIncludingTag(GPBExtensionDescriptor *extension, id value);
-
-void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension, id value,
+void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension,
+                                          id value,
                                           GPBCodedOutputStream *output);

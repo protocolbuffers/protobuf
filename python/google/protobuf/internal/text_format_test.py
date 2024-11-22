@@ -19,7 +19,7 @@ import unittest
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import descriptor_pb2
-from google.protobuf.internal import any_test_pb2 as test_extend_any
+from google.protobuf.internal import well_known_types_test_pb2 as test_extend_any
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
@@ -1179,6 +1179,73 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     test_util.SetAllFields(message)
     self.assertEqual(message, parsed_message)
 
+  def testPrintMapEmptyKeys(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[0] = 123
+    message.map_int64_int64[0] = 2**33
+    message.map_uint32_uint32[0] = 123
+    message.map_uint64_uint64[0] = 2**33
+    message.map_string_string[''] = 'world'
+    message.map_int32_foreign_message[0].c = 111
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  value: "world"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  value {\n'
+        '    c: 111\n'
+        '  }\n'
+        '}\n',
+    )
+
+  def testPrintMapEmptyValues(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[-123] = 0
+    message.map_int64_int64[-(2**33)] = 0
+    message.map_uint32_uint32[123] = 0
+    message.map_uint64_uint64[2**33] = 0
+    message.map_string_string['hello'] = ''
+    message.map_int32_foreign_message[111].c = 0
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  key: -123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  key: -8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  key: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "hello"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 0\n'
+        '  }\n'
+        '}\n',
+    )
+
   def testPrintMap(self):
     message = map_unittest_pb2.TestMap()
 
@@ -1343,6 +1410,23 @@ class Proto2Tests(TextFormatBase):
         '[google.protobuf.internal.TestMessageSetExtension3] {\n'
         '  text: \"bar\"\n'
         '}\n')
+
+  def testMessageSetExtensionNotFirst(self):
+    desc = message_set_extensions_pb2.TestMessageSetExtension1.DESCRIPTOR
+    self.assertEqual('first_extension', desc.extensions[0].name)
+    self.assertEqual('message_set_extension', desc.extensions[1].name)
+    message = message_set_extensions_pb2.TestMessageSet()
+    ext = (
+        message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+    )
+    message.Extensions[ext].i = 123
+    expected_str = (
+        '[google.protobuf.internal.TestMessageSetExtension1] {\n  i: 123\n}\n'
+    )
+    self.CompareToGoldenText(text_format.MessageToString(message), expected_str)
+    parsed = message_set_extensions_pb2.TestMessageSet()
+    text_format.Parse(expected_str, parsed)
+    self.CompareToGoldenText(text_format.MessageToString(parsed), expected_str)
 
   def testPrintMessageSetByFieldNumber(self):
     out = text_format.TextWriter(False)
@@ -1798,6 +1882,32 @@ class Proto3Tests(unittest.TestCase):
         '    data: "string"\n'
         '  }\n'
         '}\n')
+
+  def testPrintStructInAny(self):
+    packed_message = struct_pb2.Struct()
+    packed_message['name'] = 'Jim'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    print(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        )
+    )
+    self.assertEqual(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
+        'any_value {\n'
+        '  [type.googleapis.com/google.protobuf.Struct] {\n'
+        '    fields {\n'
+        '      key: "name"\n'
+        '      value {\n'
+        '        string_value: "Jim"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n',
+    )
 
   def testTopAnyMessage(self):
     packed_msg = unittest_pb2.OneString()
@@ -2407,7 +2517,6 @@ class TokenizerTest(unittest.TestCase):
     msg = unittest_delimited_pb2.TestDelimited()
     with self.assertRaises(text_format.ParseError):
       text_format.Parse('NotGroupLikeScope { b:1 }', msg)
-
 
 # Tests for pretty printer functionality.
 @_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))

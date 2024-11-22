@@ -21,14 +21,6 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 # Generic support code #########################################################
 
-# begin:github_only
-_is_google3 = False
-# end:github_only
-
-# begin:google_only
-# _is_google3 = True
-# end:google_only
-
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -50,18 +42,19 @@ def _get_real_root(ctx, file):
     real_short_path = _get_real_short_path(file)
     root = file.path[:-len(real_short_path) - 1]
 
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+    if ctx.rule.attr.strip_import_prefix:
         root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
+
     return root
 
 def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
-    if not _is_google3:
-        strip_import_prefix = ctx.rule.attr.strip_import_prefix
-        if strip_import_prefix and strip_import_prefix != "/":
-            if not package.startswith(strip_import_prefix[1:]):
-                fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
-            package = package[len(strip_import_prefix):]
+
+    strip_import_prefix = ctx.rule.attr.strip_import_prefix
+    if strip_import_prefix and strip_import_prefix != "/":
+        if not package.startswith(strip_import_prefix[1:]):
+            fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
+        package = package[len(strip_import_prefix):]
 
     real_short_path = _get_real_short_path(src)
     real_short_path = paths.relativize(real_short_path, package)

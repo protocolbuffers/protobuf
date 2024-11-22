@@ -1,25 +1,13 @@
-diff --git a/fuzzing/tools/validate_dict.py b/fuzzing/tools/validate_dict.py
-index d561e68..52cbcb8 100644
---- a/fuzzing/tools/validate_dict.py
-+++ b/fuzzing/tools/validate_dict.py
-@@ -19,7 +19,7 @@ Validates and merges a set of fuzzing dictionary files into a single output.
- 
- from absl import app
- from absl import flags
--from dict_validation import validate_line
-+from fuzzing.tools.dict_validation import validate_line
- from sys import stderr
- 
- FLAGS = flags.FLAGS
-diff --git a/fuzzing/requirements.txt b/fuzzing/requirements.txt
-index 01482d4..4b36f4f 100644
---- a/fuzzing/requirements.txt
-+++ b/fuzzing/requirements.txt
-@@ -1,5 +1,5 @@
- # Python requirements for the tools supporting the fuzzing rules. These are
- # installed automatically through the WORKSPACE configuration.
- 
--absl-py==0.11.0 --hash=sha256:b3d9eb5119ff6e0a0125f6dabf2f9fae02f8acae7be70576002fac27235611c5
--six==1.15.0 --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced
-+absl-py==2.0.0 --hash=sha256:9a28abb62774ae4e8edbe2dd4c49ffcd45a6a848952a5eccc6a49f3f0fc1e2f3
-+six==1.16.0 --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
+diff --git a/fuzzing/private/binary.bzl b/fuzzing/private/binary.bzl
+index 4c85aed..8ff9723 100644
+--- a/fuzzing/private/binary.bzl
++++ b/fuzzing/private/binary.bzl
+@@ -114,7 +114,7 @@ def _fuzzing_binary_impl(ctx):
+     else:
+         default_info = ctx.attr.binary[DefaultInfo]
+     binary_runfiles = default_info.default_runfiles
+-    binary_repo_mapping_manifest = getattr(default_info.files_to_run, "repo_mapping_manifest")
++    binary_repo_mapping_manifest = getattr(default_info.files_to_run, "repo_mapping_manifest", None)
+     other_runfiles = []
+     if ctx.file.corpus:
+         other_runfiles.append(ctx.file.corpus)

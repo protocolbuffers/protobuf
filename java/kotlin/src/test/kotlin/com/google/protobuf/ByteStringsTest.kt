@@ -35,8 +35,8 @@ class ByteStringsTest {
   @Test
   fun byteAt() {
     val str = "abc".toByteStringUtf8()
-    assertThat(str[0]).isEqualTo('a'.toByte())
-    assertThat(str[2]).isEqualTo('c'.toByte())
+    assertThat(str[0]).isEqualTo('a'.code)
+    assertThat(str[2]).isEqualTo('c'.code)
   }
 
   @Test

@@ -11,7 +11,6 @@
 
 @class GPBEnumDescriptor;
 @class GPBMessage;
-@class GPBInt32Array;
 
 /**
  * Verifies that a given value can be represented by an enum type.

@@ -15,6 +15,7 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -23,14 +24,15 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -48,11 +50,6 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   constexpr absl::string_view kOssNs = "google::protobuf";
 
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
-}
-
-inline std::string MacroPrefix(const Options& options) {
-  // Constants are different in the internal and external version.
-  return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
 inline std::string DeprecatedAttribute(const Options&,
@@ -176,6 +173,9 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                                         const Options& options,
                                         bool split = false);
 
+// Name of the ClassData subclass used for a message.
+std::string ClassDataType(const Descriptor* descriptor, const Options& options);
+
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options);
@@ -188,6 +188,24 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options);
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
 
+// Add an underscore if necessary to prevent conflicting with known names and
+// keywords.
+// We use the context and the kind of entity to try to determine if mangling is
+// necessary or not.
+// For example, a message named `New` at file scope is fine, but at message
+// scope it needs mangling because it collides with the `New` function.
+enum class NameContext {
+  kFile,
+  kMessage,
+};
+enum class NameKind {
+  kType,
+  kFunction,
+  kValue,
+};
+std::string ResolveKnownNameCollisions(absl::string_view name,
+                                       NameContext name_context,
+                                       NameKind name_kind);
 // Adds an underscore if necessary to prevent conflicting with a keyword.
 std::string ResolveKeyword(absl::string_view name);
 
@@ -330,19 +348,15 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
 
 inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
+         field->cpp_string_type() == FieldDescriptor::CppStringType::kCord;
 }
 
 inline bool IsString(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
+         (field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
+          field->cpp_string_type() == FieldDescriptor::CppStringType::kView);
 }
 
-inline bool IsStringPiece(const FieldDescriptor* field) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) ==
-             FieldOptions::STRING_PIECE;
-}
 
 bool IsProfileDriven(const Options& options);
 
@@ -470,6 +484,13 @@ bool HasMapFields(const FileDescriptor* file);
 // Does this file have any enum type definitions?
 bool HasEnumDefinitions(const FileDescriptor* file);
 
+// Returns true if any message in the file can have v2 table.
+bool HasV2Table(const FileDescriptor* file, const Options& options);
+
+// Returns true if a message (descriptor) can have v2 table.
+bool IsV2EnabledForMessage(const Descriptor* descriptor,
+                           const Options& options);
+
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
 inline bool HasGeneratedMethods(const FileDescriptor* file,
@@ -562,7 +583,7 @@ inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field,
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
 
-bool IsWellKnownMessage(const FileDescriptor* descriptor);
+bool IsWellKnownMessage(const FileDescriptor* file);
 
 enum class GeneratedFileType : int { kPbH, kProtoH, kProtoStaticReflectionH };
 
@@ -582,25 +603,7 @@ inline std::string IncludeGuard(const FileDescriptor* file,
     case GeneratedFileType::kProtoStaticReflectionH:
       extension = ".proto.static_reflection.h";
   }
-  std::string filename_identifier =
-      FilenameIdentifier(file->name() + extension);
-
-  if (IsWellKnownMessage(file)) {
-    // For well-known messages we need third_party/protobuf and net/proto2 to
-    // have distinct include guards, because some source files include both and
-    // both need to be defined (the third_party copies will be in the
-    // google::protobuf_opensource namespace).
-    return absl::StrCat(MacroPrefix(options), "_INCLUDED_",
-                        filename_identifier);
-  } else {
-    // Ideally this case would use distinct include guards for opensource and
-    // google3 protos also.  (The behavior of "first #included wins" is not
-    // ideal).  But unfortunately some legacy code includes both and depends on
-    // the identical include guards to avoid compile errors.
-    //
-    // We should clean this up so that this case can be removed.
-    return absl::StrCat("GOOGLE_PROTOBUF_INCLUDED_", filename_identifier);
-  }
+  return FilenameIdentifier(absl::StrCat(file->name(), extension));
 }
 
 // Returns the OptimizeMode for this file, furthermore it updates a status
@@ -646,7 +649,7 @@ std::vector<const Descriptor*> TopologicalSortMessagesInFile(
     const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
 
 bool HasWeakFields(const Descriptor* desc, const Options& options);
-bool HasWeakFields(const FileDescriptor* desc, const Options& options);
+bool HasWeakFields(const FileDescriptor* file, const Options& options);
 
 // Returns true if the "required" restriction check should be ignored for the
 // given field.
@@ -708,10 +711,12 @@ void ListAllFields(const Descriptor* d,
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 
-template <class T>
+template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
-  for (int i = 0; i < d->nested_type_count(); i++) {
-    ForEachField(d->nested_type(i), std::forward<T&&>(func));
+  if (do_nested_types) {
+    for (int i = 0; i < d->nested_type_count(); i++) {
+      ForEachField<true>(d->nested_type(i), std::forward<T&&>(func));
+    }
   }
   for (int i = 0; i < d->extension_count(); i++) {
     func(d->extension(i));
@@ -724,7 +729,7 @@ void ForEachField(const Descriptor* d, T&& func) {
 template <class T>
 void ForEachField(const FileDescriptor* d, T&& func) {
   for (int i = 0; i < d->message_type_count(); i++) {
-    ForEachField(d->message_type(i), std::forward<T&&>(func));
+    ForEachField<true>(d->message_type(i), std::forward<T&&>(func));
   }
   for (int i = 0; i < d->extension_count(); i++) {
     func(d->extension(i));
@@ -785,7 +790,7 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // missing to insert in the extension table in ExtensionSet.
 //
 // For services, the TU unconditionally pins the request/response objects.
-// This is the status quo for simplicitly to avoid modifying the RPC layer. It
+// This is the status quo for simplicity to avoid modifying the RPC layer. It
 // might be improved in the future.
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
@@ -935,12 +940,10 @@ class PROTOC_EXPORT Formatter {
     Formatter* format_;
   };
 
-  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent() {
-    return ScopedIndenter(this);
-  }
+  [[nodiscard]] ScopedIndenter ScopedIndent() { return ScopedIndenter(this); }
   template <typename... Args>
-  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent(const char* format,
-                                                 const Args&&... args) {
+  [[nodiscard]] ScopedIndenter ScopedIndent(const char* format,
+                                            const Args&&... args) {
     (*this)(format, static_cast<Args&&>(args)...);
     return ScopedIndenter(this);
   }
@@ -1020,7 +1023,7 @@ class PROTOC_EXPORT Formatter {
 template <typename T>
 std::string FieldComment(const T* field, const Options& options) {
   if (options.strip_nonfunctional_codegen) {
-    return field->name();
+    return std::string(field->name());
   }
   // Print the field's (or oneof's) proto-syntax definition as a comment.
   // We don't want to print group bodies so we cut off after the first
@@ -1179,6 +1182,24 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // `&ClassName::PostLoopHandler` which should be a static function of the right
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
+
+// Emit the repeated field getter for the custom options.
+// If safe_boundary_check is specified, it calls the internal checked getter.
+inline auto GetEmitRepeatedFieldGetterSub(const Options& options,
+                                          io::Printer* p) {
+  return io::Printer::Sub{
+      "getter",
+      [&options, p] {
+        if (options.safe_boundary_check) {
+          p->Emit(R"cc(
+            $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
+          )cc");
+        } else {
+          p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
+        }
+      }}
+      .WithSuffix("");
+}
 
 // Priority used for static initializers.
 enum InitPriority {

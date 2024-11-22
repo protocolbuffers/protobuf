@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package protobuf_editions_test.proto2;
 
-import "google/protobuf/editions/codegen_tests/proto2_optional.proto";
+import "editions/codegen_tests/proto2_optional.proto";
 
 message Proto2ImportMessage {
   optional Proto2Optional sub_message_field = 1;

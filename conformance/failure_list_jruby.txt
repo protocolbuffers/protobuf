@@ -144,3 +144,7 @@ Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+Required.*.ProtobufInput.UnmatchedEndGroup                                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupUnknown                                                                  # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupWithData                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupWrongType                                                                # Should have failed to parse, but didn't.

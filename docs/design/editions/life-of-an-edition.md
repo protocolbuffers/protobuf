@@ -188,11 +188,11 @@ breaking changes.
 
 ### Large-scale Changes with Features Only: Immolation of `required`
 
-We can use features to move fields off of `features.presence = LEGACY_REQUIRED`
-(the edition’s spelling of `required`) and onto `features.presence =
-EXPLICIT_PRESENCE`.
+We can use features to move fields off of `features.field_presence =
+LEGACY_REQUIRED` (the edition’s spelling of `required`) and onto
+`features.field_presence = EXPLICIT_PRESENCE`.
 
-To do this, we introduce a new value for `features.presence`,
+To do this, we introduce a new value for `features.field_presence`,
 `ALWAYS_SERIALIZE`, which behaves like `EXPLICIT_PRESENCE`, but, if the has-bit
 is not set, the default is serialized. (This is sort of like a cross between
 `required` and `proto3` no-label.)
@@ -247,7 +247,7 @@ Once we have eliminated all the legacy accessors, we will remove the feature
 ### Large-scale Changes with Wire Format Break: Group-Encoded Messages
 
 It turns out that encoding and decoding groups (end-marker-delimited
-submessages) is cheaper than handling length-delimited messages. There are
+submessages) is cheaper than handling length-prefixed messages. There are
 likely CPU and RAM savings in switching messages to use the group encoding.
 Unfortunately, that would be a wire-breaking change, causing old readers to be
 unable to parse new messages.
@@ -267,7 +267,7 @@ Once we are 95% done, we will upgrade protoc to set `features.group_encoded` to
 true by default in new editions. Tooling can be used to clean up features as
 before.
 
-We will probably never completely eliminate length-delimited messages, so this
+We will probably never completely eliminate length-prefixed messages, so this
 is a rare case where the feature lives on forever.
 
 ## Large-scale Change Tooling

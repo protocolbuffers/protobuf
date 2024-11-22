@@ -78,6 +78,17 @@ class FieldDescriptorLite {
     MAX_LABEL = 3,  // Constant useful for defining lookup tables
                     // indexed by Label.
   };
+
+  // Identifies the storage type of a C++ string field.  This corresponds to
+  // pb.CppFeatures.StringType, but is compatible with ctype prior to Edition
+  // 2024.  0 is reserved for errors.
+#ifndef SWIG
+  enum class CppStringType {
+    kView = 1,
+    kCord = 2,
+    kString = 3,
+  };
+#endif
 };
 
 }  // namespace internal

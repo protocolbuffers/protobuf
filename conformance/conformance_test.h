@@ -15,18 +15,18 @@
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/util/type_resolver.h"
-#include "absl/container/btree_set.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
+#include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/wire_format_lite.h"
 
 namespace conformance {
 class ConformanceRequest;
@@ -46,17 +46,18 @@ class ConformanceTestSuite;
 
 class ConformanceTestRunner {
  public:
-  virtual ~ConformanceTestRunner() {}
+  virtual ~ConformanceTestRunner() = default;
 
   // Call to run a single conformance test.
   //
+  // "len" is the byte length of a serialized conformance.ConformanceRequest.
   // "input" is a serialized conformance.ConformanceRequest.
   // "output" should be set to a serialized conformance.ConformanceResponse.
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& test_name, const std::string& input,
-                       std::string* output) = 0;
+  virtual void RunTest(const std::string& test_name, uint32_t len,
+                       const std::string& input, std::string* output) = 0;
 };
 
 // Test runner that spawns the process being tested and communicates with it
@@ -78,10 +79,10 @@ class ForkPipeRunner : public ConformanceTestRunner {
   explicit ForkPipeRunner(const std::string& executable)
       : child_pid_(-1), executable_(executable) {}
 
-  virtual ~ForkPipeRunner() {}
+  ~ForkPipeRunner() override = default;
 
-  void RunTest(const std::string& test_name, const std::string& request,
-               std::string* response);
+  void RunTest(const std::string& test_name, uint32_t len,
+               const std::string& request, std::string* response) override;
 
  private:
   void SpawnTestProgram();
@@ -128,13 +129,8 @@ class ForkPipeRunner : public ConformanceTestRunner {
 //
 class ConformanceTestSuite {
  public:
-  ConformanceTestSuite()
-      : verbose_(false),
-        performance_(false),
-        enforce_recommended_(false),
-        maximum_edition_(Edition::EDITION_PROTO3),
-        failure_list_flag_name_("--failure_list") {}
-  virtual ~ConformanceTestSuite() {}
+  ConformanceTestSuite() = default;
+  virtual ~ConformanceTestSuite() = default;
 
   void SetPerformance(bool performance) { performance_ = performance; }
   void SetVerbose(bool verbose) { verbose_ = verbose; }
@@ -161,7 +157,25 @@ class ConformanceTestSuite {
   }
 
   // Sets the path of the output directory.
-  void SetOutputDir(const char* output_dir) { output_dir_ = output_dir; }
+  void SetOutputDir(const std::string& output_dir) { output_dir_ = output_dir; }
+
+  // Sets if we are running the test in debug mode.
+  void SetDebug(bool debug) { debug_ = debug; }
+
+  // Sets if we are running ONLY the tests provided in the 'names_to_test_' set.
+  void SetIsolated(bool isolated) { isolated_ = isolated; }
+
+  // Sets the file path of the testee.
+  void SetTestee(const std::string& testee) { testee_ = testee; }
+
+  // Sets the names of tests to ONLY be run isolated from all the others.
+  void SetNamesToTest(absl::flat_hash_set<std::string> names_to_test) {
+    names_to_test_ = std::move(names_to_test);
+  }
+
+  absl::flat_hash_set<std::string> GetExpectedTestsNotRun() {
+    return names_to_test_;
+  }
 
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
@@ -170,6 +184,7 @@ class ConformanceTestSuite {
   // failure list.
   // The filename here is *only* used to create/format useful error messages for
   // how to update the failure list.  We do NOT read this file at all.
+
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
                 const std::string& filename,
                 conformance::FailureSet* failure_list);
@@ -201,7 +216,7 @@ class ConformanceTestSuite {
                               const Message& prototype_message,
                               const std::string& test_name,
                               const std::string& input);
-    virtual ~ConformanceRequestSetting() {}
+    virtual ~ConformanceRequestSetting() = default;
 
     std::unique_ptr<Message> NewTestMessage() const;
 
@@ -259,12 +274,11 @@ class ConformanceTestSuite {
   conformance::ConformanceResponse TruncateResponse(
       const conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const std::string& test_name);
-  void ReportFailure(const std::string& test_name, ConformanceLevel level,
+  void ReportSuccess(const conformance::TestStatus& test);
+  void ReportFailure(conformance::TestStatus& test, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
-                     const conformance::ConformanceResponse& response,
-                     absl::string_view message);
-  void ReportSkip(const std::string& test_name,
+                     const conformance::ConformanceResponse& response);
+  void ReportSkip(const conformance::TestStatus& test,
                   const conformance::ConformanceRequest& request,
                   const conformance::ConformanceResponse& response);
 
@@ -274,42 +288,83 @@ class ConformanceTestSuite {
                                const std::string& equivalent_wire_format,
                                bool require_same_wire_format = false);
 
-  void RunTest(const std::string& test_name,
+  // Returns true if our runner_ ran the test and false if it did not.
+  bool RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
-  void AddExpectedFailedTest(const std::string& test_name);
+  // Will return false if an entry from the failure list was either a
+  // duplicate of an already added one to the trie or it contained invalid
+  // wildcards; otherwise, returns true.
+  bool AddExpectedFailedTest(const conformance::TestStatus& failure);
 
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
+  FailureListTrieNode failure_list_root_;
+  std::string testee_;
   int successes_;
   int expected_failures_;
-  bool verbose_;
-  bool performance_;
-  bool enforce_recommended_;
-  Edition maximum_edition_;
+  bool verbose_ = false;
+  bool performance_ = false;
+  bool enforce_recommended_ = false;
+  Edition maximum_edition_ = Edition::EDITION_PROTO3;
   std::string output_;
   std::string output_dir_;
-  std::string failure_list_flag_name_;
+  std::string failure_list_flag_name_ = "--failure_list";
   std::string failure_list_filename_;
+  absl::flat_hash_set<std::string> names_to_test_;
+  bool debug_ = false;
+  // If names were given for names_to_test_, only those tests
+  // will be run and this bool will be set to true.
+  bool isolated_ = false;
 
-  // The set of test names that are expected to fail in this run, but haven't
-  // failed yet.
-  absl::btree_set<std::string> expected_to_fail_;
+  // The set of test names (expanded from wildcard(s) and non-expanded) that are
+  // expected to fail in this run, but haven't failed yet.
+  absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
+
+  // The set of tests that failed because their failure message did not match
+  // the actual failure message. These are failure messages that may need to be
+  // removed from our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_failure_messages_;
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
-  absl::flat_hash_set<std::string> test_names_;
+  absl::flat_hash_set<std::string> test_names_ran_;
 
-  // The set of tests that failed, but weren't expected to.
-  absl::btree_set<std::string> unexpected_failing_tests_;
+  // The set of tests that failed, but weren't expected to: They weren't
+  // present in our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_failing_tests_;
 
-  // The set of tests that succeeded, but weren't expected to.
-  absl::btree_set<std::string> unexpected_succeeding_tests_;
+  // The set of tests that succeeded, but weren't expected to: They were present
+  // in our failure lists, but managed to succeed.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_succeeding_tests_;
+
+  // The set of tests that failed because their failure message did not match
+  // the actual failure message. These are failure messages that may need to be
+  // added to our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_failure_messages_;
+
+  // The set of test names (wildcarded or not) from the failure list that did
+  // not match any actual test name.
+  absl::btree_map<std::string, conformance::TestStatus> unmatched_;
 
   // The set of tests that the testee opted out of;
-  absl::btree_set<std::string> skipped_;
+  absl::btree_map<std::string, conformance::TestStatus> skipped_;
+
+  // Allows us to remove from unmatched_.
+  absl::btree_map<std::string, std::string> saved_failure_messages_;
+
+  // If a failure list entry served as a match for more than 'max_matches_',
+  // those will be added here for removal.
+  absl::btree_map<std::string, conformance::TestStatus> exceeded_max_matches_;
+
+  // Keeps track of how many tests matched to each failure list entry.
+  absl::btree_map<std::string, int> number_of_matches_;
 };
 
 }  // namespace protobuf

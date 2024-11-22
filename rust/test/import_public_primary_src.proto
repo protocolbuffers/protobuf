@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package primary_src_testing_packages;
 
-import public "google/protobuf/rust/test/import_public_grandparent.proto";
+import public "rust/test/import_public_grandparent.proto";
 
 message PrimarySrcPubliclyImportedMsg {}
 

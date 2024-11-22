@@ -1,8 +1,11 @@
 #include "google/protobuf/compiler/java/field_common.h"
 
+#include <cstddef>
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -30,9 +33,15 @@ void SetCommonFieldVariables(
   (*variables)["kt_name"] = IsForbiddenKotlin(info->name)
                                 ? absl::StrCat(info->name, "_")
                                 : info->name;
+  auto kt_property_name = GetKotlinPropertyName(info->capitalized_name);
+  (*variables)["kt_property_name"] = kt_property_name;
+  (*variables)["kt_safe_name"] = IsForbiddenKotlin(kt_property_name)
+                                     ? absl::StrCat("`", kt_property_name, "`")
+                                     : kt_property_name;
   (*variables)["kt_capitalized_name"] =
       IsForbiddenKotlin(info->name) ? absl::StrCat(info->capitalized_name, "_")
                                     : info->capitalized_name;
+  (*variables)["jvm_synthetic"] = JvmSynthetic(info->options.jvm_dsl);
   if (!descriptor->is_repeated()) {
     (*variables)["annotation_field_type"] =
         std::string(FieldTypeName(descriptor->type()));
@@ -49,6 +58,32 @@ void SetCommonFieldVariables(
            absl::StrCat(FieldTypeName(descriptor->type()), "_LIST_PACKED")});
     }
   }
+}
+
+// Locale-independent ASCII upper and lower case munging.
+static bool IsUpper(char c) {
+  return static_cast<unsigned int>(c - 'A') <= 'Z' - 'A';
+}
+
+static char ToLower(char c) { return IsUpper(c) ? c - 'A' + 'a' : c; }
+
+std::string GetKotlinPropertyName(std::string capitalized_name) {
+  // Find the first non-capital. If it is the second character, then we just
+  // need to lowercase the first one. Otherwise we need to lowercase everything
+  // up to but not including the last capital, except that if everything is
+  // capitals then everything must be lowercased.
+  std::string kt_property_name = capitalized_name;
+  size_t first_non_capital;
+  for (first_non_capital = 0; first_non_capital < capitalized_name.length() &&
+                              IsUpper(capitalized_name[first_non_capital]);
+       first_non_capital++) {
+  }
+  size_t stop = first_non_capital;
+  if (stop > 1 && stop < capitalized_name.length()) stop--;
+  for (size_t i = 0; i < stop; i++) {
+    kt_property_name[i] = ToLower(kt_property_name[i]);
+  }
+  return kt_property_name;
 }
 
 void SetCommonOneofVariables(

@@ -305,9 +305,6 @@
                   Identifier = "PerfTests/testHas">
                </Test>
                <Test
-                  Identifier = "UnknownFieldSetTest">
-               </Test>
-               <Test
                   Identifier = "UtilitiesTests">
                </Test>
                <Test

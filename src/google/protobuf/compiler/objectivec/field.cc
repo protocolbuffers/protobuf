@@ -137,8 +137,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool();
     case FieldDescriptor::CPPTYPE_STRING: {
-      const std::string& default_string = field->default_value_string();
-      return !default_string.empty();
+      return !field->default_value_string().empty();
     }
     case FieldDescriptor::CPPTYPE_ENUM:
       // The default value for an enum field is the first enum value, so there

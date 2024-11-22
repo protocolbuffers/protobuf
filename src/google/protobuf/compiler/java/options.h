@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "google/protobuf/port_def.inc"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -25,8 +25,8 @@ struct Options {
         generate_shared_code(false),
         enforce_lite(false),
         annotate_code(false),
-        strip_nonfunctional_codegen(false) {
-  }
+        strip_nonfunctional_codegen(false),
+        jvm_dsl(true) {}
 
   bool generate_immutable_code;
   bool generate_mutable_code;
@@ -34,7 +34,7 @@ struct Options {
   // When set, the protoc will generate the current files and all the transitive
   // dependencies as lite runtime.
   bool enforce_lite;
-  bool opensource_runtime = PROTO2_IS_OSS;
+  bool opensource_runtime = google::protobuf::internal::IsOss();
   // If true, we should build .meta files and emit @Generated annotations into
   // generated code.
   bool annotate_code;
@@ -46,6 +46,10 @@ struct Options {
   std::string output_list_file;
   // If true, strip out nonfunctional codegen.
   bool strip_nonfunctional_codegen;
+
+  // If true, generate JVM-specific DSL code.  This defaults to true for
+  // compatibility with the old behavior.
+  bool jvm_dsl;
 };
 
 }  // namespace java
@@ -53,5 +57,4 @@ struct Options {
 }  // namespace protobuf
 }  // namespace google
 
-#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__

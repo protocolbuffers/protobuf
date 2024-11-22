@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "google/protobuf/compiler/java/context.h"
-#include "google/protobuf/compiler/java/immutable/service.h"
+#include "google/protobuf/compiler/java/full/service.h"
 #include "google/protobuf/compiler/java/lite/enum.h"
 #include "google/protobuf/compiler/java/lite/extension.h"
 #include "google/protobuf/compiler/java/lite/message.h"

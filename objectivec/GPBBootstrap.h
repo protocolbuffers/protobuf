@@ -118,10 +118,4 @@
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
-#define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30001
-
-// This is a legacy constant now frozen in time for old generated code. If
-// GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION ever gets moved above 30001 then
-// this should also change to break code compiled with an old runtime that
-// can't be supported any more.
-#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001
+#define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30007

@@ -108,8 +108,8 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // prototype, so these must be destroyed before the DynamicMessageFactory
   // is destroyed.
   //
-  // The given descriptor must outlive the returned message, and hence must
-  // outlive the DynamicMessageFactory.
+  // The given descriptor must be non-null and outlive the returned message, and
+  // hence must outlive the DynamicMessageFactory.
   //
   // The method is thread-safe.
   const Message* GetPrototype(const Descriptor* type) override;

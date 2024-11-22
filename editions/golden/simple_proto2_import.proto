@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package protobuf_editions_test.golden;
 
-import "google/protobuf/editions/golden/simple_proto2.proto";
+import "editions/golden/simple_proto2.proto";
 
 message AnotherMessage {
   optional SimpleProto2 field = 1;

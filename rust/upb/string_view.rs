@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 /// ABI compatible struct with upb_StringView.
 ///
 /// Note that this has semantics similar to `std::string_view` in C++ and
@@ -31,7 +38,7 @@ impl StringView {
             // SAFETY:
             // - `ptr` is non-null
             // - `ptr` is valid for `len` bytes as promised by the caller.
-            unsafe { std::slice::from_raw_parts(self.ptr, self.len) }
+            unsafe { core::slice::from_raw_parts(self.ptr, self.len) }
         }
     }
 }
@@ -39,5 +46,11 @@ impl StringView {
 impl From<&[u8]> for StringView {
     fn from(slice: &[u8]) -> Self {
         Self { ptr: slice.as_ptr(), len: slice.len() }
+    }
+}
+
+impl<const N: usize> From<&[u8; N]> for StringView {
+    fn from(slice: &[u8; N]) -> Self {
+        Self { ptr: slice.as_ptr(), len: N }
     }
 }

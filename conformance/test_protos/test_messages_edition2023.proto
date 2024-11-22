@@ -1,15 +1,28 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 edition = "2023";
 
 package protobuf_test_messages.editions;
 
+option features.message_encoding = DELIMITED;
 option java_package = "com.google.protobuf_test_messages.edition2023";
 option java_multiple_files = true;
 option objc_class_prefix = "Editions";
 
+message ComplexMessage {
+  int32 d = 1;
+}
+
 message TestAllTypesEdition2023 {
   message NestedMessage {
     int32 a = 1;
-    TestAllTypesEdition2023 corecursive = 2;
+    TestAllTypesEdition2023 corecursive = 2
+        [features.message_encoding = LENGTH_PREFIXED];
   }
 
   enum NestedEnum {
@@ -36,8 +49,10 @@ message TestAllTypesEdition2023 {
   string optional_string = 14;
   bytes optional_bytes = 15;
 
-  NestedMessage optional_nested_message = 18;
-  ForeignMessageEdition2023 optional_foreign_message = 19;
+  NestedMessage optional_nested_message = 18
+      [features.message_encoding = LENGTH_PREFIXED];
+  ForeignMessageEdition2023 optional_foreign_message = 19
+      [features.message_encoding = LENGTH_PREFIXED];
 
   NestedEnum optional_nested_enum = 21;
   ForeignEnumEdition2023 optional_foreign_enum = 22;
@@ -45,7 +60,8 @@ message TestAllTypesEdition2023 {
   string optional_string_piece = 24 [ctype = STRING_PIECE];
   string optional_cord = 25 [ctype = CORD];
 
-  TestAllTypesEdition2023 recursive_message = 27;
+  TestAllTypesEdition2023 recursive_message = 27
+      [features.message_encoding = LENGTH_PREFIXED];
 
   // Repeated
   repeated int32 repeated_int32 = 31;
@@ -64,8 +80,10 @@ message TestAllTypesEdition2023 {
   repeated string repeated_string = 44;
   repeated bytes repeated_bytes = 45;
 
-  repeated NestedMessage repeated_nested_message = 48;
-  repeated ForeignMessageEdition2023 repeated_foreign_message = 49;
+  repeated NestedMessage repeated_nested_message = 48
+      [features.message_encoding = LENGTH_PREFIXED];
+  repeated ForeignMessageEdition2023 repeated_foreign_message = 49
+      [features.message_encoding = LENGTH_PREFIXED];
 
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnumEdition2023 repeated_foreign_enum = 52;
@@ -152,7 +170,8 @@ message TestAllTypesEdition2023 {
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
-    NestedMessage oneof_nested_message = 112;
+    NestedMessage oneof_nested_message = 112
+        [features.message_encoding = LENGTH_PREFIXED];
     string oneof_string = 113;
     bytes oneof_bytes = 114;
     bool oneof_bool = 115;
@@ -170,8 +189,8 @@ message TestAllTypesEdition2023 {
     int32 group_int32 = 202;
     uint32 group_uint32 = 203;
   }
-  GroupLikeType groupliketype = 201 [features.message_encoding = DELIMITED];
-  GroupLikeType delimited_field = 202 [features.message_encoding = DELIMITED];
+  GroupLikeType groupliketype = 201;
+  GroupLikeType delimited_field = 202;
 }
 
 message ForeignMessageEdition2023 {
@@ -193,6 +212,6 @@ message GroupLikeType {
 }
 
 extend TestAllTypesEdition2023 {
-  GroupLikeType groupliketype = 121 [features.message_encoding = DELIMITED];
-  GroupLikeType delimited_ext = 122 [features.message_encoding = DELIMITED];
+  GroupLikeType groupliketype = 121;
+  GroupLikeType delimited_ext = 122;
 }

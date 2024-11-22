@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -15,6 +15,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
 namespace Google.Protobuf
 {
@@ -24,6 +25,9 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal static class ParsingPrimitives
     {
+        internal static readonly Encoding Utf8Encoding =
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         private const int StackallocThreshold = 256;
 
         /// <summary>
@@ -576,7 +580,14 @@ namespace Google.Protobuf
                 {
                     fixed (byte* sourceBytes = &MemoryMarshal.GetReference(data))
                     {
-                        value = WritingPrimitives.Utf8Encoding.GetString(sourceBytes, length);
+                        try
+                        {
+                            value = Utf8Encoding.GetString(sourceBytes, length);
+                        }
+                        catch (DecoderFallbackException e)
+                        {
+                            throw InvalidProtocolBufferException.InvalidUtf8(e);
+                        }
                     }
                 }
 
@@ -618,8 +629,14 @@ namespace Google.Protobuf
                             // Make compiler happy by passing a new span created from pointer.
                             var tempSpan = new Span<byte>(pByteSpan, byteSpan.Length);
                             ReadRawBytesIntoSpan(ref buffer, ref state, length, tempSpan);
-
-                            return WritingPrimitives.Utf8Encoding.GetString(pByteSpan, length);
+                            try
+                            {
+                                return Utf8Encoding.GetString(pByteSpan, length);
+                            }
+                            catch (DecoderFallbackException e)
+                            {
+                                throw InvalidProtocolBufferException.InvalidUtf8(e);
+                            }
                         }
                     }
                 }
@@ -637,7 +654,15 @@ namespace Google.Protobuf
             // This will be called when reading from a Stream because we don't know the length of the stream,
             // or there is not enough data in the sequence. If there is not enough data then ReadRawBytes will
             // throw an exception.
-            return WritingPrimitives.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
+            byte[] bytes = ReadRawBytes(ref buffer, ref state, length);
+            try
+            {
+                return Utf8Encoding.GetString(bytes, 0, length);
+            }
+            catch (DecoderFallbackException e)
+            {
+                throw InvalidProtocolBufferException.InvalidUtf8(e);
+            }
         }
 
         /// <summary>

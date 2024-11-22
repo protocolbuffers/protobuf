@@ -207,6 +207,21 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
   return 0;
 }
 
+static const FieldDescriptor* FindMessageSetExtension(
+    const Descriptor* message_descriptor) {
+  for (int i = 0; i < message_descriptor->extension_count(); i++) {
+    const FieldDescriptor* extension = message_descriptor->extension(i);
+    if (extension->is_extension() &&
+        extension->containing_type()->options().message_set_wire_format() &&
+        extension->type() == FieldDescriptor::TYPE_MESSAGE &&
+        extension->label() == FieldDescriptor::LABEL_OPTIONAL &&
+        extension->message_type() == message_descriptor) {
+      return extension;
+    }
+  }
+  return nullptr;
+}
+
 PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
   char* name;
   Py_ssize_t name_size;
@@ -221,14 +236,8 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
     // Is is the name of a message set extension?
     const Descriptor* message_descriptor =
         pool->pool->FindMessageTypeByName(absl::string_view(name, name_size));
-    if (message_descriptor && message_descriptor->extension_count() > 0) {
-      const FieldDescriptor* extension = message_descriptor->extension(0);
-      if (extension->is_extension() &&
-          extension->containing_type()->options().message_set_wire_format() &&
-          extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-          extension->label() == FieldDescriptor::LABEL_OPTIONAL) {
-        message_extension = extension;
-      }
+    if (message_descriptor) {
+      message_extension = FindMessageSetExtension(message_descriptor);
     }
   }
   if (message_extension == nullptr) {
@@ -264,7 +273,7 @@ static int Contains(PyObject* _self, PyObject* key) {
 
   if (!field_descriptor->is_extension()) {
     PyErr_Format(PyExc_KeyError, "%s is not an extension",
-                 field_descriptor->full_name().c_str());
+                 std::string(field_descriptor->full_name()).c_str());
     return -1;
   }
 

@@ -48,6 +48,16 @@
 
 namespace {
 
+size_t GetUnknownLength(const upb_Message* msg) {
+  size_t len = 0;
+  upb_StringView data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+    len += data.size;
+  }
+  return len;
+}
+
 TEST(GeneratedCode, FindUnknown) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
@@ -182,8 +192,7 @@ TEST(GeneratedCode, Extensions) {
                                                 arena);
 
   // Get unknown extension bytes before promotion.
-  size_t start_len;
-  upb_Message_GetUnknown(UPB_UPCAST(base_msg), &start_len);
+  size_t start_len = GetUnknownLength(UPB_UPCAST(base_msg));
   EXPECT_GT(start_len, 0);
   EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
@@ -236,8 +245,7 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 
-  size_t end_len;
-  upb_Message_GetUnknown(UPB_UPCAST(base_msg), &end_len);
+  size_t end_len = GetUnknownLength(UPB_UPCAST(base_msg));
   EXPECT_LT(end_len, start_len);
   EXPECT_EQ(6, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 

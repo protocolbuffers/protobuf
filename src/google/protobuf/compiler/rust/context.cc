@@ -71,6 +71,13 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
     opts.mapping_file_path = mapping_arg->second;
   }
 
+  auto strip_nonfunctional_codegen_arg = absl::c_find_if(args, [](auto& arg) {
+    return arg.first == "experimental_strip_nonfunctional_codegen";
+  });
+  if (strip_nonfunctional_codegen_arg != args.end()) {
+    opts.strip_nonfunctional_codegen = true;
+  }
+
   return opts;
 }
 

@@ -22,15 +22,20 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 #define GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 
+#include <cstddef>
+#include <string>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "absl/status/status.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {
 namespace python {
+
+class PythonMessageMutator;
 
 // Note on the implementation:
 // This API is designed after
@@ -45,6 +50,19 @@ struct PyProto_API {
 
   // Operations on Messages.
 
+  // Returns a PythonMessageMutator which the python message has been cleared.
+  // This API works with UPB, Cpp Extension and Pure Python.
+  // Side-effect: The message will definitely be cleared. *When* the message
+  // gets cleared is undefined (C++ will clear it up-front, python/upb will
+  // clear it on destruction).  Nothing should rely on the python message
+  // during the lifetime of this object
+  // User should not hold onto the returned PythonMessageMutator while
+  // calling back into Python
+  // Warning: there is a risk of deadlock with Python/C++ if users use the
+  // returned message->GetDescriptor()->file->pool()
+  virtual absl::StatusOr<PythonMessageMutator> GetClearedMessageMutator(
+      PyObject* msg) const = 0;
+
   // If the passed object is a Python Message, returns its internal pointer.
   // Otherwise, returns NULL with an exception set.
   virtual const Message* GetMessagePointer(PyObject* msg) const = 0;
@@ -54,6 +72,9 @@ struct PyProto_API {
   // This function will succeed only if there are no other Python objects
   // pointing to the message, like submessages or repeated containers.
   // With the current implementation, only empty messages are in this case.
+  [[deprecated(
+      "GetMutableMessagePointer() only work with Cpp Extension, "
+      "please migrate to GetClearedMessageMutator().")]]
   virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
 
   // If the passed object is a Python Message Descriptor, returns its internal
@@ -107,6 +128,37 @@ struct PyProto_API {
   // can work and return their Python counterparts.
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
+
+ protected:
+  PythonMessageMutator CreatePythonMessageMutator(Message* owned_msg,
+                                                  Message* msg,
+                                                  PyObject* py_msg) const;
+};
+
+// User should not hold onto this object while calling back into Python
+class PythonMessageMutator {
+ public:
+  PythonMessageMutator(PythonMessageMutator&& other);
+  ~PythonMessageMutator();
+
+  Message* get() { return message_; }
+  Message* operator->() { return message_; }
+  const Message& operator*() { return *message_; }
+
+ private:
+  friend struct google::protobuf::python::PyProto_API;
+  PythonMessageMutator(Message* owned_msg, Message* message, PyObject* py_msg);
+  // owned_msg_ is set for UPB/Pure Python. Cpp
+  // Extension should not set owned_msg_.
+  // owned_msg_ is a new Message for UPB/Pure Python.
+  // owned_msg_ is nullptr for Cpp Extension.
+  std::unique_ptr<Message> owned_msg_;
+  // message_ points to owned_msg_ for UPB/Pure Python.
+  // message_ points to in-place Message* for Cpp Extension.
+  Message* message_;
+  // py_msg_ points to the python message. message_ content will be serialized
+  // to py_msg_ at destructor for UPB/Pure Python, CPP Extension won't.
+  PyObject* py_msg_;
 };
 
 inline const char* PyProtoAPICapsuleName() {

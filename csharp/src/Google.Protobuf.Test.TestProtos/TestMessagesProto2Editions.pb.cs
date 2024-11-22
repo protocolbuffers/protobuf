@@ -302,9 +302,9 @@ namespace ProtobufTestMessages.Editions.Proto2 {
             "cm90bzIYeCABKAU6iQEKCmdyb3VwZmllbGQSOi5wcm90b2J1Zl90ZXN0X21l",
             "c3NhZ2VzLmVkaXRpb25zLnByb3RvMi5UZXN0QWxsVHlwZXNQcm90bzIYeSAB",
             "KAsyMi5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25zLnByb3RvMi5H",
-            "cm91cEZpZWxkQgWqAQIoAkJPCjFjb20uZ29vZ2xlLnByb3RvYnVmX3Rlc3Rf",
-            "bWVzc2FnZXMuZWRpdGlvbnMucHJvdG8ySAGiAg5FZGl0aW9uc1Byb3RvMpID",
-            "BhACGAIgA2IIZWRpdGlvbnNw6Ac="));
+            "cm91cEZpZWxkQgWqAQIoAkJSCjFjb20uZ29vZ2xlLnByb3RvYnVmX3Rlc3Rf",
+            "bWVzc2FnZXMuZWRpdGlvbnMucHJvdG8ySAH4AQGiAg5FZGl0aW9uc1Byb3Rv",
+            "MpIDBhACGAIgA2IIZWRpdGlvbnNw6Ac="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.Proto2.ForeignEnumProto2), }, new pb::Extension[] { TestMessagesProto2EditionsExtensions.ExtensionInt32, TestMessagesProto2EditionsExtensions.GroupField }, new pbr::GeneratedClrTypeInfo[] {

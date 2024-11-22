@@ -183,7 +183,8 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
 
   @SuppressWarnings("unchecked")
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(
+          Object object) {
     if (!(object instanceof MapField)) {
       return false;
     }
@@ -338,7 +339,8 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(
+            Object o) {
       return delegate.equals(o);
     }
 
@@ -434,7 +436,8 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
       }
 
       @Override
-      public boolean equals(Object o) {
+      public boolean equals(
+              Object o) {
         return delegate.equals(o);
       }
 
@@ -531,7 +534,8 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
       }
 
       @Override
-      public boolean equals(Object o) {
+      public boolean equals(
+              Object o) {
         return delegate.equals(o);
       }
 
@@ -573,7 +577,8 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
       }
 
       @Override
-      public boolean equals(Object obj) {
+      public boolean equals(
+              Object obj) {
         return delegate.equals(obj);
       }
 

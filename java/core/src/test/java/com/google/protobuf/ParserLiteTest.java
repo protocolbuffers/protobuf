@@ -76,6 +76,18 @@ public class ParserLiteTest {
   }
 
   @Test
+  public void testParseExtensionsLite_extensionIsImmutable() throws Exception {
+    TestAllExtensionsLite message =
+        TestAllExtensionsLite.parseFrom(
+            TestUtilLite.getAllLiteExtensionsSet().toByteArray(),
+            TestUtilLite.getExtensionRegistryLite());
+    Object nested = message.getExtension(UnittestLite.optionalNestedMessageExtensionLite);
+    if (nested instanceof GeneratedMessageLite) {
+      assertThat(((GeneratedMessageLite) nested).isMutable()).isFalse();
+    }
+  }
+
+  @Test
   public void testParsePacked() throws Exception {
     assertRoundTripEquals(TestUtil.getPackedSet());
     assertRoundTripEquals(TestUtil.getPackedExtensionsSet(), TestUtil.getExtensionRegistry());

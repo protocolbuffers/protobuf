@@ -84,7 +84,7 @@ struct ThreadSafeArenaStats
   void* stack[kMaxStackDepth];
   static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t used,
                                   size_t allocated, size_t wasted) {
-    if (PROTOBUF_PREDICT_TRUE(info == nullptr)) return;
+    if (ABSL_PREDICT_TRUE(info == nullptr)) return;
     RecordAllocateSlow(info, used, allocated, wasted);
   }
 
@@ -117,7 +117,7 @@ class ThreadSafeArenaStatsHandle {
       : info_(info) {}
 
   ~ThreadSafeArenaStatsHandle() {
-    if (PROTOBUF_PREDICT_TRUE(info_ == nullptr)) return;
+    if (ABSL_PREDICT_TRUE(info_ == nullptr)) return;
     UnsampleSlow(info_);
   }
 
@@ -126,7 +126,7 @@ class ThreadSafeArenaStatsHandle {
 
   ThreadSafeArenaStatsHandle& operator=(
       ThreadSafeArenaStatsHandle&& other) noexcept {
-    if (PROTOBUF_PREDICT_FALSE(info_ != nullptr)) {
+    if (ABSL_PREDICT_FALSE(info_ != nullptr)) {
       UnsampleSlow(info_);
     }
     info_ = std::exchange(other.info_, nullptr);
@@ -154,7 +154,7 @@ extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
 inline ThreadSafeArenaStatsHandle Sample() {
-  if (PROTOBUF_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
+  if (ABSL_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
     return ThreadSafeArenaStatsHandle(nullptr);
   }
   return ThreadSafeArenaStatsHandle(SampleSlow(global_sampling_state));

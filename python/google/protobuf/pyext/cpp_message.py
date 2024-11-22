@@ -34,7 +34,7 @@ class GeneratedProtocolMessageType(_message.MessageMeta):
   mydescriptor = Descriptor(.....)
   factory = symbol_database.Default()
   factory.pool.AddDescriptor(mydescriptor)
-  MyProtoClass = factory.GetPrototype(mydescriptor)
+  MyProtoClass = message_factory.GetMessageClass(mydescriptor)
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...

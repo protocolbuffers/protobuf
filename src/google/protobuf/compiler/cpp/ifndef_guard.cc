@@ -30,6 +30,7 @@ std::string MakeIfdefGuardIdentifier(const absl::string_view header_path) {
                                                                 {
                                                                     {"/", "_"},
                                                                     {".", "_"},
+                                                                    {"-", "_"},
                                                                 })),
                       "_");
 }

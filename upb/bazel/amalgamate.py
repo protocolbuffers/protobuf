@@ -106,6 +106,8 @@ class Amalgamator:
     if include.endswith("hpp"):
       # Skip, we don't support the amalgamation from C++.
       return True
+    if re.search(r"stage\d/", include):
+      return True
     elif include in self.included:
       return True
     else:

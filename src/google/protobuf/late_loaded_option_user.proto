@@ -1,0 +1,11 @@
+edition = "2023";
+
+package protobuf_unittest;
+
+import "google/protobuf/late_loaded_option.proto";
+
+message LateLoadedOptionUser {
+  option (protobuf_unittest.LateLoadedOption.ext) = {
+    value: 1
+  };
+}

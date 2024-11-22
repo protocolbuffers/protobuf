@@ -1,0 +1,29 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package hpb_unittest;
+
+import public "google/protobuf/compiler/hpb/tests/test_enum.proto";
+
+message ChildModel1 {
+  bool child_b1 = 44;
+  string child_str1 = 56;
+}
+
+message ChildModel3 {
+  string sub_key = 1;
+
+  bool bool1 = 2;
+
+  int32 i32 = 3;
+
+  string opt_str = 4;
+  bool opt_bool = 5;
+  int32 opt_i32 = 6;
+}

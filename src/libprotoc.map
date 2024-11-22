@@ -2,8 +2,8 @@
   global:
     extern "C++" {
       *google*;
-      pb::*;
-      upb::*;
+      *pb::*;
+      *upb::*;
     };
     scc_info_*;
     descriptor_table_*;

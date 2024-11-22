@@ -5,12 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 
 #import <mach/vm_param.h>
 
 #import "GPBArray.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // TODO: Consider using on other functions to reduce bloat when
@@ -350,16 +351,6 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
 - (void)writeGroup:(int32_t)fieldNumber value:(GPBMessage *)value {
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatStartGroup);
   [self writeGroupNoTag:fieldNumber value:value];
-}
-
-- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber value:(const GPBUnknownFieldSet *)value {
-  [value writeToCodedOutputStream:self];
-  GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatEndGroup);
-}
-
-- (void)writeUnknownGroup:(int32_t)fieldNumber value:(GPBUnknownFieldSet *)value {
-  GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatStartGroup);
-  [self writeUnknownGroupNoTag:fieldNumber value:value];
 }
 
 - (void)writeMessageNoTag:(GPBMessage *)value {
@@ -838,15 +829,6 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(UnknownGroup, GPBUnknownFieldSet)
-// This block of code is generated, do not edit it directly.
-
-- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray *)values {
-  for (GPBUnknownFieldSet *value in values) {
-    [self writeUnknownGroup:fieldNumber value:value];
-  }
-}
-
 //%PDDM-EXPAND-END (19 expansions)
 
 // clang-format on
@@ -982,8 +964,6 @@ size_t GPBComputeStringSizeNoTag(NSString *value) {
 
 size_t GPBComputeGroupSizeNoTag(GPBMessage *value) { return [value serializedSize]; }
 
-size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) { return value.serializedSize; }
-
 size_t GPBComputeMessageSizeNoTag(GPBMessage *value) {
   size_t size = [value serializedSize];
   return GPBComputeRawVarint32SizeForInteger(size) + size;
@@ -1048,10 +1028,6 @@ size_t GPBComputeStringSize(int32_t fieldNumber, NSString *value) {
 
 size_t GPBComputeGroupSize(int32_t fieldNumber, GPBMessage *value) {
   return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeGroupSizeNoTag(value);
-}
-
-size_t GPBComputeUnknownGroupSize(int32_t fieldNumber, GPBUnknownFieldSet *value) {
-  return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeUnknownGroupSizeNoTag(value);
 }
 
 size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value) {

@@ -996,6 +996,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Proto2_Group()
+        {
+            string json = "{ \"data\": { \"groupInt32\": 2, \"groupUint32\": 3 } }";
+            var parsed = TestAllTypesProto2.Parser.ParseJson(json);
+            Assert.True(parsed.HasData);
+            Assert.AreEqual(2, parsed.Data.GroupInt32);
+            Assert.AreEqual(3, parsed.Data.GroupUint32);
+        }
+
+        [Test]
         [TestCase("5")]
         [TestCase("\"text\"")]
         [TestCase("[0, 1, 2]")]

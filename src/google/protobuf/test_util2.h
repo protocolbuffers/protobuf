@@ -10,13 +10,15 @@
 
 #include <string>
 
-#include "google/protobuf/testing/googletest.h"
+#include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/message_differencer.h"
+
+#include "google/protobuf/testing/googletest.h"
 
 namespace google {
 namespace protobuf {

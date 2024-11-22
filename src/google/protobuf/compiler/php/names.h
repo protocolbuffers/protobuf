@@ -24,13 +24,13 @@ namespace php {
 PROTOC_EXPORT bool IsReservedName(absl::string_view name);
 
 // A prefix to stick in front of reserved names to avoid clashes.
-PROTOC_EXPORT std::string ReservedNamePrefix(const std::string& classname,
+PROTOC_EXPORT std::string ReservedNamePrefix(absl::string_view classname,
                                              const FileDescriptor* file);
 
 // A prefix to stick in front of all class names.
-PROTOC_EXPORT std::string ClassNamePrefix(const std::string& classname,
+PROTOC_EXPORT std::string ClassNamePrefix(absl::string_view classname,
                                           const Descriptor* desc);
-PROTOC_EXPORT std::string ClassNamePrefix(const std::string& classname,
+PROTOC_EXPORT std::string ClassNamePrefix(absl::string_view classname,
                                           const EnumDescriptor* desc);
 
 // To skip reserved keywords in php, some generated classname are prefixed.

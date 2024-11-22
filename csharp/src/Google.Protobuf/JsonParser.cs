@@ -330,7 +330,7 @@ namespace Google.Protobuf
             }
 
             var fieldType = field.FieldType;
-            if (fieldType == FieldType.Message)
+            if (fieldType == FieldType.Message || fieldType == FieldType.Group)
             {
                 // Parse wrapper types as their constituent types.
                 // TODO: What does this mean for null?

@@ -40,8 +40,8 @@ class ExtensionGenerator {
       absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
  private:
+  std::string root_or_message_class_name_;
   std::string method_name_;
-  std::string full_method_name_;
   const FieldDescriptor* descriptor_;
   const GenerationOptions& generation_options_;
 };

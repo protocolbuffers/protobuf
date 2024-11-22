@@ -560,3 +560,5 @@ Duration operator-(const Timestamp& t1, const Timestamp& t2) {
 }
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

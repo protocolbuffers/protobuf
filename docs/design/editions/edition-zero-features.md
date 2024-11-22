@@ -211,18 +211,18 @@ post-editions, they will look like this:
 edition = "tbd"
 
 message Foo {
-  int32 x = 1 [features.presence = LEGACY_REQUIRED];
+  int32 x = 1 [features.field_presence = LEGACY_REQUIRED];
   int32 y = 2;
   repeated int32 z = 3;
 }
 
 // bar.proto
 edition = "tbd"
-option features.presence = NO_PRESENCE;
+option features.field_presence = NO_PRESENCE;
 
 message Bar {
   int32 x = 1;
-  int32 y = 2 [features.presence = EXPLICIT_PRESENCE];
+  int32 y = 2 [features.field_presence = EXPLICIT_PRESENCE];
   repeated int32 z = 3;
 }
 ```

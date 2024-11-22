@@ -13,6 +13,9 @@ final class ExtensionSchemas {
   private static final ExtensionSchema<?> FULL_SCHEMA = loadSchemaForFullRuntime();
 
   private static ExtensionSchema<?> loadSchemaForFullRuntime() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       Class<?> clazz = Class.forName("com.google.protobuf.ExtensionSchemaFull");
       return (ExtensionSchema) clazz.getDeclaredConstructor().newInstance();
@@ -31,4 +34,6 @@ final class ExtensionSchemas {
     }
     return FULL_SCHEMA;
   }
+
+  private ExtensionSchemas() {}
 }

@@ -27,9 +27,8 @@ dependencies = [
 
 [[package]]
 name = "googletest"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09213705c85aa0e4b4fff44a3a826a556979a34a266df6bcda703a49c69fb61e"
+version = "0.12.0"
+source = "git+https://github.com/google/googletest-rust?rev=b407f3b5774defb8917d714bfb7af485e117d621#b407f3b5774defb8917d714bfb7af485e117d621"
 dependencies = [
  "googletest_macro",
  "num-traits",
@@ -39,9 +38,8 @@ dependencies = [
 
 [[package]]
 name = "googletest_macro"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "005e4cb962c56efd249bdeeb4ac232b11e1c45a2e49793bba2b2982dcc3f2e9d"
+version = "0.12.0"
+source = "git+https://github.com/google/googletest-rust?rev=b407f3b5774defb8917d714bfb7af485e117d621#b407f3b5774defb8917d714bfb7af485e117d621"
 dependencies = [
  "quote",
  "syn",
@@ -123,9 +121,9 @@ checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "syn"
-version = "2.0.38"
+version = "2.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e96b79aaa137db8f61e26363a0c9b47d8b4ec75da28b7d1d614c2303e232408b"
+checksum = "ee659fb5f3d355364e1f3e5bc10fb82068efbf824a1e9d1c9504244a6469ad53"
 dependencies = [
  "proc-macro2",
  "quote",

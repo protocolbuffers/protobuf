@@ -13,6 +13,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
+#include "google/protobuf/unittest_import_lite.pb.h"
 
 namespace google {
 namespace protobuf {

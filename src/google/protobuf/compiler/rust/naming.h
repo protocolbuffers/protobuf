@@ -38,13 +38,19 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op);
 
-// Returns the local constant that defines the vtable for mutating `field`.
-std::string VTableName(const FieldDescriptor& field);
-
 // Returns an absolute path to the Proxied Rust type of the given field.
 // The absolute path is guaranteed to work in the crate that defines the field.
 // It may be crate-relative, or directly reference the owning crate of the type.
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field);
+
+// Returns the 'simple spelling' of the Rust View type for the provided field.
+// For example, `i32` for int32 fields and `SomeMsgView<'$lifetime$>` for
+// message fields, or `SomeMsgView` if an empty lifetime is provided).
+//
+// The returned type will always be functionally substitutable for the
+// corresponding View<'$lifetime$, $sometype$> of the field's Rust type.
+std::string RsViewType(Context& ctx, const FieldDescriptor& field,
+                       absl::string_view lifetime);
 
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);

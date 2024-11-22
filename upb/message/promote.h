@@ -53,6 +53,7 @@ typedef struct {
   const char* ptr;
   // Size of unknown field data.
   size_t len;
+  uintptr_t iter;
 } upb_FindUnknownRet;
 
 // Finds first occurrence of unknown data by tag id in message.

@@ -4,12 +4,13 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """
 Provide a rule for generating the intermediate feature set defaults used for feature resolution.
 
 See go/life-of-a-featureset for more information.
 """
+
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 def _compile_edition_defaults_impl(ctx):
     out_file = ctx.actions.declare_file(ctx.outputs.output.basename)

@@ -3,12 +3,73 @@
 # generated_code.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
+require 'basic_test_proto2_pb'
 require 'generated_code_pb'
 require 'google/protobuf/well_known_types'
 require 'test/unit'
 
+module CaptureWarnings
+  @@warnings = nil
+
+  module_function
+
+  def warn(message, category: nil, **kwargs)
+    if @@warnings
+      @@warnings << message
+    else
+      super
+    end
+  end
+
+  def capture
+    @@warnings = []
+    yield
+    @@warnings
+  ensure
+    @@warnings = nil
+  end
+end
+
+Warning.extend CaptureWarnings
+
 def hex2bin(s)
   s.scan(/../).map { |x| x.hex.chr }.join
+end
+
+class NonConformantNumericsTest < Test::Unit::TestCase
+  def test_empty_json_numerics
+    if defined? JRUBY_VERSION and Google::Protobuf::IMPLEMENTATION != :FFI
+      # In a future version, CRuby and JRuby FFI will also have this behavior.
+      assert_raises Google::Protobuf::ParseError do
+        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalInt32":""}')
+      end
+    else
+      warnings = CaptureWarnings.capture {
+        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalInt32":""}')
+        assert_equal 0, msg.optional_int32
+        assert msg.has_optional_int32?
+      }
+      assert_equal 1, warnings.size
+      assert_match "Empty string is not a valid number (field: basic_test_proto2.TestMessage.optional_int32)", warnings[0]
+    end
+  end
+
+  def test_trailing_non_numeric_characters
+    if defined? JRUBY_VERSION and Google::Protobuf::IMPLEMENTATION != :FFI
+      # In a future version, CRuby and JRuby FFI will also have this behavior.
+      assert_raises Google::Protobuf::ParseError do
+        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalDouble":"123abc"}')
+      end
+    else
+      warnings = CaptureWarnings.capture {
+        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalDouble":"123abc"}')
+        assert_equal 123, msg.optional_double
+        assert msg.has_optional_double?
+      }
+      assert_equal 1, warnings.size
+      assert_match "Non-number characters in quoted number (field: basic_test_proto2.TestMessage.optional_double)", warnings[0]
+    end
+  end
 end
 
 class EncodeDecodeTest < Test::Unit::TestCase

@@ -60,10 +60,10 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import math
 import struct
 
+from google.protobuf import message
 from google.protobuf.internal import containers
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
-from google.protobuf import message
 
 
 # This is not for optimization, but rather to avoid conflicts with local
@@ -81,20 +81,32 @@ def _VarintDecoder(mask, result_type):
   decoder returns a (value, new_pos) pair.
   """
 
-  def DecodeVarint(buffer, pos):
+  def DecodeVarint(buffer, pos: int=None):
     result = 0
     shift = 0
     while 1:
-      b = buffer[pos]
+      if pos is None:
+        # Read from BytesIO
+        try:
+          b = buffer.read(1)[0]
+        except IndexError as e:
+          if shift == 0:
+            # End of BytesIO.
+            return None
+          else:
+            raise ValueError('Fail to read varint %s' % str(e))
+      else:
+        b = buffer[pos]
+        pos += 1
       result |= ((b & 0x7f) << shift)
-      pos += 1
       if not (b & 0x80):
         result &= mask
         result = result_type(result)
-        return (result, pos)
+        return result if pos is None else (result, pos)
       shift += 7
       if shift >= 64:
         raise _DecodeError('Too many bytes when decoding varint.')
+
   return DecodeVarint
 
 

@@ -35,7 +35,5 @@ import unittest
 # Our error message is better.
 NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
 
-DescriptorTest.testGetDebugString.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(verbosity=2)

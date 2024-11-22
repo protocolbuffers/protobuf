@@ -54,12 +54,13 @@ def BuildTopDescriptorsAndMessages(file_des, module_name, module):
     module: Generated _pb2 module
   """
 
-  def BuildMessage(msg_des):
+  def BuildMessage(msg_des, prefix):
     create_dict = {}
     for (name, nested_msg) in msg_des.nested_types_by_name.items():
-      create_dict[name] = BuildMessage(nested_msg)
+      create_dict[name] = BuildMessage(nested_msg, prefix + msg_des.name + '.')
     create_dict['DESCRIPTOR'] = msg_des
     create_dict['__module__'] = module_name
+    create_dict['__qualname__'] = prefix + msg_des.name
     message_class = _reflection.GeneratedProtocolMessageType(
         msg_des.name, (_message.Message,), create_dict)
     _sym_db.RegisterMessage(message_class)
@@ -83,7 +84,7 @@ def BuildTopDescriptorsAndMessages(file_des, module_name, module):
 
   # Build messages.
   for (name, msg_des) in file_des.message_types_by_name.items():
-    module[name] = BuildMessage(msg_des)
+    module[name] = BuildMessage(msg_des, '')
 
 
 def AddHelpersToExtensions(file_des):
@@ -105,12 +106,11 @@ def BuildServices(file_des, module_name, module):
     module: Generated _pb2 module
   """
   # pylint: disable=g-import-not-at-top
-  from google.protobuf import service as _service
   from google.protobuf import service_reflection
   # pylint: enable=g-import-not-at-top
   for (name, service) in file_des.services_by_name.items():
     module[name] = service_reflection.GeneratedServiceType(
-        name, (_service.Service,),
+        name, (),
         dict(DESCRIPTOR=service, __module__=module_name))
     stub_name = name + '_Stub'
     module[stub_name] = service_reflection.GeneratedServiceStubType(
