@@ -72,9 +72,7 @@ else:
           InternalAdd(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED, data)
       else:
         for tag_bytes, buffer in unknown_fields:
-          # pylint: disable=protected-access
-          (tag, _) = decoder._DecodeVarint(tag_bytes, 0)
-          field_number, wire_type = wire_format.UnpackTag(tag)
+          field_number, wire_type = decoder.DecodeTag(tag_bytes)
           if field_number == 0:
             raise RuntimeError('Field number 0 is illegal.')
           (data, _) = decoder._DecodeUnknownField(
