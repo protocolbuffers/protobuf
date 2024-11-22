@@ -504,10 +504,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Add a custom ignore criteria that is evaluated in addition to the
   // ignored fields added with IgnoreField.
-  // Takes ownership of ignore_criteria.
-  void AddIgnoreCriteria(IgnoreCriteria* ignore_criteria) {
-    AddIgnoreCriteria(absl::WrapUnique(ignore_criteria));
-  }
   void AddIgnoreCriteria(std::unique_ptr<IgnoreCriteria> ignore_criteria);
 
   // Indicates that any field with the given descriptor should be
