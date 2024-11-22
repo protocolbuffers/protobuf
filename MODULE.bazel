@@ -73,11 +73,11 @@ use_repo(pip, "pip_deps")
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.spec(
     package = "googletest",
-    version = ">0.0.0",
+    version = ">0.12.0",
 )
 crate.spec(
     package = "paste",
-    version = ">=1",
+    version = ">=1.0.15",
 )
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
