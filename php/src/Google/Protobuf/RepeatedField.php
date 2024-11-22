@@ -35,6 +35,8 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     private $type;
     /**
      * @ignore
+     * @template T of object
+     * @type string|class-string<T>
      */
     private $klass;
     /**
@@ -45,8 +47,9 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * Constructs an instance of RepeatedField.
      *
+     * @template T of object
      * @param integer $type Type of the stored element.
-     * @param string $klass Message/Enum class name (message/enum fields only).
+     * @param string|class-string<T> $klass Message/Enum class name (message/enum fields only).
      * @ignore
      */
     public function __construct($type, $klass = null)
@@ -75,6 +78,8 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 
     /**
      * @ignore
+     * @template T of object
+     * @return string|class-string<T>
      */
     public function getClass()
     {
@@ -94,8 +99,9 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $ele = $arr[0]
      *
+     * @template T of object
      * @param integer $offset The index of the element to be fetched.
-     * @return mixed The stored element at given index.
+	 * @return T The stored element at given index.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
      * @todo need to add return type mixed (require update php version to 8.0)
@@ -111,8 +117,9 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $arr []= $ele and $arr[0] = ele
      *
+     * @template T of object
      * @param int|null $offset The index of the element to be assigned.
-     * @param mixed $value The element to be assigned.
+     * @param T $value The element to be assigned.
      * @return void
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
