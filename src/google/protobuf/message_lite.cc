@@ -443,20 +443,20 @@ struct SourceWrapper<absl::Cord> {
 
 }  // namespace internal
 
-bool MessageLite::MergeFromCord(const absl::Cord& cord) {
-  return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&cord));
+bool MessageLite::MergeFromString(const absl::Cord& data) {
+  return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
-bool MessageLite::MergePartialFromCord(const absl::Cord& cord) {
-  return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+bool MessageLite::MergePartialFromString(const absl::Cord& data) {
+  return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
-bool MessageLite::ParseFromCord(const absl::Cord& cord) {
-  return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&cord));
+bool MessageLite::ParseFromString(const absl::Cord& data) {
+  return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
-bool MessageLite::ParsePartialFromCord(const absl::Cord& cord) {
-  return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+bool MessageLite::ParsePartialFromString(const absl::Cord& data) {
+  return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 // ===================================================================
@@ -640,13 +640,13 @@ std::string MessageLite::SerializePartialAsString() const {
   return output;
 }
 
-bool MessageLite::AppendToCord(absl::Cord* output) const {
+bool MessageLite::AppendToString(absl::Cord* output) const {
   ABSL_DCHECK(IsInitialized())
       << InitializationErrorMessage("serialize", *this);
   return AppendPartialToCord(output);
 }
 
-bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
+bool MessageLite::AppendPartialToString(absl::Cord* output) const {
   // For efficiency, we'd like to pass a size hint to CordOutputStream with
   // the exact total size expected.
   const size_t size = ByteSizeLong();
@@ -692,12 +692,12 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
   return true;
 }
 
-bool MessageLite::SerializeToCord(absl::Cord* output) const {
+bool MessageLite::SerializeToString(absl::Cord* output) const {
   output->Clear();
   return AppendToCord(output);
 }
 
-bool MessageLite::SerializePartialToCord(absl::Cord* output) const {
+bool MessageLite::SerializePartialToString(absl::Cord* output) const {
   output->Clear();
   return AppendPartialToCord(output);
 }
