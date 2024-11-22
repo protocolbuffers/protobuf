@@ -479,7 +479,6 @@ py_dist(
         "win64": "310",
         "linux-x86_64": "38",
         "linux-aarch_64": "38",
-        "linux-s390x": "38",
         "osx-universal2": "38",
     },
     # LINT.ThenChange(:python_tag)
