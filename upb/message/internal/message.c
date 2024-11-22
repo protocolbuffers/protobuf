@@ -41,8 +41,8 @@ const double kUpb_Infinity = INFINITY;
 
 const double kUpb_NaN = UPB_NAN;
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* a) {
+bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
+                                               size_t need, upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const size_t overhead = sizeof(upb_Message_Internal);
 

@@ -102,8 +102,11 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
                                            upb_Arena* arena,
                                            upb_StringView data[], size_t count);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena);
+// Ensure at least `need` unused bytes are available for unknown fields or
+// extensions. Returns false if a reallocation is needed to satisfy the request,
+// and fails.
+bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
+                                               size_t need, upb_Arena* arena);
 
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0

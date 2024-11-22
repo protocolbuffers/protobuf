@@ -40,7 +40,7 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
+  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, len, arena)) return false;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
   in->unknown_end += len;
@@ -57,7 +57,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   for (size_t i = 0; i < count; i++) {
     total_len += data[i].size;
   }
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, total_len, arena)) return false;
+  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, total_len, arena))
+    return false;
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   for (size_t i = 0; i < count; i++) {
