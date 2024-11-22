@@ -279,25 +279,6 @@ size_t KeySize() {
   }
 }
 
-template <typename Key>
-void ClearMap(internal::UntypedMapBase* m, bool reset_table,
-              MapValue prototype) {
-  internal::MapNodeSizeInfoT size_info = GetSizeInfo(KeySize<Key>(), prototype);
-  if (internal::RustMapHelper::IsGlobalEmptyTable(m)) return;
-  uint8_t bits = 0;
-  if constexpr (std::is_same<Key, google::protobuf::rust::PtrAndLen>::value) {
-    bits |= internal::RustMapHelper::kKeyIsString;
-  }
-  if (prototype.tag == MapValueTag::kString) {
-    bits |= internal::RustMapHelper::kValueIsString;
-  } else if (prototype.tag == MapValueTag::kMessage) {
-    bits |= internal::RustMapHelper::kValueIsProto;
-  }
-  internal::RustMapHelper::ClearTable(
-      m, internal::RustMapHelper::ClearInput{size_info, bits, reset_table,
-                                             /* destroy_node = */ nullptr});
-}
-
 }  // namespace
 }  // namespace rust
 }  // namespace protobuf
@@ -331,39 +312,39 @@ google::protobuf::internal::UntypedMapIterator proto2_rust_map_iter(
   return m->begin();
 }
 
-#define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)                   \
-  void proto2_rust_map_free_##suffix(google::protobuf::internal::UntypedMapBase* m,      \
-                                     google::protobuf::rust::MapValue prototype) {       \
-    google::protobuf::rust::ClearMap<cpp_type>(m, /* reset_table = */ false, prototype); \
-    delete m;                                                                  \
-  }                                                                            \
-  void proto2_rust_map_clear_##suffix(google::protobuf::internal::UntypedMapBase* m,     \
-                                      google::protobuf::rust::MapValue prototype) {      \
-    google::protobuf::rust::ClearMap<cpp_type>(m, /* reset_table = */ true, prototype);  \
-  }                                                                            \
-  bool proto2_rust_map_insert_##suffix(google::protobuf::internal::UntypedMapBase* m,    \
-                                       cpp_type key,                           \
-                                       google::protobuf::rust::MapValue value) {         \
-    return google::protobuf::rust::Insert(m, key, value);                                \
-  }                                                                            \
-                                                                               \
-  bool proto2_rust_map_get_##suffix(                                           \
-      google::protobuf::internal::UntypedMapBase* m, google::protobuf::rust::MapValue prototype,   \
-      cpp_type key, google::protobuf::rust::MapValue* value) {                           \
-    return google::protobuf::rust::Get(m, prototype, key, value);                        \
-  }                                                                            \
-                                                                               \
-  bool proto2_rust_map_remove_##suffix(google::protobuf::internal::UntypedMapBase* m,    \
-                                       google::protobuf::rust::MapValue prototype,       \
-                                       cpp_type key) {                         \
-    return google::protobuf::rust::Remove(m, prototype, key);                            \
-  }                                                                            \
-                                                                               \
-  void proto2_rust_map_iter_get_##suffix(                                      \
-      const google::protobuf::internal::UntypedMapIterator* iter,                        \
-      google::protobuf::rust::MapValue prototype, cpp_type* key,                         \
-      google::protobuf::rust::MapValue* value) {                                         \
-    return google::protobuf::rust::IterGet(iter, prototype, key, value);                 \
+void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m) {
+  m->ClearTable(false, nullptr);
+  delete m;
+}
+
+void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m) {
+  m->ClearTable(true, nullptr);
+}
+
+#define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)                 \
+  bool proto2_rust_map_insert_##suffix(google::protobuf::internal::UntypedMapBase* m,  \
+                                       cpp_type key,                         \
+                                       google::protobuf::rust::MapValue value) {       \
+    return google::protobuf::rust::Insert(m, key, value);                              \
+  }                                                                          \
+                                                                             \
+  bool proto2_rust_map_get_##suffix(                                         \
+      google::protobuf::internal::UntypedMapBase* m, google::protobuf::rust::MapValue prototype, \
+      cpp_type key, google::protobuf::rust::MapValue* value) {                         \
+    return google::protobuf::rust::Get(m, prototype, key, value);                      \
+  }                                                                          \
+                                                                             \
+  bool proto2_rust_map_remove_##suffix(google::protobuf::internal::UntypedMapBase* m,  \
+                                       google::protobuf::rust::MapValue prototype,     \
+                                       cpp_type key) {                       \
+    return google::protobuf::rust::Remove(m, prototype, key);                          \
+  }                                                                          \
+                                                                             \
+  void proto2_rust_map_iter_get_##suffix(                                    \
+      const google::protobuf::internal::UntypedMapIterator* iter,                      \
+      google::protobuf::rust::MapValue prototype, cpp_type* key,                       \
+      google::protobuf::rust::MapValue* value) {                                       \
+    return google::protobuf::rust::IterGet(iter, prototype, key, value);               \
   }
 
 DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(int32_t, i32)

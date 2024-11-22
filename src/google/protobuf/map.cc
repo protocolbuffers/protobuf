@@ -29,7 +29,7 @@ namespace internal {
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
-void UntypedMapBase::ClearTable(const ClearInput input) {
+void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (alloc_.arena() == nullptr) {
@@ -41,53 +41,43 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
           NodeBase* next = node->next;
           absl::PrefetchToLocalCacheNta(next);
           destroy_node(node);
-          SizedDelete(node, SizeFromInfo(input.size_info));
+          SizedDelete(node, type_info_.node_size);
           node = next;
         }
       }
     };
-    switch (input.destroy_bits) {
-      case 0:
-        loop([](NodeBase*) {});
-        break;
-      case kKeyIsString:
-        loop([](NodeBase* node) {
+
+    const auto dispatch_key = [&](auto value_handler) {
+      if (type_info_.key_type < TypeKind::kString) {
+        return loop(value_handler);
+      } else if (type_info_.key_type == TypeKind::kString) {
+        return loop([=](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
+          value_handler(node);
         });
-        break;
-      case kValueIsString:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidValue(size_info))
-              ->~basic_string();
-        });
-        break;
-      case kKeyIsString | kValueIsString:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidKey())->~basic_string();
-          static_cast<std::string*>(node->GetVoidValue(size_info))
-              ->~basic_string();
-        });
-        break;
-      case kValueIsProto:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->DestroyInstance();
-        });
-        break;
-      case kKeyIsString | kValueIsProto:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidKey())->~basic_string();
-          static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->DestroyInstance();
-        });
-        break;
-      case kUseDestructFunc:
-        loop(input.destroy_node);
-        break;
+      } else {
+        ABSL_CHECK(destroy != nullptr);
+        return loop(destroy);
+      }
+    };
+
+    if (type_info_.value_type < TypeKind::kString) {
+      dispatch_key([](NodeBase*) {});
+    } else if (type_info_.value_type == TypeKind::kString) {
+      dispatch_key([&](NodeBase* node) {
+        GetValue<std::string>(node)->~basic_string();
+      });
+    } else if (type_info_.value_type == TypeKind::kMessage) {
+      dispatch_key([&](NodeBase* node) {
+        GetValue<MessageLite>(node)->DestroyInstance();
+      });
+    } else {
+      ABSL_CHECK(destroy != nullptr);
+      loop(destroy);
     }
   }
 
-  if (input.reset_table) {
+  if (reset) {
     std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
     index_of_first_non_null_ = num_buckets_;

@@ -457,6 +457,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
 
+  template <typename T = void>
+  T* GetValue(NodeBase* node) const {
+    return reinterpret_cast<T*>(reinterpret_cast<char*>(node) +
+                                type_info_.value_offset);
+  }
+
+  void ClearTable(bool reset, void (*destroy)(NodeBase*)) {
+    if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
+    ClearTableImpl(reset, destroy);
+  }
+
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
   enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
@@ -496,6 +507,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
     NodeBase* node;
     map_index_t bucket;
   };
+
+  void ClearTableImpl(bool reset, void (*destroy)(NodeBase*));
 
   // Returns whether we should insert after the head of the list. For
   // non-optimized builds, we randomly decide whether to insert right at the
@@ -555,55 +568,20 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return result;
   }
 
-  enum {
-    kKeyIsString = 1 << 0,
-    kValueIsString = 1 << 1,
-    kValueIsProto = 1 << 2,
-    kUseDestructFunc = 1 << 3,
-  };
-  template <typename Key, typename Value>
-  static constexpr uint8_t MakeDestroyBits() {
-    uint8_t result = 0;
-    if (!std::is_trivially_destructible<Key>::value) {
-      if (std::is_same<Key, std::string>::value) {
-        result |= kKeyIsString;
-      } else {
-        return kUseDestructFunc;
-      }
-    }
-    if (!std::is_trivially_destructible<Value>::value) {
-      if (std::is_same<Value, std::string>::value) {
-        result |= kValueIsString;
-      } else if (std::is_base_of<MessageLite, Value>::value) {
-        result |= kValueIsProto;
-      } else {
-        return kUseDestructFunc;
-      }
-    }
-    return result;
-  }
-
-  struct ClearInput {
-    MapNodeSizeInfoT size_info;
-    uint8_t destroy_bits;
-    bool reset_table;
-    void (*destroy_node)(NodeBase*);
-  };
-
   template <typename Node>
   static void DestroyNode(NodeBase* node) {
     static_cast<Node*>(node)->~Node();
   }
 
   template <typename Node>
-  static constexpr ClearInput MakeClearInput(bool reset) {
-    constexpr auto bits =
-        MakeDestroyBits<typename Node::key_type, typename Node::mapped_type>();
-    return ClearInput{Node::size_info(), bits, reset,
-                      bits & kUseDestructFunc ? DestroyNode<Node> : nullptr};
+  static constexpr auto GetDestroyNode() {
+    return internal::UntypedMapBase::StaticTypeKind<
+               typename Node::key_type>() == TypeKind::kUnknown ||
+                   internal::UntypedMapBase::StaticTypeKind<
+                       typename Node::mapped_type>() == TypeKind::kUnknown
+               ? DestroyNode<Node>
+               : nullptr;
   }
-
-  void ClearTable(ClearInput input);
 
   // Space used for the table, trees, and nodes.
   // Does not include the indirect space used. Eg the data of a std::string.
@@ -907,7 +885,6 @@ bool InitializeMapKey(T*, K&&, Arena*) {
 class RustMapHelper {
  public:
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
-  using ClearInput = UntypedMapBase::ClearInput;
 
   static void GetSizeAndAlignment(const google::protobuf::MessageLite* m, uint16_t* size,
                                   uint8_t* alignment) {
@@ -925,12 +902,6 @@ class RustMapHelper {
   static constexpr MapNodeSizeInfoT SizeInfo() {
     return Map<Key, Value>::Node::size_info();
   }
-
-  enum {
-    kKeyIsString = UntypedMapBase::kKeyIsString,
-    kValueIsString = UntypedMapBase::kValueIsString,
-    kValueIsProto = UntypedMapBase::kValueIsProto,
-  };
 
   static NodeBase* AllocNode(UntypedMapBase* m, MapNodeSizeInfoT size_info) {
     return m->AllocNode(size_info);
@@ -962,10 +933,6 @@ class RustMapHelper {
   }
 
   static void DestroyMessage(MessageLite* m) { m->DestroyInstance(); }
-
-  static void ClearTable(UntypedMapBase* m, ClearInput input) {
-    m->ClearTable(input);
-  }
 
   static bool IsGlobalEmptyTable(const UntypedMapBase* m) {
     return m->num_buckets_ == kGlobalEmptyTableSize;
@@ -1049,9 +1016,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // won't trigger for leaked maps that never get destructed.
     StaticValidityCheck();
 
-    if (this->num_buckets_ != internal::kGlobalEmptyTableSize) {
-      this->ClearTable(this->template MakeClearInput<Node>(false));
-    }
+    this->ClearTable(false, this->template GetDestroyNode<Node>());
   }
 
  private:
@@ -1391,8 +1356,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   void clear() {
-    if (this->num_buckets_ == internal::kGlobalEmptyTableSize) return;
-    this->ClearTable(this->template MakeClearInput<Node>(true));
+    this->ClearTable(true, this->template GetDestroyNode<Node>());
   }
 
   // Assign

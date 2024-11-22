@@ -1017,10 +1017,6 @@ where
 
     fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self>;
 
-    unsafe fn free(m: RawMap, prototype: MapValue);
-
-    unsafe fn clear(m: RawMap, prototype: MapValue);
-
     unsafe fn insert(m: RawMap, key: View<'_, Self>, value: MapValue) -> bool;
 
     unsafe fn get(
@@ -1050,16 +1046,6 @@ macro_rules! generate_map_key_impl {
             #[inline]
             fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self> {
                 $from_ffi(key)
-            }
-
-            #[inline]
-            unsafe fn free(m: RawMap, prototype: MapValue) {
-                unsafe { [< proto2_rust_map_free_ $key >](m, prototype) }
-            }
-
-            #[inline]
-            unsafe fn clear(m: RawMap, prototype: MapValue) {
-                unsafe { [< proto2_rust_map_clear_ $key >](m, prototype) }
             }
 
             #[inline]
@@ -1126,13 +1112,13 @@ where
 
     unsafe fn map_free(_private: Private, map: &mut Map<Key, Self>) {
         unsafe {
-            Key::free(map.as_raw(Private), Self::get_prototype());
+            proto2_rust_map_free(map.as_raw(Private));
         }
     }
 
     fn map_clear(mut map: MapMut<Key, Self>) {
         unsafe {
-            Key::clear(map.as_raw(Private), Self::get_prototype());
+            proto2_rust_map_clear(map.as_raw(Private));
         }
     }
 
@@ -1193,8 +1179,6 @@ where
 
 macro_rules! impl_map_primitives {
     (@impl $(($rust_type:ty, $cpp_type:ty) => [
-        $free_thunk:ident,
-        $clear_thunk:ident,
         $insert_thunk:ident,
         $get_thunk:ident,
         $iter_get_thunk:ident,
@@ -1202,14 +1186,6 @@ macro_rules! impl_map_primitives {
     ]),* $(,)?) => {
         $(
             extern "C" {
-                pub fn $free_thunk(
-                    m: RawMap,
-                    prototype: MapValue,
-                );
-                pub fn $clear_thunk(
-                    m: RawMap,
-                    prototype: MapValue,
-                );
                 pub fn $insert_thunk(
                     m: RawMap,
                     key: $cpp_type,
@@ -1235,8 +1211,6 @@ macro_rules! impl_map_primitives {
         paste!{
             impl_map_primitives!(@impl $(
                     ($rust_type, $cpp_type) => [
-                    [< proto2_rust_map_free_ $rust_type >],
-                    [< proto2_rust_map_clear_ $rust_type >],
                     [< proto2_rust_map_insert_ $rust_type >],
                     [< proto2_rust_map_get_ $rust_type >],
                     [< proto2_rust_map_iter_get_ $rust_type >],
@@ -1260,6 +1234,8 @@ extern "C" {
     fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
 
     pub fn proto2_rust_map_new(key_prototype: MapValue, value_prototype: MapValue) -> RawMap;
+    pub fn proto2_rust_map_free(m: RawMap);
+    pub fn proto2_rust_map_clear(m: RawMap);
     pub fn proto2_rust_map_size(m: RawMap) -> usize;
     pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
 }
