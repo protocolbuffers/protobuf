@@ -115,7 +115,7 @@ class GeneratedPhpdocTest extends TestBase
                     'getRepeatedEnum',
                     'getRepeatedNoNamespaceEnum',
                 ],
-                '@return int[]'
+                '@return RepeatedField<int>'
             ],
             [
                 [
@@ -125,45 +125,45 @@ class GeneratedPhpdocTest extends TestBase
                     'getRepeatedFixed64',
                     'getRepeatedSfixed64',
                 ],
-                '@return int[]|string[]'
+                '@return RepeatedField<int>|RepeatedField<string>'
             ],
             [
                 [
                     'getRepeatedFloat',
                     'getRepeatedDouble',
                 ],
-                '@return float[]'
+                '@return RepeatedField<float>'
             ],
             [
                 [
                     'getRepeatedBool',
                 ],
-                '@return bool[]'
+                '@return RepeatedField<bool>'
             ],
             [
                 [
                     'getRepeatedString',
                     'getRepeatedBytes',
                 ],
-                '@return string[]'
+                '@return RepeatedField<string>'
             ],
             [
                 [
                     'getRepeatedMessage',
                 ],
-                '@return \Foo\TestMessage\Sub[]'
+                '@return RepeatedField<\Foo\TestMessage\Sub>'
             ],
             [
                 [
                     'getRepeatedRecursive',
                 ],
-                '@return \Foo\TestMessage[]'
+                '@return RepeatedField<\Foo\TestMessage>'
             ],
             [
                 [
                     'getRepeatedNoNamespaceMessage',
                 ],
-                '@return \NoNamespaceMessage[]'
+                '@return RepeatedField<\NoNamespaceMessage>'
             ],
             [
                 [

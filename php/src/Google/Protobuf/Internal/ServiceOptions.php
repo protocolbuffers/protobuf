@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Generated from protobuf message <code>google.protobuf.ServiceOptions</code>
@@ -57,7 +57,7 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      *           Depending on the target platform, this can emit Deprecated annotations
      *           for the service, or it will be completely ignored; in the very least,
      *           this is a formalization for deprecating services.
-     *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
+     *     @type \Google\Protobuf\Internal\UninterpretedOption[] $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
      */
@@ -154,7 +154,7 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\UninterpretedOption>
      */
     public function getUninterpretedOption()
     {
@@ -165,7 +165,7 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @param array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\UninterpretedOption[] $var
      * @return $this
      */
     public function setUninterpretedOption($var)

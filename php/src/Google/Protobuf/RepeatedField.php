@@ -21,6 +21,10 @@ use Traversable;
 /**
  * RepeatedField is used by generated protocol message classes to manipulate
  * repeated fields. It can be used like native PHP array.
+ *
+ * @template T
+ * @implements \ArrayAccess<int, T>
+ * @implements \IteratorAggregate<T>
  */
 class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 {
@@ -35,8 +39,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     private $type;
     /**
      * @ignore
-     * @template T of object
-     * @type string|class-string<T>
+     * @var string|class-string<T>
      */
     private $klass;
     /**
@@ -47,7 +50,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * Constructs an instance of RepeatedField.
      *
-     * @template T of object
      * @param integer $type Type of the stored element.
      * @param string|class-string<T> $klass Message/Enum class name (message/enum fields only).
      * @ignore
@@ -78,7 +80,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
 
     /**
      * @ignore
-     * @template T of object
      * @return string|class-string<T>
      */
     public function getClass()
@@ -99,7 +100,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $ele = $arr[0]
      *
-     * @template T of object
      * @param integer $offset The index of the element to be fetched.
 	 * @return T The stored element at given index.
      * @throws \ErrorException Invalid type for index.
@@ -117,7 +117,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $arr []= $ele and $arr[0] = ele
      *
-     * @template T of object
      * @param int|null $offset The index of the element to be assigned.
      * @param T $value The element to be assigned.
      * @return void

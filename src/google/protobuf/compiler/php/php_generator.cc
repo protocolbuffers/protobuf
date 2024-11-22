@@ -435,7 +435,7 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
     // accommodate for edge case with multiple types.
     size_t start_pos = type.find('|');
     if (start_pos != std::string::npos) {
-      type.replace(start_pos, 1, absl::StrCat(type, ">|RepeatedField<", type));
+      type.replace(start_pos, 1, ">|RepeatedField<");
     }
     type = absl::StrCat("RepeatedField<", type, ">");
   }
