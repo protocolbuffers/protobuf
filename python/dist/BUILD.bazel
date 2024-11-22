@@ -84,6 +84,27 @@ config_setting(
     },
 )
 
+# s390x support is community-maintained and not officially supported. We do not
+# publish s390x wheels.
+config_setting(
+    name = "linux_s390x_release_unused",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "linux-s390x"},
+)
+
+config_setting(
+    name = "linux_s390x_local_unused",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
 config_setting(
     name = "osx_x86_64_release",
     flag_values = {
@@ -326,6 +347,8 @@ py_wheel(
         ":linux_x86_64_release": "manylinux2014_x86_64",
         ":linux_aarch64_local": "linux_aarch64",
         ":linux_aarch64_release": "manylinux2014_aarch64",
+        ":linux_s390x_local_unused": "linux_s390x",
+        ":linux_s390x_release_unused": "manylinux2014_s390x",
         ":osx_universal2": "macosx_10_9_universal2",
         ":osx_aarch64": "macosx_11_0_arm64",
         ":windows_x86_32": "win32",
