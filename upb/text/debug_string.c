@@ -185,8 +185,7 @@ static void _upb_MessageDebugString(txtenc* e, const upb_Message* msg,
   const upb_MiniTableExtension* ext;
   upb_MessageValue val_ext;
   iter = kUpb_Message_ExtensionBegin;
-  while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &val_ext,
-                                                        &iter)) {
+  while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
     const upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
     // It is not sufficient to only pass |f| as we lose valuable information
     // about sub-messages. It is required that we pass |ext|.
