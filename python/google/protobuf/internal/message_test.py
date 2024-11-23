@@ -353,7 +353,12 @@ class MessageTest(unittest.TestCase):
   def testFloatPrinting(self, message_module):
     message = message_module.TestAllTypes()
     message.optional_float = 2.0
-    self.assertEqual(str(message), 'optional_float: 2.0\n')
+    # Python/C++ customizes the C++ TextFormat to always print trailing ".0" for
+    # floats. upb doesn't do this, it matches C++ TextFormat.
+    if api_implementation.Type() == 'upb':
+      self.assertEqual(str(message), 'optional_float: 2\n')
+    else:
+      self.assertEqual(str(message), 'optional_float: 2.0\n')
 
   def testFloatNanPrinting(self, message_module):
     message = message_module.TestAllTypes()
@@ -1662,7 +1667,8 @@ class Proto2Test(unittest.TestCase):
     doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
     self.assertIn('class TestAllTypes', doc)
     self.assertIn('SerializePartialToString', doc)
-    self.assertIn('repeated_float', doc)
+    if api_implementation.Type() != 'upb':
+      self.assertIn('repeated_float', doc)
     base = unittest_pb2.TestAllTypes.__bases__[0]
     self.assertRaises(AttributeError, getattr, base, '_extensions_by_name')
 
@@ -2258,15 +2264,17 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaisesRegex(
         TypeError,
         r'Parameter to MergeFrom\(\) must be instance of same class: expected '
-        r'.+TestMap got int\.'):
+        r'.+TestMap.+got.+int.+',
+    ):
       msg.MergeFrom(1)
 
   def testCopyFromBadType(self):
     msg = map_unittest_pb2.TestMap()
     with self.assertRaisesRegex(
         TypeError,
-        r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
-        r'expected .+TestMap got int\.'):
+        r'Parameter to (Copy|Merge)From\(\) must be instance of same class: '
+        r'expected .+TestMap.+got.+int.+',
+    ):
       msg.CopyFrom(1)
 
   def testIntegerMapWithLongs(self):
