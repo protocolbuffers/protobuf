@@ -210,7 +210,13 @@ class EncodeDecodeTest extends TestBase
         $this->expectException(Exception::class);
 
         $m = new TestMessage();
-        $m->mergeFromJsonString("{\"map_int32_enum\":{\"1\": \"UNKNOWN_ENUM\"}}");
+        $m->mergeFromJsonString(
+          "{\"map_int32_enum\":{
+            \"1\": \"ONE\",
+            \"2\": \"UNKNOWN_ENUM\",
+            \"3\": \"ZERO\"
+          }}"
+        );
     }
 
     public function testDecodeEnumMapWithUnknownStringValueIgnored()
@@ -235,7 +241,13 @@ class EncodeDecodeTest extends TestBase
         $this->expectException(Exception::class);
 
         $m = new TestMessage();
-        $m->mergeFromJsonString("{\"repeated_enum\":[\"UNKNOWN_ENUM\"]}");
+        $m->mergeFromJsonString(
+          "{\"repeated_enum\":[
+            \"ONE\",
+            \"UNKNOWN_ENUM\",
+            \"ZERO\"
+          ]}"
+        );
     }
 
     public function testDecodeRepeatedEnumWithUnknownStringValueIgnored()
