@@ -37,26 +37,28 @@ absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
 
 void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
   absl::string_view section = test_name.substr(0, test_name.find('.'));
+  
+  bool name_equals_section = test_name == section;
 
   // test_name cannot be overwritten
   absl::string_view test_name_rest =
-      test_name != section ? test_name.substr(section.length() + 1) : "";
+      name_equals_section ? "" : test_name.substr(section.length() + 1) ;
   for (auto& child : children_) {
-    if (child->data_ == section && test_name != section) {
-      return child->InsertImpl(test_name_rest);
-    }
-
     // Extracted last section -> no more '.' -> test_name will be equal to
     // section
-    if (child->data_ == section && test_name == section) {
+    if (child->data_ == section && name_equals_section) {
       child->is_test_name_ = true;
       return;
+    }
+
+    if (child->data_ == section && !name_equals_section) {
+      return child->InsertImpl(test_name_rest);
     }
   }
 
   // No match
   children_.push_back(std::make_unique<FailureListTrieNode>(section));
-  if (test_name == section) {
+  if (name_equals_section) {
     children_.back()->is_test_name_ = true;
     return;
   }
