@@ -439,6 +439,7 @@ def build_targets(name):
         visibility = ["//visibility:public"],
         deps = [
             "//src/google/protobuf",
+            "//src/google/protobuf/io",
             "@com_google_absl//absl/log:absl_check",
             "@com_google_absl//absl/status",
             "@system_python//:python_headers",

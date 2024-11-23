@@ -158,6 +158,52 @@ google::protobuf::DynamicMessageFactory* GetFactory() {
   return factory;
 }
 
+absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
+  PyObject* pyd = PyObject_GetAttrString(py_msg, "DESCRIPTOR");
+  if (pyd == nullptr) {
+    return absl::InvalidArgumentError("py_msg has no attribute 'DESCRIPTOR'");
+  }
+
+  PyObject* fn = PyObject_GetAttrString(pyd, "full_name");
+  if (fn == nullptr) {
+    return absl::InvalidArgumentError(
+        "DESCRIPTOR has no attribute 'full_name'");
+  }
+
+  const char* descriptor_full_name = PyUnicode_AsUTF8(fn);
+  if (descriptor_full_name == nullptr) {
+    return absl::InternalError("Fail to convert descriptor full name");
+  }
+
+  PyObject* pyfile = PyObject_GetAttrString(pyd, "file");
+  Py_DECREF(pyd);
+  if (pyfile == nullptr) {
+    return absl::InvalidArgumentError("DESCRIPTOR has no attribute 'file'");
+  }
+  auto gen_d = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(
+      descriptor_full_name);
+  if (gen_d) {
+    Py_DECREF(pyfile);
+    Py_DECREF(fn);
+    return google::protobuf::MessageFactory::generated_factory()
+        ->GetPrototype(gen_d)
+        ->New();
+  }
+  auto d = FindMessageDescriptor(pyfile, descriptor_full_name);
+  Py_DECREF(pyfile);
+  RETURN_IF_ERROR(d.status());
+  Py_DECREF(fn);
+  return GetFactory()->GetPrototype(*d)->New();
+}
+
+bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Message& message) {
+  *copy = message.New();
+  std::string wire;
+  message.SerializeToString(&wire);
+  (*copy)->ParseFromArray(wire.data(), wire.size());
+  return true;
+}
+
 // C++ API.  Clients get at this via proto_api.h
 struct ApiImplementation : google::protobuf::python::PyProto_API {
   absl::StatusOr<google::protobuf::python::PythonMessageMutator> GetClearedMessageMutator(
@@ -165,47 +211,50 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
     if (PyObject_TypeCheck(py_msg, google::protobuf::python::CMessage_Type)) {
       google::protobuf::Message* message =
           google::protobuf::python::PyMessage_GetMutableMessagePointer(py_msg);
+      if (message == nullptr) {
+        return absl::InternalError(
+            "Fail to get message pointer. The message "
+            "may already had a reference.");
+      }
       message->Clear();
       return CreatePythonMessageMutator(nullptr, message, py_msg);
     }
-    PyObject* pyd = PyObject_GetAttrString(py_msg, "DESCRIPTOR");
-    if (pyd == nullptr) {
-      return absl::InvalidArgumentError("py_msg has no attribute 'DESCRIPTOR'");
-    }
 
-    PyObject* fn = PyObject_GetAttrString(pyd, "full_name");
-    if (fn == nullptr) {
-      return absl::InvalidArgumentError(
-          "DESCRIPTOR has no attribute 'full_name'");
-    }
+    auto msg = CreateNewMessage(py_msg);
+    RETURN_IF_ERROR(msg.status());
+    return CreatePythonMessageMutator(*msg, *msg, py_msg);
+  }
 
-    const char* descriptor_full_name = PyUnicode_AsUTF8(fn);
-    if (descriptor_full_name == nullptr) {
-      return absl::InternalError("Fail to convert descriptor full name");
+  absl::StatusOr<google::protobuf::python::PythonConstMessagePointer>
+  GetConstMessagePointer(PyObject* py_msg) const override {
+    if (PyObject_TypeCheck(py_msg, google::protobuf::python::CMessage_Type)) {
+      const google::protobuf::Message* message =
+          google::protobuf::python::PyMessage_GetMessagePointer(py_msg);
+      google::protobuf::Message* owned_msg = nullptr;
+      ABSL_DCHECK(CopyToOwnedMsg(&owned_msg, *message));
+      return CreatePythonConstMessagePointer(owned_msg, message, py_msg);
     }
-
-    PyObject* pyfile = PyObject_GetAttrString(pyd, "file");
-    Py_DECREF(pyd);
-    if (pyfile == nullptr) {
-      return absl::InvalidArgumentError("DESCRIPTOR has no attribute 'file'");
+    auto msg = CreateNewMessage(py_msg);
+    RETURN_IF_ERROR(msg.status());
+    PyObject* serialized_pb(
+        PyObject_CallMethod(py_msg, "SerializeToString", nullptr));
+    if (serialized_pb == nullptr) {
+      return absl::InternalError("Fail to serialize py_msg");
     }
-    auto gen_d =
-        google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(
-            descriptor_full_name);
-    if (gen_d) {
-      Py_DECREF(pyfile);
-      Py_DECREF(fn);
-      google::protobuf::Message* msg = google::protobuf::MessageFactory::generated_factory()
-                                 ->GetPrototype(gen_d)
-                                 ->New();
-      return CreatePythonMessageMutator(msg, msg, py_msg);
+    char* data;
+    Py_ssize_t len;
+    if (PyBytes_AsStringAndSize(serialized_pb, &data, &len) < 0) {
+      Py_DECREF(serialized_pb);
+      return absl::InternalError(
+          "Fail to get bytes from py_msg serialized data");
     }
-    auto d = FindMessageDescriptor(pyfile, descriptor_full_name);
-    Py_DECREF(pyfile);
-    RETURN_IF_ERROR(d.status());
-    Py_DECREF(fn);
-    google::protobuf::Message* msg = GetFactory()->GetPrototype(*d)->New();
-    return CreatePythonMessageMutator(msg, msg, py_msg);
+    if (!(*msg)->ParseFromArray(data, len)) {
+      Py_DECREF(serialized_pb);
+      return absl::InternalError(
+          "Couldn't parse py_message to google::protobuf::Message*!");
+    }
+    Py_DECREF(serialized_pb);
+    return CreatePythonConstMessagePointer(*msg, *msg, py_msg);
   }
 
   const google::protobuf::Message* GetMessagePointer(PyObject* msg) const override {
