@@ -217,7 +217,6 @@ struct MapTestPeer {
 };
 
 namespace {
-using internal::DownCast;
 
 // Map API Test =====================================================
 

@@ -1200,11 +1200,6 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
-inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
-  ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
-      << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
-}
-
 template <bool test_call, typename MessageLite>
 PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
