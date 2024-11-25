@@ -53,6 +53,7 @@
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
+// #include "third_party/protobuf/descriptor.proto.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

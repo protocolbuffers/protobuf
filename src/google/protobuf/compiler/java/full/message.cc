@@ -103,12 +103,12 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
-  if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
     // We can only make these package-private since the classes that use them
     // are in separate files.
-    vars["private"] = "";
-  } else {
     vars["private"] = "private ";
+  } else {
+    vars["private"] = "";
   }
   if (*bytecode_estimate <= kMaxStaticSize) {
     vars["final"] = "final ";
@@ -179,12 +179,12 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
     io::Printer* printer, int* bytecode_estimate) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
     // We can only make these package-private since the classes that use them
     // are in separate files.
-    vars["private"] = "";
-  } else {
     vars["private"] = "private ";
+  } else {
+    vars["private"] = "";
   }
   if (*bytecode_estimate <= kMaxStaticSize) {
     vars["final"] = "final ";

@@ -2310,6 +2310,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumUnknown) {
   ExpectErrorSubstring("unknown edition \"2022\"");
 }
 
+TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                 edition = "2024";
+                 option java_multiple_files = true;
+                 message Bar {}
+                 )schema");
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "foo.proto --test_out=$tmpdir --experimental_editions");
+  ExpectErrorSubstring(
+      "`java_multiple_files` is not supported in editions 2024 and above");
+}
+
 
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
   CreateTempFile("foo.proto",
