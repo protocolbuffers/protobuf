@@ -16,9 +16,12 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 impl CodeGen {
     pub fn new() -> Self {
+        let mut output_dir = PathBuf::from(std::env::var("OUT_DIR").expect("OUT_DIR to be set"));
+        output_dir.push("proto");
+
         Self {
             inputs: Vec::new(),
-            output_dir: std::env::current_dir().unwrap().join("src").join("protos"),
+            output_dir,
             protoc_path: None,
             protoc_gen_upb_minitable_path: None,
             includes: Vec::new(),
