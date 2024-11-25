@@ -836,6 +836,19 @@ message TestPickleNestedMessage {
   }
 }
 
+// Needed for RecursivelyRemoveEmptyMessages test.
+message TestNestedNestedMessage {
+  message NestedMessage {
+    int32 bb = 1;
+
+    message NestedNestedMessage {
+      int32 cc = 1;
+    }
+    NestedNestedMessage nested_nested_message = 2;
+  }
+  NestedMessage nested_message = 1;
+}
+
 message TestMultipleExtensionRanges {
   extensions 42;
   extensions 4143 to 4243;
