@@ -8,7 +8,7 @@
 package com.google.protobuf.util;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.protobuf.util.DurationsTest.duration;
+import static com.google.protobuf.util.JodaDurationsTest.duration;
 import static org.junit.Assert.fail;
 
 import com.google.common.annotations.GwtIncompatible;
