@@ -31,6 +31,8 @@
 
 typedef struct upb_Arena upb_Arena;
 
+typedef void upb_CleanupFunc(void* context);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,6 +43,9 @@ extern "C" {
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
+// Sets the cleanup function for the upb_alloc used by the arena.
+UPB_API bool upb_Arena_SetAllocCleanup(upb_Arena* a, void* ud,
+                                       upb_CleanupFunc* func);
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 

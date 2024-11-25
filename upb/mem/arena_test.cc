@@ -30,6 +30,19 @@
 
 namespace {
 
+static void decrement_int(void* ptr) {
+  int* iptr = static_cast<int*>(ptr);
+  (*iptr)--;
+}
+
+TEST(ArenaTest, ArenaWithAllocCleanup) {
+  int i = 5;
+  upb_Arena* arena = upb_Arena_New();
+  upb_Arena_SetAllocCleanup(arena, &i, decrement_int);
+  upb_Arena_Free(arena);
+  EXPECT_EQ(i, 4);
+}
+
 TEST(ArenaTest, ArenaFuse) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
