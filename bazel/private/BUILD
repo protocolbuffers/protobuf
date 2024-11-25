@@ -95,7 +95,9 @@ bzl_library(
         "java_lite_proto_library.bzl",
         "java_proto_support.bzl",
     ],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+    ],
     deps = [
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
