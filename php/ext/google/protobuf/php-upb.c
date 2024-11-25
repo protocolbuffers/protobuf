@@ -12403,9 +12403,6 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
 
 // Must be last.
 
-const float kUpb_FltInfinity = INFINITY;
-const double kUpb_Infinity = INFINITY;
-
 // The latest win32 SDKs have an invalid definition of NAN.
 // https://developercommunity.visualstudio.com/t/NAN-is-no-longer-compile-time-constant-i/10688907
 //
@@ -12416,15 +12413,24 @@ const double kUpb_Infinity = INFINITY;
 #if __has_builtin(__builtin_nan)
 #define UPB_NAN __builtin_nan("0")
 #endif
+#if __has_builtin(__builtin_inf)
+#define UPB_INFINITY __builtin_inf()
+#endif
 #endif
 #ifndef UPB_NAN
 #define UPB_NAN 0.0 / 0.0
 #endif
+#ifndef UPB_INFINITY
+#define UPB_INFINITY 1.0 / 0.0
+#endif
 #else
 // For !_WIN32, assume math.h works.
 #define UPB_NAN NAN
+#define UPB_INFINITY INFINITY
 #endif
 
+const float kUpb_FltInfinity = UPB_INFINITY;
+const double kUpb_Infinity = UPB_INFINITY;
 const double kUpb_NaN = UPB_NAN;
 
 bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
