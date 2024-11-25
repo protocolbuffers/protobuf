@@ -13,9 +13,11 @@ cc_library(
     name = "hash",
     srcs = [
         "common.c",
+        "internal/hash.h",
     ],
     hdrs = [
         "common.h",
+        "hash.h",
         "int_table.h",
         "str_table.h",
     ],
@@ -27,6 +29,12 @@ cc_library(
         "//upb:port",
         "//upb/base:internal",
     ],
+)
+
+cc_library(
+    name = "internal/hash",
+    hdrs = ["internal/hash.h"],
+    deps = ["//upb:port"],
 )
 
 cc_test(
