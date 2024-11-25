@@ -158,7 +158,7 @@ jobs:
         version: ['8.2', '8.3']
 
     name: MacOS PHP ${{ matrix.version }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3

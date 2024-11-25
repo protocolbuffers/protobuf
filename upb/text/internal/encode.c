@@ -22,11 +22,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define CHK(x)      \
-  do {              \
-    if (!(x)) {     \
-      return false; \
-    }               \
+#define CHK(x)     \
+  do {             \
+    if (!(x)) {    \
+      return NULL; \
+    }              \
   } while (0)
 
 /*
