@@ -972,27 +972,13 @@ namespace {
 // already allocated and will not be going away.
 template <typename ItX, typename ItY>
 size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
-  size_t result = 0;
-  while (it_dest != end_dest && it_source != end_source) {
-    if (it_dest->first < it_source->first) {
-      ++result;
-      ++it_dest;
-    } else if (it_dest->first == it_source->first) {
-      ++result;
-      ++it_dest;
-      ++it_source;
-    } else {
-      if (!it_source->second.is_cleared) {
-        ++result;
-      }
-      ++it_source;
-    }
-  }
-  result += std::distance(it_dest, end_dest);
+  size_t result = std::distance(it_dest, end_dest);
   for (; it_source != end_source; ++it_source) {
-    if (!it_source->second.is_cleared) {
-      ++result;
+    while (it_dest != end_dest && it_dest->first < it_source->first) {
+      ++it_dest;
     }
+    result += (it_dest == end_dest || it_dest->first > it_source->first) &&
+              !it_source->second.is_cleared;
   }
   return result;
 }
