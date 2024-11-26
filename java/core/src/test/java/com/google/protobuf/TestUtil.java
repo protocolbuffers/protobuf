@@ -211,6 +211,7 @@ import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Handler;
@@ -2166,6 +2167,55 @@ public final class TestUtil {
 
     assertEqualsExactType("524", message.getExtension(repeatedStringPieceExtension, 1));
     assertEqualsExactType("525", message.getExtension(repeatedCordExtension, 1));
+  }
+
+  public static void assertRepeatedExtensionsImmutable(TestAllExtensionsOrBuilder message) {
+    List<List<?>> extensions =
+        Arrays.asList(
+            message.getExtension(repeatedInt32Extension),
+            message.getExtension(repeatedInt64Extension),
+            message.getExtension(repeatedUint32Extension),
+            message.getExtension(repeatedUint64Extension),
+            message.getExtension(repeatedSint32Extension),
+            message.getExtension(repeatedSint64Extension),
+            message.getExtension(repeatedFixed32Extension),
+            message.getExtension(repeatedFixed64Extension),
+            message.getExtension(repeatedSfixed32Extension),
+            message.getExtension(repeatedSfixed64Extension),
+            message.getExtension(repeatedFloatExtension),
+            message.getExtension(repeatedDoubleExtension),
+            message.getExtension(repeatedBoolExtension),
+            message.getExtension(repeatedStringExtension),
+            message.getExtension(repeatedBytesExtension),
+            message.getExtension(repeatedGroupExtension),
+            message.getExtension(repeatedNestedMessageExtension),
+            message.getExtension(repeatedForeignMessageExtension),
+            message.getExtension(repeatedImportMessageExtension),
+            message.getExtension(repeatedLazyMessageExtension),
+            message.getExtension(repeatedNestedEnumExtension),
+            message.getExtension(repeatedForeignEnumExtension),
+            message.getExtension(repeatedImportEnumExtension),
+            message.getExtension(repeatedStringPieceExtension),
+            message.getExtension(repeatedCordExtension));
+
+    ArrayList<String> errors = new ArrayList<>();
+    for (List<?> extension : extensions) {
+      String listContents = extension.toString();
+      try {
+        extension.clear();
+        errors.add(
+            "List should not be immutable, but was able to be cleared, so it's mutable: "
+                + listContents
+                + " "
+                + extension.getClass());
+      } catch (UnsupportedOperationException expected) {
+        // We expect this exception to be thrown, since the list should be
+        // immutable.
+      }
+    }
+    if (!errors.isEmpty()) {
+      throw new AssertionError(String.join("\n", errors));
+    }
   }
 
   public static void setPackedExtensions(TestPackedExtensions.Builder message) {

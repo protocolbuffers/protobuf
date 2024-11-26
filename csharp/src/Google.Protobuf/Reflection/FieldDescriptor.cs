@@ -120,7 +120,7 @@ namespace Google.Protobuf.Reflection
             // a MapField, but that feels a tad nasty.
             PropertyName = propertyName;
             Extension = extension;
-            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
+            JsonName =  Proto.JsonName.Length == 0 ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
 
         /// <summary>

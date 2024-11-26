@@ -355,7 +355,7 @@ namespace Google.Protobuf.Collections
             if (index == -1)
             {
                 return false;
-            }            
+            }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
             array[count] = default;
@@ -430,6 +430,38 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Adds the elements of the specified span to the end of the collection.
+        /// </summary>
+        /// <param name="source">The span whose elements should be added to the end of the collection.</param>
+        [SecuritySafeCritical]
+        internal void AddRangeSpan(ReadOnlySpan<T> source)
+        {
+            if (source.IsEmpty)
+            {
+                return;
+            }
+
+            // For reference types and nullable value types, we need to check that there are no nulls
+            // present. (This isn't a thread-safe approach, but we don't advertise this is thread-safe.)
+            // We expect the JITter to optimize this test to true/false, so it's effectively conditional
+            // specialization.
+            if (default(T) == null)
+            {
+                for (int i = 0; i < source.Length; i++)
+                {
+                    if (source[i] == null)
+                    {
+                        throw new ArgumentException("ReadOnlySpan contained null element", nameof(source));
+                    }
+                }
+            }
+
+            EnsureSize(count + source.Length);
+            source.CopyTo(array.AsSpan(count));
+            count += source.Length;
+        }
+
+        /// <summary>
         /// Adds all of the specified values into this collection. This method is present to
         /// allow repeated fields to be constructed from queries within collection initializers.
         /// Within non-collection-initializer code, consider using the equivalent <see cref="AddRange"/>
@@ -463,7 +495,7 @@ namespace Google.Protobuf.Collections
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj) => Equals(obj as RepeatedField<T>);
-        
+
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
@@ -476,7 +508,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -645,7 +677,7 @@ namespace Google.Protobuf.Collections
                 Remove(t);
             }
         }
-        #endregion        
+        #endregion
 
         private sealed class RepeatedFieldDebugView
         {

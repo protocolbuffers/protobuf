@@ -205,7 +205,7 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
       ABSL_LOG(FATAL);
       return nullptr;
     }
-    const ClassData* GetClassData() const PROTOBUF_FINAL {
+    const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
       ABSL_LOG(FATAL);
       return nullptr;
     }
@@ -528,7 +528,9 @@ class DispatcherTestProto : public Message {
       : Message(nullptr, nullptr) {
     ABSL_LOG(FATAL);
   }
-  const ClassData* GetClassData() const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
+  const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
+    ABSL_LOG(FATAL);
+  }
 };
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the
@@ -651,7 +653,7 @@ TEST(ArenaTest, UnknownFields) {
   arena_message_3->mutable_unknown_fields()->AddVarint(1000, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed32(1001, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed64(1002, 42);
-  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003);
+  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003, "");
   arena_message_3->mutable_unknown_fields()->DeleteSubrange(0, 2);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1002);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1003);
@@ -1537,13 +1539,13 @@ TEST(ArenaTest, ClearOneofMessageOnArena) {
   child->set_moo_int(100);
   message->clear_foo_message();
 
-#ifndef PROTOBUF_ASAN
-  EXPECT_NE(child->moo_int(), 100);
-#else
-#if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
-  EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
-#endif
-#endif
+  if (internal::HasMemoryPoisoning()) {
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
+#endif  // !GTEST_HAS_DEATH_TEST
+  } else {
+    EXPECT_NE(child->moo_int(), 100);
+  }
 }
 
 TEST(ArenaTest, CopyValuesWithinOneof) {
@@ -1838,7 +1840,10 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
 }
 
 TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
-#ifdef PROTOBUF_ASAN
+  if constexpr (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning not enabled.";
+  }
+
   char buf[1024]{};
   constexpr int kSize = 32;
   {
@@ -1847,19 +1852,21 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
     for (int i = 0; i < 100; ++i) {
       void* p = Arena::CreateArray<char>(&arena, kSize);
       // Simulate other ASan client managing shadow memory.
-      ASAN_POISON_MEMORY_REGION(p, kSize);
-      ASAN_UNPOISON_MEMORY_REGION(p, kSize - 4);
+      internal::PoisonMemoryRegion(p, kSize);
+      internal::UnpoisonMemoryRegion(p, kSize - 4);
       pointers.push_back(p);
     }
     for (void* p : pointers) {
       internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, kSize);
       // The first one is not poisoned because it becomes the freelist.
-      if (p != pointers[0]) EXPECT_TRUE(__asan_address_is_poisoned(p));
+      if (p != pointers[0]) {
+        EXPECT_TRUE(internal::IsMemoryPoisoned(p));
+      }
     }
 
     bool found_poison = false;
     for (char& c : buf) {
-      if (__asan_address_is_poisoned(&c)) {
+      if (internal::IsMemoryPoisoned(&c)) {
         found_poison = true;
         break;
       }
@@ -1869,12 +1876,8 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 
   // Should not be poisoned after destruction.
   for (char& c : buf) {
-    ASSERT_FALSE(__asan_address_is_poisoned(&c));
+    ASSERT_FALSE(internal::IsMemoryPoisoned(&c));
   }
-
-#else   // PROTOBUF_ASAN
-  GTEST_SKIP();
-#endif  // PROTOBUF_ASAN
 }
 
 

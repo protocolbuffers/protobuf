@@ -28,7 +28,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -36,7 +35,6 @@
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
@@ -45,7 +43,6 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -79,7 +76,11 @@ constexpr int RepeatedFieldLowerClampLimit() {
 // overflows when multiplied by 2 (which is undefined behavior). Sizes above
 // this will clamp to the maximum int value instead of following exponential
 // growth when growing a repeated field.
+#if defined(__cpp_inline_variables)
+inline constexpr int kRepeatedFieldUpperClampLimit =
+#else
 constexpr int kRepeatedFieldUpperClampLimit =
+#endif
     (std::numeric_limits<int>::max() / 2) + 1;
 
 template <typename Element>
@@ -559,8 +560,8 @@ class RepeatedField final
       // We need to manually unpoison the SOO buffer because in reflection for
       // split repeated fields, we poison the whole SOO buffer even when we
       // don't actually use the whole SOO buffer (e.g. for RepeatedField<bool>).
-      PROTOBUF_UNPOISON_MEMORY_REGION(soo_rep_.short_rep.data,
-                                      sizeof(soo_rep_.short_rep.data));
+      internal::UnpoisonMemoryRegion(soo_rep_.short_rep.data,
+                                     sizeof(soo_rep_.short_rep.data));
     }
   }
 
@@ -704,17 +705,13 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(Arena* arena, RepeatedField&& rhs)
     : RepeatedField(arena) {
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-  CopyFrom(rhs);
-#else   // PROTOBUF_FORCE_COPY_IN_MOVE
-  // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
-  // is on a different arena.
-  if (arena != rhs.GetArena()) {
-    CopyFrom(rhs);
-  } else {
+  if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
+  } else {
+    // We don't just call Swap(&rhs) here because it would perform 3 copies if
+    // rhs is on a different arena.
+    CopyFrom(rhs);
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
 
 template <typename Element>
@@ -723,15 +720,10 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    const Arena* arena = GetArena();
-    if (arena != other.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || arena == nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      CopyFrom(other);
-    } else {
+    if (internal::CanMoveWithInternalSwap(GetArena(), other.GetArena())) {
       InternalSwap(&other);
+    } else {
+      CopyFrom(other);
     }
   }
   return *this;
@@ -1074,11 +1066,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
   Arena* arena = GetArena();
   Arena* other_arena = other->GetArena();
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena != nullptr && arena == other_arena) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena == other_arena) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::CanUseInternalSwap(arena, other_arena)) {
     InternalSwap(other);
   } else {
     RepeatedField<Element> temp(other_arena);
@@ -1160,7 +1148,7 @@ inline int CalculateReserveSize(int capacity, int new_size) {
   }
   constexpr int kMaxSizeBeforeClamp =
       (std::numeric_limits<int>::max() - kHeapRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
+  if (ABSL_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
   constexpr int kSooCapacityElements = SooCapacityElements(sizeof(T));

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -84,10 +85,16 @@ class MapEntry : public Message {
   MapEntry& operator=(const MapEntry&) = delete;
 
   ~MapEntry() PROTOBUF_OVERRIDE {
+    // Make sure that `Value` is never a derived message type.
+    // We don't want to instantiate the template with every unique derived type.
+    // The assertion is in the destructor because we need `Value` to be
+    // complete to test it.
+    static_assert(!std::is_base_of<Message, Value>::value ||
+                      std::is_same<Message, Value>::value,
+                  "");
+
     if (GetArena() != nullptr) return;
-    this->_internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(_impl_.key_);
-    ValueTypeHandler::DeleteNoArena(_impl_.value_);
+    SharedDtor(*this);
   }
 
   using InternalArenaConstructable_ = void;
@@ -97,6 +104,13 @@ class MapEntry : public Message {
 
  protected:
   friend class google::protobuf::Arena;
+
+  static void SharedDtor(MessageLite& msg) {
+    auto& this_ = static_cast<MapEntry&>(msg);
+    this_._internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
+    ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
+  }
 
   // Field naming follows the convention of generated messages to make code
   // sharing easier.

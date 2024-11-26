@@ -50,7 +50,7 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
     //   `mt`
     // - `buf` is nullptr and `buf_len` is 0
     let len =
-        unsafe { upb_DebugString(msg, mt, Options::NoSortMaps as i32, std::ptr::null_mut(), 0) };
+        unsafe { upb_DebugString(msg, mt, Options::NoSortMaps as i32, core::ptr::null_mut(), 0) };
     assert!(len < isize::MAX as usize);
     // +1 for the trailing NULL
     let mut buf = vec![0u8; len + 1];
@@ -63,4 +63,16 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
     };
     assert_eq!(len, written_len);
     String::from_utf8_lossy(buf.as_slice()).to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+
+    #[googletest::test]
+    fn assert_text_linked() {
+        use crate::assert_linked;
+        assert_linked!(upb_DebugString);
+    }
 }

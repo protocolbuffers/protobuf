@@ -17,10 +17,7 @@ COPTS = select({
         "/wd4996",  # The compiler encountered a deprecated declaration.
     ],
     "//conditions:default": [
-        "-DHAVE_ZLIB",
-        "-Woverloaded-virtual",
         "-Wno-sign-compare",
-        "-Wno-nonnull",
     ],
 })
 

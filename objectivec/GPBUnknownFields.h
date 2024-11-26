@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBMessage.h"
+#import "GPBUnknownField.h"
+
 @class GPBMessage;
 @class GPBUnknownField;
 
@@ -117,8 +120,6 @@ __attribute__((objc_subclassing_restricted))
  * NOTE: If the field being copied is an Group, this instance added is new and thus
  * the `.group` of that result is also new, so if you intent is to modify the group
  * it *must* be fetched out of the result.
- *
- * It is a programming error to call this when the `type` is a legacy field.
  *
  * @param field The field to add.
  *

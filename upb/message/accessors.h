@@ -168,6 +168,47 @@ UPB_API_INLINE void upb_Message_SetBaseFieldUInt64(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    uint64_t value);
 
+// Extension Getters ///////////////////////////////////////////////////////////
+UPB_API_INLINE bool upb_Message_GetExtensionBool(
+    const upb_Message* msg, const upb_MiniTableExtension* f, bool default_val);
+
+UPB_API_INLINE double upb_Message_GetExtensionDouble(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    double default_val);
+
+UPB_API_INLINE float upb_Message_GetExtensionFloat(
+    const upb_Message* msg, const upb_MiniTableExtension* f, float default_val);
+
+UPB_API_INLINE int32_t upb_Message_GetExtensionInt32(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    int32_t default_val);
+
+UPB_API_INLINE int64_t upb_Message_GetExtensionInt64(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    int64_t default_val);
+
+UPB_API_INLINE uint32_t upb_Message_GetExtensionUInt32(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    uint32_t default_val);
+
+UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    uint64_t default_val);
+
+UPB_API_INLINE upb_StringView upb_Message_GetExtensionString(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    upb_StringView default_val);
+
+UPB_API_INLINE upb_Message* upb_Message_GetExtensionMessage(
+    const upb_Message* msg, const upb_MiniTableExtension* f,
+    struct upb_Message* default_val);
+
+UPB_API_INLINE const upb_Array* upb_Message_GetExtensionArray(
+    const upb_Message* msg, const upb_MiniTableExtension* f);
+
+UPB_API_INLINE upb_Array* upb_Message_GetExtensionMutableArray(
+    upb_Message* msg, const upb_MiniTableExtension* f);
+
 // Extension Setters ///////////////////////////////////////////////////////////
 
 UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,

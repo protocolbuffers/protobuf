@@ -883,7 +883,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testMesssagesAndEnumsWithEmptyPhpNamespace()
+    public function testMessagesAndEnumsWithEmptyPhpNamespace()
     {
         $m = new TestEmptyNamespace();
         $n = new TestEmptyNamespace\NestedMessage();

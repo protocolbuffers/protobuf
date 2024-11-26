@@ -9,7 +9,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # before they get merged. You'll want to use the following instead:
 #
 # http_archive(
-#     name = "protobuf",
+#     name = "com_google_protobuf",
 #     sha256 = "c29d8b4b79389463c546f98b15aa4391d4ed7ec459340c47bffe15db63eb9126",
 #     strip_prefix = "protobuf-3.21.3",
 #     urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.21.3.tar.gz"],
@@ -17,11 +17,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
     name = "com_google_protobuf",
-    path = "..",
-)
-
-local_repository(
-    name = "protobuf",
     path = "..",
 )
 
@@ -42,6 +37,20 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_python/releases/download/0.25.0/rules_python-0.25.0.tar.gz",
 )
 
-load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
+
+http_archive(
+    name = "rules_java",
+    sha256 = "9b9614f8a7f7b7ed93cb7975d227ece30fe7daed2c0a76f03a5ee37f69e437de",
+    urls = [
+        "https://github.com/bazelbuild/rules_java/releases/download/8.3.2/rules_java-8.3.2.tar.gz",
+    ],
+)
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()

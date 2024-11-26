@@ -6,8 +6,8 @@
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_MINITABLE_H_
-#define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_MINITABLE_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_MINITABLE_H_
+#define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_MINITABLE_H_
 
 #include "upb/generated_code_support.h"
 
@@ -27,7 +27,7 @@ extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_ms
 extern const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_init;
 extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr;
 
-extern const upb_MiniTableEnum google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init;
+extern const upb_MiniTableEnum google__protobuf__compiler__CodeGeneratorResponse__Feature_enum_init;
 extern const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_layout;
 
 #ifdef __cplusplus
@@ -36,4 +36,4 @@ extern const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_la
 
 #include "upb/port/undef.inc"
 
-#endif  /* GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_MINITABLE_H_ */
+#endif  /* GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_MINITABLE_H_ */

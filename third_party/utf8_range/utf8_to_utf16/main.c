@@ -197,7 +197,7 @@ static int test_manual(const struct ftab *ftab, unsigned short *buf16,
         ret = ftab->func(neg[i].data, neg[i].len, buf16, &len16);
         _ret = utf8_to16_iconv(neg[i].data, neg[i].len, _buf16, &_len16);
         if (ret != _ret || len16 != _len16 || memcmp(buf16, _buf16, len16)) {
-            printf("FAILED negitive test(%d:%d, %lu:%lu): ",
+            printf("FAILED negative test(%d:%d, %lu:%lu): ",
                     ret, _ret, len16, _len16);
             print_test(neg[i].data, neg[i].len);
             return -1;

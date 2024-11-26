@@ -11,17 +11,22 @@
 
 #include "google/protobuf/wire_format_lite.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <stack>
+#include <new>
 #include <string>
-#include <vector>
+#include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
 #include "utf8_validity.h"
 
 
@@ -665,9 +670,11 @@ static size_t VarintSize(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint32_t x = data[i];
     if (ZigZag) {
@@ -707,9 +714,11 @@ static size_t VarintSize64(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint64_t x = data[i];
     if (ZigZag) {

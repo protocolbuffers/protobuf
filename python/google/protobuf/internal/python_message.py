@@ -568,7 +568,7 @@ def _AddInitMethod(message_descriptor, cls):
               )
           )
 
-        if new_val:
+        if new_val != None:
           try:
             field_copy.MergeFrom(new_val)
           except TypeError:
@@ -988,7 +988,7 @@ def _InternalUnpackAny(msg):
   if descriptor is None:
     return None
 
-  # Unable to import message_factory at top becaue of circular import.
+  # Unable to import message_factory at top because of circular import.
   # pylint: disable=g-import-not-at-top
   from google.protobuf import message_factory
   message_class = message_factory.GetMessageClass(descriptor)

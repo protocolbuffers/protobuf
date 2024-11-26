@@ -40,7 +40,7 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
     *count = (in->size - in->ext_begin) / sizeof(upb_Extension);
-    return UPB_PTR_AT(in, in->ext_begin, void);
+    return UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
   } else {
     *count = 0;
     return NULL;
@@ -52,7 +52,7 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), a))
+  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, sizeof(upb_Extension), a))
     return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   in->ext_begin -= sizeof(upb_Extension);

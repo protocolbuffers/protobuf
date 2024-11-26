@@ -14,6 +14,7 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/bind_front.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -38,9 +40,25 @@
 
 namespace google {
 namespace protobuf {
+namespace internal {
+struct UnknownFieldSetTestPeer {
+  static auto AddLengthDelimited(UnknownFieldSet& set, int number) {
+    return set.AddLengthDelimited(number);
+  }
+};
+}  // namespace internal
 
 using internal::WireFormat;
 using ::testing::ElementsAre;
+
+template <typename T>
+T UnknownToProto(const UnknownFieldSet& set) {
+  T message;
+  std::string serialized_message;
+  ABSL_CHECK(set.SerializeToString(&serialized_message));
+  ABSL_CHECK(message.ParseFromString(serialized_message));
+  return message;
+}
 
 class UnknownFieldSetTest : public testing::Test {
  protected:
@@ -180,7 +198,9 @@ static void PopulateUFS(UnknownFieldSet& set) {
     node->AddVarint(1, 100);
     const char* long_str = "This is a very long string, not sso";
     node->AddLengthDelimited(2, long_str);
-    *node->AddLengthDelimited(3) = long_str;
+    node->AddLengthDelimited(2, std::string(long_str));
+    node->AddLengthDelimited(2, absl::Cord(long_str));
+    *internal::UnknownFieldSetTestPeer::AddLengthDelimited(*node, 3) = long_str;
     // Test some recursion too.
     node = node->AddGroup(4);
   }
@@ -642,7 +662,8 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
-  str = unknown_fields->AddLengthDelimited(1);
+  str =
+      internal::UnknownFieldSetTestPeer::AddLengthDelimited(*unknown_fields, 1);
   shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
 
@@ -750,7 +771,12 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   field_set.AddVarint(1, -1);
   field_set.AddVarint(2, -2);
   field_set.AddLengthDelimited(44, "str");
-  field_set.AddLengthDelimited(44, "byv");
+  field_set.AddLengthDelimited(44, std::string("byv"));
+  field_set.AddLengthDelimited(44,
+                               absl::Cord("this came from cord and is long"));
+  *internal::UnknownFieldSetTestPeer::AddLengthDelimited(field_set, 44) =
+      "0123456789";
+
   field_set.AddFixed32(7, 7);
   field_set.AddFixed64(8, 8);
 
@@ -759,10 +785,8 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   group_field_set = field_set.AddGroup(46);
   group_field_set->AddVarint(47, 2048);
 
-  unittest::TestAllTypes message;
-  std::string serialized_message;
-  ASSERT_TRUE(field_set.SerializeToString(&serialized_message));
-  ASSERT_TRUE(message.ParseFromString(serialized_message));
+  unittest::TestAllTypes message =
+      UnknownToProto<unittest::TestAllTypes>(field_set);
 
   EXPECT_EQ(message.optional_int32(), -1);
   EXPECT_EQ(message.optional_int64(), -2);
@@ -770,8 +794,9 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   EXPECT_EQ(message.optional_uint64(), 4);
   EXPECT_EQ(message.optional_fixed32(), 7);
   EXPECT_EQ(message.optional_fixed64(), 8);
-  EXPECT_EQ(message.repeated_string(0), "str");
-  EXPECT_EQ(message.repeated_string(1), "byv");
+  EXPECT_THAT(message.repeated_string(),
+              ElementsAre("str", "byv", "this came from cord and is long",
+                          "0123456789"));
   EXPECT_EQ(message.repeatedgroup(0).a(), 1024);
   EXPECT_EQ(message.repeatedgroup(1).a(), 2048);
 }
@@ -815,6 +840,42 @@ TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
   ASSERT_TRUE(message.ParseFromCord(cord));
   EXPECT_THAT(message.packed_int32(), ElementsAre(-1, -2, -3, -4));
   EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
+}
+
+TEST(UnknownFieldTest, SettersOverrideTheDataProperly) {
+  using T = unittest::TestAllTypes;
+  UnknownFieldSet set;
+  set.AddVarint(T::kOptionalInt32FieldNumber, 2);
+  set.AddFixed32(T::kOptionalFixed32FieldNumber, 3);
+  set.AddFixed64(T::kOptionalFixed64FieldNumber, 4);
+  set.AddLengthDelimited(T::kOptionalStringFieldNumber, "5");
+
+  T message = UnknownToProto<T>(set);
+
+  EXPECT_EQ(message.optional_int32(), 2);
+  EXPECT_EQ(message.optional_fixed32(), 3);
+  EXPECT_EQ(message.optional_fixed64(), 4);
+  EXPECT_EQ(message.optional_string(), "5");
+
+  set.mutable_field(0)->set_varint(22);
+  set.mutable_field(1)->set_fixed32(33);
+  set.mutable_field(2)->set_fixed64(44);
+  set.mutable_field(3)->set_length_delimited("55");
+
+  message = UnknownToProto<T>(set);
+
+  EXPECT_EQ(message.optional_int32(), 22);
+  EXPECT_EQ(message.optional_fixed32(), 33);
+  EXPECT_EQ(message.optional_fixed64(), 44);
+  EXPECT_EQ(message.optional_string(), "55");
+
+  set.mutable_field(3)->set_length_delimited(std::string("555"));
+  message = UnknownToProto<T>(set);
+  EXPECT_EQ(message.optional_string(), "555");
+
+  set.mutable_field(3)->set_length_delimited(absl::Cord("5555"));
+  message = UnknownToProto<T>(set);
+  EXPECT_EQ(message.optional_string(), "5555");
 }
 
 }  // namespace

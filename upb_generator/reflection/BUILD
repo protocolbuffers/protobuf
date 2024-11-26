@@ -5,11 +5,23 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    deps = [
+        "//upb:port",
+        "//upb_generator/common:names",
+        "@com_google_absl//absl/strings",
+    ],
+)
 
 cc_binary(
     name = "protoc-gen-upbdefs",
@@ -30,12 +42,18 @@ cc_library(
     # /usr/bin/x86_64-linux-gnu-ld: /opt/manylinux/2014/x86_64/lib64/libm.so.6: error adding symbols: DSO missing from command line
     # clang-14: error: linker command failed with exit code 1 (use -v to see invocation)
     deps = [
+        ":names",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//upb:mem",
         "//upb:reflection",
         "//upb/util:def_to_proto",
         "//upb_generator:common",
         "//upb_generator:file_layout",
         "//upb_generator:plugin",
+        "//upb_generator/common:names",
+        "//upb_generator/minitable:names",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 

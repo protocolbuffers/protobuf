@@ -86,6 +86,7 @@ function doTest($request)
                 case 'protobuf_test_messages.editions.proto3.TestAllTypesProto3':
                     $test_message = new TestAllTypesProto3Editions();
                     break;
+                case 'protobuf_test_messages.proto2.TestAllTypesProto2':
                 case 'protobuf_test_messages.editions.proto2.TestAllTypesProto2':
                     $response->setSkipped('PHP doesn\'t support proto2');
                     return $response;

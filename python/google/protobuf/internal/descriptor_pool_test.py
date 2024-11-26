@@ -173,11 +173,11 @@ class DescriptorPoolTestBase(object):
 
   def testCrossFileServicesByName(self):
     descriptor_pool_test1_pb2.DESCRIPTOR.services_by_name[
-        'DescriporPoolTestService'
+        'DescriptorPoolTestService'
     ],
     with self.assertRaises(KeyError):
       descriptor_pool_test2_pb2.DESCRIPTOR.services_by_name[
-          'DescriporPoolTestService'
+          'DescriptorPoolTestService'
       ]
 
   def testFindFileContainingSymbolFailure(self):

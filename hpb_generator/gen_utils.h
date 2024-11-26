@@ -41,6 +41,8 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
 
 std::string ToCamelCase(absl::string_view input, bool lower_first);
 
+std::string DefaultValue(const FieldDescriptor* field);
+
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 

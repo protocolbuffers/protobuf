@@ -52,7 +52,6 @@ extern bool fully_verify_message_sets_opt_out;
 
 namespace {
 
-using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
 // This test closely mirrors google/protobuf/compiler/cpp/unittest.cc
@@ -148,7 +147,7 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                 new unittest::ForeignMessage());
 
-  // SetAllocatedExtension with nullptr is equivalent to ClearExtenion.
+  // SetAllocatedExtension with nullptr is equivalent to ClearExtension.
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                 nullptr);
   EXPECT_FALSE(
@@ -1184,7 +1183,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
   EXPECT_DEBUG_DEATH(
       message.SetExtension(unittest::optional_foreign_enum_extension,
                            static_cast<unittest::ForeignEnum>(53)),
-      "IsValid");
+      "ValidateEnum");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
@@ -1193,6 +1192,9 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.
 
   FileDescriptorProto dynamic_proto;
+  unittest::TestDynamicExtensions::descriptor()->file()->CopyHeadingTo(
+      &dynamic_proto);
+  dynamic_proto.clear_dependency();
   dynamic_proto.set_name("dynamic_extensions_test.proto");
   dynamic_proto.add_dependency(
       unittest::TestAllExtensions::descriptor()->file()->name());
@@ -1417,6 +1419,19 @@ TEST(ExtensionSetTest, BoolExtension) {
 TEST(ExtensionSetTest, ConstInit) {
   PROTOBUF_CONSTINIT static ExtensionSet set{};
   EXPECT_EQ(set.NumExtensions(), 0);
+}
+
+// Make sure that is_cleared is set correctly for repeated fields.
+TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
+  unittest::TestAllExtensions msg;
+  ExtensionSet set;
+  const auto* desc =
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "repeated_int32_extension");
+  ASSERT_NE(desc, nullptr);
+  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
+                              desc);
+  EXPECT_EQ(set.NumExtensions(), 1);
 }
 
 TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {

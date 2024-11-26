@@ -250,7 +250,7 @@ void SingularCord::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
         ::google::protobuf::rust::PtrAndLen $borrowed_getter_thunk$($QualifiedMsg$* msg) {
           const absl::Cord& cord = msg->$field$();
           absl::string_view s = cord.TryFlat().value();
-          return ::google::protobuf::rust::PtrAndLen(s.data(), s.size());
+          return ::google::protobuf::rust::PtrAndLen{s.data(), s.size()};
         }
         std::string* $owned_getter_thunk$($QualifiedMsg$* msg) {
           const absl::Cord& cord = msg->$field$();

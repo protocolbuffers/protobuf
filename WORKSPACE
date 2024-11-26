@@ -5,10 +5,6 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
-# Second self-reference that makes it possible to load proto rules from @protobuf.
-# buildifier: disable=duplicated-name
-local_repository(name = "protobuf", path = ".")
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -63,6 +59,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
+    name = "protobuf_maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     # For updating instructions, see:
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
@@ -73,7 +70,7 @@ maven_install(
     ],
 )
 
-load("@maven//:defs.bzl", "pinned_maven_install")
+load("@protobuf_maven//:defs.bzl", "pinned_maven_install")
 
 pinned_maven_install()
 
@@ -94,6 +91,12 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
+
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
 rules_cc_dependencies()
@@ -110,10 +113,10 @@ kt_register_toolchains()
 http_archive(
     name = "rules_ruby",
     urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+      "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip"
     ],
-    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
-    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
+    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
 )
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
@@ -202,8 +205,8 @@ fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
-    integrity = "sha256-F8U7+AC5MvMtPKGdLLnorVM84cDXKfDRgwd7/dq3rUY=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.46.0/rules_rust-v0.46.0.tar.gz"],
+    integrity = "sha256-BCrPtzRpstGEj+FI2Bw0IsYepHqeGQDxyew29R6OcZM=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.51.0/rules_rust-v0.51.0.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")

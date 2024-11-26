@@ -14,11 +14,13 @@ use unittest_rust_proto::{
     NestedTestAllTypes, TestAllTypes,
 };
 
+use map_unittest_rust_proto::{TestMap, TestMapWithMessages};
+
 struct TestValue {
     val: i64,
 }
 
-#[gtest]
+#[googletest::test]
 fn test_setting_literals() {
     let fixed64 = || 108;
     let test_ref = |x: &i64| *x;
@@ -67,7 +69,7 @@ fn test_setting_literals() {
     assert_that!(msg.optional_nested_enum(), eq(test_all_types::NestedEnum::Baz));
 }
 
-#[gtest]
+#[googletest::test]
 fn single_nested_message() {
     let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
@@ -122,7 +124,7 @@ fn single_nested_message() {
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
-#[gtest]
+#[googletest::test]
 fn test_recursive_msg() {
     let msg = proto!(NestedTestAllTypes {
         child: NestedTestAllTypes {
@@ -139,7 +141,7 @@ fn test_recursive_msg() {
     assert_that!(msg.child().child().child().payload().optional_int32(), eq(43));
 }
 
-#[gtest]
+#[googletest::test]
 fn test_spread_msg() {
     let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
     let msg2 = proto!(TestAllTypes { ..msg.as_view() });
@@ -149,7 +151,7 @@ fn test_spread_msg() {
     assert_that!(msg3.optional_int32(), eq(1));
 }
 
-#[gtest]
+#[googletest::test]
 fn test_spread_nested_msg() {
     let msg = proto!(NestedTestAllTypes {
         child: NestedTestAllTypes {
@@ -168,7 +170,7 @@ fn test_spread_nested_msg() {
     assert_that!(msg2.child().child().child().payload().optional_int32(), eq(43));
 }
 
-#[gtest]
+#[googletest::test]
 fn test_repeated_i32() {
     let msg = proto!(TestAllTypes { repeated_int32: [1, 1 + 1, 3] });
     assert_that!(msg.repeated_int32().len(), eq(3));
@@ -177,7 +179,7 @@ fn test_repeated_i32() {
     assert_that!(msg.repeated_int32().get(2).unwrap(), eq(3));
 }
 
-#[gtest]
+#[googletest::test]
 fn test_repeated_msg() {
     let msg2 = proto!(NestedTestAllTypes { payload: TestAllTypes { optional_int32: 1 } });
     let msg = proto!(NestedTestAllTypes {
@@ -201,4 +203,31 @@ fn test_repeated_msg() {
     assert_that!(msg.repeated_child().len(), eq(2));
     assert_that!(msg.repeated_child().get(0).unwrap().payload().optional_int32(), eq(1));
     assert_that!(msg.repeated_child().get(1).unwrap().payload().optional_int32(), eq(2));
+}
+
+#[googletest::test]
+fn test_string_maps() {
+    let msg =
+        proto!(TestMap { map_string_string: [("foo", "bar"), ("baz", "qux"), ("quux", "quuz")] });
+    assert_that!(msg.map_string_string().len(), eq(3));
+    assert_that!(msg.map_string_string().get("foo").unwrap(), eq("bar"));
+    assert_that!(msg.map_string_string().get("baz").unwrap(), eq("qux"));
+    assert_that!(msg.map_string_string().get("quux").unwrap(), eq("quuz"));
+}
+
+#[googletest::test]
+fn test_message_maps() {
+    let msg3 = proto!(TestAllTypes { optional_int32: 3 });
+    let kv3 = ("quux", msg3);
+    let msg = proto!(TestMapWithMessages {
+        map_string_all_types: [
+            ("foo", TestAllTypes { optional_int32: 1 }),
+            ("baz", __ { optional_int32: 2 }),
+            kv3
+        ]
+    });
+    assert_that!(msg.map_string_all_types().len(), eq(3));
+    assert_that!(msg.map_string_all_types().get("foo").unwrap().optional_int32(), eq(1));
+    assert_that!(msg.map_string_all_types().get("baz").unwrap().optional_int32(), eq(2));
+    assert_that!(msg.map_string_all_types().get("quux").unwrap().optional_int32(), eq(3));
 }

@@ -182,7 +182,7 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 namespace google {
 namespace protobuf {
 
-constexpr int kMaximumWildcardExpansions = 5;
+constexpr int kMaximumWildcardExpansions = 10;
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,

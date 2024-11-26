@@ -26,6 +26,13 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+
+void LogIndexOutOfBounds(int index, int size) {
+  ABSL_DLOG(FATAL) << "Index " << index << " out of bounds " << size;
+}
+
+}  // namespace internal
 
 template <>
 PROTOBUF_EXPORT_TEMPLATE_DEFINE size_t

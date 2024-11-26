@@ -35,3 +35,4 @@ Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                          
 Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                                                            # Failed to parse input or produce output.

@@ -313,7 +313,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       } else {
         format("offsetof(decltype(_table_), aux_entries),\n");
       }
-      format("_class_data_.base(),\n");
+      format("$classname$_class_data_.base(),\n");
       if (NeedsPostLoopHandler(descriptor_, options_)) {
         printer->Emit(R"cc(
           &$classname$::PostLoopHandler,

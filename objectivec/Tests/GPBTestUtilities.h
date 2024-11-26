@@ -7,20 +7,15 @@
 
 #import <XCTest/XCTest.h>
 
-@class TestAllExtensions;
-@class TestAllTypes;
-@class TestMap;
-@class TestPackedTypes;
-@class TestPackedExtensions;
-@class TestUnpackedTypes;
-@class TestUnpackedExtensions;
-@class GPBExtensionRegistry;
+#import "GPBExtensionRegistry.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
 
 static inline NSData *DataFromCStr(const char *str) {
   return [NSData dataWithBytes:str length:strlen(str)];
 }
 
-static inline NSData *_DataFromBytesInternal(int32_t unused, ...) {
+static inline NSData *_DataFromBytesInternal(__unused int32_t unused, ...) {
   NSMutableData *values = [NSMutableData dataWithCapacity:0];
   va_list list;
   va_start(list, unused);

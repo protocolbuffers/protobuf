@@ -102,6 +102,13 @@ message TestAllTypes {
   }
 }
 
+message TestAllMapTypes {
+  map<int32, bytes> map_int32_bytes = 1;
+  map<int32, ForeignEnum> map_int32_foreign_enum = 2;
+  map<int32, ForeignMessage> map_int32_foreign_message = 3;
+  map<int32, ExplicitForeignMessage> map_int32_explicit_foreign_message = 4;
+}
+
 message TestProto2Required {
   protobuf_unittest.TestRequired proto2 = 1;
 }

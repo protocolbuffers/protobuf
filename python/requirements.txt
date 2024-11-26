@@ -1,2 +1,2 @@
-numpy<=1.26.1
+numpy<=2.1.0
 setuptools<=70.3.0

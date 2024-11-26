@@ -64,6 +64,15 @@ Error, UINTPTR_MAX is undefined
  */
 #define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
+// A flexible array member may have lower alignment requirements than the struct
+// overall - in that case, it can overlap with the trailing padding of the rest
+// of the struct, and a naive sizeof(base) + sizeof(flex) * count calculation
+// will not take into account that overlap, and allocate more than is required.
+#define UPB_SIZEOF_FLEX(type, member, count)                                \
+  (UPB_MAX(sizeof(type),                                                    \
+           (offsetof(type, member) + (count) * (offsetof(type, member[1]) - \
+                                                offsetof(type, member[0])))))
+
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.
@@ -88,6 +97,12 @@ Error, UINTPTR_MAX is undefined
 #else
 #define UPB_API
 #define UPB_API_INLINE UPB_INLINE
+#endif
+
+#ifdef EXPORT_UPBC
+#define UPBC_API UPB_EXPORT
+#else
+#define UPBC_API
 #endif
 
 #define UPB_MALLOC_ALIGN 8
@@ -117,7 +132,7 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 // Macros for function attributes on compilers that support them.
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline)) static
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
@@ -172,10 +187,14 @@ Error, UINTPTR_MAX is undefined
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
-/* UPB_SETJMP() / UPB_LONGJMP(): avoid setting/restoring signal mask. */
-#ifdef __APPLE__
-#define UPB_SETJMP(buf) _setjmp(buf)
-#define UPB_LONGJMP(buf, val) _longjmp(buf, val)
+/* UPB_SETJMP() / UPB_LONGJMP() */
+// Android uses a custom libc that does not implement all of posix, but it has
+// had sigsetjmp/siglongjmp forever on arm and since API 12 on x86. Apple has
+// sigsetjmp, but does not define the posix feature test macro.
+#if defined(__APPLE__) || defined(_POSIX_C_SOURCE) || defined(__ANDROID__)
+// avoid setting/restoring signal mask, which involves costly syscalls
+#define UPB_SETJMP(buf) sigsetjmp(buf, 0)
+#define UPB_LONGJMP(buf, val) siglongjmp(buf, val)
 #elif defined(WASM_WAMR)
 #define UPB_SETJMP(buf) 0
 #define UPB_LONGJMP(buf, val) abort()
@@ -374,8 +393,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 #if defined(__ELF__) || defined(__wasm__)
 
-#define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("linkarr_" #name)))
+#define UPB_LINKARR_APPEND(name)                          \
+  __attribute__((retain, used, section("linkarr_" #name), \
+                 no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)     \
   extern type const __start_linkarr_##name; \
   extern type const __stop_linkarr_##name;  \
@@ -386,8 +406,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #elif defined(__MACH__)
 
 /* As described in: https://stackoverflow.com/a/22366882 */
-#define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("__DATA,__la_" #name)))
+#define UPB_LINKARR_APPEND(name)                              \
+  __attribute__((retain, used, section("__DATA,__la_" #name), \
+                 no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)           \
   extern type const __start_linkarr_##name __asm( \
       "section$start$__DATA$__la_" #name);        \
@@ -407,8 +428,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 // Usage of __attribute__ here probably means this is Clang-specific, and would
 // not work on MSVC.
-#define UPB_LINKARR_APPEND(name) \
-  __declspec(allocate("la_" #name "$j")) __attribute__((retain, used))
+#define UPB_LINKARR_APPEND(name)         \
+  __declspec(allocate("la_" #name "$j")) \
+  __attribute__((retain, used, no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)                               \
   __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
   __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
@@ -421,5 +443,16 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 // Linker arrays are not supported on this platform.  Make appends a no-op but
 // don't define the other macros.
 #define UPB_LINKARR_APPEND(name)
+
+#endif
+
+// Future versions of upb will include breaking changes to some APIs.
+// This macro can be set to enable these API changes ahead of time, so that
+// user code can be updated before upgrading versions of protobuf.
+#ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Properly enforce closed enums in python.
+// Owner: mkruskal@
+#define UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT 1
 
 #endif

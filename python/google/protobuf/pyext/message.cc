@@ -491,7 +491,7 @@ void OutOfRangeError(PyObject* arg) {
 
 template <class RangeType, class ValueType>
 bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
-  if (PROTOBUF_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
+  if (ABSL_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
     if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
       // Replace it with the same ValueError as pure python protos instead of
       // the default one.
@@ -500,7 +500,7 @@ bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
     }  // Otherwise propagate existing error.
     return false;
   }
-  if (PROTOBUF_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
+  if (ABSL_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
     OutOfRangeError(arg);
     return false;
   }
@@ -514,7 +514,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // This definition includes everything with a valid __index__() implementation
   // and shouldn't cast the net too wide.
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      PROTOBUF_PREDICT_FALSE(!PyIndex_Check(arg))) {
+      ABSL_PREDICT_FALSE(!PyIndex_Check(arg))) {
     FormatTypeError(arg, "int");
     return false;
   }
@@ -558,7 +558,7 @@ template bool CheckAndGetInteger<uint64_t>(PyObject*, uint64_t*);
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      PROTOBUF_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
+      ABSL_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
     FormatTypeError(arg, "int, float");
     return false;
   }
@@ -928,7 +928,7 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
     // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
     // it).
     //
-    // Note that arena is likely null and ABSL_DCHECK and ReleaesLast might be
+    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
     // redundant. The current approach takes extra cautious path not to disrupt
     // production.
     Message* sub_message =
@@ -2651,11 +2651,17 @@ PyObject* ContainerBase::DeepCopy() {
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
   new_parent->message = this->parent->message->New(nullptr);
 
-  // Copy the map field into the new message.
-  this->parent->message->GetReflection()->SwapFields(
-      this->parent->message, new_parent->message,
-      {this->parent_field_descriptor});
-  this->parent->message->MergeFrom(*new_parent->message);
+  // There is no API to copy a single field. The closest operation we have is
+  // SwapFields.
+  // So, we copy the source into a disposable message and then swap the one
+  // field we care about from it.
+  // If the performance of this operation matters we can do a copy of the single
+  // field, but that would require huge switches for each type+cardinality to
+  // call the right read/write field functions.
+  std::unique_ptr<Message> tmp(this->parent->message->New(nullptr));
+  tmp->MergeFrom(*this->parent->message);
+  tmp->GetReflection()->SwapFields(tmp.get(), new_parent->message,
+                                   {this->parent_field_descriptor});
 
   PyObject* result =
       cmessage::GetFieldValue(new_parent, this->parent_field_descriptor);

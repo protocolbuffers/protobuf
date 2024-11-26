@@ -11,8 +11,7 @@
 
 #import "GPBCodedInputStream.h"
 
-@class GPBUnknownFieldSet;
-@class GPBFieldDescriptor;
+#import "GPBDescriptor.h"
 
 typedef struct GPBCodedInputStreamState {
   const uint8_t *bytes;
@@ -39,13 +38,6 @@ typedef struct GPBCodedInputStreamState {
 - (void)readGroup:(int32_t)fieldNumber
               message:(GPBMessage *)message
     extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
-
-// Reads a group field value from the stream and merges it into the given
-// UnknownFieldSet.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message;
-#pragma clang diagnostic pop
 
 // Reads a map entry.
 - (void)readMapEntry:(id)mapDictionary

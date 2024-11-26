@@ -430,7 +430,7 @@ class _Printer(object):
       return False
     packed_message = _BuildMessageFromTypeName(message.TypeName(),
                                                self.descriptor_pool)
-    if packed_message:
+    if packed_message is not None:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
       self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))

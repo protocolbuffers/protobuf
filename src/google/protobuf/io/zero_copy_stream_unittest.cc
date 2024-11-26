@@ -53,9 +53,11 @@
 #include "absl/strings/cord_buffer.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util2.h"
 
 #if HAVE_ZLIB
@@ -1179,7 +1181,7 @@ TEST(CordOutputStreamTest, ProperHintCreatesSingleFlatCord) {
   EXPECT_EQ(flat, std::string(2000, 'a'));
 }
 
-TEST(CordOutputStreamTest, SizeHintDicatesTotalSize) {
+TEST(CordOutputStreamTest, SizeHintDictatesTotalSize) {
   absl::Cord cord(std::string(500, 'a'));
   CordOutputStream output(std::move(cord), 2000);
   void* data;
@@ -1446,14 +1448,14 @@ TEST_F(IoTest, NonBlockingFileIo) {
       ASSERT_EQ(fcntl(fd[0], F_SETFL, O_NONBLOCK), 0);
       ASSERT_EQ(fcntl(fd[1], F_SETFL, O_NONBLOCK), 0);
 
-      std::mutex go_write;
-      go_write.lock();
+      absl::Mutex go_write;
+      go_write.Lock();
 
       bool done_reading = false;
 
       std::thread write_thread([this, fd, &go_write, i]() {
-        go_write.lock();
-        go_write.unlock();
+        go_write.Lock();
+        go_write.Unlock();
         FileOutputStream output(fd[1], kBlockSizes[i]);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
@@ -1472,7 +1474,7 @@ TEST_F(IoTest, NonBlockingFileIo) {
       // reading thread waits for the data to be available before returning.
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       EXPECT_FALSE(done_reading);
-      go_write.unlock();
+      go_write.Unlock();
       write_thread.join();
       read_thread.join();
       EXPECT_TRUE(done_reading);

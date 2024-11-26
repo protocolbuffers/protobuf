@@ -117,8 +117,8 @@ struct DynamicFieldInfoHelper {
   static absl::string_view GetStringView(const Reflection* reflection,
                                          const Message& message,
                                          const FieldDescriptor* field) {
-    auto ctype = cpp::EffectiveStringCType(field);
-    ABSL_DCHECK_NE(ctype, FieldOptions::CORD);
+    auto string_type = field->cpp_string_type();
+    ABSL_DCHECK(string_type != FieldDescriptor::CppStringType::kCord);
     ABSL_DCHECK(!is_oneof || reflection->HasOneofField(message, field));
     auto str = Get<ArenaStringPtr>(reflection, message, field);
     ABSL_DCHECK(!str.IsDefault());
@@ -1137,6 +1137,13 @@ struct RepeatedGroupDynamicExtensionInfo
 // users from a similar dispatch without creating KeyInfo or ValueInfo per type.
 template <FieldDescriptor::CppType cpp_type, typename T>
 inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if encased in a switch statement. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/qo51cKe7b
+  // This is fixed in GCC 10.1+.
+  (void)type;   // Suppress -Wunused-but-set-parameter
+  (void)value;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (cpp_type == FieldDescriptor::CPPTYPE_INT32) {
     static_assert(std::is_same_v<T, int32_t>, "type mismatch");
     switch (type) {
@@ -1217,7 +1224,7 @@ PROTOBUF_MAP_KEY_INFO(Int64, int64_t, INT64);
 PROTOBUF_MAP_KEY_INFO(UInt32, uint32_t, UINT32);
 PROTOBUF_MAP_KEY_INFO(UInt64, uint64_t, UINT64);
 PROTOBUF_MAP_KEY_INFO(Bool, bool, BOOL);
-PROTOBUF_MAP_KEY_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_KEY_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_KEY_INFO
 
@@ -1245,7 +1252,7 @@ PROTOBUF_MAP_VALUE_INFO(Bool, bool, BOOL);
 PROTOBUF_MAP_VALUE_INFO(Enum, int, ENUM);
 PROTOBUF_MAP_VALUE_INFO(Float, float, FLOAT);
 PROTOBUF_MAP_VALUE_INFO(Double, double, DOUBLE);
-PROTOBUF_MAP_VALUE_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_VALUE_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_VALUE_INFO
 

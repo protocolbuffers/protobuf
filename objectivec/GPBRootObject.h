@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class GPBExtensionRegistry;
+#import "GPBExtensionRegistry.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

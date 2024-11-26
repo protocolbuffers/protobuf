@@ -8,14 +8,14 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBBootstrap.h"
+#import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
+#import "GPBDescriptor.h"
 #import "GPBExtensionRegistry.h"
+#import "GPBUnknownFields.h"
 
-@class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionDescriptor;
-@class GPBFieldDescriptor;
-@class GPBUnknownFieldSet;
 @class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -69,13 +69,6 @@ CF_EXTERN_C_END
 // If you add an instance method/property to this class that may conflict with
 // fields declared in protos, you need to update objective_helpers.cc. The main
 // cases are methods that take no arguments, or setFoo:/hasFoo: type methods.
-
-/**
- * The set of unknown fields for this message.
- **/
-@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields __attribute__((
-    deprecated("Use GPBUnknownFields and the -initFromMessage: initializer and "
-               "mergeUnknownFields:extensionRegistry:error: to add the data back to a message.")));
 
 /**
  * Whether the message, along with all submessages, have the required fields
@@ -247,21 +240,6 @@ CF_EXTERN_C_END
                                 extensionRegistry:
                                     (nullable id<GPBExtensionRegistry>)extensionRegistry
                                             error:(NSError **)errorPtr;
-
-/**
- * Parses the given data as this message's class, and merges those values into
- * this message.
- *
- * @param data              The binary representation of the message to merge.
- * @param extensionRegistry The extension registry to use to look up extensions.
- *
- * @exception GPBCodedInputStreamException Exception thrown when parsing was
- *                                         unsuccessful.
- **/
-- (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
-    __attribute__((deprecated(
-        "Use -mergeFromData:extensionRegistry:error: instead, especaily if calling from Swift.")));
 
 /**
  * Parses the given data as this message's class, and merges those values into
@@ -507,7 +485,7 @@ CF_EXTERN_C_END
 
 /**
  * Merges in the data from an `GPBUnknownFields`, meaning the data from the unknown fields gets
- * re-parsed so any known fields will be propertly set.
+ * re-parsed so any known fields will be properly set.
  *
  * If the intent is to *replace* the message's unknown fields, call `-clearUnknownFields` first.
  *

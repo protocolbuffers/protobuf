@@ -66,7 +66,8 @@ public final class UnknownFieldSet implements MessageLite {
       new UnknownFieldSet(new TreeMap<Integer, Field>());
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(
+          Object other) {
     if (this == other) {
       return true;
     }
@@ -739,7 +740,8 @@ public final class UnknownFieldSet implements MessageLite {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(
+            Object other) {
       if (this == other) {
         return true;
       }

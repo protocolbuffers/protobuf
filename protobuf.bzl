@@ -99,6 +99,10 @@ def _proto_gen_impl(ctx):
 
     if ctx.attr.includes:
         for include in ctx.attr.includes:
+            if include == ".":
+                # This is effectively source_dir, which has already been handled,
+                # and may be generated incorrectly here.
+                continue
             import_flags += ["-I" + _GetPath(ctx, include)]
 
     import_flags = depset(direct = import_flags)
@@ -572,9 +576,9 @@ def internal_py_proto_library(
         **kargs):
     """Bazel rule to create a Python protobuf library from proto source files
 
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
+    NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
+    be removed in the next minor release.  Users should migrate to the py_proto_library rule from
+    rules_python instead.
 
     Args:
       name: the name of the py_proto_library.
@@ -633,21 +637,6 @@ def internal_py_proto_library(
         imports = includes,
         **kargs
     )
-
-def py_proto_library(
-        *args,
-        **kwargs):
-    """Deprecated alias for use before Bazel 5.3.
-
-    Args:
-      *args: the name of the py_proto_library.
-      **kwargs: other keyword arguments that are passed to py_library.
-
-    Deprecated:
-      This is provided for backwards compatibility only.  Bazel 5.3 will
-      introduce support for py_proto_library, which should be used instead.
-    """
-    internal_py_proto_library(*args, **kwargs)
 
 def _source_proto_library(
         name,

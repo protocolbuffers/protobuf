@@ -708,6 +708,7 @@ void Generator::PrintMessageDescriptors() const {
   }
 }
 
+// TODO: Remove python service code from opensource.
 void Generator::PrintServiceDescriptors() const {
   for (int i = 0; i < file_->service_count(); ++i) {
     PrintServiceDescriptor(*file_->service(i));

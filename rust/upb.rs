@@ -12,12 +12,11 @@ use crate::{
     IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
     ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
-use std::slice;
 use core::fmt::Debug;
-use std::alloc::Layout;
-use std::sync::OnceLock;
-use std::ptr::{self, NonNull};
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
+use std::ptr::{self, NonNull};
+use std::slice;
+use std::sync::OnceLock;
 
 #[cfg(bzl)]
 extern crate upb;
@@ -133,21 +132,6 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] {
-    // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
-    let new_alloc = unsafe { arena.alloc(Layout::for_value(val)) };
-    debug_assert_eq!(new_alloc.len(), val.len());
-
-    let start: *mut u8 = new_alloc.as_mut_ptr().cast();
-    // SAFETY:
-    // - `new_alloc` is writeable for `val.len()` bytes.
-    // - After the copy, `new_alloc` is initialized for `val.len()` bytes.
-    unsafe {
-        val.as_ptr().copy_to_nonoverlapping(start, val.len());
-        &*(new_alloc as *mut _ as *mut [u8])
-    }
-}
-
 /// Kernel-specific owned `string` and `bytes` field type.
 #[doc(hidden)]
 pub struct InnerProtoString(OwnedArenaBox<[u8]>);
@@ -167,7 +151,7 @@ impl InnerProtoString {
 impl From<&[u8]> for InnerProtoString {
     fn from(val: &[u8]) -> InnerProtoString {
         let arena = Arena::new();
-        let in_arena_copy = arena.copy_slice_in(val);
+        let in_arena_copy = arena.copy_slice_in(val).unwrap();
         // SAFETY:
         // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and
         //   this is the only reference in the program to it.
@@ -354,7 +338,7 @@ macro_rules! impl_repeated_bytes {
                             len
                         );
                         for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
-                            *dest_ptr = copy_bytes_in_arena(&arena, src_ptr.as_ref()).into();
+                            *dest_ptr = arena.copy_slice_in(src_ptr.as_ref()).unwrap().into();
                         }
                     }
                 }
@@ -558,8 +542,12 @@ impl<'msg> InnerMapMut<'msg> {
         self.raw
     }
 
+    pub fn arena(&mut self) -> &Arena {
+        self.arena
+    }
+
     #[doc(hidden)]
-    pub fn raw_arena(&self) -> RawArena {
+    pub fn raw_arena(&mut self) -> RawArena {
         self.arena.raw()
     }
 }
@@ -699,103 +687,101 @@ impl RawMapIter {
     }
 }
 
-macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
-    ($key_t:ty ; $($t:ty),*) => {
-         $(
-            impl ProxiedInMapValue<$key_t> for $t {
-                fn map_new(_private: Private) -> Map<$key_t, Self> {
-                    let arena = Arena::new();
-                    let raw = unsafe {
-                        upb_Map_New(arena.raw(),
-                            <$key_t as UpbTypeConversions>::upb_type(),
-                            <$t as UpbTypeConversions>::upb_type())
-                    };
-                    Map::from_inner(Private, InnerMap { raw, arena })
-                }
+impl<Key, MessageType> ProxiedInMapValue<Key> for MessageType
+where
+    Key: Proxied + UpbTypeConversions,
+    MessageType: Proxied + UpbTypeConversions,
+{
+    fn map_new(_private: Private) -> Map<Key, Self> {
+        let arena = Arena::new();
+        let raw = unsafe {
+            upb_Map_New(
+                arena.raw(),
+                <Key as UpbTypeConversions>::upb_type(),
+                <Self as UpbTypeConversions>::upb_type(),
+            )
+        };
 
-                unsafe fn map_free(_private: Private, _map: &mut Map<$key_t, Self>) {
-                    // No-op: the memory will be dropped by the arena.
-                }
+        Map::from_inner(Private, InnerMap::new(raw, arena))
+    }
 
-                fn map_clear(mut map: MapMut<$key_t, Self>) {
-                    unsafe {
-                        upb_Map_Clear(map.as_raw(Private));
-                    }
-                }
+    unsafe fn map_free(_private: Private, _map: &mut Map<Key, Self>) {
+        // No-op: the memory will be dropped by the arena.
+    }
 
-                fn map_len(map: MapView<$key_t, Self>) -> usize {
-                    unsafe {
-                        upb_Map_Size(map.as_raw(Private))
-                    }
-                }
+    fn map_clear(mut map: MapMut<Key, Self>) {
+        unsafe {
+            upb_Map_Clear(map.as_raw(Private));
+        }
+    }
 
-                fn map_insert(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
-                    let arena = map.raw_arena(Private);
-                    unsafe {
-                        upb_Map_InsertAndReturnIfInserted(
-                            map.as_raw(Private),
-                            <$key_t as UpbTypeConversions>::to_message_value(key),
-                            <$t as UpbTypeConversions>::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
-                            arena
-                        )
-                    }
-                }
+    fn map_len(map: MapView<Key, Self>) -> usize {
+        unsafe { upb_Map_Size(map.as_raw(Private)) }
+    }
 
-                fn map_get<'a>(map: MapView<'a, $key_t, Self>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
-                    let mut val = MaybeUninit::uninit();
-                    let found = unsafe {
-                        upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
-                            val.as_mut_ptr())
-                    };
-                    if !found {
-                        return None;
-                    }
-                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val.assume_init()) })
-                }
+    fn map_insert(
+        mut map: MapMut<Key, Self>,
+        key: View<'_, Key>,
+        value: impl IntoProxied<Self>,
+    ) -> bool {
+        let arena = map.inner(Private).raw_arena();
+        unsafe {
+            upb_Map_InsertAndReturnIfInserted(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    arena,
+                    value.into_proxied(Private),
+                ),
+                arena,
+            )
+        }
+    }
 
-                fn map_remove(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>) -> bool {
-                    unsafe {
-                        upb_Map_Delete(map.as_raw(Private),
-                            <$key_t as UpbTypeConversions>::to_message_value(key),
-                            ptr::null_mut())
-                    }
-                }
+    fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
+        let mut val = MaybeUninit::uninit();
+        let found = unsafe {
+            upb_Map_Get(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                val.as_mut_ptr(),
+            )
+        };
+        if !found {
+            return None;
+        }
+        Some(unsafe { <Self as UpbTypeConversions>::from_message_value(val.assume_init()) })
+    }
 
-                fn map_iter(map: MapView<$key_t, Self>) -> MapIter<$key_t, Self> {
-                    // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
-                    unsafe {
-                        MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private)))
-                    }
-                }
+    fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
+        unsafe {
+            upb_Map_Delete(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                ptr::null_mut(),
+            )
+        }
+    }
+    fn map_iter(map: MapView<Key, Self>) -> MapIter<Key, Self> {
+        // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
+        unsafe { MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private))) }
+    }
 
-                fn map_iter_next<'a>(
-                    iter: &mut MapIter<'a, $key_t, Self>
-                ) -> Option<(View<'a, $key_t>, View<'a, Self>)> {
-                    // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
-                    unsafe { iter.as_raw_mut(Private).next_unchecked() }
-                        // SAFETY: MapIter<K, V> returns key and values message values
-                        //         with the variants for K and V active.
-                        .map(|(k, v)| unsafe {(
-                            <$key_t as UpbTypeConversions>::from_message_value(k),
-                            <$t as UpbTypeConversions>::from_message_value(v),
-                        )})
-                }
-            }
-         )*
+    fn map_iter_next<'a>(
+        iter: &mut MapIter<'a, Key, Self>,
+    ) -> Option<(View<'a, Key>, View<'a, Self>)> {
+        // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
+        unsafe { iter.as_raw_mut(Private).next_unchecked() }
+            // SAFETY: MapIter<K, V> returns key and values message values
+            //         with the variants for K and V active.
+            .map(|(k, v)| unsafe {
+                (
+                    <Key as UpbTypeConversions>::from_message_value(k),
+                    <Self as UpbTypeConversions>::from_message_value(v),
+                )
+            })
     }
 }
-
-macro_rules! impl_ProxiedInMapValue_for_key_types {
-    ($($t:ty),*) => {
-        $(
-            impl_ProxiedInMapValue_for_non_generated_value_types!(
-                $t ; f32, f64, i32, u32, i64, u64, bool, ProtoString, ProtoBytes
-            );
-        )*
-    }
-}
-
-impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoString);
 
 /// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
 ///

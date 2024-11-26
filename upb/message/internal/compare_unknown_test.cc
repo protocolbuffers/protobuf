@@ -15,7 +15,10 @@
 
 #include <gtest/gtest.h>
 #include "absl/types/variant.h"
+#include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/base/internal/endian.h"
+#include "upb/base/upcast.h"
+#include "upb/mem/arena.hpp"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -103,10 +106,21 @@ std::string ToBinaryPayload(const UnknownFields& fields) {
 upb_UnknownCompareResult CompareUnknownWithMaxDepth(UnknownFields uf1,
                                                     UnknownFields uf2,
                                                     int max_depth) {
+  upb::Arena arena1;
+  upb::Arena arena2;
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg1 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena1.ptr());
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena2.ptr());
+  // Add the unknown fields to the messages.
   std::string buf1 = ToBinaryPayload(uf1);
   std::string buf2 = ToBinaryPayload(uf2);
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg1), buf1.data(),
+                                       buf1.size(), arena1.ptr(), false);
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
+                                       buf2.size(), arena2.ptr(), false);
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-      buf1.data(), buf1.size(), buf2.data(), buf2.size(), max_depth);
+      UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
 }
 
 upb_UnknownCompareResult CompareUnknown(UnknownFields uf1, UnknownFields uf2) {

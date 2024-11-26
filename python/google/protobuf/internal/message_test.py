@@ -353,7 +353,12 @@ class MessageTest(unittest.TestCase):
   def testFloatPrinting(self, message_module):
     message = message_module.TestAllTypes()
     message.optional_float = 2.0
-    self.assertEqual(str(message), 'optional_float: 2.0\n')
+    # Python/C++ customizes the C++ TextFormat to always print trailing ".0" for
+    # floats. upb doesn't do this, it matches C++ TextFormat.
+    if api_implementation.Type() == 'upb':
+      self.assertEqual(str(message), 'optional_float: 2\n')
+    else:
+      self.assertEqual(str(message), 'optional_float: 2.0\n')
 
   def testFloatNanPrinting(self, message_module):
     message = message_module.TestAllTypes()
@@ -1337,6 +1342,18 @@ class MessageTest(unittest.TestCase):
     self.assertIn('oneof_bytes', m)
     self.assertNotIn('oneof_string', m)
 
+  def testMessageClassName(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertEqual('TestAllTypes', type(m).__name__)
+    self.assertEqual('TestAllTypes', m.__class__.__qualname__)
+
+    nested = message_module.TestAllTypes.NestedMessage()
+    self.assertEqual('NestedMessage', type(nested).__name__)
+    self.assertEqual('NestedMessage', nested.__class__.__name__)
+    self.assertEqual(
+        'TestAllTypes.NestedMessage', nested.__class__.__qualname__
+    )
+
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
@@ -1408,17 +1425,25 @@ class Proto2Test(unittest.TestCase):
       del msg.repeated_nested_message
 
   def testAssignInvalidEnum(self):
-    """Assigning an invalid enum number is not allowed in proto2."""
+    """Assigning an invalid enum number is not allowed for closed enums."""
     m = unittest_pb2.TestAllTypes()
 
-    # Proto2 can not assign unknown enum.
-    with self.assertRaises(ValueError) as _:
+    # TODO Enable these once upb's behavior is made conformant.
+    if api_implementation.Type() != 'upb':
+      # Can not assign unknown enum to closed enums.
+      with self.assertRaises(ValueError) as _:
+        m.optional_nested_enum = 1234567
+      self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
+      # Assignment is a different code path than append for the C++ impl.
+      m.repeated_nested_enum.append(2)
+      m.repeated_nested_enum[0] = 2
+      with self.assertRaises(ValueError):
+        m.repeated_nested_enum[0] = 123456
+    else:
       m.optional_nested_enum = 1234567
-    self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
-    # Assignment is a different code path than append for the C++ impl.
-    m.repeated_nested_enum.append(2)
-    m.repeated_nested_enum[0] = 2
-    with self.assertRaises(ValueError):
+      m.repeated_nested_enum.append(1234567)
+      m.repeated_nested_enum.append(2)
+      m.repeated_nested_enum[0] = 2
       m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.
@@ -1642,7 +1667,8 @@ class Proto2Test(unittest.TestCase):
     doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
     self.assertIn('class TestAllTypes', doc)
     self.assertIn('SerializePartialToString', doc)
-    self.assertIn('repeated_float', doc)
+    if api_implementation.Type() != 'upb':
+      self.assertIn('repeated_float', doc)
     base = unittest_pb2.TestAllTypes.__bases__[0]
     self.assertRaises(AttributeError, getattr, base, '_extensions_by_name')
 
@@ -1892,12 +1918,40 @@ class Proto3Test(unittest.TestCase):
 
     self.assertEqual(msg1.map_int32_int32, msg2.map_int32_int32)
 
+  def testScalarMapSetdefault(self):
+    msg = map_unittest_pb2.TestMap()
+    value = msg.map_int32_int32.setdefault(123, 888)
+    self.assertEqual(value, 888)
+    self.assertEqual(msg.map_int32_int32[123], 888)
+    value = msg.map_int32_int32.setdefault(123, 777)
+    self.assertEqual(value, 888)
+
+    with self.assertRaises(ValueError):
+      value = msg.map_int32_int32.setdefault(1001)
+    self.assertNotIn(1001, msg.map_int32_int32)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault()
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault(1, 2, 3)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault("1", 2)
+    with self.assertRaises(TypeError):
+      value = msg.map_int32_int32.setdefault(1, "2")
+
   def testMessageMapComparison(self):
     msg1 = map_unittest_pb2.TestMap()
     msg2 = map_unittest_pb2.TestMap()
 
     self.assertEqual(msg1.map_int32_foreign_message,
                      msg2.map_int32_foreign_message)
+
+  def testMessageMapSetdefault(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[123].c = 888
+    with self.assertRaises(NotImplementedError):
+      msg.map_int32_foreign_message.setdefault(
+          1, msg.map_int32_foreign_message[123]
+      )
 
   def testMapGet(self):
     # Need to test that get() properly returns the default, even though the dict
@@ -2210,15 +2264,17 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaisesRegex(
         TypeError,
         r'Parameter to MergeFrom\(\) must be instance of same class: expected '
-        r'.+TestMap got int\.'):
+        r'.+TestMap.+got.+int.+',
+    ):
       msg.MergeFrom(1)
 
   def testCopyFromBadType(self):
     msg = map_unittest_pb2.TestMap()
     with self.assertRaisesRegex(
         TypeError,
-        r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
-        r'expected .+TestMap got int\.'):
+        r'Parameter to (Copy|Merge)From\(\) must be instance of same class: '
+        r'expected .+TestMap.+got.+int.+',
+    ):
       msg.CopyFrom(1)
 
   def testIntegerMapWithLongs(self):

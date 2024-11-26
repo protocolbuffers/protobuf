@@ -35,13 +35,36 @@ template <typename T, typename U = RemovePtrT<T>,
           typename = std::enable_if_t<!std::is_const_v<U>>>
 using PtrOrRaw = T;
 
+template <typename T, typename = void>
+inline constexpr bool IsHpbClass = false;
+
 template <typename T>
-using EnableIfHpbClass = std::enable_if_t<
-    std::is_base_of<typename T::Access, T>::value &&
-    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
+inline constexpr bool
+    IsHpbClass<T, std::enable_if_t<std::is_base_of_v<typename T::Access, T>>> =
+        true;
+
+template <typename T>
+using EnableIfHpbClass = std::enable_if_t<IsHpbClass<T>>;
+
+template <typename T, typename = void>
+inline constexpr bool IsHpbClassThatHasExtensions = false;
+
+template <typename T>
+inline constexpr bool IsHpbClassThatHasExtensions<
+    T, std::enable_if_t<std::is_base_of_v<typename T::Access, T> &&
+                        std::is_base_of_v<typename T::ExtendableType, T>>> =
+    true;
+
+template <typename T>
+using EnableIfHpbClassThatHasExtensions =
+    std::enable_if_t<IsHpbClassThatHasExtensions<T>>;
 
 template <typename T>
 using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
+
+template <typename T, typename T2>
+using add_const_if_T_is_const =
+    std::conditional_t<std::is_const_v<T>, const T2, T2>;
 
 }  // namespace internal
 }  // namespace hpb

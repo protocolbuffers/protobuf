@@ -164,7 +164,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     $DEPRECATED$ const $Submsg$& $name$() const;
-    $DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* $release_name$();
+    $DEPRECATED$ [[nodiscard]] $Submsg$* $release_name$();
     $DEPRECATED$ $Submsg$* $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* value);
@@ -293,7 +293,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           if (value != nullptr) {
             //~ When $Submsg$ is a cross-file type, have to read the arena
             //~ through the virtual method, because the type isn't defined in
-            //~ this file, only forward-declated.
+            //~ this file, only forward-declared.
             $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
             if (message_arena != submessage_arena) {
               value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
@@ -353,7 +353,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
     // where people assign root values to child values or vice versa which
-    // are not always checked, so we delay this change becoming 'visibile'
+    // are not always checked, so we delay this change becoming 'visible'
     // until after we copied the message.
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
@@ -379,7 +379,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      delete $field_$;
+      delete this_.$field_$;
     )cc");
   }
 }
@@ -783,26 +783,17 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$();
     }
   )cc");
-  p->Emit(
-      {
-          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-          {"GetExtraArg",
-           [&] {
-             p->Emit(opts_->safe_boundary_check
-                         ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
-                         : "");
-           }},
-      },
-      R"cc(
-        inline const $Submsg$& $Msg$::$name$(int index) const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $annotate_get$;
-          // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          $StrongRef$;
-          return _internal_$name_internal$().$Get$(index$GetExtraArg$);
-        }
-      )cc");
+  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
+          R"cc(
+            inline const $Submsg$& $Msg$::$name$(int index) const
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $annotate_get$;
+              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+              $StrongRef$;
+              return $getter$;
+            }
+          )cc");
   p->Emit(R"cc(
     inline $Submsg$* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
@@ -924,7 +915,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      $field_$.DeleteIfNotDefault();
+      this_.$field_$.DeleteIfNotDefault();
     )cc");
   }
 }

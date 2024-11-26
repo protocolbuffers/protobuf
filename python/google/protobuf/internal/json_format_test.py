@@ -597,8 +597,8 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestStruct()
     self.CheckParseBack(message, parsed_message)
     # check for regression; this used to raise
-    parsed_message.value['empty_struct']
-    parsed_message.value['empty_list']
+    _ = parsed_message.value['empty_struct']
+    _ = parsed_message.value['empty_list']
 
   def testValueMessage(self):
     message = json_format_proto3_pb2.TestValue()
@@ -1111,7 +1111,7 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, message)
     self.assertEqual(message.bytes_value, b'\x01\x02')
 
-  def testParseBadIdentifer(self):
+  def testParseBadIdentifier(self):
     self.CheckError(
         '{int32Value: 1}',
         (
@@ -1529,6 +1529,30 @@ class JsonFormatTest(JsonFormatBase):
     message = json_format_proto3_pb2.TestMessage()
     json_format.ParseDict(js_dict, message)
     self.assertEqual(expected, message.int32_value)
+
+  def testParseDictAcceptsPairValueTuples(self):
+    expected = [1, 2, 3]
+    js_dict = {'repeatedInt32Value': (1, 2, 3)}
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.ParseDict(js_dict, message)
+    self.assertEqual(expected, message.repeated_int32_value)
+
+  def testParseDictAcceptsRepeatedValueTuples(self):
+    expected = json_format_proto3_pb2.TestListValue(
+        repeated_value=[
+            struct_pb2.ListValue(
+                values=[
+                    struct_pb2.Value(number_value=4),
+                    struct_pb2.Value(number_value=5),
+                ]
+            ),
+            struct_pb2.ListValue(values=[struct_pb2.Value(number_value=6)]),
+        ]
+    )
+    js_dict = {'repeated_value': ((4, 5), (6,))}
+    message = json_format_proto3_pb2.TestListValue()
+    json_format.ParseDict(js_dict, message)
+    self.assertEqual(expected, message)
 
   def testParseDictAnyDescriptorPoolMissingType(self):
     # Confirm that ParseDict does not raise ParseError with default pool

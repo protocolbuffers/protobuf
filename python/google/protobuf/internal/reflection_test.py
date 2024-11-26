@@ -2654,7 +2654,7 @@ class ByteSizeTest(unittest.TestCase):
 @testing_refleaks.TestCase
 class SerializationTest(unittest.TestCase):
 
-  def testSerializeEmtpyMessage(self):
+  def testSerializeEmptyMessage(self):
     first_proto = unittest_pb2.TestAllTypes()
     second_proto = unittest_pb2.TestAllTypes()
     serialized = first_proto.SerializeToString()
@@ -3203,11 +3203,11 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual([1, 2, 3], proto.repeated_int32)
 
   def testInitArgsUnknownFieldName(self):
-    def InitalizeEmptyMessageWithExtraKeywordArg():
+    def InitializeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
     self._CheckRaises(
         ValueError,
-        InitalizeEmptyMessageWithExtraKeywordArg,
+        InitializeEmptyMessageWithExtraKeywordArg,
         'Protocol message TestEmptyMessage has no "unknown" field.')
 
   def testInitRequiredKwargs(self):
@@ -3261,13 +3261,13 @@ class OptionsTest(unittest.TestCase):
     proto.optional_int32 = 1
     proto.optional_double = 3.0
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(False, field_descriptor.GetOptions().packed)
+      self.assertEqual(False, field_descriptor.is_packed)
 
     proto = unittest_pb2.TestPackedTypes()
     proto.packed_int32.append(1)
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(True, field_descriptor.GetOptions().packed)
+      self.assertEqual(True, field_descriptor.is_packed)
       self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
                        field_descriptor.label)
 

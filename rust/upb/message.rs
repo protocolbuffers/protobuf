@@ -10,7 +10,7 @@ use super::{
     upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, RawMap,
     StringView,
 };
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
@@ -215,7 +215,7 @@ extern "C" {
     pub fn upb_Message_SetBaseField(
         m: RawMessage,
         f: *const upb_MiniTableField,
-        val: *const std::ffi::c_void,
+        val: *const core::ffi::c_void,
     );
 
     /// # Safety
@@ -301,4 +301,48 @@ extern "C" {
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a field within a oneof associated with `m`
     pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: *const upb_MiniTableField) -> u32;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+
+    #[googletest::test]
+    fn assert_message_linked() {
+        use crate::assert_linked;
+        assert_linked!(upb_Message_New);
+        assert_linked!(upb_Message_Clear);
+        assert_linked!(upb_Message_ClearBaseField);
+        assert_linked!(upb_Message_DeepCopy);
+        assert_linked!(upb_Message_DeepClone);
+        assert_linked!(upb_Message_GetBool);
+        assert_linked!(upb_Message_GetInt32);
+        assert_linked!(upb_Message_GetInt64);
+        assert_linked!(upb_Message_GetUInt32);
+        assert_linked!(upb_Message_GetUInt64);
+        assert_linked!(upb_Message_GetFloat);
+        assert_linked!(upb_Message_GetDouble);
+        assert_linked!(upb_Message_GetString);
+        assert_linked!(upb_Message_GetMessage);
+        assert_linked!(upb_Message_GetOrCreateMutableMessage);
+        assert_linked!(upb_Message_GetArray);
+        assert_linked!(upb_Message_GetOrCreateMutableArray);
+        assert_linked!(upb_Message_GetMap);
+        assert_linked!(upb_Message_GetOrCreateMutableMap);
+        assert_linked!(upb_Message_HasBaseField);
+        assert_linked!(upb_Message_SetBaseField);
+        assert_linked!(upb_Message_IsEqual);
+        assert_linked!(upb_Message_MergeFrom);
+        assert_linked!(upb_Message_SetBaseFieldBool);
+        assert_linked!(upb_Message_SetBaseFieldInt32);
+        assert_linked!(upb_Message_SetBaseFieldInt64);
+        assert_linked!(upb_Message_SetBaseFieldUInt32);
+        assert_linked!(upb_Message_SetBaseFieldUInt64);
+        assert_linked!(upb_Message_SetBaseFieldFloat);
+        assert_linked!(upb_Message_SetBaseFieldDouble);
+        assert_linked!(upb_Message_SetBaseFieldString);
+        assert_linked!(upb_Message_SetBaseFieldMessage);
+        assert_linked!(upb_Message_WhichOneofFieldNumber);
+    }
 }

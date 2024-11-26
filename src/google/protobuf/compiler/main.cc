@@ -63,7 +63,7 @@ int ProtobufMain(int argc, char* argv[]) {
 #endif
 
   // Proto2 Kotlin
-  java::KotlinGenerator kt_generator;
+  kotlin::KotlinGenerator kt_generator;
   cli.RegisterGenerator("--kotlin_out", "--kotlin_opt", &kt_generator,
                         "Generate Kotlin file.");
 

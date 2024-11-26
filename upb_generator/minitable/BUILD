@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
@@ -27,7 +28,6 @@ bootstrap_cc_library(
     bootstrap_deps = [
         "//upb_generator:common",
         "//upb_generator:file_layout",
-        "//upb_generator:names",
         "//upb_generator:plugin",
         "//upb_generator:plugin_upb_proto",
         "//upb/reflection:descriptor_upb_proto",
@@ -35,17 +35,51 @@ bootstrap_cc_library(
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        "//src/google/protobuf/compiler:code_generator",
+        ":names",
+        ":names_internal",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
         "//upb/mini_table:internal",
+        "//upb_generator/common:names",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    visibility = [
+        "//src/google/protobuf/compiler/hpb:__pkg__",
+        "//src/google/protobuf/compiler/rust:__pkg__",
+        "//third_party/kotlin/protobuf/generator/native:__pkg__",
+        "//upb_generator:__subpackages__",
+    ],
+    deps = [
+        ":names_internal",
+        "//upb:port",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    srcs = ["names_internal.cc"],
+    hdrs = ["names_internal.h"],
+    visibility = [
+        # For bootstrapping.
+        "//upb_generator/c:__pkg__",
+    ],
+    deps = [
+        "//upb_generator/common:names",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -59,6 +93,7 @@ bootstrap_cc_binary(
     visibility = [
         "//editions/codegen_tests:__pkg__",
         "//net/proto2/contrib/protoc_explorer:__pkg__",
+        "//rust:__pkg__",
         "//third_party/prototiller/transformer:__pkg__",
     ],
 )
@@ -69,17 +104,21 @@ bootstrap_cc_library(
     name = "generator_with_main",
     srcs = ["main.cc"],
     bootstrap_deps = [
+        ":generator",
         "//upb_generator:file_layout",
         "//upb_generator:common",
         "//upb_generator:plugin",
-        ":generator",
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [
+        ":names",
+        ":names_internal",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//upb:base",
         "//upb:port",
+        "//upb_generator/common:names",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",

@@ -1616,6 +1616,15 @@ public final class Descriptors {
     private final Descriptor extensionScope;
     private final boolean isProto3Optional;
 
+    private enum Sensitivity {
+      UNKNOWN,
+      SENSITIVE,
+      NOT_SENSITIVE
+    }
+
+    // Caches the result of isSensitive() for performance reasons.
+    private volatile Sensitivity sensitivity = Sensitivity.UNKNOWN;
+
     // Possibly initialized during cross-linking.
     private Type type;
     private Descriptor containingType;
@@ -1786,6 +1795,67 @@ public final class Descriptors {
       }
 
       file.pool.addSymbol(this);
+    }
+
+    @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
+    private boolean isOptionSensitive(FieldDescriptor field, Object value) {
+      if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
+        if (field.isRepeated()) {
+          for (EnumValueDescriptor v : (List<EnumValueDescriptor>) value) {
+            if (v.getOptions().getDebugRedact()) {
+              return true;
+            }
+          }
+        } else {
+          if (((EnumValueDescriptor) value).getOptions().getDebugRedact()) {
+            return true;
+          }
+        }
+      } else if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+        if (field.isRepeated()) {
+          for (Message m : (List<Message>) value) {
+            for (Map.Entry<FieldDescriptor, Object> entry : m.getAllFields().entrySet()) {
+              if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+                return true;
+              }
+            }
+          }
+        } else {
+          for (Map.Entry<FieldDescriptor, Object> entry :
+              ((Message) value).getAllFields().entrySet()) {
+            if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    // Lazily calculates if the field is marked as sensitive. Is only called upon the first
+    // access of the isSensitive() method.
+    boolean isSensitive() {
+      if (sensitivity == Sensitivity.UNKNOWN) {
+        // If the field is directly marked with debug_redact=true, then it is sensitive.
+        synchronized (this) {
+          if (sensitivity == Sensitivity.UNKNOWN) {
+            boolean isSensitive = proto.getOptions().getDebugRedact();
+            if (!isSensitive) {
+              // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
+              // either directly or indirectly via a message option.
+              for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+                  proto.getOptions().getAllFields().entrySet()) {
+                if (isOptionSensitive(entry.getKey(), entry.getValue())) {
+                  isSensitive = true;
+                  break;
+                }
+              }
+            }
+            sensitivity = isSensitive ? Sensitivity.SENSITIVE : Sensitivity.NOT_SENSITIVE;
+          }
+        }
+      }
+      return sensitivity == Sensitivity.SENSITIVE;
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -2110,9 +2180,9 @@ public final class Descriptors {
      * present in all runtimes; as of writing, we know that:
      *
      * <ul>
-     *   <li> C++, Java, and C++-based Python share this quirk.
-     *   <li> UPB and UPB-based Python do not.
-     *   <li> PHP and Ruby treat all enums as open regardless of declaration.
+     *   <li>C++, Java, and C++-based Python share this quirk.
+     *   <li>UPB and UPB-based Python do not.
+     *   <li>PHP and Ruby treat all enums as open regardless of declaration.
      * </ul>
      *
      * <p>Care should be taken when using this function to respect the target runtime's enum
@@ -2820,7 +2890,7 @@ public final class Descriptors {
               this, "Failed to parse features with Java feature extension registry.", e);
         }
       }
-      
+
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
@@ -2851,6 +2921,13 @@ public final class Descriptors {
           && (getFile().getEdition() == Edition.EDITION_PROTO2
               || getFile().getEdition() == Edition.EDITION_PROTO3)) {
         getFile().resolveAllFeaturesImmutable();
+      }
+      if (this.features == null) {
+        throw new NullPointerException(
+            String.format(
+                "Features not yet loaded for %s. This may be caused by a known issue for proto2"
+                    + " dependency descriptors obtained from proto1 (b/362326130)",
+                getFullName()));
       }
       return this.features;
     }

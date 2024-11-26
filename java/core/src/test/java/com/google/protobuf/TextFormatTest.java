@@ -14,6 +14,7 @@ import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static org.junit.Assert.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -80,6 +81,7 @@ public class TextFormatTest {
           + "repeated_double: 0.125\n"
           + "repeated_double: .125\n"
           + "repeated_double: -.125\n"
+          + "repeated_double: .0\n"
           + "repeated_double: 1.23E17\n"
           + "repeated_double: 1.23E+17\n"
           + "repeated_double: -1.23e-17\n"
@@ -240,6 +242,39 @@ public class TextFormatTest {
         .isEqualTo("optional_nested_message {\n  bb: 42\n}\n");
   }
 
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesRegularNotationForMessageType()
+      throws Exception {
+    final FieldDescriptor repeatedMessageField =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_message");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(
+                    repeatedMessageField,
+                    ImmutableList.of(
+                        TestAllTypes.NestedMessage.getDefaultInstance(),
+                        TestAllTypes.NestedMessage.getDefaultInstance())))
+        .isEqualTo("repeated_nested_message {\n}\nrepeated_nested_message {\n}\n");
+  }
+
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesShortNotationForPrimitiveType()
+      throws Exception {
+    final FieldDescriptor repeatedInt32Field =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_int32");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0)))
+        .isEqualTo("repeated_int32: [0]\n");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0, 1, 2, 3)))
+        .isEqualTo("repeated_int32: [0, 1, 2, 3]\n");
+  }
+
   /**
    * Helper to construct a ByteString from a String containing only 8-bit characters. The characters
    * are converted directly to bytes, *not* encoded using UTF-8.
@@ -280,6 +315,7 @@ public class TextFormatTest {
             .addRepeatedDouble(0.125)
             .addRepeatedDouble(.125)
             .addRepeatedDouble(-.125)
+            .addRepeatedDouble(.0)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(-1.23e-17)
@@ -915,6 +951,9 @@ public class TextFormatTest {
         "1:23: Enum type \"protobuf_unittest.TestAllTypes.NestedEnum\" has no "
             + "value with number 123.",
         "optional_nested_enum: 123");
+    assertParseError("1:18: Couldn't parse number: For input string: \".\"", "repeated_double: .");
+    assertParseError(
+        "1:18: Couldn't parse number: For input string: \".+\"", "repeated_double: .+");
 
     // Delimiters must match.
     assertParseError("1:22: Expected identifier. Found '}'", "OptionalGroup < a: 1 }");

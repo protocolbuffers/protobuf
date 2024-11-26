@@ -332,7 +332,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $field_$.DeleteIfNotDefault();
+        this_.$field_$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -625,7 +625,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                  data_size == 0
                      ? 0
                      : $kTagBytes$ + ::_pbi::WireFormatLite::Int32Size(
-                                         static_cast<int32_t>(data_size));
+                                         static_cast<::int32_t>(data_size));
                )cc");
              } else {
                p->Emit(R"cc(

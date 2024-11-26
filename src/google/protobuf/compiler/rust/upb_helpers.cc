@@ -5,7 +5,7 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
-#include "upb_generator/mangle.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google {
 namespace protobuf {
@@ -13,7 +13,7 @@ namespace compiler {
 namespace rust {
 
 std::string UpbMiniTableName(const Descriptor& msg) {
-  return upb::generator::MessageInit(msg.full_name());
+  return upb::generator::MiniTableMessageVarName(msg.full_name());
 }
 
 uint32_t UpbMiniTableFieldIndex(const FieldDescriptor& field) {

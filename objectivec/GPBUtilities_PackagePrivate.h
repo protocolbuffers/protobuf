@@ -9,6 +9,7 @@
 
 #import "GPBUtilities.h"
 
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
 
 // Macros for stringifying library symbols. These are used in the generated
@@ -48,19 +49,6 @@ GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS(void) {
 // GPB_DEBUG_CHECK_RUNTIME_VERSIONS() gates this with a better message; this
 // is just a final safety net to prevent otherwise hard to diagnose errors.
 void GPBRuntimeMatchFailure(void);
-
-// Legacy version of the checks, remove when GOOGLE_PROTOBUF_OBJC_GEN_VERSION
-// goes away (see more info in GPBBootstrap.h).
-void GPBCheckRuntimeVersionInternal(int32_t version)
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-__attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                          "Support for this version will go away in the future."))) GPB_INLINE void
-GPBDebugCheckRuntimeVersion(void) {
-#if defined(DEBUG) && DEBUG
-  GPBCheckRuntimeVersionInternal(GOOGLE_PROTOBUF_OBJC_GEN_VERSION);
-#endif
-}
 
 // Conversion functions for de/serializing floating point types.
 

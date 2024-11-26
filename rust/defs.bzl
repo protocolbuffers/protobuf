@@ -1,7 +1,4 @@
-"""This file implements an experimental, do-not-use-kind of rust_proto_library.
-
-Disclaimer: This project is experimental, under heavy development, and should not
-be used yet."""
+"""This file implements rust_proto_library."""
 
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -20,7 +17,6 @@ def rust_proto_library(name, deps, **args):
 
     Hopefully no user will ever need to read this code.
 
-
     Args:
         name: name of the Rust protobuf target.
         deps: proto_library target for which to generate Rust gencode.
@@ -28,7 +24,7 @@ def rust_proto_library(name, deps, **args):
     """
     if not name.endswith("_rust_proto"):
         fail(
-            "{}: Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
+            "Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
                 .format(name),
         )
     name = name.removesuffix("_rust_proto")
@@ -85,14 +81,19 @@ def _rust_proto_library_impl(ctx):
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
 
-    dep_variant_info = rust_proto_info.dep_variant_info
+    if len(rust_proto_info.dep_variant_infos) != 1:
+        fail(
+            "{}: rust_proto_library does not support src-less proto_library targets."
+                .format(_user_visible_label(ctx)),
+        )
+    dep_variant_info = rust_proto_info.dep_variant_infos[0]
     crate_info = dep_variant_info.crate_info
 
     # Change the crate name from the hame of the proto_library to the name of the rust_proto_library.
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the
     # rust_proto_library (although the name of rust_proto_libraries is consistently ending with
-    # _rust_proto, we can't rely on all proto_libraires to have a name consistently ending with
+    # _rust_proto, we can't rely on all proto_libraries to have a name consistently ending with
     # _proto), therefore we have to modify it after the fact here.
     #
     # Since Starlark providers are frozen once they leave the _impl function that defines them,
@@ -102,6 +103,12 @@ def _rust_proto_library_impl(ctx):
     pkg, name = _user_visible_label(ctx).rsplit(":")
     label = struct(**{"name": name, "pkg": pkg})
     fields["name"] = label_to_crate_name(ctx, label, toolchain)
+
+    # These two fields present on the dir(crate_info) but break on some versions of Bazel when
+    # passed back in to crate_info. Strip them for now.
+    fields.pop("to_json", None)
+    fields.pop("to_proto", None)
+
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [

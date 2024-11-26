@@ -14,8 +14,28 @@ permissions:
 jobs:
   # This job should be run on presubmit, if any continuous-only tests are added we will need to input test-type above
   linux:
-    name: Linux
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "No bzlmod", flags: --noenable_bzlmod }
+          # TODO: b/379846319 - Fix the tests with bzlmod and enable this.
+          # - { name: "bzlmod", flags: --enable_bzlmod --enable_workspace }
+          - { name: Optimized, flags: --config=opt }
+          - { name: ASAN, flags: --config=asan }
+
+        include:
+          - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.1-97f82260fd504923d8af642d567afb2d83a1959d"
+          - bazel_cmd: "test"
+
+          # Override cases with custom images
+          - config: { name: Cargo }
+            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:6.3.0-1.74.0-8858126dd9480abf91e6ce8d6e41a5cd3c03882c"
+            bazel_cmd: "run"
+            targets: "//rust:cargo_test"
+    name: Linux ${{ matrix.config.name }}
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -24,11 +44,10 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.1-97f82260fd504923d8af642d567afb2d83a1959d"
+          image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-
-            test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
-            //rust:protobuf_upb_test //rust:protobuf_cpp_test
-            //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
-            //src/google/protobuf/compiler/rust/...
+            ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite  --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+            ${{ matrix.targets }} ${{ matrix.config.flags }}
+

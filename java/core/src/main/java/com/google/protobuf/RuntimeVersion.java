@@ -27,7 +27,7 @@ public final class RuntimeVersion {
   // These OSS versions are not stripped to avoid merging conflicts.
   public static final RuntimeDomain OSS_DOMAIN = RuntimeDomain.PUBLIC;
   public static final int OSS_MAJOR = 4;
-  public static final int OSS_MINOR = 29;
+  public static final int OSS_MINOR = 30;
   public static final int OSS_PATCH = 0;
   public static final String OSS_SUFFIX = "-dev";
 
@@ -118,13 +118,6 @@ public final class RuntimeVersion {
               "Detected incompatible Protobuf Gencode/Runtime versions when loading %s: gencode %s,"
                   + " runtime %s. Runtime version cannot be older than the linked gencode version.",
               location, gencodeVersionString, VERSION_STRING));
-    } else if ((MINOR > minor || PATCH > patch) && minorWarningLoggedCount < MAX_WARNING_COUNT) {
-      logger.warning(
-          String.format(
-              " Protobuf gencode version %s is older than the runtime version %s at %s. Please"
-                  + " avoid checked-in Protobuf gencode that can be obsolete.",
-              gencodeVersionString, VERSION_STRING, location));
-      minorWarningLoggedCount++;
     }
 
     // Check that runtime version suffix is the same as the gencode version suffix.
@@ -154,7 +147,7 @@ public final class RuntimeVersion {
 
   private static boolean checkDisabled() {
     // Check the environmental variable, and temporarily disable validation if it's set to true.
-    String disableFlag = java.lang.System.getenv("TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
+    String disableFlag = java.lang.System.getenv("TEMPORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
     if ((disableFlag != null && disableFlag.equals("true"))) {
       return true;
     }

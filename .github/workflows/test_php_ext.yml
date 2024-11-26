@@ -42,7 +42,7 @@ jobs:
             bazel build //php:release $BAZEL_FLAGS;
             cp bazel-bin/php/protobuf-*.tgz .
 
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: protobuf-php-release
           path: protobuf-*.tgz
@@ -61,7 +61,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           name: protobuf-php-release

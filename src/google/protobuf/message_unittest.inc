@@ -35,11 +35,13 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -51,10 +53,14 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+using ::testing::IsEmpty;
+using ::testing::Not;
 
 namespace google {
 namespace protobuf {
@@ -364,6 +370,29 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
 }
 
+TEST(MESSAGE_TEST_NAME, ExplicitLazyBadLengthDelimitedSize) {
+  std::string serialized;
+
+  // This is a regression test for a bug in lazy field verification.  It
+  // requires invalid wire format to trigger the bug.
+
+  // NestedMessage optional_lazy_message = 27 [lazy=true];
+  uint32_t tag = internal::WireFormatLite::MakeTag(
+      1, internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  ASSERT_LT(tag, INT8_MAX);
+  serialized.push_back(tag);
+  serialized.push_back(6);
+
+  // bytes bytes_field = 1;
+  serialized.push_back(tag);
+
+  // To trigger this bug, we need an overlong size.
+  serialized.append(5, 0xff);
+
+  UNITTEST::TestLazyMessage parsed;
+  EXPECT_FALSE(parsed.ParseFromString(serialized));
+}
+
 TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {
   UNITTEST::NestedTestAllTypes original, parsed;
   original.mutable_lazy_child()
@@ -393,6 +422,12 @@ TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
   EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
   EXPECT_TRUE(message.has_lazy_child());
   EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
+}
+
+TEST(MESSAGE_TEST_NAME, DefaultInstanceByteSizeLong) {
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().ByteSizeLong(), 0);
+  EXPECT_EQ(UNITTEST::NestedTestAllTypes::default_instance().GetCachedSize(),
+            0);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
@@ -792,11 +827,17 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
 TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW(DynamicCastMessage<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               std::bad_cast);
+#else
   ASSERT_DEATH(
       DynamicCastMessage<UNITTEST::TestRequired>(
           test_all_types_pointer_const_ref),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
+#endif
 }
 
 TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
@@ -852,6 +893,17 @@ TEST(MESSAGE_TEST_NAME, MessageDebugStringMatchesBehindPointerAndLitePointer) {
   MessageLite* msg_lite_pointer = &test_all_types;
   ASSERT_EQ(test_all_types.DebugString(), msg_full_pointer->DebugString());
   ASSERT_EQ(test_all_types.DebugString(), msg_lite_pointer->DebugString());
+}
+
+TEST(MESSAGE_TEST_NAME, CordFieldGetsProperlyRegisteredInTheArena) {
+  Arena arena;
+  auto* msg = Arena::Create<UNITTEST::TestCord>(&arena);
+  // Very large input that needs allocation.
+  msg->set_optional_bytes_cord(std::string(1000, 'x'));
+  // Something should be registered for destruction.
+  EXPECT_THAT(internal::ArenaTestPeer::PeekCleanupListForTesting(&arena),
+              Not(IsEmpty()));
+  // We expect memory leaks here if the Cord was not properly destroyed.
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -1307,6 +1359,15 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, MessageTraitsWork) {
+  EXPECT_EQ(
+      &UNITTEST::TestAllTypes::default_instance(),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::default_instance());
+  EXPECT_EQ(
+      internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
+}
+
 
 TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   UNITTEST::TestExtensionRangeSerialize in_message;
@@ -1526,7 +1587,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
 
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_packed : {false, true}) {
     SCOPED_TRACE(use_packed);
     for (bool use_tail_field : {false, true}) {
@@ -1623,7 +1684,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParserForUnknownEnumValue) {
   // For unknown enum values, for consistency we must include the
   // int32_t enum value in the unknown field set, which might not be exactly the
   // same as the input.
-  PROTOBUF_UNUSED auto* descriptor = non_dynamic.descriptor();
+  [[maybe_unused]] auto* descriptor = non_dynamic.descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::EnumParseTester>();
@@ -1676,7 +1737,7 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
       GetFields<UNITTEST::BoolParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1740,7 +1801,7 @@ TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
       GetFields<UNITTEST::Int32ParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1805,7 +1866,7 @@ TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
       GetFields<UNITTEST::Int64ParseTester>();
 
   auto* ref = obj.GetReflection();
-  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
+  [[maybe_unused]] auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1909,7 +1970,7 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
       "abcdefghijklmnopqrstuvwxyz"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  PROTOBUF_UNUSED const auto* const descriptor =
+  [[maybe_unused]] const auto* const descriptor =
       UNITTEST::StringParseTester::descriptor();
 
   const std::vector<const FieldDescriptor*> fields =

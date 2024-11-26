@@ -3007,8 +3007,8 @@ final class MessageSchema<T> implements Schema<T> {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
             // Unknown field.
-
-            if (unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+            if (unknownFieldSchema.mergeOneFieldFrom(
+                unknownFields, reader, /* currentDepth= */ 0)) {
               continue;
             }
           }
@@ -3383,8 +3383,8 @@ final class MessageSchema<T> implements Schema<T> {
               if (unknownFields == null) {
                 unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
               }
-
-              if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+              if (!unknownFieldSchema.mergeOneFieldFrom(
+                  unknownFields, reader, /* currentDepth= */ 0)) {
                 return;
               }
               break;
@@ -3400,8 +3400,8 @@ final class MessageSchema<T> implements Schema<T> {
             if (unknownFields == null) {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
-
-            if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+            if (!unknownFieldSchema.mergeOneFieldFrom(
+                unknownFields, reader, /* currentDepth= */ 0)) {
               return;
             }
           }
@@ -3577,9 +3577,7 @@ final class MessageSchema<T> implements Schema<T> {
     ProtobufList<?> list = (ProtobufList<?>) UNSAFE.getObject(message, fieldOffset);
     if (!list.isModifiable()) {
       final int size = list.size();
-      list =
-          list.mutableCopyWithCapacity(
-              size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+      list = list.mutableCopyWithCapacity(size * 2);
       UNSAFE.putObject(message, fieldOffset, list);
     }
     switch (fieldType) {
@@ -3716,7 +3714,7 @@ final class MessageSchema<T> implements Schema<T> {
                   data,
                   position,
                   limit,
-                  list,
+                  (ProtobufList<Object>) list,
                   registers);
         }
         break;

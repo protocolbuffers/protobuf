@@ -24,7 +24,7 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
-namespace java {
+namespace kotlin {
 
 // CodeGenerator implementation which generates Kotlin code.  If you create your
 // own protocol compiler binary and you want it to support Kotlin output, you
@@ -53,7 +53,7 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
   using CodeGenerator::GetResolvedSourceFeatures;
 };
 
-}  // namespace java
+}  // namespace kotlin
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

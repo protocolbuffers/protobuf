@@ -447,9 +447,9 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: http://buf.build/
     *   Extension: 1157-1166
 
-1.  Connect
+1.  Connect RPC
 
-    *   Website: http://connect.build/
+    *   Website: http://connectrpc.com/
     *   Extension: 1167-1176
 
 1.  protocel
@@ -506,3 +506,28 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://square.github.io/wire/
     *   Extensions: 1190
+
+1.  Nebius AI
+
+    *   Website: https://nebius.ai
+    *   Extensions: 1191-1199
+
+1.  Buf
+
+    *   Website: http://buf.build/
+    *   Extension: 1200-1239
+
+1.  userver
+
+    *   Website: https://userver.tech/
+    *   Extensions: 1240-1249
+
+1.  protoc-gen-default / protoc-gen-env (confpb)
+
+    *   Website: https://github.com/MarnixBouhuis/confpb
+    *   Extensions: 1250-1251
+
+1.  JaiaBot
+
+    *   Website: https://github.com/jaiarobotics/jaiabot
+    *   Extensions: 1252

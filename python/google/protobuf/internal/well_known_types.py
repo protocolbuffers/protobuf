@@ -26,7 +26,7 @@ from typing import Union
 
 FieldMask = field_mask.FieldMask
 
-_TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
+_TIMESTAMPFORMAT = '%Y-%m-%dT%H:%M:%S'
 _NANOS_PER_SECOND = 1000000000
 _NANOS_PER_MILLISECOND = 1000000
 _NANOS_PER_MICROSECOND = 1000
@@ -68,7 +68,7 @@ class Any(object):
   def TypeName(self):
     """Returns the protobuf type name of the inner message."""
     # Only last part is to be used: b/25630112
-    return self.type_url.split('/')[-1]
+    return self.type_url.rpartition('/')[2]
 
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
@@ -142,7 +142,7 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFORMAT)
     td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
@@ -242,7 +242,7 @@ class Timestamp(object):
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
     # Using datetime.fromtimestamp for this would avoid constructing an extra
-    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # timedelta object and possibly an extra datetime. Unfortunately, that has
     # the disadvantage of not handling the full precision (on all platforms, see
     # https://github.com/python/cpython/issues/109849) or full range (on some
     # platforms, see https://github.com/python/cpython/issues/110042) of

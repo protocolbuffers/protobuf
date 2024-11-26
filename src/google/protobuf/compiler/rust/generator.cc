@@ -175,8 +175,9 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"pbr", "::__pb::__runtime"},
       {"NonNull", "::__std::ptr::NonNull"},
       {"Phantom", "::__std::marker::PhantomData"},
+      {"Result", "::__std::result::Result"},
+      {"Option", "::__std::option::Option"},
   });
-
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;
@@ -224,9 +225,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "google/protobuf/map.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "google/protobuf/rust/cpp_kernel/map.h"
-#include "google/protobuf/rust/cpp_kernel/serialized_data.h"
-#include "google/protobuf/rust/cpp_kernel/strings.h"
+#include "rust/cpp_kernel/serialized_data.h"
+#include "rust/cpp_kernel/strings.h"
         )cc");
   }
 

@@ -10,17 +10,18 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_repeated_fields.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 #include "google/protobuf/compiler/hpb/names.h"
-#include "google/protobuf/compiler/hpb/output.h"
-#include "upb_generator/common.h"
-#include "upb_generator/keywords.h"
-#include "upb_generator/names.h"
+#include "google/protobuf/descriptor.h"
+#include "upb_generator/c/names.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -33,22 +34,21 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               absl::string_view resolved_field_name,
                               absl::string_view resolved_upbc_name,
-                              Output& output);
+                              Context& ctx);
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              absl::string_view resolved_field_name,
                              absl::string_view resolved_upbc_name,
-                             Output& output);
+                             Context& ctx);
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
                             absl::string_view resolved_field_name,
-                            absl::string_view resolved_upbc_name,
-                            Output& output);
+                            absl::string_view resolved_upbc_name, Context& ctx);
 
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
                                  const protobuf::FieldDescriptor* field,
                                  absl::string_view resolved_field_name,
-                                 absl::string_view class_name, Output& output);
+                                 absl::string_view class_name, Context& ctx);
 
 // Returns C++ class member name by resolving naming conflicts across
 // proto field names (such as clear_ prefixes) and keyword collisions.
@@ -58,6 +58,11 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
 // into C accessors but need to fully resolve conflicts for C++ class members.
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names);
+
+upb::generator::NameMangler CreateNameMangler(
+    const protobuf::Descriptor* message) {
+  return upb::generator::NameMangler(upb::generator::GetCppFields(message));
+}
 
 NameToFieldDescriptorMap CreateFieldNameMap(
     const protobuf::Descriptor* message) {
@@ -70,54 +75,62 @@ NameToFieldDescriptorMap CreateFieldNameMap(
 }
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Output& output) {
+                                 Context& ctx) {
   // Generate const methods.
-  OutputIndenter i(output);
-
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
+
+  auto indent = ctx.printer().WithIndent();
 
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     WriteFieldAccessorHazzer(desc, field, resolved_field_name,
-                             resolved_upbc_name, output);
+                             resolved_upbc_name, ctx);
     WriteFieldAccessorClear(desc, field, resolved_field_name,
-                            resolved_upbc_name, output);
+                            resolved_upbc_name, ctx);
 
     if (field->is_map()) {
       WriteMapFieldAccessors(desc, field, resolved_field_name,
-                             resolved_upbc_name, output);
+                             resolved_upbc_name, ctx);
     } else if (desc->options().map_entry()) {
       // TODO Implement map entry
     } else if (field->is_repeated()) {
       WriteRepeatedFieldsInMessageHeader(desc, field, resolved_field_name,
-                                         resolved_upbc_name, output);
+                                         resolved_upbc_name, ctx);
     } else {
       // non-repeated.
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
-        output(R"cc(
-                 $0 $1() const;
-                 void set_$1($0 value);
-               )cc",
-               CppConstType(field), resolved_field_name);
+        ctx.EmitLegacy(R"cc(
+                         $0 $1() const;
+                         void set_$1($0 value);
+                       )cc",
+                       CppConstType(field), resolved_field_name);
       } else if (field->cpp_type() ==
                  protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        output(R"cc(
-                 $1 $2() const;
-                 $0 mutable_$2();
-               )cc",
-               MessagePtrConstType(field, /* const */ false),
-               MessagePtrConstType(field, /* const */ true),
-               resolved_field_name, resolved_upbc_name);
+        ctx.EmitLegacy(R"cc(
+                         $1 $2() const;
+                         $0 mutable_$2();
+                         /**
+                          * Re-points submessage to the given target.
+                          *
+                          * REQUIRES:
+                          * - both messages must be in the same arena, or in two
+                          * fused arenas.
+                          */
+                         void set_alias_$2($0 target);
+                       )cc",
+                       MessagePtrConstType(field, /* const */ false),
+                       MessagePtrConstType(field, /* const */ true),
+                       resolved_field_name);
       } else {
-        output(
+        ctx.EmitLegacy(
             R"cc(
               inline $0 $1() const { return $2_$3(msg_); }
               inline void set_$1($0 value) { return $2_set_$3(msg_, value); }
             )cc",
-            CppConstType(field), resolved_field_name, MessageName(desc),
+            CppConstType(field), resolved_field_name,
+            upb::generator::CApiMessageType(desc->full_name()),
             resolved_upbc_name);
       }
     }
@@ -128,12 +141,14 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
                               const absl::string_view resolved_upbc_name,
-                              Output& output) {
+                              Context& ctx) {
   // Generate hazzer (if any).
   if (field->has_presence()) {
     // Has presence.
-    output("inline bool has_$0() const { return $1_has_$2(msg_); }\n",
-           resolved_field_name, MessageName(desc), resolved_upbc_name);
+    ctx.EmitLegacy("inline bool has_$0() const { return $1_has_$2(msg_); }\n",
+                   resolved_field_name,
+                   upb::generator::CApiMessageType(desc->full_name()),
+                   resolved_upbc_name);
   }
 }
 
@@ -141,10 +156,11 @@ void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
                              const absl::string_view resolved_upbc_name,
-                             Output& output) {
+                             Context& ctx) {
   if (field->has_presence()) {
-    output("void clear_$0() { $2_clear_$1(msg_); }\n", resolved_field_name,
-           resolved_upbc_name, MessageName(desc));
+    ctx.EmitLegacy("void clear_$0() { $2_clear_$1(msg_); }\n",
+                   resolved_field_name, resolved_upbc_name,
+                   upb::generator::CApiMessageType(desc->full_name()));
   }
 }
 
@@ -152,31 +168,35 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
                             const absl::string_view resolved_field_name,
                             const absl::string_view resolved_upbc_name,
-                            Output& output) {
+                            Context& ctx) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
-  output(
+  ctx.EmitLegacy(
       R"cc(
         inline size_t $0_size() const { return $1_$3_size(msg_); }
         inline void clear_$0() { $1_clear_$3(msg_); }
         void delete_$0($2 key);
       )cc",
-      resolved_field_name, MessageName(desc), CppConstType(key),
-      resolved_upbc_name);
+      resolved_field_name, upb::generator::CApiMessageType(desc->full_name()),
+      CppConstType(key), resolved_upbc_name);
 
   if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    output(
-        R"cc(
-          bool set_$0($1 key, $3 value);
-          bool set_$0($1 key, $4 value);
-          absl::StatusOr<$3> get_$0($1 key);
-        )cc",
-        resolved_field_name, CppConstType(key), CppConstType(val),
-        MessagePtrConstType(val, /* is_const */ true),
-        MessagePtrConstType(val, /* is_const */ false));
+    ctx.Emit({{"field_name", resolved_field_name},
+              {"const_key", CppConstType(key)},
+              {"const_val", CppConstType(val)},
+              {"ConstPtr", MessagePtrConstType(val, true)},
+              {"MutPtr", MessagePtrConstType(val, false)}},
+             R"cc(
+               bool set_$field_name$($const_key$ key, $ConstPtr$ value);
+               bool set_$field_name$($const_key$ key, $MutPtr$ value);
+               bool set_alias_$field_name$($const_key$ key, $ConstPtr$ value);
+               bool set_alias_$field_name$($const_key$ key, $MutPtr$ value);
+               absl::StatusOr<$ConstPtr$> get_$field_name$($const_key$ key);
+               absl::StatusOr<$MutPtr$> get_mutable_$field_name$($const_key$ key);
+             )cc");
   } else {
-    output(
+    ctx.EmitLegacy(
         R"cc(
           bool set_$0($1 key, $2 value);
           absl::StatusOr<$2> get_$0($1 key);
@@ -185,60 +205,62 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
+void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
   std::string class_name = ClassName(desc);
   absl::StrAppend(&class_name, "Access");
-  output("namespace internal {\n");
+  ctx.Emit("namespace internal {\n");
   const char arena_expression[] = "arena_";
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
 
   // Generate const methods.
-  OutputIndenter i(output);
+  auto indent = ctx.printer().WithIndent();
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     if (field->is_map()) {
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
-                                  output);
+                                  ctx);
     } else if (desc->options().map_entry()) {
       // TODO Implement map entry
     } else if (field->is_repeated()) {
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         WriteRepeatedMessageAccessor(desc, field, resolved_field_name,
-                                     class_name, output);
+                                     class_name, ctx);
       } else if (field->cpp_type() ==
                  protobuf::FieldDescriptor::CPPTYPE_STRING) {
         WriteRepeatedStringAccessor(desc, field, resolved_field_name,
-                                    class_name, output);
+                                    class_name, ctx);
       } else {
         WriteRepeatedScalarAccessor(desc, field, resolved_field_name,
-                                    class_name, output);
+                                    class_name, ctx);
       }
     } else {
       // non-repeated field.
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
-        output(
+        ctx.EmitLegacy(
             R"cc(
               $1 $0::$2() const {
-                return ::hpb::UpbStrToStringView($3_$4(msg_));
+                return hpb::interop::upb::FromUpbStringView($3_$4(msg_));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
-            MessageName(desc), resolved_upbc_name);
+            upb::generator::CApiMessageType(desc->full_name()),
+            resolved_upbc_name);
         // Set string.
-        output(
+        ctx.EmitLegacy(
             R"cc(
               void $0::set_$2($1 value) {
-                $4_set_$3(msg_, ::hpb::UpbStrFromStringView(value, $5));
+                $4_set_$3(msg_, hpb::interop::upb::CopyToUpbStringView(value, $5));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
-            resolved_upbc_name, MessageName(desc), arena_expression);
+            resolved_upbc_name,
+            upb::generator::CApiMessageType(desc->full_name()),
+            arena_expression);
       } else if (field->cpp_type() ==
                  protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        output(
+        ctx.EmitLegacy(
             R"cc(
               $1 $0::$2() const {
                 if (!has_$2()) {
@@ -249,33 +271,42 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
               }
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ true),
-            resolved_field_name, MessageName(desc),
+            resolved_field_name,
+            upb::generator::CApiMessageType(desc->full_name()),
             MessageBaseType(field, /* maybe_const */ false),
             resolved_upbc_name);
 
-        output(
+        ctx.EmitLegacy(
             R"cc(
               $1 $0::mutable_$2() {
                 return hpb::interop::upb::MakeHandle<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
+              void $0::set_alias_$2($1 target) {
+                ABSL_CHECK(upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)));
+                upb_Message_SetBaseFieldMessage(
+                    UPB_UPCAST(msg_),
+                    upb_MiniTable_GetFieldByIndex($7::minitable(), $8),
+                    hpb::interop::upb::GetMessage(target));
+              }
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ false),
-            resolved_field_name, MessageName(desc),
+            resolved_field_name,
+            upb::generator::CApiMessageType(desc->full_name()),
             MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
-            arena_expression);
+            arena_expression, ClassName(desc), ctx.GetLayoutIndex(field));
       }
     }
   }
-  output("\n");
-  output("}  // namespace internal\n\n");
+  ctx.Emit("\n");
+  ctx.Emit("}  // namespace internal\n\n");
 }
 
-void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
+void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
                                  const protobuf::FieldDescriptor* field,
                                  const absl::string_view resolved_field_name,
                                  const absl::string_view class_name,
-                                 Output& output) {
+                                 Context& ctx) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
@@ -291,7 +322,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         "upb_StringView upb_key = {key.data(), key.size()};\n";
   }
   if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    output(
+    ctx.EmitLegacy(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
@@ -301,11 +332,13 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
-        MessagePtrConstType(val, /* is_const */ true), MessageName(message),
-        MessageName(val->message_type()), optional_conversion_code,
-        converted_key_name, upbc_name,
-        ::upb::generator::MessageInit(val->message_type()->full_name()));
-    output(
+        MessagePtrConstType(val, /* is_const */ true),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name,
+        ::upb::generator::MiniTableMessageVarName(
+            val->message_type()->full_name()));
+    ctx.EmitLegacy(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
@@ -315,11 +348,37 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
-        MessagePtrConstType(val, /* is_const */ false), MessageName(message),
-        MessageName(val->message_type()), optional_conversion_code,
-        converted_key_name, upbc_name,
-        ::upb::generator::MessageInit(val->message_type()->full_name()));
-    output(
+        MessagePtrConstType(val, /* is_const */ false),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name,
+        ::upb::generator::MiniTableMessageVarName(
+            val->message_type()->full_name()));
+    ctx.EmitLegacy(
+        R"cc(
+          bool $0::set_alias_$1($2 key, $3 value) {
+            $6return $4_$8_set(
+                msg_, $7, ($5*)hpb::interop::upb::GetMessage(value), arena_);
+          }
+        )cc",
+        class_name, resolved_field_name, CppConstType(key),
+        MessagePtrConstType(val, /* is_const */ true),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
+        R"cc(
+          bool $0::set_alias_$1($2 key, $3 value) {
+            $6return $4_$8_set(
+                msg_, $7, ($5*)hpb::interop::upb::GetMessage(value), arena_);
+          }
+        )cc",
+        class_name, resolved_field_name, CppConstType(key),
+        MessagePtrConstType(val, /* is_const */ false),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
             $5* msg_value;
@@ -331,30 +390,59 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
-        MessagePtrConstType(val, /* is_const */ true), MessageName(message),
-        MessageName(val->message_type()),
+        MessagePtrConstType(val, /* is_const */ true),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
         QualifiedClassName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name);
-    output(
+    ctx.Emit(
+        {{"class_name", class_name},
+         {"hpb_field_name", resolved_field_name},
+         {"const_key", CppConstType(key)},
+         {"PtrMut", MessagePtrConstType(val, false)},
+         {"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())},
+         {"return_type",
+          upb::generator::CApiMessageType(val->message_type()->full_name())},
+         {"proto_class", QualifiedClassName(val->message_type())},
+         {"optional_conversion_code", optional_conversion_code},
+         {"converted_key_name", converted_key_name},
+         {"upb_field_name", upbc_name}},
+        R"cc(
+          absl::StatusOr<$PtrMut$> $class_name$::get_mutable_$hpb_field_name$(
+              $const_key$ key) {
+            $return_type$* msg_value;
+            $optional_conversion_code$bool success =
+                $upb_msg_name$_$upb_field_name$_get(msg_, $converted_key_name$,
+                                                    &msg_value);
+            if (success) {
+              return ::hpb::interop::upb::MakeHandle<$proto_class$>(
+                  UPB_UPCAST(msg_value), arena_);
+            }
+            return absl::NotFoundError("");
+          }
+        )cc");
+    ctx.EmitLegacy(
         R"cc(
           void $0::delete_$1($2 key) { $6$4_$8_delete(msg_, $7); }
         )cc",
         class_name, resolved_field_name, CppConstType(key),
-        MessagePtrConstType(val, /* is_const */ false), MessageName(message),
-        MessageName(val->message_type()), optional_conversion_code,
-        converted_key_name, upbc_name);
+        MessagePtrConstType(val, /* is_const */ false),
+        upb::generator::CApiMessageType(desc->full_name()),
+        upb::generator::CApiMessageType(val->message_type()->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
   } else if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
-    output(
+    ctx.EmitLegacy(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             $5return $4_$7_set(
-                msg_, $6, ::hpb::UpbStrFromStringView(value, arena_), arena_);
+                msg_, $6, hpb::interop::upb::CopyToUpbStringView(value, arena_),
+                arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
-    output(
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
             upb_StringView value;
@@ -366,26 +454,26 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
-    output(
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
         R"cc(
           void $0::delete_$1($2 key) { $5$4_$7_delete(msg_, $6); }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
   } else {
-    output(
+    ctx.EmitLegacy(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             $5return $4_$7_set(msg_, $6, value, arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
-    output(
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
             $3 value;
@@ -397,24 +485,24 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
-    output(
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
+    ctx.EmitLegacy(
         R"cc(
           void $0::delete_$1($2 key) { $5$4_$7_delete(msg_, $6); }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
-        MessageName(message), optional_conversion_code, converted_key_name,
-        upbc_name);
+        upb::generator::CApiMessageType(desc->full_name()),
+        optional_conversion_code, converted_key_name, upbc_name);
   }
 }
 
 void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 MessageClassType handle_type, Output& output) {
+                                 MessageClassType handle_type, Context& ctx) {
   bool read_only = handle_type == MessageClassType::kMessageCProxy;
 
   // Generate const methods.
-  OutputIndenter i(output);
+  auto indent = ctx.printer().WithIndent();
   std::string class_name = ClassName(desc);
   auto field_names = CreateFieldNameMap(desc);
 
@@ -422,90 +510,110 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     // Generate hazzer (if any).
     if (field->has_presence()) {
-      output("using $0Access::has_$1;\n", class_name, resolved_field_name);
+      ctx.EmitLegacy("using $0Access::has_$1;\n", class_name,
+                     resolved_field_name);
       if (!read_only) {
-        output("using $0Access::clear_$1;\n", class_name, resolved_field_name);
+        ctx.EmitLegacy("using $0Access::clear_$1;\n", class_name,
+                       resolved_field_name);
       }
     }
     if (field->is_map()) {
-      output(
+      ctx.EmitLegacy(
           R"cc(
             using $0Access::$1_size;
             using $0Access::get_$1;
           )cc",
           class_name, resolved_field_name);
       if (!read_only) {
-        output(
+        ctx.EmitLegacy(
             R"cc(
               using $0Access::clear_$1;
               using $0Access::delete_$1;
               using $0Access::set_$1;
             )cc",
             class_name, resolved_field_name);
+        // only emit set_alias and get_mutable for maps when value is a message
+        if (field->message_type()->FindFieldByNumber(2)->cpp_type() ==
+            protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+          ctx.Emit(
+              {{"class_name", class_name}, {"field_name", resolved_field_name}},
+              R"cc(
+                using $class_name$Access::get_mutable_$field_name$;
+                using $class_name$Access::set_alias_$field_name$;
+              )cc");
+        }
       }
     } else if (desc->options().map_entry()) {
       // TODO Implement map entry
     } else if (field->is_repeated()) {
       WriteRepeatedFieldUsingAccessors(field, class_name, resolved_field_name,
-                                       output, read_only);
+                                       ctx, read_only);
     } else {
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        output("using $0Access::$1;\n", ClassName(desc), resolved_field_name);
+        ctx.EmitLegacy("using $0Access::$1;\n", ClassName(desc),
+                       resolved_field_name);
         if (!read_only) {
-          output("using $0Access::mutable_$1;\n", class_name,
-                 resolved_field_name);
+          ctx.EmitLegacy("using $0Access::mutable_$1;\n", class_name,
+                         resolved_field_name);
+          ctx.EmitLegacy("using $0Access::set_alias_$1;\n", class_name,
+                         resolved_field_name);
         }
       } else {
-        output("using $0Access::$1;\n", class_name, resolved_field_name);
+        ctx.EmitLegacy("using $0Access::$1;\n", class_name,
+                       resolved_field_name);
         if (!read_only) {
-          output("using $0Access::set_$1;\n", class_name, resolved_field_name);
+          ctx.EmitLegacy("using $0Access::set_$1;\n", class_name,
+                         resolved_field_name);
         }
       }
     }
   }
   for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
     const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
-    output("using $0Access::$1_case;\n", class_name, oneof->name());
-    output("using $0Access::$1Case;\n", class_name,
-           ToCamelCase(oneof->name(), /*lower_first=*/false));
+    ctx.EmitLegacy("using $0Access::$1_case;\n", class_name, oneof->name());
+    ctx.EmitLegacy("using $0Access::$1Case;\n", class_name,
+                   ToCamelCase(oneof->name(), /*lower_first=*/false));
     for (int j = 0; j < oneof->field_count(); ++j) {
       const protobuf::FieldDescriptor* field = oneof->field(j);
-      output("using $0Access::k$1;\n", class_name,
-             ToCamelCase(field->name(), /*lower_first=*/false),
-             field->number());
+      ctx.EmitLegacy("using $0Access::k$1;\n", class_name,
+                     ToCamelCase(field->name(), /*lower_first=*/false),
+                     field->number());
     }
-    output("using $0Access::$1_NOT_SET;\n", class_name,
-           absl::AsciiStrToUpper(oneof->name()));
+    ctx.EmitLegacy("using $0Access::$1_NOT_SET;\n", class_name,
+                   absl::AsciiStrToUpper(oneof->name()));
   }
 }
 
 void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Output& output) {
+                                 Context& ctx) {
   // Generate const methods.
-  OutputIndenter i(output);
+  auto indent = ctx.printer().WithIndent();
   std::string class_name = ClassName(desc);
   auto field_names = CreateFieldNameMap(desc);
   for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
     const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
-    output("enum $0Case {\n",
-           ToCamelCase(oneof->name(), /*lower_first=*/false));
+    ctx.EmitLegacy("enum $0Case {\n",
+                   ToCamelCase(oneof->name(), /*lower_first=*/false));
     for (int j = 0; j < oneof->field_count(); ++j) {
       const protobuf::FieldDescriptor* field = oneof->field(j);
-      output("  k$0 = $1,\n", ToCamelCase(field->name(), /*lower_first=*/false),
-             field->number());
+      ctx.EmitLegacy("  k$0 = $1,\n",
+                     ToCamelCase(field->name(), /*lower_first=*/false),
+                     field->number());
     }
-    output("  $0_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
-    output("};\n\n");
-    output("$0Case $1_case() const {\n",
-           ToCamelCase(oneof->name(), /*lower_first=*/false), oneof->name());
+    ctx.EmitLegacy("  $0_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
+    ctx.Emit("};\n\n");
+    ctx.EmitLegacy("$0Case $1_case() const {\n",
+                   ToCamelCase(oneof->name(), /*lower_first=*/false),
+                   oneof->name());
     for (int j = 0; j < oneof->field_count(); ++j) {
       const protobuf::FieldDescriptor* field = oneof->field(j);
       std::string resolved_field_name = ResolveFieldName(field, field_names);
-      output("  if (has_$0()) { return k$1; }\n", resolved_field_name,
-             ToCamelCase(field->name(), /*lower_first=*/false));
+      ctx.EmitLegacy("  if (has_$0()) { return k$1; }\n", resolved_field_name,
+                     ToCamelCase(field->name(), /*lower_first=*/false));
     }
-    output("  return $0_NOT_SET;\n", absl::AsciiStrToUpper(oneof->name()));
-    output("}\n;");
+    ctx.EmitLegacy("  return $0_NOT_SET;\n",
+                   absl::AsciiStrToUpper(oneof->name()));
+    ctx.Emit("}\n;");
   }
 }
 
@@ -562,7 +670,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       }
     }
   }
-  return upb::generator::ResolveKeywordConflict(std::string(field_name));
+  return ResolveKeywordConflict(field_name);
 }
 
 }  // namespace protobuf

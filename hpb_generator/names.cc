@@ -10,18 +10,14 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "upb_generator/keywords.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/hpb/context.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
 
 namespace {
-
-// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
-std::string NamespaceFromPackageName(absl::string_view package_name) {
-  return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
-                      "::protos");
-}
 
 std::string DotsToColons(const absl::string_view name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
@@ -91,7 +87,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   }
   if (parent) res += ClassName(parent) + "_";
   absl::StrAppend(&res, descriptor->name());
-  return ::upb::generator::ResolveKeywordConflict(res);
+  return ResolveKeywordConflict(res);
 }
 
 std::string QualifiedClassName(const protobuf::Descriptor* descriptor) {
@@ -104,35 +100,19 @@ std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor) {
 }
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.cc";
+  return compiler::StripProto(file->name()) + ".upb.proto.cc";
 }
 
 std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.fwd.h";
+  return compiler::StripProto(file->name()) + ".upb.fwd.h";
 }
 
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.h";
+  return compiler::StripProto(file->name()) + ".upb.h";
 }
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.h";
-}
-
-void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output) {
-  // Skip namespace generation if package name is not specified.
-  if (file->package().empty()) {
-    return;
-  }
-
-  output("namespace $0 {\n\n", NamespaceFromPackageName(file->package()));
-}
-
-void WriteEndNamespace(const protobuf::FileDescriptor* file, Output& output) {
-  if (file->package().empty()) {
-    return;
-  }
-  output("} //  namespace $0\n\n", NamespaceFromPackageName(file->package()));
+  return compiler::StripProto(file->name()) + ".upb.proto.h";
 }
 
 std::string CppConstType(const protobuf::FieldDescriptor* field) {

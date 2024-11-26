@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::opaque_pointee::opaque_pointee;
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_MiniTable);
 pub type RawMiniTable = NonNull<upb_MiniTable>;
@@ -45,4 +45,18 @@ extern "C" {
         m: *const upb_MiniTable,
         f: *const upb_MiniTableField,
     ) -> *const upb_MiniTable;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+
+    #[googletest::test]
+    fn assert_mini_table_linked() {
+        use crate::assert_linked;
+        assert_linked!(upb_MiniTable_FindFieldByNumber);
+        assert_linked!(upb_MiniTable_GetFieldByIndex);
+        assert_linked!(upb_MiniTable_SubMessage);
+    }
 }

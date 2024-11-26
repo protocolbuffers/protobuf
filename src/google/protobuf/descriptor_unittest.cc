@@ -23,6 +23,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -43,6 +44,7 @@
 #include "absl/log/scoped_mock_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -78,7 +80,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
 using ::google::protobuf::internal::cpp::GetUtf8CheckMode;
+using ::google::protobuf::internal::cpp::HasbitMode;
+using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::AnyOf;
@@ -2958,29 +2963,6 @@ TEST_F(MiscTest, DefaultValues) {
   EXPECT_EQ(enum_value_a, message->field(22)->default_value_enum());
 }
 
-TEST_F(MiscTest, InvalidFieldOptions) {
-  FileDescriptorProto file_proto;
-  file_proto.set_name("foo.proto");
-
-  file_proto.set_syntax("editions");
-  file_proto.set_edition(Edition::EDITION_2023);
-
-  DescriptorProto* message_proto = AddMessage(&file_proto, "TestMessage");
-  AddField(message_proto, "foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
-           FieldDescriptorProto::TYPE_INT32);
-  FieldDescriptorProto* bar_proto =
-      AddField(message_proto, "bar", 2, FieldDescriptorProto::LABEL_OPTIONAL,
-               FieldDescriptorProto::TYPE_INT32);
-
-  FieldOptions* options = bar_proto->mutable_options();
-  options->set_ctype(FieldOptions::CORD);
-
-  // Expects it to fail as int32 fields cannot have ctype.
-  DescriptorPool pool;
-  const FileDescriptor* file = pool.BuildFile(file_proto);
-  EXPECT_EQ(file, nullptr);
-}
-
 TEST_F(MiscTest, FieldOptions) {
   // Try setting field options.
 
@@ -3017,6 +2999,273 @@ TEST_F(MiscTest, FieldOptions) {
   EXPECT_TRUE(bar->options().has_ctype());
   EXPECT_EQ(FieldOptions::CORD, bar->options().ctype());
 }
+
+// ===================================================================
+
+struct HasHasbitTestParam {
+  struct ExpectedOutput {
+    HasbitMode expected_hasbitmode;
+    bool expected_has_presence;
+    bool expected_has_hasbit;
+  };
+
+  std::string input_foo_proto;
+  ExpectedOutput expected_output;
+};
+
+class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
+ protected:
+  void SetUp() override {
+    ASSERT_TRUE(
+        TextFormat::ParseFromString(GetParam().input_foo_proto, &foo_proto_));
+    foo_ = pool_.BuildFile(foo_proto_);
+  }
+
+  const FieldDescriptor* GetField() { return foo_->message_type(0)->field(0); }
+
+  DescriptorPool pool_;
+  FileDescriptorProto foo_proto_;
+  const FileDescriptor* foo_;
+};
+
+TEST_P(HasHasbitTest, TestHasHasbitExplicitPresence) {
+  EXPECT_EQ(GetField()->has_presence(),
+            GetParam().expected_output.expected_has_presence);
+  EXPECT_EQ(GetFieldHasbitMode(GetField()),
+            GetParam().expected_output.expected_hasbitmode);
+  EXPECT_EQ(HasHasbit(GetField()),
+            GetParam().expected_output.expected_has_hasbit);
+}
+
+// NOTE: with C++20 we can use designated initializers to ensure
+// that struct members match commented names, but as we are still working with
+// C++17 in the foreseeable future, we won't be able to refactor this for a
+// while...
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+INSTANTIATE_TEST_SUITE_P(
+    HasHasbitLegacySyntaxTests, HasHasbitTest,
+    testing::Values(
+        // Test case: proto2 singular fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto2'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_INT64
+                                    label: LABEL_OPTIONAL
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                               /*expected_has_presence=*/true,
+                               /*expected_has_hasbit=*/true,
+                           }},
+        // Test case: proto2 repeated fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto2'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }},
+        // Test case: proto3 singular fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto3'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_INT64
+                                    label: LABEL_OPTIONAL
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/true,
+                           }},
+        // Test case: proto3 optional fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto3'
+                 message_type {
+                   name: 'Foo'
+                   field {
+                     name: 'int_field'
+                     number: 1
+                     type: TYPE_INT32
+                     label: LABEL_OPTIONAL
+                     oneof_index: 0
+                     proto3_optional: true
+                   }
+                   oneof_decl { name: '_int_field' }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: proto3 repeated fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto3'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }}));
+
+// NOTE: with C++20 we can use designated initializers to ensure
+// that struct members match commented names, but as we are still working with
+// C++17 in the foreseeable future, we won't be able to refactor this for a
+// while...
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+INSTANTIATE_TEST_SUITE_P(
+    HasHasbitEditionsTests, HasHasbitTest,
+    testing::Values(
+        // Test case: explicit-presence, singular fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_INT64
+                     options { features { field_presence: EXPLICIT } }
+                   }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: implicit-presence, singular fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_INT64
+                     options { features { field_presence: IMPLICIT } }
+                   }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: oneof fields.
+        // Note that oneof fields can't specify field presence.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     oneof_index: 0
+                   }
+                   oneof_decl { name: "onebar" }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/false,
+            }},
+        // Test case: message fields.
+        // Note that message fields cannot specify implicit presence.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_MESSAGE
+                     type_name: "Bar"
+                   }
+                 }
+                 message_type {
+                   name: 'Bar'
+                   field { name: 'int_field' number: 1 type: TYPE_INT32 }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: repeated fields.
+        // Note that repeated fields can't specify presence.
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'editions'
+                                edition: EDITION_2023
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }}));
+
 
 // ===================================================================
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
@@ -4051,7 +4300,7 @@ class ValidationErrorTest : public testing::Test {
   void SetUp() override {
     // Enable extension declaration enforcement since most test cases want to
     // exercise the full validation.
-    pool_.EnforceExtensionDeclarations(true);
+    pool_.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
@@ -4501,6 +4750,28 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
       file->DebugString());
 }
 
+TEST_F(ValidationErrorTest, ReservedFieldsDebugString2023) {
+  const FileDescriptor* file = BuildFile(R"pb(
+    syntax: "editions"
+    edition: EDITION_2023
+    name: "foo.proto"
+    message_type {
+      name: "Foo"
+      reserved_name: "foo"
+      reserved_name: "bar"
+      reserved_range { start: 5 end: 6 }
+      reserved_range { start: 10 end: 20 }
+    })pb");
+
+  ASSERT_EQ(
+      "edition = \"2023\";\n\n"
+      "message Foo {\n"
+      "  reserved 5, 10 to 19;\n"
+      "  reserved foo, bar;\n"
+      "}\n\n",
+      file->DebugString());
+}
+
 TEST_F(ValidationErrorTest, DebugStringReservedRangeMax) {
   const FileDescriptor* file = BuildFile(absl::Substitute(
       "name: \"foo.proto\" "
@@ -4683,6 +4954,37 @@ TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString) {
       "  FOO = 3;\n"
       "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
       "  reserved \"foo\", \"bar\";\n"
+      "}\n\n",
+      file->DebugString());
+}
+
+TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString2023) {
+  const FileDescriptor* file = BuildFile(R"pb(
+    syntax: "editions"
+    edition: EDITION_2023
+    name: "foo.proto"
+    enum_type {
+      name: "Foo"
+      value { name: "FOO" number: 3 }
+      options { features { enum_type: CLOSED } }
+      reserved_name: "foo"
+      reserved_name: "bar"
+      reserved_range { start: -6 end: -6 }
+      reserved_range { start: -5 end: -4 }
+      reserved_range { start: -1 end: 1 }
+      reserved_range { start: 5 end: 5 }
+      reserved_range { start: 10 end: 19 }
+    })pb");
+
+  ASSERT_EQ(
+      "edition = \"2023\";\n\n"
+      "enum Foo {\n"
+      "  option features = {\n"
+      "    enum_type: CLOSED\n"
+      "  };\n"
+      "  FOO = 3;\n"
+      "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
+      "  reserved foo, bar;\n"
       "}\n\n",
       file->DebugString());
 }
@@ -7357,13 +7659,6 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
 }
 
-TEST(EditionsTest, DenseRange) {
-  for (int i = static_cast<int>(PROTOBUF_MINIMUM_EDITION);
-       i <= static_cast<int>(PROTOBUF_MAXIMUM_EDITION); ++i) {
-    EXPECT_TRUE(Edition_IsValid(i));
-  }
-}
-
 TEST(IsGroupLike, GroupLikeDelimited) {
   using internal::cpp::IsGroupLike;
   const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
@@ -7519,7 +7814,7 @@ TEST_F(FeaturesTest, Proto2Features) {
         name: "cord"
         number: 8
         label: LABEL_OPTIONAL
-        type: TYPE_STRING
+        type: TYPE_BYTES
         options { ctype: CORD }
       }
       field {
@@ -7604,6 +7899,8 @@ TEST_F(FeaturesTest, Proto2Features) {
 
   EXPECT_EQ(message->FindFieldByName("str")->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
+            FieldDescriptor::CppStringType::kCord);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;
@@ -9820,6 +10117,19 @@ TEST_F(FeaturesTest, FieldCppStringType) {
               }
             }
           } $0
+          extension_range { start: 100 end: 200 }
+        }
+        extension {
+          name: "cord_ext"
+          number: 100
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          options {
+            features {
+              [pb.cpp] { string_type: CORD }
+            }
+          }
+          extendee: "Foo"
         }
       )pb",
       ""
@@ -9830,12 +10140,15 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   const FieldDescriptor* str = message->field(1);
   const FieldDescriptor* cord = message->field(2);
   const FieldDescriptor* cord_bytes = message->field(3);
+  const FieldDescriptor* cord_ext = file->extension(0);
 
   EXPECT_EQ(view->cpp_string_type(), FieldDescriptor::CppStringType::kView);
   EXPECT_EQ(str->cpp_string_type(), FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(cord_bytes->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
   EXPECT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(cord_ext->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
 
 }
 
@@ -10971,7 +11284,8 @@ TEST_F(FeaturesTest, RemovedFeature) {
         }
       )pb",
       "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.removed_feature has been removed in edition 2024\n");
+      "pb.TestFeatures.removed_feature has been removed in edition 2024 and "
+      "can't be used in edition 2024\n");
 }
 
 TEST_F(FeaturesTest, RemovedFeatureDefault) {
@@ -11002,7 +11316,8 @@ TEST_F(FeaturesTest, FutureFeature) {
         }
       )pb",
       "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+      "pb.TestFeatures.future_feature wasn't introduced until edition 2024 and "
+      "can't be used in edition 2023\n");
 }
 
 TEST_F(FeaturesTest, FutureFeatureDefault) {
@@ -11420,7 +11735,7 @@ TEST_F(ValidationErrorTest, ExtensionDeclarationsMismatchFullNameAllowed) {
   // Make sure that extension declaration names and types are not validated
   // outside of protoc. This is important for allowing extensions to be renamed
   // safely.
-  pool_.EnforceExtensionDeclarations(false);
+  pool_.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kNoEnforcement);
   BuildFile(
       R"pb(
         name: "foo.proto"
@@ -11606,7 +11921,7 @@ TEST_P(ExtensionDeclarationsTest, DotPrefixTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11639,7 +11954,7 @@ TEST_P(ExtensionDeclarationsTest, EnumTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11676,7 +11991,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchEnumType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11712,7 +12027,7 @@ TEST_P(ExtensionDeclarationsTest, DotPrefixFullNameCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11741,7 +12056,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingMessage) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11771,7 +12086,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingNonMessage) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11806,7 +12121,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchMessageType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11836,7 +12151,7 @@ TEST_P(ExtensionDeclarationsTest, NonMessageTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11865,7 +12180,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchNonMessageType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11900,7 +12215,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingRepeated) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11940,7 +12255,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingOptional) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11972,7 +12287,7 @@ TEST_P(ExtensionDeclarationsTest, TypeDoesNotLookLikeIdentifier) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -12018,7 +12333,7 @@ TEST_P(ExtensionDeclarationsTest, MultipleDeclarationsInARangeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -12382,14 +12697,20 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12433,14 +12754,20 @@ TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12459,21 +12786,27 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
   DescriptorPool pool(&database_, &error_collector);
 
   EXPECT_TRUE(pool.FindMessageTypeByName("FooFeatures") == nullptr);
-  EXPECT_EQ(
-      error_collector.text_,
-      "features.proto: FooFeatures: NAME: Feature "
-      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+  EXPECT_EQ(error_collector.text_,
+            "features.proto: FooFeatures: NAME: Feature "
+            "pb.TestFeatures.future_feature wasn't introduced until edition "
+            "2024 and can't be used in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "option.proto"
     syntax: "editions"
@@ -12523,10 +12856,10 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
   // Verify that the extension does trigger a lifetime error.
   error_collector.text_.clear();
   ASSERT_EQ(pool.FindExtensionByName("foo_extension"), nullptr);
-  EXPECT_EQ(
-      error_collector.text_,
-      "option.proto: foo_extension: NAME: Feature "
-      "pb.TestFeatures.legacy_feature has been removed in edition 2023\n");
+  EXPECT_EQ(error_collector.text_,
+            "option.proto: foo_extension: NAME: Feature "
+            "pb.TestFeatures.legacy_feature has been removed in edition 2023 "
+            "and can't be used in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {
@@ -13787,6 +14120,28 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
 }
 
 // ===================================================================
+
+// This is effectively a static_assert ensuring that the generated
+// descriptor_table variable is marked extern "C". The compiler will give us an
+// error if the generated declaration does not match this one. We need this
+// variable to be extern "C" so that we can refer to it from Rust.
+//
+// If this causes a linker error, it is likely because the name mangling
+// changed. That can be fixed by updating to the new name from the generated
+// code for unittest.proto.
+
+#define DESCRIPTOR_TABLE_NAME \
+  descriptor_table_google_2fprotobuf_2funittest_2eproto
+
+extern "C" {
+extern const ::google::protobuf::internal::DescriptorTable DESCRIPTOR_TABLE_NAME;
+}
+
+TEST(DescriptorTableExternLinkageTest, DescriptorTableExternLinkageTest) {
+  // The goal of this assertion is just to verify that the descriptor_table
+  // variable declaration above still refers to a real thing.
+  EXPECT_TRUE(absl::EndsWith(DESCRIPTOR_TABLE_NAME.filename, "unittest.proto"));
+}
 
 
 }  // namespace descriptor_unittest

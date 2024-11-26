@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -25,12 +26,20 @@ namespace google {
 namespace protobuf {
 namespace {
 
+using ::proto2_nofieldpresence_unittest::ExplicitForeignMessage;
+using ::proto2_nofieldpresence_unittest::FOREIGN_BAZ;
+using ::proto2_nofieldpresence_unittest::FOREIGN_FOO;
+using ::proto2_nofieldpresence_unittest::ForeignMessage;
+using ::proto2_nofieldpresence_unittest::TestAllTypes;
+using ::testing::Eq;
 using ::testing::Gt;
+using ::testing::IsEmpty;
+using ::testing::Not;
 using ::testing::StrEq;
+using ::testing::UnorderedPointwise;
 
 // Helper: checks that all fields have default (zero/empty) values.
-void CheckDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(0, m.optional_int32());
   EXPECT_EQ(0, m.optional_int64());
   EXPECT_EQ(0, m.optional_uint32());
@@ -56,10 +65,8 @@ void CheckDefaultValues(
   // default instance.
   EXPECT_EQ(41, m.optional_proto2_message().default_int32());
   EXPECT_EQ(false, m.has_optional_foreign_message());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::FOO,
-            m.optional_nested_enum());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
-            m.optional_foreign_enum());
+  EXPECT_EQ(TestAllTypes::FOO, m.optional_nested_enum());
+  EXPECT_EQ(FOREIGN_FOO, m.optional_foreign_enum());
 
 
   EXPECT_EQ(0, m.repeated_int32_size());
@@ -83,11 +90,10 @@ void CheckDefaultValues(
   EXPECT_EQ(0, m.repeated_nested_enum_size());
   EXPECT_EQ(0, m.repeated_foreign_enum_size());
   EXPECT_EQ(0, m.repeated_lazy_message_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::ONEOF_FIELD_NOT_SET,
-            m.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::ONEOF_FIELD_NOT_SET, m.oneof_field_case());
 }
 
-void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
+void FillValues(TestAllTypes* m) {
   m->set_optional_int32(100);
   m->set_optional_int64(101);
   m->set_optional_uint32(102);
@@ -106,9 +112,8 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->mutable_optional_nested_message()->set_bb(42);
   m->mutable_optional_foreign_message()->set_c(43);
   m->mutable_optional_proto2_message()->set_optional_int32(44);
-  m->set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
-  m->set_optional_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
+  m->set_optional_nested_enum(TestAllTypes::BAZ);
+  m->set_optional_foreign_enum(FOREIGN_BAZ);
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
@@ -128,9 +133,8 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->add_repeated_nested_message()->set_bb(46);
   m->add_repeated_foreign_message()->set_c(47);
   m->add_repeated_proto2_message()->set_optional_int32(48);
-  m->add_repeated_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
-  m->add_repeated_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
+  m->add_repeated_nested_enum(TestAllTypes::BAZ);
+  m->add_repeated_foreign_enum(FOREIGN_BAZ);
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -138,8 +142,7 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->set_oneof_string("test");  // only this one remains set
 }
 
-void CheckNonDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(100, m.optional_int32());
   EXPECT_EQ(101, m.optional_int64());
   EXPECT_EQ(102, m.optional_uint32());
@@ -161,10 +164,8 @@ void CheckNonDefaultValues(
   EXPECT_EQ(43, m.optional_foreign_message().c());
   EXPECT_EQ(true, m.has_optional_proto2_message());
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
-            m.optional_nested_enum());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
-            m.optional_foreign_enum());
+  EXPECT_EQ(TestAllTypes::BAZ, m.optional_nested_enum());
+  EXPECT_EQ(FOREIGN_BAZ, m.optional_foreign_enum());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
 
@@ -205,21 +206,18 @@ void CheckNonDefaultValues(
   EXPECT_EQ(1, m.repeated_proto2_message_size());
   EXPECT_EQ(48, m.repeated_proto2_message(0).optional_int32());
   EXPECT_EQ(1, m.repeated_nested_enum_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
-            m.repeated_nested_enum(0));
+  EXPECT_EQ(TestAllTypes::BAZ, m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
-            m.repeated_foreign_enum(0));
+  EXPECT_EQ(FOREIGN_BAZ, m.repeated_foreign_enum(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofString,
-            m.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofString, m.oneof_field_case());
   EXPECT_EQ("test", m.oneof_string());
 }
 
 TEST(NoFieldPresenceTest, BasicMessageTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   // Check default values, fill all fields, check values. We just want to
   // exercise the basic getters/setter paths here to make sure no
   // field-presence-related changes broke these.
@@ -234,7 +232,7 @@ TEST(NoFieldPresenceTest, BasicMessageTest) {
 
 TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
   // check that presence still works properly for message fields.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   EXPECT_EQ(false, message.has_optional_nested_message());
   // Getter should fetch default instance, and not cause the field to become
   // present.
@@ -258,15 +256,460 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
 
   // Test field presence of a message field on the default instance.
   EXPECT_EQ(false,
-            proto2_nofieldpresence_unittest::TestAllTypes::default_instance()
-                .has_optional_nested_message());
+            TestAllTypes::default_instance().has_optional_nested_message());
+}
+
+TEST(NoFieldPresenceTest, MergeFromDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+
+  dst = src;
+  dst = src;
+}
+
+class NoFieldPresenceSwapFieldTest : public testing::Test {
+ protected:
+  NoFieldPresenceSwapFieldTest()
+      : m1_(),
+        m2_(),
+        r1_(m1_.GetReflection()),
+        r2_(m2_.GetReflection()),
+        d1_(m1_.GetDescriptor()),
+        d2_(m2_.GetDescriptor()) {}
+
+  // Returns a field descriptor that corresponds to the field name.
+  // Note that different messages would still return the same field descriptor.
+  const FieldDescriptor* FindFieldByName(absl::string_view field_name) {
+    const FieldDescriptor* f1 = d1_->FindFieldByName(field_name);
+    const FieldDescriptor* f2 = d2_->FindFieldByName(field_name);
+
+    // We actually ensure uniqueness of *field descriptors* even if we try to
+    // obtain them from different *message descriptors*.
+    ABSL_CHECK_EQ(f1, f2);
+    return f1;
+  }
+
+  TestAllTypes m1_;
+  TestAllTypes m2_;
+  const Reflection* r1_;
+  const Reflection* r2_;
+  const Descriptor* d1_;
+  const Descriptor* d2_;
+};
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarNonZeroTest) {
+  m1_.set_optional_int32(1);
+  m2_.set_optional_int32(2);
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(2, m1_.optional_int32());
+  EXPECT_EQ(1, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(1, m1_.optional_int32());
+  EXPECT_EQ(2, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarOneZeroTest) {
+  m1_.set_optional_int32(1);
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(1, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(1, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarBothZeroTest) {
+  m1_.set_optional_int32(0);  // setting an int field to zero should be noop
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldRepeatedNonZeroTest) {
+  m1_.add_repeated_int32(1);
+  m2_.add_repeated_int32(2);
+  m2_.add_repeated_int32(22);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 2);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {2, 22}));
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 2);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {2, 22}));
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldRepeatedOneZeroTest) {
+  m1_.add_repeated_int32(1);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 0);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), IsEmpty());
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 0);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+  EXPECT_THAT(m2_.repeated_int32(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldRepeatedExplicitZeroTest) {
+  // For repeated fields, explicitly adding zero would cause it to be added into
+  // the repeated field.
+  m1_.add_repeated_int32(0);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 0);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), IsEmpty());
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {0}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 0);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {0}));
+  EXPECT_THAT(m2_.repeated_int32(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldOneofFieldDescriptorTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  // NOTE: Calling swap on any field descriptor within the oneof works --
+  // even a completely unrelated field.
+  const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
+
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{never_set_field});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, never_set_field));
+  EXPECT_FALSE(r1_->HasField(m2_, never_set_field));
+  EXPECT_TRUE(m1_.has_oneof_string());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // Calling oneof accessors on a swapped-out field will give the default value.
+  EXPECT_FALSE(m1_.has_oneof_uint32());
+  EXPECT_FALSE(m2_.has_oneof_string());
+  EXPECT_EQ(m1_.oneof_uint32(), 0);
+  EXPECT_THAT(m2_.oneof_string(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldOneofFieldMultipleIdenticalDescriptorTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  // NOTE: Calling swap on any field descriptor within the oneof works --
+  // even a completely unrelated field.
+  const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
+  const FieldDescriptor* f1 = d1_->FindFieldByName("oneof_uint32");
+  const FieldDescriptor* f2 = d2_->FindFieldByName("oneof_string");
+
+  // Multiple instances of the identical descriptor is ignored.
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{never_set_field, never_set_field});
+
+  // Fields should be swapped (just once).
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // Multiple instances of the identical descriptor is ignored.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f1, f2, never_set_field});
+
+  // Fields should be swapped (just once).
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_string());
+  EXPECT_TRUE(r1_->HasField(m1_, f1));
+  EXPECT_TRUE(r2_->HasField(m2_, f2));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_EQ(m2_.oneof_string(), "test");
+
+  // Calling oneof accessors on a swapped-out field will give the default value.
+  EXPECT_FALSE(m1_.has_oneof_string());
+  EXPECT_FALSE(m2_.has_oneof_uint32());
+  EXPECT_FALSE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_FALSE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_uint32")));
+  EXPECT_THAT(m1_.oneof_string(), IsEmpty());
+  EXPECT_EQ(m2_.oneof_uint32(), 0);
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofNonZeroTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(m1_.has_oneof_string());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_TRUE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_string());
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_string")));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_EQ(m2_.oneof_string(), "test");
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofDefaultTest) {
+  m1_.set_oneof_uint32(1);
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_FALSE(m1_.has_oneof_string());
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_string")));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_FALSE(m2_.has_oneof_string());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofExplicitZeroTest) {
+  // Oneof fields essentially have explicit presence -- if set to zero, they
+  // will still be considered present.
+  m1_.set_oneof_uint32(0);
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_FALSE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_EQ(m2_.oneof_uint32(), 0);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_EQ(m1_.oneof_uint32(), 0);
+  EXPECT_FALSE(m2_.has_oneof_uint32());
+}
+
+class NoFieldPresenceListFieldsTest : public testing::Test {
+ protected:
+  NoFieldPresenceListFieldsTest()
+      : message_(), r_(message_.GetReflection()), fields_() {
+    // Check initial state: scalars not present (due to need to be consistent
+    // with MergeFrom()), message fields not present, oneofs not present.
+    r_->ListFields(message_, &fields_);
+    ABSL_CHECK(fields_.empty());
+  }
+
+  TestAllTypes message_;
+  const Reflection* r_;
+  std::vector<const FieldDescriptor*> fields_;
+};
+
+TEST_F(NoFieldPresenceListFieldsTest, ScalarTest) {
+  // Check zero/empty-means-not-present semantics.
+  message_.set_optional_int32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_TRUE(fields_.empty());
+
+  message_.Clear();
+  message_.set_optional_int32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, MessageTest) {
+  // Message fields always have explicit presence.
+  message_.mutable_optional_nested_message();
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  message_.Clear();
+  message_.mutable_optional_nested_message()->set_bb(123);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, OneOfTest) {
+  // Oneof fields behave essentially like an explicit presence field.
+  message_.set_oneof_uint32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  // Note:
+  // we don't clear message_ -- oneof must only maintain one present field.
+  message_.set_oneof_uint32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
 }
 
 TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // check that HasField reports true on all scalar fields. Check that it
   // behaves properly for message fields.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -281,11 +724,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // Test field presence of a message field on the default instance.
   const FieldDescriptor* msg_field =
       desc->FindFieldByName("optional_nested_message");
-  EXPECT_EQ(
-      false,
-      r->HasField(
-          proto2_nofieldpresence_unittest::TestAllTypes::default_instance(),
-          msg_field));
+  EXPECT_EQ(false, r->HasField(TestAllTypes::default_instance(), msg_field));
 
   // Fill all fields, expect everything to report true (check oneofs below).
   FillValues(&message);
@@ -330,7 +769,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
 }
 
 TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
 
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -370,7 +809,7 @@ TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
 
 TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   // check that HasField behaves properly for oneofs.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
 
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -405,8 +844,7 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
 
 TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   // check that MergeFrom copies if nonzero/nondefault only.
-  proto2_nofieldpresence_unittest::TestAllTypes source;
-  proto2_nofieldpresence_unittest::TestAllTypes dest;
+  TestAllTypes source, dest;
 
   dest.set_optional_int32(42);
   dest.set_optional_string("test");
@@ -426,13 +864,13 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
 
 TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
   // check extra serialized zeroes on the wire are parsed into the object.
-  proto2_nofieldpresence_unittest::ForeignMessage dest;
+  ForeignMessage dest;
   dest.set_c(42);
   ASSERT_EQ(42, dest.c());
 
   // ExplicitForeignMessage has the same fields as ForeignMessage, but with
   // explicit presence instead of implicit presence.
-  proto2_nofieldpresence_unittest::ExplicitForeignMessage source;
+  ExplicitForeignMessage source;
   source.set_c(0);
   std::string wire = source.SerializeAsString();
   ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
@@ -447,13 +885,13 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
 
 TEST(NoFieldPresenceTest, ExtraZeroesInWireMergeTest) {
   // check explicit zeros on the wire are merged into an implicit one.
-  proto2_nofieldpresence_unittest::ForeignMessage dest;
+  ForeignMessage dest;
   dest.set_c(42);
   ASSERT_EQ(42, dest.c());
 
   // ExplicitForeignMessage has the same fields as ForeignMessage, but with
   // explicit presence instead of implicit presence.
-  proto2_nofieldpresence_unittest::ExplicitForeignMessage source;
+  ExplicitForeignMessage source;
   source.set_c(0);
   std::string wire = source.SerializeAsString();
   ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
@@ -476,7 +914,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireLastWins) {
   // always take the last one -- even if it is a zero.
 
   absl::string_view wire{"\x08\x01\x08\x00", /*len=*/4};  // note the null-byte.
-  proto2_nofieldpresence_unittest::ForeignMessage dest;
+  ForeignMessage dest;
 
   // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
   //                      well-defined.
@@ -564,7 +1002,7 @@ TYPED_TEST_SUITE(NoFieldPresenceSerializeTest, SerializableOutputTypes);
 TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   // check that serialized data contains only non-zero numeric fields/non-empty
   // string/byte fields.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -587,10 +1025,8 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   message.set_optional_bool(false);
   message.set_optional_string("");
   message.set_optional_bytes("");
-  message.set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // first enum entry
-  message.set_optional_foreign_enum(
-      proto2_nofieldpresence_unittest::FOREIGN_FOO);  // first enum entry
+  message.set_optional_nested_enum(TestAllTypes::FOO);  // first enum entry
+  message.set_optional_foreign_enum(FOREIGN_FOO);       // first enum entry
 
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(0, this->GetOutput().size());
@@ -608,7 +1044,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
 TYPED_TEST(NoFieldPresenceSerializeTest, NullMutableSerializesEmpty) {
   // Check that, if mutable_foo() was called, but fields were not modified,
   // nothing is serialized on the wire.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -631,7 +1067,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, NullMutableSerializesEmpty) {
 TYPED_TEST(NoFieldPresenceSerializeTest, SetAllocatedAndReleaseTest) {
   // Check that setting an empty string via set_allocated_foo behaves properly;
   // Check that serializing after release_foo does not generate output for foo.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -661,7 +1097,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, SetAllocatedAndReleaseTest) {
 TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
   // Check that has-bit interaction with lazy message works (has-bit before and
   // after lazy decode).
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
   const FieldDescriptor* field = desc->FindFieldByName("optional_lazy_message");
@@ -678,7 +1114,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
   // object is in unparsed state.
   TypeParam& output_sink = this->GetOutputSinkRef();
   ASSERT_TRUE(TestSerialize(message, &output_sink));
-  proto2_nofieldpresence_unittest::TestAllTypes message2;
+  TestAllTypes message2;
   message2.ParseFromString(this->GetOutput());
 
   EXPECT_EQ(true, message2.has_optional_lazy_message());
@@ -691,7 +1127,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   // oneof fields still have field presence -- ensure that this goes on the wire
   // even though its value is the empty string.
   message.set_oneof_string("");
@@ -707,8 +1143,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
 
   message.Clear();
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofString,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofString, message.oneof_field_case());
 
   // Also test int32 and enum fields.
   message.Clear();
@@ -716,18 +1151,14 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(3, this->GetOutput().size());
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofUint32,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofUint32, message.oneof_field_case());
 
   message.Clear();
-  message.set_oneof_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // default
-                                                            // value.
+  message.set_oneof_enum(TestAllTypes::FOO);  // FOO is the default value.
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(3, this->GetOutput().size());
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofEnum,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofEnum, message.oneof_field_case());
 
   message.Clear();
   message.set_oneof_string("test");

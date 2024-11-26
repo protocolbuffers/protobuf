@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -64,27 +65,30 @@ class DescriptorPoolExtensionFinder {
 void ExtensionSet::AppendToList(
     const Descriptor* extendee, const DescriptorPool* pool,
     std::vector<const FieldDescriptor*>* output) const {
-  ForEach([extendee, pool, &output](int number, const Extension& ext) {
-    bool has = false;
-    if (ext.is_repeated) {
-      has = ext.GetSize() > 0;
-    } else {
-      has = !ext.is_cleared;
-    }
+  ForEach(
+      [extendee, pool, &output](int number, const Extension& ext) {
+        bool has = false;
+        if (ext.is_repeated) {
+          has = ext.GetSize() > 0;
+        } else {
+          has = !ext.is_cleared;
+        }
 
-    if (has) {
-      // TODO: Looking up each field by number is somewhat unfortunate.
-      //   Is there a better way?  The problem is that descriptors are lazily-
-      //   initialized, so they might not even be constructed until
-      //   AppendToList() is called.
+        if (has) {
+          // TODO: Looking up each field by number is somewhat
+          // unfortunate.
+          //   Is there a better way?  The problem is that descriptors are
+          //   lazily-initialized, so they might not even be constructed until
+          //   AppendToList() is called.
 
-      if (ext.descriptor == nullptr) {
-        output->push_back(pool->FindExtensionByNumber(extendee, number));
-      } else {
-        output->push_back(ext.descriptor);
-      }
-    }
-  });
+          if (ext.descriptor == nullptr) {
+            output->push_back(pool->FindExtensionByNumber(extendee, number));
+          } else {
+            output->push_back(ext.descriptor);
+          }
+        }
+      },
+      Prefetch{});
 }
 
 inline FieldDescriptor::Type real_type(FieldType type) {
@@ -133,6 +137,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
     extension->type = descriptor->type();
     ABSL_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
+    extension->is_pointer = true;
     extension->is_packed = false;
     const MessageLite* prototype =
         factory->GetPrototype(descriptor->message_type());
@@ -210,6 +215,7 @@ ExtensionSet::Extension* ExtensionSet::MaybeNewRepeatedExtension(
     extension->type = descriptor->type();
     ABSL_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
+    extension->is_pointer = true;
     extension->ptr.repeated_message_value =
         Arena::Create<RepeatedPtrField<MessageLite> >(arena_);
   } else {
@@ -280,10 +286,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
 
-      if (extension->options().has_lazy()) {
-        output->is_lazy = extension->options().lazy() ? LazyAnnotation::kLazy
-                                                      : LazyAnnotation::kEager;
-      }
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();
@@ -353,9 +355,11 @@ int ExtensionSet::SpaceUsedExcludingSelf() const {
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
   size_t total_size =
       (is_large() ? map_.large->size() : flat_capacity_) * sizeof(KeyValue);
-  ForEach([&total_size](int /* number */, const Extension& ext) {
-    total_size += ext.SpaceUsedExcludingSelfLong();
-  });
+  ForEach(
+      [&total_size](int /* number */, const Extension& ext) {
+        total_size += ext.SpaceUsedExcludingSelfLong();
+      },
+      Prefetch{});
   return total_size;
 }
 

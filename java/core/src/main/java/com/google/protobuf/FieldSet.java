@@ -101,8 +101,15 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; ++i) {
       Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      if (entry.getValue() instanceof GeneratedMessageLite) {
-        ((GeneratedMessageLite<?, ?>) entry.getValue()).makeImmutable();
+      Object value = entry.getValue();
+      if (value instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
+      }
+    }
+    for (Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
+      Object value = entry.getValue();
+      if (value instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
       }
     }
     fields.makeImmutable();
@@ -120,7 +127,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }
@@ -259,6 +267,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       return ((LazyField) o).getValue();
     }
     return o;
+  }
+
+  /** Returns true if the field is a lazy field and it is corrupted. */
+  boolean lazyFieldCorrupted(final T descriptor) {
+    Object o = fields.get(descriptor);
+    return o instanceof LazyField && ((LazyField) o).isCorrupted();
   }
 
   /**

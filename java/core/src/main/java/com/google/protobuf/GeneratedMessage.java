@@ -986,17 +986,26 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
       final Object value = extensions.getField(descriptor);
+      T result = null;
       if (value == null) {
         if (descriptor.isRepeated()) {
-          return (T) Collections.emptyList();
+          result = (T) ProtobufArrayList.emptyList();
         } else if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-          return (T) extension.getMessageDefaultInstance();
+          result = (T) extension.getMessageDefaultInstance();
         } else {
-          return (T) extension.fromReflectionType(descriptor.getDefaultValue());
+          result = (T) extension.fromReflectionType(descriptor.getDefaultValue());
         }
       } else {
-        return (T) extension.fromReflectionType(value);
+        result = (T) extension.fromReflectionType(value);
       }
+
+      // If the lazy field is corrupted, we need to invalidate the memoized size in case the
+      // corrupted message data was replaced with an empty ByteString and yet a previous serialized
+      // size was memoized.
+      if (extensions.lazyFieldCorrupted(descriptor)) {
+        setMemoizedSerializedSize(-1);
+      }
+      return result;
     }
 
     /** Get one element of a repeated extension. */
@@ -1826,10 +1835,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE
             || descriptor.getJavaType() == FieldDescriptor.JavaType.ENUM) {
           // Must convert the whole list.
-          final List<Object> result = new ArrayList<>();
+          final ProtobufArrayList<Object> result = new ProtobufArrayList<>();
+          result.ensureCapacity(((List<?>) value).size());
           for (final Object element : (List<?>) value) {
             result.add(singularFromReflectionType(element));
           }
+          result.makeImmutable();
           return result;
         } else {
           return value;
@@ -2707,13 +2718,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
       @Override
       public Message.Builder newBuilder() {
-        throw new UnsupportedOperationException(
-            "newBuilderForField() called on a non-Message type.");
+        throw new UnsupportedOperationException("newBuilderForField() called on a repeated field.");
       }
 
       @Override
       public Message.Builder getBuilder(GeneratedMessage.Builder<?> builder) {
-        throw new UnsupportedOperationException("getFieldBuilder() called on a non-Message type.");
+        throw new UnsupportedOperationException("getFieldBuilder() called on a repeated field.");
       }
 
       @Override

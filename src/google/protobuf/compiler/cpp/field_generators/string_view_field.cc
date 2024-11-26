@@ -216,41 +216,29 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  ABSL_CHECK(!field_->options().has_ctype());
-
-  auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
-  vars.push_back(Sub{
-      "release_name",
-      SafeFunctionName(field_->containing_type(), field_, "release_"),
-  }
-                     .AnnotatedAs(field_));
-  auto v1 = p->WithVars(vars);
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
-  auto v3 = p->WithVars(
-      AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
-  p->Emit(
-      {{"donated",
-        [&] {
-          if (!is_inlined()) return;
-          p->Emit(R"cc(
-            inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
+  p->Emit({{"donated",
+            [&] {
+              if (!is_inlined()) return;
+              p->Emit(R"cc(
+                PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
+              )cc");
+            }}},
+          R"cc(
+            $DEPRECATED$ absl::string_view $name$() const;
+            template <typename Arg_ = std::string&&>
+            $DEPRECATED$ void $set_name$(Arg_&& arg);
+
+            private:
+            const std::string& _internal_$name$() const;
+            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(absl::string_view value);
+            $donated$;
+
+            public:
           )cc");
-        }}},
-      R"cc(
-        $DEPRECATED$ absl::string_view $name$() const;
-        template <typename Arg_ = std::string&&>
-        $DEPRECATED$ void $set_name$(Arg_&& arg);
-
-        private:
-        const std::string& _internal_$name$() const;
-        inline PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(
-            absl::string_view value);
-        $donated$;
-
-        public:
-      )cc");
 }
 
 void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
@@ -305,8 +293,6 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
                }
              )cc");
            }},
-          {"release_name",
-           SafeFunctionName(field_->containing_type(), field_, "release_")},
       },
       R"cc(
         inline absl::string_view $Msg$::$name$() const
@@ -318,7 +304,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
           return _internal_$name_internal$();
         }
         template <typename Arg_>
-        inline PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg) {
+        PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
@@ -445,9 +431,9 @@ void SingularStringView::GenerateConstructorCode(io::Printer* p) const {
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-      $field_$.Set("", GetArena());
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+      if ($pbi$::DebugHardenForceCopyDefaultString()) {
+        $field_$.Set("", GetArena());
+      }
     )cc");
   }
 }
@@ -502,7 +488,7 @@ void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    $field_$.Destroy();
+    this_.$field_$.Destroy();
   )cc");
 }
 
@@ -612,7 +598,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $field_$.DeleteIfNotDefault();
+        this_.$field_$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -649,14 +635,7 @@ class RepeatedStringView : public FieldGeneratorBase {
 };
 
 void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
-
-  if (unknown_ctype) {
-    p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
-    )cc");
-  }
+  ABSL_DCHECK(GetDeclaredStringType() == pb::CppFeatures::VIEW);
 
   auto v1 = p->WithVars(AnnotatedAccessors(field_, {"", "_internal_"}));
   auto v2 = p->WithVars(
@@ -687,20 +666,14 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedStringView::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
-  p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-           {"GetExtraArg",
-            [&] {
-              p->Emit(opts_->safe_boundary_check
-                          ? ", $pbi$::GetEmptyStringAlreadyInited()"
-                          : "");
-            }}},
+  p->Emit({GetEmitRepeatedFieldGetterSub(*opts_, p)},
           R"cc(
             inline absl::string_view $Msg$::$name$(int index) const
                 ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $WeakDescriptorSelfPin$;
               $annotate_get$;
               // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              return _internal_$name_internal$().$Get$(index$GetExtraArg$);
+              return $getter$;
             }
             inline void $Msg$::set_$name$(int index, const std::string& value) {
               $WeakDescriptorSelfPin$;

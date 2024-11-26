@@ -979,7 +979,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafFirst) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -1000,7 +1000,7 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
       "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafLast) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -1633,7 +1633,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
 
   ExpectErrorSubstring(
       "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2023");
+      "supported edition 2024");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
@@ -1927,6 +1927,70 @@ TEST_F(CommandLineInterfaceTest, PluginErrorAndNoEditionsSupport) {
       "--plug_out: foo.proto: Saw message type MockCodeGenerator_Error.");
 }
 
+TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition 2024, which is later than the protoc "
+      "maximum supported edition 2023.");
+}
+
+TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionAllowlisted) {
+  constexpr absl::string_view path = "google/protobuf";
+  CreateTempFile(absl::StrCat(path, "/foo.proto"),
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run(
+      absl::Substitute("protocol_compiler --proto_path=$$tmpdir "
+                       "--test_out=$$tmpdir $0/foo.proto",
+                       path));
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AfterProtocMaximumEditionExperimentalEditions) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AfterMaximumKnownEditionErrorExperimentalEditions) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "99997_TEST_ONLY";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
+      "supported edition 2024\n");
+}
+
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
@@ -2097,7 +2161,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 6);
+  ASSERT_EQ(defaults.defaults_size(), 7);
   EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
@@ -2618,7 +2682,6 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
       "Can only process one input file when using --dependency_out=FILE.\n");
 }
 
-#ifdef PROTOBUF_OPENSOURCE
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -2630,7 +2693,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                  "  optional Foo foo = 1;\n"
                  "}\n");
 
-  std::string current_working_directory = getcwd(nullptr, 0);
+  char current_dir[PATH_MAX];
+  ASSERT_EQ(getcwd(current_dir, sizeof(current_dir)), current_dir);
   SwitchToTempDirectory();
 
   Run("protocol_compiler --dependency_out=manifest --test_out=. "
@@ -2642,12 +2706,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                     "bar.proto.MockCodeGenerator.test_generator: "
                     "foo.proto\\\n bar.proto");
 
-  File::ChangeWorkingDirectory(current_working_directory);
+  File::ChangeWorkingDirectory(current_dir);
 }
-#else  // !PROTOBUF_OPENSOURCE
-// TODO: Figure out how to change and get working directory in
-// google3.
-#endif  // !PROTOBUF_OPENSOURCE
 
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   CreateTempFile("foo.proto",
@@ -2771,9 +2831,12 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
-      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n"
-      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
-      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
+      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+  ExpectErrorText(
+      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
+      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
       "foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
 }
 

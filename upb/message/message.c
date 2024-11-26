@@ -7,10 +7,12 @@
 
 #include "upb/message/message.h"
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
@@ -28,19 +30,43 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static const size_t message_overhead = sizeof(upb_Message_Internal);
-
 upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
   return _upb_Message_New(m, a);
 }
 
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
-                                          size_t len, upb_Arena* arena) {
+                                          size_t len, upb_Arena* arena,
+                                          bool alias) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
+  // valid proto field
+  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, len, arena)) return false;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
   in->unknown_end += len;
+  return true;
+}
+
+bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
+                                           upb_Arena* arena,
+                                           upb_StringView data[],
+                                           size_t count) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(count > 0);
+  size_t total_len = 0;
+  for (size_t i = 0; i < count; i++) {
+    total_len += data[i].size;
+  }
+  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, total_len, arena))
+    return false;
+
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  for (size_t i = 0; i < count; i++) {
+    memcpy(UPB_PTR_AT(in, in->unknown_end, char), data[i].data, data[i].size);
+    in->unknown_end += data[i].size;
+  }
+  // TODO: b/376969853  - Add debug check that the unknown field is an overall
+  // valid proto field
   return true;
 }
 
@@ -48,14 +74,14 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
-    in->unknown_end = message_overhead;
+    in->unknown_end = sizeof(upb_Message_Internal);
   }
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
-    *len = in->unknown_end - message_overhead;
+    *len = in->unknown_end - sizeof(upb_Message_Internal);
     return (char*)(in + 1);
   } else {
     *len = 0;
@@ -63,24 +89,31 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
   }
 }
 
-void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
+bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
+                               uintptr_t* iter) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(*iter == kUpb_Message_UnknownBegin + 1);
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
 
 #ifndef NDEBUG
   size_t full_unknown_size;
   const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
-  UPB_ASSERT((uintptr_t)data >= (uintptr_t)full_unknown);
-  UPB_ASSERT((uintptr_t)data < (uintptr_t)(full_unknown + full_unknown_size));
-  UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
-  UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
+  UPB_ASSERT((uintptr_t)data->data >= (uintptr_t)full_unknown);
+  UPB_ASSERT((uintptr_t)data->data <
+             (uintptr_t)(full_unknown + full_unknown_size));
+  UPB_ASSERT((uintptr_t)(data->data + data->size) > (uintptr_t)data->data);
+  UPB_ASSERT((uintptr_t)(data->data + data->size) <=
+             (uintptr_t)internal_unknown_end);
 #endif
-
-  if ((data + len) != internal_unknown_end) {
-    memmove((char*)data, data + len, internal_unknown_end - data - len);
+  const char* end = data->data + data->size;
+  size_t offset = data->data - (const char*)in;
+  if (end != internal_unknown_end) {
+    memmove(UPB_PTR_AT(in, offset, char), end, internal_unknown_end - end);
   }
-  in->unknown_end -= len;
+  in->unknown_end -= data->size;
+  data->size = in->unknown_end - offset;
+  return data->size != 0;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -126,16 +159,12 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   }
 
   // Extensions.
-  size_t ext_count;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
-
-  for (size_t i = 0; i < ext_count; i++) {
-    const upb_MiniTableExtension* e = ext[i].ext;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* e;
+  upb_MessageValue val;
+  while (upb_Message_NextExtension(msg, &e, &val, &iter)) {
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
-
-    upb_MessageValue val;
-    memcpy(&val, &ext[i].data, sizeof(upb_MessageValue));
 
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array: {

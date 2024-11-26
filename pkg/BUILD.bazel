@@ -16,6 +16,7 @@ pkg_files(
     name = "wkt_protos_files",
     srcs = [
         "//:well_known_type_protos",
+        "//go:go_features_proto_srcs",
         "//java/core:java_features_proto_srcs",
         "//src/google/protobuf:cpp_features_proto_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
@@ -218,14 +219,13 @@ cc_dist_library(
         "//upb/text",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "//upb/wire:byte_size",
     ],
 )
 
 cc_dist_library(
     name = "protoc-gen-upb",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],
@@ -237,8 +237,6 @@ cc_dist_library(
 cc_dist_library(
     name = "protoc-gen-upbdefs",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],
@@ -250,8 +248,6 @@ cc_dist_library(
 cc_dist_library(
     name = "protoc-gen-upb_minitable",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],

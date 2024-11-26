@@ -78,7 +78,7 @@ def _relevant_linker_inputs(ltl):
     )
 
 def _find_linker_input(rust_proto_info, basename_substring):
-    cc_info = rust_proto_info.dep_variant_info.cc_info
+    cc_info = rust_proto_info.dep_variant_infos[0].cc_info
     for linker_input in cc_info.linking_context.linker_inputs.to_list():
         for ltl in linker_input.libraries:
             for file in _relevant_linker_inputs(ltl):

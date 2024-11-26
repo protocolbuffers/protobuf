@@ -8,8 +8,8 @@
 #ifndef PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
 #define PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
 
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/compiler/hpb/output.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
@@ -18,11 +18,11 @@ void WriteMessageClassDeclarations(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Output& output);
+    Context& ctx);
 void WriteMessageImplementation(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Output& output);
+    Context& ctx);
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 

@@ -8,11 +8,15 @@
 """Vendored version of bazel_features for protobuf, to keep a one-step setup"""
 
 _PROTO_BAZEL_FEATURES = """bazel_features = struct(
+  cc = struct(
+    protobuf_on_allowlist = {protobuf_on_allowlist},
+  ),
   proto = struct(
     starlark_proto_info = {starlark_proto_info},
   ),
   globals = struct(
     PackageSpecificationInfo = {PackageSpecificationInfo},
+    ProtoInfo = getattr(getattr(native, 'legacy_globals', None), 'ProtoInfo', {ProtoInfo})
   ),
 )
 """
@@ -29,6 +33,9 @@ def _proto_bazel_features_impl(rctx):
     starlark_proto_info = major_version_int >= 7
     PackageSpecificationInfo = major_version_int > 6 or (major_version_int == 6 and minor_version_int >= 4)
 
+    protobuf_on_allowlist = major_version_int > 7
+    ProtoInfo = "ProtoInfo" if major_version_int < 8 else "None"
+
     rctx.file("BUILD.bazel", """
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 bzl_library(
@@ -41,6 +48,8 @@ exports_files(["features.bzl"])
     rctx.file("features.bzl", _PROTO_BAZEL_FEATURES.format(
         starlark_proto_info = repr(starlark_proto_info),
         PackageSpecificationInfo = "PackageSpecificationInfo" if PackageSpecificationInfo else "None",
+        protobuf_on_allowlist = repr(protobuf_on_allowlist),
+        ProtoInfo = ProtoInfo,
     ))
 
 proto_bazel_features = repository_rule(

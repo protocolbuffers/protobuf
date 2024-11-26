@@ -24,12 +24,16 @@ using testing::Not;
 
 auto MatchOutput(bool expect_output) {
   const auto header = HasSubstr("Protobuf debug counters:");
-  const auto foo = HasSubstr("Foo         :");
-  const auto bar = HasSubstr("Bar       :          1 (33.33%)");
-  const auto baz = HasSubstr("Baz       :          2 (66.67%)");
-  const auto total = HasSubstr("Total     :          3");
-  return expect_output ? testing::Matcher<const std::string&>(
-                             AllOf(header, foo, bar, baz, total))
+  const auto all = AllOf(header,  //
+                         HasSubstr("Foo         :"),
+                         HasSubstr("  Bar       :          1 (33.33%)"),
+                         HasSubstr("  Baz       :          2 (66.67%)"),
+                         HasSubstr("  Total     :          3"),  //
+                         HasSubstr("Num         :"),
+                         HasSubstr("         32 :          3 (75.00%)"),
+                         HasSubstr("        128 :          1 (25.00%)"),
+                         HasSubstr("  Total     :          4"));
+  return expect_output ? testing::Matcher<const std::string&>(all)
                        : testing::Matcher<const std::string&>(Not(header));
 }
 
@@ -39,9 +43,15 @@ TEST(DebugCounterTest, RealProvidesReportAtExit) {
       {
         static google::protobuf::internal::RealDebugCounter counter1("Foo.Bar");
         static google::protobuf::internal::RealDebugCounter counter2("Foo.Baz");
+        static google::protobuf::internal::RealDebugCounter counter3("Num.32");
+        static google::protobuf::internal::RealDebugCounter counter4("Num.128");
         counter1.Inc();
         counter2.Inc();
         counter2.Inc();
+        counter3.Inc();
+        counter3.Inc();
+        counter3.Inc();
+        counter4.Inc();
         exit(0);
       },
       ExitedWithCode(0), MatchOutput(true));
@@ -79,6 +89,10 @@ TEST(DebugCounterTest, MacroProvidesReportAtExitDependingOnBuild) {
         for (int i = 0; i < 2; ++i) {
           PROTOBUF_DEBUG_COUNTER("Foo.Baz").Inc();
         }
+        for (int i = 0; i < 3; ++i) {
+          PROTOBUF_DEBUG_COUNTER("Num.32").Inc();
+        }
+        PROTOBUF_DEBUG_COUNTER("Num.128").Inc();
         exit(0);
       },
       ExitedWithCode(0), MatchOutput(match_output));

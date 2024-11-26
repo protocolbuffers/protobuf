@@ -252,6 +252,8 @@ upb_amalgamation(
         "//upb/mini_table:internal",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
+        "//upb/text:debug",
+        "//upb/text:internal",
     ],
     strip_import_prefix = ["src"],
     visibility = ["//rust:__pkg__"],

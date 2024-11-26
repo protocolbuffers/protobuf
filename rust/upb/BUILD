@@ -39,6 +39,9 @@ rust_library(
 rust_test(
     name = "upb_rs_crate_test",
     crate = ":upb",
+    deps = [
+        "@crate_index//:googletest",
+    ],
 )
 
 cc_library(
@@ -56,11 +59,11 @@ cc_library(
 
 pkg_files(
     name = "rust_protobuf_upb_src",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    strip_prefix = strip_prefix.from_root("rust"),
-    visibility = ["//rust:__pkg__"],
+    srcs = glob(["*"]),
+    prefix = "upb",
+    strip_prefix = strip_prefix.from_pkg(),
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
 )

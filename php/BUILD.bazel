@@ -7,14 +7,57 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
+load("//php:internal_generated_files.bzl", "DESCRIPTOR_GENERATED_FILES", "WKT_GENERATED_FILES")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
+
+# We must explicitly classify every checked-in php file because we can't
+# distinguish gencode from hand-written code.  The former must be kept
+# up-to-date though, using our staleness infrastructure.
+
+_RUNTIME_SOURCES = [
+    "src/Google/Protobuf/Descriptor.php",
+    "src/Google/Protobuf/DescriptorPool.php",
+    "src/Google/Protobuf/EnumDescriptor.php",
+    "src/Google/Protobuf/EnumValueDescriptor.php",
+    "src/Google/Protobuf/Field_Cardinality.php",
+    "src/Google/Protobuf/Field_Kind.php",
+    "src/Google/Protobuf/FieldDescriptor.php",
+    "src/Google/Protobuf/Internal/AnyBase.php",
+    "src/Google/Protobuf/Internal/CodedInputStream.php",
+    "src/Google/Protobuf/Internal/CodedOutputStream.php",
+    "src/Google/Protobuf/Internal/Descriptor.php",
+    "src/Google/Protobuf/Internal/DescriptorPool.php",
+    "src/Google/Protobuf/Internal/EnumBuilderContext.php",
+    "src/Google/Protobuf/Internal/EnumDescriptor.php",
+    "src/Google/Protobuf/Internal/FieldDescriptor.php",
+    "src/Google/Protobuf/Internal/FileDescriptor.php",
+    "src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php",
+    "src/Google/Protobuf/Internal/GPBDecodeException.php",
+    "src/Google/Protobuf/Internal/GPBJsonWire.php",
+    "src/Google/Protobuf/Internal/GPBLabel.php",
+    "src/Google/Protobuf/Internal/GPBType.php",
+    "src/Google/Protobuf/Internal/GPBUtil.php",
+    "src/Google/Protobuf/Internal/GPBWire.php",
+    "src/Google/Protobuf/Internal/GPBWireType.php",
+    "src/Google/Protobuf/Internal/HasPublicDescriptorTrait.php",
+    "src/Google/Protobuf/Internal/MapEntry.php",
+    "src/Google/Protobuf/Internal/MapField.php",
+    "src/Google/Protobuf/Internal/MapFieldIter.php",
+    "src/Google/Protobuf/Internal/Message.php",
+    "src/Google/Protobuf/Internal/MessageBuilderContext.php",
+    "src/Google/Protobuf/Internal/OneofDescriptor.php",
+    "src/Google/Protobuf/Internal/OneofField.php",
+    "src/Google/Protobuf/Internal/RawInputStream.php",
+    "src/Google/Protobuf/Internal/RepeatedField.php",
+    "src/Google/Protobuf/Internal/RepeatedFieldIter.php",
+    "src/Google/Protobuf/Internal/TimestampBase.php",
+    "src/Google/Protobuf/OneofDescriptor.php",
+]
 
 filegroup(
     name = "source_files",
-    srcs = glob([
-        "src/GPBMetadata/Google/Protobuf/**/*.php",
-        "src/Google/Protobuf/**/*.php",
-    ]) + [
+    srcs = _RUNTIME_SOURCES +
+           ["generated/" + f for f in DESCRIPTOR_GENERATED_FILES + WKT_GENERATED_FILES] + [
         "composer.json",
         ":php_ext_source_files",
     ],
@@ -47,9 +90,16 @@ genrule(
     srcs = [
         ":source_files",
         "//third_party/utf8_range:utf8_range_srcs",
+        "generated/ext/google/protobuf/wkt.inc",
+        "generated/ext/google/protobuf/php-upb.h",
+        "generated/ext/google/protobuf/php-upb.c",
     ],
     outs = ["protobuf.so"],
     cmd = """
+        rm php/ext/google/protobuf/wkt.inc php/ext/google/protobuf/php-upb.h php/ext/google/protobuf/php-upb.c
+        cp $(location generated/ext/google/protobuf/wkt.inc) php/ext/google/protobuf
+        cp $(location generated/ext/google/protobuf/php-upb.h) php/ext/google/protobuf
+        cp $(location generated/ext/google/protobuf/php-upb.c) php/ext/google/protobuf
         ./$(execpath :build_extension) $@
         cp php/ext/google/protobuf/modules/protobuf.so $(OUTS)
     """,
@@ -65,10 +115,6 @@ conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_php.txt",
     maximum_edition = "2023",
-    target_compatible_with = select({
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     testee = "//conformance:conformance_php",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
@@ -77,10 +123,6 @@ conformance_test(
     name = "conformance_test_c",
     failure_list = "//conformance:failure_list_php_c.txt",
     maximum_edition = "2023",
-    target_compatible_with = select({
-        "@platforms//os:osx": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
     testee = "//conformance:conformance_php_c",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
@@ -88,14 +130,14 @@ conformance_test(
 genrule(
     name = "copy_php_amalgamation_h",
     srcs = ["//upb:php-upb.h"],
-    outs = ["generated-in/ext/google/protobuf/php-upb.h"],
+    outs = ["generated/ext/google/protobuf/php-upb.h"],
     cmd = "cp $< $@",
 )
 
 genrule(
     name = "copy_php_amalgamation_c",
     srcs = ["//upb:php-upb.c"],
-    outs = ["generated-in/ext/google/protobuf/php-upb.c"],
+    outs = ["generated/ext/google/protobuf/php-upb.c"],
     cmd = "cp $< $@",
 )
 
@@ -104,8 +146,51 @@ staleness_test(
     outs = [
         "ext/google/protobuf/php-upb.c",
         "ext/google/protobuf/php-upb.h",
+        "ext/google/protobuf/wkt.inc",
     ],
-    generated_pattern = "generated-in/%s",
+    generated_pattern = "generated/%s",
+    tags = ["manual"],
+)
+
+# The WKTs have to be checked in to support the Composer builds. This
+# generule and test ensure the source are current.
+
+# Make sure we error if new files start showing up, since that may go unnoticed.
+_CHECK_GENCODE = """
+for f in $$(find $(@D) -name "*.php"); do
+    local=$$(echo $$f | sed "s:bazel-out.*.bin.php.::g");
+    if [[ "$(OUTS)" != *$$local* ]]; then
+        echo "Extra generated file $$local!  Please update the lists in php/internal_generated_files.bzl" && exit 1;
+    fi
+done
+"""
+
+# These must be combined due to windows sandbox isolation issues.
+genrule(
+    name = "gen_wkt_sources",
+    srcs = [
+        "//src/google/protobuf:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    outs = ["generated/" + wkt for wkt in WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES] + [
+        "generated/ext/google/protobuf/wkt.inc",
+    ],
+    cmd = """
+        $(execpath //:protoc) --php_out=internal_generate_c_wkt:$(RULEDIR)/generated/src --proto_path=src $(locations //src/google/protobuf:well_known_type_protos);
+        $(execpath //:protoc) --php_out=internal:$(RULEDIR)/generated/src --proto_path=src $(location //src/google/protobuf:descriptor_proto_srcs);
+    """ + _CHECK_GENCODE,
+    tags = ["manual"],
+    tools = ["//:protoc"],
+)
+
+staleness_test(
+    name = "proto_staleness_test",
+    outs = glob(
+        ["src/**/*.php"],
+        allow_empty = True,
+        exclude = _RUNTIME_SOURCES + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
+    ) + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
+    generated_pattern = "generated/%s",
     tags = ["manual"],
 )
 
