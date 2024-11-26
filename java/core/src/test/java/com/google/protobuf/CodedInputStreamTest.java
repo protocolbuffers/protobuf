@@ -1408,37 +1408,37 @@ public class CodedInputStreamTest {
   }
 
   @Test
-  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() throws Exception {
-    ByteBuffer input = ByteBuffer.allocateDirect(128);
-    input.put((byte) 127);
-    for (int i = 0; i < 127; i++) input.put((byte) i);
-    input.flip();
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
+    int size = 127;
+    assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);
+    ByteBuffer input = ByteBuffer.allocateDirect(1 + size);
+    input.put(0, (byte) size);
 
-    Supplier<Integer> embeddedSize =
+    Supplier<ByteString> embeddedBytes =
         () -> {
           try {
             final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
             inputStream.enableAliasing(true);
-            return inputStream.readBytes().size();
+            return inputStream.readBytes();
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
         };
 
-    assertThat(embeddedSize.get()).isEqualTo(127);
+    assertThat(embeddedBytes.get().size()).isEqualTo(size);
 
     // Concurrent reader should have no impact ...
     int iterations = 100000;
     new Thread(
             () -> {
-              for (int i = 0; i < iterations; i++) embeddedSize.get();
+              for (int i = 0; i < iterations; i++) embeddedBytes.get();
             })
         .start();
 
-    // ... but reliably fails the check:
+    // ... but reliably makes the check fail:
     //   expected: 127
     //   but was : 0
-    for (int i = 0; i < iterations; i++) assertThat(embeddedSize.get()).isEqualTo(127);
+    for (int i = 0; i < iterations; i++) assertThat(embeddedBytes.get().size()).isEqualTo(size);
   }
 
   @Test
