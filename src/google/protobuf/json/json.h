@@ -69,7 +69,7 @@ inline absl::Status MessageToJsonString(const Message& message,
   return MessageToJsonString(message, output, PrintOptions());
 }
 
-// Converts from JSON to protobuf message. This works equivalently to
+// Converts from JSON string to protobuf message. This works equivalently to
 // JsonToBinaryStream(). It will use the DescriptorPool of the passed-in
 // message to resolve Any types.
 //
@@ -82,6 +82,20 @@ PROTOBUF_EXPORT absl::Status JsonStringToMessage(absl::string_view input,
 inline absl::Status JsonStringToMessage(absl::string_view input,
                                         Message* message) {
   return JsonStringToMessage(input, message, ParseOptions());
+}
+
+// Converts from JSON stream to protobuf message. Similar to JsonStringToMessage
+// but with input stream.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
+PROTOBUF_EXPORT absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                                 Message* message,
+                                                 const ParseOptions& options);
+
+inline absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                        Message* message) {
+  return JsonStreamToMessage(input, message, ParseOptions());
 }
 
 // Converts protobuf binary data to JSON.

@@ -14,7 +14,10 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -78,8 +81,7 @@ std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
-// TODO: remove the default value after updating client code.
-std::string FileClassName(const FileDescriptor* file, bool immutable = true);
+std::string FileClassName(const FileDescriptor* file, bool immutable);
 
 // Returns the file's Java package name.
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
@@ -109,7 +111,7 @@ std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
 // Get the unqualified Java class name for mutable messages. i.e. without
 // package or outer classnames.
 inline std::string ShortMutableJavaClassName(const Descriptor* descriptor) {
-  return descriptor->name();
+  return std::string(descriptor->name());
 }
 
 // Whether the given descriptor is for one of the core descriptor protos. We
@@ -339,7 +341,7 @@ bool HasRequiredFields(const Descriptor* descriptor);
 bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  return internal::cpp::HasHasbit(descriptor);
+  return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 
 // Check whether a message has repeated fields.
@@ -380,6 +382,24 @@ std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
 const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor);
 
 const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor);
+
+inline std::string JvmSynthetic(bool jvm_dsl) {
+  return jvm_dsl ? "@kotlin.jvm.JvmSynthetic\n" : "";
+}
+
+struct JvmNameContext {
+  const Options& options;
+  io::Printer* printer;
+  bool lite = true;
+};
+
+inline void JvmName(absl::string_view name, const JvmNameContext& context) {
+  if (context.lite && !context.options.jvm_dsl) return;
+  context.printer->Emit("@kotlin.jvm.JvmName(\"");
+  // Note: `name` will likely have vars in it that we do want to interpolate.
+  context.printer->Emit(name);
+  context.printer->Emit("\")\n");
+}
 
 }  // namespace java
 }  // namespace compiler

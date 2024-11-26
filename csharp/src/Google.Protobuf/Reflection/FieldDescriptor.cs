@@ -120,7 +120,7 @@ namespace Google.Protobuf.Reflection
             // a MapField, but that feels a tad nasty.
             PropertyName = propertyName;
             Extension = extension;
-            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
+            JsonName =  Proto.JsonName.Length == 0 ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
 
         /// <summary>
@@ -412,6 +412,11 @@ namespace Google.Protobuf.Reflection
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = m;
+                    if (m.Proto.Options?.MapEntry == true || ContainingType?.Proto.Options?.MapEntry == true)
+                    {
+                        // Maps can't inherit delimited encoding.
+                        FieldType = FieldType.Message;
+                    }
 
                     if (Proto.HasDefaultValue)
                     {

@@ -39,11 +39,11 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_delimited.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
@@ -121,6 +121,7 @@ class TextFormatTest : public TextFormatTestBase {
  protected:
   // Text format read from text_format_unittest_data.txt.
   const std::string proto_text_format_;
+
  private:
   static std::string static_proto_text_format_;
 };
@@ -994,6 +995,7 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
 
+
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
   std::string parse_string =
@@ -1209,7 +1211,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_string: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
@@ -1218,7 +1220,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_bytes: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
@@ -2036,6 +2038,7 @@ TEST_F(TextFormatParserTest, InvalidToken) {
   ExpectFailure("\"some string\"", "Expected identifier, got: \"some string\"",
                 1, 1);
 }
+
 
 TEST_F(TextFormatParserTest, InvalidFieldName) {
   ExpectFailure(

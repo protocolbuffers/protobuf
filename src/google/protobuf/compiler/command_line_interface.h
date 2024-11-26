@@ -27,6 +27,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -232,6 +233,9 @@ class PROTOC_EXPORT CommandLineInterface {
       Edition minimum_edition, Edition maximum_edition,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  bool EnforceProtocEditionsSupport(
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -340,6 +344,7 @@ class PROTOC_EXPORT CommandLineInterface {
       const TransitiveDependencyOptions& options =
           TransitiveDependencyOptions());
 
+
   // -----------------------------------------------------------------
 
   // The name of the executable as invoked (i.e. argv[0]).
@@ -366,7 +371,8 @@ class PROTOC_EXPORT CommandLineInterface {
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
   // Then there will be an entry ("--foo_out", "enable_bar") in this map.
   absl::flat_hash_map<std::string, std::string> generator_parameters_;
-  // Similar to generator_parameters_, but stores the parameters for plugins.
+  // Similar to generator_parameters_, stores the parameters for plugins but the
+  // key is the actual plugin name e.g. "protoc-gen-foo".
   absl::flat_hash_map<std::string, std::string> plugin_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
@@ -469,7 +475,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
 
-  bool opensource_runtime_ = PROTO2_IS_OSS;
+  bool opensource_runtime_ = google::protobuf::internal::IsOss();
 
 };
 

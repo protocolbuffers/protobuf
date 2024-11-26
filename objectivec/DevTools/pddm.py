@@ -525,8 +525,8 @@ class SourceFile(object):
       self.Append(line)
       return (True, False)
 
-    def BindMacroCollection(self, macro_colletion):
-      if not macro_colletion:
+    def BindMacroCollection(self, macro_collection):
+      if not macro_collection:
         return
       if self._import_resolver is None:
         raise PDDMError('Got an IMPORT-DEFINES without a resolver (line %d):'
@@ -541,7 +541,7 @@ class SourceFile(object):
         imported_src_file = SourceFile(imported_file, self._import_resolver)
         imported_src_file._ParseFile()
         for section in imported_src_file._sections:
-          section.BindMacroCollection(macro_colletion)
+          section.BindMacroCollection(macro_collection)
       except PDDMError as e:
         raise PDDMError('%s\n...while importing defines:\n'
                         '  Line %d: %s' %

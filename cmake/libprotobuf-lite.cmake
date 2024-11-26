@@ -29,6 +29,7 @@ target_include_directories(libprotobuf-lite PUBLIC
 )
 target_link_libraries(libprotobuf-lite PUBLIC ${protobuf_ABSL_USED_TARGETS})
 protobuf_configure_target(libprotobuf-lite)
+protobuf_configure_unity_target(libprotobuf-lite)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf-lite
     PUBLIC  PROTOBUF_USE_DLLS

@@ -91,6 +91,7 @@ message TestAllTypes {
 
   string optional_string_piece = 24 [ctype=STRING_PIECE];
   string optional_cord = 25 [ctype=CORD];
+  bytes optional_bytes_cord = 86 [ctype=CORD];
 
   // Defined in unittest_import_public.proto
   protobuf_unittest_import.PublicImportMessage
@@ -266,6 +267,7 @@ extend TestAllExtensions {
   // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   string optional_cord_extension = 25;
+  bytes optional_bytes_cord_extension = 86;
 
   protobuf_unittest_import.PublicImportMessage
     optional_public_import_message_extension = 26;
@@ -1175,6 +1177,14 @@ message TestMessageSize {
   int64 m6 = 6;
 }
 
+// Tests eager verification of a lazy message field.
+message TestEagerlyVerifiedLazyMessage {
+  message LazyMessage {
+    bytes bytes_field = 1;
+  }
+  LazyMessage lazy_message = 1 [lazy = true];
+}
+
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}
@@ -1254,11 +1264,11 @@ message TestNestedGroupExtensionOuter {
     message Layer2RepeatedGroup {
       extensions 3
         // NOTE: extension metadata is not supported due to targets such as
-        // `//third_party/protobuf_legacy_opensource/src:shell_scripts_test`,
+        // `//google/protobuf_legacy_opensource/src:shell_scripts_test`,
         // eee https://screenshot.googleplex.com/Axz2QD8nxjdpyFF
         //[metadata = {
         // NOTE: can't write type there due to some clever build gen code at
-        // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+        // http://google3/google/protobuf/BUILD;l=1247;rcl=411090862
         // type: "edition_unittest.TestNestedGroupExtensionInnerExtension",
         // name: "inner",
         // }]

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -11,7 +11,6 @@
 
 #include "google/protobuf/text_format.h"
 
-#include <float.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -19,17 +18,22 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
@@ -40,7 +44,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -498,7 +501,6 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -619,7 +621,6 @@ class TextFormat::Parser::ParserImpl {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
-
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
           ReportError(absl::StrCat("Message type \"", descriptor->full_name(),
@@ -909,7 +910,7 @@ class TextFormat::Parser::ParserImpl {
       case FieldDescriptor::CPPTYPE_STRING: {
         std::string value;
         DO(ConsumeString(&value));
-        SET_FIELD(String, string, value);
+        SET_FIELD(String, string, std::move(value));
         break;
       }
 
@@ -917,7 +918,7 @@ class TextFormat::Parser::ParserImpl {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64_t value;
           DO(ConsumeUnsignedInteger(&value, 1));
-          SET_FIELD(Bool, bool, value);
+          SET_FIELD(Bool, bool, static_cast<bool>(value));
         } else {
           std::string value;
           DO(ConsumeIdentifier(&value));
@@ -1093,7 +1094,7 @@ class TextFormat::Parser::ParserImpl {
       return true;
     }
 
-    // If allow_field_numer_ or allow_unknown_field_ is true, we should able
+    // If allow_field_number_ or allow_unknown_field_ is true, we should able
     // to parse integer identifiers.
     if ((allow_field_number_ || allow_unknown_field_ ||
          allow_unknown_extension_) &&
@@ -2300,7 +2301,7 @@ bool TextFormat::Printer::Print(const Message& message,
   return !generator.failed();
 }
 
-// Maximum recursion depth for heuristically printing out length-delimited
+// Maximum recursion depth for heuristically printing out length-prefixed
 // unknown fields as messages.
 static constexpr int kUnknownFieldRecursionLimit = 10;
 
@@ -2565,7 +2566,8 @@ void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
       ABSL_LOG(ERROR) << "Not supported.";
       break;
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc, key.GetStringValue());
+      reflection->SetString(message, field_desc,
+                            std::string(key.GetStringValue()));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, key.GetInt64Value());
@@ -2606,7 +2608,8 @@ void MapFieldPrinterHelper::CopyValue(const MapValueRef& value,
       return;
     }
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc, value.GetStringValue());
+      reflection->SetString(message, field_desc,
+                            std::string(value.GetStringValue()));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, value.GetInt64Value());
@@ -2802,7 +2805,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const EnumValueDescriptor* enum_desc =
           field->enum_type()->FindValueByNumber(enum_value);
       if (enum_desc != nullptr) {
-        printer->PrintEnum(enum_value, enum_desc->name(), generator);
+        printer->PrintEnum(enum_value, internal::NameOfEnumAsString(enum_desc),
+                           generator);
       } else {
         // Ordinarily, enum_desc should not be null, because proto2 has the
         // invariant that set enum field values must be in-range, but with the
@@ -2922,7 +2926,7 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_LENGTH_DELIMITED: {
         OutOfLinePrintString(generator, field.number());
-        const std::string& value = field.length_delimited();
+        const absl::string_view value = field.length_delimited();
         // We create a CodedInputStream so that we can adhere to our recursion
         // budget when we attempt to parse the data. UnknownFieldSet parsing is
         // recursive because of groups.

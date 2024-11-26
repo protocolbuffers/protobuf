@@ -275,6 +275,28 @@ public class FieldPresenceTest {
   }
 
   @Test
+  public void testFieldPresence_mergeEmptyBytesValue() {
+    TestAllTypes mergeFrom =
+        TestAllTypes.newBuilder().setOptionalBytes(ByteString.copyFrom(new byte[0])).build();
+    TestAllTypes mergeTo =
+        TestAllTypes.newBuilder().setOptionalBytes(ByteString.copyFromUtf8("A")).build();
+
+    // An empty ByteString should be treated as "unset" and not override the value in mergeTo.
+    assertThat(mergeTo.toBuilder().mergeFrom(mergeFrom).build()).isEqualTo(mergeTo);
+  }
+
+  @Test
+  public void testFieldPresence_mergeNegativeZeroValue() {
+    TestAllTypes mergeFrom =
+        TestAllTypes.newBuilder().setOptionalFloat(-0.0F).setOptionalDouble(-0.0).build();
+    TestAllTypes mergeTo =
+        TestAllTypes.newBuilder().setOptionalFloat(42.23F).setOptionalDouble(23.42).build();
+
+    // Negative zero should be treated as "set" and override the value in mergeTo.
+    assertThat(mergeTo.toBuilder().mergeFrom(mergeFrom).build()).isEqualTo(mergeFrom);
+  }
+
+  @Test
   public void testFieldPresenceByReflection() {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalInt32Field = descriptor.findFieldByName("optional_int32");
@@ -356,8 +378,7 @@ public class FieldPresenceTest {
 
     // Field set to default value is seen as not present.
     message =
-        message
-            .toBuilder()
+        message.toBuilder()
             .setField(optionalInt32Field, 0)
             .setField(optionalStringField, "")
             .setField(optionalBytesField, ByteString.EMPTY)

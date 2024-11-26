@@ -50,6 +50,11 @@ static void PrintHexDigit(char digit, protobuf::io::Printer* printer) {
   printer->WriteRaw(&text, 1);
 }
 
+static bool IsPrint(int ch) {
+  // isprint(ch) with negative values is UB.
+  return ch < 0 ? false : isprint(ch);
+}
+
 static void PrintString(int max_cols, absl::string_view* str,
                         protobuf::io::Printer* printer) {
   printer->Print("\'");
@@ -61,7 +66,7 @@ static void PrintString(int max_cols, absl::string_view* str,
     } else if (ch == '\'') {
       printer->PrintRaw("\\'");
       max_cols--;
-    } else if (isprint(ch)) {
+    } else if (IsPrint(ch)) {
       printer->WriteRaw(&ch, 1);
       max_cols--;
     } else {

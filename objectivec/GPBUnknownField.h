@@ -7,70 +7,68 @@
 
 #import <Foundation/Foundation.h>
 
-@class GPBCodedOutputStream;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
-@class GPBUnknownFieldSet;
+#import "GPBArray.h"
+#import "GPBUnknownFields.h"
+
+@class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(uint8_t, GPBUnknownFieldType) {
+  GPBUnknownFieldTypeVarint,
+  GPBUnknownFieldTypeFixed32,
+  GPBUnknownFieldTypeFixed64,
+  GPBUnknownFieldTypeLengthDelimited,  // Length prefixed
+  GPBUnknownFieldTypeGroup,            // Tag delimited
+};
+
 /**
- * Store an unknown field. These are used in conjunction with
- * GPBUnknownFieldSet.
+ * Store an unknown field. These are used in conjunction with GPBUnknownFields.
  **/
 __attribute__((objc_subclassing_restricted))
 @interface GPBUnknownField : NSObject<NSCopying>
 
-/** Initialize a field with the given number. */
-- (instancetype)initWithNumber:(int32_t)number;
-
 /** The field number the data is stored under. */
 @property(nonatomic, readonly, assign) int32_t number;
 
-/** An array of varint values for this field. */
-@property(nonatomic, readonly, strong) GPBUInt64Array *varintList;
-
-/** An array of fixed32 values for this field. */
-@property(nonatomic, readonly, strong) GPBUInt32Array *fixed32List;
-
-/** An array of fixed64 values for this field. */
-@property(nonatomic, readonly, strong) GPBUInt64Array *fixed64List;
-
-/** An array of data values for this field. */
-@property(nonatomic, readonly, strong) NSArray<NSData *> *lengthDelimitedList;
-
-/** An array of groups of values for this field. */
-@property(nonatomic, readonly, strong) NSArray<GPBUnknownFieldSet *> *groupList;
+/** The type of the field. */
+@property(nonatomic, readonly, assign) GPBUnknownFieldType type;
 
 /**
- * Add a value to the varintList.
+ * Fetch the varint value.
  *
- * @param value The value to add.
- **/
-- (void)addVarint:(uint64_t)value;
+ * It is a programming error to call this when the `type` is not a varint.
+ */
+@property(nonatomic, readonly, assign) uint64_t varint;
+
 /**
- * Add a value to the fixed32List.
+ * Fetch the fixed32 value.
  *
- * @param value The value to add.
- **/
-- (void)addFixed32:(uint32_t)value;
+ * It is a programming error to call this when the `type` is not a fixed32.
+ */
+@property(nonatomic, readonly, assign) uint32_t fixed32;
+
 /**
- * Add a value to the fixed64List.
+ * Fetch the fixed64 value.
  *
- * @param value The value to add.
- **/
-- (void)addFixed64:(uint64_t)value;
+ * It is a programming error to call this when the `type` is not a fixed64.
+ */
+@property(nonatomic, readonly, assign) uint64_t fixed64;
+
 /**
- * Add a value to the lengthDelimitedList.
+ * Fetch the length delimited (length prefixed) value.
  *
- * @param value The value to add.
- **/
-- (void)addLengthDelimited:(NSData *)value;
+ * It is a programming error to call this when the `type` is not a length
+ * delimited.
+ */
+@property(nonatomic, readonly, strong, nonnull) NSData *lengthDelimited;
+
 /**
- * Add a value to the groupList.
+ * Fetch the group (tag delimited) value.
  *
- * @param value The value to add.
- **/
-- (void)addGroup:(GPBUnknownFieldSet *)value;
+ * It is a programming error to call this when the `type` is not a group.
+ */
+@property(nonatomic, readonly, strong, nonnull) GPBUnknownFields *group;
 
 @end
 

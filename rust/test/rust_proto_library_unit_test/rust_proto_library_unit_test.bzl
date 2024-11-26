@@ -1,6 +1,7 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//rust:aspects.bzl", "RustProtoInfo")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
@@ -77,7 +78,7 @@ def _relevant_linker_inputs(ltl):
     )
 
 def _find_linker_input(rust_proto_info, basename_substring):
-    cc_info = rust_proto_info.dep_variant_info.cc_info
+    cc_info = rust_proto_info.dep_variant_infos[0].cc_info
     for linker_input in cc_info.linking_context.linker_inputs.to_list():
         for ltl in linker_input.libraries:
             for file in _relevant_linker_inputs(ltl):
@@ -116,8 +117,8 @@ def _rust_upb_aspect_test_impl(ctx):
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
 
     # The aspect needs to provide CcInfo that passes UPB gencode to the eventual linking.
-    _find_linker_input(target_under_test[RustProtoInfo], "child.upb.thunks")
-    _find_linker_input(target_under_test[RustProtoInfo], "parent.upb.thunks")
+    _find_linker_input(target_under_test[RustProtoInfo], "child.upb_minitable")
+    _find_linker_input(target_under_test[RustProtoInfo], "parent.upb_minitable")
 
     return analysistest.end(env)
 
@@ -173,8 +174,8 @@ def _rust_outputs_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     label_to_file = {
-        "child_rust_cc_proto": "child.c.pb.rs",
-        "child_rust_upb_proto": "child.u.pb.rs",
+        "child_cpp_rust_proto": "child.c.pb.rs",
+        "child_upb_rust_proto": "child.u.pb.rs",
     }
     expected_output = label_to_file[target_under_test.label.name]
     asserts.true(env, target_under_test.files.to_list()[0].path.endswith(expected_output))
@@ -185,24 +186,24 @@ rust_outputs_test = analysistest.make(_rust_outputs_test_impl)
 
 def _test_cc_outputs():
     rust_cc_proto_library(
-        name = "child_rust_cc_proto",
+        name = "child_cpp_rust_proto",
         deps = [":child_proto"],
     )
 
     rust_outputs_test(
         name = "rust_cc_outputs_test",
-        target_under_test = ":child_rust_cc_proto",
+        target_under_test = ":child_cpp_rust_proto",
     )
 
 def _test_upb_outputs():
     rust_upb_proto_library(
-        name = "child_rust_upb_proto",
+        name = "child_upb_rust_proto",
         deps = [":child_proto"],
     )
 
     rust_outputs_test(
         name = "rust_upb_outputs_test",
-        target_under_test = ":child_rust_upb_proto",
+        target_under_test = ":child_upb_rust_proto",
     )
 
 def rust_proto_library_unit_test(name):
@@ -210,21 +211,18 @@ def rust_proto_library_unit_test(name):
 
     Args:
       name: name of the test suite"""
-    native.proto_library(
+    proto_library(
         # Use a '-' in the target name to test that its replaced by a '_' in the crate name.
         name = "grand-parent_proto",
         srcs = ["grandparent1.proto", "grandparent2.proto"],
     )
-
-    native.proto_library(
+    proto_library(
         name = "parent_proto",
         srcs = ["parent.proto"],
         deps = [":grand-parent_proto"],
     )
-
-    native.proto_library(name = "parent2_proto", srcs = ["parent2.proto"])
-
-    native.proto_library(
+    proto_library(name = "parent2_proto", srcs = ["parent2.proto"])
+    proto_library(
         name = "child_proto",
         srcs = ["child.proto"],
         deps = [":parent_proto", ":parent2_proto"],

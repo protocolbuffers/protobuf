@@ -8,6 +8,7 @@
 #include "upb/message/copy.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
@@ -150,7 +151,7 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
   for (size_t i = 0; i < size; ++i) {
     upb_MessageValue val = upb_Array_Get(array, i);
     if (!upb_Clone_MessageValue(&val, value_type, sub, arena)) {
-      return false;
+      return NULL;
     }
     upb_Array_Set(cloned_array, i, val);
   }
@@ -215,7 +216,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
               return NULL;
             }
             UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-            (dst, mini_table, field,
+            (dst, field,
              UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
                                                      is_empty));
           }
@@ -280,12 +281,12 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
 
   // Clone unknowns.
-  size_t unknown_size = 0;
-  const char* ptr = upb_Message_GetUnknown(src, &unknown_size);
-  if (unknown_size != 0) {
-    UPB_ASSERT(ptr);
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView unknowns;
+  while (upb_Message_NextUnknown(src, &unknowns, &iter)) {
     // Make a copy into destination arena.
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, ptr, unknown_size, arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknowns.data, unknowns.size,
+                                              arena, false)) {
       return NULL;
     }
   }

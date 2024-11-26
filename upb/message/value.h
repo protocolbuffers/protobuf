@@ -12,8 +12,17 @@
 #define UPB_MESSAGE_VALUE_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
+#include "upb/message/internal/types.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef union {
   bool bool_val;
@@ -33,12 +42,38 @@ typedef union {
   // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
   // information.
   uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
+
+  // For an extension field, we are essentially treating ext->data (a
+  // upb_MessageValue) as if it were a message with one field that lives at
+  // offset 0. This works because upb_MessageValue is precisely one value that
+  // can hold any type of data. Recall that an extension can be of any type
+  // (scalar, repeated, or message). For a message extension, that will be a
+  // single upb_Message* at offset 0 of the upb_MessageValue.
+  struct upb_Message UPB_PRIVATE(ext_msg_val);
 } upb_MessageValue;
+
+UPB_API_INLINE upb_MessageValue upb_MessageValue_Zero(void) {
+  upb_MessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
 
 typedef union {
   struct upb_Array* array;
   struct upb_Map* map;
   struct upb_Message* msg;
 } upb_MutableMessageValue;
+
+UPB_API_INLINE upb_MutableMessageValue upb_MutableMessageValue_Zero(void) {
+  upb_MutableMessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_VALUE_H_ */

@@ -6,8 +6,8 @@
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
 
 #include "upb/generated_code_support.h"
 
@@ -18,56 +18,56 @@
 extern "C" {
 #endif
 
-extern const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init();
-extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__DescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__DescriptorProto__ExtensionRange_msg_init();
-extern const upb_MiniTable* google__protobuf__DescriptorProto__ReservedRange_msg_init();
-extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions__Declaration_msg_init();
-extern const upb_MiniTable* google__protobuf__FieldDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__OneofDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__EnumDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init();
-extern const upb_MiniTable* google__protobuf__EnumValueDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__ServiceDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__MethodDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__FileOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__MessageOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__FieldOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__FieldOptions__EditionDefault_msg_init();
-extern const upb_MiniTable* google__protobuf__FieldOptions__FeatureSupport_msg_init();
-extern const upb_MiniTable* google__protobuf__OneofOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__EnumOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__EnumValueOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__ServiceOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__MethodOptions_msg_init();
-extern const upb_MiniTable* google__protobuf__UninterpretedOption_msg_init();
-extern const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init();
-extern const upb_MiniTable* google__protobuf__FeatureSet_msg_init();
-extern const upb_MiniTable* google__protobuf__FeatureSetDefaults_msg_init();
-extern const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init();
-extern const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init();
-extern const upb_MiniTable* google__protobuf__SourceCodeInfo__Location_msg_init();
-extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init();
-extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init();
-extern const upb_MiniTableEnum* google_protobuf_Edition_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_ExtensionRangeOptions_VerificationState_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_EnumType_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_FieldPresence_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_JsonFormat_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_MessageEncoding_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FeatureSet_Utf8Validation_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Label_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldDescriptorProto_Type_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldOptions_CType_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldOptions_JSType_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldOptions_OptionRetention_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FieldOptions_OptionTargetType_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_FileOptions_OptimizeMode_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init();
-extern const upb_MiniTableEnum* google_protobuf_MethodOptions_IdempotencyLevel_enum_init();
+extern const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__DescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__DescriptorProto__ExtensionRange_msg_init(void);
+extern const upb_MiniTable* google__protobuf__DescriptorProto__ReservedRange_msg_init(void);
+extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions__Declaration_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FieldDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__OneofDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__EnumDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init(void);
+extern const upb_MiniTable* google__protobuf__EnumValueDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__ServiceDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__MethodDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FileOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__MessageOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FieldOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FieldOptions__EditionDefault_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FieldOptions__FeatureSupport_msg_init(void);
+extern const upb_MiniTable* google__protobuf__OneofOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__EnumOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__EnumValueOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__ServiceOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__MethodOptions_msg_init(void);
+extern const upb_MiniTable* google__protobuf__UninterpretedOption_msg_init(void);
+extern const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FeatureSet_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FeatureSetDefaults_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init(void);
+extern const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init(void);
+extern const upb_MiniTable* google__protobuf__SourceCodeInfo__Location_msg_init(void);
+extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init(void);
+extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init(void);
+extern const upb_MiniTableEnum* google__protobuf__Edition_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__ExtensionRangeOptions__VerificationState_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__EnumType_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__FieldPresence_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__JsonFormat_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__MessageEncoding_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__RepeatedFieldEncoding_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__Utf8Validation_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldDescriptorProto__Label_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldDescriptorProto__Type_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldOptions__CType_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldOptions__JSType_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldOptions__OptionRetention_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FieldOptions__OptionTargetType_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FileOptions__OptimizeMode_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__GeneratedCodeInfo__Annotation__Semantic_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__MethodOptions__IdempotencyLevel_enum_init(void);
 
 typedef struct google_protobuf_FileDescriptorSet { upb_Message UPB_PRIVATE(base); } google_protobuf_FileDescriptorSet;
 typedef struct google_protobuf_FileDescriptorProto { upb_Message UPB_PRIVATE(base); } google_protobuf_FileDescriptorProto;
@@ -4962,6 +4962,22 @@ UPB_INLINE bool google_protobuf_EnumValueOptions_has_debug_redact(const google_p
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 3);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
+UPB_INLINE void google_protobuf_EnumValueOptions_clear_feature_support(google_protobuf_EnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE const google_protobuf_FieldOptions_FeatureSupport* google_protobuf_EnumValueOptions_feature_support(const google_protobuf_EnumValueOptions* msg) {
+  const google_protobuf_FieldOptions_FeatureSupport* default_val = NULL;
+  const google_protobuf_FieldOptions_FeatureSupport* ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_EnumValueOptions_has_feature_support(const google_protobuf_EnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
 UPB_INLINE void google_protobuf_EnumValueOptions_clear_uninterpreted_option(google_protobuf_EnumValueOptions* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 999);
   upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
@@ -5014,6 +5030,18 @@ UPB_INLINE struct google_protobuf_FeatureSet* google_protobuf_EnumValueOptions_m
 UPB_INLINE void google_protobuf_EnumValueOptions_set_debug_redact(google_protobuf_EnumValueOptions *msg, bool value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 3);
   upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_EnumValueOptions_set_feature_support(google_protobuf_EnumValueOptions *msg, google_protobuf_FieldOptions_FeatureSupport* value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE struct google_protobuf_FieldOptions_FeatureSupport* google_protobuf_EnumValueOptions_mutable_feature_support(google_protobuf_EnumValueOptions* msg, upb_Arena* arena) {
+  struct google_protobuf_FieldOptions_FeatureSupport* sub = (struct google_protobuf_FieldOptions_FeatureSupport*)google_protobuf_EnumValueOptions_feature_support(msg);
+  if (sub == NULL) {
+    sub = (struct google_protobuf_FieldOptions_FeatureSupport*)_upb_Message_New(google__protobuf__FieldOptions__FeatureSupport_msg_init(), arena);
+    if (sub) google_protobuf_EnumValueOptions_set_feature_support(msg, sub);
+  }
+  return sub;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumValueOptions_mutable_uninterpreted_option(google_protobuf_EnumValueOptions* msg, size_t* size) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 999);
@@ -6718,4 +6746,4 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 #include "upb/port/undef.inc"
 
-#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_ */

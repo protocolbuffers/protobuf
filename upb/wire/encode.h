@@ -59,6 +59,8 @@ UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
 
+uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options);
+
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   uint32_t max_depth = upb_EncodeOptions_GetMaxDepth(encode_options);
@@ -75,6 +77,9 @@ UPB_API upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
                                                   const upb_MiniTable* l,
                                                   int options, upb_Arena* arena,
                                                   char** buf, size_t* size);
+// Utility function for wrapper languages to get an error string from a
+// upb_EncodeStatus.
+UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);
 
 #ifdef __cplusplus
 } /* extern "C" */

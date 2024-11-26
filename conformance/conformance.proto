@@ -57,11 +57,23 @@ enum TestCategory {
   TEXT_FORMAT_TEST = 5;
 }
 
+// Meant to encapsulate all types of tests: successes, skips, failures, etc.
+// Therefore, this may or may not have a failure message. Failure messages
+// may be truncated for our failure lists.
+message TestStatus {
+  string name = 1;
+  string failure_message = 2;
+  // What an actual test name matched to in a failure list. Can be wildcarded or
+  // an exact match without wildcards.
+  string matched_name = 3;
+}
+
 // The conformance runner will request a list of failures as the first request.
 // This will be known by message_type == "conformance.FailureSet", a conformance
 // test should return a serialized FailureSet in protobuf_payload.
 message FailureSet {
-  repeated string failure = 1;
+  repeated TestStatus test = 2;
+  reserved 1;
 }
 
 // Represents a single test case's input.  The testee should:
@@ -86,7 +98,10 @@ message ConformanceRequest {
 
   // The full name for the test message to use; for the moment, either:
   // protobuf_test_messages.proto3.TestAllTypesProto3 or
-  // protobuf_test_messages.google.protobuf.TestAllTypesProto2.
+  // protobuf_test_messages.proto2.TestAllTypesProto2 or
+  // protobuf_test_messages.editions.proto2.TestAllTypesProto2 or
+  // protobuf_test_messages.editions.proto3.TestAllTypesProto3 or
+  // protobuf_test_messages.editions.TestAllTypesEdition2023.
   string message_type = 4;
 
   // Each test is given a specific test category. Some category may need

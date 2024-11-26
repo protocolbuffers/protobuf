@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/descriptor.h"
@@ -85,7 +86,7 @@ class ReflectionVisit final {
 };
 
 inline bool ShouldVisit(FieldMask mask, FieldDescriptor::CppType cpptype) {
-  if (PROTOBUF_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
+  if (ABSL_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
   return (static_cast<uint32_t>(mask) & (1 << cpptype)) != 0;
 }
 
@@ -140,7 +141,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
 #define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)                 \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
-    if (PROTOBUF_PREDICT_TRUE(!field->is_map())) {                             \
+    if (ABSL_PREDICT_TRUE(!field->is_map())) {                                 \
       /* Handle repeated fields. */                                            \
       const auto& rep = reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>( \
           message, field);                                                     \
@@ -174,9 +175,10 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         reflection, message, field, rep});                                     \
   }
 
-          switch (cpp::EffectiveStringCType(field)) {
-            default:
-            case FieldOptions::STRING:
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+            case FieldDescriptor::CppStringType::kView:
+            case FieldDescriptor::CppStringType::kString:
               PROTOBUF_IMPL_STRING_CASE(std::string, String);
               break;
           }
@@ -227,13 +229,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
-                                                      field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
                                                         field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+                                                          field});
+              break;
           }
           break;
         }
@@ -245,11 +250,11 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
     } else {
       auto index = has_bits_indices[i];
       bool check_hasbits = has_bits && index != static_cast<uint32_t>(-1);
-      if (PROTOBUF_PREDICT_TRUE(check_hasbits)) {
+      if (ABSL_PREDICT_TRUE(check_hasbits)) {
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {
         // Skip if it has default values.
-        if (!reflection->HasBit(message, field)) continue;
+        if (!reflection->HasFieldSingular(message, field)) continue;
       }
       switch (field->type()) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                     \
@@ -279,13 +284,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
           break;
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
-                                                       field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
                                                          field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+                                                           field});
+              break;
           }
           break;
         }
@@ -303,102 +311,105 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   auto* extendee = reflection->descriptor_;
   auto* pool = reflection->descriptor_pool_;
 
-  set.ForEach([&](int number, auto& ext) {
-    ABSL_DCHECK_GT(ext.type, 0);
-    ABSL_DCHECK_LE(ext.type, FieldDescriptor::MAX_TYPE);
+  set.ForEach(
+      [&](int number, auto& ext) {
+        ABSL_DCHECK_GT(ext.type, 0);
+        ABSL_DCHECK_LE(ext.type, FieldDescriptor::MAX_TYPE);
 
-    if (!ShouldVisit(mask, FieldDescriptor::TypeToCppType(
-                               static_cast<FieldDescriptor::Type>(ext.type)))) {
-      return;
-    }
+        if (!ShouldVisit(mask,
+                         FieldDescriptor::TypeToCppType(
+                             static_cast<FieldDescriptor::Type>(ext.type)))) {
+          return;
+        }
 
-    if (ext.is_repeated) {
-      if (ext.GetSize() == 0) return;
+        if (ext.is_repeated) {
+          if (ext.GetSize() == 0) return;
 
-      switch (ext.type) {
+          switch (ext.type) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                \
   case FieldDescriptor::TYPE_##TYPE:                                    \
     func(internal::Repeated##NAME##DynamicExtensionInfo<decltype(ext)>{ \
         ext, number});                                                  \
     break;
-        PROTOBUF_HANDLE_CASE(DOUBLE, Double);
-        PROTOBUF_HANDLE_CASE(FLOAT, Float);
-        PROTOBUF_HANDLE_CASE(INT64, Int64);
-        PROTOBUF_HANDLE_CASE(UINT64, UInt64);
-        PROTOBUF_HANDLE_CASE(INT32, Int32);
-        PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
-        PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
-        PROTOBUF_HANDLE_CASE(BOOL, Bool);
-        PROTOBUF_HANDLE_CASE(UINT32, UInt32);
-        PROTOBUF_HANDLE_CASE(ENUM, Enum);
-        PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
-        PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
-        PROTOBUF_HANDLE_CASE(SINT32, SInt32);
-        PROTOBUF_HANDLE_CASE(SINT64, SInt64);
+            PROTOBUF_HANDLE_CASE(DOUBLE, Double);
+            PROTOBUF_HANDLE_CASE(FLOAT, Float);
+            PROTOBUF_HANDLE_CASE(INT64, Int64);
+            PROTOBUF_HANDLE_CASE(UINT64, UInt64);
+            PROTOBUF_HANDLE_CASE(INT32, Int32);
+            PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
+            PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
+            PROTOBUF_HANDLE_CASE(BOOL, Bool);
+            PROTOBUF_HANDLE_CASE(UINT32, UInt32);
+            PROTOBUF_HANDLE_CASE(ENUM, Enum);
+            PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
+            PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
+            PROTOBUF_HANDLE_CASE(SINT32, SInt32);
+            PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-        PROTOBUF_HANDLE_CASE(MESSAGE, Message);
-        PROTOBUF_HANDLE_CASE(GROUP, Group);
+            PROTOBUF_HANDLE_CASE(MESSAGE, Message);
+            PROTOBUF_HANDLE_CASE(GROUP, Group);
 
-        case FieldDescriptor::TYPE_BYTES:
-        case FieldDescriptor::TYPE_STRING:
-          func(internal::RepeatedStringDynamicExtensionInfo<decltype(ext)>{
-              ext, number});
-          break;
-        default:
-          internal::Unreachable();
-          break;
+            case FieldDescriptor::TYPE_BYTES:
+            case FieldDescriptor::TYPE_STRING:
+              func(internal::RepeatedStringDynamicExtensionInfo<decltype(ext)>{
+                  ext, number});
+              break;
+            default:
+              internal::Unreachable();
+              break;
 #undef PROTOBUF_HANDLE_CASE
-      }
-    } else {
-      if (ext.is_cleared) return;
+          }
+        } else {
+          if (ext.is_cleared) return;
 
-      switch (ext.type) {
+          switch (ext.type) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                    \
   case FieldDescriptor::TYPE_##TYPE:                                        \
     func(internal::NAME##DynamicExtensionInfo<decltype(ext)>{ext, number}); \
     break;
-        PROTOBUF_HANDLE_CASE(DOUBLE, Double);
-        PROTOBUF_HANDLE_CASE(FLOAT, Float);
-        PROTOBUF_HANDLE_CASE(INT64, Int64);
-        PROTOBUF_HANDLE_CASE(UINT64, UInt64);
-        PROTOBUF_HANDLE_CASE(INT32, Int32);
-        PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
-        PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
-        PROTOBUF_HANDLE_CASE(BOOL, Bool);
-        PROTOBUF_HANDLE_CASE(UINT32, UInt32);
-        PROTOBUF_HANDLE_CASE(ENUM, Enum);
-        PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
-        PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
-        PROTOBUF_HANDLE_CASE(SINT32, SInt32);
-        PROTOBUF_HANDLE_CASE(SINT64, SInt64);
+            PROTOBUF_HANDLE_CASE(DOUBLE, Double);
+            PROTOBUF_HANDLE_CASE(FLOAT, Float);
+            PROTOBUF_HANDLE_CASE(INT64, Int64);
+            PROTOBUF_HANDLE_CASE(UINT64, UInt64);
+            PROTOBUF_HANDLE_CASE(INT32, Int32);
+            PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
+            PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
+            PROTOBUF_HANDLE_CASE(BOOL, Bool);
+            PROTOBUF_HANDLE_CASE(UINT32, UInt32);
+            PROTOBUF_HANDLE_CASE(ENUM, Enum);
+            PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
+            PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
+            PROTOBUF_HANDLE_CASE(SINT32, SInt32);
+            PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-        PROTOBUF_HANDLE_CASE(GROUP, Group);
-        case FieldDescriptor::TYPE_MESSAGE: {
-          const FieldDescriptor* field =
-              ext.descriptor != nullptr
-                  ? ext.descriptor
-                  : pool->FindExtensionByNumber(extendee, number);
-          ABSL_DCHECK_EQ(field->number(), number);
-          bool is_mset =
-              field->containing_type()->options().message_set_wire_format();
-          func(internal::MessageDynamicExtensionInfo<decltype(ext)>{ext, number,
-                                                                    is_mset});
-          break;
-        }
+            PROTOBUF_HANDLE_CASE(GROUP, Group);
+            case FieldDescriptor::TYPE_MESSAGE: {
+              const FieldDescriptor* field =
+                  ext.descriptor != nullptr
+                      ? ext.descriptor
+                      : pool->FindExtensionByNumber(extendee, number);
+              ABSL_DCHECK_EQ(field->number(), number);
+              bool is_mset =
+                  field->containing_type()->options().message_set_wire_format();
+              func(internal::MessageDynamicExtensionInfo<decltype(ext)>{
+                  ext, number, is_mset});
+              break;
+            }
 
-        case FieldDescriptor::TYPE_BYTES:
-        case FieldDescriptor::TYPE_STRING:
-          func(
-              internal::StringDynamicExtensionInfo<decltype(ext)>{ext, number});
-          break;
+            case FieldDescriptor::TYPE_BYTES:
+            case FieldDescriptor::TYPE_STRING:
+              func(internal::StringDynamicExtensionInfo<decltype(ext)>{ext,
+                                                                       number});
+              break;
 
-        default:
-          internal::Unreachable();
-          break;
+            default:
+              internal::Unreachable();
+              break;
 #undef PROTOBUF_HANDLE_CASE
-      }
-    }
-  });
+          }
+        }
+      },
+      ExtensionSet::Prefetch{});
 }
 
 template <typename CallbackFn>
@@ -422,7 +433,7 @@ void ReflectionVisit::VisitMessageFields(const Message& message,
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (const auto& it : info.Get()) {
-              func(DownCast<const Message&>(it));
+              func(DownCastMessage<Message>(it));
             }
           } else {
             func(info.Get());
@@ -452,7 +463,7 @@ void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (auto& it : info.Mutable()) {
-              func(DownCast<Message&>(it));
+              func(DownCastMessage<Message>(it));
             }
           } else {
             func(info.Mutable());

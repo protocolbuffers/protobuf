@@ -1,0 +1,25 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package hpb_unittest.someotherpackage;
+
+import "google/protobuf/compiler/hpb/tests/test_model.proto";
+
+// Define extension that is extending proto outside this package with a type
+// defined in different file.
+
+extend TestModel {
+  ThemeExtension styling = 13001;
+}
+
+extend TestModel {
+  int32 int32_ext = 13002 [default = 644];
+
+  int64 int64_ext = 13003 [default = 2147483648];
+}

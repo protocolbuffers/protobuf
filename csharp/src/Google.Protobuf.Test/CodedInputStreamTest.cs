@@ -7,12 +7,12 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
-using System;
-using System.Buffers;
-using System.IO;
 using Google.Protobuf.TestProtos;
 using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
+using System;
+using System.Buffers;
+using System.IO;
 
 namespace Google.Protobuf
 {
@@ -577,12 +577,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Tests that if we read an string that contains invalid UTF-8, no exception
-        /// is thrown.  Instead, the invalid bytes are replaced with the Unicode
-        /// "replacement character" U+FFFD.
+        /// Tests that if we read a string that contains invalid UTF-8, an exception
+        /// is thrown.
         /// </summary>
         [Test]
-        public void ReadInvalidUtf8()
+        public void ReadInvalidUtf8ThrowsInvalidProtocolBufferException()
         {
             MemoryStream ms = new MemoryStream();
             CodedOutputStream output = new CodedOutputStream(ms);
@@ -597,8 +596,7 @@ namespace Google.Protobuf
             CodedInputStream input = new CodedInputStream(ms);
 
             Assert.AreEqual(tag, input.ReadTag());
-            string text = input.ReadString();
-            Assert.AreEqual('\ufffd', text[0]);
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadString());
         }
 
         [Test]

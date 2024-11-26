@@ -11,9 +11,22 @@
 
 #include "google/protobuf/compiler/java/internal_helpers.h"
 
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -105,6 +118,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
     return GetExperimentalJavaFieldTypeForSingular(field) | extra_bits;
   }
 }
+
 
 }  // namespace java
 }  // namespace compiler

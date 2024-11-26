@@ -3,7 +3,7 @@ Protocol Buffers - Google's data interchange format
 
 Copyright 2008 Google Inc.
 
-https://developers.google.com/protocol-buffers/
+https://protobuf.dev.
 
 CMake Installation
 -----------------------
@@ -16,18 +16,18 @@ C++ Protobuf - Unix
 
 To build protobuf from source, the following tools are needed:
 
-  * bazel
-  * git
-  * g++
-  * Abseil
+*   Bazel
+*   git
+*   g++
+*   Abseil
 
 On Ubuntu/Debian, for example, you can install them with:
 
     sudo apt-get install g++ git bazel
 
-On other platforms, please use the corresponding package managing tool to
-install them before proceeding.  See https://bazel.build/install for further
-instructions on installing Bazel, or to build from source using CMake, see
+On other platforms, use the corresponding package managing tool to install them
+before proceeding. See https://bazel.build/install for further instructions on
+installing Bazel, or to build from source using CMake, see
 [cmake/README.md](../cmake/README.md). See https://github.com/abseil/abseil-cpp
 for instructions on installing Abseil.
 
@@ -49,11 +49,11 @@ To build the C++ Protocol Buffer runtime and the Protocol Buffer compiler
 
     bazel build :protoc :protobuf
 
-The compiler can then be installed, for example on Linux:
+You can then install the compiler, for example on Linux:
 
     cp bazel-bin/protoc /usr/local/bin
 
-For more usage information on Bazel, please refer to http://bazel.build.
+For more usage information on Bazel, see http://bazel.build.
 
 **Compiling dependent packages**
 
@@ -90,15 +90,16 @@ page:
 
     https://github.com/protocolbuffers/protobuf/releases/latest
 
-In the downloads section, download the zip file protoc-$VERSION-win32.zip.
-It contains the protoc binary as well as public proto files of protobuf
-library.
+In the downloads section, download the zip file `protoc-$VERSION-win32.zip`. It
+contains the protoc binary as well as public proto files of protobuf library.
+The
+[protoc binary and the gencode version must match](https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp).
 
-Protobuf and its dependencies can be installed directly by using `vcpkg`:
+You can install protobuf and its dependencies directly by using `vcpkg`:
 
     >vcpkg install protobuf protobuf:x64-windows
 
-If zlib support is desired, you'll also need to install the zlib feature:
+If you want to use zlib, you'll also need to install the zlib feature:
 
     >vcpkg install protobuf[zlib] protobuf[zlib]:x64-windows
 
@@ -126,7 +127,6 @@ by specifying:
 Usage
 -----
 
-The complete documentation for Protocol Buffers is available via the
-web at:
+The complete documentation for Protocol Buffers is available at:
 
 https://protobuf.dev/

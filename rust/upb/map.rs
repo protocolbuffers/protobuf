@@ -1,6 +1,13 @@
-use crate::opaque_pointee::opaque_pointee;
-use crate::{upb_MessageValue, CType, RawArena};
-use std::ptr::NonNull;
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+use super::opaque_pointee::opaque_pointee;
+use super::{upb_MessageValue, CType, RawArena};
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_Map);
 pub type RawMap = NonNull<upb_Map>;
@@ -14,9 +21,9 @@ pub enum MapInsertStatus {
     OutOfMemory = 2,
 }
 
-extern "C" {
-    pub static __rust_proto_kUpb_Map_Begin: usize;
+pub const UPB_MAP_BEGIN: usize = usize::MAX;
 
+extern "C" {
     pub fn upb_Map_New(arena: RawArena, key_type: CType, value_type: CType) -> RawMap;
     pub fn upb_Map_Size(map: RawMap) -> usize;
     pub fn upb_Map_Insert(
@@ -42,13 +49,27 @@ extern "C" {
 
 #[cfg(test)]
 mod tests {
+    use super::super::Arena;
     use super::*;
+    
 
-    #[test]
+    #[googletest::test]
+    fn assert_map_linked() {
+        use crate::assert_linked;
+        assert_linked!(upb_Map_New);
+        assert_linked!(upb_Map_Size);
+        assert_linked!(upb_Map_Insert);
+        assert_linked!(upb_Map_Get);
+        assert_linked!(upb_Map_Delete);
+        assert_linked!(upb_Map_Clear);
+        assert_linked!(upb_Map_Next);
+    }
+
+    #[googletest::test]
     fn map_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
-            let arena = crate::Arena::new();
+            let arena = Arena::new();
             let raw_arena = arena.raw();
             let map = upb_Map_New(raw_arena, CType::Bool, CType::Double);
             assert_eq!(upb_Map_Size(map), 0);
@@ -85,7 +106,7 @@ mod tests {
 
             let mut out = upb_MessageValue::zeroed();
             assert!(upb_Map_Get(map, upb_MessageValue { bool_val: true }, &mut out));
-            assert!(matches!(out, upb_MessageValue { double_val: 4.0 }));
+            assert_eq!(out.double_val, 4.0);
         }
     }
 }

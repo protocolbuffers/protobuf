@@ -20,6 +20,9 @@ message TestMessageSet {
 
 message TestMessageSetExtension1 {
   extend TestMessageSet {
+    optional TestExtension first_extension = 2534113;
+  }
+  extend TestMessageSet {
     optional TestMessageSetExtension1 message_set_extension = 98418603;
   }
   optional int32 i = 15;
@@ -34,6 +37,10 @@ message TestMessageSetExtension2 {
 
 message TestMessageSetExtension3 {
   optional string text = 35;
+}
+
+message TestExtension {
+  optional string str = 1;
 }
 
 extend TestMessageSet {

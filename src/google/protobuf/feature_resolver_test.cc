@@ -326,7 +326,6 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
                    .has_removed_feature());
 }
 
-
 TEST(FeatureResolverTest, CompileDefaultsOverridable) {
   absl::StatusOr<FeatureSetDefaults> defaults =
       FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
@@ -352,7 +351,7 @@ TEST(FeatureResolverTest, CompileDefaultsOverridable) {
 
 TEST(FeatureResolverTest, CreateFromUnsortedDefaults) {
   auto valid_defaults = FeatureResolver::CompileDefaults(
-      FeatureSet::descriptor(), {}, EDITION_PROTO2, EDITION_2023);
+      FeatureSet::descriptor(), {}, EDITION_LEGACY, EDITION_2023);
   ASSERT_OK(valid_defaults);
   FeatureSetDefaults defaults = *valid_defaults;
 
@@ -361,7 +360,7 @@ TEST(FeatureResolverTest, CreateFromUnsortedDefaults) {
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(AllOf(HasSubstr("not strictly increasing."),
                              HasSubstr("Edition PROTO3 is greater "
-                                       "than or equal to edition PROTO2"))));
+                                       "than or equal to edition LEGACY"))));
 }
 
 TEST(FeatureResolverTest, CreateUnknownEdition) {
@@ -637,11 +636,16 @@ TEST(FeatureResolverLifetimesTest, MultipleErrors) {
 
 TEST(FeatureResolverLifetimesTest, DynamicPool) {
   DescriptorPool pool;
-  FileDescriptorProto file;
-  FileDescriptorProto::GetDescriptor()->file()->CopyTo(&file);
-  ASSERT_NE(pool.BuildFile(file), nullptr);
-  pb::TestFeatures::GetDescriptor()->file()->CopyTo(&file);
-  ASSERT_NE(pool.BuildFile(file), nullptr);
+  {
+    FileDescriptorProto file;
+    FileDescriptorProto::GetDescriptor()->file()->CopyTo(&file);
+    ASSERT_NE(pool.BuildFile(file), nullptr);
+  }
+  {
+    FileDescriptorProto file;
+    pb::TestFeatures::GetDescriptor()->file()->CopyTo(&file);
+    ASSERT_NE(pool.BuildFile(file), nullptr);
+  }
   const Descriptor* feature_set =
       pool.FindMessageTypeByName("google.protobuf.FeatureSet");
   ASSERT_NE(feature_set, nullptr);
@@ -655,6 +659,96 @@ TEST(FeatureResolverLifetimesTest, DynamicPool) {
               ElementsAre(HasSubstr("pb.TestFeatures.future_feature")));
   EXPECT_THAT(results.warnings,
               ElementsAre(HasSubstr("pb.TestFeatures.removed_feature")));
+}
+
+TEST(FeatureResolverLifetimesTest, EmptyValueSupportValid) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_EMPTY_SUPPORT }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportValid) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_SUPPORT }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_99997_TEST_ONLY, features, nullptr);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportBeforeIntroduced) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_FUTURE }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(
+                  HasSubstr("pb.VALUE_LIFETIME_FUTURE"),
+                  HasSubstr("introduced until edition 99997_TEST_ONLY"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportAfterRemoved) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_REMOVED }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_99997_TEST_ONLY, features, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.VALUE_LIFETIME_REMOVED"),
+                        HasSubstr("removed in edition 99997_TEST_ONLY"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportDeprecated) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_DEPRECATED }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_99997_TEST_ONLY, features, nullptr);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(HasSubstr("pb.VALUE_LIFETIME_DEPRECATED"),
+                        HasSubstr("deprecated in edition 99997_TEST_ONLY"),
+                        HasSubstr("Custom feature deprecation warning"))));
+}
+
+TEST(FeatureResolverLifetimesTest, ValueAndFeatureSupportDeprecated) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { value_lifetime_feature: VALUE_LIFETIME_DEPRECATED }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_99998_TEST_ONLY, features, nullptr);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(results.warnings,
+              UnorderedElementsAre(
+                  AllOf(HasSubstr("pb.VALUE_LIFETIME_DEPRECATED"),
+                        HasSubstr("deprecated in edition 99997_TEST_ONLY"),
+                        HasSubstr("Custom feature deprecation warning")),
+                  AllOf(HasSubstr("pb.TestFeatures.value_lifetime_feature"),
+                        HasSubstr("deprecated in edition 99998_TEST_ONLY"),
+                        HasSubstr("Custom feature deprecation warning"))));
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportInvalidNumber) {
+  FeatureSet features;
+  features.MutableExtension(pb::test)->set_value_lifetime_feature(
+      static_cast<pb::ValueLifetimeFeature>(1234));
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.TestFeatures.value_lifetime_feature"),
+                        HasSubstr("1234"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
 }
 
 class FakeErrorCollector : public io::ErrorCollector {
@@ -1259,7 +1353,350 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidDefaultsTooEarly) {
   EXPECT_THAT(
       FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
                                        EDITION_2023),
-      HasError(HasSubstr("No valid default found for edition 2_TEST_ONLY")));
+      HasError(HasSubstr("Minimum edition 2_TEST_ONLY is not EDITION_LEGACY")));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueWithMissingDeprecationWarning) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support.edition_deprecated = EDITION_2023];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.VALUE"),
+                             HasSubstr("deprecation warning"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueWithMissingDeprecation) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support.deprecation_warning = "some message"];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.VALUE"),
+                             HasSubstr("is not marked deprecated"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueDeprecatedBeforeIntroduced) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_introduced: EDITION_2024
+        edition_deprecated: EDITION_2023
+        deprecation_warning: "warning"
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
+                                       EDITION_2023),
+      HasError(AllOf(HasSubstr("test.VALUE"),
+                     HasSubstr("deprecated before it was introduced"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueDeprecatedBeforeIntroducedInherited) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_deprecated: EDITION_2023
+        deprecation_warning: "warning"
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2024,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
+                                       EDITION_2023),
+      HasError(AllOf(HasSubstr("test.VALUE"),
+                     HasSubstr("deprecated before it was introduced"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueDeprecatedAfterRemoved) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_introduced: EDITION_2023
+        edition_deprecated: EDITION_2024
+        deprecation_warning: "warning"
+        edition_removed: EDITION_2024
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.VALUE"),
+                             HasSubstr("deprecated after it was removed"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueRemovedBeforeIntroduced) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_introduced: EDITION_2024
+        edition_removed: EDITION_2023
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.VALUE"),
+                             HasSubstr("removed before it was introduced"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueIntroducedBeforeFeature) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_introduced: EDITION_2023
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2024,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
+                                       EDITION_2023),
+      HasError(AllOf(HasSubstr("test.VALUE"), HasSubstr("introduced before"),
+                     HasSubstr("test.Foo.bool_field"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueIntroducedAfterFeatureRemoved) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_introduced: EDITION_99997_TEST_ONLY
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        feature_support.edition_removed = EDITION_2024,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.VALUE"),
+                             HasSubstr("removed before it was introduced"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueRemovedAfterFeature) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_removed: EDITION_99997_TEST_ONLY
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        feature_support.edition_removed = EDITION_2024,
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
+                                       EDITION_2023),
+      HasError(AllOf(HasSubstr("test.VALUE"), HasSubstr("removed after"),
+                     HasSubstr("test.Foo.bool_field"))));
+}
+
+TEST_F(FeatureResolverPoolTest,
+       CompileDefaultsInvalidValueDeprecatedAfterFeature) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum FooValues {
+      UNKNOWN = 0;
+      VALUE = 1 [feature_support = {
+        edition_deprecated: EDITION_99997_TEST_ONLY
+        deprecation_warning: "warning"
+      }];
+    }
+    message Foo {
+      optional FooValues bool_field = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        feature_support.edition_deprecated = EDITION_2024,
+        feature_support.deprecation_warning = "warning",
+        edition_defaults = { edition: EDITION_LEGACY, value: "UNKNOWN" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
+                                       EDITION_2023),
+      HasError(AllOf(HasSubstr("test.VALUE"), HasSubstr("deprecated after"),
+                     HasSubstr("test.Foo.bool_field"))));
 }
 
 TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
@@ -1286,6 +1723,81 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
       FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_1_TEST_ONLY,
                                        EDITION_99997_TEST_ONLY),
       HasError(HasSubstr("edition 1_TEST_ONLY is earlier than the oldest")));
+}
+
+TEST_F(FeatureResolverPoolTest, CompileDefaultsRemovedOnly) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum Bar {
+      TEST_ENUM_FEATURE_UNKNOWN = 0;
+      VALUE1 = 1;
+      VALUE2 = 2;
+    }
+    message Foo {
+      optional Bar file_feature = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        feature_support.edition_removed = EDITION_99998_TEST_ONLY,
+        edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  auto compiled_defaults = FeatureResolver::CompileDefaults(
+      feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(compiled_defaults);
+  const auto& defaults = *compiled_defaults->defaults().rbegin();
+  EXPECT_THAT(defaults.edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_THAT(defaults.fixed_features().GetExtension(pb::test).file_feature(),
+              pb::VALUE1);
+  EXPECT_FALSE(defaults.overridable_features()
+                   .GetExtension(pb::test)
+                   .has_file_feature());
+}
+
+TEST_F(FeatureResolverPoolTest, CompileDefaultsIntroducedOnly) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum Bar {
+      TEST_ENUM_FEATURE_UNKNOWN = 0;
+      VALUE1 = 1;
+      VALUE2 = 2;
+    }
+    message Foo {
+      optional Bar file_feature = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_99998_TEST_ONLY,
+        edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  auto compiled_defaults = FeatureResolver::CompileDefaults(
+      feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(compiled_defaults);
+  const auto& defaults = *compiled_defaults->defaults().rbegin();
+  EXPECT_THAT(defaults.edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_THAT(
+      defaults.overridable_features().GetExtension(pb::test).file_feature(),
+      pb::VALUE1);
+  EXPECT_FALSE(
+      defaults.fixed_features().GetExtension(pb::test).has_file_feature());
 }
 
 TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
@@ -1319,12 +1831,11 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   auto defaults = FeatureResolver::CompileDefaults(
       feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
   ASSERT_OK(defaults);
-
   EXPECT_THAT(*defaults, EqualsProto(R"pb(
     minimum_edition: EDITION_99997_TEST_ONLY
     maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
-      edition: EDITION_PROTO2
+      edition: EDITION_LEGACY
       overridable_features {
         [pb.test] {}
       }

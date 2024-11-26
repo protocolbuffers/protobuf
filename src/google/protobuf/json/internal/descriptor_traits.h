@@ -277,7 +277,7 @@ struct Proto2Descriptor {
 
   static absl::StatusOr<std::string> EnumNameByNumber(Field f, int32_t number) {
     if (const auto* ev = f->enum_type()->FindValueByNumber(number)) {
-      return ev->name();
+      return std::string(ev->name());
     }
     return absl::InvalidArgumentError(
         absl::StrFormat("unknown enum number: '%d'", number));

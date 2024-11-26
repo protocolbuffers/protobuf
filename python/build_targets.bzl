@@ -412,15 +412,36 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "decoder_test",
+        srcs = ["google/protobuf/internal/decoder_test.py"],
+    )
+
+    internal_py_test(
         name = "wire_format_test",
         srcs = ["google/protobuf/internal/wire_format_test.py"],
     )
 
+    internal_py_test(
+        name = "proto_test",
+        srcs = ["google/protobuf/internal/proto_test.py"],
+    )
+
+    internal_py_test(
+        name = "proto_json_test",
+        srcs = ["google/protobuf/internal/proto_json_test.py"],
+    )
+
     native.cc_library(
         name = "proto_api",
+        srcs = ["google/protobuf/proto_api.cc"],
         hdrs = ["google/protobuf/proto_api.h"],
+        strip_include_prefix = "/python",
         visibility = ["//visibility:public"],
         deps = [
+            "//src/google/protobuf",
+            "//src/google/protobuf/io",
+            "@com_google_absl//absl/log:absl_check",
+            "@com_google_absl//absl/status",
             "@system_python//:python_headers",
         ],
     )
@@ -448,7 +469,7 @@ def build_targets(name):
     conformance_test(
         name = "conformance_test_cpp",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
-        failure_list = "//conformance:failure_list_python.txt",
+        failure_list = "//conformance:failure_list_python_cpp.txt",
         target_compatible_with = select({
             "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],

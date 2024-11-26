@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package package2;
 
-import "google/protobuf/rust/test/package_disabiguation1.proto";
+import "rust/test/package_disabiguation1.proto";
 
 message YayConflict {
   optional .package1.YayConflict other_message = 1;

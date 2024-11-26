@@ -7,6 +7,8 @@
 
 package com.google.protobuf;
 
+import static java.lang.Math.max;
+
 import com.google.protobuf.Internal.ProtobufList;
 import java.util.Arrays;
 import java.util.RandomAccess;
@@ -14,8 +16,10 @@ import java.util.RandomAccess;
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
 final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
 
+  private static final Object[] EMPTY_ARRAY = new Object[0];
+
   private static final ProtobufArrayList<Object> EMPTY_LIST =
-      new ProtobufArrayList<Object>(new Object[0], 0, false);
+      new ProtobufArrayList<>(EMPTY_ARRAY, 0, false);
 
   @SuppressWarnings("unchecked") // Guaranteed safe by runtime.
   public static <E> ProtobufArrayList<E> emptyList() {
@@ -27,7 +31,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
 
   @SuppressWarnings("unchecked")
   ProtobufArrayList() {
-    this((E[]) new Object[DEFAULT_CAPACITY], 0, true);
+    this((E[]) EMPTY_ARRAY, 0, true);
   }
 
   private ProtobufArrayList(E[] array, int size, boolean isMutable) {
@@ -36,13 +40,14 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     this.size = size;
   }
 
+  @SuppressWarnings("unchecked") // Casting an empty Object[] to a generic array is safe.
   @Override
   public ProtobufArrayList<E> mutableCopyWithCapacity(int capacity) {
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
 
-    E[] newArray = Arrays.copyOf(array, capacity);
+    E[] newArray = capacity == 0 ? (E[]) EMPTY_ARRAY : Arrays.copyOf(array, capacity);
 
     return new ProtobufArrayList<E>(newArray, size, true);
   }
@@ -52,8 +57,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     ensureIsMutable();
 
     if (size == array.length) {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       E[] newArray = Arrays.copyOf(array, length);
 
       array = newArray;
@@ -63,6 +67,11 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     modCount++;
 
     return true;
+  }
+
+  private static int growSize(int previousSize) {
+    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
+    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
   }
 
   @Override
@@ -77,8 +86,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
     } else {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       E[] newArray = createArray(length);
 
       // Copy the first part directly
@@ -130,6 +138,26 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   @Override
   public int size() {
     return size;
+  }
+
+  /** Ensures the backing array can fit at least minCapacity elements. */
+  @SuppressWarnings("unchecked") // Casting an Object[] with no values inside to E[] is safe.
+  void ensureCapacity(int minCapacity) {
+    if (minCapacity <= array.length) {
+      return;
+    }
+    if (array.length == 0) {
+      array = (E[]) new Object[max(minCapacity, DEFAULT_CAPACITY)];
+      return;
+    }
+    // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
+    // exactly the requested capacity, but must exponentially grow instead. This is similar
+    // behaviour to ArrayList.
+    int n = array.length;
+    while (n < minCapacity) {
+      n = growSize(n);
+    }
+    array = Arrays.copyOf(array, n);
   }
 
   @SuppressWarnings("unchecked")

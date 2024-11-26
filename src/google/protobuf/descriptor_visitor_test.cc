@@ -29,7 +29,7 @@ constexpr absl::string_view kUnittestProtoFile =
 TEST(VisitDescriptorsTest, SingleTypeNoProto) {
   const FileDescriptor& file =
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
   VisitDescriptors(file, [&](const Descriptor& descriptor) {
     descriptors.push_back(descriptor.full_name());
   });
@@ -43,7 +43,7 @@ TEST(VisitDescriptorsTest, SingleTypeWithProto) {
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
   VisitDescriptors(
       file, proto,
       [&](const Descriptor& descriptor, const DescriptorProto& proto) {
@@ -60,7 +60,7 @@ TEST(VisitDescriptorsTest, SingleTypeMutableProto) {
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
   VisitDescriptors(file, proto,
                    [&](const Descriptor& descriptor, DescriptorProto& proto) {
                      descriptors.push_back(descriptor.full_name());
@@ -76,7 +76,7 @@ TEST(VisitDescriptorsTest, SingleTypeMutableProto) {
 TEST(VisitDescriptorsTest, AllTypesDeduce) {
   const FileDescriptor& file =
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
   VisitDescriptors(file, [&](const auto& descriptor) {
     descriptors.push_back(descriptor.name());
   });
@@ -90,7 +90,7 @@ TEST(VisitDescriptorsTest, AllTypesDeduce) {
 TEST(VisitDescriptorsTest, AllTypesDeduceSelective) {
   const FileDescriptor& file =
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
   VisitDescriptors(
       file,
       // Only select on descriptors with a full_name method.
@@ -112,12 +112,12 @@ TEST(VisitDescriptorsTest, AllTypesDeduceSelective) {
 }
 
 void TestHandle(const Descriptor& message, const DescriptorProto& proto,
-                std::vector<std::string>* result) {
+                std::vector<absl::string_view>* result) {
   if (result != nullptr) result->push_back(message.full_name());
   EXPECT_EQ(message.name(), proto.name());
 }
 void TestHandle(const EnumDescriptor& enm, const EnumDescriptorProto& proto,
-                std::vector<std::string>* result) {
+                std::vector<absl::string_view>* result) {
   if (result != nullptr) result->push_back(enm.full_name());
   EXPECT_EQ(enm.name(), proto.name());
 }
@@ -126,7 +126,7 @@ TEST(VisitDescriptorsTest, AllTypesDeduceDelegate) {
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
-  std::vector<std::string> descriptors;
+  std::vector<absl::string_view> descriptors;
 
   VisitDescriptors(file, proto,
                    [&](const auto& descriptor, const auto& proto)

@@ -9,5 +9,5 @@ syntax = "proto2";
 
 package import_public;
 
-import public "google/protobuf/rust/test/import_public_non_primary_src1.proto";
-import public "google/protobuf/rust/test/import_public_non_primary_src2.proto";
+import public "rust/test/import_public_non_primary_src1.proto";
+import public "rust/test/import_public_non_primary_src2.proto";

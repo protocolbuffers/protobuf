@@ -12,6 +12,7 @@
 #   `//rust:protobuf`.
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
@@ -24,17 +25,31 @@ proto_library(
 )
 
 rust_cc_proto_library(
-    name = "debug_rust_proto",
+    name = "debug_cpp_rust_proto",
     testonly = True,
     deps = [":debug_proto"],
+)
+
+proto_library(
+    name = "optimize_for_lite_proto",
+    testonly = True,
+    srcs = ["optimize_for_lite.proto"],
+)
+
+rust_cc_proto_library(
+    name = "optimize_for_lite_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//visibility:private"],
+    deps = [":optimize_for_lite_proto"],
 )
 
 rust_test(
     name = "debug_test",
     srcs = ["debug_test.rs"],
     deps = [
-        ":debug_rust_proto",
-        "//rust:protobuf_cpp",
+        ":debug_cpp_rust_proto",
+        ":optimize_for_lite_cpp_rust_proto",
+        "//rust:protobuf_cpp_export",
         "@crate_index//:googletest",
     ],
 )

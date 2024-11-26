@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
