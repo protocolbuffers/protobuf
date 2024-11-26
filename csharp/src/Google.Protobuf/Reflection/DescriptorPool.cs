@@ -279,7 +279,7 @@ namespace Google.Protobuf.Reflection
                 {
                     // Chop off the last component of the scope.
 
-                    int dotpos = scopeToTry.ToString().LastIndexOf(".");
+                    int dotpos = scopeToTry.ToString().LastIndexOf('.');
                     if (dotpos == -1)
                     {
                         result = FindSymbol<IDescriptor>(name);
