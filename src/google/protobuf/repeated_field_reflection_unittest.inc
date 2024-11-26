@@ -22,7 +22,6 @@ namespace protobuf {
 namespace {
 
 
-using internal::DownCast;
 using UNITTEST::ForeignMessage;
 using UNITTEST::TestAllExtensions;
 using UNITTEST::TestAllTypes;
