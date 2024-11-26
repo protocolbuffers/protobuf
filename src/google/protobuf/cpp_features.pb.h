@@ -51,8 +51,10 @@ template <typename T>
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
+}  // extern "C"
 namespace pb {
 enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
@@ -80,9 +82,11 @@ enum CppFeatures_StringType : int {
 
 PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
-constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN = static_cast<CppFeatures_StringType>(0);
-constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX = static_cast<CppFeatures_StringType>(3);
-constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
+inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN =
+    static_cast<CppFeatures_StringType>(0);
+inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX =
+    static_cast<CppFeatures_StringType>(3);
+inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 CppFeatures_StringType_descriptor();
 template <typename T>
@@ -162,10 +166,7 @@ class PROTOBUF_EXPORT CppFeatures final
     return default_instance().GetMetadata().reflection;
   }
   static const CppFeatures& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CppFeatures* internal_default_instance() {
-    return reinterpret_cast<const CppFeatures*>(
+    return *reinterpret_cast<const CppFeatures*>(
         &_CppFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -354,7 +355,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 
 
 
-static const int kCppFieldNumber = 1000;
+inline constexpr int kCppFieldNumber =
+    1000;
 PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11,
     false>

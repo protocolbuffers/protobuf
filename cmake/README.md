@@ -110,8 +110,8 @@ Create a temporary *build* folder and change your working directory to it:
      C:\Path\to\build\protobuf>
 
 During configuration you will also be specifying where CMake should expect to
-find your Abseil installation. To do so, first set `-Dprotobuf_ABSL_PROVIDER=package`
-and then set `-DCMAKE_PREFIX_PATH` to the path where you installed Abseil.
+find your Abseil installation. To do so, set `-DCMAKE_PREFIX_PATH` to the path
+where you installed Abseil.
 
 For example:
 
@@ -119,9 +119,13 @@ For example:
 C:\Path\to\build\protobuf> cmake -S. -Bcmake-out \
                            -DCMAKE_INSTALL_PREFIX=/tmp/protobuf \
                            -DCMAKE_CXX_STANDARD=14 \
-                           -Dprotobuf_ABSL_PROVIDER=package \
                            -DCMAKE_PREFIX_PATH=/tmp/absl  # Path to where I installed Abseil
 ```
+
+If the installation of a dependency can't be found, CMake will default to
+downloading and building a copy from GitHub. To prevent this and make it an
+error condition, you can optionally set
+`-Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON`.
 
 The *Makefile* and *Ninja* generators can build the project in only one configuration, so you need to build
 a separate folder for each configuration.
@@ -155,9 +159,8 @@ will be downloaded during CMake configuration.
 Alternately, you may want to use protobuf in a larger set-up, you may want to use that standard CMake approach where
 you build and install a shared copy of Google Test.
 
-After you've built and installed your Google Test copy, you need add the following definition to your *cmake* command line
-during the configuration step: `-Dprotobuf_USE_EXTERNAL_GTEST=ON`.
-This will cause the standard CMake `find_package(GTest REQUIRED)` to be used.
+After you've built and installed your Google Test copy, the standard CMake
+`find_package(GTest)` will use it.
 
 [find_package](https://cmake.org/cmake/help/latest/command/find_package.html) will search in a default location,
 which on Windows is *C:\Program Files*. This is most likely not what you want. You will want instead to search for

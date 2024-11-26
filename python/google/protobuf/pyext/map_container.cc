@@ -438,6 +438,35 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
   }
 }
 
+static PyObject* ScalarMapSetdefault(PyObject* self, PyObject* args) {
+  PyObject* key = nullptr;
+  PyObject* default_value = Py_None;
+
+  if (!PyArg_UnpackTuple(args, "setdefault", 1, 2, &key, &default_value)) {
+    return nullptr;
+  }
+
+  if (default_value == Py_None) {
+    PyErr_Format(PyExc_ValueError,
+                 "The value for scalar map setdefault must be set.");
+    return nullptr;
+  }
+
+  ScopedPyObjectPtr is_present(MapReflectionFriend::Contains(self, key));
+  if (is_present == nullptr) {
+    return nullptr;
+  }
+  if (PyObject_IsTrue(is_present.get())) {
+    return MapReflectionFriend::ScalarMapGetItem(self, key);
+  }
+
+  if (MapReflectionFriend::ScalarMapSetItem(self, key, default_value) < 0) {
+    return nullptr;
+  }
+  Py_INCREF(default_value);
+  return default_value;
+}
+
 static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
                               PyObject* kwargs) {
   static const char* kwlist[] = {"key", "default", nullptr};
@@ -512,6 +541,8 @@ static PyMethodDef ScalarMapMethods[] = {
      "Tests whether a key is a member of the map."},
     {"clear", (PyCFunction)Clear, METH_NOARGS,
      "Removes all elements from the map."},
+    {"setdefault", (PyCFunction)ScalarMapSetdefault, METH_VARARGS,
+     "If the key does not exist, insert the key, with the specified value"},
     {"get", (PyCFunction)ScalarMapGet, METH_VARARGS | METH_KEYWORDS,
      "Gets the value for the given key if present, or otherwise a default"},
     {"GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
@@ -685,6 +716,12 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   return PyObject_Repr(dict.get());
 }
 
+static PyObject* MessageMapSetdefault(PyObject* self, PyObject* args) {
+  PyErr_Format(PyExc_NotImplementedError,
+               "Set message map value directly is not supported.");
+  return nullptr;
+}
+
 PyObject* MessageMapGet(PyObject* self, PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
@@ -729,6 +766,8 @@ static PyMethodDef MessageMapMethods[] = {
      "Tests whether the map contains this element."},
     {"clear", (PyCFunction)Clear, METH_NOARGS,
      "Removes all elements from the map."},
+    {"setdefault", (PyCFunction)MessageMapSetdefault, METH_VARARGS,
+     "setdefault is disallowed in MessageMap."},
     {"get", (PyCFunction)MessageMapGet, METH_VARARGS | METH_KEYWORDS,
      "Gets the value for the given key if present, or otherwise a default"},
     {"get_or_create", MapReflectionFriend::MessageMapGetItem, METH_O,

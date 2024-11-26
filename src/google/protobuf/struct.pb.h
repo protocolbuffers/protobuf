@@ -29,6 +29,7 @@
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/map.h"  // IWYU pragma: export
+#include "google/protobuf/map_type_handler.h"  // IWYU pragma: export
 #include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/generated_enum_reflection.h"
@@ -53,8 +54,10 @@ template <typename T>
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fstruct_2eproto;
+}  // extern "C"
 namespace google {
 namespace protobuf {
 enum NullValue : int;
@@ -94,9 +97,11 @@ enum NullValue : int {
 
 PROTOBUF_EXPORT bool NullValue_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
-constexpr NullValue NullValue_MIN = static_cast<NullValue>(0);
-constexpr NullValue NullValue_MAX = static_cast<NullValue>(0);
-constexpr int NullValue_ARRAYSIZE = 0 + 1;
+inline constexpr NullValue NullValue_MIN =
+    static_cast<NullValue>(0);
+inline constexpr NullValue NullValue_MAX =
+    static_cast<NullValue>(0);
+inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 NullValue_descriptor();
 template <typename T>
@@ -176,10 +181,7 @@ class PROTOBUF_EXPORT ListValue final
     return default_instance().GetMetadata().reflection;
   }
   static const ListValue& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ListValue* internal_default_instance() {
-    return reinterpret_cast<const ListValue*>(
+    return *reinterpret_cast<const ListValue*>(
         &_ListValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -377,10 +379,7 @@ class PROTOBUF_EXPORT Struct final
     return default_instance().GetMetadata().reflection;
   }
   static const Struct& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Struct* internal_default_instance() {
-    return reinterpret_cast<const Struct*>(
+    return *reinterpret_cast<const Struct*>(
         &_Struct_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -620,7 +619,8 @@ class PROTOBUF_EXPORT Value final
     return default_instance().GetMetadata().reflection;
   }
   static const Value& default_instance() {
-    return *internal_default_instance();
+    return *reinterpret_cast<const Value*>(
+        &_Value_default_instance_);
   }
   enum KindCase {
     kNullValue = 1,
@@ -631,10 +631,6 @@ class PROTOBUF_EXPORT Value final
     kListValue = 6,
     KIND_NOT_SET = 0,
   };
-  static inline const Value* internal_default_instance() {
-    return reinterpret_cast<const Value*>(
-        &_Value_default_instance_);
-  }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Value& a, Value& b) { a.Swap(&b); }
   inline void Swap(Value* other) {
@@ -759,13 +755,12 @@ class PROTOBUF_EXPORT Value final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
-  PROTOBUF_NODISCARD std::string* release_string_value();
+  [[nodiscard]] std::string* release_string_value();
   void set_allocated_string_value(std::string* value);
 
   private:
   const std::string& _internal_string_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
 
   public:
@@ -788,7 +783,7 @@ class PROTOBUF_EXPORT Value final
   public:
   void clear_struct_value() ;
   const ::google::protobuf::Struct& struct_value() const;
-  PROTOBUF_NODISCARD ::google::protobuf::Struct* release_struct_value();
+  [[nodiscard]] ::google::protobuf::Struct* release_struct_value();
   ::google::protobuf::Struct* mutable_struct_value();
   void set_allocated_struct_value(::google::protobuf::Struct* value);
   void unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value);
@@ -807,7 +802,7 @@ class PROTOBUF_EXPORT Value final
   public:
   void clear_list_value() ;
   const ::google::protobuf::ListValue& list_value() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ListValue* release_list_value();
+  [[nodiscard]] ::google::protobuf::ListValue* release_list_value();
   ::google::protobuf::ListValue* mutable_list_value();
   void set_allocated_list_value(::google::protobuf::ListValue* value);
   void unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value);
@@ -1007,8 +1002,8 @@ inline const std::string& Value::string_value() const
   return _internal_string_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();

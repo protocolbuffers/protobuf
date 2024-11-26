@@ -30,6 +30,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/config.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/types/span.h"
@@ -38,6 +39,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 // TODO: Remove.
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
@@ -474,9 +476,9 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
-#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
-  GTEST_SKIP() << "Disabled because sanitizer is active";
-#endif
+  if (internal::HasAnySanitizer()) {
+    GTEST_SKIP() << "Disabled because sanitizer is active";
+  }
   // Largest value that does not clamp to the large limit:
   constexpr int non_clamping_limit =
       (std::numeric_limits<int>::max() - sizeof(Arena*)) / 2;
@@ -1134,17 +1136,17 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && \
-    (defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN))
+#if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+                                      defined(ABSL_HAVE_MEMORY_SANITIZER))
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
 // read and write the reserved element directly beyond the last element.
 void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
   auto* end = field.Mutable(field.size() - 1) + 1;
-#if defined(PROTOBUF_ASAN)
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
   EXPECT_DEATH(*end = 1, "container-overflow");
   EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
-#elif defined(PROTOBUF_MSAN)
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
   EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
 #endif
 

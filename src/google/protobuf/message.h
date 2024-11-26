@@ -97,6 +97,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
@@ -515,8 +516,8 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  PROTOBUF_NODISCARD Message* ReleaseLast(Message* message,
-                                          const FieldDescriptor* field) const;
+  [[nodiscard]] Message* ReleaseLast(Message* message,
+                                     const FieldDescriptor* field) const;
 
   // Similar to ReleaseLast() without internal safety and ownershp checks. This
   // method should only be used when the objects are on the same arena or paired
@@ -716,7 +717,7 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  PROTOBUF_NODISCARD Message* ReleaseMessage(
+  [[nodiscard]] Message* ReleaseMessage(
       Message* message, const FieldDescriptor* field,
       MessageFactory* factory = nullptr) const;
 
@@ -1234,6 +1235,17 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldInlined(field);
   }
 
+  // For "proto3 non-optional" primitive fields, aka implicit-presence fields,
+  // returns true if the field is populated, i.e., nonzero. False otherwise.
+  bool IsSingularFieldNonEmpty(const Message& message,
+                               const FieldDescriptor* field) const;
+  // Returns whether the field is present if there are usable hasbits in the
+  // field schema. (Note that in some cases hasbits are merely a hint to
+  // indicate "possible presence", and another empty-check is required).
+  bool IsFieldPresentGivenHasbits(const Message& message,
+                                  const FieldDescriptor* field,
+                                  const uint32_t* hasbits,
+                                  uint32_t hasbit_index) const;
   // Returns true if the field is considered to be present.
   // Requires the input to be 'singular' i.e. non-extension, non-oneof, non-weak
   // field.
@@ -1243,8 +1255,14 @@ class PROTOBUF_EXPORT Reflection final {
                         const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
   inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
-  inline void SwapHasBit(Message* message1, Message* message2,
-                         const FieldDescriptor* field) const;
+  // Naively swaps the hasbit without checking for field existence.
+  // For explicit presence fields, the hasbit is swapped normally.
+  // For implicit presence fields, the hasbit is swapped without checking for
+  // field emptiness. That is, the destination message may have hasbit set even
+  // if the field is empty. This should still result in correct behaviour due to
+  // HasbitMode being set to kHintHasbits for implicit presence fields.
+  inline void NaiveSwapHasBit(Message* message1, Message* message2,
+                              const FieldDescriptor* field) const;
 
   inline const uint32_t* GetInlinedStringDonatedArray(
       const Message& message) const;
@@ -1586,12 +1604,12 @@ bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
 
 inline void MaybePoisonAfterClear(Message* root) {
   if (root == nullptr) return;
-#ifndef PROTOBUF_ASAN
-  root->Clear();
-#else
-  const Reflection* reflection = root->GetReflection();
-  reflection->MaybePoisonAfterClear(*root);
-#endif
+  if constexpr (HasMemoryPoisoning()) {
+    const Reflection* reflection = root->GetReflection();
+    reflection->MaybePoisonAfterClear(*root);
+  } else {
+    root->Clear();
+  }
 }
 
 }  // namespace internal
@@ -1612,7 +1630,7 @@ const Type& Reflection::GetRawSplit(const Message& message,
 template <class Type>
 const Type& Reflection::GetRawNonOneof(const Message& message,
                                        const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     return GetRawSplit<Type>(message, field);
   }
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
@@ -1625,7 +1643,7 @@ const Type& Reflection::GetRaw(const Message& message,
   ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
 
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
     return GetRawNonOneof<Type>(message, field);
   }
 

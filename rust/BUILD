@@ -69,6 +69,18 @@ PROTOBUF_SHARED = [
     # go/keep-sorted end
 ]
 
+# All Rust source files; this is used for packaging up a crate.
+ALL_RUST_SRCS = PROTOBUF_SHARED + [
+    # go/keep-sorted start
+    "cpp.rs",
+    "gtest_matchers.rs",
+    "gtest_matchers_impl.rs",
+    "protobuf.rs",
+    "upb.rs",
+    "utf8.rs",
+    # go/keep-sorted end
+]
+
 # The Rust Protobuf runtime using the upb kernel.
 #
 # `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
@@ -212,6 +224,7 @@ rust_library(
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
     command_line = "--rust_out=$(OUT)",
+    output_files = "multiple",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_upb",
     visibility = ["//visibility:public"],
@@ -220,6 +233,7 @@ proto_lang_toolchain(
 proto_lang_toolchain(
     name = "proto_rust_cpp_toolchain",
     command_line = "--rust_out=$(OUT)",
+    output_files = "multiple",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_cpp",
     visibility = ["//visibility:public"],
@@ -247,22 +261,20 @@ config_setting(
     },
 )
 
+# Note: strip_prefix.from_pkg() should work for this below, but has surprising behavior in bazel
+# with filegroups and so we only use strip_prefix.from_root() and this constant instead.
+SRC_ROOT = "rust"
+
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = glob(
-        [
-            "*",
-        ],
-    ),
-    strip_prefix = strip_prefix.from_root("rust"),
-    visibility = ["//:__pkg__"],
+    srcs = ALL_RUST_SRCS,
+    strip_prefix = strip_prefix.from_root(SRC_ROOT),
 )
 
 pkg_files(
     name = "crate_root_files",
-    srcs = glob(["cargo/**/*"]),
-    strip_prefix = strip_prefix.from_root("rust/cargo"),
-    visibility = ["//:__pkg__"],
+    srcs = ["//rust/cargo:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/cargo"),
 )
 
 pkg_filegroup(
@@ -301,8 +313,8 @@ pkg_tar(
 
 pkg_files(
     name = "protobuf_codegen_files",
-    srcs = glob(["protobuf_codegen/src/*"]) + ["protobuf_codegen/Cargo.toml"],
-    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen"),
+    srcs = ["//rust/protobuf_codegen:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/protobuf_codegen"),
 )
 
 pkg_tar(
@@ -313,7 +325,6 @@ pkg_tar(
         "//:LICENSE",
     ],
     tags = ["manual"],
-    visibility = ["//rust:__pkg__"],
 )
 
 pkg_tar(
@@ -324,13 +335,12 @@ pkg_tar(
         "//:LICENSE",
     ],
     tags = ["manual"],
-    visibility = ["//rust:__pkg__"],
 )
 
 pkg_files(
     name = "codegen_example_files",
-    srcs = glob(["protobuf_codegen/example/**/*"]),
-    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen/example"),
+    srcs = ["//rust/protobuf_codegen/example:srcs"],
+    strip_prefix = strip_prefix.from_root(SRC_ROOT + "/protobuf_codegen/example"),
 )
 
 pkg_tar(
@@ -339,7 +349,6 @@ pkg_tar(
         ":codegen_example_files",
         "//:LICENSE",
     ],
-    visibility = ["//rust:__pkg__"],
 )
 
 # Bundle all protoc binaries for all platforms. Requires the toolchains to be installed.

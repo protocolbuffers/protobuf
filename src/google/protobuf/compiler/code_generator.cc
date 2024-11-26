@@ -64,17 +64,12 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
 absl::StatusOr<FeatureSetDefaults> CodeGenerator::BuildFeatureSetDefaults()
     const {
-  if ((GetSupportedFeatures() & FEATURE_SUPPORTS_EDITIONS) == 0) {
-    // For generators that don't fully support editions yet, provide an
-    // optimistic set of defaults.  Protoc will check this condition later
-    // anyway.
-    return FeatureResolver::CompileDefaults(
-        FeatureSet::descriptor(), GetFeatureExtensions(),
-        MinimumAllowedEdition(), MaximumAllowedEdition());
-  }
+  // For generators that don't fully support editions yet, provide an
+  // optimistic set of defaults.  Protoc will check this condition later
+  // anyway.
   return FeatureResolver::CompileDefaults(
-      FeatureSet::descriptor(), GetFeatureExtensions(), GetMinimumEdition(),
-      GetMaximumEdition());
+      FeatureSet::descriptor(), GetFeatureExtensions(), ProtocMinimumEdition(),
+      MaximumKnownEdition());
 }
 
 GeneratorContext::~GeneratorContext() = default;

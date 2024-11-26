@@ -229,7 +229,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         },
         // Non arena-constructable
         [arena](auto&&... args) {
-          if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+          if (ABSL_PREDICT_FALSE(arena == nullptr)) {
             return new T(std::forward<Args>(args)...);
           }
           return new (arena->AllocateInternal<T>())
@@ -277,7 +277,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
@@ -445,9 +445,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return new (ptr) T(static_cast<Args&&>(args)...);
     }
 
-    static inline PROTOBUF_ALWAYS_INLINE T* New() {
-      return new T(nullptr);
-    }
+    static PROTOBUF_ALWAYS_INLINE T* New() { return new T(nullptr); }
 
     friend class Arena;
     friend class TestUtil::ReflectionTester;
@@ -520,7 +518,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                                          Args&&... args) {
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
@@ -534,7 +532,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_NDEBUG_INLINE static T* CreateArenaCompatible(Arena* arena) {
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       // Generated arena constructor T(Arena*) is protected. Call via
       // InternalHelper.
       return InternalHelper<T>::New();
@@ -583,31 +581,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // which needs to declare Map as friend of generated message.
   template <typename T, typename... Args>
   static void CreateInArenaStorage(T* ptr, Arena* arena, Args&&... args) {
-    CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>(),
-                                 std::forward<Args>(args)...);
-    if (PROTOBUF_PREDICT_TRUE(arena != nullptr)) {
-      RegisterDestructorInternal(ptr, arena, is_destructor_skippable<T>());
+    if constexpr (is_arena_constructable<T>::value) {
+      InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
+    } else {
+      new (ptr) T(std::forward<Args>(args)...);
     }
-  }
 
-  template <typename T, typename... Args>
-  static void CreateInArenaStorageInternal(T* ptr, Arena* arena,
-                                           std::true_type, Args&&... args) {
-    InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
-  }
-  template <typename T, typename... Args>
-  static void CreateInArenaStorageInternal(T* ptr, Arena* /* arena */,
-                                           std::false_type, Args&&... args) {
-    new (ptr) T(std::forward<Args>(args)...);
-  }
-
-  template <typename T>
-  static void RegisterDestructorInternal(T* /* ptr */, Arena* /* arena */,
-                                         std::true_type) {}
-  template <typename T>
-  static void RegisterDestructorInternal(T* ptr, Arena* arena,
-                                         std::false_type) {
-    arena->OwnDestructor(ptr);
+    if constexpr (!is_destructor_skippable<T>::value) {
+      if (ABSL_PREDICT_TRUE(arena != nullptr)) {
+        arena->OwnDestructor(ptr);
+      }
+    }
   }
 
   // Implementation for GetArena(). Only message objects with

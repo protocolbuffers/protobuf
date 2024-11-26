@@ -195,6 +195,11 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+
+  void SetNoDefaultInstance(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -218,6 +223,11 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+
+  void SetNoDefaultInstance(Scalar desired) const noexcept {
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif
@@ -327,14 +337,8 @@ using GetTypeNameReturnType = absl::string_view;
 using GetTypeNameReturnType = std::string;
 #endif
 
-// Default empty string object. Don't use this directly. Instead, call
-// GetEmptyString() to get the reference. This empty string is aligned with a
-// minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
-PROTOBUF_EXPORT extern ExplicitlyConstructedArenaString
-    fixed_address_empty_string;
 
-
-PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
+PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
@@ -1196,13 +1200,8 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
-inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
-  ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
-      << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
-}
-
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
+PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
@@ -1303,7 +1302,7 @@ PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
 }
 
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::New(
+PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, Arena* arena) const {
   return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
@@ -1328,7 +1327,7 @@ std::string Utf8Format(const MessageLite& message_lite);
 //
 // `DynamicCastMessage` is similar to `dynamic_cast`, returns `nullptr` when the
 // input is not an instance of `T`. The overloads that take a reference will
-// terminate on mismatch.
+// throw std::bad_cast on mismatch, or terminate if compiled without exceptions.
 //
 // `DownCastMessage` is a lightweight function for downcasting base
 // `MessageLite` pointer to derived type, where it only does type checking if
@@ -1362,6 +1361,11 @@ template <typename T>
 const T& DynamicCastMessage(const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
   if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
+    // If exceptions are enabled, throw.
+    // Otherwise, log a fatal error.
+#if defined(ABSL_HAVE_EXCEPTIONS)
+    throw std::bad_cast();
+#endif
     // Move the logging into an out-of-line function to reduce bloat in the
     // caller.
     internal::FailDynamicCast(from, T::default_instance());

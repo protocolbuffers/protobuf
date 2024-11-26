@@ -161,7 +161,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
         }
 
         bool $0::add_alias_$2($1 target) {
-          ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
+          ABSL_CHECK(upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)));
           size_t size = 0;
           $3_$2(msg_, &size);
           auto elements = $3_resize_$2(msg_, size + 1, arena_);

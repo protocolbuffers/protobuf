@@ -69,7 +69,7 @@ def protobuf_deps():
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = Label("//:third_party/zlib.BUILD"),
+            build_file = Label("//third_party:zlib.BUILD"),
             sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
             strip_prefix = "zlib-1.3.1",
             urls = [
@@ -84,22 +84,22 @@ def protobuf_deps():
             repo = "https://github.com/open-source-parsers/jsoncpp",
             commit = "89e2973c754a9c02a49974d839779b151e95afd6",  # 1.9.6
             sha256 = "02f0804596c1e18c064d890ac9497fa17d585e822fcacf07ff8a8aa0b344a7bd",
-            build_file = Label("//:third_party/jsoncpp.BUILD"),
+            build_file = Label("//third_party:jsoncpp.BUILD"),
         )
 
     if not native.existing_rule("rules_cc"):
         http_archive(
             name = "rules_cc",
-            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.13/rules_cc-0.0.13.tar.gz"],
-            sha256 = "d9bdd3ec66b6871456ec9c965809f43a0901e692d754885e89293807762d3d80",
-            strip_prefix = "rules_cc-0.0.13",
+            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
+            sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
+            strip_prefix = "rules_cc-0.0.16",
         )
 
     if not native.existing_rule("rules_java"):
         http_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/7.12.2/rules_java-7.12.2.tar.gz",
-            sha256 = "a9690bc00c538246880d5c83c233e4deb83fe885f54c21bb445eb8116a180b83",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/8.3.2/rules_java-8.3.2.tar.gz",
+            sha256 = "9b9614f8a7f7b7ed93cb7975d227ece30fe7daed2c0a76f03a5ee37f69e437de",
         )
 
     if not native.existing_rule("rules_shell"):
@@ -124,7 +124,7 @@ def protobuf_deps():
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.8",
+            minimum_python_version = "3.9",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -178,16 +178,8 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        name = "python-3.8.0",
-        sha256 = "f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.8.0",
-        sha256 = "87a6481f5eef30b42ac12c93f06f73bd0b8692f26313b76a6615d1641c4e7bca",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.8.0",
-        sha256 = "96c61321ce90dd053c8a04f305a5f6cc6d91350b862db34440e4a4f069b708a0",
+        name = "python-3.9.0",
+        sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
     )
     python_nuget_package(
         name = "nuget_python_i686_3.9.0",

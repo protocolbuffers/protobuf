@@ -21,6 +21,7 @@
 namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
+using Sub = protobuf::io::Printer::Sub;
 
 // Convert enum value to C++ literal.
 //
@@ -94,21 +95,26 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
-    ctx.EmitLegacy("  $0", EnumValueSymbolInNameSpace(desc, value));
-    ctx.EmitLegacy(" = $0", EnumInt32ToString(value->number()));
-    if (i != values.size() - 1) {
-      ctx.Emit(",");
-    }
-    ctx.Emit("\n");
+    ctx.Emit({{"name", EnumValueSymbolInNameSpace(desc, value)},
+              {"number", EnumInt32ToString(value->number())},
+              {"sep", i == values.size() - 1 ? "" : ","}},
+             R"cc(
+               $name$ = $number$$sep$
+             )cc");
   }
 }
 
 void WriteEnumDeclarations(
     const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx) {
   for (auto enumdesc : enums) {
-    ctx.EmitLegacy("enum $0 : int {\n", EnumTypeName(enumdesc));
-    WriteEnumValues(enumdesc, ctx);
-    ctx.Emit("};\n\n");
+    ctx.Emit({{"type", EnumTypeName(enumdesc)},
+              Sub("enum_vals", [&] { WriteEnumValues(enumdesc, ctx); })
+                  .WithSuffix(",")},
+             R"cc(
+               enum $type$ : int {
+                 $enum_vals$,
+               };
+             )cc");
   }
 }
 

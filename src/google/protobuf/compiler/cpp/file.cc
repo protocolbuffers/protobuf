@@ -855,7 +855,7 @@ void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
           }}},
         R"cc(
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY$priority$ static ::std::false_type
-              _static_init$priority$_ PROTOBUF_UNUSED =
+              _static_init$priority$_ [[maybe_unused]] =
                   ($expr$, ::std::false_type{});
         )cc");
     // Reset the vector because we might be generating many files.
@@ -1546,11 +1546,11 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     }
 
     ListAllTypesForServices(file_, &classes);
-  } else {
-    // List all enums in this file, to declare the traits.
-    google::protobuf::internal::VisitDescriptors(
-        *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
   }
+
+  // List all enums in this file, to declare the traits.
+  google::protobuf::internal::VisitDescriptors(
+      *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
 
   // Calculate the set of files whose definitions we get through include.
   // No need to forward declare types that are defined in these.
@@ -1686,6 +1686,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   }
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
+    IncludeFileAndExport("third_party/protobuf/map_type_handler.h", p);
     if (HasDescriptorMethods(file_, options_)) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
@@ -1768,9 +1769,14 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   )cc");
 
   if (HasDescriptorMethods(file_, options_)) {
+    // The DescriptorTable needs to be extern "C" so that we can access it from
+    // Rust. We do not attempt to read the contents of the table in Rust, but
+    // just use the symbol to force-link the C++ generated code when necessary.
     p->Emit(R"cc(
+      extern "C" {
       $dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable
           $desc_table$;
+      }  // extern "C"
     )cc");
   }
 }

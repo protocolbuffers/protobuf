@@ -9,67 +9,16 @@
   - hpb_proto_library()
 """
 
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
 def _filter_none(elems):
     return [e for e in elems if e]
-
-# TODO: b/373443334 - consolidate
-def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
-    """Like cc_library(), but callable from rules.
-
-    Args:
-      ctx: Rule context.
-      name: Unique name used to generate output files.
-      hdrs: Public headers that can be #included from other rules.
-      srcs: C/C++ source files.
-      copts: Additional options for cc compilation.
-      dep_ccinfos: CcInfo providers of dependencies we should build/link against.
-
-    Returns:
-      CcInfo provider for this compilation.
-    """
-
-    compilation_contexts = [info.compilation_context for info in dep_ccinfos]
-    linking_contexts = [info.linking_context for info in dep_ccinfos]
-    toolchain = find_cpp_toolchain(ctx)
-    feature_configuration = cc_common.configure_features(
-        ctx = ctx,
-        cc_toolchain = toolchain,
-        requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features,
-    )
-
-    (compilation_context, compilation_outputs) = cc_common.compile(
-        actions = ctx.actions,
-        feature_configuration = feature_configuration,
-        cc_toolchain = toolchain,
-        name = name,
-        srcs = srcs,
-        public_hdrs = hdrs,
-        user_compile_flags = copts,
-        compilation_contexts = compilation_contexts,
-    )
-
-    # buildifier: disable=unused-variable
-    (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
-        actions = ctx.actions,
-        name = name,
-        feature_configuration = feature_configuration,
-        cc_toolchain = toolchain,
-        compilation_outputs = compilation_outputs,
-        linking_contexts = linking_contexts,
-    )
-
-    return CcInfo(
-        compilation_context = compilation_context,
-        linking_context = linking_context,
-    )
 
 # Dummy rule to expose select() copts to aspects  ##############################
 
@@ -177,7 +126,7 @@ def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
         ), file_provider(srcs = GeneratedSrcsInfo(srcs = [], hdrs = []))]
     else:
         files = _compile_upb_cc_protos(ctx, proto_info, proto_info.direct_sources)
-        cc_info = _cc_library_func(
+        cc_info = cc_library_func(
             ctx = ctx,
             name = ctx.rule.attr.name + ".upbprotos",
             hdrs = files.hdrs,

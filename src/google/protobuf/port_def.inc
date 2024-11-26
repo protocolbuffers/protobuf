@@ -162,13 +162,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 // For functions we want to force inline.
 #if defined(PROTOBUF_NO_INLINE)
-# define PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_ALWAYS_INLINE inline
 #elif defined(__GNUC__)
-# define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
+#define PROTOBUF_ALWAYS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
-# define PROTOBUF_ALWAYS_INLINE __forceinline
+#define PROTOBUF_ALWAYS_INLINE inline __forceinline
 #else
-# define PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_ALWAYS_INLINE inline
 #endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE_CALL
@@ -196,7 +196,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #if defined(NDEBUG) || (defined(_MSC_VER) && !defined(_DEBUG))
 # define PROTOBUF_NDEBUG_INLINE PROTOBUF_ALWAYS_INLINE
 #else
-# define PROTOBUF_NDEBUG_INLINE
+#define PROTOBUF_NDEBUG_INLINE inline
 #endif
 
 // Note that PROTOBUF_NOINLINE is an attribute applied to functions, to prevent
@@ -354,28 +354,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOC_EXPORT
 #endif
 
-#if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
-#error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
-#endif
-#if defined(__GNUC__)
-# define PROTOBUF_PREDICT_TRUE(x) (__builtin_expect(false || (x), true))
-# define PROTOBUF_PREDICT_FALSE(x) (__builtin_expect(false || (x), false))
-#else
-# define PROTOBUF_PREDICT_TRUE(x) (x)
-# define PROTOBUF_PREDICT_FALSE(x) (x)
-#endif
-
-#ifdef PROTOBUF_NODISCARD
-#error PROTOBUF_NODISCARD was previously defined
-#endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(nodiscard)
-#define PROTOBUF_NODISCARD [[nodiscard]]
-#elif ABSL_HAVE_ATTRIBUTE(warn_unused_result) || defined(__GNUC__)
-#define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
-#else
-#define PROTOBUF_NODISCARD
-#endif
-
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
@@ -525,56 +503,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_HAVE_ATTRIBUTE_WEAK 0
 #endif
 
-// Macros to detect sanitizers.
-#ifdef PROTOBUF_ASAN
-#error PROTOBUF_ASAN was previously defined
-#endif
-#ifdef PROTOBUF_MSAN
-#error PROTOBUF_MSAN was previously defined
-#endif
-#ifdef PROTOBUF_TSAN
-#error PROTOBUF_TSAN was previously defined
-#endif
-#if defined(__clang__)
-#if ABSL_HAVE_FEATURE(address_sanitizer)
-#    define PROTOBUF_ASAN 1
-#  endif
-#if ABSL_HAVE_FEATURE(thread_sanitizer)
-#    define PROTOBUF_TSAN 1
-#  endif
-#if ABSL_HAVE_FEATURE(memory_sanitizer)
-#    define PROTOBUF_MSAN 1
-#  endif
-#elif defined(__GNUC__)
-// Double-guard is needed for -Wundef:
-#  ifdef __SANITIZE_ADDRESS__
-#  if    __SANITIZE_ADDRESS__
-#    define PROTOBUF_ASAN 1
-#  endif
-#  endif
-#  ifdef __SANITIZE_THREAD__
-#  if    __SANITIZE_THREAD__
-#    define PROTOBUF_TSAN 1
-#  endif
-#  endif
-#  ifdef __SANITIZE_MEMORY__
-#  if    __SANITIZE_MEMORY__
-#    define PROTOBUF_ASAN 1
-#  endif
-#  endif
-#endif
-
-#ifdef PROTOBUF_ASAN
-#include <sanitizer/asan_interface.h>
-#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
-#else  // PROTOBUF_ASAN
-#define PROTOBUF_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
-#endif  // PROTOBUF_ASAN
-
-#ifdef PROTOBUF_TSAN
-#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
+// Variable used to inject artificial language races to detect API level races.
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
+#define PROTOBUF_TSAN_DECLARE_MEMBER char _tsan_detect_race = 0;
 #else
 #define PROTOBUF_TSAN_DECLARE_MEMBER
 #endif
@@ -608,17 +539,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
       const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
 #define PROTOBUF_TC_PARAM_NO_DATA_PASS \
   msg, ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
-
-#ifdef PROTOBUF_UNUSED
-#error PROTOBUF_UNUSED was previously defined
-#endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(maybe_unused) || (PROTOBUF_MSC_VER_MIN(1911))
-#define PROTOBUF_UNUSED [[maybe_unused]]
-#elif ABSL_HAVE_ATTRIBUTE(unused) || defined(__GNUC__)
-#define PROTOBUF_UNUSED __attribute__((__unused__))
-#else
-#define PROTOBUF_UNUSED
-#endif
 
 // For the toolchains that support it, evaluates to `true` if the input is
 // determined to be a compile time constant after optimizations have happened
@@ -969,7 +889,6 @@ namespace internal {
 #else
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
-
 
 namespace google {
 namespace protobuf {

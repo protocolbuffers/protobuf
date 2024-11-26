@@ -994,6 +994,55 @@ UPB_API_INLINE uint64_t upb_Message_GetExtensionUInt64(
   return ret;
 }
 
+UPB_API_INLINE upb_StringView upb_Message_GetExtensionString(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    upb_StringView default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_String ||
+             upb_MiniTableExtension_CType(e) == kUpb_CType_Bytes);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             kUpb_FieldRep_StringView);
+  upb_StringView ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE struct upb_Message* upb_Message_GetExtensionMessage(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    struct upb_Message* default_val) {
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  struct upb_Message* ret;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+// Repeated
+UPB_API_INLINE const upb_Array* upb_Message_GetExtensionArray(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field)) ==
+             kUpb_FieldRep_NativePointer);
+  UPB_ASSUME(upb_MiniTableField_IsArray(&e->UPB_PRIVATE(field)));
+  UPB_ASSUME(e->UPB_PRIVATE(field).presence == 0);
+  upb_Array* ret;
+  const upb_Array* default_val = NULL;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE upb_Array* upb_Message_GetExtensionMutableArray(
+    struct upb_Message* msg, const upb_MiniTableExtension* e) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field)) ==
+             kUpb_FieldRep_NativePointer);
+  UPB_ASSUME(upb_MiniTableField_IsArray(&e->UPB_PRIVATE(field)));
+  UPB_ASSUME(e->UPB_PRIVATE(field).presence == 0);
+  upb_Array* ret;
+  upb_Array* default_val = NULL;
+  _upb_Message_GetExtensionField(msg, e, &default_val, &ret);
+  return ret;
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

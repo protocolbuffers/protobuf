@@ -39,10 +39,9 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/container/btree_map.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
@@ -51,7 +50,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
@@ -2043,6 +2041,18 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 168);
 
+#ifndef SWIG
+enum class ExtDeclEnforcementLevel : uint8_t {
+  // No enforcement.
+  kNoEnforcement = 0,
+  // All extensions excluding descriptor.proto extensions
+  // (go/extension-declarations#descriptor-proto)
+  kCustomExtensions = 1,
+  // All extensions including descriptor.proto extensions.
+  kAllExtensions = 2,
+};
+#endif  // !SWIG
+
 // ===================================================================
 
 // Used to construct descriptors.
@@ -2268,8 +2278,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   // This enforcement is disabled by default because it requires full
   // descriptors with source-retention options, which are generally not
   // available at runtime.
-  void EnforceExtensionDeclarations(bool enforce) {
+  void EnforceExtensionDeclarations(google::protobuf::ExtDeclEnforcementLevel enforce) {
     enforce_extension_declarations_ = enforce;
+  }
+
+  bool EnforceDescriptorExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+           ExtDeclEnforcementLevel::kAllExtensions;
+  }
+
+  bool EnforceCustomExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kAllExtensions ||
+           enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kCustomExtensions;
   }
 
 #ifndef SWIG
@@ -2486,7 +2508,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  bool enforce_extension_declarations_;
+  ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   mutable bool build_started_ = false;
@@ -2949,9 +2971,33 @@ constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
     const FieldDescriptor* field);
 
-PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
-
 #ifndef SWIG
+enum class HasbitMode : uint8_t {
+  // Hasbits do not exist for the field.
+  kNoHasbit,
+  // Hasbits exist and indicate field presence.
+  // Hasbit is set if and only if field is present.
+  kTrueHasbit,
+  // Hasbits exist and "hint at" field presence.
+  // When hasbit is set, field is 'probably' present, but field accessors must
+  // still check for field presence (i.e. false positives are possible).
+  // When hasbit is unset, field is guaranteed to be not present.
+  kHintHasbit,
+};
+
+// Returns the "hasbit mode" of the field. Depending on the implementation, a
+// field can:
+//   - have no hasbits in its internal object (kNoHasbit);
+//   - have hasbits where hasbit == 1 indicates field presence and hasbit == 0
+//     indicates an unset field (kTrueHasbit);
+//   - have hasbits where hasbit == 1 indicates "field is possibly modified" and
+//     hasbit == 0 indicates "field is definitely missing" (kHintHasbit).
+PROTOBUF_EXPORT HasbitMode GetFieldHasbitMode(const FieldDescriptor* field);
+
+// Returns true if there are hasbits for the field.
+// Note that this does not correlate with "hazzer"s, i.e., whether has_foo APIs
+// are emitted.
+PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
 enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
@@ -3012,6 +3058,14 @@ auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
   return {};
 }
 #endif  // !SWIG
+
+// Whether the given string field should have the accessors be privatized due
+// to it being an unsupported type. If this returns true, cpp_string_type()
+// returns kString for the storage, the C++ Generator will not generate
+// public accessors for the type, but the field will sill be accessible via
+// reflection.
+PROTOBUF_EXPORT bool IsStringFieldWithPrivatizedAccessors(
+    const FieldDescriptor& field);
 
 }  // namespace cpp
 }  // namespace internal

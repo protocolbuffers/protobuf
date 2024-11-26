@@ -2111,7 +2111,7 @@ MessageDifferencer::StreamReporter::~StreamReporter() {
 void MessageDifferencer::StreamReporter::PrintPath(
     const std::vector<SpecificField>& field_path, bool left_side) {
   for (size_t i = 0; i < field_path.size(); ++i) {
-    SpecificField specific_field = field_path[i];
+    const SpecificField& specific_field = field_path[i];
 
     if (specific_field.field != nullptr &&
         specific_field.field->name() == "value") {

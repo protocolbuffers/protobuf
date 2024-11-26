@@ -26,6 +26,7 @@
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/generator_factory.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/lite/generator_factory.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -33,6 +34,7 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -238,6 +240,17 @@ bool FileGenerator::Validate(std::string* error) {
         << "name for the .proto file to be safe.";
   }
 
+  // Check that no field is a closed enum with implicit presence. For normal
+  // cases this will be rejected by protoc before the generator is invoked, but
+  // for cases like legacy_closed_enum it may reach the generator.
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const FieldDescriptor& field) {
+    if (field.enum_type() != nullptr && !SupportUnknownEnumValue(&field) &&
+        !field.has_presence() && !field.is_repeated()) {
+      absl::StrAppend(error, "Field ", field.full_name(),
+                      " has a closed enum type with implicit presence.\n");
+    }
+  });
+
   // Print a warning if optimize_for = LITE_RUNTIME is used.
   if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME &&
       !options_.enforce_lite) {
@@ -250,7 +263,8 @@ bool FileGenerator::Validate(std::string* error) {
            "https://github.com/protocolbuffers/protobuf/blob/main/java/"
            "lite.md";
   }
-  return true;
+
+  return error->empty();
 }
 
 void FileGenerator::Generate(io::Printer* printer) {

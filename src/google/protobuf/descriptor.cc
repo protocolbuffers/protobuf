@@ -2104,7 +2104,7 @@ DescriptorPool::DescriptorPool()
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2119,7 +2119,7 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2133,7 +2133,7 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -3959,16 +3959,15 @@ bool FieldDescriptor::has_optional_keyword() const {
 
 FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
   ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*this)) {
+    return CppStringType::kString;
+  }
+
   switch (features().GetExtension(pb::cpp).string_type()) {
     case pb::CppFeatures::VIEW:
       return CppStringType::kView;
     case pb::CppFeatures::CORD:
-      // In open-source, protobuf CORD is only supported for singular bytes
-      // fields.
-      if (type() != FieldDescriptor::TYPE_BYTES || is_repeated() ||
-          is_extension()) {
-        return CppStringType::kString;
-      }
       return CppStringType::kCord;
     case pb::CppFeatures::STRING:
       return CppStringType::kString;
@@ -4806,7 +4805,7 @@ DescriptorBuilder::DescriptorBuilder(
   // have to avoid registering these pre-main, because we need to ensure that
   // the linker --gc-sections step can strip out the full runtime if it is
   // unused.
-  PROTOBUF_UNUSED static std::true_type lazy_register =
+  [[maybe_unused]] static std::true_type lazy_register =
       (internal::ExtensionSet::RegisterMessageExtension(
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
@@ -8046,7 +8045,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->enforce_extension_declarations_) {
+    if (pool_->EnforceCustomExtensionDeclarations()) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {
@@ -9798,9 +9797,27 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
+HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
+  // Do not generate hasbits for "real-oneof" and weak fields.
+  if (field->real_containing_oneof() || field->options().weak()) {
+    return HasbitMode::kNoHasbit;
+  }
+
+  // Explicit-presence fields always have true hasbits.
+  if (field->has_presence()) {
+    return HasbitMode::kTrueHasbit;
+  }
+
+  // Implicit presence fields.
+  if (!field->is_repeated()) {
+    return HasbitMode::kHintHasbit;
+  }
+  // We currently don't implement hasbits for implicit repeated fields.
+  return HasbitMode::kNoHasbit;
+}
+
 bool HasHasbit(const FieldDescriptor* field) {
-  return field->has_presence() && !field->real_containing_oneof() &&
-         !field->options().weak();
+  return GetFieldHasbitMode(field) != HasbitMode::kNoHasbit;
 }
 
 static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
@@ -9850,6 +9867,22 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   return filename == "net/proto2/proto/descriptor.proto" ||
          filename == "google/protobuf/descriptor.proto";
+}
+
+bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
+  // In open-source, protobuf CORD is only supported for singular bytes
+  // fields.
+  if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      InternalFeatureHelper::GetFeatures(field)
+              .GetExtension(pb::cpp)
+              .string_type() == pb::CppFeatures::CORD &&
+      (field.type() != FieldDescriptor::TYPE_BYTES || field.is_repeated() ||
+       field.is_extension())
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace cpp

@@ -1,19 +1,31 @@
 # Don't run jsoncpp tests.
 set(JSONCPP_WITH_TESTS OFF)
 
-if (TARGET jsoncpp_lib)
-  # jsoncpp is already present.
-elseif (protobuf_FETCH_DEPENDENCIES AND protobuf_JSONCPP_PROVIDER STREQUAL "fetch")
-  include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
-  include(FetchContent)
-  FetchContent_Declare(
-    jsoncpp
-    GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp.git"
-    GIT_TAG "${jsoncpp-version}"
-  )
-  FetchContent_MakeAvailable(jsoncpp)
-else ()
-  find_package(jsoncpp REQUIRED)
+if (NOT TARGET jsoncpp_lib)
+  if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
+    find_package(jsoncpp)
+  endif()
+
+  # Fallback to fetching Googletest from github if it's not found locally.
+  if (NOT jsoncpp_FOUND AND NOT protobuf_LOCAL_DEPENDENCIES_ONLY)
+    include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
+    message(STATUS "Fallback to downloading jsoncpp ${jsoncpp-version} from GitHub")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      jsoncpp
+      GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp.git"
+      GIT_TAG "${jsoncpp-version}"
+    )
+    FetchContent_MakeAvailable(jsoncpp)
+  endif()
+endif()
+
+if (NOT TARGET jsoncpp_lib)
+  message(FATAL_ERROR
+          "Cannot find jsoncpp dependency that's needed to build conformance tests.\n"
+          "If instead you want to skip these tests, run cmake with:\n"
+          "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
 endif()
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/conformance)
@@ -137,10 +149,6 @@ add_test(NAME conformance_cpp_test
   DEPENDS conformance_test_runner conformance_cpp)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
-if(NOT protobuf_FETCH_DEPENDENCIES AND protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
-  target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
-endif()
 
 if(BUILD_SHARED_LIBS)
   target_link_libraries(conformance_test_runner jsoncpp_lib)

@@ -12,10 +12,8 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
@@ -52,24 +50,6 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
 
     *out_f = f;
     *out_v = val;
-    *iter = i;
-    return true;
-  }
-
-  return false;
-}
-
-bool UPB_PRIVATE(_upb_Message_NextExtension)(
-    const upb_Message* msg, const upb_MiniTable* m,
-    const upb_MiniTableExtension** out_e, upb_MessageValue* out_v,
-    size_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-
-  if (++i < count) {
-    *out_e = exts[i].ext;
-    *out_v = exts[i].data;
     *iter = i;
     return true;
   }

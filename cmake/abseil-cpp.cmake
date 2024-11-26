@@ -10,27 +10,36 @@ if(protobuf_BUILD_TESTS)
   set(ABSL_FIND_GOOGLETEST OFF)
 endif()
 
-if(TARGET absl::strings)
-  # If Abseil is included already, skip including it.
-  # (https://github.com/protocolbuffers/protobuf/issues/10435)
-elseif (protobuf_FETCH_DEPENDENCIES AND protobuf_ABSL_PROVIDER STREQUAL "fetch")
-  include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
-  include(FetchContent)
-  FetchContent_Declare(
-    absl
-    GIT_REPOSITORY "https://github.com/abseil/abseil-cpp.git"
-    GIT_TAG "${abseil-cpp-version}"
-  )
-  if(protobuf_INSTALL)
-    # When protobuf_INSTALL is enabled and Abseil will be built as a module,
-    # Abseil will be installed along with protobuf for convenience.
-    set(ABSL_ENABLE_INSTALL ON)
+if (NOT TARGET absl::strings)
+  if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
+    # Use "CONFIG" as there is no built-in cmake module for absl.
+    find_package(absl CONFIG)
   endif()
-  FetchContent_MakeAvailable(absl)
-else ()
-  # Use "CONFIG" as there is no built-in cmake module for absl.
-  find_package(absl REQUIRED CONFIG)
+
+  # Fallback to fetching Abseil from github if it's not found locally.
+  if (NOT absl_FOUND AND NOT protobuf_LOCAL_DEPENDENCIES_ONLY)
+    include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
+    message(STATUS "Fallback to downloading Abseil ${abseil-cpp-version} from GitHub")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      absl
+      GIT_REPOSITORY "https://github.com/abseil/abseil-cpp.git"
+      GIT_TAG "${abseil-cpp-version}"
+    )
+    if (protobuf_INSTALL)
+      # When protobuf_INSTALL is enabled and Abseil will be built as a module,
+      # Abseil will be installed along with protobuf for convenience.
+      set(ABSL_ENABLE_INSTALL ON)
+    endif()
+    FetchContent_MakeAvailable(absl)
+  endif()
 endif()
+
+if (NOT TARGET absl::strings)
+  message(FATAL_ERROR "Cannot find abseil-cpp dependency that's needed to build protobuf.\n")
+endif()
+
 set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
 
 if (BUILD_SHARED_LIBS AND MSVC)
@@ -41,13 +50,8 @@ if (BUILD_SHARED_LIBS AND MSVC)
   # Once https://github.com/abseil/abseil-cpp/pull/1466 is merged and released
   # in the minimum version of abseil required by protobuf, it is possible to
   # always link absl::abseil_dll and absl::abseil_test_dll and remove the if
-  if(protobuf_ABSL_PROVIDER STREQUAL "package")
-    set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
-    set(protobuf_ABSL_USED_TEST_TARGETS absl::abseil_test_dll)
-  else()
-    set(protobuf_ABSL_USED_TARGETS abseil_dll)
-    set(protobuf_ABSL_USED_TEST_TARGETS abseil_test_dll)
-  endif()
+  set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
+  set(protobuf_ABSL_USED_TEST_TARGETS absl::abseil_test_dll)
 else()
   set(protobuf_ABSL_USED_TARGETS
     absl::absl_check

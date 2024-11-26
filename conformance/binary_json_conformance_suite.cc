@@ -1367,6 +1367,43 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
+  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroup", REQUIRED);
+  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroupUnknown", REQUIRED);
+  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroupWrongType", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18, tag(1234, WireFormatLite::WIRETYPE_END_GROUP)),
+      "UnmatchedEndGroupNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
+      "UnmatchedEndGroupNested", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
+                   len(2, "hello world")),
+      "UnmatchedEndGroupWithData", REQUIRED);
+
+  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroup", REQUIRED);
+  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupUnknown", REQUIRED);
+  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupWrongType", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18, tag(1234, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, tag(202, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNested", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                   len(2, "hello world")),
+      "UnmatchedStartGroupWithData", REQUIRED);
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
   for (uint8_t type : {0x6, 0x7}) {
     for (uint8_t field = 0; field < 4; ++field) {
@@ -1553,7 +1590,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
-
+    TestUnmatchedGroup();
     TestUnknownWireType();
 
     int64_t kInt64Min = -9223372036854775808ULL;
@@ -2289,6 +2326,10 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("Int32FieldStringValueEscaped", REQUIRED,
                    R"({"optionalInt32": "2\u003147483647"})",
                    "optional_int32: 2147483647");
+  RunValidJsonTest("Int32FieldStringValueZero", REQUIRED,
+                   R"({"optionalInt32": "0"})", "optional_int32: 0");
+  RunValidJsonTest("Int32FieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalInt32": "1e5"})", "optional_int32: 100000");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailureForJson("Int32FieldTooLarge", REQUIRED,
@@ -2313,6 +2354,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalInt32": "12abc"})");
+  ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalInt32": "abc"})");
 
   // Parser reject empty string values.
   ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
@@ -2418,6 +2465,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("FloatFieldQuotedValue", REQUIRED,
                    R"({"optionalFloat": "1"})", "optional_float: 1");
+  RunValidJsonTest("FloatFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalFloat": "1.175494e-38"})",
+                   "optional_float: 1.175494e-38");
   // Special values.
   RunValidJsonTest("FloatFieldNan", REQUIRED, R"({"optionalFloat": "NaN"})",
                    "optional_float: nan");
@@ -2458,6 +2508,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldEmptyString", REQUIRED,
                             R"({"optionalFloat": ""})");
 
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalFloat": "12abc"})");
+  ExpectParseFailureForJson("FloatFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalFloat": "abc"})");
+
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
                    R"({"optionalDouble": 2.22507e-308})",
@@ -2474,6 +2530,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("DoubleFieldQuotedValue", REQUIRED,
                    R"({"optionalDouble": "1"})", "optional_double: 1");
+  RunValidJsonTest("DoubleFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalDouble": "2.22507e-308"})",
+                   "optional_double: 2.22507e-308");
   // Special values.
   RunValidJsonTest("DoubleFieldNan", REQUIRED, R"({"optionalDouble": "NaN"})",
                    "optional_double: nan");
@@ -2513,6 +2572,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Parsers should reject empty string values.
   ExpectParseFailureForJson("DoubleFieldEmptyString", REQUIRED,
                             R"({"optionalDouble": ""})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("DoubleFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalDouble": "12abc"})");
+  ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalDouble": "abc"})");
 
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",

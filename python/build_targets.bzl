@@ -439,6 +439,7 @@ def build_targets(name):
         visibility = ["//visibility:public"],
         deps = [
             "//src/google/protobuf",
+            "//src/google/protobuf/io",
             "@com_google_absl//absl/log:absl_check",
             "@com_google_absl//absl/status",
             "@system_python//:python_headers",
@@ -468,7 +469,7 @@ def build_targets(name):
     conformance_test(
         name = "conformance_test_cpp",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
-        failure_list = "//conformance:failure_list_python.txt",
+        failure_list = "//conformance:failure_list_python_cpp.txt",
         target_compatible_with = select({
             "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],

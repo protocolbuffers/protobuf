@@ -19,8 +19,11 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_MICROSECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_MILLISECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 
+import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.Strings;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
+import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -140,6 +143,8 @@ public final class Durations {
    * @throws NullPointerException if {@code duration} is {@code null}
    */
   @CanIgnoreReturnValue
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public static Duration checkNotNegative(Duration duration) {
     checkArgument(!isNegative(duration), "duration (%s) must not be negative", toString(duration));
     return duration;
@@ -152,6 +157,8 @@ public final class Durations {
    * @throws NullPointerException if {@code duration} is {@code null}
    */
   @CanIgnoreReturnValue
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public static Duration checkPositive(Duration duration) {
     checkArgument(isPositive(duration), "duration (%s) must be positive", toString(duration));
     return duration;
@@ -164,7 +171,7 @@ public final class Durations {
     int nanos = duration.getNanos();
     if (!isValid(seconds, nanos)) {
       throw new IllegalArgumentException(
-          String.format(
+          Strings.lenientFormat(
               "Duration is not valid. See proto definition for valid values. "
                   + "Seconds (%s) must be in range [-315,576,000,000, +315,576,000,000]. "
                   + "Nanos (%s) must be in range [-999,999,999, +999,999,999]. "
@@ -193,6 +200,8 @@ public final class Durations {
    * @return The string representation of the given duration.
    * @throws IllegalArgumentException if the given duration is not in the valid range.
    */
+  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ObjCIncompatible
   public static String toString(Duration duration) {
     checkValid(duration);
 
@@ -220,6 +229,8 @@ public final class Durations {
    * @return a Duration parsed from the string
    * @throws ParseException if the string is not in the duration format
    */
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public static Duration parse(String value) throws ParseException {
     // Must end with "s".
     if (value.isEmpty() || value.charAt(value.length() - 1) != 's') {
@@ -269,6 +280,8 @@ public final class Durations {
    * @return a {@link Duration} parsed from the string
    * @throws IllegalArgumentException if parsing fails
    */
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public static Duration parseUnchecked(@CompileTimeConstant String value) {
     try {
       return parse(value);
@@ -427,17 +440,7 @@ public final class Durations {
 
   // Math operations
 
-  /**
-   * Add two durations.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
-   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
-   *     arithmetic there, and convert back using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Add two durations. */
   public static Duration add(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);
@@ -445,17 +448,7 @@ public final class Durations {
         checkedAdd(d1.getSeconds(), d2.getSeconds()), checkedAdd(d1.getNanos(), d2.getNanos()));
   }
 
-  /**
-   * Subtract a duration from another.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
-   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
-   *     arithmetic there, and convert back using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Subtract a duration from another. */
   public static Duration subtract(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);

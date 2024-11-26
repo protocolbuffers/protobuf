@@ -63,6 +63,7 @@ def _get_import_path(proto_file):
 
     Args:
       proto_file: (File) The .proto file
+
     Returns:
       (str) import path
     """

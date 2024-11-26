@@ -24,6 +24,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -82,6 +83,10 @@ namespace protobuf {
 namespace internal {
 
 class InternalMetadata;
+
+namespace v2 {
+class TableDriven;
+}  // namespace v2
 
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
@@ -338,13 +343,13 @@ class PROTOBUF_EXPORT ExtensionSet {
   void UnsafeArenaSetAllocatedMessage(int number, FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(int number,
-                                                 const MessageLite& prototype);
+  [[nodiscard]] MessageLite* ReleaseMessage(int number,
+                                            const MessageLite& prototype);
   MessageLite* UnsafeArenaReleaseMessage(int number,
                                          const MessageLite& prototype);
 
-  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(
-      const FieldDescriptor* descriptor, MessageFactory* factory);
+  [[nodiscard]] MessageLite* ReleaseMessage(const FieldDescriptor* descriptor,
+                                            MessageFactory* factory);
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
@@ -413,7 +418,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #undef desc
 
   void RemoveLast(int number);
-  PROTOBUF_NODISCARD MessageLite* ReleaseLast(int number);
+  [[nodiscard]] MessageLite* ReleaseLast(int number);
   MessageLite* UnsafeArenaReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
@@ -567,6 +572,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
+  friend class google::protobuf::internal::v2::TableDriven;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -628,7 +634,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
                                                 Arena* arena) = 0;
-    PROTOBUF_NODISCARD virtual MessageLite* ReleaseMessage(
+    [[nodiscard]] virtual MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
@@ -644,6 +650,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
+
+    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
+        const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
                            const LazyMessageExtension& other, Arena* arena,
@@ -753,9 +762,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     // For singular types, indicates if the extension is "cleared".  This
     // happens when an extension is set and then later cleared by the caller.
     // We want to keep the Extension object around for reuse, so instead of
-    // removing it from the map, we just set is_cleared = true.  This has no
-    // meaning for repeated types; for those, the size of the RepeatedField
-    // simply becomes zero when cleared.
+    // removing it from the map, we just set is_cleared = true.
+    //
+    // This is always set to false for repeated types.
+    // The size of the RepeatedField simply becomes zero when cleared.
     bool is_cleared : 1;
 
     // For singular message types, indicates whether lazy parsing is enabled
@@ -807,18 +817,29 @@ class PROTOBUF_EXPORT ExtensionSet {
   // finds the already-existing Extension for that key (returns false).
   // The Extension* will point to the new-or-found Extension.
   std::pair<Extension*, bool> Insert(int key);
+  // Same as insert for the large map.
+  std::pair<Extension*, bool> InternalInsertIntoLargeMap(int key);
 
   // Grows the flat_capacity_.
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
+
   static constexpr uint16_t kMaximumFlatCapacity = 256;
+
+  // Reserves capacity for the flat_capacity_ when the ExtensionSet is
+  // IsCompletelyEmpty.
+  // minimum_new_capacity must be <= kMaximumFlatCapacity.
+  void InternalReserveSmallCapacityFromEmpty(size_t minimum_new_capacity);
+
   bool is_large() const { return static_cast<int16_t>(flat_size_) < 0; }
 
   // Removes a key from the ExtensionSet.
   void Erase(int key);
 
+  // Returns the number of elements in the ExtensionSet, including cleared
+  // extensions.
   size_t Size() const {
-    return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
   // For use as `PrefetchFunctor`s in `ForEach`.
@@ -861,7 +882,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // prefetches ahead.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                           std::move(func), std::move(prefetch_func));
       return;
@@ -872,7 +893,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // As above, but const.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                           std::move(func), std::move(prefetch_func));
       return;
@@ -892,7 +913,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                         std::move(func));
       return;
@@ -903,7 +924,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // As above, but const.
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                         std::move(func));
       return;
@@ -911,10 +932,30 @@ class PROTOBUF_EXPORT ExtensionSet {
     ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
-  // Merges existing Extension from other_extension
+  // Returns true if nothing is allocated in the ExtensionSet.
+  bool IsCompletelyEmpty() const {
+    return flat_size_ == 0 && flat_capacity_ == 0;
+  }
+
+  // Implementation of MergeFrom into the empty ExtensionSet from a small
+  // `other`.
+  // This is used in all types of copy.
+  // PRECONDITIONs:
+  // 1. `this.IsCompletelyEmpty()`.
+  // 2. `other` is small (!other.is_large()).
+  void InternalMergeFromSmallToEmpty(const MessageLite* extendee,
+                                     const ExtensionSet& other);
+  // Implementation of MergeFrom for general case.
+  void InternalMergeFromSlow(const MessageLite* extendee,
+                             const ExtensionSet& other);
+  // Merges new or existing Extension from other_extension.
   void InternalExtensionMergeFrom(const MessageLite* extendee, int number,
                                   const Extension& other_extension,
                                   Arena* other_arena);
+  // Merges newly created uninitialized Extension from other_extension.
+  void InternalExtensionMergeFromIntoUninitializedExtension(
+      Extension& dst_extension, const MessageLite* extendee, int number,
+      const Extension& other_extension, Arena* other_arena);
 
   inline static bool is_packable(WireFormatLite::WireType type) {
     switch (type) {
@@ -1068,6 +1109,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     return map_.flat + flat_size_;
   }
 
+  static KeyValue* AllocateFlatMap(Arena* arena,
+                                   uint16_t powerof2_flat_capacity);
+  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
+
   Arena* arena_;
 
   // Manual memory-management:
@@ -1082,8 +1127,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     // which guarantees O(n lg n) CPU but larger constant factors.
     LargeMap* large;
   } map_;
-
-  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
 };
 
 constexpr ExtensionSet::ExtensionSet(Arena* arena)
@@ -1531,8 +1574,9 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, nullptr, message);
   }
-  PROTOBUF_NODISCARD static inline MutableType Release(
-      int number, FieldType /* field_type */, ExtensionSet* set) {
+  [[nodiscard]] static inline MutableType Release(int number,
+                                                  FieldType /* field_type */,
+                                                  ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));
   }

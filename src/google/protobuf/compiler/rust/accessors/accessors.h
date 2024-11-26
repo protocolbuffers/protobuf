@@ -17,6 +17,11 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
+// Returns true if the field will have accessors generated for it. This will
+// return true for nearly all fields; there are a few edge cases of string
+// types that we don't generate accessors for.
+bool IsSupportedField(Context& ctx, const FieldDescriptor& field);
+
 // Generates the Rust accessors: expected to be called once each for each
 // Message, MessageMut and MessageView's impl.
 void GenerateAccessorMsgImpl(Context& ctx, const FieldDescriptor& field,

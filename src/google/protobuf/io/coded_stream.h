@@ -659,15 +659,15 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
   // to check for errors.
-  PROTOBUF_NODISCARD uint8_t* EnsureSpace(uint8_t* ptr) {
-    if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
+  [[nodiscard]] uint8_t* EnsureSpace(uint8_t* ptr) {
+    if (ABSL_PREDICT_FALSE(ptr >= end_)) {
       return EnsureSpaceFallback(ptr);
     }
     return ptr;
   }
 
   uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
-    if (PROTOBUF_PREDICT_FALSE(end_ - ptr < size)) {
+    if (ABSL_PREDICT_FALSE(end_ - ptr < size)) {
       return WriteRawFallback(data, size, ptr);
     }
     std::memcpy(ptr, data, static_cast<unsigned int>(size));
@@ -696,8 +696,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s,
                                    uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
-    if (PROTOBUF_PREDICT_FALSE(
-            size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
+    if (ABSL_PREDICT_FALSE(size >= 128 ||
+                           end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
       return WriteStringMaybeAliasedOutline(num, s, ptr);
     }
     ptr = UnsafeVarint((num << 3) | 2, ptr);
@@ -714,8 +714,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteString(uint32_t num, const T& s,
                                               uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
-    if (PROTOBUF_PREDICT_FALSE(
-            size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
+    if (ABSL_PREDICT_FALSE(size >= 128 ||
+                           end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
       return WriteStringOutline(num, s, ptr);
     }
     ptr = UnsafeVarint((num << 3) | 2, ptr);
@@ -898,7 +898,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
-    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+    while (ABSL_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
       ++ptr;
@@ -909,7 +909,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeWriteSize(uint32_t value,
                                                          uint8_t* ptr) {
-    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+    while (ABSL_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
       ++ptr;
@@ -1295,7 +1295,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
 
 inline bool CodedInputStream::ReadVarint32(uint32_t* value) {
   uint32_t v = 0;
-  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
       *value = v;
@@ -1309,7 +1309,7 @@ inline bool CodedInputStream::ReadVarint32(uint32_t* value) {
 }
 
 inline bool CodedInputStream::ReadVarint64(uint64_t* value) {
-  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
+  if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
     *value = *buffer_;
     Advance(1);
     return true;
@@ -1320,7 +1320,7 @@ inline bool CodedInputStream::ReadVarint64(uint64_t* value) {
 }
 
 inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
-  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_)) {
     int v = *buffer_;
     if (v < 0x80) {
       *value = v;
@@ -1355,7 +1355,7 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
 }
 
 inline bool CodedInputStream::ReadLittleEndian16(uint16_t* value) {
-  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+  if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian16FromArray(buffer_, value);
     return true;
   } else {
@@ -1366,7 +1366,7 @@ inline bool CodedInputStream::ReadLittleEndian16(uint16_t* value) {
 inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
 #if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+  if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian32FromArray(buffer_, value);
     return true;
   } else {
@@ -1380,7 +1380,7 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
 inline bool CodedInputStream::ReadLittleEndian64(uint64_t* value) {
 #if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+  if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian64FromArray(buffer_, value);
     return true;
   } else {
@@ -1393,7 +1393,7 @@ inline bool CodedInputStream::ReadLittleEndian64(uint64_t* value) {
 
 inline uint32_t CodedInputStream::ReadTagNoLastTag() {
   uint32_t v = 0;
-  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
       Advance(1);
@@ -1410,7 +1410,7 @@ inline std::pair<uint32_t, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
   // constant, and things like "cutoff >= kMax1ByteVarint" to be evaluated at
   // compile time.
   uint32_t first_byte_or_zero = 0;
-  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_)) {
     // Hot case: buffer_ non_empty, buffer_[0] in [1, 128).
     // TODO: Is it worth rearranging this? E.g., if the number of fields
     // is large enough then is it better to check for the two-byte case first?
@@ -1424,8 +1424,8 @@ inline std::pair<uint32_t, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
     // Other hot case: cutoff >= 0x80, buffer_ has at least two bytes available,
     // and tag is two bytes.  The latter is tested by bitwise-and-not of the
     // first byte and the second byte.
-    if (cutoff >= 0x80 && PROTOBUF_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
-        PROTOBUF_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
+    if (cutoff >= 0x80 && ABSL_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
+        ABSL_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
       const uint32_t kMax2ByteVarint = (0x7f << 7) + 0x7f;
       uint32_t tag = (1u << 7) * buffer_[1] + (buffer_[0] - 0x80);
       Advance(2);
@@ -1454,15 +1454,14 @@ inline bool CodedInputStream::ConsumedEntireMessage() {
 
 inline bool CodedInputStream::ExpectTag(uint32_t expected) {
   if (expected < (1 << 7)) {
-    if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_) &&
-        buffer_[0] == expected) {
+    if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] == expected) {
       Advance(1);
       return true;
     } else {
       return false;
     }
   } else if (expected < (1 << 14)) {
-    if (PROTOBUF_PREDICT_TRUE(BufferSize() >= 2) &&
+    if (ABSL_PREDICT_TRUE(BufferSize() >= 2) &&
         buffer_[0] == static_cast<uint8_t>(expected | 0x80) &&
         buffer_[1] == static_cast<uint8_t>(expected >> 7)) {
       Advance(2);
@@ -1632,7 +1631,7 @@ template <class Stream>
 inline void CodedOutputStream::InitEagerly(Stream* stream) {
   void* data;
   int size;
-  if (PROTOBUF_PREDICT_TRUE(stream->Next(&data, &size) && size > 0)) {
+  if (ABSL_PREDICT_TRUE(stream->Next(&data, &size) && size > 0)) {
     cur_ = impl_.SetInitialBuffer(data, size);
   }
 }

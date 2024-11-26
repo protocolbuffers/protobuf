@@ -15,9 +15,9 @@ module(
 bazel_dep(name = "abseil-cpp", version = "20240722.0", repo_name = "com_google_absl")
 bazel_dep(name = "bazel_skylib", version = "1.7.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
-bazel_dep(name = "rules_cc", version = "0.0.13")
+bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
-bazel_dep(name = "rules_java", version = "7.12.2")
+bazel_dep(name = "rules_java", version = "8.3.2")
 bazel_dep(name = "rules_jvm_external", version = "6.3")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
@@ -36,7 +36,6 @@ bazel_dep(
 register_toolchains("//bazel/private/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.8",
     "3.9",
     "3.10",
     "3.11",

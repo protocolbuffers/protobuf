@@ -1168,6 +1168,7 @@ set(protobuf_lite_test_files
 # @//src/google/protobuf:lite_test_proto_srcs
 set(protobuf_lite_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/only_one_enum_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto
@@ -1198,7 +1199,9 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
@@ -1215,6 +1218,11 @@ set(compiler_test_files
 set(compiler_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_file_name.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_file_name_2024.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_multiple_file_no.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_multiple_file_yes.proto
 )
 
 # @//src/google/protobuf/compiler:test_plugin_srcs

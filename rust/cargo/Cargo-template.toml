@@ -7,8 +7,8 @@
 
 [package]
 name = "protobuf"
-version = "4.27.3-beta.0"
-edition = "2021"
+version = "{VERSION}"
+edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 links = "libupb"
 license = "BSD-3-Clause"
 rust-version = "1.74"
@@ -21,7 +21,7 @@ path = "src/shared.rs"
 paste = "1.0.15"
 
 [dev-dependencies]
-googletest = {git = "https://github.com/google/googletest-rust.git" }
+googletest = "0.12.0"
 
 [build-dependencies]
 cc = "1.1.6"

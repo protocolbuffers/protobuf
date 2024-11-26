@@ -5,7 +5,7 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_c
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
-def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
+def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = []):
     """Like cc_library(), but callable from rules.
 
     Args:
@@ -14,8 +14,8 @@ def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
       hdrs: Public headers that can be #included from other rules.
       srcs: C/C++ source files.
       copts: Additional options for cc compilation.
-      includes: Additional include paths.
       dep_ccinfos: CcInfo providers of dependencies we should build/link against.
+      includes: Additional include paths.
 
     Returns:
       CcInfo provider for this compilation.

@@ -9,16 +9,15 @@ use googletest::prelude::*;
 use protobuf::prelude::*;
 use protobuf::View;
 
-use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use paste::paste;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
-use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_parameterized_serialization_test {
     ($(($type: ident, $name_ext: ident)),*) => {
         paste! { $(
-            #[gtest]
+            #[googletest::test]
             fn [< serialization_zero_length_ $name_ext >]() {
                 let mut msg = [< $type >]::new();
 
@@ -32,13 +31,13 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(serialized.len(), eq(0));
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< serialize_default_view $name_ext>]() {
                 let default = View::<[< $type >]>::default();
                 assert_that!(default.serialize().unwrap().len(), eq(0));
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< serialize_deserialize_message_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -53,17 +52,17 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(msg.optional_bytes(), eq(msg2.optional_bytes()));
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< deserialize_empty_ $name_ext>]() {
                 assert!([< $type >]::parse(&[]).is_ok());
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< deserialize_error_ $name_ext>]() {
                 assert!([< $type >]::parse(b"not a serialized proto").is_err());
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< set_bytes_with_serialized_data_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -73,7 +72,7 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(msg2.optional_bytes(), eq(msg.serialize().unwrap()));
             }
 
-            #[gtest]
+            #[googletest::test]
             fn [< deserialize_on_previously_allocated_message_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -94,9 +93,8 @@ macro_rules! generate_parameterized_serialization_test {
   }
 
 generate_parameterized_serialization_test!(
-    (TestAllTypesProto2, proto2),
+    (TestAllTypes, editions),
     (TestAllTypesProto3, proto3),
-    (TestAllTypesEditions, editions),
     (TestProto3Optional, proto3_optional)
 );
 
@@ -104,7 +102,7 @@ macro_rules! generate_parameterized_int32_byte_size_test {
     ($(($type: ident, $name_ext: ident)),*) => {
         paste! { $(
 
-            #[gtest]
+            #[googletest::test]
             fn [< test_int32_byte_size_ $name_ext>]() {
                 let args = vec![(0, 1), (127, 1), (128, 2), (-1, 10)];
                 for arg in args {
@@ -124,10 +122,9 @@ macro_rules! generate_parameterized_int32_byte_size_test {
   }
 
 generate_parameterized_int32_byte_size_test!(
-    (TestAllTypesProto2, proto2),
-    (TestProto3Optional, proto3_optional), /* Test would fail if we were to use
-                                            * TestAllTypesProto3: optional_int32 follows "no
-                                            * presence" semantics and setting it to 0 (default
-                                            * value) will cause it to not be serialized */
-    (TestAllTypesEditions, editions)
+    (TestAllTypes, editions),
+    (TestProto3Optional, proto3_optional) /* Test would fail if we were to use
+                                           * TestAllTypesProto3: optional_int32 follows "no
+                                           * presence" semantics and setting it to 0 (default
+                                           * value) will cause it to not be serialized */
 );

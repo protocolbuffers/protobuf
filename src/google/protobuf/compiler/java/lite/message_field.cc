@@ -57,8 +57,6 @@ void SetMessageVariables(
 
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
-    (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
-
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
         absl::StrCat(GenerateSetBit(messageBitIndex), ";");
@@ -129,41 +127,21 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_, "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
-  if (HasHasbit(descriptor_)) {
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_message$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-        "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  } else {
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $name$_ != null;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-        "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $is_field_present_message$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(
+      variables_,
+      "@java.lang.Override\n"
+      "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+      "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   // Field.Builder setField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());

@@ -58,16 +58,18 @@ for file in yaml_files:
         elif 'with' in step and 'name' in step['with']:
           name = step['with']['name']
         else:
-          raise ValueError('Step in job %s does not have a name.' % job)
+          raise ValueError(
+              'Step in job %s from file %s does not have a name.' % (job, file)
+          )
         if continuous_condition and 'continuous-run' not in step.get('if', ''):
           raise ValueError(
-              'Step %s in job %s does not check the continuous-run condition'
-              % (name, job)
+              'Step %s in job %s from file %s does not check the continuous-run'
+              ' condition' % (name, job, file)
           )
         if not continuous_condition and 'continuous-run' in step.get('if', ''):
           raise ValueError(
-              'Step %s in job %s checks the continuous-run condition but '
-              'the job does not contain the continuous-prefix'
-              % (name, job)
+              'Step %s in job %s from file %s checks the continuous-run'
+              ' condition but the job does not contain the continuous-prefix'
+              % (name, job, file)
           )
 print('PASSED: All steps in all jobs check the continuous-run condition.')

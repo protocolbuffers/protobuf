@@ -40,7 +40,7 @@ extern "C" {
     fn GetConstStaticInteropTestMessage() -> *const c_void;
 }
 
-#[gtest]
+#[googletest::test]
 fn send_to_cpp() {
     let mut msg1 = InteropTestMessage::new();
     msg1.set_i64(7);
@@ -48,7 +48,7 @@ fn send_to_cpp() {
     assert_eq!(i, 7);
 }
 
-#[gtest]
+#[googletest::test]
 fn mutate_message_mut_in_cpp() {
     let mut msg1 = InteropTestMessage::new();
     unsafe {
@@ -63,7 +63,7 @@ fn mutate_message_mut_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[gtest]
+#[googletest::test]
 fn deserialize_in_rust() {
     let mut msg1 = InteropTestMessage::new();
     msg1.set_i64(-1);
@@ -75,7 +75,7 @@ fn deserialize_in_rust() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[gtest]
+#[googletest::test]
 fn deserialize_in_cpp() {
     let mut msg1 = InteropTestMessage::new();
     msg1.set_i64(-1);
@@ -92,7 +92,7 @@ fn deserialize_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[gtest]
+#[googletest::test]
 fn deserialize_in_cpp_into_mut() {
     let mut msg1 = InteropTestMessage::new();
     msg1.set_i64(-1);
@@ -110,7 +110,7 @@ fn deserialize_in_cpp_into_mut() {
     }
 }
 
-#[gtest]
+#[googletest::test]
 fn deserialize_in_cpp_into_view() {
     let mut msg1 = InteropTestMessage::new();
     msg1.set_i64(-1);
@@ -131,7 +131,7 @@ fn deserialize_in_cpp_into_view() {
 
 // This test ensures that random fields we (Rust) don't know about don't
 // accidentally get destroyed by Rust.
-#[gtest]
+#[googletest::test]
 fn smuggle_extension() {
     let msg1 =
         unsafe { InteropTestMessage::__unstable_take_ownership_of_raw_message(NewWithExtension()) };
@@ -143,7 +143,7 @@ fn smuggle_extension() {
     assert_eq!(bytes, b"smuggled");
 }
 
-#[gtest]
+#[googletest::test]
 fn view_of_const_static() {
     let view: InteropTestMessageView<'static> = unsafe {
         InteropTestMessageView::__unstable_wrap_raw_message_unchecked_lifetime(

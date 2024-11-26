@@ -121,7 +121,7 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
-inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::FieldMask& from_msg)
       : paths_{visibility, arena, from.paths_},
@@ -143,7 +143,7 @@ FieldMask::FieldMask(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
-inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : paths_{visibility, arena},
@@ -287,7 +287,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
             target = stream->WriteString(1, s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -364,7 +364,7 @@ namespace protobuf {
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
-    _static_init2_ PROTOBUF_UNUSED =
+    _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

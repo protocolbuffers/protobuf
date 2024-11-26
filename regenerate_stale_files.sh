@@ -13,6 +13,7 @@ cd $(dirname -- "$0")
 readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 
 STALENESS_TESTS=(
+  "csharp:generated_csharp_defaults_staleness_test"
   "java/core:generated_java_defaults_staleness_test"
   "upb/reflection:bootstrap_upb_defaults_staleness_test"
   "cmake:test_dependencies_staleness"

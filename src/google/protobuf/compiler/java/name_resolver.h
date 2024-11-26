@@ -34,7 +34,7 @@ enum NameEquality { NO_MATCH, EXACT_EQUAL, EQUAL_IGNORE_CASE };
 // Used to get the Java class related names for a given descriptor. It caches
 // the results to avoid redundant calculation across multiple name queries.
 // Thread-safety note: This class is *not* thread-safe.
-class ClassNameResolver {
+class PROTOC_EXPORT ClassNameResolver {
  public:
   explicit ClassNameResolver(const Options& options = {}) : options_(options) {}
   ~ClassNameResolver() = default;

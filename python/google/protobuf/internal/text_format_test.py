@@ -1411,6 +1411,23 @@ class Proto2Tests(TextFormatBase):
         '  text: \"bar\"\n'
         '}\n')
 
+  def testMessageSetExtensionNotFirst(self):
+    desc = message_set_extensions_pb2.TestMessageSetExtension1.DESCRIPTOR
+    self.assertEqual('first_extension', desc.extensions[0].name)
+    self.assertEqual('message_set_extension', desc.extensions[1].name)
+    message = message_set_extensions_pb2.TestMessageSet()
+    ext = (
+        message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+    )
+    message.Extensions[ext].i = 123
+    expected_str = (
+        '[google.protobuf.internal.TestMessageSetExtension1] {\n  i: 123\n}\n'
+    )
+    self.CompareToGoldenText(text_format.MessageToString(message), expected_str)
+    parsed = message_set_extensions_pb2.TestMessageSet()
+    text_format.Parse(expected_str, parsed)
+    self.CompareToGoldenText(text_format.MessageToString(parsed), expected_str)
+
   def testPrintMessageSetByFieldNumber(self):
     out = text_format.TextWriter(False)
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -1865,6 +1882,32 @@ class Proto3Tests(unittest.TestCase):
         '    data: "string"\n'
         '  }\n'
         '}\n')
+
+  def testPrintStructInAny(self):
+    packed_message = struct_pb2.Struct()
+    packed_message['name'] = 'Jim'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    print(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        )
+    )
+    self.assertEqual(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
+        'any_value {\n'
+        '  [type.googleapis.com/google.protobuf.Struct] {\n'
+        '    fields {\n'
+        '      key: "name"\n'
+        '      value {\n'
+        '        string_value: "Jim"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n',
+    )
 
   def testTopAnyMessage(self):
     packed_msg = unittest_pb2.OneString()

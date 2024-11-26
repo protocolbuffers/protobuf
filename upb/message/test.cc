@@ -7,8 +7,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -22,6 +24,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
+#include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -37,6 +40,8 @@
 #include "upb/test/fuzz_util.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/types.h"
 
 void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
@@ -501,6 +506,7 @@ TEST(MessageTest, MapField) {
   // parse into second instance
   upb_test_TestMapFieldExtra* test_msg_extra2 =
       upb_test_TestMapFieldExtra_parse(serialized, size, arena.ptr());
+  ASSERT_NE(nullptr, test_msg_extra2);
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }

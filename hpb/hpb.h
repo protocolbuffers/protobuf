@@ -96,27 +96,17 @@ ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(
-    Ptr<T> message, absl::string_view bytes,
-    const ::hpb::ExtensionRegistry& extension_registry) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = hpb::interop::upb::GetArena(message);
-  return upb_Decode(bytes.data(), bytes.size(),
-                    hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message),
-                    /* extreg= */
-                    ::hpb::internal::GetUpbExtensions(extension_registry),
-                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(
-    T* message, absl::string_view bytes,
-    const ::hpb::ExtensionRegistry& extension_registry) {
-  static_assert(!std::is_const_v<T>);
-  return Parse(Ptr(message, bytes, extension_registry));
+absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
+  T message;
+  auto* arena = hpb::interop::upb::GetArena(&message);
+  upb_DecodeStatus status =
+      upb_Decode(bytes.data(), bytes.size(), message.msg(),
+                 ::hpb::interop::upb::GetMiniTable(&message),
+                 /* extreg= */ nullptr, /* options= */ 0, arena);
+  if (status == kUpb_DecodeStatus_Ok) {
+    return message;
+  }
+  return MessageDecodeError(status);
 }
 
 template <typename T>
@@ -130,20 +120,6 @@ ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
                     ::hpb::interop::upb::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
-  T message;
-  auto* arena = hpb::interop::upb::GetArena(&message);
-  upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::interop::upb::GetMiniTable(&message),
-                 /* extreg= */ nullptr, /* options= */ 0, arena);
-  if (status == kUpb_DecodeStatus_Ok) {
-    return message;
-  }
-  return MessageDecodeError(status);
 }
 
 template <typename T>

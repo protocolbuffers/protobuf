@@ -2455,6 +2455,10 @@ extend RedactedFields {
   ];
 }
 
+message TestString {
+  string optional_string = 1;
+}
+
 message TestCord {
   bytes optional_bytes_cord = 1 [
     ctype = CORD

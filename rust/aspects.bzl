@@ -130,7 +130,6 @@ def _generate_rust_gencode(
         additional_args = additional_args,
         generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
-        plugin_output = ctx.bin_dir.path,
     )
     return (rs_outputs, cc_outputs)
 
@@ -298,7 +297,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         unsupported_features = ctx.disabled_features,
     )
 
-    proto_srcs = getattr(ctx.rule.files, "srcs", [])
+    proto_srcs = target[ProtoInfo].direct_sources
     proto_deps = getattr(ctx.rule.attr, "deps", [])
     transitive_crate_mappings = []
     for dep in proto_deps:

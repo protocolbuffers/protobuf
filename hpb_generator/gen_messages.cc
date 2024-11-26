@@ -28,6 +28,7 @@
 namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
+using Sub = protobuf::io::Printer::Sub;
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Context& ctx);
@@ -73,53 +74,77 @@ void WriteMessageClassDeclarations(
   }
 
   // Forward declaration of Proto Class for GCC handling of free friend method.
-  ctx.EmitLegacy("class $0;\n", ClassName(descriptor));
-  ctx.Emit("namespace internal {\n\n");
-  WriteModelAccessDeclaration(descriptor, ctx);
-  ctx.Emit("\n");
-  WriteInternalForwardDeclarationsInHeader(descriptor, ctx);
-  ctx.Emit("\n");
-  ctx.Emit("}  // namespace internal\n\n");
-  WriteModelPublicDeclaration(descriptor, file_exts, file_enums, ctx);
-  ctx.Emit("namespace internal {\n");
-  WriteModelCProxyDeclaration(descriptor, ctx);
-  WriteModelProxyDeclaration(descriptor, ctx);
-  ctx.Emit("}  // namespace internal\n\n");
+  ctx.Emit(
+      {Sub("class_name", ClassName(descriptor)),
+       Sub("model_access",
+           [&] { WriteModelAccessDeclaration(descriptor, ctx); })
+           .WithSuffix(";"),
+       Sub("fwd_decl",
+           [&] { WriteInternalForwardDeclarationsInHeader(descriptor, ctx); })
+           .WithSuffix(";"),
+       Sub("public_decl",
+           [&] {
+             WriteModelPublicDeclaration(descriptor, file_exts, file_enums,
+                                         ctx);
+           })
+           .WithSuffix(";"),
+       Sub("cproxy_decl", [&] { WriteModelCProxyDeclaration(descriptor, ctx); })
+           .WithSuffix(";"),
+       Sub("proxy_decl", [&] { WriteModelProxyDeclaration(descriptor, ctx); })
+           .WithSuffix(";")},
+      R"cc(
+        class $class_name$;
+        namespace internal {
+        $model_access$;
+
+        $fwd_decl$;
+        }  // namespace internal
+
+        $public_decl$;
+        namespace internal {
+        $cproxy_decl$;
+        $proxy_decl$;
+        }  // namespace internal
+      )cc");
 }
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Context& ctx) {
-  ctx.EmitLegacy(
-      R"cc(
-        class $0Access {
-         public:
-          $0Access() {}
-          $0Access($1* msg, upb_Arena* arena) : msg_(msg), arena_(arena) {
-            assert(arena != nullptr);
-          }  // NOLINT
-          $0Access(const $1* msg, upb_Arena* arena)
-              : msg_(const_cast<$1*>(msg)), arena_(arena) {
-            assert(arena != nullptr);
-          }  // NOLINT
-      )cc",
-      ClassName(descriptor),
-      upb::generator::CApiMessageType(descriptor->full_name()));
-  WriteFieldAccessorsInHeader(descriptor, ctx);
-  WriteOneofAccessorsInHeader(descriptor, ctx);
-  ctx.EmitLegacy(
-      R"cc(
-        private:
-        friend class $2;
-        friend class $0Proxy;
-        friend class $0CProxy;
-        friend struct ::hpb::internal::PrivateAccess;
-        $1* msg_;
-        upb_Arena* arena_;
-      )cc",
-      ClassName(descriptor),
-      upb::generator::CApiMessageType(descriptor->full_name()),
-      QualifiedClassName(descriptor));
-  ctx.Emit("};\n");
+  ctx.Emit({Sub("class_name", ClassName(descriptor)),
+            Sub("qualified_class_name", QualifiedClassName(descriptor)),
+            Sub("upb_msg_name",
+                upb::generator::CApiMessageType(descriptor->full_name())),
+            Sub("field_accessors",
+                [&] { WriteFieldAccessorsInHeader(descriptor, ctx); })
+                .WithSuffix(";"),
+            Sub("oneof_accessors",
+                [&] { WriteOneofAccessorsInHeader(descriptor, ctx); })
+                .WithSuffix(";")},
+           R"cc(
+             class $class_name$Access {
+              public:
+               $class_name$Access() {}
+               $class_name$Access($upb_msg_name$* msg, upb_Arena* arena)
+                   : msg_(msg), arena_(arena) {
+                 assert(arena != nullptr);
+               }  // NOLINT
+               $class_name$Access(const $upb_msg_name$* msg, upb_Arena* arena)
+                   : msg_(const_cast<$upb_msg_name$*>(msg)), arena_(arena) {
+                 assert(arena != nullptr);
+               }  // NOLINT
+
+               $field_accessors$;
+               $oneof_accessors$;
+
+              private:
+               friend class $qualified_class_name$;
+               friend class $class_name$Proxy;
+               friend class $class_name$CProxy;
+               friend struct ::hpb::internal::PrivateAccess;
+               $upb_msg_name$* msg_;
+               upb_Arena* arena_;
+             };
+           )cc");
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

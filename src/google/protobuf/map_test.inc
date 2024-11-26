@@ -87,6 +87,11 @@ struct MoveTestKey {
   MoveTestKey(MoveTestKey&& other) noexcept
       : data(other.data), copies(other.copies) {}
 
+  template <typename H>
+  friend auto AbslHashValue(H state, const MoveTestKey& m) {
+    return H::combine(std::move(state), m.data);
+  }
+
   friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
     return lhs.data == rhs.data;
   }
@@ -201,21 +206,17 @@ struct MapTestPeer {
     map.Resize(num_buckets);
   }
 
-  template <typename T>
-  static bool HasTreeBuckets(T& map) {
-    for (size_t i = 0; i < map.num_buckets_; ++i) {
-      if (TableEntryIsTree(map.table_[i])) return true;
-    }
-    return false;
-  }
-
   static int CalculateHiCutoff(int num_buckets) {
     return Map<int, int>::CalculateHiCutoff(num_buckets);
+  }
+
+  template <typename Map>
+  static auto GetTypeInfo() {
+    return Map::GetTypeInfo();
   }
 };
 
 namespace {
-using internal::DownCast;
 
 // Map API Test =====================================================
 
@@ -322,26 +323,8 @@ namespace protobuf {
 namespace internal {
 
 template <>
-struct RealKeyToVariantKey<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
 struct TransparentSupport<MoveTestKey> {
   using hash = absl::Hash<MoveTestKey>;
-
-  static bool Equals(const MoveTestKey& a, const MoveTestKey& b) {
-    return a == b;
-  }
 
   template <typename K>
   using key_arg = MoveTestKey;
@@ -512,49 +495,6 @@ TEST_F(MapImplTest, IteratorBasic) {
 static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
-
-// Finds inputs that will fall in the first few buckets for this particular map
-// (with the random seed it has) and this particular size.
-static std::vector<int> FindBadInputs(Map<int, int>& map, int num_inputs) {
-  // Make sure the seed and the size is set so that BucketNumber works.
-  while (map.size() < num_inputs) map[map.size()];
-  map.clear();
-
-  std::vector<int> out;
-
-  for (int i = 0; out.size() < num_inputs; ++i) {
-    if (MapTestPeer::BucketNumber(map, i) < 3) {
-      out.push_back(i);
-    }
-  }
-
-  // Reset the table to get it to grow from scratch again.
-  // The capacity will be lost, but we will get it again on insertion.
-  // It will also keep the seed.
-  map.clear();
-  MapTestPeer::Resize(map, 8);
-
-  return out;
-}
-
-TEST_F(MapImplTest, TreePathWorksAsExpected) {
-  const std::vector<int> s = FindBadInputs(map_, 1000);
-
-  for (int i : s) {
-    map_[i] = 0;
-  }
-  // Make sure we are testing what we think we are testing.
-  ASSERT_TRUE(MapTestPeer::HasTreeBuckets(map_));
-  for (int i : s) {
-    ASSERT_NE(map_.find(i), map_.end()) << i;
-  }
-  for (int i : s) {
-    ASSERT_EQ(1, map_.erase(i)) << i;
-  }
-  EXPECT_FALSE(MapTestPeer::HasTreeBuckets(map_));
-  EXPECT_TRUE(map_.empty());
-}
-
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
@@ -1365,9 +1305,9 @@ TEST_F(MapImplTest, SpaceUsed) {
 bool MapOrderingIsRandom(int a, int b) {
   bool saw_a_first = false;
   bool saw_b_first = false;
-  std::vector<Map<int32_t, int32_t>> v(50);
-  for (int i = 0; i < 50; ++i) {
-    Map<int32_t, int32_t>& m = v[i];
+  std::vector<Map<int32_t, int32_t>> v;
+  while (v.size() < 100) {
+    Map<int32_t, int32_t>& m = v.emplace_back();
     m[a] = 0;
     m[b] = 0;
     int32_t first_element = m.begin()->first;

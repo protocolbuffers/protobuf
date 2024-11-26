@@ -38,10 +38,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define RETURN_IF_ERROR(expr)                                  \
-  do {                                                         \
-    const absl::Status _status = (expr);                       \
-    if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status; \
+#define RETURN_IF_ERROR(expr)                              \
+  do {                                                     \
+    const absl::Status _status = (expr);                   \
+    if (ABSL_PREDICT_FALSE(!_status.ok())) return _status; \
   } while (0)
 
 namespace google {

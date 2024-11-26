@@ -51,8 +51,10 @@ template <typename T>
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fapi_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fapi_2eproto;
+}  // extern "C"
 namespace google {
 namespace protobuf {
 class Api;
@@ -132,10 +134,7 @@ class PROTOBUF_EXPORT Mixin final
     return default_instance().GetMetadata().reflection;
   }
   static const Mixin& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Mixin* internal_default_instance() {
-    return reinterpret_cast<const Mixin*>(
+    return *reinterpret_cast<const Mixin*>(
         &_Mixin_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -235,13 +234,12 @@ class PROTOBUF_EXPORT Mixin final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -251,13 +249,12 @@ class PROTOBUF_EXPORT Mixin final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_root(Arg_&& arg, Args_... args);
   std::string* mutable_root();
-  PROTOBUF_NODISCARD std::string* release_root();
+  [[nodiscard]] std::string* release_root();
   void set_allocated_root(std::string* value);
 
   private:
   const std::string& _internal_root() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_root(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_root(const std::string& value);
   std::string* _internal_mutable_root();
 
   public:
@@ -284,9 +281,10 @@ class PROTOBUF_EXPORT Mixin final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Mixin& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr root_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -350,10 +348,7 @@ class PROTOBUF_EXPORT Method final
     return default_instance().GetMetadata().reflection;
   }
   static const Method& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Method* internal_default_instance() {
-    return reinterpret_cast<const Method*>(
+    return *reinterpret_cast<const Method*>(
         &_Method_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -475,13 +470,12 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -491,13 +485,12 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_request_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_request_type_url();
-  PROTOBUF_NODISCARD std::string* release_request_type_url();
+  [[nodiscard]] std::string* release_request_type_url();
   void set_allocated_request_type_url(std::string* value);
 
   private:
   const std::string& _internal_request_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const std::string& value);
   std::string* _internal_mutable_request_type_url();
 
   public:
@@ -507,13 +500,12 @@ class PROTOBUF_EXPORT Method final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_response_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_response_type_url();
-  PROTOBUF_NODISCARD std::string* release_response_type_url();
+  [[nodiscard]] std::string* release_response_type_url();
   void set_allocated_response_type_url(std::string* value);
 
   private:
   const std::string& _internal_response_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const std::string& value);
   std::string* _internal_mutable_response_type_url();
 
   public:
@@ -570,6 +562,8 @@ class PROTOBUF_EXPORT Method final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Method& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr request_type_url_;
@@ -577,7 +571,6 @@ class PROTOBUF_EXPORT Method final
     bool request_streaming_;
     bool response_streaming_;
     int syntax_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -641,10 +634,7 @@ class PROTOBUF_EXPORT Api final
     return default_instance().GetMetadata().reflection;
   }
   static const Api& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Api* internal_default_instance() {
-    return reinterpret_cast<const Api*>(
+    return *reinterpret_cast<const Api*>(
         &_Api_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -800,13 +790,12 @@ class PROTOBUF_EXPORT Api final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -816,13 +805,12 @@ class PROTOBUF_EXPORT Api final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_version(Arg_&& arg, Args_... args);
   std::string* mutable_version();
-  PROTOBUF_NODISCARD std::string* release_version();
+  [[nodiscard]] std::string* release_version();
   void set_allocated_version(std::string* value);
 
   private:
   const std::string& _internal_version() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_version(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_version(const std::string& value);
   std::string* _internal_mutable_version();
 
   public:
@@ -830,7 +818,7 @@ class PROTOBUF_EXPORT Api final
   bool has_source_context() const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceContext* release_source_context();
+  [[nodiscard]] ::google::protobuf::SourceContext* release_source_context();
   ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
@@ -911,6 +899,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_cla
 inline void Api::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Api::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -918,9 +907,10 @@ inline const std::string& Api::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
@@ -935,19 +925,34 @@ inline const std::string& Api::_internal_name() const {
 }
 inline void Api::_internal_set_name(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Api::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Api::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
-  return _impl_.name_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Api::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
   _impl_.name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", GetArena());
@@ -1053,6 +1058,7 @@ Api::_internal_mutable_options() {
 inline void Api::clear_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.version_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& Api::version() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1060,9 +1066,10 @@ inline const std::string& Api::version() const
   return _internal_version();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.version_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
@@ -1077,19 +1084,34 @@ inline const std::string& Api::_internal_version() const {
 }
 inline void Api::_internal_set_version(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.version_.Set(value, GetArena());
 }
 inline std::string* Api::_internal_mutable_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.version_.Mutable( GetArena());
 }
 inline std::string* Api::release_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
-  return _impl_.version_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.version_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.version_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Api::set_allocated_version(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
   _impl_.version_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.version_.IsDefault()) {
     _impl_.version_.Set("", GetArena());
@@ -1099,7 +1121,7 @@ inline void Api::set_allocated_version(std::string* value) {
 
 // .google.protobuf.SourceContext source_context = 5;
 inline bool Api::has_source_context() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
   return value;
 }
@@ -1119,16 +1141,16 @@ inline void Api::unsafe_arena_set_allocated_source_context(::google::protobuf::S
   }
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000004u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000004u;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
 inline ::google::protobuf::SourceContext* Api::release_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
   ::google::protobuf::SourceContext* released = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
@@ -1148,7 +1170,7 @@ inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_conte
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
 
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
   ::google::protobuf::SourceContext* temp = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
   return temp;
@@ -1162,7 +1184,7 @@ inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context(
   return _impl_.source_context_;
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
@@ -1179,9 +1201,9 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000004u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000004u;
   }
 
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
@@ -1241,6 +1263,7 @@ Api::_internal_mutable_mixins() {
 inline void Api::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::google::protobuf::Syntax Api::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.syntax)
@@ -1248,6 +1271,7 @@ inline ::google::protobuf::Syntax Api::syntax() const {
 }
 inline void Api::set_syntax(::google::protobuf::Syntax value) {
   _internal_set_syntax(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 inline ::google::protobuf::Syntax Api::_internal_syntax() const {
@@ -1267,6 +1291,7 @@ inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Method::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Method::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1274,9 +1299,10 @@ inline const std::string& Method::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
@@ -1291,19 +1317,34 @@ inline const std::string& Method::_internal_name() const {
 }
 inline void Method::_internal_set_name(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Method::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
-  return _impl_.name_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Method::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
   _impl_.name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", GetArena());
@@ -1315,6 +1356,7 @@ inline void Method::set_allocated_name(std::string* value) {
 inline void Method::clear_request_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_type_url_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& Method::request_type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1322,9 +1364,10 @@ inline const std::string& Method::request_type_url() const
   return _internal_request_type_url();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.request_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
@@ -1339,19 +1382,34 @@ inline const std::string& Method::_internal_request_type_url() const {
 }
 inline void Method::_internal_set_request_type_url(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.request_type_url_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_request_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.request_type_url_.Mutable( GetArena());
 }
 inline std::string* Method::release_request_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
-  return _impl_.request_type_url_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.request_type_url_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.request_type_url_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Method::set_allocated_request_type_url(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
   _impl_.request_type_url_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.request_type_url_.IsDefault()) {
     _impl_.request_type_url_.Set("", GetArena());
@@ -1363,6 +1421,7 @@ inline void Method::set_allocated_request_type_url(std::string* value) {
 inline void Method::clear_request_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_streaming_ = false;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool Method::request_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_streaming)
@@ -1370,6 +1429,7 @@ inline bool Method::request_streaming() const {
 }
 inline void Method::set_request_streaming(bool value) {
   _internal_set_request_streaming(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_streaming)
 }
 inline bool Method::_internal_request_streaming() const {
@@ -1385,6 +1445,7 @@ inline void Method::_internal_set_request_streaming(bool value) {
 inline void Method::clear_response_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_type_url_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& Method::response_type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1392,9 +1453,10 @@ inline const std::string& Method::response_type_url() const
   return _internal_response_type_url();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.response_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
@@ -1409,19 +1471,34 @@ inline const std::string& Method::_internal_response_type_url() const {
 }
 inline void Method::_internal_set_response_type_url(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.response_type_url_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_response_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.response_type_url_.Mutable( GetArena());
 }
 inline std::string* Method::release_response_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
-  return _impl_.response_type_url_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000004u;
+  auto* released = _impl_.response_type_url_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.response_type_url_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Method::set_allocated_response_type_url(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000004u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000004u;
+  }
   _impl_.response_type_url_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.response_type_url_.IsDefault()) {
     _impl_.response_type_url_.Set("", GetArena());
@@ -1433,6 +1510,7 @@ inline void Method::set_allocated_response_type_url(std::string* value) {
 inline void Method::clear_response_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_streaming_ = false;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool Method::response_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_streaming)
@@ -1440,6 +1518,7 @@ inline bool Method::response_streaming() const {
 }
 inline void Method::set_response_streaming(bool value) {
   _internal_set_response_streaming(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_streaming)
 }
 inline bool Method::_internal_response_streaming() const {
@@ -1500,6 +1579,7 @@ Method::_internal_mutable_options() {
 inline void Method::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline ::google::protobuf::Syntax Method::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.syntax)
@@ -1507,6 +1587,7 @@ inline ::google::protobuf::Syntax Method::syntax() const {
 }
 inline void Method::set_syntax(::google::protobuf::Syntax value) {
   _internal_set_syntax(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 inline ::google::protobuf::Syntax Method::_internal_syntax() const {
@@ -1526,6 +1607,7 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Mixin::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Mixin::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1533,9 +1615,10 @@ inline const std::string& Mixin::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
@@ -1550,19 +1633,34 @@ inline const std::string& Mixin::_internal_name() const {
 }
 inline void Mixin::_internal_set_name(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Mixin::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Mixin::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
-  return _impl_.name_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Mixin::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
   _impl_.name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", GetArena());
@@ -1574,6 +1672,7 @@ inline void Mixin::set_allocated_name(std::string* value) {
 inline void Mixin::clear_root() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.root_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& Mixin::root() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1581,9 +1680,10 @@ inline const std::string& Mixin::root() const
   return _internal_root();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.root_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
@@ -1598,19 +1698,34 @@ inline const std::string& Mixin::_internal_root() const {
 }
 inline void Mixin::_internal_set_root(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.root_.Set(value, GetArena());
 }
 inline std::string* Mixin::_internal_mutable_root() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.root_.Mutable( GetArena());
 }
 inline std::string* Mixin::release_root() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
-  return _impl_.root_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.root_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.root_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Mixin::set_allocated_root(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
   _impl_.root_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.root_.IsDefault()) {
     _impl_.root_.Set("", GetArena());

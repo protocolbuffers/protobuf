@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -234,6 +235,26 @@ class PROTOBUF_EXPORT MapKey {
   friend class MapIterator;
   friend class internal::DynamicMapField;
 
+  template <typename H>
+  friend auto AbslHashValue(H state, const MapKey& key) {
+    switch (key.type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        return H::combine(std::move(state), key.GetStringValue());
+      case FieldDescriptor::CPPTYPE_INT64:
+        return H::combine(std::move(state), key.GetInt64Value());
+      case FieldDescriptor::CPPTYPE_INT32:
+        return H::combine(std::move(state), key.GetInt32Value());
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return H::combine(std::move(state), key.GetUInt64Value());
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return H::combine(std::move(state), key.GetUInt32Value());
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return H::combine(std::move(state), key.GetBoolValue());
+      default:
+        internal::Unreachable();
+    }
+  }
+
   union KeyValue {
     KeyValue() {}
     absl::string_view string_value;
@@ -255,18 +276,6 @@ namespace internal {
 
 template <>
 struct is_internal_map_key_type<MapKey> : std::true_type {};
-
-template <>
-struct RealKeyToVariantKey<MapKey> {
-  VariantKey operator()(const MapKey& value) const;
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<MapKey> {
-  VariantKey operator()(const MapKey& value) const {
-    return RealKeyToVariantKey<MapKey>{}(value);
-  }
-};
 
 }  // namespace internal
 
@@ -408,9 +417,18 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
+  static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   // Tells MapFieldBase that there is new change to Map.
-  void SetMapDirty();
+  void SetMapDirty() {
+    MutableAccess();
+    // These are called by (non-const) mutator functions. So by our API it's the
+    // callers responsibility to have these calls properly ordered.
+    if (auto* p = maybe_payload()) {
+      // If we don't have a payload, it is already assumed `STATE_MODIFIED_MAP`.
+      p->state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+    }
+  }
 
   // Tells MapFieldBase that there is new change to RepeatedPtrField.
   void SetRepeatedDirty();
@@ -429,7 +447,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // thread calls either ConstAccess() or MutableAccess(), on the same
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
-#if defined(PROTOBUF_TSAN)
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
   void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
   void MutableAccess() {
     if (seq1_ & 1) {
@@ -611,8 +629,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
-
-  static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

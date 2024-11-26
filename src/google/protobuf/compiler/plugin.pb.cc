@@ -305,18 +305,6 @@ PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[]
 bool CodeGeneratorResponse_Feature_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_NONE;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_PROTO3_OPTIONAL;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_SUPPORTS_EDITIONS;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MIN;
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MAX;
-constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class Version::_Internal {
@@ -336,7 +324,7 @@ Version::Version(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
-inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::Version& from_msg)
       : _has_bits_{from._has_bits_},
@@ -366,7 +354,7 @@ Version::Version(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
 }
-inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -554,7 +542,7 @@ PROTOBUF_NOINLINE void Version::Clear() {
             target = stream->WriteStringMaybeAliased(4, _s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -685,7 +673,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
       : _has_bits_{from._has_bits_},
@@ -715,7 +703,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -952,7 +940,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -1108,7 +1096,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1137,7 +1125,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1336,7 +1324,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -1463,7 +1451,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
       : _has_bits_{from._has_bits_},
@@ -1494,7 +1482,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
-inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : _cached_size_{0},
@@ -1716,7 +1704,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -1842,7 +1830,7 @@ namespace protobuf {
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
-    _static_init2_ PROTOBUF_UNUSED =
+    _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

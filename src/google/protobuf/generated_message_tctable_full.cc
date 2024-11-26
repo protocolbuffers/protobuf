@@ -30,6 +30,7 @@
 
 #include <cstdint>
 
+#include "absl/base/optimization.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/message.h"
@@ -53,7 +54,7 @@ const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
 
 const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
   bool must_fallback_to_generic = (ptr == nullptr);
-  if (PROTOBUF_PREDICT_FALSE(must_fallback_to_generic)) {
+  if (ABSL_PREDICT_FALSE(must_fallback_to_generic)) {
     PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
   }
 

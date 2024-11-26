@@ -1,4 +1,5 @@
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 
 package(
     default_applicable_licenses = ["//:license"],

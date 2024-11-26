@@ -105,4 +105,51 @@ expose_repeated_ptr_field_methods(ProtoBytes);
 
 #undef expose_repeated_ptr_field_methods
 
+using google::protobuf::internal::GenericTypeHandler;
+using google::protobuf::internal::RepeatedPtrFieldBase;
+using google::protobuf::internal::RustRepeatedMessageHelper;
+
+void* proto2_rust_RepeatedField_Message_new() {
+  return RustRepeatedMessageHelper::New();
+}
+
+void proto2_rust_RepeatedField_Message_free(RepeatedPtrFieldBase* field) {
+  RustRepeatedMessageHelper::Delete(field);
+}
+
+size_t proto2_rust_RepeatedField_Message_size(
+    const RepeatedPtrFieldBase* field) {
+  return RustRepeatedMessageHelper::Size(*field);
+}
+
+const google::protobuf::MessageLite* proto2_rust_RepeatedField_Message_get(
+    const RepeatedPtrFieldBase* field, size_t index) {
+  return &RustRepeatedMessageHelper::At(*field, index);
+}
+
+google::protobuf::MessageLite* proto2_rust_RepeatedField_Message_get_mut(
+    RepeatedPtrFieldBase* field, size_t index) {
+  return &RustRepeatedMessageHelper::At(*field, index);
+}
+
+google::protobuf::MessageLite* proto2_rust_RepeatedField_Message_add(
+    RepeatedPtrFieldBase* field, const google::protobuf::MessageLite* prototype) {
+  return field->AddMessage(prototype);
+}
+
+void proto2_rust_RepeatedField_Message_clear(RepeatedPtrFieldBase* field) {
+  field->Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
+}
+
+void proto2_rust_RepeatedField_Message_copy_from(
+    RepeatedPtrFieldBase* dst, const RepeatedPtrFieldBase* src) {
+  dst->Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
+  dst->MergeFrom<google::protobuf::MessageLite>(*src);
+}
+
+void proto2_rust_RepeatedField_Message_reserve(RepeatedPtrFieldBase* field,
+                                               size_t additional) {
+  RustRepeatedMessageHelper::Reserve(*field, additional);
+}
+
 }  // extern "C"

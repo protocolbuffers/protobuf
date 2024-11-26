@@ -51,8 +51,10 @@ template <typename T>
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
+}  // extern "C"
 namespace pb {
 enum JavaFeatures_Utf8Validation : int;
 PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
@@ -79,9 +81,11 @@ enum JavaFeatures_Utf8Validation : int {
 
 PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
-constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MIN = static_cast<JavaFeatures_Utf8Validation>(0);
-constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MAX = static_cast<JavaFeatures_Utf8Validation>(2);
-constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
+inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MIN =
+    static_cast<JavaFeatures_Utf8Validation>(0);
+inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MAX =
+    static_cast<JavaFeatures_Utf8Validation>(2);
+inline constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
 JavaFeatures_Utf8Validation_descriptor();
 template <typename T>
@@ -161,10 +165,7 @@ class PROTOC_EXPORT JavaFeatures final
     return default_instance().GetMetadata().reflection;
   }
   static const JavaFeatures& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const JavaFeatures* internal_default_instance() {
-    return reinterpret_cast<const JavaFeatures*>(
+    return *reinterpret_cast<const JavaFeatures*>(
         &_JavaFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -352,7 +353,8 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 
 
 
-static const int kJavaFieldNumber = 1001;
+inline constexpr int kJavaFieldNumber =
+    1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11,
     false>

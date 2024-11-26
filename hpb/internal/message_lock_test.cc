@@ -18,6 +18,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
 #include "upb/mini_table/extension.h"
@@ -105,24 +106,32 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
-  ::upb::Arena arena;
-  TestConcurrentExtensionAccess({{}, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry registry(arena);
+  TestConcurrentExtensionAccess(registry);
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
-  ::upb::Arena arena;
-  std::vector<const upb_MiniTableExtension*> e1{theme.mini_table_ext()};
-  TestConcurrentExtensionAccess({e1, arena});
-  std::vector<const upb_MiniTableExtension*> e2{
-      ThemeExtension::theme_extension.mini_table_ext()};
-  TestConcurrentExtensionAccess({e2, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry r1(arena);
+  r1.AddExtension(theme);
+  TestConcurrentExtensionAccess(r1);
+  hpb::ExtensionRegistry r2(arena);
+  r2.AddExtension(ThemeExtension::theme_extension);
+  TestConcurrentExtensionAccess(r2);
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
-  ::upb::Arena arena;
-  std::vector<const upb_MiniTableExtension*> exts{
-      theme.mini_table_ext(), ThemeExtension::theme_extension.mini_table_ext()};
-  TestConcurrentExtensionAccess({exts, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry registry(arena);
+  registry.AddExtension(theme);
+  registry.AddExtension(ThemeExtension::theme_extension);
+  TestConcurrentExtensionAccess(registry);
+}
+
+TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceGlobalInstance) {
+  upb::Arena arena;
+  TestConcurrentExtensionAccess(hpb::ExtensionRegistry::generated_registry());
 }
 
 }  // namespace

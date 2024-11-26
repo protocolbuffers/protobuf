@@ -331,6 +331,15 @@ public class Utils {
         && fieldDescriptor.getMessageType().getOptions().getMapEntry();
   }
 
+  public static RaiseException createInvalidByteSequenceError(
+      ThreadContext context, String message) {
+    if (cInvalidByteSequenceError == null) {
+      cInvalidByteSequenceError =
+          (RubyClass) context.runtime.getClassFromPath("Encoding::InvalidByteSequenceError");
+    }
+    return RaiseException.from(context.runtime, cInvalidByteSequenceError, message);
+  }
+
   public static RaiseException createTypeError(ThreadContext context, String message) {
     if (cTypeError == null) {
       cTypeError = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::TypeError");
@@ -393,12 +402,7 @@ public class Utils {
     RubyString string = (RubyString) value;
     if (encoding == UTF8Encoding.INSTANCE && string.getEncoding().isUTF8()) {
       if (string.isCodeRangeBroken()) {
-        // TODO: For now we only warn for
-        // this case.  We will remove the warning and throw an exception in the 30.x release
-        context
-            .runtime
-            .getWarnings()
-            .warn("String is invalid UTF-8. This will be an error in a future version.");
+        throw createInvalidByteSequenceError(context, "String is invalid UTF-8.");
       }
     }
 
@@ -424,4 +428,5 @@ public class Utils {
   private static final long UINT_MAX = 0xffffffffl;
 
   private static RubyClass cTypeError;
+  private static RubyClass cInvalidByteSequenceError;
 }
