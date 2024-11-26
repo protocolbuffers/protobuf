@@ -34,6 +34,10 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
+size_t MapFieldBase::SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map) {
+  return map.GetMapRaw().SpaceUsedExcludingSelfLong();
+}
+
 const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
                                                bool is_mutable) {
   const auto& self = static_cast<const MapFieldBase&>(map);
