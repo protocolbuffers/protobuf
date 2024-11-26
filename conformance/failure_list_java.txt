@@ -43,3 +43,7 @@ Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool       
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
+Required.*.ProtobufInput.UnmatchedEndGroup                                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupUnknown                                                                  # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupWithData                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.UnmatchedEndGroupWrongType                                                                # Should have failed to parse, but didn't.

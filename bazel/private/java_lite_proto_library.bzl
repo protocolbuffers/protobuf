@@ -16,7 +16,7 @@ load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 _PROTO_TOOLCHAIN_ATTR = "_aspect_proto_toolchain_for_javalite"
 
-_JAVA_LITE_PROTO_TOOLCHAIN = "//bazel/private:javalite_toolchain_type"
+_JAVA_LITE_PROTO_TOOLCHAIN = Label("//bazel/private:javalite_toolchain_type")
 
 def _aspect_impl(target, ctx):
     """Generates and compiles Java code for a proto_library dependency graph.
@@ -109,7 +109,7 @@ def _rule_impl(ctx):
     if runtime:
         proguard_provider_specs = runtime[ProguardSpecInfo]
     else:
-        proguard_provider_specs = ProguardSpecInfo(specs = depset())
+        proguard_provider_specs = ProguardSpecInfo(depset())
 
     java_info = java_info_merge_for_protos([dep[JavaInfo] for dep in ctx.attr.deps], merge_java_outputs = False)
 

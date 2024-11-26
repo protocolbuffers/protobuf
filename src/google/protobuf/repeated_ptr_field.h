@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
@@ -60,7 +61,6 @@ namespace internal {
 
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
-
 
 }  // namespace internal
 
@@ -116,6 +116,8 @@ class GenericTypeHandler;
 //
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
 //     static int SpaceUsedLong(const Type&);
+//
+//     static const Type& default_instance();
 //   };
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
@@ -218,7 +220,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
-    if (PROTOBUF_PREDICT_FALSE(arena_ != nullptr)) return;
+    if (ABSL_PREDICT_FALSE(arena_ != nullptr)) return;
 
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
@@ -296,7 +298,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: PrepareForParse() is true.
   void AddAllocatedForParse(void* value) {
     ABSL_DCHECK(PrepareForParse());
-    if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+    if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1) = value;
       ++rep()->allocated_size;
     } else {
@@ -447,7 +449,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_NODISCARD Value<TypeHandler>* ReleaseLast() {
+  [[nodiscard]] Value<TypeHandler>* ReleaseLast() {
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
     Arena* arena = GetArena();
@@ -571,6 +573,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class google::protobuf::Reflection;
   friend class internal::SwapFieldHelper;
   friend class LazyRepeatedPtrField;
+
+  friend class RustRepeatedMessageHelper;
 
   // Concrete Arena enabled copy function used to copy messages instances.
   // This follows the `Arena::CopyConstruct` signature so that the compiler
@@ -789,7 +793,7 @@ void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
     return result;
   }
   Rep* r = rep();
-  if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+  if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
     InternalExtend(1);
     r = rep();
   } else {
@@ -836,6 +840,11 @@ class GenericTypeHandler {
   static inline size_t SpaceUsedLong(const Type& value) {
     return value.SpaceUsedLong();
   }
+
+  static const Type& default_instance() {
+    return *static_cast<const GenericType*>(
+        MessageTraits<Type>::default_instance());
+  }
 };
 
 template <>
@@ -872,6 +881,10 @@ class GenericTypeHandler<std::string> {
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
+
+  static const Type& default_instance() {
+    return GetEmptyStringAlreadyInited();
+  }
 };
 
 }  // namespace internal
@@ -894,6 +907,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
             internal::is_supported_string_type<Element>,
             internal::is_supported_message_type<Element>>::value,
         "We only support string and Message types in RepeatedPtrField.");
+    static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
+                  "Overaligned types are not supported");
   }
 
  public:
@@ -1092,7 +1107,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // If this RepeatedPtrField is on an arena, an object copy is required to pass
   // ownership back to the user (for compatible semantics). Use
   // UnsafeArenaReleaseLast() if this behavior is undesired.
-  PROTOBUF_NODISCARD Element* ReleaseLast();
+  [[nodiscard]] Element* ReleaseLast();
 
   // Adds an already-allocated object, skipping arena-ownership checks. The user
   // must guarantee that the given object is in the same arena as this
@@ -1146,10 +1161,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Hardcore programs may choose to manipulate these cleared objects
   // to better optimize memory management using the following routines.
 
-  // Gets the number of cleared objects that are currently being kept
-  // around for reuse.
-  ABSL_DEPRECATED("This will be removed in a future release")
-  int ClearedCount() const;
 
   // Removes the element referenced by position.
   //
@@ -1178,7 +1189,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   }
 
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
-
 
  private:
   using InternalArenaConstructable_ = void;
@@ -1311,7 +1321,6 @@ inline Element& RepeatedPtrField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
-
 
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::Mutable(int index)
@@ -1526,10 +1535,6 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
   return RepeatedPtrFieldBase::UnsafeArenaReleaseLast<TypeHandler>();
 }
 
-template <typename Element>
-inline int RepeatedPtrField<Element>::ClearedCount() const {
-  return RepeatedPtrFieldBase::ClearedCount();
-}
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
@@ -1544,6 +1549,37 @@ inline int RepeatedPtrField<Element>::Capacity() const {
 // -------------------------------------------------------------------
 
 namespace internal {
+
+// This class gives the Rust implementation access to some protected methods on
+// RepeatedPtrFieldBase. These methods allow us to operate solely on the
+// MessageLite interface so that we do not need to generate code for each
+// concrete message type.
+class RustRepeatedMessageHelper {
+ public:
+  static RepeatedPtrFieldBase* New() { return new RepeatedPtrFieldBase; }
+
+  static void Delete(RepeatedPtrFieldBase* field) {
+    field->DestroyProtos();
+    delete field;
+  }
+
+  static size_t Size(const RepeatedPtrFieldBase& field) {
+    return static_cast<size_t>(field.size());
+  }
+
+  static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
+    field.Reserve(field.size() + additional);
+  }
+
+  static const MessageLite& At(const RepeatedPtrFieldBase& field,
+                               size_t index) {
+    return field.at<GenericTypeHandler<MessageLite>>(index);
+  }
+
+  static MessageLite& At(RepeatedPtrFieldBase& field, size_t index) {
+    return field.at<GenericTypeHandler<MessageLite>>(index);
+  }
+};
 
 // STL-like iterator implementation for RepeatedPtrField.  You should not
 // refer to this class directly; use RepeatedPtrField<T>::iterator instead.
@@ -1940,6 +1976,18 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  private:
   RepeatedPtrField<T>* field_;
 };
+
+// A utility function for logging that doesn't need any template types.
+void LogIndexOutOfBounds(int index, int size);
+
+template <typename T>
+const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+    LogIndexOutOfBounds(index, field.size());
+    return GenericTypeHandler<T>::default_instance();
+  }
+  return field.Get(index);
+}
 
 }  // namespace internal
 

@@ -5,10 +5,6 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
-# Second self-reference that makes it possible to load proto rules from @protobuf.
-# buildifier: disable=duplicated-name
-local_repository(name = "protobuf", path = ".")
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -95,6 +91,12 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
+
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
 rules_cc_dependencies()
@@ -111,10 +113,10 @@ kt_register_toolchains()
 http_archive(
     name = "rules_ruby",
     urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+      "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip"
     ],
-    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
-    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
+    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
 )
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")

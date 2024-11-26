@@ -929,7 +929,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // equals() and hashCode()
 
   @Override
-  public abstract boolean equals(Object o);
+  public abstract boolean equals(
+          Object o);
 
   /** Base class for leaf {@link ByteString}s (i.e. non-ropes). */
   abstract static class LeafByteString extends ByteString {
@@ -1478,7 +1479,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     // equals() and hashCode()
 
     @Override
-    public final boolean equals(Object other) {
+    public final boolean equals(
+            Object other) {
       if (other == this) {
         return true;
       }
@@ -1816,7 +1818,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(
+            Object other) {
       if (other == this) {
         return true;
       }

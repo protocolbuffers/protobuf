@@ -9,10 +9,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -27,9 +24,7 @@
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/ptr.h"
-#include "google/protobuf/hpb/repeated_field.h"
 #include "google/protobuf/hpb/requires.h"
-#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 
 namespace {
@@ -37,9 +32,6 @@ namespace {
 using ::hpb::internal::Requires;
 using ::hpb_unittest::protos::Child;
 using ::hpb_unittest::protos::ChildModel1;
-using ::hpb_unittest::protos::container_ext;
-using ::hpb_unittest::protos::ContainerExtension;
-using ::hpb_unittest::protos::other_ext;
 using ::hpb_unittest::protos::Parent;
 using ::hpb_unittest::protos::ParentWithMap;
 using ::hpb_unittest::protos::ParentWithRepeated;
@@ -50,9 +42,6 @@ using ::hpb_unittest::protos::TestModel_Category;
 using ::hpb_unittest::protos::TestModel_Category_IMAGES;
 using ::hpb_unittest::protos::TestModel_Category_NEWS;
 using ::hpb_unittest::protos::TestModel_Category_VIDEO;
-using ::hpb_unittest::protos::theme;
-using ::hpb_unittest::protos::ThemeExtension;
-using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -339,298 +328,6 @@ TEST(CppGeneratedCode, NestedMessages) {
   EXPECT_EQ(true, mutable_nested_child->has_nested_child_name());
 }
 
-TEST(CppGeneratedCode, RepeatedMessages) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.child_models_size());
-  // Should be able to clear repeated field when empty.
-  test_model.mutable_child_models()->clear();
-  EXPECT_EQ(0, test_model.child_models_size());
-  // Add 2 children.
-  auto new_child = test_model.add_child_models();
-  EXPECT_EQ(true, new_child.ok());
-  new_child.value()->set_child_str1(kTestStr1);
-  new_child = test_model.add_child_models();
-  EXPECT_EQ(true, new_child.ok());
-  new_child.value()->set_child_str1(kTestStr2);
-  EXPECT_EQ(2, test_model.child_models_size());
-  // Mutable access.
-  auto mutable_first = test_model.mutable_child_models(0);
-  EXPECT_EQ(mutable_first->child_str1(), kTestStr1);
-  mutable_first->set_child_str1("change1");
-  auto mutable_second = test_model.mutable_child_models(1);
-  EXPECT_EQ(mutable_second->child_str1(), kTestStr2);
-  mutable_second->set_child_str1("change2");
-  // Check mutations using views.
-  auto view_first = test_model.child_models(0);
-  EXPECT_EQ(view_first->child_str1(), "change1");
-  auto view_second = test_model.child_models(1);
-  EXPECT_EQ(view_second->child_str1(), "change2");
-}
-
-TEST(CppGeneratedCode, RepeatedScalar) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.value_array_size());
-  // Should be able to clear repeated field when empty.
-  test_model.mutable_value_array()->clear();
-  EXPECT_EQ(0, test_model.value_array_size());
-  // Add 2 children.
-  EXPECT_EQ(true, test_model.add_value_array(5));
-  EXPECT_EQ(true, test_model.add_value_array(6));
-  EXPECT_EQ(2, test_model.value_array_size());
-  EXPECT_EQ(5, test_model.value_array(0));
-  EXPECT_EQ(6, test_model.value_array(1));
-  EXPECT_EQ(true, test_model.resize_value_array(3));
-  EXPECT_EQ(3, test_model.value_array_size());
-  test_model.set_value_array(2, 7);
-  EXPECT_EQ(5, test_model.value_array(0));
-  EXPECT_EQ(6, test_model.value_array(1));
-  EXPECT_EQ(7, test_model.value_array(2));
-}
-
-TEST(CppGeneratedCode, RepeatedFieldClear) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  test_model.mutable_value_array()->push_back(5);
-  test_model.mutable_value_array()->push_back(16);
-  test_model.mutable_value_array()->push_back(27);
-  ASSERT_EQ(test_model.mutable_value_array()->size(), 3);
-  test_model.mutable_value_array()->clear();
-  EXPECT_EQ(test_model.mutable_value_array()->size(), 0);
-}
-
-TEST(CppGeneratedCode, RepeatedFieldProxyForScalars) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.value_array().size());
-  EXPECT_EQ(0, test_model.mutable_value_array()->size());
-
-  test_model.mutable_value_array()->push_back(5);
-  test_model.mutable_value_array()->push_back(16);
-  test_model.mutable_value_array()->push_back(27);
-
-  ASSERT_EQ(test_model.mutable_value_array()->size(), 3);
-  EXPECT_EQ((*test_model.mutable_value_array())[0], 5);
-  EXPECT_EQ((*test_model.mutable_value_array())[1], 16);
-  EXPECT_EQ((*test_model.mutable_value_array())[2], 27);
-
-  const auto value_array = test_model.value_array();
-  ASSERT_EQ(value_array.size(), 3);
-  EXPECT_EQ(value_array[0], 5);
-  EXPECT_EQ(value_array[1], 16);
-  EXPECT_EQ(value_array[2], 27);
-
-  EXPECT_THAT(value_array, ElementsAre(5, 16, 27));
-
-  EXPECT_THAT(std::vector(value_array.begin(), value_array.end()),
-              ElementsAre(5, 16, 27));
-  EXPECT_THAT(std::vector(value_array.cbegin(), value_array.cend()),
-              ElementsAre(5, 16, 27));
-  EXPECT_THAT(std::vector(value_array.rbegin(), value_array.rend()),
-              ElementsAre(27, 16, 5));
-  EXPECT_THAT(std::vector(value_array.crbegin(), value_array.crend()),
-              ElementsAre(27, 16, 5));
-}
-
-TEST(CppGeneratedCode, RepeatedScalarIterator) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  test_model.mutable_value_array()->push_back(5);
-  test_model.mutable_value_array()->push_back(16);
-  test_model.mutable_value_array()->push_back(27);
-  int sum = 0;
-  // Access by value.
-  const ::hpb::RepeatedField<int32_t>::CProxy rep1 = test_model.value_array();
-  for (auto i : rep1) {
-    sum += i;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-  // Access by const reference.
-  sum = 0;
-  for (const auto& i : *test_model.mutable_value_array()) {
-    sum += i;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-  // Access by forwarding reference.
-  sum = 0;
-  for (auto&& i : *test_model.mutable_value_array()) {
-    sum += i;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-  // Test iterator operators.
-  auto begin = test_model.value_array().begin();
-  auto end = test_model.value_array().end();
-  sum = 0;
-  for (auto it = begin; it != end; ++it) {
-    sum += *it;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-  auto it = begin;
-  ++it;
-  EXPECT_TRUE(begin < it);
-  EXPECT_TRUE(begin <= it);
-  it = end;
-  EXPECT_TRUE(it == end);
-  EXPECT_TRUE(it > begin);
-  EXPECT_TRUE(it >= begin);
-  EXPECT_TRUE(it != begin);
-  // difference type
-  it = end;
-  --it;
-  --it;
-  EXPECT_EQ(end - it, 2);
-  it = begin;
-  EXPECT_EQ(it[0], 5);
-  EXPECT_EQ(it[1], 16);
-  EXPECT_EQ(it[2], 27);
-  // ValueProxy.
-  sum = 0;
-  for (::hpb::RepeatedField<int32_t>::ValueCProxy c :
-       test_model.value_array()) {
-    sum += c;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-  sum = 0;
-  for (::hpb::RepeatedField<int32_t>::ValueProxy c :
-       *test_model.mutable_value_array()) {
-    sum += c;
-  }
-  EXPECT_EQ(sum, 5 + 16 + 27);
-}
-
-TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.repeated_string().size());
-  EXPECT_EQ(0, test_model.mutable_repeated_string()->size());
-
-  test_model.mutable_repeated_string()->push_back("a");
-  test_model.mutable_repeated_string()->push_back("b");
-  test_model.mutable_repeated_string()->push_back("c");
-
-  ASSERT_EQ(test_model.repeated_string().size(), 3);
-  EXPECT_EQ(test_model.repeated_string()[0], "a");
-  EXPECT_EQ(test_model.repeated_string()[1], "b");
-  EXPECT_EQ(test_model.repeated_string()[2], "c");
-
-  EXPECT_THAT(test_model.repeated_string(), ElementsAre("a", "b", "c"));
-  EXPECT_THAT(*test_model.mutable_repeated_string(),
-              ElementsAre("a", "b", "c"));
-
-  ASSERT_EQ(test_model.mutable_repeated_string()->size(), 3);
-  EXPECT_EQ((*test_model.mutable_repeated_string())[0], "a");
-  EXPECT_EQ((*test_model.mutable_repeated_string())[1], "b");
-  EXPECT_EQ((*test_model.mutable_repeated_string())[2], "c");
-
-  // The const accessor can't be used to modify the element
-  EXPECT_FALSE((std::is_assignable<decltype(test_model.repeated_string()[1]),
-                                   absl::string_view>::value));
-  // But the mutable one is fine.
-  (*test_model.mutable_repeated_string())[1] = "other";
-  EXPECT_THAT(test_model.repeated_string(), ElementsAre("a", "other", "c"));
-
-  test_model.mutable_repeated_string()->clear();
-  EXPECT_EQ(test_model.mutable_repeated_string()->size(), 0);
-}
-
-TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.child_models().size());
-  ChildModel1 child1;
-  child1.set_child_str1(kTestStr1);
-  test_model.mutable_child_models()->push_back(child1);
-  ChildModel1 child2;
-  child2.set_child_str1(kTestStr2);
-  test_model.mutable_child_models()->push_back(std::move(child2));
-
-  int i = 0;
-  for (auto child : test_model.child_models()) {
-    EXPECT_FALSE(Requires<decltype(child)>(
-        [](auto&& x) -> decltype(x.set_child_str1("")) {}));
-    if (i++ == 0) {
-      EXPECT_EQ(child.child_str1(), kTestStr1);
-    } else {
-      EXPECT_EQ(child.child_str1(), kTestStr2);
-    }
-  }
-
-  i = 0;
-  for (const auto& child : *test_model.mutable_child_models()) {
-    if (i++ == 0) {
-      EXPECT_EQ(child.child_str1(), kTestStr1);
-    } else {
-      EXPECT_EQ(child.child_str1(), kTestStr2);
-    }
-  }
-
-  using testing::_;
-  EXPECT_THAT(test_model.child_models(), ElementsAre(_, _));
-
-  EXPECT_EQ(test_model.child_models().size(), 2);
-  EXPECT_EQ(test_model.child_models()[0].child_str1(), kTestStr1);
-  EXPECT_EQ(test_model.child_models()[1].child_str1(), kTestStr2);
-  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), kTestStr1);
-  EXPECT_EQ((*test_model.mutable_child_models())[1].child_str1(), kTestStr2);
-  (*test_model.mutable_child_models())[0].set_child_str1("change1");
-  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
-  test_model.mutable_child_models()->clear();
-  EXPECT_EQ(test_model.mutable_child_models()->size(), 0);
-}
-
-TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.child_models().size());
-  ChildModel1 child1;
-  child1.set_child_str1(kTestStr1);
-
-  EXPECT_EQ(test_model.child_models().size(), 0);
-  EXPECT_EQ(std::distance(test_model.child_models().begin(),
-                          test_model.child_models().end()),
-            0);
-}
-
-TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.child_models().size());
-  ChildModel1 child1;
-  child1.set_child_str1(kTestStr1);
-  test_model.mutable_child_models()->push_back(child1);
-  ChildModel1 child2;
-
-  child2.set_child_str1(kTestStr2);
-  test_model.mutable_child_models()->push_back(std::move(child2));
-  ASSERT_EQ(test_model.child_models().size(), 2);
-
-  // test_model.child_models()[0].set_child_str1("change1");
-  (*test_model.mutable_child_models())[0].set_child_str1("change1");
-  EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
-}
-
-TEST(CppGeneratedCode, RepeatedStrings) {
-  ::hpb::Arena arena;
-  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_EQ(0, test_model.repeated_string_size());
-  // Should be able to clear repeated field when empty.
-  test_model.mutable_repeated_string()->clear();
-  EXPECT_EQ(0, test_model.repeated_string_size());
-  // Add 2 children.
-  EXPECT_EQ(true, test_model.add_repeated_string("Hello"));
-  EXPECT_EQ(true, test_model.add_repeated_string("World"));
-  EXPECT_EQ(2, test_model.repeated_string_size());
-  EXPECT_EQ("Hello", test_model.repeated_string(0));
-  EXPECT_EQ("World", test_model.repeated_string(1));
-  EXPECT_EQ(true, test_model.resize_repeated_string(3));
-  EXPECT_EQ(3, test_model.repeated_string_size());
-  test_model.set_repeated_string(2, "Test");
-  EXPECT_EQ("Hello", test_model.repeated_string(0));
-  EXPECT_EQ("World", test_model.repeated_string(1));
-  EXPECT_EQ("Test", test_model.repeated_string(2));
-}
-
 TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
   const int key_test_value = 3;
   ::hpb::Arena arena;
@@ -652,6 +349,23 @@ TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
   test_model.delete_child_map(key_test_value);
   auto map_result_after_delete = test_model.get_child_map(key_test_value);
   EXPECT_EQ(false, map_result_after_delete.ok());
+}
+
+TEST(CppGeneratedCode, MapMutableValue) {
+  constexpr int key = 1;
+  hpb::Arena arena;
+  auto msg = hpb::CreateMessage<ParentWithMap>(arena);
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(12);
+  msg.set_child_map(key, child);
+  auto const_map_result = msg.get_child_map(key);
+  EXPECT_EQ(true, const_map_result.ok());
+  EXPECT_EQ(12, const_map_result.value()->peeps());
+
+  auto mut_map_result = msg.get_mutable_child_map(key);
+  EXPECT_EQ(true, mut_map_result.ok());
+  mut_map_result.value()->set_peeps(9001);
+  EXPECT_EQ(9001, mut_map_result.value()->peeps());
 }
 
 TEST(CppGeneratedCode, MessageMapStringKeyAndStringValue) {
@@ -688,207 +402,6 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
   EXPECT_EQ(false, result_after_delete.ok());
 }
 
-TEST(CppGeneratedCode, HasExtension) {
-  TestModel model;
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-}
-
-TEST(CppGeneratedCode, HasExtensionPtr) {
-  TestModel model;
-  EXPECT_EQ(false, ::hpb::HasExtension(model.recursive_child(), theme));
-}
-
-TEST(CppGeneratedCode, ClearExtensionWithEmptyExtension) {
-  TestModel model;
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-  ::hpb::ClearExtension(&model, theme);
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-}
-
-TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
-  TestModel model;
-  ::hpb::Ptr<TestModel> recursive_child = model.mutable_recursive_child();
-  ::hpb::ClearExtension(recursive_child, theme);
-  EXPECT_EQ(false, ::hpb::HasExtension(recursive_child, theme));
-}
-
-TEST(CppGeneratedCode, SetExtension) {
-  TestModel model;
-  void* prior_message;
-  {
-    // Use a nested scope to make sure the arenas are fused correctly.
-    ThemeExtension extension1;
-    extension1.set_ext_name("Hello World");
-    prior_message = hpb::interop::upb::GetMessage(&extension1);
-    EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-    EXPECT_EQ(true,
-              ::hpb::SetExtension(&model, theme, std::move(extension1)).ok());
-  }
-  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = hpb::GetExtension(&model, theme);
-  EXPECT_TRUE(ext.ok());
-  EXPECT_EQ(hpb::interop::upb::GetMessage(*ext), prior_message);
-}
-
-TEST(CppGeneratedCode, SetExtensionWithPtr) {
-  ::hpb::Arena arena_model;
-  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena_model);
-  void* prior_message;
-  {
-    // Use a nested scope to make sure the arenas are fused correctly.
-    ::hpb::Arena arena;
-    ::hpb::Ptr<ThemeExtension> extension1 =
-        ::hpb::CreateMessage<ThemeExtension>(arena);
-    extension1->set_ext_name("Hello World");
-    prior_message = hpb::interop::upb::GetMessage(extension1);
-    EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
-    auto res = ::hpb::SetExtension(model, theme, extension1);
-    EXPECT_EQ(true, res.ok());
-  }
-  EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
-  auto ext = hpb::GetExtension(model, theme);
-  EXPECT_TRUE(ext.ok());
-  EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
-}
-
-#ifndef _MSC_VER
-TEST(CppGeneratedCode, SetExtensionShouldNotCompileForWrongType) {
-  ::hpb::Arena arena;
-  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
-  ThemeExtension extension1;
-  ContainerExtension extension2;
-
-  const auto canSetExtension = [&](auto l) {
-    return Requires<decltype(model)>(l);
-  };
-  EXPECT_TRUE(canSetExtension(
-      [](auto p) -> decltype(::hpb::SetExtension(p, theme, extension1)) {}));
-  // Wrong extension value type should fail to compile.
-  EXPECT_TRUE(!canSetExtension(
-      [](auto p) -> decltype(::hpb::SetExtension(p, theme, extension2)) {}));
-  // Wrong extension id with correct extension type should fail to compile.
-  EXPECT_TRUE(
-      !canSetExtension([](auto p) -> decltype(::hpb::SetExtension(
-                                      p, container_ext, extension1)) {}));
-}
-#endif
-
-TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
-  ::hpb::Arena arena;
-  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
-  void* prior_message;
-  {
-    // Use a nested scope to make sure the arenas are fused correctly.
-    ::hpb::Ptr<ThemeExtension> extension1 =
-        ::hpb::CreateMessage<ThemeExtension>(arena);
-    extension1->set_ext_name("Hello World");
-    prior_message = hpb::interop::upb::GetMessage(extension1);
-    EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
-    auto res = ::hpb::SetExtension(model, theme, extension1);
-    EXPECT_EQ(true, res.ok());
-  }
-  EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
-  auto ext = hpb::GetExtension(model, theme);
-  EXPECT_TRUE(ext.ok());
-  EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
-}
-
-TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
-  // Use an initial block to disallow fusing.
-  char initial_block[1000];
-  hpb::Arena arena(initial_block, sizeof(initial_block));
-
-  hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
-
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  ASSERT_FALSE(
-      upb_Arena_Fuse(arena.ptr(), hpb::interop::upb::GetArena(&extension1)));
-  EXPECT_FALSE(::hpb::HasExtension(model, theme));
-  auto status = ::hpb::SetExtension(model, theme, std::move(extension1));
-  EXPECT_TRUE(status.ok());
-  EXPECT_TRUE(::hpb::HasExtension(model, theme));
-  EXPECT_TRUE(hpb::GetExtension(model, theme).ok());
-}
-
-TEST(CppGeneratedCode, SetExtensionShouldClone) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  extension1.set_ext_name("Goodbye");
-  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = hpb::GetExtension(&model, theme);
-  EXPECT_TRUE(ext.ok());
-  EXPECT_EQ((*ext)->ext_name(), "Hello World");
-}
-
-TEST(CppGeneratedCode, SetExtensionShouldCloneConst) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-  EXPECT_EQ(true,
-            ::hpb::SetExtension(&model, theme, std::as_const(extension1)).ok());
-  extension1.set_ext_name("Goodbye");
-  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = hpb::GetExtension(&model, theme);
-  EXPECT_TRUE(ext.ok());
-  EXPECT_EQ((*ext)->ext_name(), "Hello World");
-}
-
-TEST(CppGeneratedCode, SetExtensionOnMutableChild) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::hpb::HasExtension(model.mutable_recursive_child(), theme));
-  EXPECT_EQ(true, ::hpb::SetExtension(model.mutable_recursive_child(), theme,
-                                      extension1)
-                      .ok());
-  EXPECT_EQ(true, ::hpb::HasExtension(model.mutable_recursive_child(), theme));
-}
-
-TEST(CppGeneratedCode, GetExtension) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  EXPECT_EQ("Hello World",
-            hpb::GetExtension(&model, theme).value()->ext_name());
-}
-
-TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  ::hpb::Ptr<TestModel> mutable_recursive_child =
-      model.mutable_recursive_child();
-  EXPECT_EQ(false, ::hpb::HasExtension(mutable_recursive_child, theme));
-  EXPECT_EQ(
-      true,
-      ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
-  EXPECT_EQ(
-      "Hello World",
-      hpb::GetExtension(mutable_recursive_child, theme).value()->ext_name());
-}
-
-TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
-  TestModel model;
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  ::hpb::Ptr<TestModel> mutable_recursive_child =
-      model.mutable_recursive_child();
-  EXPECT_EQ(false, ::hpb::HasExtension(mutable_recursive_child, theme));
-  EXPECT_EQ(
-      true,
-      ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
-  ::hpb::Ptr<const TestModel> recursive_child = model.recursive_child();
-  EXPECT_EQ("Hello World",
-            hpb::GetExtension(recursive_child, theme).value()->ext_name());
-}
-
 TEST(CppGeneratedCode, SerializeUsingArena) {
   TestModel model;
   model.set_str1("Hello World");
@@ -920,64 +433,6 @@ TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
-}
-
-TEST(CppGeneratedCode, Parse) {
-  TestModel model;
-  model.set_str1("Test123");
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  ::upb::Arena arena;
-  auto bytes = ::hpb::Serialize(&model, arena);
-  EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
-  EXPECT_EQ("Test123", parsed_model.str1());
-  EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
-}
-
-TEST(CppGeneratedCode, ParseIntoPtrToModel) {
-  TestModel model;
-  model.set_str1("Test123");
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  ::upb::Arena arena;
-  auto bytes = ::hpb::Serialize(&model, arena);
-  EXPECT_EQ(true, bytes.ok());
-  ::hpb::Ptr<TestModel> parsed_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_TRUE(::hpb::Parse(parsed_model, bytes.value()));
-  EXPECT_EQ("Test123", parsed_model->str1());
-  // Should return an extension even if we don't pass ExtensionRegistry
-  // by promoting unknown.
-  EXPECT_EQ(true, hpb::GetExtension(parsed_model, theme).ok());
-}
-
-TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
-  TestModel model;
-  model.set_str1("Test123");
-  ThemeExtension extension1;
-  extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  EXPECT_EQ(true, ::hpb::SetExtension(&model, ThemeExtension::theme_extension,
-                                      extension1)
-                      .ok());
-  ::upb::Arena arena;
-  auto bytes = ::hpb::Serialize(&model, arena);
-  EXPECT_EQ(true, bytes.ok());
-  ::hpb::ExtensionRegistry extensions(
-      {&theme, &other_ext, &ThemeExtension::theme_extension}, arena);
-  TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), extensions).value();
-  EXPECT_EQ("Test123", parsed_model.str1());
-  EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
-  EXPECT_EQ(
-      true,
-      hpb::GetExtension(&parsed_model, ThemeExtension::theme_extension).ok());
-  EXPECT_EQ("Hello World",
-            hpb::GetExtension(&parsed_model, ThemeExtension::theme_extension)
-                .value()
-                ->ext_name());
 }
 
 TEST(CppGeneratedCode, NameCollisions) {
@@ -1121,41 +576,6 @@ TEST(CppGeneratedCode, PtrImplicitConversion) {
   EXPECT_EQ(model_ptr->int64(), 5);
 }
 
-TEST(CppGeneratedCode, ClearSubMessage) {
-  // Fill model.
-  TestModel model;
-  model.set_int64(5);
-  auto new_child = model.mutable_child_model_1();
-  new_child->set_child_str1("text in child");
-  ThemeExtension extension1;
-  extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
-  EXPECT_TRUE(model.mutable_child_model_1()->has_child_str1());
-  // Clear using Ptr<T>
-  ::hpb::ClearMessage(model.mutable_child_model_1());
-  EXPECT_FALSE(model.mutable_child_model_1()->has_child_str1());
-}
-
-TEST(CppGeneratedCode, ClearMessage) {
-  // Fill model.
-  TestModel model;
-  model.set_int64(5);
-  model.set_str2("Hello");
-  auto new_child = model.add_child_models();
-  ASSERT_TRUE(new_child.ok());
-  new_child.value()->set_child_str1("text in child");
-  ThemeExtension extension1;
-  extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
-  // Clear using T*
-  ::hpb::ClearMessage(&model);
-  // Verify that scalars, repeated fields and extensions are cleared.
-  EXPECT_FALSE(model.has_int64());
-  EXPECT_FALSE(model.has_str2());
-  EXPECT_TRUE(model.child_models().empty());
-  EXPECT_FALSE(::hpb::HasExtension(&model, theme));
-}
-
 TEST(CppGeneratedCode, CanInvokeClearMessageWithPtr) {
   // Fill model.
   TestModel model;
@@ -1194,54 +614,9 @@ TEST(CppGeneratedCode, CannotInvokeClearMessageWithConstRawPtr) {
   EXPECT_FALSE(CanCallClearMessage<const TestModel*>());
 }
 
-TEST(CppGeneratedCode, DeepCopy) {
-  // Fill model.
-  TestModel model;
-  model.set_int64(5);
-  model.set_str2("Hello");
-  auto new_child = model.add_child_models();
-  ASSERT_TRUE(new_child.ok());
-  new_child.value()->set_child_str1("text in child");
-  ThemeExtension extension1;
-  extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
-  TestModel target;
-  target.set_b1(true);
-  ::hpb::DeepCopy(&model, &target);
-  EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content ";
-  EXPECT_EQ(target.str2(), "Hello");
-  EXPECT_TRUE(::hpb::HasExtension(&target, theme));
-}
-
-TEST(CppGeneratedCode, HasExtensionAndRegistry) {
-  // Fill model.
-  TestModel source;
-  source.set_int64(5);
-  source.set_str2("Hello");
-  auto new_child = source.add_child_models();
-  ASSERT_TRUE(new_child.ok());
-  new_child.value()->set_child_str1("text in child");
-  ThemeExtension extension1;
-  extension1.set_ext_name("name in extension");
-  ASSERT_TRUE(::hpb::SetExtension(&source, theme, extension1).ok());
-
-  // Now that we have a source model with extension data, serialize.
-  ::hpb::Arena arena;
-  std::string data = std::string(::hpb::Serialize(&source, arena).value());
-
-  // Test with ExtensionRegistry
-  ::hpb::ExtensionRegistry extensions({&theme}, arena);
-  TestModel parsed_model = ::hpb::Parse<TestModel>(data, extensions).value();
-  EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
-}
-
 TEST(CppGeneratedCode, FieldNumberConstants) {
   static_assert(TestModel::kChildMapFieldNumber == 225);
   EXPECT_EQ(225, TestModel::kChildMapFieldNumber);
-}
-
-TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
-  EXPECT_EQ(12003, ::hpb::ExtensionNumber(ThemeExtension::theme_extension));
 }
 
 TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
@@ -1267,12 +642,44 @@ TEST(CppGeneratedCode, SetAlias) {
             hpb::interop::upb::GetMessage(parent1.child()));
 }
 
+TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(12);
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto parent2 = hpb::CreateMessage<Parent>(arena);
+  parent1.set_alias_child(child);
+  parent2.set_alias_child(child);
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(parent1.child()->peeps(), 12);
+}
+
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
   hpb::Arena different_arena;
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
+}
+
+TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
+  hpb::Arena arena;
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto child = parent1.mutable_child();
+  child->set_peeps(12);
+
+  hpb::Arena other_arena;
+  auto parent2 = hpb::CreateMessage<Parent>(other_arena);
+  arena.Fuse(other_arena);
+
+  parent2.set_alias_child(child);
+
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.child()),
+            hpb::interop::upb::GetMessage(parent2.child()));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.child()));
 }
 
 TEST(CppGeneratedCode, SetAliasRepeated) {

@@ -116,6 +116,7 @@ bzl_library(
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
         "@proto_bazel_features//:features",
+        "@rules_cc//cc:find_cc_toolchain_bzl",
     ],
 )
 
@@ -144,6 +145,14 @@ bzl_library(
         "//bazel/common:proto_info_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
         "@proto_bazel_features//:features",
+    ],
+)
+
+bzl_library(
+    name = "cc_proto_aspect_bzl",
+    srcs = ["cc_proto_aspect.bzl"],
+    deps = [
+        ":bazel_cc_proto_library_bzl",
     ],
 )
 

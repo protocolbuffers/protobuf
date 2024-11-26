@@ -8,8 +8,8 @@
 #ifndef PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_
 #define PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_
 
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/compiler/hpb/output.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -20,7 +20,7 @@ std::string EnumValueSymbolInNameSpace(
     const protobuf::EnumDescriptor* desc,
     const protobuf::EnumValueDescriptor* value);
 void WriteEnumDeclarations(
-    const std::vector<const protobuf::EnumDescriptor*>& enums, Output& output);
+    const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx);
 
 }  // namespace protobuf
 }  // namespace google::hpb_generator

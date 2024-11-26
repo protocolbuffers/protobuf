@@ -310,18 +310,18 @@ const ::_pbi::TcParseTable<1, 2, 1, 46, 2> Struct_FieldsEntry_DoNotUse::_table_ 
   }, {{
     // .google.protobuf.Value value = 2;
     {::_pbi::TcParser::FastMtS1,
-     {18, 0, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
+     {18, 1, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
     // string key = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_)}},
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_)}},
   }}, {{
     65535, 65535
   }}, {{
     // string key = 1;
-    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), -1, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
     // .google.protobuf.Value value = 2;
-    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 0, 0,
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
@@ -347,7 +347,7 @@ Struct::Struct(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
-inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Struct& from_msg)
       : fields_{visibility, arena, from.fields_},
@@ -369,7 +369,7 @@ Struct::Struct(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
-inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : fields_{visibility, arena},
@@ -538,7 +538,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
             }
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -650,7 +650,7 @@ Value::Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
-inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::Value& from_msg)
       : kind_{},
@@ -695,7 +695,7 @@ Value::Value(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
-inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : kind_{},
@@ -922,7 +922,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
             default:
               break;
           }
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -1085,7 +1085,7 @@ ListValue::ListValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
-inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::ListValue& from_msg)
       : values_{visibility, arena, from.values_},
@@ -1107,7 +1107,7 @@ ListValue::ListValue(
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
-inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : values_{visibility, arena},
@@ -1251,7 +1251,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -1327,7 +1327,7 @@ namespace protobuf {
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
-    _static_init2_ PROTOBUF_UNUSED =
+    _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

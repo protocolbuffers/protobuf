@@ -51,7 +51,7 @@ size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
                                               ::uint8_t* target,
                                               io::EpsCopyOutputStream* stream) {
   auto& this_ = static_cast<const ZeroFieldsBase&>(msg);
-  if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target = internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         this_._internal_metadata_.unknown_fields<UnknownFieldSet>(
             UnknownFieldSet::default_instance),

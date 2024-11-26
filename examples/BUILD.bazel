@@ -5,10 +5,10 @@
 # example.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
-load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
-load("@protobuf//bazel:proto_library.bzl", "proto_library")
-load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+load("@com_google_protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:py_binary.bzl", "py_binary")
@@ -25,7 +25,7 @@ load("@rules_python//python:py_binary.bzl", "py_binary")
 proto_library(
     name = "addressbook_proto",
     srcs = ["addressbook.proto"],
-    deps = ["@protobuf//:timestamp_proto"],
+    deps = ["@com_google_protobuf//:timestamp_proto"],
 )
 
 # The cc_proto_library rule generates C++ code for a proto_library rule. It
@@ -45,8 +45,8 @@ cc_binary(
     srcs = ["add_person.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@protobuf",
-        "@protobuf//src/google/protobuf/util:time_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -55,8 +55,8 @@ cc_binary(
     srcs = ["list_people.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@protobuf",
-        "@protobuf//src/google/protobuf/util:time_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//src/google/protobuf/util:time_util",
     ],
 )
 

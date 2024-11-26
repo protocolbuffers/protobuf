@@ -12,8 +12,10 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
+#include "upb/base/string_view.h"
 #include "upb/message/compare.h"
 #include "upb/message/copy.h"
+#include "upb/message/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
@@ -575,9 +577,7 @@ static bool PyUpb_Message_IsEmpty(const upb_Message* msg,
   upb_MessageValue val;
   if (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) return false;
 
-  size_t len;
-  (void)upb_Message_GetUnknown(msg, &len);
-  return len == 0;
+  return !upb_Message_HasUnknown(msg);
 }
 
 static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {

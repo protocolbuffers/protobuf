@@ -14,9 +14,9 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/log/log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -48,7 +48,7 @@ inline const char* InternalParseRepeated(const char* ptr,
                                          const MessageLite* prototype) {
   uint32_t expected_tag;
   ptr = ReadTag(ptr, &expected_tag);
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
   // TODO: Try to optimize this. The tags and lengths are read again
   // which is a bit wasteful.
   return LazyRepeatedPtrField::ParseToRepeatedMessage<uint32_t>(

@@ -372,7 +372,7 @@ mod tests {
 
     impl<'msg> MutProxy<'msg> for MyProxiedMut<'msg> {}
 
-    #[gtest]
+    #[googletest::test]
     fn test_as_view() {
         let my_proxied = MyProxied { val: "Hello World".to_string() };
 
@@ -387,7 +387,7 @@ mod tests {
         x.into_view() // OK: we return the same lifetime as we got in.
     }
 
-    #[gtest]
+    #[googletest::test]
     fn test_mut_into_view() {
         let mut my_proxied = MyProxied { val: "Hello World".to_string() };
         reborrow_mut_into_view(my_proxied.as_mut());
@@ -395,7 +395,7 @@ mod tests {
 
     fn require_unified_lifetimes<'msg>(_x: Mut<'msg, MyProxied>, _y: View<'msg, MyProxied>) {}
 
-    #[gtest]
+    #[googletest::test]
     fn test_require_unified_lifetimes() {
         let mut my_proxied = MyProxied { val: "Hello1".to_string() };
         let my_mut = my_proxied.as_mut();
@@ -420,7 +420,7 @@ mod tests {
         [x.as_view(), y.as_view()]
     }
 
-    #[gtest]
+    #[googletest::test]
     fn test_reborrow_generic_as_view() {
         let mut my_proxied = MyProxied { val: "Hello1".to_string() };
         let mut my_mut = my_proxied.as_mut();
@@ -447,7 +447,7 @@ mod tests {
         [x.into_view(), y]
     }
 
-    #[gtest]
+    #[googletest::test]
     fn test_reborrow_generic_into_view() {
         let my_proxied = MyProxied { val: "Hello1".to_string() };
         let my_view = my_proxied.as_view();
@@ -467,7 +467,7 @@ mod tests {
         [x.into_view(), y]
     }
 
-    #[gtest]
+    #[googletest::test]
     fn test_reborrow_generic_mut_into_view() {
         let mut my_proxied = MyProxied { val: "Hello1".to_string() };
         let my_mut = my_proxied.as_mut();
@@ -491,7 +491,7 @@ mod tests {
         [tmp, y]
     }
 
-    #[gtest]
+    #[googletest::test]
     fn test_reborrow_generic_mut_into_mut() {
         let mut my_proxied = MyProxied { val: "Hello1".to_string() };
         let my_mut = my_proxied.as_mut();

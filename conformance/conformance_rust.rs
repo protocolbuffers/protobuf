@@ -8,7 +8,7 @@ use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat
 
 use protobuf::prelude::*;
 use protobuf::Optional::{Set, Unset};
-use protobuf::ParseError;
+use protobuf::{Message, ParseError};
 
 use std::io::{self, ErrorKind, Read, Write};
 use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;

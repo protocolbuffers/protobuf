@@ -1177,6 +1177,14 @@ message TestMessageSize {
   int64 m6 = 6;
 }
 
+// Tests eager verification of a lazy message field.
+message TestEagerlyVerifiedLazyMessage {
+  message LazyMessage {
+    bytes bytes_field = 1;
+  }
+  LazyMessage lazy_message = 1 [lazy = true];
+}
+
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}

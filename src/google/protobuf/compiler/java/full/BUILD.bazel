@@ -44,6 +44,7 @@ cc_library(
         "//src/google/protobuf/compiler/java:internal_helpers",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:function_ref",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",

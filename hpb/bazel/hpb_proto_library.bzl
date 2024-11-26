@@ -9,96 +9,16 @@
   - hpb_proto_library()
 """
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
-# Generic support code #########################################################
-
-def _get_real_short_path(file):
-    # For some reason, files from other archives have short paths that look like:
-    #   ../com_google_protobuf/google/protobuf/descriptor.proto
-    short_path = file.short_path
-    if short_path.startswith("../"):
-        second_slash = short_path.index("/", 3)
-        short_path = short_path[second_slash + 1:]
-
-    # Sometimes it has another few prefixes like:
-    #   _virtual_imports/any_proto/google/protobuf/any.proto
-    #   benchmarks/_virtual_imports/100_msgs_proto/benchmarks/100_msgs.proto
-    # We want just google/protobuf/any.proto.
-    virtual_imports = "_virtual_imports/"
-    if virtual_imports in short_path:
-        short_path = short_path.split(virtual_imports)[1].split("/", 1)[1]
-    return short_path
-
-def _get_real_root(file):
-    real_short_path = _get_real_short_path(file)
-    return file.path[:-len(real_short_path) - 1]
-
-def _generate_output_file(ctx, src, extension):
-    real_short_path = _get_real_short_path(src)
-    real_short_path = paths.relativize(real_short_path, ctx.label.package)
-    output_filename = paths.replace_extension(real_short_path, extension)
-    ret = ctx.actions.declare_file(output_filename)
-    return ret
-
 def _filter_none(elems):
     return [e for e in elems if e]
-
-def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
-    """Like cc_library(), but callable from rules.
-
-    Args:
-      ctx: Rule context.
-      name: Unique name used to generate output files.
-      hdrs: Public headers that can be #included from other rules.
-      srcs: C/C++ source files.
-      copts: Additional options for cc compilation.
-      dep_ccinfos: CcInfo providers of dependencies we should build/link against.
-
-    Returns:
-      CcInfo provider for this compilation.
-    """
-
-    compilation_contexts = [info.compilation_context for info in dep_ccinfos]
-    linking_contexts = [info.linking_context for info in dep_ccinfos]
-    toolchain = find_cpp_toolchain(ctx)
-    feature_configuration = cc_common.configure_features(
-        ctx = ctx,
-        cc_toolchain = toolchain,
-        requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features,
-    )
-
-    (compilation_context, compilation_outputs) = cc_common.compile(
-        actions = ctx.actions,
-        feature_configuration = feature_configuration,
-        cc_toolchain = toolchain,
-        name = name,
-        srcs = srcs,
-        public_hdrs = hdrs,
-        user_compile_flags = copts,
-        compilation_contexts = compilation_contexts,
-    )
-
-    # buildifier: disable=unused-variable
-    (linking_context, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
-        actions = ctx.actions,
-        name = name,
-        feature_configuration = feature_configuration,
-        cc_toolchain = toolchain,
-        compilation_outputs = compilation_outputs,
-        linking_contexts = linking_contexts,
-    )
-
-    return CcInfo(
-        compilation_context = compilation_context,
-        linking_context = linking_context,
-    )
 
 # Dummy rule to expose select() copts to aspects  ##############################
 
@@ -117,39 +37,43 @@ hpb_proto_library_copts = rule(
     attrs = {"copts": attr.string_list(default = [])},
 )
 
-_UpbCcWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
+_UpbCcWrappedCcInfo = provider("Provider for cc_info for hpb", fields = ["cc_info"])
 _WrappedCcGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 
-def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
+def _get_lang_toolchain(ctx):
+    return ctx.attr._hpb_lang_toolchain[proto_common.ProtoLangToolchainInfo]
+
+def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     if len(proto_sources) == 0:
         return GeneratedSrcsInfo(srcs = [], hdrs = [])
 
-    tool = getattr(ctx.executable, "_gen_" + generator)
-    srcs = [_generate_output_file(ctx, name, ".upb.proto.cc") for name in proto_sources]
-    hdrs = [_generate_output_file(ctx, name, ".upb.proto.h") for name in proto_sources]
-    hdrs += [_generate_output_file(ctx, name, ".upb.fwd.h") for name in proto_sources]
-    transitive_sets = proto_info.transitive_descriptor_sets.to_list()
-
-    args = ctx.actions.args()
-    args.use_param_file(param_file_arg = "@%s")
-    args.set_param_file_format("multiline")
-
-    args.add("--" + generator + "_out=" + _get_real_root(srcs[0]))
-    args.add("--plugin=protoc-gen-" + generator + "=" + tool.path)
-    args.add("--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]))
-    args.add_all(proto_sources, map_each = _get_real_short_path)
-
-    ctx.actions.run(
-        inputs = depset(
-            direct = [proto_info.direct_descriptor_set],
-            transitive = [proto_info.transitive_descriptor_sets],
-        ),
-        tools = [tool],
-        outputs = srcs + hdrs,
-        executable = ctx.executable._protoc,
-        arguments = [args],
-        progress_message = "Generating upb cc protos for :" + ctx.label.name,
+    srcs = []
+    srcs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.proto.cc",
+        proto_info = proto_info,
     )
+
+    hdrs = []
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.proto.h",
+        proto_info = proto_info,
+    )
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.fwd.h",
+        proto_info = proto_info,
+    )
+
+    proto_common.compile(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        proto_lang_toolchain_info = _get_lang_toolchain(ctx),
+        generated_files = srcs + hdrs,
+        experimental_exec_group = "proto_compiler",
+    )
+
     return GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs)
 
 def _upb_cc_proto_rule_impl(ctx):
@@ -183,43 +107,45 @@ def _upb_cc_proto_rule_impl(ctx):
         cc_info,
     ]
 
-def _upb_cc_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
-    proto_info = target[ProtoInfo]
-    files = _compile_upb_cc_protos(ctx, generator, proto_info, proto_info.direct_sources)
-    deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
+def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
+    deps = ctx.rule.attr.deps + ctx.attr._upbprotos
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_UpbCcWrappedCcInfo].cc_info for dep in deps if _UpbCcWrappedCcInfo in dep]
     if UpbWrappedCcInfo not in target:
         fail("Target should have UpbWrappedCcInfo provider")
     dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
-    cc_info = _cc_library_func(
-        ctx = ctx,
-        name = ctx.rule.attr.name + "." + generator,
-        hdrs = files.hdrs,
-        srcs = files.srcs,
-        copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
-        dep_ccinfos = dep_ccinfos,
-    )
-    return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
+    proto_info = target[ProtoInfo]
+
+    if not getattr(ctx.rule.attr, "srcs", []):
+        # This target doesn't declare any sources, reexport all its deps instead.
+        # This is known as an "alias library":
+        # https://bazel.build/versions/6.4.0/reference/be/protocol-buffer#proto_library.srcs
+        return [cc_provider(
+            cc_info = cc_common.merge_cc_infos(direct_cc_infos = dep_ccinfos),
+        ), file_provider(srcs = GeneratedSrcsInfo(srcs = [], hdrs = []))]
+    else:
+        files = _compile_upb_cc_protos(ctx, proto_info, proto_info.direct_sources)
+        cc_info = cc_library_func(
+            ctx = ctx,
+            name = ctx.rule.attr.name + ".upbprotos",
+            hdrs = files.hdrs,
+            srcs = files.srcs,
+            copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
+            dep_ccinfos = dep_ccinfos,
+        )
+        return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
 
 def _upb_cc_proto_library_aspect_impl(target, ctx):
-    return _upb_cc_proto_aspect_impl(target, ctx, "upbprotos", _UpbCcWrappedCcInfo, _WrappedCcGeneratedSrcsInfo)
+    return _upb_cc_proto_aspect_impl(target, ctx, _UpbCcWrappedCcInfo, _WrappedCcGeneratedSrcsInfo)
 
 _upb_cc_proto_library_aspect = aspect(
     attrs = {
         "_ccopts": attr.label(
             default = "//hpb:hpb_proto_library_copts",
         ),
-        "_gen_upbprotos": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//src/google/protobuf/compiler/hpb:protoc-gen-hpb",
-        ),
-        "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//net/proto2/compiler/public:protocol_compiler",
+        "_hpb_lang_toolchain": attr.label(
+            default = "//src/google/protobuf/compiler/hpb:toolchain",
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
@@ -235,6 +161,9 @@ _upb_cc_proto_library_aspect = aspect(
                 "//hpb:repeated_field",
             ],
         ),
+    },
+    exec_groups = {
+        "proto_compiler": exec_group(),
     },
     implementation = _upb_cc_proto_library_aspect_impl,
     provides = [

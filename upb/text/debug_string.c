@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,7 +28,6 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/text/internal/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -184,9 +184,8 @@ static void _upb_MessageDebugString(txtenc* e, const upb_Message* msg,
 
   const upb_MiniTableExtension* ext;
   upb_MessageValue val_ext;
-  iter = kUpb_Extension_Begin;
-  while (
-      UPB_PRIVATE(_upb_Message_NextExtension)(msg, mt, &ext, &val_ext, &iter)) {
+  iter = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
     const upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
     // It is not sufficient to only pass |f| as we lose valuable information
     // about sub-messages. It is required that we pass |ext|.
@@ -201,19 +200,7 @@ static void _upb_MessageDebugString(txtenc* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & UPB_TXTENC_SKIPUNKNOWN) == 0) {
-    size_t size;
-    const char* ptr = upb_Message_GetUnknown(msg, &size);
-    if (size != 0) {
-      char* start = e->ptr;
-      upb_EpsCopyInputStream stream;
-      upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
-      if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, ptr, &stream, -1)) {
-        /* Unknown failed to parse, back up and don't print it at all. */
-        e->ptr = start;
-      }
-    }
-  }
+  UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(e, msg);
 }
 
 size_t upb_DebugString(const upb_Message* msg, const upb_MiniTable* mt,

@@ -716,8 +716,8 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
+                           0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
       // Explicit abort to let compilers know this code-path does not return
@@ -734,8 +734,8 @@ class PROTOBUF_EXPORT TcParser final {
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
     // not respect the alignment as expressed by `alignof(T)`
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(target) % alignof(T) !=
+                           0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
       // Explicit abort to let compilers know this code-path does not return
@@ -822,6 +822,9 @@ class PROTOBUF_EXPORT TcParser final {
     };
   }
 
+  static void VerifyHasBitConsistency(const MessageLite* msg,
+                                      const TcParseTableBase* table);
+
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
@@ -856,7 +859,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType>
   PROTOBUF_CC static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
 
-  static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
+  static PROTOBUF_ALWAYS_INLINE void SyncHasbits(
       MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
     const uint32_t has_bits_offset = table->has_bits_offset;
     if (has_bits_offset) {
@@ -904,7 +907,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <class MessageBaseT, class UnknownFieldsT>
   PROTOBUF_CC static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
       // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
       static constexpr UnknownFieldOps kOps = {
           WriteVarintToUnknown<UnknownFieldsT>,
@@ -1027,6 +1030,8 @@ class PROTOBUF_EXPORT TcParser final {
   static absl::string_view MessageName(const TcParseTableBase* table);
   static absl::string_view FieldName(const TcParseTableBase* table,
                                      const TcParseTableBase::FieldEntry*);
+  static int FieldNumber(const TcParseTableBase* table,
+                         const TcParseTableBase::FieldEntry*);
   static bool ChangeOneof(const TcParseTableBase* table,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
@@ -1094,7 +1099,7 @@ class PROTOBUF_EXPORT TcParser final {
 };
 
 // Dispatch to the designated parse function
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
   const size_t idx = coded_tag & table->fast_idx_mask;
@@ -1110,7 +1115,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
 // reliably do this optimization in opt mode, but do not perform this in debug
 // mode. Luckily the structure of the algorithm is such that it's always
 // possible to just return and use the enclosing parse loop as a trampoline.
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   constexpr bool always_return = !PROTOBUF_TAILCALL;
   if (always_return || !ctx->DataAvailable(ptr)) {
@@ -1119,14 +1124,14 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
   PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   (void)ctx;
   SyncHasbits(msg, hasbits, table);
   return ptr;
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
@@ -1151,6 +1156,9 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
   table -= 1;
   if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
     return table->post_loop_handler(msg, ptr, ctx);
+  }
+  if (ABSL_PREDICT_FALSE(PerformDebugChecks() && ptr == nullptr)) {
+    VerifyHasBitConsistency(msg, table);
   }
   return ptr;
 }

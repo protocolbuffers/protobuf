@@ -58,11 +58,6 @@ class ExplicitlyConstructed {
   } union_;
 };
 
-// ArenaStringPtr compatible explicitly constructed string type.
-// This empty string type is aligned with a minimum alignment of 8 bytes
-// which is the minimum requirement of ArenaStringPtr
-using ExplicitlyConstructedArenaString = ExplicitlyConstructed<std::string, 8>;
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

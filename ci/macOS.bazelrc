@@ -1,7 +1,8 @@
 import common.bazelrc
 
-build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build --cxxopt="-Woverloaded-virtual"
 build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
 common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
 common --xcode_version_config=@com_google_protobuf//.github:host_xcodes
+

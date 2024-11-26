@@ -1137,6 +1137,13 @@ struct RepeatedGroupDynamicExtensionInfo
 // users from a similar dispatch without creating KeyInfo or ValueInfo per type.
 template <FieldDescriptor::CppType cpp_type, typename T>
 inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if encased in a switch statement. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/qo51cKe7b
+  // This is fixed in GCC 10.1+.
+  (void)type;   // Suppress -Wunused-but-set-parameter
+  (void)value;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (cpp_type == FieldDescriptor::CPPTYPE_INT32) {
     static_assert(std::is_same_v<T, int32_t>, "type mismatch");
     switch (type) {

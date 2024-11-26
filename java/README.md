@@ -56,8 +56,8 @@ Lite runtime](lite.md).
 ### Use Java Protocol Buffers with Bazel
 
 Bazel has native build rules to work with protobuf. For Java, you can use the
-`java_proto_library` rule for server and the `java_lite_proto_library` rule
-for Android. Check out [our build files examples](../examples/BUILD) to learn
+`java_proto_library` rule for server and the `java_lite_proto_library` rule for
+Android. Check out [our build files examples](../examples/BUILD.bazel) to learn
 how to use them.
 
 ## Build from Source

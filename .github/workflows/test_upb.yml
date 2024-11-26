@@ -87,7 +87,8 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - name: Setup Python
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
@@ -114,8 +115,10 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - name: Setup Python
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
+          python-version: 3.12
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
@@ -146,7 +149,7 @@ jobs:
             which python3 &&
             mv `which python3` /tmp &&
             ! which python3 &&
-            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel -//python:aarch64_test -//python:x86_64_test -//python:google/protobuf/pyext/_message.so -//python:proto_api
 
   build_wheels:
     name: Build Wheels
@@ -166,11 +169,11 @@ jobs:
           bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: python-wheels
           path: wheels/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
@@ -185,26 +188,26 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
-          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.13", architecture: x64, type: 'binary' }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
@@ -215,17 +218,18 @@ jobs:
     steps:
       - name: Download Wheels
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: requirements
           path: requirements
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - name: Setup Python
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.python-version }}
@@ -275,18 +279,19 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.8", "3.12"]
+        python-version: ["3.9", "3.13"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels
       - name: Delete Binary Wheels
         run: find wheels -type f | grep -v none-any | xargs rm
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - name: Setup Python
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Setup Python venv

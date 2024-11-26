@@ -7,13 +7,18 @@
 
 #include "google/protobuf/compiler/java/name_resolver.h"
 
+#include <cstddef>
 #include <string>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/substitute.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
@@ -31,6 +36,15 @@ namespace {
 // A suffix that will be appended to the file's outer class name if the name
 // conflicts with some other types defined in the file.
 const char* kOuterClassNameSuffix = "OuterClass";
+
+inline bool UseOldFileClassNameDefault(const FileDescriptor* file) {
+  // TODO b/373884685 - Clean up this check once when we have a way to query
+  // Java features in the C++ runtime.
+  if (JavaGenerator::GetEdition(*file) < EDITION_2024) return true;
+  return JavaGenerator::GetResolvedSourceFeatures(*file)
+      .GetExtension(pb::java)
+      .use_old_outer_classname_default();
+}
 
 // Strip package name from a descriptor's full name.
 // For example:
@@ -132,7 +146,9 @@ std::string ClassNameResolver::GetFileDefaultImmutableClassName(
   } else {
     basename = file->name().substr(last_slash + 1);
   }
-  return UnderscoresToCamelCase(StripProto(basename), true);
+  // foo_bar_baz.proto -> FooBarBaz
+  std::string ret = UnderscoresToCamelCase(StripProto(basename), true);
+  return UseOldFileClassNameDefault(file) ? ret : ret + "Proto";
 }
 
 std::string ClassNameResolver::GetFileImmutableClassName(
@@ -143,7 +159,11 @@ std::string ClassNameResolver::GetFileImmutableClassName(
       class_name = file->options().java_outer_classname();
     } else {
       class_name = GetFileDefaultImmutableClassName(file);
-      if (HasConflictingClassName(file, class_name,
+
+      // This disambiguation logic is deprecated and only enabled when using
+      // the old default scheme.
+      if (UseOldFileClassNameDefault(file) &&
+          HasConflictingClassName(file, class_name,
                                   NameEquality::EXACT_EQUAL)) {
         class_name += kOuterClassNameSuffix;
       }

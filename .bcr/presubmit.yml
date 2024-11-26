@@ -8,9 +8,8 @@ tasks:
     platform: ${{ platform }}
     bazel: ${{ bazel }}
     build_flags:
-    - '--host_cxxopt=-std=c++14'
-    - '--cxxopt=-std=c++14'
-    - '--experimental_google_legacy_api'
+    - '--host_cxxopt=-std=c++17'
+    - '--cxxopt=-std=c++17'
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
@@ -31,8 +30,7 @@ bcr_test_module:
       platform: ${{ platform }}
       bazel: ${{ bazel }}
       build_flags:
-      - '--host_cxxopt=-std=c++14'
-      - '--cxxopt=-std=c++14'
-      - '--experimental_google_legacy_api'
+      - '--host_cxxopt=-std=c++17'
+      - '--cxxopt=-std=c++17'
       build_targets:
       - "//..."

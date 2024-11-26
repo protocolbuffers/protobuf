@@ -49,8 +49,10 @@ template <typename T>
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fany_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fany_2eproto;
+}  // extern "C"
 namespace google {
 namespace protobuf {
 class Any;
@@ -122,10 +124,7 @@ class PROTOBUF_EXPORT Any final
     return default_instance().GetMetadata().reflection;
   }
   static const Any& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Any* internal_default_instance() {
-    return reinterpret_cast<const Any*>(
+    return *reinterpret_cast<const Any*>(
         &_Any_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -281,13 +280,12 @@ class PROTOBUF_EXPORT Any final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
-  PROTOBUF_NODISCARD std::string* release_type_url();
+  [[nodiscard]] std::string* release_type_url();
   void set_allocated_type_url(std::string* value);
 
   private:
   const std::string& _internal_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
   std::string* _internal_mutable_type_url();
 
   public:
@@ -297,13 +295,12 @@ class PROTOBUF_EXPORT Any final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
-  PROTOBUF_NODISCARD std::string* release_value();
+  [[nodiscard]] std::string* release_value();
   void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
 
   public:
@@ -330,9 +327,10 @@ class PROTOBUF_EXPORT Any final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Any& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr type_url_;
     ::google::protobuf::internal::ArenaStringPtr value_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -361,6 +359,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_cla
 inline void Any::clear_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_url_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Any::type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -368,9 +367,10 @@ inline const std::string& Any::type_url() const
   return _internal_type_url();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
@@ -385,19 +385,34 @@ inline const std::string& Any::_internal_type_url() const {
 }
 inline void Any::_internal_set_type_url(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.type_url_.Set(value, GetArena());
 }
 inline std::string* Any::_internal_mutable_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.type_url_.Mutable( GetArena());
 }
 inline std::string* Any::release_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
-  return _impl_.type_url_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.type_url_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.type_url_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Any::set_allocated_type_url(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
   _impl_.type_url_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_url_.IsDefault()) {
     _impl_.type_url_.Set("", GetArena());
@@ -409,6 +424,7 @@ inline void Any::set_allocated_type_url(std::string* value) {
 inline void Any::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& Any::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -416,9 +432,10 @@ inline const std::string& Any::value() const
   return _internal_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
@@ -433,19 +450,34 @@ inline const std::string& Any::_internal_value() const {
 }
 inline void Any::_internal_set_value(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.value_.Set(value, GetArena());
 }
 inline std::string* Any::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* Any::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
-  return _impl_.value_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.value_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.value_.Set("", GetArena());
+  }
+  return released;
 }
 inline void Any::set_allocated_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
   _impl_.value_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
     _impl_.value_.Set("", GetArena());

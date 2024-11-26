@@ -42,6 +42,7 @@
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 
@@ -854,7 +855,7 @@ void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
           }}},
         R"cc(
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY$priority$ static ::std::false_type
-              _static_init$priority$_ PROTOBUF_UNUSED =
+              _static_init$priority$_ [[maybe_unused]] =
                   ($expr$, ::std::false_type{});
         )cc");
     // Reset the vector because we might be generating many files.
@@ -1419,10 +1420,18 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({Sub("enum", e.first).AnnotatedAs(e.second)}, R"cc(
-        enum $enum$ : int;
-        bool $enum$_IsValid(int value);
-      )cc");
+      // TODO: Remove _IsValid forward declaration.
+      p->Emit(
+          {
+              Sub("enum", e.first).AnnotatedAs(e.second),
+              {"DEPRECATED",
+               e.second->options().deprecated() ? "[[deprecated]]" : ""},
+          },
+          R"cc(
+            enum $DEPRECATED $$enum$ : int;
+            $dllexport_decl $bool $enum$_IsValid(int value);
+            $dllexport_decl $extern const uint32_t $enum$_internal_data_[];
+          )cc");
     }
 
     for (const auto& c : classes_) {
@@ -1459,6 +1468,14 @@ class FileGenerator::ForwardDeclarations {
   }
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
+    for (const auto& e : enums_) {
+      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
+              R"cc(
+                template <>
+                internal::EnumTraitsT<$enum$_internal_data_>
+                    internal::EnumTraitsImpl::value<$enum$>;
+              )cc");
+    }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
@@ -1530,6 +1547,10 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
     ListAllTypesForServices(file_, &classes);
   }
+
+  // List all enums in this file, to declare the traits.
+  google::protobuf::internal::VisitDescriptors(
+      *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
 
   // Calculate the set of files whose definitions we get through include.
   // No need to forward declare types that are defined in these.
@@ -1665,6 +1686,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   }
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
+    IncludeFileAndExport("third_party/protobuf/map_type_handler.h", p);
     if (HasDescriptorMethods(file_, options_)) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
@@ -1747,9 +1769,14 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   )cc");
 
   if (HasDescriptorMethods(file_, options_)) {
+    // The DescriptorTable needs to be extern "C" so that we can access it from
+    // Rust. We do not attempt to read the contents of the table in Rust, but
+    // just use the symbol to force-link the C++ generated code when necessary.
     p->Emit(R"cc(
+      extern "C" {
       $dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable
           $desc_table$;
+      }  // extern "C"
     )cc");
   }
 }

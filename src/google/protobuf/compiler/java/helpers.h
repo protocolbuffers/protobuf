@@ -14,7 +14,10 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -338,7 +341,7 @@ bool HasRequiredFields(const Descriptor* descriptor);
 bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  return internal::cpp::HasHasbit(descriptor);
+  return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 
 // Check whether a message has repeated fields.

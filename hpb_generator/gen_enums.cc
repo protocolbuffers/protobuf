@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/descriptor.h"
@@ -20,6 +21,7 @@
 namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
+using Sub = protobuf::io::Printer::Sub;
 
 // Convert enum value to C++ literal.
 //
@@ -78,7 +80,7 @@ std::string EnumValueSymbolInNameSpace(
   }
 }
 
-void WriteEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
+void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
   std::vector<const protobuf::EnumValueDescriptor*> values;
   auto value_count = desc->value_count();
   values.reserve(value_count);
@@ -93,21 +95,26 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
-    output("  $0", EnumValueSymbolInNameSpace(desc, value));
-    output(" = $0", EnumInt32ToString(value->number()));
-    if (i != values.size() - 1) {
-      output(",");
-    }
-    output("\n");
+    ctx.Emit({{"name", EnumValueSymbolInNameSpace(desc, value)},
+              {"number", EnumInt32ToString(value->number())},
+              {"sep", i == values.size() - 1 ? "" : ","}},
+             R"cc(
+               $name$ = $number$$sep$
+             )cc");
   }
 }
 
 void WriteEnumDeclarations(
-    const std::vector<const protobuf::EnumDescriptor*>& enums, Output& output) {
+    const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx) {
   for (auto enumdesc : enums) {
-    output("enum $0 : int {\n", EnumTypeName(enumdesc));
-    WriteEnumValues(enumdesc, output);
-    output("};\n\n");
+    ctx.Emit({{"type", EnumTypeName(enumdesc)},
+              Sub("enum_vals", [&] { WriteEnumValues(enumdesc, ctx); })
+                  .WithSuffix(",")},
+             R"cc(
+               enum $type$ : int {
+                 $enum_vals$,
+               };
+             )cc");
   }
 }
 

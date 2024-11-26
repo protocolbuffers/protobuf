@@ -526,3 +526,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/MarnixBouhuis/confpb
     *   Extensions: 1250-1251
+
+1.  JaiaBot
+
+    *   Website: https://github.com/jaiarobotics/jaiabot
+    *   Extensions: 1252

@@ -195,7 +195,7 @@ size_t Message::ComputeUnknownFieldsSize(
 
 size_t Message::MaybeComputeUnknownFieldsSize(
     size_t total_size, const internal::CachedSize* cached_size) const {
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+  if (ABSL_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ComputeUnknownFieldsSize(total_size, cached_size);
   }
   cached_size->Set(internal::ToCachedSize(total_size));

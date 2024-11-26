@@ -18,10 +18,10 @@ namespace rust {
 
 void UnsupportedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                  AccessorCase accessor_case) const {
-  ctx.Emit({{"reason", reason_}}, R"rs(
-    // Unsupported! :( Reason: $reason$
+  ctx.Emit(R"rs(
+    // Unsupported field! :(
+
     )rs");
-  ctx.printer().PrintRaw("\n");
 }
 
 }  // namespace rust

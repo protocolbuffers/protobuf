@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
@@ -198,7 +199,10 @@ proto_library(
 
 cc_proto_library(
     name = "java_features_cc_proto",
-    visibility = ["//editions:__pkg__"],
+    visibility = [
+        "//editions:__pkg__",
+        "//src/google/protobuf/compiler/java:__pkg__",  # For java/names.h
+    ],
     deps = [":java_features_proto"],
 )
 
@@ -620,6 +624,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
             "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
             "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
+            "src/test/java/com/google/protobuf/FieldPresenceTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
@@ -669,6 +674,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
             "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
             "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
+            "src/test/java/com/google/protobuf/FieldPresenceTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",

@@ -11,18 +11,13 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
 
 namespace {
-
-// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
-std::string NamespaceFromPackageName(absl::string_view package_name) {
-  return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
-                      "::protos");
-}
 
 std::string DotsToColons(const absl::string_view name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
@@ -118,22 +113,6 @@ std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
   return compiler::StripProto(file->name()) + ".upb.proto.h";
-}
-
-void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output) {
-  // Skip namespace generation if package name is not specified.
-  if (file->package().empty()) {
-    return;
-  }
-
-  output("namespace $0 {\n\n", NamespaceFromPackageName(file->package()));
-}
-
-void WriteEndNamespace(const protobuf::FileDescriptor* file, Output& output) {
-  if (file->package().empty()) {
-    return;
-  }
-  output("} //  namespace $0\n\n", NamespaceFromPackageName(file->package()));
 }
 
 std::string CppConstType(const protobuf::FieldDescriptor* field) {

@@ -50,10 +50,63 @@ template <typename T>
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
   static const ::uint32_t offsets[];
 };
+extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
+}  // extern "C"
 namespace google {
 namespace protobuf {
+enum Edition : int;
+PROTOBUF_EXPORT bool Edition_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
+enum ExtensionRangeOptions_VerificationState : int;
+PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
+enum FeatureSet_EnumType : int;
+PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
+enum FeatureSet_FieldPresence : int;
+PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
+enum FeatureSet_JsonFormat : int;
+PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
+enum FeatureSet_MessageEncoding : int;
+PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
+enum FeatureSet_RepeatedFieldEncoding : int;
+PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
+enum FeatureSet_Utf8Validation : int;
+PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
+enum FieldDescriptorProto_Label : int;
+PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
+enum FieldDescriptorProto_Type : int;
+PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
+enum FieldOptions_CType : int;
+PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
+enum FieldOptions_JSType : int;
+PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
+enum FieldOptions_OptionRetention : int;
+PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
+enum FieldOptions_OptionTargetType : int;
+PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
+enum FileOptions_OptimizeMode : int;
+PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
+enum GeneratedCodeInfo_Annotation_Semantic : int;
+PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
+enum MethodOptions_IdempotencyLevel : int;
+PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
@@ -186,6 +239,57 @@ class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartDefaultTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
+template <>
+internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::Edition>;
+template <>
+internal::EnumTraitsT<::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::ExtensionRangeOptions_VerificationState>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_EnumType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnumType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_FieldPresence_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_FieldPresence>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_JsonFormat_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_JsonFormat>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_MessageEncoding_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_MessageEncoding>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_RepeatedFieldEncoding>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_Utf8Validation_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_Utf8Validation>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Label_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Label>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Type_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Type>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_CType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_CType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_JSType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_JSType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionRetention_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionRetention>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionTargetType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionTargetType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FileOptions_OptimizeMode_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FileOptions_OptimizeMode>;
+template <>
+internal::EnumTraitsT<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic>;
+template <>
+internal::EnumTraitsT<::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::MethodOptions_IdempotencyLevel>;
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
@@ -203,9 +307,11 @@ enum ExtensionRangeOptions_VerificationState : int {
 
 PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN = static_cast<ExtensionRangeOptions_VerificationState>(0);
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX = static_cast<ExtensionRangeOptions_VerificationState>(1);
-constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
+inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN =
+    static_cast<ExtensionRangeOptions_VerificationState>(0);
+inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX =
+    static_cast<ExtensionRangeOptions_VerificationState>(1);
+inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 ExtensionRangeOptions_VerificationState_descriptor();
 template <typename T>
@@ -248,9 +354,11 @@ enum FieldDescriptorProto_Type : int {
 
 PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
-constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = static_cast<FieldDescriptorProto_Type>(1);
-constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = static_cast<FieldDescriptorProto_Type>(18);
-constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
+inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN =
+    static_cast<FieldDescriptorProto_Type>(1);
+inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX =
+    static_cast<FieldDescriptorProto_Type>(18);
+inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldDescriptorProto_Type_descriptor();
 template <typename T>
@@ -278,9 +386,11 @@ enum FieldDescriptorProto_Label : int {
 
 PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
-constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = static_cast<FieldDescriptorProto_Label>(1);
-constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = static_cast<FieldDescriptorProto_Label>(3);
-constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
+inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN =
+    static_cast<FieldDescriptorProto_Label>(1);
+inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX =
+    static_cast<FieldDescriptorProto_Label>(3);
+inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldDescriptorProto_Label_descriptor();
 template <typename T>
@@ -308,9 +418,11 @@ enum FileOptions_OptimizeMode : int {
 
 PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
-constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = static_cast<FileOptions_OptimizeMode>(1);
-constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = static_cast<FileOptions_OptimizeMode>(3);
-constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
+inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN =
+    static_cast<FileOptions_OptimizeMode>(1);
+inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX =
+    static_cast<FileOptions_OptimizeMode>(3);
+inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FileOptions_OptimizeMode_descriptor();
 template <typename T>
@@ -338,9 +450,11 @@ enum FieldOptions_CType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
-constexpr FieldOptions_CType FieldOptions_CType_CType_MIN = static_cast<FieldOptions_CType>(0);
-constexpr FieldOptions_CType FieldOptions_CType_CType_MAX = static_cast<FieldOptions_CType>(2);
-constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_CType FieldOptions_CType_CType_MIN =
+    static_cast<FieldOptions_CType>(0);
+inline constexpr FieldOptions_CType FieldOptions_CType_CType_MAX =
+    static_cast<FieldOptions_CType>(2);
+inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_CType_descriptor();
 template <typename T>
@@ -368,9 +482,11 @@ enum FieldOptions_JSType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
-constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN = static_cast<FieldOptions_JSType>(0);
-constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX = static_cast<FieldOptions_JSType>(2);
-constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN =
+    static_cast<FieldOptions_JSType>(0);
+inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX =
+    static_cast<FieldOptions_JSType>(2);
+inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_JSType_descriptor();
 template <typename T>
@@ -398,9 +514,11 @@ enum FieldOptions_OptionRetention : int {
 
 PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN = static_cast<FieldOptions_OptionRetention>(0);
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX = static_cast<FieldOptions_OptionRetention>(2);
-constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN =
+    static_cast<FieldOptions_OptionRetention>(0);
+inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX =
+    static_cast<FieldOptions_OptionRetention>(2);
+inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_OptionRetention_descriptor();
 template <typename T>
@@ -435,9 +553,11 @@ enum FieldOptions_OptionTargetType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN = static_cast<FieldOptions_OptionTargetType>(0);
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX = static_cast<FieldOptions_OptionTargetType>(9);
-constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
+inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN =
+    static_cast<FieldOptions_OptionTargetType>(0);
+inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX =
+    static_cast<FieldOptions_OptionTargetType>(9);
+inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_OptionTargetType_descriptor();
 template <typename T>
@@ -465,9 +585,11 @@ enum MethodOptions_IdempotencyLevel : int {
 
 PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
-constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN = static_cast<MethodOptions_IdempotencyLevel>(0);
-constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX = static_cast<MethodOptions_IdempotencyLevel>(2);
-constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
+inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN =
+    static_cast<MethodOptions_IdempotencyLevel>(0);
+inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX =
+    static_cast<MethodOptions_IdempotencyLevel>(2);
+inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 MethodOptions_IdempotencyLevel_descriptor();
 template <typename T>
@@ -496,9 +618,11 @@ enum FeatureSet_FieldPresence : int {
 
 PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
-constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MIN = static_cast<FeatureSet_FieldPresence>(0);
-constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MAX = static_cast<FeatureSet_FieldPresence>(3);
-constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
+inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MIN =
+    static_cast<FeatureSet_FieldPresence>(0);
+inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MAX =
+    static_cast<FeatureSet_FieldPresence>(3);
+inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_FieldPresence_descriptor();
 template <typename T>
@@ -526,9 +650,11 @@ enum FeatureSet_EnumType : int {
 
 PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
-constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN = static_cast<FeatureSet_EnumType>(0);
-constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX = static_cast<FeatureSet_EnumType>(2);
-constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN =
+    static_cast<FeatureSet_EnumType>(0);
+inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX =
+    static_cast<FeatureSet_EnumType>(2);
+inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_EnumType_descriptor();
 template <typename T>
@@ -556,9 +682,11 @@ enum FeatureSet_RepeatedFieldEncoding : int {
 
 PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MIN = static_cast<FeatureSet_RepeatedFieldEncoding>(0);
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MAX = static_cast<FeatureSet_RepeatedFieldEncoding>(2);
-constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MIN =
+    static_cast<FeatureSet_RepeatedFieldEncoding>(0);
+inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MAX =
+    static_cast<FeatureSet_RepeatedFieldEncoding>(2);
+inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_RepeatedFieldEncoding_descriptor();
 template <typename T>
@@ -586,9 +714,11 @@ enum FeatureSet_Utf8Validation : int {
 
 PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
-constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN = static_cast<FeatureSet_Utf8Validation>(0);
-constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX = static_cast<FeatureSet_Utf8Validation>(3);
-constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
+inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN =
+    static_cast<FeatureSet_Utf8Validation>(0);
+inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX =
+    static_cast<FeatureSet_Utf8Validation>(3);
+inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_Utf8Validation_descriptor();
 template <typename T>
@@ -616,9 +746,11 @@ enum FeatureSet_MessageEncoding : int {
 
 PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
-constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MIN = static_cast<FeatureSet_MessageEncoding>(0);
-constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MAX = static_cast<FeatureSet_MessageEncoding>(2);
-constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MIN =
+    static_cast<FeatureSet_MessageEncoding>(0);
+inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MAX =
+    static_cast<FeatureSet_MessageEncoding>(2);
+inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_MessageEncoding_descriptor();
 template <typename T>
@@ -646,9 +778,11 @@ enum FeatureSet_JsonFormat : int {
 
 PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
-constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MIN = static_cast<FeatureSet_JsonFormat>(0);
-constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MAX = static_cast<FeatureSet_JsonFormat>(2);
-constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MIN =
+    static_cast<FeatureSet_JsonFormat>(0);
+inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MAX =
+    static_cast<FeatureSet_JsonFormat>(2);
+inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_JsonFormat_descriptor();
 template <typename T>
@@ -676,9 +810,11 @@ enum GeneratedCodeInfo_Annotation_Semantic : int {
 
 PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MIN = static_cast<GeneratedCodeInfo_Annotation_Semantic>(0);
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MAX = static_cast<GeneratedCodeInfo_Annotation_Semantic>(2);
-constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
+inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MIN =
+    static_cast<GeneratedCodeInfo_Annotation_Semantic>(0);
+inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MAX =
+    static_cast<GeneratedCodeInfo_Annotation_Semantic>(2);
+inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 GeneratedCodeInfo_Annotation_Semantic_descriptor();
 template <typename T>
@@ -715,8 +851,10 @@ enum Edition : int {
 
 PROTOBUF_EXPORT bool Edition_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
-constexpr Edition Edition_MIN = static_cast<Edition>(0);
-constexpr Edition Edition_MAX = static_cast<Edition>(2147483647);
+inline constexpr Edition Edition_MIN =
+    static_cast<Edition>(0);
+inline constexpr Edition Edition_MAX =
+    static_cast<Edition>(2147483647);
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 Edition_descriptor();
 template <typename T>
@@ -790,10 +928,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
     return default_instance().GetMetadata().reflection;
   }
   static const UninterpretedOption_NamePart& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UninterpretedOption_NamePart* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption_NamePart*>(
+    return *reinterpret_cast<const UninterpretedOption_NamePart*>(
         &_UninterpretedOption_NamePart_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 24;
@@ -899,13 +1034,12 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name_part(Arg_&& arg, Args_... args);
   std::string* mutable_name_part();
-  PROTOBUF_NODISCARD std::string* release_name_part();
+  [[nodiscard]] std::string* release_name_part();
   void set_allocated_name_part(std::string* value);
 
   private:
   const std::string& _internal_name_part() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const std::string& value);
   std::string* _internal_mutable_name_part();
 
   public:
@@ -1010,10 +1144,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
     return default_instance().GetMetadata().reflection;
   }
   static const SourceCodeInfo_Location& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SourceCodeInfo_Location* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo_Location*>(
+    return *reinterpret_cast<const SourceCodeInfo_Location*>(
         &_SourceCodeInfo_Location_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 29;
@@ -1175,13 +1306,12 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_leading_comments(Arg_&& arg, Args_... args);
   std::string* mutable_leading_comments();
-  PROTOBUF_NODISCARD std::string* release_leading_comments();
+  [[nodiscard]] std::string* release_leading_comments();
   void set_allocated_leading_comments(std::string* value);
 
   private:
   const std::string& _internal_leading_comments() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const std::string& value);
   std::string* _internal_mutable_leading_comments();
 
   public:
@@ -1192,13 +1322,12 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_trailing_comments(Arg_&& arg, Args_... args);
   std::string* mutable_trailing_comments();
-  PROTOBUF_NODISCARD std::string* release_trailing_comments();
+  [[nodiscard]] std::string* release_trailing_comments();
   void set_allocated_trailing_comments(std::string* value);
 
   private:
   const std::string& _internal_trailing_comments() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const std::string& value);
   std::string* _internal_mutable_trailing_comments();
 
   public:
@@ -1297,10 +1426,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
     return default_instance().GetMetadata().reflection;
   }
   static const GeneratedCodeInfo_Annotation& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
+    return *reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
         &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 31;
@@ -1442,13 +1568,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_source_file(Arg_&& arg, Args_... args);
   std::string* mutable_source_file();
-  PROTOBUF_NODISCARD std::string* release_source_file();
+  [[nodiscard]] std::string* release_source_file();
   void set_allocated_source_file(std::string* value);
 
   private:
   const std::string& _internal_source_file() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const std::string& value);
   std::string* _internal_mutable_source_file();
 
   public:
@@ -1579,10 +1704,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions_FeatureSupport& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions_FeatureSupport* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_FeatureSupport*>(
+    return *reinterpret_cast<const FieldOptions_FeatureSupport*>(
         &_FieldOptions_FeatureSupport_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 17;
@@ -1685,13 +1807,12 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_deprecation_warning(Arg_&& arg, Args_... args);
   std::string* mutable_deprecation_warning();
-  PROTOBUF_NODISCARD std::string* release_deprecation_warning();
+  [[nodiscard]] std::string* release_deprecation_warning();
   void set_allocated_deprecation_warning(std::string* value);
 
   private:
   const std::string& _internal_deprecation_warning() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const std::string& value);
   std::string* _internal_mutable_deprecation_warning();
 
   public:
@@ -1820,10 +1941,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions_EditionDefault& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions_EditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_EditionDefault*>(
+    return *reinterpret_cast<const FieldOptions_EditionDefault*>(
         &_FieldOptions_EditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 16;
@@ -1924,13 +2042,12 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
-  PROTOBUF_NODISCARD std::string* release_value();
+  [[nodiscard]] std::string* release_value();
   void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
 
   public:
@@ -2035,10 +2152,7 @@ class PROTOBUF_EXPORT FeatureSet final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSet& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSet* internal_default_instance() {
-    return reinterpret_cast<const FeatureSet*>(
+    return *reinterpret_cast<const FeatureSet*>(
         &_FeatureSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 26;
@@ -2411,11 +2525,9 @@ class PROTOBUF_EXPORT FeatureSet final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FeatureSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -2602,10 +2714,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
     return default_instance().GetMetadata().reflection;
   }
   static const ExtensionRangeOptions_Declaration& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ExtensionRangeOptions_Declaration* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
+    return *reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
         &_ExtensionRangeOptions_Declaration_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 5;
@@ -2709,13 +2818,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_full_name(Arg_&& arg, Args_... args);
   std::string* mutable_full_name();
-  PROTOBUF_NODISCARD std::string* release_full_name();
+  [[nodiscard]] std::string* release_full_name();
   void set_allocated_full_name(std::string* value);
 
   private:
   const std::string& _internal_full_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const std::string& value);
   std::string* _internal_mutable_full_name();
 
   public:
@@ -2726,13 +2834,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type(Arg_&& arg, Args_... args);
   std::string* mutable_type();
-  PROTOBUF_NODISCARD std::string* release_type();
+  [[nodiscard]] std::string* release_type();
   void set_allocated_type(std::string* value);
 
   private:
   const std::string& _internal_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const std::string& value);
   std::string* _internal_mutable_type();
 
   public:
@@ -2862,10 +2969,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumDescriptorProto_EnumReservedRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
+    return *reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
         &_EnumDescriptorProto_EnumReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 9;
@@ -3071,10 +3175,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto_ReservedRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto_ReservedRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ReservedRange*>(
+    return *reinterpret_cast<const DescriptorProto_ReservedRange*>(
         &_DescriptorProto_ReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
@@ -3280,10 +3381,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
     return default_instance().GetMetadata().reflection;
   }
   static const UninterpretedOption& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const UninterpretedOption* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption*>(
+    return *reinterpret_cast<const UninterpretedOption*>(
         &_UninterpretedOption_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 25;
@@ -3412,13 +3510,12 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_identifier_value(Arg_&& arg, Args_... args);
   std::string* mutable_identifier_value();
-  PROTOBUF_NODISCARD std::string* release_identifier_value();
+  [[nodiscard]] std::string* release_identifier_value();
   void set_allocated_identifier_value(std::string* value);
 
   private:
   const std::string& _internal_identifier_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const std::string& value);
   std::string* _internal_mutable_identifier_value();
 
   public:
@@ -3429,13 +3526,12 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
-  PROTOBUF_NODISCARD std::string* release_string_value();
+  [[nodiscard]] std::string* release_string_value();
   void set_allocated_string_value(std::string* value);
 
   private:
   const std::string& _internal_string_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
 
   public:
@@ -3446,13 +3542,12 @@ class PROTOBUF_EXPORT UninterpretedOption final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_aggregate_value(Arg_&& arg, Args_... args);
   std::string* mutable_aggregate_value();
-  PROTOBUF_NODISCARD std::string* release_aggregate_value();
+  [[nodiscard]] std::string* release_aggregate_value();
   void set_allocated_aggregate_value(std::string* value);
 
   private:
   const std::string& _internal_aggregate_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const std::string& value);
   std::string* _internal_mutable_aggregate_value();
 
   public:
@@ -3584,10 +3679,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
     return default_instance().GetMetadata().reflection;
   }
   static const SourceCodeInfo& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SourceCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo*>(
+    return *reinterpret_cast<const SourceCodeInfo*>(
         &_SourceCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 30;
@@ -3623,8 +3715,13 @@ class PROTOBUF_EXPORT SourceCodeInfo final
 
   public:
   bool IsInitialized() const {
-    return true;
+    return IsInitializedImpl(*this);
   }
+
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
@@ -3698,6 +3795,183 @@ class PROTOBUF_EXPORT SourceCodeInfo final
   const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
   ::google::protobuf::SourceCodeInfo_Location* add_location();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& location() const;
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
+  inline bool HasExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.Has(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void ClearExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    _impl_._extensions_.ClearExtension(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
+  inline int ExtensionSize(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.ExtensionSize(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                    &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void UnsafeArenaSetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                               value, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   SourceCodeInfo, _proto_TypeTraits, _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType
+  UnsafeArenaReleaseExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                                 &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    typename _proto_TypeTraits::Repeated::MutableType to_add =
+        _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
+    return to_add;
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                           &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+  GetRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+  MutableRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                              _is_packed, &_impl_._extensions_);
+  }
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
   class _Internal;
@@ -3721,6 +3995,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceCodeInfo& from_msg);
+    ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3786,10 +4061,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
     return default_instance().GetMetadata().reflection;
   }
   static const GeneratedCodeInfo& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const GeneratedCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo*>(
+    return *reinterpret_cast<const GeneratedCodeInfo*>(
         &_GeneratedCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 32;
@@ -3988,10 +4260,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSetDefaults_FeatureSetEditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
+    return *reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
         &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 27;
@@ -4095,7 +4364,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   bool has_overridable_features() const;
   void clear_overridable_features() ;
   const ::google::protobuf::FeatureSet& overridable_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_overridable_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_overridable_features();
   ::google::protobuf::FeatureSet* mutable_overridable_features();
   void set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
@@ -4110,7 +4379,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   bool has_fixed_features() const;
   void clear_fixed_features() ;
   const ::google::protobuf::FeatureSet& fixed_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_fixed_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_fixed_features();
   ::google::protobuf::FeatureSet* mutable_fixed_features();
   void set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
@@ -4223,10 +4492,7 @@ class PROTOBUF_EXPORT ServiceOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const ServiceOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ServiceOptions* internal_default_instance() {
-    return reinterpret_cast<const ServiceOptions*>(
+    return *reinterpret_cast<const ServiceOptions*>(
         &_ServiceOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 22;
@@ -4347,7 +4613,7 @@ class PROTOBUF_EXPORT ServiceOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -4452,11 +4718,9 @@ class PROTOBUF_EXPORT ServiceOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4640,10 +4904,7 @@ class PROTOBUF_EXPORT OneofOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const OneofOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const OneofOptions* internal_default_instance() {
-    return reinterpret_cast<const OneofOptions*>(
+    return *reinterpret_cast<const OneofOptions*>(
         &_OneofOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 19;
@@ -4763,7 +5024,7 @@ class PROTOBUF_EXPORT OneofOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -4857,11 +5118,9 @@ class PROTOBUF_EXPORT OneofOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5044,10 +5303,7 @@ class PROTOBUF_EXPORT MethodOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const MethodOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MethodOptions* internal_default_instance() {
-    return reinterpret_cast<const MethodOptions*>(
+    return *reinterpret_cast<const MethodOptions*>(
         &_MethodOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 23;
@@ -5189,7 +5445,7 @@ class PROTOBUF_EXPORT MethodOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5305,11 +5561,9 @@ class PROTOBUF_EXPORT MethodOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5494,10 +5748,7 @@ class PROTOBUF_EXPORT MessageOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const MessageOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MessageOptions* internal_default_instance() {
-    return reinterpret_cast<const MessageOptions*>(
+    return *reinterpret_cast<const MessageOptions*>(
         &_MessageOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 15;
@@ -5622,7 +5873,7 @@ class PROTOBUF_EXPORT MessageOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5771,11 +6022,9 @@ class PROTOBUF_EXPORT MessageOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5963,10 +6212,7 @@ class PROTOBUF_EXPORT FileOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const FileOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileOptions* internal_default_instance() {
-    return reinterpret_cast<const FileOptions*>(
+    return *reinterpret_cast<const FileOptions*>(
         &_FileOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 14;
@@ -6128,13 +6374,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_java_package(Arg_&& arg, Args_... args);
   std::string* mutable_java_package();
-  PROTOBUF_NODISCARD std::string* release_java_package();
+  [[nodiscard]] std::string* release_java_package();
   void set_allocated_java_package(std::string* value);
 
   private:
   const std::string& _internal_java_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const std::string& value);
   std::string* _internal_mutable_java_package();
 
   public:
@@ -6145,13 +6390,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_java_outer_classname(Arg_&& arg, Args_... args);
   std::string* mutable_java_outer_classname();
-  PROTOBUF_NODISCARD std::string* release_java_outer_classname();
+  [[nodiscard]] std::string* release_java_outer_classname();
   void set_allocated_java_outer_classname(std::string* value);
 
   private:
   const std::string& _internal_java_outer_classname() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const std::string& value);
   std::string* _internal_mutable_java_outer_classname();
 
   public:
@@ -6162,13 +6406,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_go_package(Arg_&& arg, Args_... args);
   std::string* mutable_go_package();
-  PROTOBUF_NODISCARD std::string* release_go_package();
+  [[nodiscard]] std::string* release_go_package();
   void set_allocated_go_package(std::string* value);
 
   private:
   const std::string& _internal_go_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const std::string& value);
   std::string* _internal_mutable_go_package();
 
   public:
@@ -6179,13 +6422,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_objc_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_objc_class_prefix();
-  PROTOBUF_NODISCARD std::string* release_objc_class_prefix();
+  [[nodiscard]] std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(std::string* value);
 
   private:
   const std::string& _internal_objc_class_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const std::string& value);
   std::string* _internal_mutable_objc_class_prefix();
 
   public:
@@ -6196,13 +6438,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_csharp_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_csharp_namespace();
-  PROTOBUF_NODISCARD std::string* release_csharp_namespace();
+  [[nodiscard]] std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(std::string* value);
 
   private:
   const std::string& _internal_csharp_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const std::string& value);
   std::string* _internal_mutable_csharp_namespace();
 
   public:
@@ -6213,13 +6454,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_swift_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_swift_prefix();
-  PROTOBUF_NODISCARD std::string* release_swift_prefix();
+  [[nodiscard]] std::string* release_swift_prefix();
   void set_allocated_swift_prefix(std::string* value);
 
   private:
   const std::string& _internal_swift_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const std::string& value);
   std::string* _internal_mutable_swift_prefix();
 
   public:
@@ -6230,13 +6470,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_php_class_prefix();
-  PROTOBUF_NODISCARD std::string* release_php_class_prefix();
+  [[nodiscard]] std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(std::string* value);
 
   private:
   const std::string& _internal_php_class_prefix() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const std::string& value);
   std::string* _internal_mutable_php_class_prefix();
 
   public:
@@ -6247,13 +6486,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_namespace();
-  PROTOBUF_NODISCARD std::string* release_php_namespace();
+  [[nodiscard]] std::string* release_php_namespace();
   void set_allocated_php_namespace(std::string* value);
 
   private:
   const std::string& _internal_php_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const std::string& value);
   std::string* _internal_mutable_php_namespace();
 
   public:
@@ -6264,13 +6502,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_php_metadata_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_metadata_namespace();
-  PROTOBUF_NODISCARD std::string* release_php_metadata_namespace();
+  [[nodiscard]] std::string* release_php_metadata_namespace();
   void set_allocated_php_metadata_namespace(std::string* value);
 
   private:
   const std::string& _internal_php_metadata_namespace() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const std::string& value);
   std::string* _internal_mutable_php_metadata_namespace();
 
   public:
@@ -6281,13 +6518,12 @@ class PROTOBUF_EXPORT FileOptions final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_ruby_package(Arg_&& arg, Args_... args);
   std::string* mutable_ruby_package();
-  PROTOBUF_NODISCARD std::string* release_ruby_package();
+  [[nodiscard]] std::string* release_ruby_package();
   void set_allocated_ruby_package(std::string* value);
 
   private:
   const std::string& _internal_ruby_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const std::string& value);
   std::string* _internal_mutable_ruby_package();
 
   public:
@@ -6295,7 +6531,7 @@ class PROTOBUF_EXPORT FileOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6488,11 +6724,9 @@ class PROTOBUF_EXPORT FileOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6694,10 +6928,7 @@ class PROTOBUF_EXPORT FieldOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldOptions* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions*>(
+    return *reinterpret_cast<const FieldOptions*>(
         &_FieldOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 18;
@@ -6954,7 +7185,7 @@ class PROTOBUF_EXPORT FieldOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6969,7 +7200,7 @@ class PROTOBUF_EXPORT FieldOptions final
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -7162,11 +7393,9 @@ class PROTOBUF_EXPORT FieldOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7361,10 +7590,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
     return default_instance().GetMetadata().reflection;
   }
   static const FeatureSetDefaults& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FeatureSetDefaults* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults*>(
+    return *reinterpret_cast<const FeatureSetDefaults*>(
         &_FeatureSetDefaults_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 28;
@@ -7595,10 +7821,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const ExtensionRangeOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ExtensionRangeOptions* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions*>(
+    return *reinterpret_cast<const ExtensionRangeOptions*>(
         &_ExtensionRangeOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 6;
@@ -7757,7 +7980,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -7862,11 +8085,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8051,10 +8272,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumValueOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumValueOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumValueOptions*>(
+    return *reinterpret_cast<const EnumValueOptions*>(
         &_EnumValueOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 21;
@@ -8177,7 +8395,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -8192,7 +8410,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -8308,11 +8526,9 @@ class PROTOBUF_EXPORT EnumValueOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8498,10 +8714,7 @@ class PROTOBUF_EXPORT EnumOptions final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumOptions& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumOptions*>(
+    return *reinterpret_cast<const EnumOptions*>(
         &_EnumOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 20;
@@ -8624,7 +8837,7 @@ class PROTOBUF_EXPORT EnumOptions final
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  [[nodiscard]] ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -8751,11 +8964,9 @@ class PROTOBUF_EXPORT EnumOptions final
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
-  PROTOBUF_NODISCARD inline
-      typename _proto_TypeTraits::Singular::MutableType
-      ReleaseExtension(
-          const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) {
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8941,10 +9152,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const OneofDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const OneofDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const OneofDescriptorProto*>(
+    return *reinterpret_cast<const OneofDescriptorProto*>(
         &_OneofDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 8;
@@ -9050,13 +9258,12 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9064,7 +9271,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::OneofOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::OneofOptions* release_options();
+  [[nodiscard]] ::google::protobuf::OneofOptions* release_options();
   ::google::protobuf::OneofOptions* mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value);
@@ -9165,10 +9372,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const MethodDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const MethodDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const MethodDescriptorProto*>(
+    return *reinterpret_cast<const MethodDescriptorProto*>(
         &_MethodDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 13;
@@ -9278,13 +9482,12 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9295,13 +9498,12 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_input_type(Arg_&& arg, Args_... args);
   std::string* mutable_input_type();
-  PROTOBUF_NODISCARD std::string* release_input_type();
+  [[nodiscard]] std::string* release_input_type();
   void set_allocated_input_type(std::string* value);
 
   private:
   const std::string& _internal_input_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const std::string& value);
   std::string* _internal_mutable_input_type();
 
   public:
@@ -9312,13 +9514,12 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_output_type(Arg_&& arg, Args_... args);
   std::string* mutable_output_type();
-  PROTOBUF_NODISCARD std::string* release_output_type();
+  [[nodiscard]] std::string* release_output_type();
   void set_allocated_output_type(std::string* value);
 
   private:
   const std::string& _internal_output_type() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const std::string& value);
   std::string* _internal_mutable_output_type();
 
   public:
@@ -9326,7 +9527,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MethodOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MethodOptions* release_options();
+  [[nodiscard]] ::google::protobuf::MethodOptions* release_options();
   ::google::protobuf::MethodOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value);
@@ -9453,10 +9654,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const FieldDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FieldDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FieldDescriptorProto*>(
+    return *reinterpret_cast<const FieldDescriptorProto*>(
         &_FieldDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 7;
@@ -9626,13 +9824,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9643,13 +9840,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_extendee(Arg_&& arg, Args_... args);
   std::string* mutable_extendee();
-  PROTOBUF_NODISCARD std::string* release_extendee();
+  [[nodiscard]] std::string* release_extendee();
   void set_allocated_extendee(std::string* value);
 
   private:
   const std::string& _internal_extendee() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const std::string& value);
   std::string* _internal_mutable_extendee();
 
   public:
@@ -9660,13 +9856,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_type_name(Arg_&& arg, Args_... args);
   std::string* mutable_type_name();
-  PROTOBUF_NODISCARD std::string* release_type_name();
+  [[nodiscard]] std::string* release_type_name();
   void set_allocated_type_name(std::string* value);
 
   private:
   const std::string& _internal_type_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const std::string& value);
   std::string* _internal_mutable_type_name();
 
   public:
@@ -9677,13 +9872,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_default_value(Arg_&& arg, Args_... args);
   std::string* mutable_default_value();
-  PROTOBUF_NODISCARD std::string* release_default_value();
+  [[nodiscard]] std::string* release_default_value();
   void set_allocated_default_value(std::string* value);
 
   private:
   const std::string& _internal_default_value() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
   std::string* _internal_mutable_default_value();
 
   public:
@@ -9694,13 +9888,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_json_name(Arg_&& arg, Args_... args);
   std::string* mutable_json_name();
-  PROTOBUF_NODISCARD std::string* release_json_name();
+  [[nodiscard]] std::string* release_json_name();
   void set_allocated_json_name(std::string* value);
 
   private:
   const std::string& _internal_json_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
   std::string* _internal_mutable_json_name();
 
   public:
@@ -9708,7 +9901,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FieldOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions* release_options();
+  [[nodiscard]] ::google::protobuf::FieldOptions* release_options();
   ::google::protobuf::FieldOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value);
@@ -9873,10 +10066,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumValueDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumValueDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumValueDescriptorProto*>(
+    return *reinterpret_cast<const EnumValueDescriptorProto*>(
         &_EnumValueDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 11;
@@ -9983,13 +10173,12 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -9997,7 +10186,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumValueOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumValueOptions* release_options();
+  [[nodiscard]] ::google::protobuf::EnumValueOptions* release_options();
   ::google::protobuf::EnumValueOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value);
@@ -10110,10 +10299,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto_ExtensionRange& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
+    return *reinterpret_cast<const DescriptorProto_ExtensionRange*>(
         &_DescriptorProto_ExtensionRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
@@ -10217,7 +10403,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ExtensionRangeOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ExtensionRangeOptions* release_options();
+  [[nodiscard]] ::google::protobuf::ExtensionRangeOptions* release_options();
   ::google::protobuf::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
@@ -10341,10 +10527,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const ServiceDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const ServiceDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const ServiceDescriptorProto*>(
+    return *reinterpret_cast<const ServiceDescriptorProto*>(
         &_ServiceDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 12;
@@ -10468,13 +10651,12 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -10482,7 +10664,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ServiceOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ServiceOptions* release_options();
+  [[nodiscard]] ::google::protobuf::ServiceOptions* release_options();
   ::google::protobuf::ServiceOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value);
@@ -10584,10 +10766,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const EnumDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const EnumDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto*>(
+    return *reinterpret_cast<const EnumDescriptorProto*>(
         &_EnumDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 10;
@@ -10753,13 +10932,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -10767,7 +10945,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumOptions* release_options();
+  [[nodiscard]] ::google::protobuf::EnumOptions* release_options();
   ::google::protobuf::EnumOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value);
@@ -10871,10 +11049,7 @@ class PROTOBUF_EXPORT DescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const DescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const DescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto*>(
+    return *reinterpret_cast<const DescriptorProto*>(
         &_DescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 4;
@@ -11131,13 +11306,12 @@ class PROTOBUF_EXPORT DescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11145,7 +11319,7 @@ class PROTOBUF_EXPORT DescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MessageOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MessageOptions* release_options();
+  [[nodiscard]] ::google::protobuf::MessageOptions* release_options();
   ::google::protobuf::MessageOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value);
@@ -11254,10 +11428,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
     return default_instance().GetMetadata().reflection;
   }
   static const FileDescriptorProto& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorProto*>(
+    return *reinterpret_cast<const FileDescriptorProto*>(
         &_FileDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
@@ -11500,13 +11671,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
+  [[nodiscard]] std::string* release_name();
   void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
 
   public:
@@ -11517,13 +11687,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_package(Arg_&& arg, Args_... args);
   std::string* mutable_package();
-  PROTOBUF_NODISCARD std::string* release_package();
+  [[nodiscard]] std::string* release_package();
   void set_allocated_package(std::string* value);
 
   private:
   const std::string& _internal_package() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_package(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const std::string& value);
   std::string* _internal_mutable_package();
 
   public:
@@ -11534,13 +11703,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_syntax(Arg_&& arg, Args_... args);
   std::string* mutable_syntax();
-  PROTOBUF_NODISCARD std::string* release_syntax();
+  [[nodiscard]] std::string* release_syntax();
   void set_allocated_syntax(std::string* value);
 
   private:
   const std::string& _internal_syntax() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(
-      const std::string& value);
+  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const std::string& value);
   std::string* _internal_mutable_syntax();
 
   public:
@@ -11548,7 +11716,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FileOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FileOptions* release_options();
+  [[nodiscard]] ::google::protobuf::FileOptions* release_options();
   ::google::protobuf::FileOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value);
@@ -11563,7 +11731,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   bool has_source_code_info() const;
   void clear_source_code_info() ;
   const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceCodeInfo* release_source_code_info();
+  [[nodiscard]] ::google::protobuf::SourceCodeInfo* release_source_code_info();
   ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
   void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
@@ -11686,10 +11854,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final
     return default_instance().GetMetadata().reflection;
   }
   static const FileDescriptorSet& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const FileDescriptorSet* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorSet*>(
+    return *reinterpret_cast<const FileDescriptorSet*>(
         &_FileDescriptorSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
@@ -11804,6 +11969,183 @@ class PROTOBUF_EXPORT FileDescriptorSet final
   const ::google::protobuf::FileDescriptorProto& file(int index) const;
   ::google::protobuf::FileDescriptorProto* add_file();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& file() const;
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
+  inline bool HasExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.Has(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void ClearExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    _impl_._extensions_.ClearExtension(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
+  inline int ExtensionSize(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.ExtensionSize(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                    &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void UnsafeArenaSetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                               value, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
+  ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
+                   FileDescriptorSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType
+  UnsafeArenaReleaseExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                                 &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    typename _proto_TypeTraits::Repeated::MutableType to_add =
+        _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
+    return to_add;
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                           &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+  GetRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+  MutableRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                              _is_packed, &_impl_._extensions_);
+  }
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
   class _Internal;
@@ -11827,6 +12169,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FileDescriptorSet& from_msg);
+    ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -11922,8 +12265,8 @@ inline const std::string& FileDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -11991,8 +12334,8 @@ inline const std::string& FileDescriptorProto::package() const
   return _internal_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -12602,8 +12945,8 @@ inline const std::string& FileDescriptorProto::syntax() const
   return _internal_syntax();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -12920,8 +13263,8 @@ inline const std::string& DescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -13524,8 +13867,8 @@ inline const std::string& ExtensionRangeOptions_Declaration::full_name() const
   return _internal_full_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -13593,8 +13936,8 @@ inline const std::string& ExtensionRangeOptions_Declaration::type() const
   return _internal_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -13949,8 +14292,8 @@ inline const std::string& FieldDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14104,8 +14447,8 @@ inline const std::string& FieldDescriptorProto::type_name() const
   return _internal_type_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14173,8 +14516,8 @@ inline const std::string& FieldDescriptorProto::extendee() const
   return _internal_extendee();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14242,8 +14585,8 @@ inline const std::string& FieldDescriptorProto::default_value() const
   return _internal_default_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14339,8 +14682,8 @@ inline const std::string& FieldDescriptorProto::json_name() const
   return _internal_json_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14536,8 +14879,8 @@ inline const std::string& OneofDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -14765,8 +15108,8 @@ inline const std::string& EnumDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15096,8 +15439,8 @@ inline const std::string& EnumValueDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15293,8 +15636,8 @@ inline const std::string& ServiceDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15511,8 +15854,8 @@ inline const std::string& MethodDescriptorProto::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15580,8 +15923,8 @@ inline const std::string& MethodDescriptorProto::input_type() const
   return _internal_input_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15649,8 +15992,8 @@ inline const std::string& MethodDescriptorProto::output_type() const
   return _internal_output_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15874,8 +16217,8 @@ inline const std::string& FileOptions::java_package() const
   return _internal_java_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -15943,8 +16286,8 @@ inline const std::string& FileOptions::java_outer_classname() const
   return _internal_java_outer_classname();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16125,8 +16468,8 @@ inline const std::string& FileOptions::go_package() const
   return _internal_go_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16334,8 +16677,8 @@ inline const std::string& FileOptions::objc_class_prefix() const
   return _internal_objc_class_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16403,8 +16746,8 @@ inline const std::string& FileOptions::csharp_namespace() const
   return _internal_csharp_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16472,8 +16815,8 @@ inline const std::string& FileOptions::swift_prefix() const
   return _internal_swift_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16541,8 +16884,8 @@ inline const std::string& FileOptions::php_class_prefix() const
   return _internal_php_class_prefix();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16610,8 +16953,8 @@ inline const std::string& FileOptions::php_namespace() const
   return _internal_php_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16679,8 +17022,8 @@ inline const std::string& FileOptions::php_metadata_namespace() const
   return _internal_php_metadata_namespace();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -16748,8 +17091,8 @@ inline const std::string& FileOptions::ruby_package() const
   return _internal_ruby_package();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17284,8 +17627,8 @@ inline const std::string& FieldOptions_EditionDefault::value() const
   return _internal_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -17415,8 +17758,8 @@ inline const std::string& FieldOptions_FeatureSupport::deprecation_warning() con
   return _internal_deprecation_warning();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.deprecation_warning_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19179,8 +19522,8 @@ inline const std::string& UninterpretedOption_NamePart::name_part() const
   return _internal_name_part();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19329,8 +19672,8 @@ inline const std::string& UninterpretedOption::identifier_value() const
   return _internal_identifier_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19482,8 +19825,8 @@ inline const std::string& UninterpretedOption::string_value() const
   return _internal_string_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -19551,8 +19894,8 @@ inline const std::string& UninterpretedOption::aggregate_value() const
   return _internal_aggregate_value();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20228,8 +20571,8 @@ inline const std::string& SourceCodeInfo_Location::leading_comments() const
   return _internal_leading_comments();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20297,8 +20640,8 @@ inline const std::string& SourceCodeInfo_Location::trailing_comments() const
   return _internal_trailing_comments();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -20532,8 +20875,8 @@ inline const std::string& GeneratedCodeInfo_Annotation::source_file() const
   return _internal_source_file();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&& arg,
-                                                     Args_... args) {
+PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&& arg,
+                                              Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArena());

@@ -660,6 +660,7 @@ filegroup(
     name = "test_proto_srcs",
     srcs = [
         "//src/google/protobuf/compiler/cpp:test_proto_srcs",
+        "//src/google/protobuf/compiler/java:test_proto_srcs",
     ],
     visibility = ["//pkg:__pkg__"],
 )

@@ -35,13 +35,6 @@ class SymbolDatabaseTest(unittest.TestCase):
     db.RegisterServiceDescriptor(unittest_pb2._TESTSERVICE)
     return db
 
-  def testGetMessages(self):
-    messages = self._Database().GetMessages(
-        ['google/protobuf/unittest.proto'])
-    self.assertTrue(
-        unittest_pb2.TestAllTypes is
-        messages['protobuf_unittest.TestAllTypes'])
-
   def testGetSymbol(self):
     self.assertEqual(
         unittest_pb2.TestAllTypes, self._Database().GetSymbol(

@@ -1,0 +1,21 @@
+edition = "2023";
+
+package protobuf_unittest;
+
+// Test generic services that are produced by the protoc builtin generators.
+option cc_generic_services = true;
+option java_generic_services = true;
+option java_multiple_files = true;
+
+enum MultipleFileYesEnum {
+  MULTIPLE_FILE_YES_BAR = 0;
+}
+
+message MultipleFileYesMessage {
+  int32 bar = 1;
+}
+
+service MultipleFileYesService {
+  // Test.
+  rpc Method(MultipleFileYesMessage) returns (MultipleFileYesMessage) {}
+}

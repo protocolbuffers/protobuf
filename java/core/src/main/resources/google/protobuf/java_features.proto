@@ -66,4 +66,21 @@ message JavaFeatures {
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "DEFAULT" }
   ];
+
+  // Whether to use the old default outer class name scheme, or the new feature
+  // which adds a "Proto" suffix to the outer class name.
+  //
+  // Users will not be able to set this option, because we removed it in the
+  // same edition that it was introduced. But we use it to determine which
+  // naming scheme to use for outer class name defaults.
+  optional bool use_old_outer_classname_default = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+      edition_removed: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "true" },
+    edition_defaults = { edition: EDITION_2024, value: "false" }
+  ];
 }

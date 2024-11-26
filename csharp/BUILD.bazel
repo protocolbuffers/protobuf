@@ -5,6 +5,8 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
+load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 ################################################################################
 # Tests
@@ -113,4 +115,35 @@ sh_binary(
     name = "release",
     srcs = ["build_release.sh"],
     args = ["$(location build_release.sh)"],
+)
+
+################################################################################
+# Generated edition defaults (and staleness test)
+################################################################################
+
+compile_edition_defaults(
+    name = "csharp_edition_defaults",
+    srcs = [
+        "//:descriptor_proto",
+    ],
+    maximum_edition = "2023",
+    minimum_edition = "PROTO2",
+)
+
+# TODO Make bazel tests use this output instead of the checked-in one
+embed_edition_defaults(
+    name = "embedded_csharp_edition_defaults_generate",
+    defaults = "csharp_edition_defaults",
+    encoding = "base64",
+    output = "generated/src/Google.Protobuf/Reflection/FeatureSetDescriptor.g.cs",
+    placeholder = "DEFAULTS_VALUE",
+    template = "src/Google.Protobuf/Reflection/FeatureSetDescriptor.g.cs.template",
+)
+
+staleness_test(
+    name = "generated_csharp_defaults_staleness_test",
+    outs = ["src/Google.Protobuf/Reflection/FeatureSetDescriptor.g.cs"],
+    generated_pattern = "generated/%s",
+    tags = ["manual"],
+    target_files = ["src/Google.Protobuf/Reflection/FeatureSetDescriptor.g.cs"],
 )

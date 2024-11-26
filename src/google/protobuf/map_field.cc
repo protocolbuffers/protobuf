@@ -29,29 +29,13 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
-  switch (value.type()) {
-    case FieldDescriptor::CPPTYPE_STRING:
-      return VariantKey(value.GetStringValue());
-    case FieldDescriptor::CPPTYPE_INT64:
-      return VariantKey(value.GetInt64Value());
-    case FieldDescriptor::CPPTYPE_INT32:
-      return VariantKey(value.GetInt32Value());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return VariantKey(value.GetUInt64Value());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return VariantKey(value.GetUInt32Value());
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return VariantKey(static_cast<uint64_t>(value.GetBoolValue()));
-    default:
-      Unreachable();
-      return VariantKey(uint64_t{});
-  }
-}
-
 MapFieldBase::~MapFieldBase() {
   ABSL_DCHECK_EQ(arena(), nullptr);
   delete maybe_payload();
+}
+
+size_t MapFieldBase::SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map) {
+  return map.GetMapRaw().SpaceUsedExcludingSelfLong();
 }
 
 const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
@@ -158,10 +142,15 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   size_t size = 0;
   if (auto* p = maybe_payload()) {
-    {
-      absl::MutexLock lock(&p->mutex);
-      size = SpaceUsedExcludingSelfNoLock();
-    }
+    absl::MutexLock lock(&p->mutex);
+    // Measure the map under the lock, because there could be some repeated
+    // field data that might be sync'd back into the map.
+    size = SpaceUsedExcludingSelfNoLock();
+    size += p->repeated_field.SpaceUsedExcludingSelfLong();
+    ConstAccess();
+  } else {
+    // Only measure the map without the repeated field, because it is not there.
+    size = SpaceUsedExcludingSelfNoLock();
     ConstAccess();
   }
   return size;
@@ -177,13 +166,6 @@ bool MapFieldBase::IsMapValid() const {
 bool MapFieldBase::IsRepeatedFieldValid() const {
   ConstAccess();
   return state() != STATE_MODIFIED_MAP;
-}
-
-void MapFieldBase::SetMapDirty() {
-  MutableAccess();
-  // These are called by (non-const) mutator functions. So by our API it's the
-  // callers responsibility to have these calls properly ordered.
-  payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SetRepeatedDirty() {
