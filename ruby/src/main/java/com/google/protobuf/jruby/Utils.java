@@ -40,6 +40,7 @@ import org.jcodings.Encoding;
 import org.jcodings.specific.ASCIIEncoding;
 import org.jcodings.specific.UTF8Encoding;
 import org.jruby.*;
+import org.jruby.common.RubyWarnings;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.Block;
@@ -330,6 +331,15 @@ public class Utils {
         && fieldDescriptor.getMessageType().getOptions().getMapEntry();
   }
 
+  public static RaiseException createInvalidByteSequenceError(
+      ThreadContext context, String message) {
+    if (cInvalidByteSequenceError == null) {
+      cInvalidByteSequenceError =
+          (RubyClass) context.runtime.getClassFromPath("Encoding::InvalidByteSequenceError");
+    }
+    return RaiseException.from(context.runtime, cInvalidByteSequenceError, message);
+  }
+
   public static RaiseException createTypeError(ThreadContext context, String message) {
     if (cTypeError == null) {
       cTypeError = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::TypeError");
@@ -389,11 +399,16 @@ public class Utils {
     if (!(value instanceof RubyString))
       throw createInvalidTypeError(context, fieldType, fieldName, value);
 
+    RubyString string = (RubyString) value;
+    if (encoding == UTF8Encoding.INSTANCE && string.getEncoding().isUTF8()) {
+      if (string.isCodeRangeBroken()) {
+        throw createInvalidByteSequenceError(context, "String is invalid UTF-8.");
+      }
+    }
+
     value =
-        ((RubyString) value)
-            .encode(
-                context,
-                context.runtime.getEncodingService().convertEncodingToRubyEncoding(encoding));
+        string.encode(
+            context, context.runtime.getEncodingService().convertEncodingToRubyEncoding(encoding));
     value.setFrozen(true);
     return value;
   }
@@ -413,4 +428,5 @@ public class Utils {
   private static final long UINT_MAX = 0xffffffffl;
 
   private static RubyClass cTypeError;
+  private static RubyClass cInvalidByteSequenceError;
 }

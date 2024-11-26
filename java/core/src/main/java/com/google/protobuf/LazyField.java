@@ -50,7 +50,8 @@ public class LazyField extends LazyFieldLite {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(
+          Object obj) {
     return getValue().equals(obj);
   }
 

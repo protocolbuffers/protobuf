@@ -7,13 +7,17 @@
 
 #include "google/protobuf/arena.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -27,6 +31,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -54,6 +59,7 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using ::testing::ElementsAreArray;
 
 namespace google {
 namespace protobuf {
@@ -156,6 +162,98 @@ TEST(ArenaTest, DestructorSkippable) {
   EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
   EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
+}
+
+template <int>
+struct EmptyBase {};
+struct ArenaCtorBase {
+  using InternalArenaConstructable_ = void;
+};
+struct ArenaDtorBase {
+  using DestructorSkippable_ = void;
+};
+
+template <bool arena_ctor, bool arena_dtor>
+void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
+                           std::vector<absl::string_view> copy,
+                           std::vector<absl::string_view> with_int) {
+  static auto& actions = *new std::vector<absl::string_view>;
+  struct TraitsProber
+      : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
+        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
+        Message {
+    TraitsProber() : Message(nullptr, nullptr) { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) : Message(nullptr, nullptr) {
+      actions.push_back("(const T&)");
+    }
+    explicit TraitsProber(int) : Message(nullptr, nullptr) {
+      actions.push_back("(int)");
+    }
+    explicit TraitsProber(Arena* arena) : Message(nullptr, nullptr) {
+      actions.push_back("(Arena)");
+    }
+    TraitsProber(Arena* arena, const TraitsProber&)
+        : Message(nullptr, nullptr) {
+      actions.push_back("(Arena, const T&)");
+    }
+    TraitsProber(Arena* arena, int) : Message(nullptr, nullptr) {
+      actions.push_back("(Arena, int)");
+    }
+    ~TraitsProber() { actions.push_back("~()"); }
+
+    TraitsProber* New(Arena*) const {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+    const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+  };
+
+  static_assert(
+      !arena_ctor || Arena::is_arena_constructable<TraitsProber>::value, "");
+  static_assert(
+      !arena_dtor || Arena::is_destructor_skippable<TraitsProber>::value, "");
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(def));
+
+  const TraitsProber p;
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, p);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(copy));
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, 17);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(with_int));
+}
+
+TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
+  TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
+                                      {"(int)", "~()"});
+  // If the object is not arena constructible, then the destructor is always
+  // called even if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
+                                     {"(int)", "~()"});
+
+  // Some types are arena constructible but we can't skip the destructor. Those
+  // are constructed with an arena but still destroyed.
+  TestCtorAndDtorTraits<true, false>({"(Arena)", "~()"},
+                                     {"(Arena, const T&)", "~()"},
+                                     {"(Arena, int)", "~()"});
+  TestCtorAndDtorTraits<true, true>({"(Arena)"}, {"(Arena, const T&)"},
+                                    {"(Arena, int)"});
 }
 
 TEST(ArenaTest, BasicCreate) {
@@ -420,12 +518,19 @@ TEST(ArenaTest, GetConstructTypeWorks) {
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   // For the test below to construct.
-  explicit DispatcherTestProto(absl::in_place_t) {}
-  explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
-  DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
-  DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
-  const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
+  explicit DispatcherTestProto(absl::in_place_t) : Message(nullptr, nullptr) {}
+  explicit DispatcherTestProto(Arena*) : Message(nullptr, nullptr) {
+    ABSL_LOG(FATAL);
+  }
+  DispatcherTestProto(Arena*, const DispatcherTestProto&)
+      : Message(nullptr, nullptr) {
+    ABSL_LOG(FATAL);
+  }
+  const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
+    ABSL_LOG(FATAL);
+  }
 };
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the
@@ -548,7 +653,7 @@ TEST(ArenaTest, UnknownFields) {
   arena_message_3->mutable_unknown_fields()->AddVarint(1000, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed32(1001, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed64(1002, 42);
-  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003);
+  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003, "");
   arena_message_3->mutable_unknown_fields()->DeleteSubrange(0, 2);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1002);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1003);
@@ -789,7 +894,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = static_cast<TestAllTypes::NestedMessage*>(
+    nested_msg = DownCastMessage<TestAllTypes::NestedMessage>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -1317,12 +1422,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
   Arena arena(arena_block.data(), arena_block.size());
+  const size_t initial_allocated_size = arena.SpaceAllocated();
 
   {
-    internal::NoHeapChecker no_heap;
-
-    // Fill some repeated fields on the arena to test for leaks. Also verify no
-    // memory allocations.
+    // Fill some repeated fields on the arena to test for leaks. Also that the
+    // newly allocated memory is approximately the size of the cleanups for the
+    // repeated messages.
     RepeatedField<int32_t> repeated_int32(&arena);
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1343,10 +1448,14 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
     EXPECT_EQ(5, repeated_message.size());
+    // Upper bound of the size of the cleanups of new repeated messages.
+    const size_t upperbound_cleanup_size =
+        2 * 110 * sizeof(internal::cleanup::CleanupNode);
+    EXPECT_GT(initial_allocated_size + upperbound_cleanup_size,
+              arena.SpaceAllocated());
   }
 
-  // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
-  // semantics.
+  // Now test ExtractSubrange's copying semantics.
   {
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1397,7 +1506,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      static_cast<TestAllTypes::NestedMessage*>(
+      DownCastMessage<TestAllTypes::NestedMessage>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -1407,7 +1516,7 @@ TEST(ArenaTest, MutableMessageReflection) {
 
   const FieldDescriptor* oneof_field =
       d->FindFieldByName("oneof_nested_message");
-  submessage = static_cast<TestAllTypes::NestedMessage*>(
+  submessage = DownCastMessage<TestAllTypes::NestedMessage>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 
@@ -1416,6 +1525,45 @@ TEST(ArenaTest, MutableMessageReflection) {
 }
 #endif  // PROTOBUF_RTTI
 
+
+TEST(ArenaTest, ClearOneofMessageOnArena) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof2>(&arena);
+  // Intentionally nested to force poisoning recursively to catch the access.
+  auto* child =
+      message->mutable_foo_message()->mutable_child()->mutable_child();
+  child->set_moo_int(100);
+  message->clear_foo_message();
+
+  if (internal::HasMemoryPoisoning()) {
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
+#endif  // !GTEST_HAS_DEATH_TEST
+  } else {
+    EXPECT_NE(child->moo_int(), 100);
+  }
+}
+
+TEST(ArenaTest, CopyValuesWithinOneof) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof>(&arena);
+  auto* foo = message->mutable_foogroup();
+  foo->set_a(100);
+  foo->set_b("hello world");
+  message->set_foo_string(message->foogroup().b());
+
+  // As a debug hardening measure, `set_foo_string` would clear `foo` in
+  // (!NDEBUG && !ASAN) and the copy wouldn't work.
+  EXPECT_TRUE(message->foo_string().empty()) << message->foo_string();
+}
 
 void FillArenaAwareFields(TestAllTypes* message) {
   std::string test_string = "hello world";
@@ -1437,6 +1585,10 @@ void FillArenaAwareFields(TestAllTypes* message) {
 
 // Test: no allocations occur on heap while touching all supported field types.
 TEST(ArenaTest, NoHeapAllocationsTest) {
+  if (internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "debug hardening may cause heap allocation.";
+  }
+
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
@@ -1445,19 +1597,15 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   Arena arena(options);
 
   {
-
+    // We need to call Arena::Create before NoHeapChecker because the ArenaDtor
+    // allocates a new cleanup chunk.
     TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
+
+
     FillArenaAwareFields(message);
   }
 
   arena.Reset();
-}
-
-TEST(ArenaTest, ParseCorruptedString) {
-  TestAllTypes message;
-  TestUtil::SetAllFields(&message);
-  TestParseCorruptedString<TestAllTypes, true>(message);
-  TestParseCorruptedString<TestAllTypes, false>(message);
 }
 
 #if PROTOBUF_RTTI
@@ -1478,8 +1626,9 @@ TEST(ArenaTest, MessageLiteOnArena) {
   initial_message.SerializeToString(&serialized);
 
   {
-
     MessageLite* generic_message = prototype->New(&arena);
+
+
     EXPECT_TRUE(generic_message != nullptr);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));
@@ -1547,6 +1696,23 @@ TEST(ArenaTest, FirstArenaOverhead) {
 }
 
 
+TEST(ArenaTest, StartingBlockSize) {
+  Arena default_arena;
+  EXPECT_EQ(0, default_arena.SpaceAllocated());
+
+  // Allocate something to get starting block size.
+  Arena::CreateArray<char>(&default_arena, 1);
+  ArenaOptions options;
+  // First block size should be the default starting block size.
+  EXPECT_EQ(default_arena.SpaceAllocated(), options.start_block_size);
+
+  // Use a custom starting block size.
+  options.start_block_size *= 2;
+  Arena custom_arena(options);
+  Arena::CreateArray<char>(&custom_arena, 1);
+  EXPECT_EQ(custom_arena.SpaceAllocated(), options.start_block_size);
+}
+
 TEST(ArenaTest, BlockSizeDoubling) {
   Arena arena;
   EXPECT_EQ(0, arena.SpaceUsed());
@@ -1570,7 +1736,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0u) << i << ": " << p;
   }
 }
 
@@ -1674,7 +1840,10 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
 }
 
 TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
-#ifdef PROTOBUF_ASAN
+  if constexpr (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning not enabled.";
+  }
+
   char buf[1024]{};
   constexpr int kSize = 32;
   {
@@ -1683,19 +1852,21 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
     for (int i = 0; i < 100; ++i) {
       void* p = Arena::CreateArray<char>(&arena, kSize);
       // Simulate other ASan client managing shadow memory.
-      ASAN_POISON_MEMORY_REGION(p, kSize);
-      ASAN_UNPOISON_MEMORY_REGION(p, kSize - 4);
+      internal::PoisonMemoryRegion(p, kSize);
+      internal::UnpoisonMemoryRegion(p, kSize - 4);
       pointers.push_back(p);
     }
     for (void* p : pointers) {
       internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, kSize);
       // The first one is not poisoned because it becomes the freelist.
-      if (p != pointers[0]) EXPECT_TRUE(__asan_address_is_poisoned(p));
+      if (p != pointers[0]) {
+        EXPECT_TRUE(internal::IsMemoryPoisoned(p));
+      }
     }
 
     bool found_poison = false;
     for (char& c : buf) {
-      if (__asan_address_is_poisoned(&c)) {
+      if (internal::IsMemoryPoisoned(&c)) {
         found_poison = true;
         break;
       }
@@ -1705,12 +1876,8 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 
   // Should not be poisoned after destruction.
   for (char& c : buf) {
-    ASSERT_FALSE(__asan_address_is_poisoned(&c));
+    ASSERT_FALSE(internal::IsMemoryPoisoned(&c));
   }
-
-#else   // PROTOBUF_ASAN
-  GTEST_SKIP();
-#endif  // PROTOBUF_ASAN
 }
 
 

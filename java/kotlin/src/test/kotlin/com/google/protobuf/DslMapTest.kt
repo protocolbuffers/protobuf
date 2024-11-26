@@ -147,7 +147,7 @@ class DslMapTest {
       .addEqualityGroup(
         DslMap<Int, Int, DummyProxy>(emptyMap()),
         DslMap<String, String, DummyProxy>(emptyMap()),
-        emptyMap<Int, Int>()
+        emptyMap<Int, Int>(),
       )
       .testEquals()
   }

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -44,9 +44,7 @@ namespace internal {
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_detection;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction;
+PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_string_safe_format;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
 
@@ -88,9 +86,13 @@ namespace internal {
 // Enum used to set printing options for StringifyMessage.
 PROTOBUF_EXPORT enum class Option;
 
-// Converts a protobuf message to a string with redaction enabled.
+// Converts a protobuf message to a string. If enable_safe_format is true,
+// sensitive fields are redacted, and a per-process randomized prefix is
+// inserted.
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
-                                             Option option);
+                                             Option option,
+                                             FieldReporterLevel reporter_level,
+                                             bool enable_safe_format);
 
 class UnsetFieldsMetadataTextFormatTestUtil;
 class UnsetFieldsMetadataMessageDifferencerTestUtil;
@@ -438,6 +440,7 @@ class PROTOBUF_EXPORT TextFormat {
     // particular Descriptor.
     // Returns "true" if the registration succeeded, or "false" if there is
     // already a printer for that Descriptor.
+    // Takes ownership of the printer on successful registration.
     bool RegisterMessagePrinter(const Descriptor* descriptor,
                                 const MessagePrinter* printer);
 
@@ -453,8 +456,9 @@ class PROTOBUF_EXPORT TextFormat {
     friend std::string Message::DebugString() const;
     friend std::string Message::ShortDebugString() const;
     friend std::string Message::Utf8DebugString() const;
-    friend std::string internal::StringifyMessage(const Message& message,
-                                                  internal::Option option);
+    friend std::string internal::StringifyMessage(
+        const Message& message, internal::Option option,
+        internal::FieldReporterLevel reporter_level, bool enable_safe_format);
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }

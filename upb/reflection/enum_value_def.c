@@ -113,15 +113,10 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
 static void _upb_EnumValueDef_CheckZeroValue(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e,
                                              const upb_EnumValueDef* v, int n) {
-  if (upb_EnumDef_IsClosed(e) || n == 0 || v[0].number == 0) return;
-
-  // When the special UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 is enabled, we have to
-  // exempt proto2 enums from this check, even when we are treating them as
+  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
+  // exempt closed enums from this check, even when we are treating them as
   // open.
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 &&
-      upb_FileDef_Syntax(upb_EnumDef_File(e)) == kUpb_Syntax_Proto2) {
-    return;
-  }
+  if (upb_EnumDef_IsSpecifiedAsClosed(e) || n == 0 || v[0].number == 0) return;
 
   _upb_DefBuilder_Errf(ctx, "for open enums, the first value must be zero (%s)",
                        upb_EnumDef_FullName(e));

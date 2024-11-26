@@ -15,22 +15,23 @@ import gc
 import operator
 import struct
 import sys
-import warnings
 import unittest
+import warnings
 
-from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pb2
 from google.protobuf import message
+from google.protobuf import message_factory
 from google.protobuf import reflection
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import decoder
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
-from google.protobuf.internal import message_set_extensions_pb2
-from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
-from google.protobuf.internal import decoder
+from google.protobuf.internal import wire_format
 from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
@@ -594,19 +595,37 @@ class ReflectionTest(unittest.TestCase):
 
   def testEnum_KeysAndValues(self, message_module):
     if message_module == unittest_pb2:
-      keys = ['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ', 'FOREIGN_BAX']
-      values = [4, 5, 6, 32]
+      keys = [
+          'FOREIGN_FOO',
+          'FOREIGN_BAR',
+          'FOREIGN_BAZ',
+          'FOREIGN_BAX',
+          'FOREIGN_LARGE',
+      ]
+      values = [4, 5, 6, 32, 123456]
       items = [
           ('FOREIGN_FOO', 4),
           ('FOREIGN_BAR', 5),
           ('FOREIGN_BAZ', 6),
           ('FOREIGN_BAX', 32),
+          ('FOREIGN_LARGE', 123456),
       ]
     else:
-      keys = ['FOREIGN_ZERO', 'FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ']
-      values = [0, 4, 5, 6]
-      items = [('FOREIGN_ZERO', 0), ('FOREIGN_FOO', 4),
-               ('FOREIGN_BAR', 5), ('FOREIGN_BAZ', 6)]
+      keys = [
+          'FOREIGN_ZERO',
+          'FOREIGN_FOO',
+          'FOREIGN_BAR',
+          'FOREIGN_BAZ',
+          'FOREIGN_LARGE',
+      ]
+      values = [0, 4, 5, 6, 123456]
+      items = [
+          ('FOREIGN_ZERO', 0),
+          ('FOREIGN_FOO', 4),
+          ('FOREIGN_BAR', 5),
+          ('FOREIGN_BAZ', 6),
+          ('FOREIGN_LARGE', 123456),
+      ]
     self.assertEqual(keys,
                      list(message_module.ForeignEnum.keys()))
     self.assertEqual(values,
@@ -1549,7 +1568,8 @@ class Proto2ReflectionTest(unittest.TestCase):
     prius.owners.extend(['bob', 'susan'])
 
     serialized_prius = prius.SerializeToString()
-    new_prius = reflection.ParseMessage(desc, serialized_prius)
+    new_prius = message_factory.GetMessageClass(desc)()
+    new_prius.ParseFromString(serialized_prius)
     self.assertIsNot(new_prius, prius)
     self.assertEqual(prius, new_prius)
 
@@ -2634,7 +2654,7 @@ class ByteSizeTest(unittest.TestCase):
 @testing_refleaks.TestCase
 class SerializationTest(unittest.TestCase):
 
-  def testSerializeEmtpyMessage(self):
+  def testSerializeEmptyMessage(self):
     first_proto = unittest_pb2.TestAllTypes()
     second_proto = unittest_pb2.TestAllTypes()
     serialized = first_proto.SerializeToString()
@@ -3183,11 +3203,11 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual([1, 2, 3], proto.repeated_int32)
 
   def testInitArgsUnknownFieldName(self):
-    def InitalizeEmptyMessageWithExtraKeywordArg():
+    def InitializeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
     self._CheckRaises(
         ValueError,
-        InitalizeEmptyMessageWithExtraKeywordArg,
+        InitializeEmptyMessageWithExtraKeywordArg,
         'Protocol message TestEmptyMessage has no "unknown" field.')
 
   def testInitRequiredKwargs(self):
@@ -3241,13 +3261,13 @@ class OptionsTest(unittest.TestCase):
     proto.optional_int32 = 1
     proto.optional_double = 3.0
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(False, field_descriptor.GetOptions().packed)
+      self.assertEqual(False, field_descriptor.is_packed)
 
     proto = unittest_pb2.TestPackedTypes()
     proto.packed_int32.append(1)
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(True, field_descriptor.GetOptions().packed)
+      self.assertEqual(True, field_descriptor.is_packed)
       self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
                        field_descriptor.label)
 
@@ -3288,7 +3308,7 @@ class ClassAPITest(unittest.TestCase):
         enum_types=[], extensions=[],
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
-    reflection.MakeClass(parent_desc)
+    message_factory.GetMessageClass(parent_desc)
 
   def _GetSerializedFileDescriptor(self, name):
     """Get a serialized representation of a test FileDescriptorProto.
@@ -3381,7 +3401,7 @@ class ClassAPITest(unittest.TestCase):
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('B'))
     msg_descriptor = descriptor.MakeDescriptor(
         file_descriptor.message_type[0])
-    msg_class = reflection.MakeClass(msg_descriptor)
+    msg_class = message_factory.GetMessageClass(msg_descriptor)
     msg = msg_class()
     msg_str = (
         'flat: 0 '
@@ -3397,7 +3417,7 @@ class ClassAPITest(unittest.TestCase):
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('C'))
     msg_descriptor = descriptor.MakeDescriptor(
         file_descriptor.message_type[0])
-    msg_class = reflection.MakeClass(msg_descriptor)
+    msg_class = message_factory.GetMessageClass(msg_descriptor)
     msg = msg_class()
     msg_str = (
         'bar {'

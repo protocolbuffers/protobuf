@@ -1,3 +1,6 @@
+# TODO: ErrorProne's SelfAssertions are violated in tests
+build --javacopt=-Xep:SelfAssertion:WARN
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
@@ -27,6 +30,13 @@ build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute
+
+# Workaround Bazel 7 remote cache issues.
+# See https://github.com/bazelbuild/bazel/issues/20161
+build --experimental_remote_cache_eviction_retries=5
+build --remote_download_outputs=all
 
 # Build with all --incompatible flags that we can. This helps us prepare for
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
@@ -69,6 +79,10 @@ build --incompatible_use_host_features
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
 common --noenable_bzlmod
+
+# For easier debugging of build failures.
+common --announce_rc
+build --verbose_failures
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.

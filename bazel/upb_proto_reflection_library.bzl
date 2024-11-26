@@ -1,9 +1,11 @@
 """upb_c_proto_reflection_library() exposes upb reflection for protobuf (foo.upbdefs.h)"""
 
 load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
-load("//bazel:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
-load("//bazel:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
-load("//bazel:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
+load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
+load("//bazel/private:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
 
 _UpbDefsWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
 
@@ -29,7 +31,7 @@ _upb_proto_reflection_library_aspect = aspect(
             default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_upbdefs_toolchain": attr.label(
-            default = Label("//upb_generator:protoc-gen-upbdefs_toolchain"),
+            default = Label("//upb_generator/reflection:toolchain"),
             cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
         ),
         "_cc_toolchain": attr.label(
@@ -55,7 +57,6 @@ def _upb_proto_reflection_library_rule_impl(ctx):
     return upb_proto_rule_impl(ctx, _UpbDefsWrappedCcInfo, _WrappedDefsGeneratedSrcsInfo)
 
 upb_proto_reflection_library = rule(
-    output_to_genfiles = True,
     implementation = _upb_proto_reflection_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

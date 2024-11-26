@@ -21,12 +21,12 @@ import calendar
 import collections.abc
 import datetime
 import warnings
-
 from google.protobuf.internal import field_mask
+from typing import Union
 
 FieldMask = field_mask.FieldMask
 
-_TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
+_TIMESTAMPFORMAT = '%Y-%m-%dT%H:%M:%S'
 _NANOS_PER_SECOND = 1000000000
 _NANOS_PER_MILLISECOND = 1000000
 _NANOS_PER_MICROSECOND = 1000
@@ -68,7 +68,7 @@ class Any(object):
   def TypeName(self):
     """Returns the protobuf type name of the inner message."""
     # Only last part is to be used: b/25630112
-    return self.type_url.split('/')[-1]
+    return self.type_url.rpartition('/')[2]
 
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
@@ -142,7 +142,7 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFORMAT)
     td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
@@ -242,7 +242,7 @@ class Timestamp(object):
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
     # Using datetime.fromtimestamp for this would avoid constructing an extra
-    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # timedelta object and possibly an extra datetime. Unfortunately, that has
     # the disadvantage of not handling the full precision (on all platforms, see
     # https://github.com/python/cpython/issues/109849) or full range (on some
     # platforms, see https://github.com/python/cpython/issues/110042) of
@@ -271,11 +271,37 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    seconds = calendar.timegm(dt.utctimetuple())
-    nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    try:
+      seconds = calendar.timegm(dt.utctimetuple())
+      nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Timestamp. Expected a datetime like '
+          'object got {0} : {1}'.format(type(dt).__name__, e)
+      ) from e
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
+
+  def _internal_assign(self, dt):
+    self.FromDatetime(dt)
+
+  def __add__(self, value) -> datetime.datetime:
+    if isinstance(value, Duration):
+      return self.ToDatetime() + value.ToTimedelta()
+    return self.ToDatetime() + value
+
+  __radd__ = __add__
+
+  def __sub__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToDatetime() - value.ToDatetime()
+    elif isinstance(value, Duration):
+      return self.ToDatetime() - value.ToTimedelta()
+    return self.ToDatetime() - value
+
+  def __rsub__(self, dt) -> datetime.timedelta:
+    return dt - self.ToDatetime()
 
 
 def _CheckTimestampValid(seconds, nanos):
@@ -400,7 +426,7 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self):
+  def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
     return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
@@ -408,8 +434,19 @@ class Duration(object):
 
   def FromTimedelta(self, td):
     """Converts timedelta to Duration."""
-    self._NormalizeDuration(td.seconds + td.days * _SECONDS_PER_DAY,
-                            td.microseconds * _NANOS_PER_MICROSECOND)
+    try:
+      self._NormalizeDuration(
+          td.seconds + td.days * _SECONDS_PER_DAY,
+          td.microseconds * _NANOS_PER_MICROSECOND,
+      )
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Duration. Expected a timedelta like '
+          'object got {0}: {1}'.format(type(td).__name__, e)
+      ) from e
+
+  def _internal_assign(self, td):
+    self.FromTimedelta(td)
 
   def _NormalizeDuration(self, seconds, nanos):
     """Set Duration by seconds and nanos."""
@@ -419,6 +456,16 @@ class Duration(object):
       nanos -= _NANOS_PER_SECOND
     self.seconds = seconds
     self.nanos = nanos
+
+  def __add__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToTimedelta() + value.ToDatetime()
+    return self.ToTimedelta() + value
+
+  __radd__ = __add__
+
+  def __rsub__(self, dt) -> Union[datetime.datetime, datetime.timedelta]:
+    return dt - self.ToTimedelta()
 
 
 def _CheckDurationValid(seconds, nanos):
@@ -497,9 +544,6 @@ class Struct(object):
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
 
-  def __contains__(self, item):
-    return item in self.fields
-
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)
 
@@ -511,6 +555,24 @@ class Struct(object):
 
   def __iter__(self):
     return iter(self.fields)
+
+  def _internal_assign(self, dictionary):
+    self.Clear()
+    self.update(dictionary)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for key, value in self.items():
+      if key not in other:
+        return False
+      if isinstance(other[key], (dict, list)):
+        if not value._internal_compare(other[key]):
+          return False
+      elif value != other[key]:
+        return False
+    return True
 
   def keys(self):  # pylint: disable=invalid-name
     return self.fields.keys()
@@ -566,6 +628,22 @@ class ListValue(object):
 
   def __delitem__(self, key):
     del self.values[key]
+
+  def _internal_assign(self, elem_seq):
+    self.Clear()
+    self.extend(elem_seq)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for i in range(size):
+      if isinstance(other[i], (dict, list)):
+        if not self[i]._internal_compare(other[i]):
+          return False
+      elif self[i] != other[i]:
+        return False
+    return True
 
   def items(self):
     for i in range(len(self)):

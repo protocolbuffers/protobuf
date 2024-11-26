@@ -699,13 +699,6 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
                   }
                   break;
                 }
-                case FieldDescriptor::TYPE_ENUM: {
-                  MaybeOwnedString key_str = key.value;
-                  auto e = ParseEnumFromStr<Traits>(lex, key_str, field);
-                  RETURN_IF_ERROR(e.status());
-                  Traits::SetEnum(key_field, entry, e->value_or(0));
-                  break;
-                }
                 case FieldDescriptor::TYPE_STRING: {
                   Traits::SetString(key_field, entry,
                                     std::move(key.value.ToString()));
@@ -1278,14 +1271,11 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 }
 }  // namespace
 
-absl::Status JsonStringToMessage(absl::string_view input, Message* message,
+absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                 Message* message,
                                  json_internal::ParseOptions options) {
   MessagePath path(message->GetDescriptor()->full_name());
-  if (PROTOBUF_DEBUG) {
-    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
-  }
-  io::ArrayInputStream in(input.data(), input.size());
-  JsonLexer lex(&in, options, &path);
+  JsonLexer lex(input, options, &path);
 
   ParseProto2Descriptor::Msg msg(message);
   absl::Status s =
@@ -1367,3 +1357,5 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

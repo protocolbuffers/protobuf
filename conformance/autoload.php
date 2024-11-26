@@ -7,8 +7,12 @@ define("GOOGLE_GPBMETADATA_NAMESPACE", "GPBMetadata\\Google\\Protobuf\\");
 function protobuf_autoloader_impl($class, $prefix) {
     $length = strlen($prefix);
     if ((substr($class, 0, $length) === $prefix)) {
-        $path = 'php/src/' . implode('/', array_map('ucwords', explode('\\', $class))) . '.php';
-        include_once $path;
+        $path = 'src/' . implode('/', array_map('ucwords', explode('\\', $class))) . '.php';
+        if (file_exists('php/' . $path)) {
+            include_once 'php/' . $path;
+        } else {
+            include_once 'php/generated/' . $path;
+        }
     }
 }
 

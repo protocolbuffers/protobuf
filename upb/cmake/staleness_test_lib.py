@@ -121,7 +121,7 @@ def _GetMissingAndStaleFiles(file_pairs):
       missing_files.append(pair)
       continue
 
-    with open(pair.generated) as g, open(pair.target) as t:
+    with open(pair.generated, 'rb') as g, open(pair.target, 'rb') as t:
       if g.read() != t.read():
         stale_files.append(pair)
 

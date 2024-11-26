@@ -4,20 +4,12 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """lua_proto_library(): a rule for building Lua protos."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 # Generic support code #########################################################
-
-# begin:github_only
-_is_google3 = False
-# end:github_only
-
-# begin:google_only
-# _is_google3 = True
-# end:google_only
 
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
@@ -39,14 +31,18 @@ def _get_real_short_path(file):
 def _get_real_root(ctx, file):
     real_short_path = _get_real_short_path(file)
     root = file.path[:-len(real_short_path) - 1]
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+
+    if ctx.rule.attr.strip_import_prefix:
         root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
+
     return root
 
 def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "/":
+
+    if ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "/":
         package = package[len(ctx.rule.attr.strip_import_prefix):]
+
     real_short_path = _get_real_short_path(src)
     real_short_path = paths.relativize(real_short_path, package)
     output_filename = paths.replace_extension(real_short_path, extension)
@@ -124,7 +120,6 @@ _lua_proto_library_aspect = aspect(
 )
 
 lua_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _lua_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(

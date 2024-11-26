@@ -1,15 +1,54 @@
 # This is the list of text format conformance tests that are known to fail right
 # now.
 # TODO: These should be fixed.
-Required.Proto3.TextFormatInput.FloatFieldMaxValue.ProtobufOutput
-Required.Proto3.TextFormatInput.FloatFieldMaxValue.TextFormatOutput
-Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput
-Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput
-Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput
-Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput
-Required.Editions_Proto3.TextFormatInput.FloatFieldMaxValue.ProtobufOutput
-Required.Editions_Proto3.TextFormatInput.FloatFieldMaxValue.TextFormatOutput
-Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput
-Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput
-Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput
-Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput
+Required.*.TextFormatInput.FloatFieldLargerThanInt64_F.ProtobufOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldLargerThanInt64_F.TextFormatOutput                                            # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldLargerThanUint64_F.ProtobufOutput                                             # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldLargerThanUint64_F.TextFormatOutput                                           # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldMaxValue_F.ProtobufOutput                                                     # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldMaxValue_F.TextFormatOutput                                                   # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldMinValue_F.ProtobufOutput                                                     # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldMinValue_F.TextFormatOutput                                                   # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegativeNoLeadingZero_F.ProtobufOutput                                        # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegativeNoLeadingZero_F.TextFormatOutput                                      # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegativeZero.ProtobufOutput                                                   # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.FloatFieldNegativeZero.TextFormatOutput                                                 # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.FloatFieldNegativeZero_F.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegativeZero_F.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegativeZero_f.ProtobufOutput                                                 # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.FloatFieldNegativeZero_f.TextFormatOutput                                               # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.FloatFieldNegative_F.ProtobufOutput                                                     # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNegative_F.TextFormatOutput                                                   # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNoLeadingZeroWithExponent_F.ProtobufOutput                                    # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNoLeadingZeroWithExponent_F.TextFormatOutput                                  # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNoLeadingZero_F.ProtobufOutput                                                # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNoLeadingZero_F.TextFormatOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldNoNegativeOctal                                                               # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.FloatFieldNoOctal                                                                       # Should have failed to parse, but didn't.
+Required.*.TextFormatInput.FloatFieldTooLarge_F.ProtobufOutput                                                     # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldTooLarge_F.TextFormatOutput                                                   # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldTooSmall_F.ProtobufOutput                                                     # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldTooSmall_F.TextFormatOutput                                                   # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldWithInt32Max_F.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldWithInt32Max_F.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldWithVeryPreciseNumber_F.ProtobufOutput                                        # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldWithVeryPreciseNumber_F.TextFormatOutput                                      # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldZero_F.ProtobufOutput                                                         # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatFieldZero_F.TextFormatOutput                                                       # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatField_F.ProtobufOutput                                                             # Failed to parse input or produce output.
+Required.*.TextFormatInput.FloatField_F.TextFormatOutput                                                           # Failed to parse input or produce output.
+Required.*.TextFormatInput.NegDoubleFieldLargeNegativeExponentParsesAsNegZero.ProtobufOutput                       # Output was not equivalent to reference message: deleted: optional_double: -0
+Required.*.TextFormatInput.NegDoubleFieldLargeNegativeExponentParsesAsNegZero.TextFormatOutput                     # Output was not equivalent to reference message: deleted: optional_double: -0
+Required.*.TextFormatInput.NegFloatFieldLargeNegativeExponentParsesAsNegZero.ProtobufOutput                        # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.NegFloatFieldLargeNegativeExponentParsesAsNegZero.TextFormatOutput                      # Output was not equivalent to reference message: deleted: optional_float: -0
+Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput                                           # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
+Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput                                         # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
+Required.*.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput                                          # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
+Required.*.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput                                        # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
+
+# Optional float interpreted as `inf`
+Required.*.TextFormatInput.FloatFieldMaxValue.ProtobufOutput                                                       # Output was not equivalent to reference message
+Required.*.TextFormatInput.FloatFieldMaxValue.TextFormatOutput                                                     # Output was not equivalent to reference message
+Required.*.TextFormatInput.FloatFieldMaxValue_f.ProtobufOutput                                                     # Output was not equivalent to reference message
+Required.*.TextFormatInput.FloatFieldMaxValue_f.TextFormatOutput                                                   # Output was not equivalent to reference message
+

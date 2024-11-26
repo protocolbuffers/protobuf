@@ -31,7 +31,7 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class Proto3Test {
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testGettersAndSetters() {
     testAllTypes {
@@ -53,7 +53,7 @@ class Proto3Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypes {
@@ -81,7 +81,7 @@ class Proto3Test {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
@@ -91,7 +91,7 @@ class Proto3Test {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -200,6 +200,11 @@ class Proto3Test {
           pairs["foo"] = 1
           LeadingUnderscore = "foo"
           option = 1
+          dEPRECATEDFoo = "foo"
+          iD = "foo"
+          aBNotification = "foo"
+          DEPRECATEDBar = "foo"
+          notDEPRECATEDFoo = "foo"
         }
       )
       .isEqualTo(
@@ -237,13 +242,18 @@ class Proto3Test {
           .putPairs("foo", 1)
           .setLeadingUnderscore("foo")
           .setOption(1)
+          .setDEPRECATEDFoo("foo")
+          .setID("foo")
+          .setABNotification("foo")
+          .setDEPRECATEDBar("foo")
+          .setNotDEPRECATEDFoo("foo")
           .build()
       )
 
     assertThat(class_ {}).isEqualTo(Class.newBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto3 {
@@ -276,7 +286,7 @@ class Proto3Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto3 {
@@ -294,7 +304,7 @@ class Proto3Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto3 {

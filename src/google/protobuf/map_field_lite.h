@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
+#include <cstddef>
 #include <type_traits>
 
 #include "absl/log/absl_check.h"
@@ -73,6 +74,12 @@ class MapFieldLite {
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
+
+  static constexpr size_t InternalGetArenaOffset(
+      internal::InternalVisibility access) {
+    return PROTOBUF_FIELD_OFFSET(MapFieldLite, map_) +
+           decltype(map_)::InternalGetArenaOffset(access);
+  }
 
  private:
   typedef void DestructorSkippable_;

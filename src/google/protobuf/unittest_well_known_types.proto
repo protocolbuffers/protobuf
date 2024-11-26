@@ -9,10 +9,6 @@ syntax = "proto3";
 
 package protobuf_unittest;
 
-option csharp_namespace = "Google.Protobuf.TestProtos";
-option java_multiple_files = true;
-option java_package = "com.google.protobuf.test";
-
 import "google/protobuf/any.proto";
 import "google/protobuf/api.proto";
 import "google/protobuf/duration.proto";
@@ -23,6 +19,10 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/type.proto";
 import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "Google.Protobuf.TestProtos";
+option java_multiple_files = true;
+option java_package = "com.google.protobuf.test";
 
 // Test that we can include all well-known types.
 // Each wrapper type is included separately, as languages
@@ -100,22 +100,22 @@ message OneofWellKnownTypes {
 // need to worry about the value part of the map being the
 // well-known types, as messages can't be map keys.
 message MapWellKnownTypes {
-  map<int32,google.protobuf.Any> any_field = 1;
-  map<int32,google.protobuf.Api> api_field = 2;
-  map<int32,google.protobuf.Duration> duration_field = 3;
-  map<int32,google.protobuf.Empty> empty_field = 4;
-  map<int32,google.protobuf.FieldMask> field_mask_field = 5;
-  map<int32,google.protobuf.SourceContext> source_context_field = 6;
-  map<int32,google.protobuf.Struct> struct_field = 7;
-  map<int32,google.protobuf.Timestamp> timestamp_field = 8;
-  map<int32,google.protobuf.Type> type_field = 9;
-  map<int32,google.protobuf.DoubleValue> double_field = 10;
-  map<int32,google.protobuf.FloatValue> float_field = 11;
-  map<int32,google.protobuf.Int64Value> int64_field = 12;
-  map<int32,google.protobuf.UInt64Value> uint64_field = 13;
-  map<int32,google.protobuf.Int32Value> int32_field = 14;
-  map<int32,google.protobuf.UInt32Value> uint32_field = 15;
-  map<int32,google.protobuf.BoolValue> bool_field = 16;
-  map<int32,google.protobuf.StringValue> string_field = 17;
-  map<int32,google.protobuf.BytesValue> bytes_field = 18;
+  map<int32, google.protobuf.Any> any_field = 1;
+  map<int32, google.protobuf.Api> api_field = 2;
+  map<int32, google.protobuf.Duration> duration_field = 3;
+  map<int32, google.protobuf.Empty> empty_field = 4;
+  map<int32, google.protobuf.FieldMask> field_mask_field = 5;
+  map<int32, google.protobuf.SourceContext> source_context_field = 6;
+  map<int32, google.protobuf.Struct> struct_field = 7;
+  map<int32, google.protobuf.Timestamp> timestamp_field = 8;
+  map<int32, google.protobuf.Type> type_field = 9;
+  map<int32, google.protobuf.DoubleValue> double_field = 10;
+  map<int32, google.protobuf.FloatValue> float_field = 11;
+  map<int32, google.protobuf.Int64Value> int64_field = 12;
+  map<int32, google.protobuf.UInt64Value> uint64_field = 13;
+  map<int32, google.protobuf.Int32Value> int32_field = 14;
+  map<int32, google.protobuf.UInt32Value> uint32_field = 15;
+  map<int32, google.protobuf.BoolValue> bool_field = 16;
+  map<int32, google.protobuf.StringValue> string_field = 17;
+  map<int32, google.protobuf.BytesValue> bytes_field = 18;
 }

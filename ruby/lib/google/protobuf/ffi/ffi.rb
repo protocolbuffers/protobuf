@@ -36,6 +36,11 @@ module Google
       ## JSON Decoding options
       Upb_JsonDecode_IgnoreUnknown = 1
 
+      ## JSON Decoding results
+      Upb_JsonDecodeResult_Ok = 0
+      Upb_JsonDecodeResult_OkWithEmptyStringNumerics = 1
+      Upb_JsonDecodeResult_Error = 2
+
       typedef :pointer, :Array
       typedef :pointer, :DefPool
       typedef :pointer, :EnumValueDef
@@ -93,11 +98,6 @@ module Google
         :optional, 1,
         :required,
         :repeated
-      )
-
-      Syntax = enum(
-        :Proto2, 2,
-        :Proto3
       )
 
       # All the different kind of well known type messages. For simplicity of check,

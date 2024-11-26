@@ -19,18 +19,55 @@
 
 #include "google/protobuf/dynamic_message.h"
 
+#include <cstddef>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"
 
+
 namespace google {
 namespace protobuf {
+namespace {
+
+void AddUnittestDescriptors(
+    DescriptorPool& pool, std::vector<const FileDescriptor*>* files = nullptr) {
+  // We want to make sure that DynamicMessage works (particularly with
+  // extensions) even if we use descriptors that are *not* from compiled-in
+  // types, so we make copies of the descriptors for unittest.proto and
+  // unittest_import.proto.
+  FileDescriptorProto unittest_file;
+  FileDescriptorProto unittest_import_file;
+  FileDescriptorProto unittest_import_public_file;
+  FileDescriptorProto unittest_no_field_presence_file;
+
+  unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
+  unittest_import::ImportMessage::descriptor()->file()->CopyTo(
+      &unittest_import_file);
+  unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
+      &unittest_import_public_file);
+  proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->file()->CopyTo(
+      &unittest_no_field_presence_file);
+
+  ASSERT_TRUE(pool.BuildFile(unittest_import_public_file) != nullptr);
+  ASSERT_TRUE(pool.BuildFile(unittest_import_file) != nullptr);
+  ASSERT_TRUE(pool.BuildFile(unittest_file) != nullptr);
+  ASSERT_TRUE(pool.BuildFile(unittest_no_field_presence_file) != nullptr);
+
+  if (files) {
+    files->push_back(pool.FindFileByName(unittest_file.name()));
+    files->push_back(pool.FindFileByName(unittest_import_file.name()));
+    files->push_back(pool.FindFileByName(unittest_import_public_file.name()));
+    files->push_back(
+        pool.FindFileByName(unittest_no_field_presence_file.name()));
+  }
+}
 
 class DynamicMessageTest : public ::testing::TestWithParam<bool> {
  protected:
@@ -40,6 +77,8 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
   const Message* prototype_;
   const Descriptor* extensions_descriptor_;
   const Message* extensions_prototype_;
+  const Descriptor* packed_extensions_descriptor_;
+  const Message* packed_extensions_prototype_;
   const Descriptor* packed_descriptor_;
   const Message* packed_prototype_;
   const Descriptor* oneof_descriptor_;
@@ -50,27 +89,7 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
   DynamicMessageTest() : factory_(&pool_) {}
 
   void SetUp() override {
-    // We want to make sure that DynamicMessage works (particularly with
-    // extensions) even if we use descriptors that are *not* from compiled-in
-    // types, so we make copies of the descriptors for unittest.proto and
-    // unittest_import.proto.
-    FileDescriptorProto unittest_file;
-    FileDescriptorProto unittest_import_file;
-    FileDescriptorProto unittest_import_public_file;
-    FileDescriptorProto unittest_no_field_presence_file;
-
-    unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
-    unittest_import::ImportMessage::descriptor()->file()->CopyTo(
-        &unittest_import_file);
-    unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
-        &unittest_import_public_file);
-    proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->file()->CopyTo(
-        &unittest_no_field_presence_file);
-
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != nullptr);
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != nullptr);
-    ASSERT_TRUE(pool_.BuildFile(unittest_file) != nullptr);
-    ASSERT_TRUE(pool_.BuildFile(unittest_no_field_presence_file) != nullptr);
+    AddUnittestDescriptors(pool_);
 
     descriptor_ = pool_.FindMessageTypeByName("protobuf_unittest.TestAllTypes");
     ASSERT_TRUE(descriptor_ != nullptr);
@@ -80,6 +99,12 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
         pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
     ASSERT_TRUE(extensions_descriptor_ != nullptr);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
+
+    packed_extensions_descriptor_ =
+        pool_.FindMessageTypeByName("protobuf_unittest.TestPackedExtensions");
+    ASSERT_TRUE(packed_extensions_descriptor_ != nullptr);
+    packed_extensions_prototype_ =
+        factory_.GetPrototype(packed_extensions_descriptor_);
 
     packed_descriptor_ =
         pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
@@ -139,6 +164,21 @@ TEST_P(DynamicMessageTest, Extensions) {
 
   reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
+}
+
+TEST_P(DynamicMessageTest, PackedExtensions) {
+  // Check that extensions work.
+  Arena arena;
+  Message* message =
+      packed_extensions_prototype_->New(GetParam() ? &arena : nullptr);
+  TestUtil::ReflectionTester reflection_tester(packed_extensions_descriptor_);
+
+  reflection_tester.SetPackedFieldsViaReflection(message);
+  reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
 
   if (!GetParam()) {
     delete message;
@@ -298,5 +338,7 @@ TEST_F(DynamicMessageTest, Proto3) {
 
 INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
+
+}  // namespace
 }  // namespace protobuf
 }  // namespace google

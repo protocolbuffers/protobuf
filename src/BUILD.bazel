@@ -64,3 +64,8 @@ staleness_test(
     # test.
     tags = ["manual"],
 )
+
+test_suite(
+    name = "editions_tests",
+    tests = ["//editions:all_tests"],
+)

@@ -11,13 +11,6 @@ syntax = "proto3";
 
 package enums;
 
-import "devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto/optouts.proto";
-
-option (proto_best_practices.file_optouts) = {
-  categories: ENUM_DEFAULT_VALUE_NAME_CONFLICT
-  categories: ENUM_VALUE_NAMES
-};
-
 // This should result in an enum with these accessible values:
 // - Unknown = 0
 // - Unrecognized = 0
@@ -58,4 +51,15 @@ enum TestEnumWithNumericNames {
 enum TestEnumValueNameSameAsEnum {
   TEST_ENUM_VALUE_NAME_SAME_AS_ENUM_UNKNOWN = 0;
   TEST_ENUM_VALUE_NAME_SAME_AS_ENUM = 1;
+}
+
+// Regression test for maps with nested enum as value.
+message TestMapWithNestedEnum {
+  message InnerNested {
+    enum NestedEnum {
+      UNKNOWN = 0;
+      FOO = 1;
+    }
+  }
+  map<string, InnerNested.NestedEnum> string_map = 1;
 }

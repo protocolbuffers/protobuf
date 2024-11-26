@@ -15,6 +15,7 @@ __author__ = 'shaod@google.com (Dennis Shao)'
 
 from enum import Enum
 import os
+import warnings
 
 
 class Domain(Enum):
@@ -22,17 +23,31 @@ class Domain(Enum):
   PUBLIC = 2
 
 
+# The versions of this Python Protobuf runtime to be changed automatically by
+# the Protobuf release process. Do not edit them manually.
+# These OSS versions are not stripped to avoid merging conflicts.
+OSS_DOMAIN = Domain.PUBLIC
+OSS_MAJOR = 5
+OSS_MINOR = 30
+OSS_PATCH = 0
+OSS_SUFFIX = '-dev'
+
+DOMAIN = OSS_DOMAIN
+MAJOR = OSS_MAJOR
+MINOR = OSS_MINOR
+PATCH = OSS_PATCH
+SUFFIX = OSS_SUFFIX
+
+# Avoid flooding of warnings.
+_MAX_WARNING_COUNT = 20
+_warning_count = 0
+
 class VersionError(Exception):
   """Exception class for version violation."""
 
 
-# The versions of this Python Protobuf runtime to be changed automatically by
-# the Protobuf release process. Do not edit them manually.
-DOMAIN = Domain.PUBLIC
-MAJOR = 5
-MINOR = 27
-PATCH = 0
-SUFFIX = '-dev'
+def _ReportVersionError(msg):
+  raise VersionError(msg)
 
 
 def ValidateProtobufRuntimeVersion(
@@ -53,9 +68,11 @@ def ValidateProtobufRuntimeVersion(
     runtime.
   """
 
-  disable_flag = os.getenv('TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK')
+  disable_flag = os.getenv('TEMPORARILY_DISABLE_PROTOBUF_VERSION_CHECK')
   if disable_flag is not None and disable_flag.lower() == 'true':
     return
+
+  global _warning_count
 
   version = f'{MAJOR}.{MINOR}.{PATCH}{SUFFIX}'
   gen_version = f'{gen_major}.{gen_minor}.{gen_patch}{gen_suffix}'
@@ -69,28 +86,38 @@ def ValidateProtobufRuntimeVersion(
   )
 
   if gen_domain != DOMAIN:
-    raise VersionError(
+    _ReportVersionError(
         'Detected mismatched Protobuf Gencode/Runtime domains when loading'
         f' {location}: gencode {gen_domain.name} runtime {DOMAIN.name}.'
         ' Cross-domain usage of Protobuf is not supported.'
     )
 
   if gen_major != MAJOR:
-    raise VersionError(
-        'Detected mismatched Protobuf Gencode/Runtime major versions when'
-        f' loading {location}: gencode {gen_version} runtime {version}.'
-        f' Same major version is required. {error_prompt}'
-    )
+    if gen_major == MAJOR - 1:
+      if _warning_count < _MAX_WARNING_COUNT:
+        warnings.warn(
+            'Protobuf gencode version %s is exactly one major version older'
+            ' than the runtime version %s at %s. Please update the gencode to'
+            ' avoid compatibility violations in the next runtime release.'
+            % (gen_version, version, location)
+        )
+        _warning_count += 1
+    else:
+      _ReportVersionError(
+          'Detected mismatched Protobuf Gencode/Runtime major versions when'
+          f' loading {location}: gencode {gen_version} runtime {version}.'
+          f' Same major version is required. {error_prompt}'
+      )
 
   if MINOR < gen_minor or (MINOR == gen_minor and PATCH < gen_patch):
-    raise VersionError(
+    _ReportVersionError(
         'Detected incompatible Protobuf Gencode/Runtime versions when loading'
         f' {location}: gencode {gen_version} runtime {version}. Runtime version'
         f' cannot be older than the linked gencode version. {error_prompt}'
     )
 
-  if gen_suffix is not SUFFIX:
-    raise VersionError(
+  if gen_suffix != SUFFIX:
+    _ReportVersionError(
         'Detected mismatched Protobuf Gencode/Runtime version suffixes when'
         f' loading {location}: gencode {gen_version} runtime {version}.'
         f' Version suffixes must be the same. {error_prompt}'

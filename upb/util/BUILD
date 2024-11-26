@@ -1,12 +1,11 @@
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
@@ -18,6 +17,8 @@ cc_library(
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//upb:base",
         "//upb:port",
         "//upb:reflection",
         "//upb/reflection:internal",
@@ -50,9 +51,9 @@ cc_library(
     deps = [
         ":def_to_proto",
         "//:protobuf",
+        "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf/util:differencer",
         "//upb:base",
-        "//upb:descriptor_upb_proto",
         "//upb:mem",
         "//upb/reflection:internal",
         "@com_google_googletest//:gtest",
@@ -64,12 +65,16 @@ cc_test(
     srcs = ["def_to_proto_test.cc"],
     deps = [
         ":def_to_proto",
+        ":def_to_proto_editions_test_upb_proto",
+        ":def_to_proto_editions_test_upb_proto_reflection",
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//src/google/protobuf/util:differencer",
-        "//upb:descriptor_upb_proto_reflection",
+        "//upb:base",
         "//upb:mem",
         "//upb:reflection",
         "//upb/test:parse_text_proto",
@@ -78,19 +83,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
-
-# begin:google_only
-# cc_test(
-#     name = "def_to_proto_fuzz_test",
-#     srcs = ["def_to_proto_fuzz_test.cc"],
-#     tags = ["clang_only"],
-#     deps = [
-#         ":def_to_proto_test_lib",
-#         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
-#         "//testing/fuzzing:fuzztest",
-#     ],
-# )
-# end:google_only
 
 # Required fields
 
@@ -106,6 +98,21 @@ cc_library(
         "//upb:port",
         "//upb:reflection",
     ],
+)
+
+proto_library(
+    name = "def_to_proto_editions_test_proto",
+    srcs = ["def_to_proto_editions_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "def_to_proto_editions_test_upb_proto",
+    deps = ["def_to_proto_editions_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "def_to_proto_editions_test_upb_proto_reflection",
+    deps = ["def_to_proto_editions_test_proto"],
 )
 
 proto_library(
@@ -144,7 +151,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = [
@@ -155,26 +161,34 @@ filegroup(
     ],
     visibility = ["//python/dist:__pkg__"],
 )
-# end:github_only
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
         [
             "**/*test.cc",
         ],
+        exclude = ["def_to_proto_fuzz_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = glob(
+        [
+            "**/*test.h",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
-# end:github_only

@@ -21,10 +21,10 @@
 #include <string>
 
 #include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -148,6 +148,10 @@ struct ReflectionSchema {
                sizeof(uint32_t));
   }
 
+  // Returns true iff the field object has usable hasbit offset.
+  // Note that this is not necessarily correlated with *field presence* :
+  // Fields with implicit presence (i.e. ones that don't expose has_foo API)
+  // can still have hasbits in their underlying implementation.
   bool HasHasbits() const { return has_bits_offset_ != -1; }
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
@@ -339,9 +343,11 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
 };
 
 // Retrieves the existing prototype out of a descriptor table.
-// If it doesn't exist, asks the generated message factory for one.
+// If it doesn't exist:
+//  - If force_build is true, asks the generated message factory for one.
+//  - Otherwise, return null
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index);
+                                             int index, bool force_build);
 
 struct DenseEnumCacheInfo {
   std::atomic<const std::string**> cache;
@@ -363,8 +369,8 @@ const std::string& NameOfDenseEnum(int v) {
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
   const std::string** cache = deci.cache.load(std::memory_order_acquire );
-  if (PROTOBUF_PREDICT_TRUE(cache != nullptr)) {
-    if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
+    if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];
     }
   }

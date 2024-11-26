@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -80,6 +80,7 @@ def _proto_gen_impl(ctx):
     srcs = ctx.files.srcs
     langs = ctx.attr.langs or []
     out_type = ctx.attr.out_type
+    enable_editions = ctx.attr.enable_editions
     deps = depset(direct = ctx.files.srcs)
     source_dir = _SourceDir(ctx)
     gen_dir = _GenDir(ctx).rstrip("/")
@@ -98,6 +99,10 @@ def _proto_gen_impl(ctx):
 
     if ctx.attr.includes:
         for include in ctx.attr.includes:
+            if include == ".":
+                # This is effectively source_dir, which has already been handled,
+                # and may be generated incorrectly here.
+                continue
             import_flags += ["-I" + _GetPath(ctx, include)]
 
     import_flags = depset(direct = import_flags)
@@ -130,6 +135,8 @@ def _proto_gen_impl(ctx):
     generated_files = []
     for src in srcs:
         args = []
+        if enable_editions:
+            args.append("--experimental_editions")
 
         in_gen_dir = src.root.path == gen_dir
         if in_gen_dir:
@@ -231,6 +238,7 @@ Args:
   srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
     against.
   deps: a list of dependency labels; must be other proto libraries.
+  enable_editions: if true, sets the --experimental_editions flag.
   includes: a list of include paths to .proto files.
   protoc: the label of the protocol compiler to generate the sources.
   plugin: the label of the protocol compiler plugin to be passed to the protocol
@@ -247,6 +255,7 @@ _proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [ProtoGenInfo]),
+        "enable_editions": attr.bool(),
         "includes": attr.string_list(),
         "protoc": attr.label(
             cfg = "exec",
@@ -267,7 +276,6 @@ _proto_gen = rule(
             default = "all",
         ),
     },
-    output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
 
@@ -568,9 +576,9 @@ def internal_py_proto_library(
         **kargs):
     """Bazel rule to create a Python protobuf library from proto source files
 
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
+    NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
+    be removed in the next minor release.  Users should migrate to the py_proto_library rule from
+    rules_python instead.
 
     Args:
       name: the name of the py_proto_library.
@@ -630,21 +638,6 @@ def internal_py_proto_library(
         **kargs
     )
 
-def py_proto_library(
-        *args,
-        **kwargs):
-    """Deprecated alias for use before Bazel 5.3.
-
-    Args:
-      *args: the name of the py_proto_library.
-      **kwargs: other keyword arguments that are passed to py_library.
-
-    Deprecated:
-      This is provided for backwards compatibility only.  Bazel 5.3 will
-      introduce support for py_proto_library, which should be used instead.
-    """
-    internal_py_proto_library(*args, **kwargs)
-
 def _source_proto_library(
         name,
         srcs = [],
@@ -656,6 +649,7 @@ def _source_proto_library(
         protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
+        enable_editions = False,
         **kwargs):
     """Bazel rule to create generated protobuf code from proto source files for
     languages not well supported by Bazel yet.  This will output the generated
@@ -700,6 +694,7 @@ def _source_proto_library(
             srcs = proto_deps,
             protoc = protoc,
             includes = includes,
+            enable_editions = enable_editions,
         )
         full_deps.append(":%s_deps_genproto" % name)
 
@@ -713,6 +708,7 @@ def _source_proto_library(
         protoc = protoc,
         testonly = testonly,
         visibility = visibility,
+        enable_editions = enable_editions,
     )
 
     native.filegroup(

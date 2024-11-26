@@ -1,0 +1,10 @@
+edition = "2023";
+
+package editions_unittest;
+
+option java_multiple_files = true;
+
+message MessageImport {
+  int32 a = 1;
+  int32 b = 2;
+}

@@ -16,8 +16,8 @@
 
 #include "conformance/conformance.upb.h"
 #include "conformance/conformance.upbdefs.h"
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.upbdefs.h"
-#include "google/protobuf/editions/golden/test_messages_proto3_editions.upbdefs.h"
+#include "editions/golden/test_messages_proto2_editions.upbdefs.h"
+#include "editions/golden/test_messages_proto3_editions.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
 #include "upb/base/upcast.h"
@@ -314,11 +314,11 @@ int main(void) {
       symtab, &google_protobuf_test_messages_proto3_proto_upbdefinit, true);
   _upb_DefPool_LoadDefInitEx(
       symtab,
-      &google_protobuf_editions_golden_test_messages_proto2_editions_proto_upbdefinit,
+      &editions_golden_test_messages_proto2_editions_proto_upbdefinit,
       true);
   _upb_DefPool_LoadDefInitEx(
       symtab,
-      &google_protobuf_editions_golden_test_messages_proto3_editions_proto_upbdefinit,
+      &editions_golden_test_messages_proto3_editions_proto_upbdefinit,
       true);
 #else
   protobuf_test_messages_proto2_TestAllTypesProto2_getmsgdef(symtab);

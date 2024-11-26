@@ -473,11 +473,14 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     }
   }
 
+  if (PyUpb_RepeatedContainer_Length(pself) == 0) Py_RETURN_NONE;
+
   PyObject* ret = NULL;
   PyObject* full_slice = NULL;
   PyObject* list = NULL;
   PyObject* m = NULL;
   PyObject* res = NULL;
+
   if ((full_slice = PySlice_New(NULL, NULL, NULL)) &&
       (list = PyUpb_RepeatedContainer_Subscript(pself, full_slice)) &&
       (m = PyObject_GetAttrString(list, "sort")) &&

@@ -9,21 +9,26 @@
 
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "conformance_test.h"
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "editions/golden/test_messages_proto2_editions.pb.h"
+#include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
+using conformance::TestStatus;
 using conformance::WireFormat;
+using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -69,19 +74,22 @@ bool TextFormatConformanceTestSuite::ParseResponse(
   const std::string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
 
+  TestStatus test;
+  test.set_name(test_name);
   switch (response.result_case()) {
     case ConformanceResponse::kProtobufPayload: {
       if (requested_output != conformance::PROTOBUF) {
-        ReportFailure(test_name, level, request, response,
-                      absl::StrCat("Test was asked for ",
-                                   WireFormatToString(requested_output),
-                                   " output but provided PROTOBUF instead."));
+        test.set_failure_message(absl::StrCat(
+            "Test was asked for ", WireFormatToString(requested_output),
+            " output but provided PROTOBUF instead."));
+        ReportFailure(test, level, request, response);
         return false;
       }
 
       if (!test_message->ParseFromString(response.protobuf_payload())) {
-        ReportFailure(test_name, level, request, response,
-                      "Protobuf output we received from test was unparseable.");
+        test.set_failure_message(
+            "Protobuf output we received from test was unparseable.");
+        ReportFailure(test, level, request, response);
         return false;
       }
 
@@ -90,18 +98,17 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     case ConformanceResponse::kTextPayload: {
       if (requested_output != conformance::TEXT_FORMAT) {
-        ReportFailure(
-            test_name, level, request, response,
-            absl::StrCat("Test was asked for ",
-                         WireFormatToString(requested_output),
-                         " output but provided TEXT_FORMAT instead."));
+        test.set_failure_message(absl::StrCat(
+            "Test was asked for ", WireFormatToString(requested_output),
+            " output but provided TEXT_FORMAT instead."));
+        ReportFailure(test, level, request, response);
         return false;
       }
 
       if (!ParseTextFormatResponse(response, setting, test_message)) {
-        ReportFailure(
-            test_name, level, request, response,
+        test.set_failure_message(
             "TEXT_FORMAT output we received from test was unparseable.");
+        ReportFailure(test, level, request, response);
         return false;
       }
 
@@ -122,6 +129,7 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
   if (maximum_edition_ >= Edition::EDITION_2023) {
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto2Editions>(this);
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto3Editions>(this);
+    TextFormatConformanceTestSuiteImpl<TestAllTypesEdition2023>(this);
   }
 }
 
@@ -131,13 +139,22 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     : suite_(*ABSL_DIE_IF_NULL(suite)) {
   // Flag control performance tests to keep them internal and opt-in only
   if (suite_.performance_) {
+    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
+      // There are no editions-sensitive performance tests.
+      return;
+    }
     RunTextFormatPerformanceTests();
   } else {
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
       RunGroupTests();
+      RunClosedEnumTests();
+    }
+    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
+      RunDelimitedTests();
     }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
+      RunOpenEnumTests();
       // TODO Run these over proto2 also.
       RunAllTests();
     }
@@ -160,14 +177,19 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
       setting.ConformanceLevelToString(level), ".",
       setting.GetSyntaxIdentifier(), ".TextFormatInput.", test_name);
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(effective_test_name);
+    suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(effective_test_name, request, response);
+    suite_.ReportSkip(test, request, response);
   } else {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         "Should have failed to parse, but didn't.");
+    test.set_failure_message("Should have failed to parse, but didn't.");
+    suite_.ReportFailure(test, level, request, response);
   }
 }
 
@@ -236,12 +258,62 @@ void TextFormatConformanceTestSuiteImpl<
 }
 
 template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
+  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
+                         "GroupLikeType { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
+                         "GroupLikeType: { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "GroupLikeType {}");
+  RunValidTextFormatTest(
+      "GroupFieldExtension", REQUIRED,
+      "[protobuf_test_messages.editions.groupliketype] { c: 1 }");
+  RunValidTextFormatTest(
+      "DelimitedFieldExtension", REQUIRED,
+      "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
+
+
+  // Test that lower-cased group name (i.e. implicit field name) are accepted.
+  RunValidTextFormatTest("DelimitedFieldLowercased", REQUIRED,
+                         "groupliketype { group_int32: 1 }");
+  RunValidTextFormatTest("DelimitedFieldLowercasedDifferent", REQUIRED,
+                         "delimited_field { group_int32: 1 }");
+
+  // Extensions always used the field name, and should never accept the message
+  // name.
+  ExpectParseFailure(
+      "DelimitedFieldExtensionMessageName", REQUIRED,
+      "[protobuf_test_messages.editions.GroupLikeType] { group_int32: 1 }");
+}
+
+template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
   RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
                          "Data { group_int32: 1 }");
   RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
                          "Data: { group_int32: 1 }");
   RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "Data {}");
+  RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
+                         "MultiWordGroupField { group_int32: 1 }");
+
+  // Test that lower-cased group name (i.e. implicit field name) is accepted
+  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
+                         "data { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldLowercasedMultiWord", REQUIRED,
+                         "multiwordgroupfield { group_int32: 1 }");
+
+  // Test extensions of group type
+  RunValidTextFormatTest("GroupFieldExtension", REQUIRED,
+                         absl::StrFormat("[%s] { group_int32: 1 }",
+                                         MessageType::GetDescriptor()
+                                             ->file()
+                                             ->FindExtensionByName("groupfield")
+                                             ->PrintableNameForExtension()));
+  ExpectParseFailure("GroupFieldExtensionGroupName", REQUIRED,
+                     absl::StrFormat("[%s] { group_int32: 1 }",
+                                     MessageType::GetDescriptor()
+                                         ->file()
+                                         ->FindMessageTypeByName("GroupField")
+                                         ->full_name()));
 }
 
 template <typename MessageType>
@@ -261,6 +333,44 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
                          "optional_int64: -9223372036854775808");
   RunValidTextFormatTest("Uint64FieldMaxValue", REQUIRED,
                          "optional_uint64: 18446744073709551615");
+  // Integer fields - Hex
+  RunValidTextFormatTestWithExpected("Int32FieldMaxValueHex", REQUIRED,
+                                     "optional_int32: 0x7FFFFFFF",
+                                     "optional_int32: 2147483647");
+  RunValidTextFormatTestWithExpected("Int32FieldMinValueHex", REQUIRED,
+                                     "optional_int32: -0x80000000",
+                                     "optional_int32: -2147483648");
+  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueHex", REQUIRED,
+                                     "optional_uint32: 0xFFFFFFFF",
+                                     "optional_uint32: 4294967295");
+  RunValidTextFormatTestWithExpected("Int64FieldMaxValueHex", REQUIRED,
+                                     "optional_int64: 0x7FFFFFFFFFFFFFFF",
+                                     "optional_int64: 9223372036854775807");
+  RunValidTextFormatTestWithExpected("Int64FieldMinValueHex", REQUIRED,
+                                     "optional_int64: -0x8000000000000000",
+                                     "optional_int64: -9223372036854775808");
+  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueHex", REQUIRED,
+                                     "optional_uint64: 0xFFFFFFFFFFFFFFFF",
+                                     "optional_uint64: 18446744073709551615");
+  // Integer fields - Octal
+  RunValidTextFormatTestWithExpected("Int32FieldMaxValueOctal", REQUIRED,
+                                     "optional_int32: 017777777777",
+                                     "optional_int32: 2147483647");
+  RunValidTextFormatTestWithExpected("Int32FieldMinValueOctal", REQUIRED,
+                                     "optional_int32: -020000000000",
+                                     "optional_int32: -2147483648");
+  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueOctal", REQUIRED,
+                                     "optional_uint32: 037777777777",
+                                     "optional_uint32: 4294967295");
+  RunValidTextFormatTestWithExpected("Int64FieldMaxValueOctal", REQUIRED,
+                                     "optional_int64: 0777777777777777777777",
+                                     "optional_int64: 9223372036854775807");
+  RunValidTextFormatTestWithExpected("Int64FieldMinValueOctal", REQUIRED,
+                                     "optional_int64: -01000000000000000000000",
+                                     "optional_int64: -9223372036854775808");
+  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueOctal", REQUIRED,
+                                     "optional_uint64: 01777777777777777777777",
+                                     "optional_uint64: 18446744073709551615");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailure("Int32FieldTooLarge", REQUIRED,
@@ -275,30 +385,145 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
                      "optional_int64: -9223372036854775809");
   ExpectParseFailure("Uint64FieldTooLarge", REQUIRED,
                      "optional_uint64: 18446744073709551616");
+  // Parsers reject out-of-bound integer values - Hex
+  ExpectParseFailure("Int32FieldTooLargeHex", REQUIRED,
+                     "optional_int32: 0x80000000");
+  ExpectParseFailure("Int32FieldTooSmallHex", REQUIRED,
+                     "optional_int32: -0x80000001");
+  ExpectParseFailure("Uint32FieldTooLargeHex", REQUIRED,
+                     "optional_uint32: 0x100000000");
+  ExpectParseFailure("Int64FieldTooLargeHex", REQUIRED,
+                     "optional_int64: 0x8000000000000000");
+  ExpectParseFailure("Int64FieldTooSmallHex", REQUIRED,
+                     "optional_int64: -0x8000000000000001");
+  ExpectParseFailure("Uint64FieldTooLargeHex", REQUIRED,
+                     "optional_uint64: 0x10000000000000000");
+  // Parsers reject out-of-bound integer values - Octal
+  ExpectParseFailure("Int32FieldTooLargeOctal", REQUIRED,
+                     "optional_int32: 020000000000");
+  ExpectParseFailure("Int32FieldTooSmallOctal", REQUIRED,
+                     "optional_int32: -020000000001");
+  ExpectParseFailure("Uint32FieldTooLargeOctal", REQUIRED,
+                     "optional_uint32: 040000000000");
+  ExpectParseFailure("Int64FieldTooLargeOctal", REQUIRED,
+                     "optional_int64: 01000000000000000000000");
+  ExpectParseFailure("Int64FieldTooSmallOctal", REQUIRED,
+                     "optional_int64: -01000000000000000000001");
+  ExpectParseFailure("Uint64FieldTooLargeOctal", REQUIRED,
+                     "optional_uint64: 02000000000000000000000");
 
   // Floating point fields
-  RunValidTextFormatTest("FloatField", REQUIRED, "optional_float: 3.192837");
-  RunValidTextFormatTest("FloatFieldWithVeryPreciseNumber", REQUIRED,
-                         "optional_float: 3.123456789123456789");
-  RunValidTextFormatTest("FloatFieldMaxValue", REQUIRED,
-                         "optional_float: 3.4028235e+38");
-  RunValidTextFormatTest("FloatFieldMinValue", REQUIRED,
-                         "optional_float: 1.17549e-38");
-  RunValidTextFormatTest("FloatFieldNaNValue", REQUIRED, "optional_float: NaN");
-  RunValidTextFormatTest("FloatFieldPosInfValue", REQUIRED,
-                         "optional_float: inf");
-  RunValidTextFormatTest("FloatFieldNegInfValue", REQUIRED,
-                         "optional_float: -inf");
-  RunValidTextFormatTest("FloatFieldWithInt32Max", REQUIRED,
-                         "optional_float: 4294967296");
-  RunValidTextFormatTest("FloatFieldLargerThanInt64", REQUIRED,
-                         "optional_float: 9223372036854775808");
-  RunValidTextFormatTest("FloatFieldTooLarge", REQUIRED,
-                         "optional_float: 3.4028235e+39");
-  RunValidTextFormatTest("FloatFieldTooSmall", REQUIRED,
-                         "optional_float: 1.17549e-39");
-  RunValidTextFormatTest("FloatFieldLargerThanUint64", REQUIRED,
-                         "optional_float: 18446744073709551616");
+  for (const auto& suffix : std::vector<std::string>{"", "f", "F"}) {
+    const std::string name_suffix =
+        suffix.empty() ? "" : absl::StrCat("_", suffix);
+
+    RunValidTextFormatTest(absl::StrCat("FloatField", name_suffix), REQUIRED,
+                           absl::StrCat("optional_float: 3.192837", suffix));
+    RunValidTextFormatTestWithExpected(
+        absl::StrCat("FloatFieldZero", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 0", suffix),
+        "" /* implicit presence, so zero means unset*/);
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNegative", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: -3.192837", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldWithVeryPreciseNumber", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.123456789123456789", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldMaxValue", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.4028235e+38", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldMinValue", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 1.17549e-38", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldWithInt32Max", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 4294967296", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldLargerThanInt64", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 9223372036854775808", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldTooLarge", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.4028235e+39", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldTooSmall", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 1.17549e-39", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldLargerThanUint64", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 18446744073709551616", suffix));
+    // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
+    // "-0" is a valid float literal. -0 should be considered not the same as 0
+    // when considering implicit presence, and so should round trip.
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNegativeZero", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: -0", suffix));
+    // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
+    // ".123", "-.123", ".123e2" are a valid float literal.
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNoLeadingZero", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: .123", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldNegativeNoLeadingZero", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: -.123", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldNoLeadingZeroWithExponent", name_suffix),
+        REQUIRED, absl::StrCat("optional_float: .123e2", suffix));
+  }
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value say case
+  // doesn't matter for special values, test a few
+  for (const auto& value : std::vector<std::string>{"nan", "NaN", "nAn"}) {
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_", value), REQUIRED,
+                           absl::StrCat("optional_float: ", value));
+  }
+  for (const auto& value : std::vector<std::string>{
+           "inf", "infinity", "INF", "INFINITY", "iNF", "inFINITY"}) {
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_Pos", value), REQUIRED,
+                           absl::StrCat("optional_float: ", value));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_Neg", value), REQUIRED,
+                           absl::StrCat("optional_float: -", value));
+  }
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#numeric and
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value says
+  // hex or octal float literals are invalid.
+  ExpectParseFailure("FloatFieldNoHex", REQUIRED, "optional_float: 0x1");
+  ExpectParseFailure("FloatFieldNoNegativeHex", REQUIRED,
+                     "optional_float: -0x1");
+  ExpectParseFailure("FloatFieldNoOctal", REQUIRED, "optional_float: 012");
+  ExpectParseFailure("FloatFieldNoNegativeOctal", REQUIRED,
+                     "optional_float: -012");
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value says
+  // overflows are mapped to infinity/-infinity.
+  RunValidTextFormatTestWithExpected("FloatFieldOverflowInfinity", REQUIRED,
+                                     "optional_float: 1e50",
+                                     "optional_float: inf");
+  RunValidTextFormatTestWithExpected("FloatFieldOverflowNegativeInfinity",
+                                     REQUIRED, "optional_float: -1e50",
+                                     "optional_float: -inf");
+  RunValidTextFormatTestWithExpected("DoubleFieldOverflowInfinity", REQUIRED,
+                                     "optional_double: 1e9999",
+                                     "optional_double: inf");
+  RunValidTextFormatTestWithExpected("DoubleFieldOverflowNegativeInfinity",
+                                     REQUIRED, "optional_double: -1e9999",
+                                     "optional_double: -inf");
+  // Exponent is one more than uint64 max.
+  RunValidTextFormatTestWithExpected(
+      "FloatFieldOverflowInfinityHugeExponent", REQUIRED,
+      "optional_float: 1e18446744073709551616", "optional_float: inf");
+  RunValidTextFormatTestWithExpected(
+      "DoubleFieldOverflowInfinityHugeExponent", REQUIRED,
+      "optional_double: 1e18446744073709551616", "optional_double: inf");
+  RunValidTextFormatTestWithExpected(
+      "DoubleFieldLargeNegativeExponentParsesAsZero", REQUIRED,
+      "optional_double: 1e-18446744073709551616", "");
+  RunValidTextFormatTestWithExpected(
+      "NegDoubleFieldLargeNegativeExponentParsesAsNegZero", REQUIRED,
+      "optional_double: -1e-18446744073709551616", "optional_double: -0");
+
+  RunValidTextFormatTestWithExpected(
+      "FloatFieldLargeNegativeExponentParsesAsZero", REQUIRED,
+      "optional_float: 1e-50", "");
+  RunValidTextFormatTestWithExpected(
+      "NegFloatFieldLargeNegativeExponentParsesAsNegZero", REQUIRED,
+      "optional_float: -1e-50", "optional_float: -0");
 
   // String literals x {Strings, Bytes}
   for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
@@ -377,6 +602,95 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
     (this->*test_method)(absl::StrCat(field_type, "FieldBadUTF8Hex"), REQUIRED,
                          absl::StrCat(field_name, ": '\\xc0'"));
   }
+
+  // Separators
+  for (const auto& test_case : std::vector<std::pair<std::string, std::string>>{
+           {"string", "\"abc\""},
+           {"bytes", "\"abc\""},
+           {"int32", "123"},
+           {"bool", "true"},
+           {"double", "1.23"},
+           {"fixed32", "0x123"},
+       }) {
+    // Optional Field Separators
+    for (const auto& field_type :
+         std::vector<std::string>{"Single", "Repeated"}) {
+      std::string field_name, field_value;
+      if (field_type == "Single") {
+        field_name = absl::StrCat("optional_", test_case.first);
+        field_value = test_case.second;
+      } else {
+        field_name = absl::StrCat("repeated_", test_case.first);
+        field_value = absl::StrCat("[", test_case.second, "]");
+      }
+
+      RunValidTextFormatTest(absl::StrCat("FieldSeparatorCommaTopLevel",
+                                          field_type, "_", test_case.first),
+                             REQUIRED,
+                             absl::StrCat(field_name, ": ", field_value, ","));
+      RunValidTextFormatTest(absl::StrCat("FieldSeparatorSemiTopLevelSingle",
+                                          field_type, "_", test_case.first),
+                             REQUIRED,
+                             absl::StrCat(field_name, ": ", field_value, ";"));
+
+      ExpectParseFailure(
+          absl::StrCat("FieldSeparatorCommaTopLevelDuplicatesFails", field_type,
+                       "_", test_case.first),
+          REQUIRED, absl::StrCat(field_name, ": ", field_value, ",,"));
+      ExpectParseFailure(
+          absl::StrCat("FieldSeparatorSemiTopLevelDuplicateFails", field_type,
+                       "_", test_case.first),
+          REQUIRED, absl::StrCat(field_name, ": ", field_value, ";;"));
+    }
+
+    // Required List Separators
+    RunValidTextFormatTest(
+        absl::StrCat("ListSeparator_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ",",
+                     test_case.second, "]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorSemiFails_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ";",
+                     test_case.second, "]"));
+    // For string and bytes, if we skip the separator, the parser will treat
+    // the two values as a single value.
+    if (test_case.first == "string" || test_case.first == "bytes") {
+      RunValidTextFormatTest(
+          absl::StrCat("ListSeparatorMissingIsOneValue_", test_case.first),
+          REQUIRED,
+          absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                       " ", test_case.second, "]"));
+    } else {
+      ExpectParseFailure(
+          absl::StrCat("ListSeparatorMissingFails_", test_case.first), REQUIRED,
+          absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                       " ", test_case.second, "]"));
+    }
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorDuplicateFails_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                     ",,", test_case.second, "]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorSingleTrailingFails_", test_case.first),
+        REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                     ",]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorTwoValuesTrailingFails_", test_case.first),
+        REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ",",
+                     test_case.second, ",]"));
+  }
+  // The test message don't really have all types nested, so just check one
+  // data type for the nested field separator support
+  RunValidTextFormatTest("FieldSeparatorCommaNested", REQUIRED,
+                         "optional_nested_message: { a: 123, }");
+  RunValidTextFormatTest("FieldSeparatorSemiNested", REQUIRED,
+                         "optional_nested_message: { a: 123; }");
+  ExpectParseFailure("FieldSeparatorCommaNestedDuplicates", REQUIRED,
+                     "optional_nested_message: { a: 123,, }");
+  ExpectParseFailure("FieldSeparatorSemiNestedDuplicates", REQUIRED,
+                     "optional_nested_message: { a: 123;; }");
 
   // Unknown Fields
   UnknownToTestAllTypes message;
@@ -551,6 +865,30 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
       absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
                    test_type_name),
       RECOMMENDED, input, expected);
+}
+
+template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::RunOpenEnumTests() {
+  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
+                         R"(
+        optional_nested_enum: 1
+        )");
+  RunValidTextFormatTest("ClosedEnumFieldWithUnknownNumber", REQUIRED,
+                         R"(
+        optional_nested_enum: 42
+        )");
+}
+
+template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
+  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
+                         R"(
+        optional_nested_enum: 1
+        )");
+  ExpectParseFailure("ClosedEnumFieldWithUnknownNumber", REQUIRED,
+                     R"(
+        optional_nested_enum: 42
+        )");
 }
 
 }  // namespace protobuf

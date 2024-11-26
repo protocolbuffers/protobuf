@@ -1274,6 +1274,16 @@ TEST_P(JsonTest, FieldOrder) {
       out, R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
 }
 
+TEST_P(JsonTest, UnknownGroupField) {
+  // $ protoscope -s <<< "999: !{1: 99}"
+  std::string out;
+  absl::Status s = BinaryToJsonString(resolver_.get(),
+                                      "type.googleapis.com/proto3.TestMessage",
+                                      "\273>\010c\274>", &out);
+  ASSERT_OK(s);
+  EXPECT_EQ(out, "{}");
+}
+
 // JSON values get special treatment when it comes to pre-existing values in
 // their repeated fields, when parsing through their dedicated syntax.
 TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
@@ -1310,3 +1320,5 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
 }  // namespace json
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

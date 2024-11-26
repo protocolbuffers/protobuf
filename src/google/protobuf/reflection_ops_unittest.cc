@@ -274,6 +274,15 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
             message.repeated_nested_message(0).unknown_fields().field_count());
 }
 
+TEST(ReflectionOpsTest, DiscardUnknownFieldsIsANoopIfNotPresent) {
+  unittest::TestAllTypes message;
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+  ReflectionOps::DiscardUnknownFields(&message);
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+}
+
 TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);

@@ -49,8 +49,11 @@ class TextFormatConformanceTestSuiteImpl {
 
   void RunAllTests();
 
+  void RunDelimitedTests();
   void RunGroupTests();
   void RunAnyTests();
+  void RunOpenEnumTests();
+  void RunClosedEnumTests();
 
   void RunTextFormatPerformanceTests();
   void RunValidTextFormatTest(const std::string& test_name,

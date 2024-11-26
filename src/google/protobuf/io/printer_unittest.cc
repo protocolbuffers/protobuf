@@ -610,7 +610,7 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
-TEST_F(PrinterTest, EmitWithSubstituionListener) {
+TEST_F(PrinterTest, EmitWithSubstitutionListener) {
   std::vector<std::string> seen;
   Printer printer(output());
   const auto emit = [&] {
@@ -711,6 +711,44 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  class Foo {\n"
             "    int x, y, z;\n"
             "  };\n");
+}
+
+TEST_F(PrinterTest, EmitWithPreprocessor) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"value",
+                   [&] {
+                     printer.Emit(R"cc(
+#if FOO
+                       0,
+#else
+                       1,
+#endif
+                     )cc");
+                   }},
+                  {"on_new_line",
+                   [&] {
+                     printer.Emit(R"cc(
+#pragma foo
+                     )cc");
+                   }}},
+                 R"cc(
+                   int val = ($value$, 0);
+                   $on_new_line$;
+                 )cc");
+  }
+
+  EXPECT_EQ(written(),
+            R"(  int val = (
+  #if FOO
+                         0,
+  #else
+                         1,
+  #endif
+   0);
+  #pragma foo
+)");
 }
 
 

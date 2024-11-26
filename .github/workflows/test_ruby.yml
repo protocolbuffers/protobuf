@@ -3,10 +3,21 @@ name: Ruby Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
 
 permissions:
   contents: read
@@ -20,56 +31,64 @@ jobs:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.1, ruby: ruby-3.1.0 }
-          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true }
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
-    name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-904cad5249547845454998ca3837a34c71fabf96', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:6.4.0-{0}-27cf7b86212020d7e552bc13b1e084abb971da75', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+# Useful tool for troubleshooting, but the action introduces flakes as well,
+# e.g. https://github.com/actions/upload-artifact/issues/569
+#      - name: Archive log artifacts
+#        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
+#          path: logs
 
   linux-32bit:
     name: Linux 32-bit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: i386/ruby:3.0.2-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -78,29 +97,29 @@ jobs:
 
   linux-aarch64:
     name: Linux aarch64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: arm64v8/ruby:3.0.2-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -116,37 +135,40 @@ jobs:
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "3.0", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.0", ffi: FFI }
-        - { version: "3.1" }
-        - { version: "3.2" }
+        - { version: "3.0", ffi: FFI, continuous-only: true }
+        - { version: "3.1", continuous-only: true }
+        - { version: "3.2", continuous-only: true }
         - { version: "3.3", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.3", ffi: FFI }
+        - { version: "3.3", ffi: FFI }
 
-    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: macos-12
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Ruby version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: ruby/setup-ruby@961f85197f92e4842e3cb92a4f97bd8e010cdbaf # v1.165.0
         with:
           ruby-version: ${{ matrix.version }}
 
       - name: Validate version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
+  # This test should always be skipped on presubmit
   test_ruby_gems:
     strategy:
       fail-fast: false
@@ -160,19 +182,21 @@ jobs:
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
-    name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
+    name: ${{ inputs.continuous-prefix }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-904cad5249547845454998ca3837a34c71fabf96
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:6.4.0-${{ matrix.ruby }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >

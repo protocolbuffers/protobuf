@@ -28,10 +28,6 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
-// begin:google_only
-// #include "testing/fuzzing/fuzztest.h"
-// end:google_only
-
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -45,7 +41,7 @@ TEST_P(MiniTableTest, Empty) {
   upb_MiniTable* table =
       _upb_MiniTable_Build(nullptr, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(0, table->UPB_PRIVATE(field_count));
+  EXPECT_EQ(0, upb_MiniTable_FieldCount(table));
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
@@ -242,11 +238,11 @@ TEST_P(MiniTableTest, SubsInitializedToEmpty) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(table->UPB_PRIVATE(field_count), 2);
-  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
-      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[0])));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
-      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[1])));
+  EXPECT_EQ(upb_MiniTable_FieldCount(table), 2);
+  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
+      table, upb_MiniTable_GetFieldByIndex(table, 0)));
+  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
+      table, upb_MiniTable_GetFieldByIndex(table, 1)));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {
@@ -289,21 +285,3 @@ TEST_P(MiniTableTest, Extendible) {
   EXPECT_EQ(kUpb_ExtMode_Extendable,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
 }
-
-// begin:google_only
-//
-// static void BuildMiniTable(std::string_view s, bool is_32bit) {
-//   upb::Arena arena;
-//   upb::Status status;
-//   _upb_MiniTable_Build(
-//       s.data(), s.size(),
-//       is_32bit ? kUpb_MiniTablePlatform_32Bit : kUpb_MiniTablePlatform_64Bit,
-//       arena.ptr(), status.ptr());
-// }
-// FUZZ_TEST(FuzzTest, BuildMiniTable);
-//
-// TEST(FuzzTest, BuildMiniTableRegression) {
-//   BuildMiniTable("g}{v~fq{\271", false);
-// }
-//
-// end:google_only

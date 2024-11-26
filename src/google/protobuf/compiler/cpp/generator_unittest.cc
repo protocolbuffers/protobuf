@@ -98,7 +98,9 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring(
+      "foo.proto:9:16: warning: Feature pb.CppFeatures.legacy_closed_enum has "
+      "been deprecated in edition 2023");
 }
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
@@ -119,7 +121,9 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring(
+      "foo.proto: warning: Feature pb.CppFeatures.legacy_closed_enum has "
+      "been deprecated in edition 2023");
 }
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
@@ -144,7 +148,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
-TEST_F(CppGeneratorTest, NoStringTypeTillEdition2024) {
+TEST_F(CppGeneratorTest, AllowStringTypeForEdition2023) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
@@ -158,8 +162,25 @@ TEST_F(CppGeneratorTest, NoStringTypeTillEdition2024) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ErrorsOnBothStringTypeAndCtype) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [ctype = CORD, features.(pb.cpp).string_type = VIEW];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
   ExpectErrorSubstring(
-      "Field Foo.baz specifies string_type which is not currently allowed.");
+      "Foo.baz specifies both string_type and ctype which is not supported.");
 }
 
 TEST_F(CppGeneratorTest, StringTypeForCord) {
@@ -234,8 +255,29 @@ TEST_F(CppGeneratorTest, StringTypeCordNotForExtension) {
       "--experimental_editions foo.proto");
 
   ExpectErrorSubstring(
-      "Extension bar specifies string_type=CORD which is not supported for "
+      "Extension bar specifies Cord type which is not supported for "
       "extensions.");
+}
+
+TEST_F(CppGeneratorTest, InheritedStringTypeCordNotForExtension) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+    option features.(pb.cpp).string_type = CORD;
+
+    message Foo {
+      extensions 1 to max;
+    }
+    extend Foo {
+      bytes bar = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
 }
 
 TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
@@ -265,7 +307,7 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "Extension bar specifies ctype=CORD which is "
+      "Extension bar specifies Cord type which is "
       "not supported for extensions.");
 }
 }  // namespace

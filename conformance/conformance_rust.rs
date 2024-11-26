@@ -4,21 +4,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use conformance_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
+use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
-#[cfg(cpp_kernel)]
-use protobuf_cpp as kernel;
-
-#[cfg(upb_kernel)]
-use protobuf_upb as kernel;
-
-use kernel::Optional::{Set, Unset};
+use protobuf::prelude::*;
+use protobuf::Optional::{Set, Unset};
+use protobuf::{Message, ParseError};
 
 use std::io::{self, ErrorKind, Read, Write};
-use test_messages_proto2::TestAllTypesProto2;
-use test_messages_proto2_editions_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
-use test_messages_proto3::TestAllTypesProto3;
-use test_messages_proto3_editions_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
+use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;
+use test_messages_proto2_editions_rust_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
+use test_messages_proto2_rust_proto::TestAllTypesProto2;
+use test_messages_proto3_editions_rust_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
+use test_messages_proto3_rust_proto::TestAllTypesProto3;
 
 /// Returns Some(i32) if a binary read can succeed from stdin.
 /// Returns None if we have reached an EOF.
@@ -43,13 +40,11 @@ fn read_request_from_stdin() -> Option<ConformanceRequest> {
     let msg_len = read_little_endian_i32_from_stdin()?;
     let mut serialized = vec![0_u8; msg_len as usize];
     io::stdin().read_exact(&mut serialized).unwrap();
-    let mut req = ConformanceRequest::new();
-    req.deserialize(&serialized).unwrap();
-    Some(req)
+    Some(ConformanceRequest::parse(&serialized).unwrap())
 }
 
 fn write_response_to_stdout(resp: &ConformanceResponse) {
-    let bytes = resp.serialize();
+    let bytes = resp.serialize().unwrap();
     let len = bytes.len() as u32;
     let mut handle = io::stdout();
     handle.write_all(&len.to_le_bytes()).unwrap();
@@ -74,44 +69,39 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         Set(bytes) => bytes,
     };
 
+    fn roundtrip<T: Message>(bytes: &[u8]) -> Result<Vec<u8>, ParseError> {
+        T::parse(bytes).map(|msg| msg.serialize().unwrap())
+    }
+
     let serialized = match message_type.as_bytes() {
         b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
-            let mut proto = TestAllTypesProto2::new();
-            if let Err(_) = proto.deserialize(bytes) {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
-            proto.serialize()
+            roundtrip::<TestAllTypesProto2>(bytes)
         }
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
-            let mut proto = TestAllTypesProto3::new();
-            if let Err(_) = proto.deserialize(bytes) {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
-            proto.serialize()
+            roundtrip::<TestAllTypesProto3>(bytes)
+        }
+        b"protobuf_test_messages.editions.TestAllTypesEdition2023" => {
+            roundtrip::<TestAllTypesEdition2023>(bytes)
         }
         b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
-            let mut proto = EditionsTestAllTypesProto2::new();
-            if let Err(_) = proto.deserialize(bytes) {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
-            proto.serialize()
+            roundtrip::<EditionsTestAllTypesProto2>(bytes)
         }
         b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
-            let mut proto = EditionsTestAllTypesProto3::new();
-            if let Err(_) = proto.deserialize(bytes) {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
-            proto.serialize()
+            roundtrip::<EditionsTestAllTypesProto3>(bytes)
         }
         _ => panic!("unexpected msg type {message_type}"),
     };
 
-    resp.set_protobuf_payload(serialized);
-    return resp;
+    match serialized {
+        Ok(serialized) => {
+            resp.set_protobuf_payload(serialized);
+        }
+        Err(_) => {
+            resp.set_parse_error("failed to parse bytes");
+        }
+    }
+
+    resp
 }
 
 fn main() {

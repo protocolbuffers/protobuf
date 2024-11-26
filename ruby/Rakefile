@@ -22,16 +22,20 @@ well_known_protos = %w[
 
 test_protos = %w[
   tests/basic_test.proto
+  tests/basic_test_features.proto
   tests/basic_test_proto2.proto
   tests/generated_code.proto
   tests/generated_code_proto2.proto
+  tests/generated_code_editions.proto
   tests/multi_level_nesting_test.proto
   tests/repeated_field_test.proto
+  tests/service_test.proto
   tests/stress.proto
   tests/test_import.proto
   tests/test_import_proto2.proto
   tests/test_ruby_package.proto
   tests/test_ruby_package_proto2.proto
+  tests/utf8.proto
 ]
 
 # These are omitted for now because we don't support proto2.
@@ -77,7 +81,7 @@ task :copy_third_party do
     # We need utf8_range in-tree.
     utf8_root = '../third_party/utf8_range'
     %w[
-      utf8_range.h utf8_range.c LICENSE
+      utf8_range.h utf8_range.c utf8_range_sse.inc utf8_range_neon.inc LICENSE
     ].each do |file|
       FileUtils.cp File.join(utf8_root, file),
                    "ext/google/protobuf_c/third_party/utf8_range"

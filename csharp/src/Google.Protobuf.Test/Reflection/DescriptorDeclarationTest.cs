@@ -137,6 +137,16 @@ namespace Google.Protobuf.Test.Reflection
             Assert.AreEqual(" Zero value comment\n", value.Declaration.LeadingComments);
         }
 
+        [Test]
+        public void OneofComments()
+        {
+            // CommentMessage doesn't have an enum, but we can use TestAllTypes.
+            var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("TestAllTypes");
+            var oneof = message.Oneofs.Single(o => o.Name == "oneof_field");
+            Assert.NotNull(oneof.Declaration);
+            Assert.AreEqual(" For oneof test\n", oneof.Declaration.LeadingComments);
+        }
+
         private static FileDescriptor LoadProtos()
         {
             var type = typeof(DescriptorDeclarationTest);

@@ -170,6 +170,17 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
   return f->ext_layouts[i];
 }
 
+// Note: Import cycles are not allowed so this will terminate.
+bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
+  if (!strcmp(f->name, path)) return true;
+
+  for (int i = 0; i < upb_FileDef_PublicDependencyCount(f); i++) {
+    const upb_FileDef* dep = upb_FileDef_PublicDependency(f, i);
+    if (upb_FileDef_Resolves(dep, path)) return true;
+  }
+  return false;
+}
+
 static char* strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
   char* ret = upb_strdup2(view.data, view.size, _upb_DefBuilder_Arena(ctx));
   if (!ret) _upb_DefBuilder_OomErr(ctx);
@@ -221,20 +232,35 @@ const UPB_DESC(FeatureSet*)
   size_t n;
   const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* const* d =
       UPB_DESC(FeatureSetDefaults_defaults)(defaults, &n);
-  const UPB_DESC(FeatureSet)* ret = NULL;
+  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* result = NULL;
   for (size_t i = 0; i < n; i++) {
     if (UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_edition)(d[i]) >
         edition) {
       break;
     }
-    ret = UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_features)(d[i]);
+    result = d[i];
   }
-  if (ret == NULL) {
+  if (result == NULL) {
     _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
                          upb_FileDef_EditionName(edition));
     return NULL;
   }
-  return ret;
+
+  // Merge the fixed and overridable features to get the edition's default
+  // feature set.
+  const UPB_DESC(FeatureSet)* fixed = UPB_DESC(
+      FeatureSetDefaults_FeatureSetEditionDefault_fixed_features)(result);
+  const UPB_DESC(FeatureSet)* overridable = UPB_DESC(
+      FeatureSetDefaults_FeatureSetEditionDefault_overridable_features)(result);
+  if (!fixed && !overridable) {
+    _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
+                         upb_FileDef_EditionName(edition));
+    return NULL;
+  } else if (!fixed) {
+    return overridable;
+  }
+  return _upb_DefBuilder_DoResolveFeatures(ctx, fixed, overridable,
+                                           /*is_implicit=*/true);
 }
 
 // Allocate and initialize one file def, and add it to the context object.

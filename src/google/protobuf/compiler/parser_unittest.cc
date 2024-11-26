@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/parser.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -225,7 +226,7 @@ TEST_F(ParserTest, StopAfterSyntaxIdentifierWithErrors) {
   EXPECT_EQ("1:9: Expected syntax identifier.\n", error_collector_.text_);
 }
 
-TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
+TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
   SetupParser("message A {}");
   FileDescriptorProto file;
   CaptureTestStderr();
@@ -460,6 +461,7 @@ TEST_F(ParseMessageTest, FieldDefaults) {
       "  required double foo = 1 [default= inf ];\n"
       "  required double foo = 1 [default=-inf ];\n"
       "  required double foo = 1 [default= nan ];\n"
+      "  required double foo = 1 [default= -nan ];\n"
       "  required string foo = 1 [default='13\\001'];\n"
       "  required string foo = 1 [default='a' \"b\" \n \"c\"];\n"
       "  required bytes  foo = 1 [default='14\\002'];\n"
@@ -508,6 +510,8 @@ TEST_F(ParseMessageTest, FieldDefaults) {
       "  field { type:TYPE_DOUBLE  default_value:\"-inf\"      " ETC
       " }"
       "  field { type:TYPE_DOUBLE  default_value:\"nan\"       " ETC
+      " }"
+      "  field { type:TYPE_DOUBLE  default_value:\"-nan\"      " ETC
       " }"
       "  field { type:TYPE_STRING  default_value:\"13\\001\"   " ETC
       " }"
@@ -652,6 +656,65 @@ TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
       "      uninterpreted_option{"
       "        name{ name_part: \"f\" is_extension: true }"
       "        double_value: -1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "}");
+}
+
+TEST_F(ParseMessageTest, FieldOptionsSupportInfAndNan) {
+  ExpectParsesTo(
+      "import \"google/protobuf/descriptor.proto\";\n"
+      "extend google.protobuf.FieldOptions {\n"
+      "  optional double f = 10101;\n"
+      "}\n"
+      "message TestMessage {\n"
+      "  optional double a = 1 [(f) = inf];\n"
+      "  optional double b = 2 [(f) = -inf];\n"
+      "  optional double c = 3 [(f) = nan];\n"
+      "  optional double d = 4 [(f) = -nan];\n"
+      "}\n",
+
+      "dependency: \"google/protobuf/descriptor.proto\""
+      "extension {"
+      "  name: \"f\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 10101"
+      "  extendee: \"google.protobuf.FieldOptions\""
+      "}"
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {"
+      "    name: \"a\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 1"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"inf\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"b\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 2"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: -infinity"
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"c\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 3"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"nan\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"d\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 4"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: nan"
       "      }"
       "    }"
       "  }"
@@ -1394,6 +1457,48 @@ TEST_F(ParseMiscTest, ParseFileOptions) {
       "                              is_extension: false }"
       "                       identifier_value: \"CODE_SIZE\" } "
       "}");
+}
+
+TEST_F(ParseMiscTest, InterpretedOptions) {
+  // Since we're importing the generated code from parsing/compiling
+  // unittest_custom_options.proto, we can just look at the option
+  // values from that file's descriptor in the generated code.
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromInf ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_GT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_GT(double_val, 0);
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNegativeInf ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_LT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_LT(double_val, 0);
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNan ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNegativeNan ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
 }
 
 // ===================================================================
@@ -2522,7 +2627,7 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedError) {
       " to start from the outermost scope.\n");
 }
 
-TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
+TEST_F(ParserValidationErrorTest, ResolvedUndefinedOptionError) {
   // Build descriptor message in test pool
   FileDescriptorProto descriptor_proto;
   DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
@@ -2590,7 +2695,7 @@ class CompareDescriptorNames {
   }
 };
 
-// Sorts nested DescriptorProtos of a DescriptoProto, by name.
+// Sorts nested DescriptorProtos of a DescriptorProto, by name.
 void SortMessages(DescriptorProto* descriptor_proto) {
   int size = descriptor_proto->nested_type_size();
   // recursively sort; we can't guarantee the order of nested messages either
@@ -2659,7 +2764,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   original_file->CopyTo(&expected);
   StripEmptyOptions(expected);
 
-  // Get the DebugString of the unittest.proto FileDecriptor, which includes
+  // Get the DebugString of the unittest.proto FileDescriptor, which includes
   // all other descriptor types
   std::string debug_string = original_file->DebugString();
 
@@ -2671,7 +2776,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   ASSERT_EQ("", error_collector_.text_) << "Failed to parse:\n" << debug_string;
 
   // We now have a FileDescriptorProto, but to compare with the expected we
-  // need to link to a FileDecriptor, then output back to a proto. We'll
+  // need to link to a FileDescriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
   parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
@@ -2719,7 +2824,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   ASSERT_EQ("", error_collector_.text_);
 
   // We now have a FileDescriptorProto, but to compare with the expected we
-  // need to link to a FileDecriptor, then output back to a proto. We'll
+  // need to link to a FileDescriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
   parsed.set_name(original_file->name());
 

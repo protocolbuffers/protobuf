@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -30,18 +31,9 @@
 
 namespace google {
 namespace protobuf {
-class Arena;
-namespace internal {
-template <typename Derived, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-class MapField;
-}
-}  // namespace protobuf
-}  // namespace google
 
-namespace google {
-namespace protobuf {
+class Arena;
+
 namespace internal {
 
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
@@ -70,8 +62,7 @@ namespace internal {
 // The in-memory types of primitive types can be inferred from its proto type,
 // while we need to explicitly specify the cpp type if proto type is
 // TYPE_MESSAGE to infer the in-memory type.
-template <typename Derived, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
 class MapEntry : public Message {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
@@ -85,40 +76,58 @@ class MapEntry : public Message {
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
  public:
-  constexpr MapEntry()
-      : key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()) {}
-
-  explicit MapEntry(Arena* arena)
-      : Message(arena),
-        key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()) {}
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr MapEntry() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  using Message::Message;
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
 
-  ~MapEntry() override {
+  ~MapEntry() PROTOBUF_OVERRIDE {
+    // Make sure that `Value` is never a derived message type.
+    // We don't want to instantiate the template with every unique derived type.
+    // The assertion is in the destructor because we need `Value` to be
+    // complete to test it.
+    static_assert(!std::is_base_of<Message, Value>::value ||
+                      std::is_same<Message, Value>::value,
+                  "");
+
     if (GetArena() != nullptr) return;
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(key_);
-    ValueTypeHandler::DeleteNoArena(value_);
+    SharedDtor(*this);
   }
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  Message* New(Arena* arena) const final {
-    return Arena::Create<Derived>(arena);
-  }
+  struct _Internal;
 
  protected:
   friend class google::protobuf::Arena;
 
-  HasBits<1> _has_bits_{};
-  mutable CachedSize _cached_size_{};
+  static void SharedDtor(MessageLite& msg) {
+    auto& this_ = static_cast<MapEntry&>(msg);
+    this_._internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
+    ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
+  }
 
-  KeyOnMemory key_;
-  ValueOnMemory value_;
+  // Field naming follows the convention of generated messages to make code
+  // sharing easier.
+  struct {
+    HasBits<1> _has_bits_{};
+    CachedSize _cached_size_{};
+
+    KeyOnMemory key_{KeyTypeHandler::Constinit()};
+    ValueOnMemory value_{ValueTypeHandler::Constinit()};
+  } _impl_;
+};
+
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntry<Key, Value, kKeyFieldType, kValueFieldType>::_Internal {
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

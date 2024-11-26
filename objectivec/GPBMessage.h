@@ -8,14 +8,15 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBBootstrap.h"
+#import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
+#import "GPBDescriptor.h"
 #import "GPBExtensionRegistry.h"
+#import "GPBUnknownFields.h"
 
-@class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionDescriptor;
-@class GPBFieldDescriptor;
-@class GPBUnknownFieldSet;
+@class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -54,8 +55,8 @@ CF_EXTERN_C_END
  *       exist in two places, you don't want a sub message to be a property
  *       property of two other messages.
  *
- * @note While the class support NSSecureCoding, if the message has any
- *       extensions, they will end up reloaded in @c unknownFields as there is
+ * @note While the class supports NSSecureCoding, if the message has any
+ *       extensions, they will end up reloaded in the unknown fields as there is
  *       no way for the @c NSCoding plumbing to pass through a
  *       @c GPBExtensionRegistry. To support extensions, instead of passing the
  *       calls off to the Message, simple store the result of @c data, and then
@@ -68,11 +69,6 @@ CF_EXTERN_C_END
 // If you add an instance method/property to this class that may conflict with
 // fields declared in protos, you need to update objective_helpers.cc. The main
 // cases are methods that take no arguments, or setFoo:/hasFoo: type methods.
-
-/**
- * The set of unknown fields for this message.
- **/
-@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
 /**
  * Whether the message, along with all submessages, have the required fields
@@ -244,21 +240,6 @@ CF_EXTERN_C_END
                                 extensionRegistry:
                                     (nullable id<GPBExtensionRegistry>)extensionRegistry
                                             error:(NSError **)errorPtr;
-
-/**
- * Parses the given data as this message's class, and merges those values into
- * this message.
- *
- * @param data              The binary representation of the message to merge.
- * @param extensionRegistry The extension registry to use to look up extensions.
- *
- * @exception GPBCodedInputStreamException Exception thrown when parsing was
- *                                         unsuccessful.
- **/
-- (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
-    __attribute__((deprecated(
-        "Use -mergeFromData:extensionRegistry:error: instead, especaily if calling from Swift.")));
 
 /**
  * Parses the given data as this message's class, and merges those values into
@@ -492,6 +473,40 @@ CF_EXTERN_C_END
  * Resets all of the fields of this message to their default values.
  **/
 - (void)clear;
+
+/**
+ * Clears any unknown fields on this message.
+ *
+ * Note: To clear this message's unknown field and all the unknown fields of the
+ * messages within the fields of this message, use
+ * `GPBMessageDropUnknownFieldsRecursively()`.
+ **/
+- (void)clearUnknownFields;
+
+/**
+ * Merges in the data from an `GPBUnknownFields`, meaning the data from the unknown fields gets
+ * re-parsed so any known fields will be properly set.
+ *
+ * If the intent is to *replace* the message's unknown fields, call `-clearUnknownFields` first.
+ *
+ * Since the data from the GPBUnknownFields will always be well formed, this call will almost never
+ * fail. What could cause it to fail is if the GPBUnknownFields contains a field value that is
+ * an error for the message's schema - i.e.: if it contains a length delimited field where the
+ * field number for the message is defined to be a _string_ field, however the length delimited
+ * data provide is not a valid UTF8 string, or if the field is a _packed_ number field, but the
+ * data provided is not a valid for that field.
+ *
+ * @param unknownFields     The unknown fields to merge the data from.
+ * @param extensionRegistry The extension registry to use to look up extensions, can be `nil`.
+ * @param errorPtr          An optional error pointer to fill in with a failure
+ *                          reason if the data can not be parsed. Will only be
+ *                          filled in if the data failed to be parsed.
+ *
+ * @return Boolean indicating success. errorPtr will only be fill in on failure.
+ **/
+- (BOOL)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                     error:(NSError **)errorPtr;
 
 @end
 

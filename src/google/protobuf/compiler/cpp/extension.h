@@ -15,6 +15,8 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/port.h"
 
@@ -56,7 +58,20 @@ class PROTOC_EXPORT ExtensionGenerator {
   // Source file stuff.
   void GenerateDefinition(io::Printer* p);
 
-  void GenerateRegistration(io::Printer* p);
+  // Extension registration can happen at different priority levels depending on
+  // the features used.
+  //
+  // For Weak Descriptor messages, we must use a two phase approach where we
+  // first register all the extensions that are fully linked in, and then we
+  // register the rest. To do that, we register the linked in extensions on
+  // priority 101 and the rest as priority 102.
+  // For extensions that are missing prototypes we need to create the prototypes
+  // before we can register them, but for that we need to successfully parse
+  // its descriptors, which might require other extensions to be registered
+  // first. All extensions required for descriptor parsing will be fully linked
+  // in and registered in the first phase.
+  void GenerateRegistration(io::Printer* p, InitPriority priority);
+  bool WillGenerateRegistration(InitPriority priority);
 
   bool IsScoped() const;
 

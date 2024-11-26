@@ -21,6 +21,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -81,7 +82,8 @@ class PROTOC_EXPORT FileGenerator {
 
   // Generates a static initializers with all the existing values from
   // `static_initializers_`.
-  // They run in `PROTOBUF_ATTRIBUTE_INIT_PRIORITY2` priority.
+  // They run in `PROTOBUF_ATTRIBUTE_INIT_PRIORITY1` and
+  // `PROTOBUF_ATTRIBUTE_INIT_PRIORITY2` priority respectively.
   void GenerateStaticInitializer(io::Printer* p);
 
   // Shared code between the two header generators.
@@ -176,7 +178,7 @@ class PROTOC_EXPORT FileGenerator {
 
   absl::flat_hash_set<const FileDescriptor*> weak_deps_;
 
-  std::vector<absl::AnyInvocable<void(io::Printer*)>> static_initializers_;
+  std::vector<absl::AnyInvocable<void(io::Printer*)>> static_initializers_[2];
 
   const FileDescriptor* file_;
   Options options_;

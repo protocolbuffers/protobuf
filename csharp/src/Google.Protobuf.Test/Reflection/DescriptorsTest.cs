@@ -205,6 +205,14 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void MessageDescriptor_IsMapEntry()
+        {
+            var testMapMessage = TestMap.Descriptor;
+            Assert.False(testMapMessage.IsMapEntry);
+            Assert.True(testMapMessage.Fields[1].MessageType.IsMapEntry);
+        }
+
+        [Test]
         public void FieldDescriptor_GeneratedCode()
         {
             TestFieldDescriptor(UnittestProto3Reflection.Descriptor, TestAllTypes.Descriptor, ForeignMessage.Descriptor, ImportMessage.Descriptor);

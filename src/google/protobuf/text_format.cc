@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -11,7 +11,6 @@
 
 #include "google/protobuf/text_format.h"
 
-#include <float.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -19,17 +18,22 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
@@ -40,7 +44,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -94,97 +97,37 @@ namespace internal {
 const char kDebugStringSilentMarker[] = "";
 const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
-// Controls insertion of kDebugStringSilentMarker into DebugString() output.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
-
 // Controls insertion of a marker making debug strings non-parseable, and
-// redacting annotated fields.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction{true};
+// redacting annotated fields in Protobuf's DebugString APIs.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
 }
-}  // namespace internal
-
-std::string Message::DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kDebugString);
-
-  printer.PrintToString(*this, &debug_string);
-
-  return debug_string;
-}
-
-std::string Message::ShortDebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetSingleLineMode(true);
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kShortDebugString);
-
-  printer.PrintToString(*this, &debug_string);
-  TrimTrailingSpace(debug_string);
-
-  return debug_string;
-}
-
-std::string Message::Utf8DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetUseUtf8StringEscaping(true);
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kUtf8DebugString);
-
-  printer.PrintToString(*this, &debug_string);
-
-  return debug_string;
-}
-
-void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
-
-namespace internal {
 
 enum class Option { kNone, kShort, kUTF8 };
 
-std::string StringifyMessage(const Message& message, Option option) {
+std::string StringifyMessage(const Message& message, Option option,
+                             FieldReporterLevel reporter_level,
+                             bool enable_safe_format) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
   TextFormat::Printer printer;
-  internal::FieldReporterLevel reporter = FieldReporterLevel::kAbslStringify;
+  internal::FieldReporterLevel reporter = reporter_level;
   switch (option) {
     case Option::kShort:
       printer.SetSingleLineMode(true);
-      reporter = FieldReporterLevel::kShortFormat;
       break;
     case Option::kUTF8:
       printer.SetUseUtf8StringEscaping(true);
-      reporter = FieldReporterLevel::kUtf8Format;
       break;
     case Option::kNone:
       break;
   }
   printer.SetExpandAny(true);
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction.load(std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(true);
+  printer.SetRedactDebugString(enable_safe_format);
+  printer.SetRandomizeDebugString(enable_safe_format);
   printer.SetReportSensitiveFields(reporter);
   std::string result;
   printer.PrintToString(message, &result);
@@ -197,17 +140,87 @@ std::string StringifyMessage(const Message& message, Option option) {
 }
 
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
-  return StringifyMessage(message, Option::kNone);
+  return StringifyMessage(message, Option::kNone,
+                          FieldReporterLevel::kAbslStringify, true);
 }
-
 }  // namespace internal
 
+std::string Message::DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kNone,
+                            FieldReporterLevel::kDebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kDebugString);
+
+  printer.PrintToString(*this, &debug_string);
+
+  return debug_string;
+}
+
+std::string Message::ShortDebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kShort,
+                            FieldReporterLevel::kShortDebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetSingleLineMode(true);
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kShortDebugString);
+
+  printer.PrintToString(*this, &debug_string);
+  TrimTrailingSpace(debug_string);
+
+  return debug_string;
+}
+
+std::string Message::Utf8DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kUTF8,
+                            FieldReporterLevel::kUtf8DebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetUseUtf8StringEscaping(true);
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kUtf8DebugString);
+
+  printer.PrintToString(*this, &debug_string);
+
+  return debug_string;
+}
+
+void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
+
 PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kShort);
+  return internal::StringifyMessage(message, internal::Option::kShort,
+                                    FieldReporterLevel::kShortFormat, true);
 }
 
 PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kUTF8);
+  return internal::StringifyMessage(message, internal::Option::kUTF8,
+                                    FieldReporterLevel::kUtf8Format, true);
 }
 
 
@@ -488,7 +501,6 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -584,23 +596,19 @@ class TextFormat::Parser::ParserImpl {
         }
       } else {
         field = descriptor->FindFieldByName(field_name);
-        // Group names are expected to be capitalized as they appear in the
-        // .proto file, which actually matches their type names, not their
-        // field names.
+        // Group-like delimited fields will accept both the capitalized type
+        // names as well.
         if (field == nullptr) {
           std::string lower_field_name = field_name;
           absl::AsciiStrToLower(&lower_field_name);
           field = descriptor->FindFieldByName(lower_field_name);
           // If the case-insensitive match worked but the field is NOT a group,
-          if (field != nullptr &&
-              field->type() != FieldDescriptor::TYPE_GROUP) {
+          if (field != nullptr && !internal::cpp::IsGroupLike(*field)) {
             field = nullptr;
           }
-        }
-        // Again, special-case group names as described above.
-        if (field != nullptr && field->type() == FieldDescriptor::TYPE_GROUP &&
-            field->message_type()->name() != field_name) {
-          field = nullptr;
+          if (field != nullptr && field->message_type()->name() != field_name) {
+            field = nullptr;
+          }
         }
 
         if (field == nullptr && allow_case_insensitive_field_) {
@@ -613,7 +621,6 @@ class TextFormat::Parser::ParserImpl {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
-
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
           ReportError(absl::StrCat("Message type \"", descriptor->full_name(),
@@ -903,7 +910,7 @@ class TextFormat::Parser::ParserImpl {
       case FieldDescriptor::CPPTYPE_STRING: {
         std::string value;
         DO(ConsumeString(&value));
-        SET_FIELD(String, string, value);
+        SET_FIELD(String, string, std::move(value));
         break;
       }
 
@@ -911,7 +918,7 @@ class TextFormat::Parser::ParserImpl {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64_t value;
           DO(ConsumeUnsignedInteger(&value, 1));
-          SET_FIELD(Bool, bool, value);
+          SET_FIELD(Bool, bool, static_cast<bool>(value));
         } else {
           std::string value;
           DO(ConsumeIdentifier(&value));
@@ -1087,7 +1094,7 @@ class TextFormat::Parser::ParserImpl {
       return true;
     }
 
-    // If allow_field_numer_ or allow_unknown_field_ is true, we should able
+    // If allow_field_number_ or allow_unknown_field_ is true, we should able
     // to parse integer identifiers.
     if ((allow_field_number_ || allow_unknown_field_ ||
          allow_unknown_extension_) &&
@@ -1362,8 +1369,8 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  // Attempts to consume the supplied value. Returns false if a the
-  // token found does not match the value specified.
+  // Attempts to consume the supplied value. Returns false if the token found
+  // does not match the value specified.
   bool TryConsume(const std::string& value) {
     if (tokenizer_.current().text == value) {
       tokenizer_.Next();
@@ -2062,7 +2069,7 @@ void TextFormat::FastFieldValuePrinter::PrintFieldName(
     generator->PrintLiteral("[");
     generator->PrintString(field->PrintableNameForExtension());
     generator->PrintLiteral("]");
-  } else if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  } else if (internal::cpp::IsGroupLike(*field)) {
     // Groups must be serialized with their original capitalization.
     generator->PrintString(field->message_type()->name());
   } else {
@@ -2294,7 +2301,7 @@ bool TextFormat::Printer::Print(const Message& message,
   return !generator.failed();
 }
 
-// Maximum recursion depth for heuristically printing out length-delimited
+// Maximum recursion depth for heuristically printing out length-prefixed
 // unknown fields as messages.
 static constexpr int kUnknownFieldRecursionLimit = 10;
 
@@ -2559,7 +2566,8 @@ void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
       ABSL_LOG(ERROR) << "Not supported.";
       break;
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc, key.GetStringValue());
+      reflection->SetString(message, field_desc,
+                            std::string(key.GetStringValue()));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, key.GetInt64Value());
@@ -2600,7 +2608,8 @@ void MapFieldPrinterHelper::CopyValue(const MapValueRef& value,
       return;
     }
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc, value.GetStringValue());
+      reflection->SetString(message, field_desc,
+                            std::string(value.GetStringValue()));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, value.GetInt64Value());
@@ -2796,7 +2805,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const EnumValueDescriptor* enum_desc =
           field->enum_type()->FindValueByNumber(enum_value);
       if (enum_desc != nullptr) {
-        printer->PrintEnum(enum_value, enum_desc->name(), generator);
+        printer->PrintEnum(enum_value, internal::NameOfEnumAsString(enum_desc),
+                           generator);
       } else {
         // Ordinarily, enum_desc should not be null, because proto2 has the
         // invariant that set enum field values must be in-range, but with the
@@ -2916,7 +2926,7 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_LENGTH_DELIMITED: {
         OutOfLinePrintString(generator, field.number());
-        const std::string& value = field.length_delimited();
+        const absl::string_view value = field.length_delimited();
         // We create a CodedInputStream so that we can adhere to our recursion
         // budget when we attempt to parse the data. UnknownFieldSet parsing is
         // recursive because of groups.

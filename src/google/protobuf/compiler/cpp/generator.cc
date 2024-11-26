@@ -355,9 +355,6 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
-  auto edition = GetEdition(*file);
-  absl::string_view filename = file->name();
-
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
@@ -387,11 +384,7 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
     }
 
     if (unresolved_features.has_string_type()) {
-      if (!CanSkipEditionCheck(filename) && edition < Edition::EDITION_2024) {
-        status = absl::FailedPreconditionError(absl::StrCat(
-            "Field ", field.full_name(),
-            " specifies string_type which is not currently allowed."));
-      } else if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
             " specifies string_type, but is not a string nor bytes field."));
@@ -402,14 +395,23 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
                          " specifies string_type=CORD which is not supported "
                          "for extensions."));
       } else if (field.options().has_ctype()) {
-        status = absl::FailedPreconditionError(absl::StrCat(
-            field.full_name(),
-            " specifies both string_type and ctype which is not supported."));
+        // NOTE: this is just a sanity check. This case should never happen
+        // because descriptor builder makes string_type override ctype.
+        const FieldOptions::CType ctype = field.options().ctype();
+        const pb::CppFeatures::StringType string_type =
+            unresolved_features.string_type();
+        if ((ctype == FieldOptions::STRING &&
+             string_type != pb::CppFeatures::STRING) ||
+            (ctype == FieldOptions::CORD &&
+             string_type != pb::CppFeatures::CORD)) {
+          status = absl::FailedPreconditionError(
+              absl::StrCat(field.full_name(),
+                           " specifies inconsistent string_type and ctype."));
+        }
       }
     }
 
-    // 'ctype' check has moved to DescriptorBuilder for Edition 2023 and above.
-    if (edition < Edition::EDITION_2023 && field.options().has_ctype()) {
+    if (field.options().has_ctype()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
@@ -419,9 +421,17 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
         if (field.is_extension()) {
           status = absl::FailedPreconditionError(absl::StrCat(
               "Extension ", field.full_name(),
-              " specifies ctype=CORD which is not supported for extensions."));
+              " specifies Cord type which is not supported for extensions."));
         }
       }
+    }
+
+    if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+        field.cpp_string_type() == FieldDescriptor::CppStringType::kCord &&
+        field.is_extension()) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Extension ", field.full_name(),
+          " specifies Cord type which is not supported for extensions."));
     }
   });
   return status;

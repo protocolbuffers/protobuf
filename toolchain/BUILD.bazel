@@ -1,5 +1,5 @@
-load(":cc_toolchain_config.bzl", "cc_toolchain_config")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load(":cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -108,7 +108,7 @@ cc_toolchain_config(
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/xcode_14_0/macosx",
     target_cpu = "aarch64",
-    target_full_name = "aarch64-apple-macosx10.15",
+    target_full_name = "aarch64-apple-macosx11.0",
 )
 
 cc_toolchain_config(
@@ -125,19 +125,18 @@ cc_toolchain_config(
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/xcode_14_0/macosx",
     target_cpu = "x86_64",
-    target_full_name = "x86_64-apple-macosx10.15",
+    target_full_name = "x86_64-apple-macosx11.0",
 )
 
 cc_toolchain_config(
     name = "win32-config",
     extra_compiler_flags = [
-        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
-        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
-        "-fsjlj-exceptions",
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++",
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++/i686-w64-mingw32",
     ],
     extra_include = "/usr/lib/gcc/i686-w64-mingw32",
     extra_linker_flags = [
-        "-L/usr/lib/gcc/i686-w64-mingw32/8.3-posix",
+        "-L/usr/lib/gcc/i686-w64-mingw32/10-posix",
         "-ldbghelp",
         "-pthread",
     ],
@@ -150,12 +149,12 @@ cc_toolchain_config(
 cc_toolchain_config(
     name = "win64-config",
     extra_compiler_flags = [
-        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
-        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include/c++/",
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include/c++/x86_64-w64-mingw32",
     ],
-    extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include",
+    extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include",
     extra_linker_flags = [
-        "-L/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix",
+        "-L/usr/lib/gcc/x86_64-w64-mingw32/10-posix",
         "-ldbghelp",
     ],
     linker_path = "/usr/bin/ld",

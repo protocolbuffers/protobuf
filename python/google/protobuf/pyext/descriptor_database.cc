@@ -17,6 +17,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
@@ -55,7 +56,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       message->message->GetDescriptor() == filedescriptor_descriptor) {
     // Fast path: Just use the pointer.
     FileDescriptorProto* file_proto =
-        google::protobuf::DownCastToGenerated<FileDescriptorProto>(message->message);
+        google::protobuf::DownCastMessage<FileDescriptorProto>(message->message);
     *output = *file_proto;
     return true;
   } else {

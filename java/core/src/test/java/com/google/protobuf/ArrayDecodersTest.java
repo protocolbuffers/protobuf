@@ -7,7 +7,7 @@
 
 package com.google.protobuf;
 
-import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.ArrayDecoders.Registers;
 import java.io.IOException;
@@ -33,134 +33,220 @@ public class ArrayDecodersTest {
 
   @Test
   public void testException_decodeString() {
-    try {
-      ArrayDecoders.decodeString(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      assertWithMessage("should throw exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeString(NEGATIVE_SIZE_0.toByteArray(), 0, registers));
   }
 
   @Test
   public void testException_decodeStringRequireUtf8() {
-    try {
-      ArrayDecoders.decodeStringRequireUtf8(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeStringRequireUtf8(NEGATIVE_SIZE_0.toByteArray(), 0, registers));
   }
 
   @Test
   public void testException_decodeBytes() {
-    try {
-      ArrayDecoders.decodeBytes(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeBytes(NEGATIVE_SIZE_0.toByteArray(), 0, registers));
   }
 
   @Test
   public void testException_decodeStringList_first() {
-    try {
-      ArrayDecoders.decodeStringList(
-          TAG,
-          NEGATIVE_SIZE_0.toByteArray(),
-          0,
-          NEGATIVE_SIZE_0.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringList(
+                TAG,
+                NEGATIVE_SIZE_0.toByteArray(),
+                0,
+                NEGATIVE_SIZE_0.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeStringList_second() {
-    try {
-      ArrayDecoders.decodeStringList(
-          TAG,
-          NEGATIVE_SIZE_1.toByteArray(),
-          0,
-          NEGATIVE_SIZE_1.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringList(
+                TAG,
+                NEGATIVE_SIZE_1.toByteArray(),
+                0,
+                NEGATIVE_SIZE_1.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeStringListRequireUtf8_first() {
-    try {
-      ArrayDecoders.decodeStringListRequireUtf8(
-          TAG,
-          NEGATIVE_SIZE_0.toByteArray(),
-          0,
-          NEGATIVE_SIZE_0.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringListRequireUtf8(
+                TAG,
+                NEGATIVE_SIZE_0.toByteArray(),
+                0,
+                NEGATIVE_SIZE_0.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeStringListRequireUtf8_second() {
-    try {
-      ArrayDecoders.decodeStringListRequireUtf8(
-          TAG,
-          NEGATIVE_SIZE_1.toByteArray(),
-          0,
-          NEGATIVE_SIZE_1.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringListRequireUtf8(
+                TAG,
+                NEGATIVE_SIZE_1.toByteArray(),
+                0,
+                NEGATIVE_SIZE_1.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeBytesList_first() {
-    try {
-      ArrayDecoders.decodeBytesList(
-          TAG,
-          NEGATIVE_SIZE_0.toByteArray(),
-          0,
-          NEGATIVE_SIZE_0.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeBytesList(
+                TAG,
+                NEGATIVE_SIZE_0.toByteArray(),
+                0,
+                NEGATIVE_SIZE_0.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeBytesList_second() {
-    try {
-      ArrayDecoders.decodeBytesList(
-          TAG,
-          NEGATIVE_SIZE_1.toByteArray(),
-          0,
-          NEGATIVE_SIZE_1.size(),
-          new ProtobufArrayList<Object>(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeBytesList(
+                TAG,
+                NEGATIVE_SIZE_1.toByteArray(),
+                0,
+                NEGATIVE_SIZE_1.size(),
+                new ProtobufArrayList<Object>(),
+                registers));
   }
 
   @Test
   public void testException_decodeUnknownField() {
-    try {
-      ArrayDecoders.decodeUnknownField(
-          TAG,
-          NEGATIVE_SIZE_0.toByteArray(),
-          0,
-          NEGATIVE_SIZE_0.size(),
-          UnknownFieldSetLite.newInstance(),
-          registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeUnknownField(
+                TAG,
+                NEGATIVE_SIZE_0.toByteArray(),
+                0,
+                NEGATIVE_SIZE_0.size(),
+                UnknownFieldSetLite.newInstance(),
+                registers));
+  }
+
+  @Test
+  public void testDecodePackedFixed32List_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed32List(
+                packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFixed32List_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed32List(
+                packedSizeBytesNoTag(2_000_000_000), 0, new IntArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFixed64List_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed64List(
+                packedSizeBytesNoTag(2_000_000_000), 0, new LongArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFloatList_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFloatList(
+                packedSizeBytesNoTag(2_000_000_000), 0, new FloatArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedDoubleList_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedDoubleList(
+                packedSizeBytesNoTag(2_000_000_000), 0, new DoubleArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFixed64List_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed64List(
+                packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFloatList_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFloatList(
+                packedSizeBytesNoTag(-1), 0, new FloatArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedDoubleList_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedDoubleList(
+                packedSizeBytesNoTag(-1), 0, new DoubleArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedBoolList_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedBoolList(
+                packedSizeBytesNoTag(-1), 0, new BooleanArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedSInt32List_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedSInt32List(
+                packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedSInt64List_negativeSize() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedSInt64List(
+                packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers));
   }
 
   @Test
@@ -169,18 +255,15 @@ public class ArrayDecodersTest {
         new byte[] {
           (byte) 0x80, (byte) 0xFF, (byte) 0xFF, (byte) 0xEF, 0x73, 0x74, 0x69, 0x6E, 0x67
         };
-    try {
-      ArrayDecoders.decodeUnknownField(
-          TAG, badBytes, 0, badBytes.length, UnknownFieldSetLite.newInstance(), registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeUnknownField(
+                TAG, badBytes, 0, badBytes.length, UnknownFieldSetLite.newInstance(), registers));
 
-    try {
-      ArrayDecoders.decodeBytes(badBytes, 0, registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeBytes(badBytes, 0, registers));
 
     byte[] badBytesList =
         new byte[] {
@@ -197,11 +280,25 @@ public class ArrayDecodersTest {
           0x6E,
           0x67
         };
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeBytesList(
+                TAG, badBytesList, 0, badBytes.length, new ProtobufArrayList<>(), registers));
+  }
+
+  // Encodes a single varint without a tag prefix.
+  // For use when testing decoding of packed primitive lists.
+  // e.g. size = -1 is not a proper byte size for a list.
+  private static byte[] packedSizeBytesNoTag(int size) {
     try {
-      ArrayDecoders.decodeBytesList(
-          TAG, badBytesList, 0, badBytes.length, new ProtobufArrayList<>(), registers);
-      assertWithMessage("should throw an exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
+      ByteString.Output byteStringOutput = ByteString.newOutput();
+      CodedOutputStream codedOutput = CodedOutputStream.newInstance(byteStringOutput);
+      codedOutput.writeInt32NoTag(size);
+      codedOutput.flush();
+      return byteStringOutput.toByteString().toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

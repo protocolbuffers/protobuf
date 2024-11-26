@@ -24,6 +24,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -85,7 +86,7 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   using CodeGenerator::GetResolvedSourceFeatures;
 
  private:
-  bool opensource_runtime_ = PROTO2_IS_OSS;
+  bool opensource_runtime_ = google::protobuf::internal::IsOss();
   std::string runtime_include_base_;
 
   absl::Status ValidateFeatures(const FileDescriptor* file) const;

@@ -6,27 +6,21 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-
-# begin:google_only
-# load("@rules_cc//cc:defs.bzl", "cc_proto_library")
-# end:google_only
-
 load(
     ":build_defs.bzl",
     "cc_optimizefor_proto_library",
     "expand_suffixes",
-    "proto_library",
     "tmpl_cc_binary",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
@@ -78,7 +72,6 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/json",
         "//upb:base",
-        "//upb:descriptor_upb_proto",
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
@@ -242,7 +235,7 @@ genrule(
     ),
     outs = ["size_data.txt"],
     # We want --format=GNU which counts rodata with data, not text.
-    cmd = "size $$($$OSTYPE == 'linux-gnu' ? '--format=GNU -d' : '') $(SRCS) > $@",
+    cmd = "size $$([ $$OSTYPE == 'linux-gnu' ] && echo '--format=GNU -d' || echo '') $(SRCS) > $@",
     # "size" sometimes isn't available remotely.
     local = 1,
     tags = ["no-remote-exec"],

@@ -203,8 +203,8 @@ PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
 
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
+  std::vector<int32_t> group_stack;
   while (true) {
-    std::vector<int32_t> group_stack;
     uint32_t tag = stream.ReadTag();
     if (tag == 0) {
       return absl::OkStatus();
@@ -216,7 +216,8 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     // EGROUP markers can show up as "unknown fields", so we need to handle them
     // before we even do field lookup. Being inside of a group behaves as if a
     // special field has been added to the message.
-    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {
+    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP &&
+        group_stack.empty()) {
       if (!current_group.has_value()) {
         return MakeEndGroupWithoutGroupError(field_number);
       }
@@ -565,3 +566,5 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

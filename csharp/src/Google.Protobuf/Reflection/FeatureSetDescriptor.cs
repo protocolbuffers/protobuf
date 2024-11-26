@@ -9,6 +9,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using static Google.Protobuf.Reflection.FeatureSet.Types;
 
 namespace Google.Protobuf.Reflection;
@@ -22,52 +24,55 @@ namespace Google.Protobuf.Reflection;
 /// If either of those features are ever implemented in this runtime,
 /// the feature settings will be exposed as properties in this class.
 /// </remarks>
-internal sealed class FeatureSetDescriptor
+internal sealed partial class FeatureSetDescriptor
 {
     private static readonly ConcurrentDictionary<FeatureSet, FeatureSetDescriptor> cache = new();
 
-    // Note: this approach is deliberately chosen to circumvent bootstrapping issues.
-    // This can still be tested using the binary representation.
-    // TODO: Generate this code (as a partial class) from the binary representation.
-    private static readonly FeatureSetDescriptor edition2023Defaults = new FeatureSetDescriptor(
-        new FeatureSet
+    private static readonly IReadOnlyDictionary<Edition, FeatureSetDescriptor> descriptorsByEdition = BuildEditionDefaults();
+
+    // Note: if the debugger is set to break within this code, various type initializers will fail
+    // as the debugger will try to call ToString() on messages, requiring descriptors to be accessed etc.
+    // There's a possible workaround of using a hard-coded bootstrapping FeatureSetDescriptor to be returned
+    // by GetEditionDefaults if descriptorsByEdition is null, but it's ugly and likely just pushes the problem
+    // elsewhere. Normal debugging sessions (where the initial bootstrapping code doesn't hit any breakpoints)
+    // do not cause any problems.
+    private static IReadOnlyDictionary<Edition, FeatureSetDescriptor> BuildEditionDefaults()
+    {
+        var featureSetDefaults = FeatureSetDefaults.Parser.ParseFrom(Convert.FromBase64String(DefaultsBase64));
+        var ret = new Dictionary<Edition, FeatureSetDescriptor>();
+
+        // Note: Enum.GetValues<TEnum> isn't available until .NET 5. It's not worth making this conditional
+        // based on that.
+        var supportedEditions = ((Edition[]) Enum.GetValues(typeof(Edition)))
+            .OrderBy(x => x)
+            .Where(e => e >= featureSetDefaults.MinimumEdition && e <= featureSetDefaults.MaximumEdition);
+
+        // We assume the embedded defaults will always contain "legacy".
+        var currentDescriptor = MaybeCreateDescriptor(Edition.Legacy);
+        foreach (var edition in supportedEditions)
         {
-            EnumType = EnumType.Open,
-            FieldPresence = FieldPresence.Explicit,
-            JsonFormat = JsonFormat.Allow,
-            MessageEncoding = MessageEncoding.LengthPrefixed,
-            RepeatedFieldEncoding = RepeatedFieldEncoding.Packed,
-            Utf8Validation = Utf8Validation.Verify,
-        });
-    private static readonly FeatureSetDescriptor proto2Defaults = new FeatureSetDescriptor(
-        new FeatureSet
+            currentDescriptor = MaybeCreateDescriptor(edition) ?? currentDescriptor;
+            ret[edition] = currentDescriptor;
+        }
+        return ret;
+
+        FeatureSetDescriptor MaybeCreateDescriptor(Edition edition)
         {
-            EnumType = EnumType.Closed,
-            FieldPresence = FieldPresence.Explicit,
-            JsonFormat = JsonFormat.LegacyBestEffort,
-            MessageEncoding = MessageEncoding.LengthPrefixed,
-            RepeatedFieldEncoding = RepeatedFieldEncoding.Expanded,
-            Utf8Validation = Utf8Validation.None,
-        });
-    private static readonly FeatureSetDescriptor proto3Defaults = new FeatureSetDescriptor(
-        new FeatureSet
-        {
-            EnumType = EnumType.Open,
-            FieldPresence = FieldPresence.Implicit,
-            JsonFormat = JsonFormat.Allow,
-            MessageEncoding = MessageEncoding.LengthPrefixed,
-            RepeatedFieldEncoding = RepeatedFieldEncoding.Packed,
-            Utf8Validation = Utf8Validation.Verify,
-        });
+            var editionDefaults = featureSetDefaults.Defaults.SingleOrDefault(d => d.Edition == edition);
+            if (editionDefaults is null)
+            {
+                return null;
+            }
+            var proto = new FeatureSet();
+            proto.MergeFrom(editionDefaults.FixedFeatures);
+            proto.MergeFrom(editionDefaults.OverridableFeatures);
+            return new FeatureSetDescriptor(proto);
+        }
+    }
 
     internal static FeatureSetDescriptor GetEditionDefaults(Edition edition) =>
-        edition switch
-        {
-            Edition.Proto2 => proto2Defaults,
-            Edition.Proto3 => proto3Defaults,
-            Edition._2023 => edition2023Defaults,
-            _ => throw new ArgumentOutOfRangeException($"Unsupported edition: {edition}")
-        };
+        descriptorsByEdition.TryGetValue(edition, out var defaults) ? defaults
+        : throw new ArgumentOutOfRangeException($"Unsupported edition: {edition}");
 
     // Visible for testing. The underlying feature set proto, usually derived during
     // feature resolution.

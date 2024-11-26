@@ -8,13 +8,18 @@
 #ifndef GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 #define GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 
+#include <algorithm>
+#include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <utility>
 
 #include "absl/base/config.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -24,13 +29,14 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
-#include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -104,7 +110,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     ABSL_DCHECK(ptr <= buffer_end_ + kSlopBytes);
     int count;
     if (next_chunk_ == patch_buffer_) {
-      count = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
+      count = BytesAvailable(ptr);
     } else {
       count = size_ + static_cast<int>(buffer_end_ - ptr);
     }
@@ -113,14 +119,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   // In sanitizer mode we use memory poisoning to guarantee that:
   //  - We do not read an uninitialized token.
-  //  - We would like to verify that this token was consumed, but unforuntately
+  //  - We would like to verify that this token was consumed, but unfortunately
   //    __asan_address_is_poisoned is allowed to have false negatives.
   class LimitToken {
    public:
-    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
+    LimitToken() { internal::PoisonMemoryRegion(&token_, sizeof(token_)); }
 
     explicit LimitToken(int token) : token_(token) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      internal::UnpoisonMemoryRegion(&token_, sizeof(token_));
     }
 
     LimitToken(const LimitToken&) = delete;
@@ -129,17 +135,17 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     LimitToken(LimitToken&& other) { *this = std::move(other); }
 
     LimitToken& operator=(LimitToken&& other) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      internal::UnpoisonMemoryRegion(&token_, sizeof(token_));
       token_ = other.token_;
-      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
+      internal::PoisonMemoryRegion(&other.token_, sizeof(token_));
       return *this;
     }
 
-    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
+    ~LimitToken() { internal::UnpoisonMemoryRegion(&token_, sizeof(token_)); }
 
     int token() && {
       int t = token_;
-      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
+      internal::PoisonMemoryRegion(&token_, sizeof(token_));
       return t;
     }
 
@@ -148,7 +154,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   };
 
   // If return value is negative it's an error
-  PROTOBUF_NODISCARD LimitToken PushLimit(const char* ptr, int limit) {
+  [[nodiscard]] LimitToken PushLimit(const char* ptr, int limit) {
     ABSL_DCHECK(limit >= 0 && limit <= INT_MAX - kSlopBytes);
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
@@ -159,26 +165,26 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return LimitToken(old_limit - limit);
   }
 
-  PROTOBUF_NODISCARD bool PopLimit(LimitToken delta) {
+  [[nodiscard]] bool PopLimit(LimitToken delta) {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
-    if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
+    if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
     // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
   }
 
-  PROTOBUF_NODISCARD const char* Skip(const char* ptr, int size) {
-    if (size <= buffer_end_ + kSlopBytes - ptr) {
+  [[nodiscard]] const char* Skip(const char* ptr, int size) {
+    if (size <= BytesAvailable(ptr)) {
       return ptr + size;
     }
     return SkipFallback(ptr, size);
   }
-  PROTOBUF_NODISCARD const char* ReadString(const char* ptr, int size,
-                                            std::string* s) {
-    if (size <= buffer_end_ + kSlopBytes - ptr) {
+  [[nodiscard]] const char* ReadString(const char* ptr, int size,
+                                       std::string* s) {
+    if (size <= BytesAvailable(ptr)) {
       // Fundamentally we just want to do assign to the string.
       // However micro-benchmarks regress on string reading cases. So we copy
       // the same logic from the old CodedInputStream ReadString. Note: as of
@@ -190,23 +196,21 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return ReadStringFallback(ptr, size, s);
   }
-  PROTOBUF_NODISCARD const char* AppendString(const char* ptr, int size,
-                                              std::string* s) {
-    if (size <= buffer_end_ + kSlopBytes - ptr) {
+  [[nodiscard]] const char* AppendString(const char* ptr, int size,
+                                         std::string* s) {
+    if (size <= BytesAvailable(ptr)) {
       s->append(ptr, size);
       return ptr + size;
     }
     return AppendStringFallback(ptr, size, s);
   }
   // Implemented in arenastring.cc
-  PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
-                                                 ArenaStringPtr* s,
-                                                 Arena* arena);
+  [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
+                                            Arena* arena);
 
-  PROTOBUF_NODISCARD const char* ReadCord(const char* ptr, int size,
-                                          ::absl::Cord* cord) {
-    if (size <= std::min<int>(static_cast<int>(buffer_end_ + kSlopBytes - ptr),
-                              kMaxCordBytesToCopy)) {
+  [[nodiscard]] const char* ReadCord(const char* ptr, int size,
+                                     ::absl::Cord* cord) {
+    if (size <= std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy)) {
       *cord = absl::string_view(ptr, size);
       return ptr + size;
     }
@@ -215,20 +219,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 
   template <typename Tag, typename T>
-  PROTOBUF_NODISCARD const char* ReadRepeatedFixed(const char* ptr,
-                                                   Tag expected_tag,
-                                                   RepeatedField<T>* out);
+  [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Tag expected_tag,
+                                              RepeatedField<T>* out);
 
   template <typename T>
-  PROTOBUF_NODISCARD const char* ReadPackedFixed(const char* ptr, int size,
-                                                 RepeatedField<T>* out);
+  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, int size,
+                                            RepeatedField<T>* out);
   template <typename Add>
-  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add) {
+  [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
     return ReadPackedVarint(ptr, add, [](int) {});
   }
   template <typename Add, typename SizeCb>
-  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
-                                                  SizeCb size_callback);
+  [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add,
+                                             SizeCb size_callback);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -257,17 +260,17 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
  protected:
-  // Returns true is limit (either an explicit limit or end of stream) is
+  // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
-  // If limit is exceeded it returns true and ptr is set to null.
+  // If limit is exceeded, it returns true and ptr is set to null.
   bool DoneWithCheck(const char** ptr, int d) {
     ABSL_DCHECK(*ptr);
-    if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
+    if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
     int overrun = static_cast<int>(*ptr - buffer_end_);
     ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
-      // If we actually overrun the buffer and next_chunk_ is null. It means
+      // If we actually overrun the buffer and next_chunk_ is null, it means
       // the stream ended and we passed the stream end.
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;
@@ -346,6 +349,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
+  int BytesAvailable(const char* ptr) const {
+    ABSL_DCHECK_NE(ptr, nullptr);
+    ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
+    ABSL_DCHECK_GE(available, 0);
+    ABSL_DCHECK_LE(available, INT_MAX);
+    return static_cast<int>(available);
+  }
+
   // Advances to next buffer chunk returns a pointer to the same logical place
   // in the stream as set by overrun. Overrun indicates the position in the slop
   // region the parse was left (0 <= overrun <= kSlopBytes). Returns true if at
@@ -383,7 +394,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
-    int chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
+    int chunk_size = BytesAvailable(ptr);
     do {
       ABSL_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
@@ -397,7 +408,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr = Next();
       if (ptr == nullptr) return nullptr;  // passed the limit
       ptr += kSlopBytes;
-      chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
+      chunk_size = BytesAvailable(ptr);
     } while (size > chunk_size);
     append(ptr, size);
     return ptr + size;
@@ -412,7 +423,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
-      size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
+      size_t chunk_size = BytesAvailable(ptr);
       append(ptr, chunk_size);
       ptr = Next();
       if (ptr == nullptr) return limit_end_;
@@ -424,8 +435,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return end;
   }
 
-  PROTOBUF_NODISCARD const char* AppendString(const char* ptr,
-                                              std::string* str) {
+  [[nodiscard]] const char* AppendString(const char* ptr, std::string* str) {
     return AppendUntilEnd(
         ptr, [str](const char* p, ptrdiff_t s) { str->append(p, s); });
   }
@@ -497,18 +507,37 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Read the length prefix, push the new limit, call the func(ptr), and then
   // pop the limit. Useful for situations that don't have an actual message.
   template <typename Func>
-  PROTOBUF_NODISCARD const char* ParseLengthDelimitedInlined(const char*,
-                                                             const Func& func);
+  [[nodiscard]] const char* ParseLengthDelimitedInlined(const char*,
+                                                        const Func& func);
 
   // Push the recursion depth, call the func(ptr), and then pop depth. Useful
   // for situations that don't have an actual message.
   template <typename Func>
-  PROTOBUF_NODISCARD const char* ParseGroupInlined(const char* ptr,
-                                                   uint32_t start_tag,
-                                                   const Func& func);
+  [[nodiscard]] const char* ParseGroupInlined(const char* ptr,
+                                              uint32_t start_tag,
+                                              const Func& func);
 
-  PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
-      MessageLite* msg, const char* ptr, uint32_t tag) {
+  // Use a template to avoid the strong dep into TcParser. All callers will have
+  // the dep.
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr) {
+    return ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
+  }
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr,
+      uint32_t start_tag) {
+    return ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
+  }
+
+  [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
+                                                              const char* ptr,
+                                                              uint32_t tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
     auto old_depth = depth_;
@@ -520,7 +549,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     }
     group_depth_--;
     depth_++;
-    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
+    if (ABSL_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
     return ptr;
   }
 
@@ -533,12 +562,12 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   //   if (!ptr) return nullptr;
   //   LimitToken old = PushLimit(ptr, size);
   //   if (--depth_ < 0) return nullptr;
-  PROTOBUF_NODISCARD const char* ReadSizeAndPushLimitAndDepth(
-      const char* ptr, LimitToken* old_limit);
+  [[nodiscard]] const char* ReadSizeAndPushLimitAndDepth(const char* ptr,
+                                                         LimitToken* old_limit);
 
   // As above, but fully inlined for the cases where we care about performance
   // more than size. eg TcParser.
-  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE const char*
   ReadSizeAndPushLimitAndDepthInlined(const char* ptr, LimitToken* old_limit);
 
   // The context keeps an internal stack to keep track of the recursive
@@ -618,7 +647,7 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
-#ifdef __aarch64__
+#if defined(__aarch64__) && !defined(_MSC_VER)
 // Generally, speaking, the ARM-optimized Varint decode algorithm is to extract
 // and concatenate all potentially valid data bits, compute the actual length
 // of the Varint, and mask off the data bits which are not actually part of the
@@ -700,26 +729,24 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 // Falsely indicate that the specific value is modified at this location.  This
 // prevents code which depends on this value from being scheduled earlier.
 template <typename V1Type>
-PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
   asm("" : "+r"(value1));
   return value1;
 }
 
 template <typename V1Type, typename V2Type>
-PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1,
-                                                  V2Type value2) {
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
   asm("" : "+r"(value1) : "r"(value2));
   return value1;
 }
 
 // Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
-static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
-                                                    uint64_t start) {
+static PROTOBUF_ALWAYS_INLINE uint64_t Ubfx7(uint64_t data, uint64_t start) {
   return ValueBarrier((data >> start) & 0x7f);
 }
 
-PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
-    uint64_t data, uint64_t first_byte) {
+PROTOBUF_ALWAYS_INLINE uint64_t ExtractAndMergeTwoChunks(uint64_t data,
+                                                         uint64_t first_byte) {
   ABSL_DCHECK_LE(first_byte, 6U);
   uint64_t first = Ubfx7(data, first_byte * 8);
   uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
@@ -737,8 +764,8 @@ struct SlowPathEncodedInfo {
 // Performs multiple actions which are identical between 32 and 64 bit Varints
 // in order to compute the length of the encoded Varint and compute the new
 // of p.
-PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
-    const char* p) {
+PROTOBUF_ALWAYS_INLINE SlowPathEncodedInfo
+ComputeLengthAndUpdateP(const char* p) {
   SlowPathEncodedInfo result;
   // Load the last two bytes of the encoded Varint.
   std::memcpy(&result.last8, p + 2, sizeof(result.last8));
@@ -762,8 +789,8 @@ PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
   return result;
 }
 
-inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t>
-VarintParseSlowArm64(const char* p, uint64_t first8) {
+PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t> VarintParseSlowArm64(
+    const char* p, uint64_t first8) {
   constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
   constexpr uint64_t kFirstResultBitChunk2 = 2 * 7;
   constexpr uint64_t kFirstResultBitChunk4 = 4 * 7;
@@ -782,12 +809,12 @@ VarintParseSlowArm64(const char* p, uint64_t first8) {
   // This immediate ends in 14 zeroes since valid_chunk_bits is too low by 14.
   uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
   //  iff the Varint i invalid.
-  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+  if (ABSL_PREDICT_FALSE(info.masked_cont_bits == 0)) {
     return {nullptr, 0};
   }
   // Test for early exit if Varint does not exceed 6 chunks.  Branching on one
   // bit is faster on ARM than via a compare and branch.
-  if (PROTOBUF_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
+  if (ABSL_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
     // Extract data bits from high four chunks.
     uint64_t merged_67 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/6);
     // Last two chunks come from last two bytes of info.last8.
@@ -804,8 +831,8 @@ VarintParseSlowArm64(const char* p, uint64_t first8) {
 
 // See comments in VarintParseSlowArm64 for a description of the algorithm.
 // Differences in the 32 bit version are noted below.
-inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t>
-VarintParseSlowArm32(const char* p, uint64_t first8) {
+PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t> VarintParseSlowArm32(
+    const char* p, uint64_t first8) {
   constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
   constexpr uint64_t kFirstResultBitChunk1 = 1 * 7;
   constexpr uint64_t kFirstResultBitChunk3 = 3 * 7;
@@ -825,7 +852,7 @@ VarintParseSlowArm32(const char* p, uint64_t first8) {
   // condition isn't on the critical path. Here we make sure that we don't do so
   // until result has been computed.
   info.masked_cont_bits = ValueBarrier(info.masked_cont_bits, result);
-  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+  if (ABSL_PREDICT_FALSE(info.masked_cont_bits == 0)) {
     return {nullptr, 0};
   }
   return {info.p, result};
@@ -848,16 +875,17 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
-PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
+[[nodiscard]] const char* VarintParse(const char* p, T* out) {
+  AssertBytesAreReadable(p, 10);
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x80) == 0)) {
+  if (ABSL_PREDICT_TRUE((first8 & 0x80) == 0)) {
     *out = static_cast<uint8_t>(first8);
     return p + 1;
   }
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
+  if (ABSL_PREDICT_TRUE((first8 & 0x8000) == 0)) {
     uint64_t chunk1;
     uint64_t chunk2;
     // Extracting the two chunks this way gives a speedup for this path.
@@ -909,13 +937,13 @@ inline const char* ReadTag(const char* p, uint32_t* out,
 //
 // Two support routines for ReadTagInlined come first...
 template <class T>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
-    T x, int s) noexcept {
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(T x,
+                                                            int s) noexcept {
   return static_cast<T>(x << (s & (std::numeric_limits<T>::digits - 1))) |
          static_cast<T>(x >> ((-s) & (std::numeric_limits<T>::digits - 1)));
 }
 
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
@@ -938,21 +966,21 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   return res;
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
-                                                         uint32_t* out) {
+PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
+                                                  uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
-  if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
+  if (ABSL_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);
-    if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+    if (ABSL_PREDICT_FALSE(res & 0x80)) {
       res = RotRight7AndReplaceLowByte(res, ptr[2]);
-      if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+      if (ABSL_PREDICT_FALSE(res & 0x80)) {
         res = RotRight7AndReplaceLowByte(res, ptr[3]);
-        if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+        if (ABSL_PREDICT_FALSE(res & 0x80)) {
           // Note: this wouldn't work if res were 32-bit,
           // because then replacing the low byte would overwrite
           // the bottom 4 bits of the result.
           res = RotRight7AndReplaceLowByte(res, ptr[4]);
-          if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+          if (ABSL_PREDICT_FALSE(res & 0x80)) {
             // The proto format does not permit longer than 5-byte encodings for
             // tags.
             *out = 0;
@@ -1009,7 +1037,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
   auto pnew = p;
   auto tmp = DecodeTwoBytes(&pnew);
   uint64_t res = tmp >> 1;
-  if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
+  if (ABSL_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
     *out = res;
     return pnew;
   }
@@ -1017,7 +1045,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
     pnew = p + 2 * i;
     tmp = DecodeTwoBytes(&pnew);
     res += (static_cast<std::uint64_t>(tmp) - 2) << (14 * i - 1);
-    if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
+    if (ABSL_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
       *out = res;
       return pnew;
     }
@@ -1027,9 +1055,11 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
 
 PROTOBUF_EXPORT
 std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t first);
-// Used for tags, could read up to 5 bytes which must be available. Additionally
-// it makes sure the unsigned value fits a int32_t, otherwise returns nullptr.
-// Caller must ensure its safe to call.
+
+// Used for length prefixes. Could read up to 5 bytes, but no more than
+// necessary for a single varint. The caller must ensure enough bytes are
+// available. Additionally it makes sure the unsigned value fits in an int32_t,
+// otherwise returns nullptr. Caller must ensure it is safe to call.
 inline uint32_t ReadSize(const char** pp) {
   auto p = *pp;
   uint32_t res = static_cast<uint8_t>(p[0]);
@@ -1072,7 +1102,7 @@ inline int32_t ReadVarintZigZag32(const char** p) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
   ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
@@ -1086,7 +1116,7 @@ ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
                                 const Func& func) {
   if (--depth_ < 0) return nullptr;
@@ -1100,14 +1130,14 @@ ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
   }
   group_depth_--;
   depth_++;
-  if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
+  if (ABSL_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
   return ptr;
 }
 
 inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
     const char* ptr, LimitToken* old_limit) {
   int size = ReadSize(&ptr);
-  if (PROTOBUF_PREDICT_FALSE(!ptr) || depth_ <= 0) {
+  if (ABSL_PREDICT_FALSE(!ptr) || depth_ <= 0) {
     return nullptr;
   }
   *old_limit = PushLimit(ptr, size);
@@ -1122,7 +1152,7 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
   do {
     out->Add(UnalignedLoad<T>(ptr));
     ptr += sizeof(T);
-    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
+    if (ABSL_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
   } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
   return ptr;
 }
@@ -1143,7 +1173,7 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
+  int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
@@ -1161,7 +1191,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
+    nbytes = BytesAvailable(ptr);
   }
   int num = size / sizeof(T);
   int block_size = num * sizeof(T);
@@ -1239,12 +1269,12 @@ inline bool VerifyUTF8(const std::string* s, const char* field_name) {
 }
 
 // All the string parsers with or without UTF checking and for all CTypes.
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* InlineGreedyStringParser(
+[[nodiscard]] PROTOBUF_EXPORT const char* InlineGreedyStringParser(
     std::string* s, const char* ptr, ParseContext* ctx);
 
-PROTOBUF_NODISCARD inline const char* InlineCordParser(::absl::Cord* cord,
-                                                       const char* ptr,
-                                                       ParseContext* ctx) {
+[[nodiscard]] inline const char* InlineCordParser(::absl::Cord* cord,
+                                                  const char* ptr,
+                                                  ParseContext* ctx) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
   return ctx->ReadCord(ptr, size, cord);
@@ -1252,8 +1282,8 @@ PROTOBUF_NODISCARD inline const char* InlineCordParser(::absl::Cord* cord,
 
 
 template <typename T>
-PROTOBUF_NODISCARD const char* FieldParser(uint64_t tag, T& field_parser,
-                                           const char* ptr, ParseContext* ctx) {
+[[nodiscard]] const char* FieldParser(uint64_t tag, T& field_parser,
+                                      const char* ptr, ParseContext* ctx) {
   uint32_t number = tag >> 3;
   GOOGLE_PROTOBUF_PARSER_ASSERT(number != 0);
   using WireType = internal::WireFormatLite::WireType;
@@ -1298,9 +1328,8 @@ PROTOBUF_NODISCARD const char* FieldParser(uint64_t tag, T& field_parser,
 }
 
 template <typename T>
-PROTOBUF_NODISCARD const char* WireFormatParser(T& field_parser,
-                                                const char* ptr,
-                                                ParseContext* ctx) {
+[[nodiscard]] const char* WireFormatParser(T& field_parser, const char* ptr,
+                                           ParseContext* ctx) {
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ReadTag(ptr, &tag);
@@ -1319,30 +1348,37 @@ PROTOBUF_NODISCARD const char* WireFormatParser(T& field_parser,
 // corresponding field
 
 // These are packed varints
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedInt32Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedUInt32Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedInt64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedUInt64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedSInt32Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedSInt64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedEnumParser(
-    void* object, const char* ptr, ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt32Parser(void* object,
+                                                            const char* ptr,
+                                                            ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt32Parser(void* object,
+                                                             const char* ptr,
+                                                             ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt64Parser(void* object,
+                                                            const char* ptr,
+                                                            ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt64Parser(void* object,
+                                                             const char* ptr,
+                                                             ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt32Parser(void* object,
+                                                             const char* ptr,
+                                                             ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt64Parser(void* object,
+                                                             const char* ptr,
+                                                             ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedEnumParser(void* object,
+                                                           const char* ptr,
+                                                           ParseContext* ctx);
 
-template <typename T>
-PROTOBUF_NODISCARD const char* PackedEnumParser(void* object, const char* ptr,
-                                                ParseContext* ctx,
-                                                bool (*is_valid)(int),
-                                                InternalMetadata* metadata,
-                                                int field_num) {
+template <typename T, typename Validator>
+[[nodiscard]] const char* PackedEnumParserArg(void* object, const char* ptr,
+                                              ParseContext* ctx,
+                                              Validator validator,
+                                              InternalMetadata* metadata,
+                                              int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, metadata, field_num](int32_t val) {
-        if (is_valid(val)) {
+      ptr, [object, validator, metadata, field_num](int32_t val) {
+        if (validator.IsValid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
           WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
@@ -1350,43 +1386,31 @@ PROTOBUF_NODISCARD const char* PackedEnumParser(void* object, const char* ptr,
       });
 }
 
-template <typename T>
-PROTOBUF_NODISCARD const char* PackedEnumParserArg(
-    void* object, const char* ptr, ParseContext* ctx,
-    bool (*is_valid)(const void*, int), const void* data,
-    InternalMetadata* metadata, int field_num) {
-  return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, data, metadata, field_num](int32_t val) {
-        if (is_valid(data, val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
-        } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
-        }
-      });
-}
-
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedBoolParser(
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedBoolParser(void* object,
+                                                           const char* ptr,
+                                                           ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedFixed32Parser(
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedSFixed32Parser(
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedFixed64Parser(
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedSFixed64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedFloatParser(
-    void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedDoubleParser(
-    void* object, const char* ptr, ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedFloatParser(void* object,
+                                                            const char* ptr,
+                                                            ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedDoubleParser(void* object,
+                                                             const char* ptr,
+                                                             ParseContext* ctx);
 
 // This is the only recursive parser.
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* UnknownGroupLiteParse(
+[[nodiscard]] PROTOBUF_EXPORT const char* UnknownGroupLiteParse(
     std::string* unknown, const char* ptr, ParseContext* ctx);
 // This is a helper to for the UnknownGroupLiteParse but is actually also
 // useful in the generated code. It uses overload on std::string* vs
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
-PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* UnknownFieldParse(
+[[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
 
 }  // namespace internal

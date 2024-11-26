@@ -19,8 +19,9 @@ from google.protobuf import text_format
 from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import test_messages_proto3_pb2
 from conformance import conformance_pb2
-from google.protobuf.editions.golden import test_messages_proto2_editions_pb2
-from google.protobuf.editions.golden import test_messages_proto3_editions_pb2
+from conformance.test_protos import test_messages_edition2023_pb2
+from editions.golden import test_messages_proto2_editions_pb2
+from editions.golden import test_messages_proto3_editions_pb2
 
 test_count = 0
 verbose = False
@@ -35,6 +36,8 @@ def _create_test_message(type):
     return test_messages_proto2_pb2.TestAllTypesProto2()
   if type == "protobuf_test_messages.proto3.TestAllTypesProto3":
     return test_messages_proto3_pb2.TestAllTypesProto3()
+  if type == "protobuf_test_messages.editions.TestAllTypesEdition2023":
+    return test_messages_edition2023_pb2.TestAllTypesEdition2023()
   if type == "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
     return test_messages_proto2_editions_pb2.TestAllTypesProto2()
   if type == "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
@@ -95,36 +98,38 @@ def do_test(request):
           "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64",
       ]
     for x in failures:
-      failure_set.failure.append(x)
+      failure_set.test.append(conformance_pb2.TestStatus(name=x))
     response.protobuf_payload = failure_set.SerializeToString()
     return response
 
-  isJson = (request.WhichOneof('payload') == 'json_payload')
+  isJson = request.WhichOneof("payload") == "json_payload"
   test_message = _create_test_message(request.message_type)
 
   if (not isJson) and (test_message is None):
     raise ProtocolError("Protobuf request doesn't have specific payload type")
 
   try:
-    if request.WhichOneof('payload') == 'protobuf_payload':
+    if request.WhichOneof("payload") == "protobuf_payload":
       try:
         test_message.ParseFromString(request.protobuf_payload)
       except message.DecodeError as e:
         response.parse_error = str(e)
         return response
 
-    elif request.WhichOneof('payload') == 'json_payload':
+    elif request.WhichOneof("payload") == "json_payload":
       try:
-        ignore_unknown_fields = \
-            request.test_category == \
-                conformance_pb2.JSON_IGNORE_UNKNOWN_PARSING_TEST
-        json_format.Parse(request.json_payload, test_message,
-                          ignore_unknown_fields)
+        ignore_unknown_fields = (
+            request.test_category
+            == conformance_pb2.JSON_IGNORE_UNKNOWN_PARSING_TEST
+        )
+        json_format.Parse(
+            request.json_payload, test_message, ignore_unknown_fields
+        )
       except Exception as e:
         response.parse_error = str(e)
         return response
 
-    elif request.WhichOneof('payload') == 'text_payload':
+    elif request.WhichOneof("payload") == "text_payload":
       try:
         text_format.Parse(request.text_payload, test_message)
       except Exception as e:
@@ -149,7 +154,8 @@ def do_test(request):
 
     elif request.requested_output_format == conformance_pb2.TEXT_FORMAT:
       response.text_payload = text_format.MessageToString(
-          test_message, print_unknown_fields=request.print_unknown_fields)
+          test_message, print_unknown_fields=request.print_unknown_fields
+      )
 
   except Exception as e:
     response.runtime_error = str(e)
@@ -160,7 +166,7 @@ def do_test(request):
 def do_test_io():
   length_bytes = sys.stdin.buffer.read(4)
   if len(length_bytes) == 0:
-    return False   # EOF
+    return False  # EOF
   elif len(length_bytes) != 4:
     raise IOError("I/O error")
 
@@ -180,17 +186,24 @@ def do_test_io():
   sys.stdout.buffer.flush()
 
   if verbose:
-    sys.stderr.write("conformance_python: request=%s, response=%s\n" % (
-                       request.ShortDebugString().c_str(),
-                       response.ShortDebugString().c_str()))
+    sys.stderr.write(
+        "conformance_python: request=%s, response=%s\n"
+        % (
+            request.ShortDebugString().c_str(),
+            response.ShortDebugString().c_str(),
+        )
+    )
 
   global test_count
   test_count += 1
 
   return True
 
+
 while True:
   if not do_test_io():
-    sys.stderr.write("conformance_python: received EOF from test runner " +
-                     "after %s tests, exiting\n" % (test_count))
+    sys.stderr.write(
+        "conformance_python: received EOF from test runner "
+        + "after %s tests, exiting\n" % (test_count,)
+    )
     sys.exit(0)

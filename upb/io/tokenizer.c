@@ -403,7 +403,7 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
 }
 
 // Read and consume a number, returning TYPE_FLOAT or TYPE_INTEGER depending
-// on what was read.  This needs to know if the first characer was a zero in
+// on what was read.  This needs to know if the first character was a zero in
 // order to correctly recognize hex and octal numbers.  It also needs to know
 // whether the first character was a '.' to parse floating point correctly.
 static upb_TokenType ConsumeNumber(upb_Tokenizer* t, bool started_with_zero,

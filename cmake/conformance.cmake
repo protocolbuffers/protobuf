@@ -1,21 +1,32 @@
-if (protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
-    message(FATAL_ERROR
-            "Cannot find third_party/jsoncpp directory that's needed to "
-            "build conformance tests. If you use git, make sure you have cloned "
-            "submodules:\n"
-            "  git submodule update --init --recursive\n"
-            "If instead you want to skip them, run cmake with:\n"
-            "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
+# Don't run jsoncpp tests.
+set(JSONCPP_WITH_TESTS OFF)
+
+if (NOT TARGET jsoncpp_lib)
+  if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
+    find_package(jsoncpp)
   endif()
-elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
-  find_package(jsoncpp REQUIRED)
+
+  # Fallback to fetching Googletest from github if it's not found locally.
+  if (NOT jsoncpp_FOUND AND NOT protobuf_LOCAL_DEPENDENCIES_ONLY)
+    include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
+    message(STATUS "Fallback to downloading jsoncpp ${jsoncpp-version} from GitHub")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      jsoncpp
+      GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp.git"
+      GIT_TAG "${jsoncpp-version}"
+    )
+    FetchContent_MakeAvailable(jsoncpp)
+  endif()
 endif()
 
-set(protoc_cpp_args)
-if (protobuf_BUILD_SHARED_LIBS)
-  set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS:")
-endif ()
+if (NOT TARGET jsoncpp_lib)
+  message(FATAL_ERROR
+          "Cannot find jsoncpp dependency that's needed to build conformance tests.\n"
+          "If instead you want to skip these tests, run cmake with:\n"
+          "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
+endif()
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/conformance)
 
@@ -23,10 +34,34 @@ add_custom_command(
   OUTPUT
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
-  DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
-  COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
-      --proto_path=${protobuf_SOURCE_DIR}/conformance
-      --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/conformance
+    ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
+    ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
+  DEPENDS ${protobuf_PROTOC_EXE}
+    ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+    ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
+  COMMAND ${protobuf_PROTOC_EXE}
+      ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+      ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
+      --proto_path=${protobuf_SOURCE_DIR}
+      --cpp_out=${protobuf_BINARY_DIR}
+)
+
+
+add_custom_command(
+  OUTPUT
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.h
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.cc
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.h
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.cc
+  DEPENDS ${protobuf_PROTOC_EXE}
+    ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto3_editions.proto
+    ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto2_editions.proto
+  COMMAND ${protobuf_PROTOC_EXE}
+      ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto3_editions.proto
+      ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto2_editions.proto
+      --proto_path=${protobuf_SOURCE_DIR}
+      --proto_path=${protobuf_SOURCE_DIR}/src
+      --cpp_out=${protobuf_BINARY_DIR}
 )
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
@@ -37,45 +72,34 @@ add_custom_command(
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
   DEPENDS ${protobuf_PROTOC_EXE}
           ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
           ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
-          ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.proto
-          ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.proto
   COMMAND ${protobuf_PROTOC_EXE}
               ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
               ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
-              ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.proto
-              ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.proto
             --proto_path=${protobuf_SOURCE_DIR}/src
-            --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/src
+            --cpp_out=${protobuf_BINARY_DIR}/src
 )
 
-add_library(libconformance_common ${protobuf_SHARED_OR_STATIC}
+add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
+  ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
+  ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.h
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.cc
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.h
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
 )
 target_link_libraries(libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
 )
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libconformance_common
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc
@@ -85,6 +109,8 @@ add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.cc
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.h
 )
 
 add_executable(conformance_cpp
@@ -119,18 +145,13 @@ add_test(NAME conformance_cpp_test
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
     --maximum_edition 2023
-    ${CMAKE_CURRENT_BINARY_DIR}/conformance_cpp
+    $<TARGET_FILE:conformance_cpp>
   DEPENDS conformance_test_runner conformance_cpp)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
-if(protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
-  target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
-  if(BUILD_SHARED_LIBS)
-    target_link_libraries(conformance_test_runner jsoncpp_lib)
-  else()
-    target_link_libraries(conformance_test_runner jsoncpp_static)
-  endif()
+
+if(BUILD_SHARED_LIBS)
+  target_link_libraries(conformance_test_runner jsoncpp_lib)
 else()
-  target_link_libraries(conformance_test_runner jsoncpp)
+  target_link_libraries(conformance_test_runner jsoncpp_static)
 endif()

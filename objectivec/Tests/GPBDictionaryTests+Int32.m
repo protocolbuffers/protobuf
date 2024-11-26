@@ -9,7 +9,6 @@
 #import <XCTest/XCTest.h>
 
 #import "GPBDictionary.h"
-
 #import "GPBTestUtilities.h"
 #import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
 

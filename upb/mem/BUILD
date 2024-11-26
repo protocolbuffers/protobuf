@@ -5,7 +5,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "mem",
@@ -44,6 +46,7 @@ cc_test(
     deps = [
         ":mem",
         "//upb:port",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/synchronization",
@@ -53,7 +56,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -68,9 +70,7 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
-# end:github_only
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -78,6 +78,5 @@ filegroup(
             "**/*test.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
-# end:github_only

@@ -39,7 +39,7 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
   std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
   if (descriptor.file() != file_) {
     std::string module_alias;
-    std::string filename = descriptor.file()->name();
+    const absl::string_view filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
       std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
@@ -71,7 +71,7 @@ struct ImportModules {
 };
 
 // Checks whether a descriptor name matches a well-known type.
-bool IsWellKnownType(const std::string& name) {
+bool IsWellKnownType(const absl::string_view name) {
   // LINT.IfChange(wktbases)
   return (name == "google.protobuf.Any" ||
           name == "google.protobuf.Duration" ||
@@ -132,7 +132,7 @@ void CheckImportModules(const Descriptor* descriptor,
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
     bool* has_importlib) const {
-  const std::string& filename = desc.name();
+  const absl::string_view filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
@@ -288,7 +288,7 @@ printer_->Annotate(label.c_str(), descriptor);
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  std::string enum_name = enum_descriptor.name();
+  const absl::string_view enum_name = enum_descriptor.name();
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
       "    __slots__ = ()\n",
@@ -385,7 +385,7 @@ void PyiGenerator::PrintMessage(
   if (!is_nested) {
     printer_->Print("\n");
   }
-  std::string class_name = message_descriptor.name();
+  const absl::string_view class_name = message_descriptor.name();
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
@@ -475,23 +475,25 @@ void PyiGenerator::PrintMessage(
   }
 
   // Prints __init__
-  printer_->Print("def __init__(self");
-  bool has_key_words = false;
-  bool is_first = true;
+  printer_->Print("def __init__(");
+  // If the message has a field named "self" (see b/144146793), it can still be
+  // passed to the initializer, which takes those as **kwargs. To avoid name
+  // collision, we rename the self parameter by appending underscores until it
+  // no longer collides. The self-parameter is in fact positional-only, so the
+  // name in the pyi doesn't matter with regard to what runtime usage is valid.
+  std::string self_arg_name = "self";
+  while (message_descriptor.FindFieldByName(self_arg_name) != nullptr) {
+    self_arg_name.append("_");
+  }
+  printer_->Print(self_arg_name);
+  bool has_python_keywords = false;
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
-      has_key_words = true;
+      has_python_keywords = true;
       continue;
     }
-    std::string field_name = field_des->name();
-    if (is_first && field_name == "self") {
-      // See b/144146793 for an example of real code that generates a (self,
-      // self) method signature. Since repeating a parameter name is illegal in
-      // Python, we rename the duplicate self.
-      field_name = "self_";
-    }
-    is_first = false;
+    std::string field_name = std::string(field_des->name());
     printer_->Print(", $field_name$: ", "field_name", field_name);
     Annotate("field_name", field_des);
     if (field_des->is_repeated() ||
@@ -533,7 +535,7 @@ void PyiGenerator::PrintMessage(
     }
     printer_->Print(" = ...");
   }
-  if (has_key_words) {
+  if (has_python_keywords) {
     printer_->Print(", **kwargs");
   }
   printer_->Print(") -> None: ...\n");
@@ -567,7 +569,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   import_map_.clear();
   // Calculate file name.
   file_ = file;
-  // In google3, devtools/python/blaze/pytype/pytype_impl.bzl uses --pyi_out to
+  // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
   // directly set the output file name.
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);

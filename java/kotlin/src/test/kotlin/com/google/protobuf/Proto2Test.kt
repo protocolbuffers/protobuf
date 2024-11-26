@@ -26,12 +26,14 @@ import protobuf_unittest.UnittestProto.TestAllTypes.NestedEnum
 import protobuf_unittest.UnittestProto.TestEmptyMessage
 import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions
 import protobuf_unittest.copy
+import protobuf_unittest.deprecatedMessageOrNull
 import protobuf_unittest.foreignMessage
 import protobuf_unittest.optionalGroupExtension
 import protobuf_unittest.optionalNestedMessageOrNull
 import protobuf_unittest.repeatedGroupExtension
 import protobuf_unittest.testAllExtensions
 import protobuf_unittest.testAllTypes
+import protobuf_unittest.testDeprecatedFields
 import protobuf_unittest.testEmptyMessage
 import protobuf_unittest.testEmptyMessageWithExtensions
 import protobuf_unittest.testEnumMap
@@ -160,7 +162,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllSetBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testGetters() {
     testAllTypes {
@@ -181,7 +183,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testDefaultGetters() {
     testAllTypes {
@@ -192,7 +194,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypes {
@@ -225,7 +227,7 @@ class Proto2Test {
             TestAllTypesKt.repeatedGroup { a = 1 },
             TestAllTypesKt.repeatedGroup { a = 2 },
             TestAllTypesKt.repeatedGroup { a = 3 },
-            TestAllTypesKt.repeatedGroup { a = 4 }
+            TestAllTypesKt.repeatedGroup { a = 4 },
           )
         )
       repeatedGroup[0] = TestAllTypesKt.repeatedGroup { a = 5 }
@@ -235,7 +237,7 @@ class Proto2Test {
             TestAllTypesKt.repeatedGroup { a = 5 },
             TestAllTypesKt.repeatedGroup { a = 2 },
             TestAllTypesKt.repeatedGroup { a = 3 },
-            TestAllTypesKt.repeatedGroup { a = 4 }
+            TestAllTypesKt.repeatedGroup { a = 4 },
           )
         )
 
@@ -249,7 +251,7 @@ class Proto2Test {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
@@ -259,7 +261,7 @@ class Proto2Test {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -274,7 +276,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHazzers() {
     testAllTypes {
@@ -305,7 +307,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testClears() {
     testAllTypes {
@@ -494,7 +496,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllExtensionsSet())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionGetters() {
     testAllExtensions {
@@ -517,7 +519,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedExtensionGettersAndSetters() {
     testAllExtensions {
@@ -548,7 +550,7 @@ class Proto2Test {
             repeatedGroupExtension { a = 1 },
             repeatedGroupExtension { a = 2 },
             repeatedGroupExtension { a = 3 },
-            repeatedGroupExtension { a = 4 }
+            repeatedGroupExtension { a = 4 },
           )
         )
       this[UnittestProto.repeatedGroupExtension][0] = repeatedGroupExtension { a = 5 }
@@ -558,7 +560,7 @@ class Proto2Test {
             repeatedGroupExtension { a = 5 },
             repeatedGroupExtension { a = 2 },
             repeatedGroupExtension { a = 3 },
-            repeatedGroupExtension { a = 4 }
+            repeatedGroupExtension { a = 4 },
           )
         )
 
@@ -575,7 +577,7 @@ class Proto2Test {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       this[UnittestProto.repeatedNestedMessageExtension][0] = nestedMessage { bb = 5 }
@@ -585,7 +587,7 @@ class Proto2Test {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -598,7 +600,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionContains() {
     testAllExtensions {
@@ -629,7 +631,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionClears() {
     testAllExtensions {
@@ -711,7 +713,7 @@ class Proto2Test {
       )
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapGettersAndSetters() {
     val intMap = testIntIntMap {
@@ -757,13 +759,13 @@ class Proto2Test {
             1 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO,
             2 to Proto2MapEnum.PROTO2_MAP_ENUM_BAR,
             3 to Proto2MapEnum.PROTO2_MAP_ENUM_BAZ,
-            4 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO
+            4 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO,
           )
         )
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapRemove() {
     val intMap = testIntIntMap {
@@ -791,7 +793,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapClear() {
     val intMap = testIntIntMap {
@@ -844,6 +846,11 @@ class Proto2Test {
           cachedSize_ = "foo"
           serializedSize_ = true
           by = "foo"
+          dEPRECATEDFoo = "foo"
+          DEPRECATEDBar = "foo"
+          iD = "foo"
+          aBNotification = "foo"
+          notDEPRECATEDFoo = "foo"
         }
       )
       .isEqualTo(
@@ -869,13 +876,18 @@ class Proto2Test {
           .setCachedSize_("foo")
           .setSerializedSize_(true)
           .setBy("foo")
+          .setDEPRECATEDFoo("foo")
+          .setDEPRECATEDBar("foo")
+          .setID("foo")
+          .setABNotification("foo")
+          .setNotDEPRECATEDFoo("foo")
           .build()
       )
 
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto2 {
@@ -905,7 +917,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto2 {
@@ -920,7 +932,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto2 {
@@ -948,5 +960,16 @@ class Proto2Test {
     }
     assertThat(someNestedMessage.optionalNestedMessageOrNull)
       .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
+  }
+
+  @Test
+  fun testDeprecated() {
+    val testInstance =
+      protobuf_unittest.UnittestProto.TestDeprecatedFields.getDefaultInstance()
+    assertThat(testInstance::deprecatedMessageOrNull.annotations.any { it is Deprecated }).isTrue()
+
+    val unused = testDeprecatedFields {
+      assertThat(::deprecatedMessage.annotations.any { it is Deprecated }).isTrue()
+    }
   }
 }

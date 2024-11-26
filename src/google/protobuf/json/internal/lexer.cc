@@ -513,3 +513,5 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseBareWord() {
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
