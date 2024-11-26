@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1403,6 +1405,40 @@ public class CodedInputStreamTest {
       result.position(bytesLength - 1);
       assertWithMessage(inputType.name()).that(result.get()).isEqualTo((byte) 89);
     }
+  }
+
+  @Test
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() throws Exception {
+    ByteBuffer input = ByteBuffer.allocateDirect(128);
+    input.put((byte) 127);
+    for (int i = 0; i < 127; i++) input.put((byte) i);
+    input.flip();
+
+    Supplier<Integer> embeddedSize =
+        () -> {
+          try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
+            inputStream.enableAliasing(true);
+            return inputStream.readBytes().size();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        };
+
+    assertThat(embeddedSize.get()).isEqualTo(127);
+
+    // Concurrent reader should have no impact ...
+    int iterations = 100000;
+    new Thread(
+            () -> {
+              for (int i = 0; i < iterations; i++) embeddedSize.get();
+            })
+        .start();
+
+    // ... but reliably fails the check:
+    //   expected: 127
+    //   but was : 0
+    for (int i = 0; i < iterations; i++) assertThat(embeddedSize.get()).isEqualTo(127);
   }
 
   @Test
