@@ -6,7 +6,7 @@
 #if defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
 // This header is checked in.
 #include "upb_generator/stage0/google/protobuf/compiler/plugin.upb.h"
-#elif UPB_BOOTSTRAP_STAGE == 1
+#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 1
 // This header is generated at build time by the bootstrapping process.
 #include "upb_generator/stage1/google/protobuf/compiler/plugin.upb.h"
 #else

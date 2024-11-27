@@ -85,7 +85,7 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
   return true;
 }
 
-#if UPB_TRACING_ENABLED
+#ifdef UPB_TRACING_ENABLED
 static void (*_message_trace_handler)(const upb_MiniTable*, const upb_Arena*);
 
 void upb_Message_LogNewMessage(const upb_MiniTable* m, const upb_Arena* arena) {
