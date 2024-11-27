@@ -134,8 +134,9 @@ class ExtensionRegistry {
   void AddExtension(const ExtensionIdentifier& id) {
     if (registry_) {
       auto* extension = id.mini_table_ext();
-      bool success = upb_ExtensionRegistry_AddArray(registry_, &extension, 1);
-      if (!success) {
+      upb_ExtensionRegistryStatus status =
+          upb_ExtensionRegistry_AddArray(registry_, &extension, 1);
+      if (status != kUpb_ExtensionRegistryStatus_Ok) {
         registry_ = nullptr;
       }
     }
