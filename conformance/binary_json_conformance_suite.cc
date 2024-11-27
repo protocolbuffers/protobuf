@@ -1401,6 +1401,17 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
       absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
                    len(2, "hello world")),
       "UnmatchedStartGroupWithData", REQUIRED);
+
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                   len(2, "hello world"),
+                   tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
+      "MismatchedGroupTags", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, absl::StrCat(tag(202, WireFormatLite::WIRETYPE_START_GROUP),
+                              len(2, "hello world"),
+                              tag(203, WireFormatLite::WIRETYPE_END_GROUP))),
+      "MismatchedNestedGroupTags", REQUIRED);
 }
 
 template <typename MessageType>
