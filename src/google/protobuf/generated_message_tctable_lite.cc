@@ -16,6 +16,7 @@
 #include <type_traits>
 
 #include "absl/base/optimization.h"
+#include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
@@ -2681,48 +2682,6 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
   GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
 }
 
-PROTOBUF_ALWAYS_INLINE void TcParser::InitializeMapNodeEntry(
-    void* obj, MapTypeCard type_card, UntypedMapBase& map,
-    const TcParseTableBase::FieldAux* aux, bool is_key) {
-  (void)is_key;
-  switch (type_card.cpp_type()) {
-    case MapTypeCard::kBool:
-      memset(obj, 0, sizeof(bool));
-      break;
-    case MapTypeCard::k32:
-      memset(obj, 0, sizeof(uint32_t));
-      break;
-    case MapTypeCard::k64:
-      memset(obj, 0, sizeof(uint64_t));
-      break;
-    case MapTypeCard::kString:
-      Arena::CreateInArenaStorage(reinterpret_cast<std::string*>(obj),
-                                  map.arena());
-      break;
-    case MapTypeCard::kMessage:
-      aux[1].table->class_data->PlacementNew(obj, map.arena());
-      break;
-    default:
-      Unreachable();
-  }
-}
-
-PROTOBUF_NOINLINE void TcParser::DestroyMapNode(NodeBase* node,
-                                                MapAuxInfo map_info,
-                                                UntypedMapBase& map) {
-  if (map_info.key_type_card.cpp_type() == MapTypeCard::kString) {
-    static_cast<std::string*>(node->GetVoidKey())->~basic_string();
-  }
-  if (map_info.value_type_card.cpp_type() == MapTypeCard::kString) {
-    static_cast<std::string*>(node->GetVoidValue(map_info.node_size_info))
-        ->~basic_string();
-  } else if (map_info.value_type_card.cpp_type() == MapTypeCard::kMessage) {
-    static_cast<MessageLite*>(node->GetVoidValue(map_info.node_size_info))
-        ->DestroyInstance();
-  }
-  map.DeallocNode(node, map_info.node_size_info);
-}
-
 template <typename T>
 const char* ReadFixed(void* obj, const char* ptr) {
   auto v = UnalignedLoad<T>(ptr);
@@ -2866,12 +2825,38 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   const uint32_t saved_tag = data.tag();
 
   while (true) {
-    NodeBase* node = map.AllocNode(map_info.node_size_info);
+    NodeBase* node = map.AllocNode();
 
-    InitializeMapNodeEntry(node->GetVoidKey(), map_info.key_type_card, map, aux,
-                           true);
-    InitializeMapNodeEntry(node->GetVoidValue(map_info.node_size_info),
-                           map_info.value_type_card, map, aux, false);
+    map.VisitKey(node,  //
+                 absl::Overload{
+                     [&](std::string* str) {
+                       Arena::CreateInArenaStorage(str, map.arena());
+                     },
+                     [&](void* scalar) {
+                       // Due to node alignment we can guarantee that we have at
+                       // least 8 writable bytes at the key position (as long as
+                       // we do it before we initialize the value). We can
+                       // unconditionally write here.
+                       // Assert this in debug mode, just in case.
+                       ABSL_DCHECK_GE(
+                           reinterpret_cast<char*>(node) +
+                               map.type_info().node_size -
+                               reinterpret_cast<char*>(node->GetVoidKey()),
+                           sizeof(uint64_t));
+                       memset(node->GetVoidKey(), 0, sizeof(uint64_t));
+                     },
+                 });
+
+    map.VisitValue(
+        node, absl::Overload{
+                  [&](std::string* str) {
+                    Arena::CreateInArenaStorage(str, map.arena());
+                  },
+                  [&](MessageLite* msg) {
+                    aux[1].table->class_data->PlacementNew(msg, map.arena());
+                  },
+                  [](auto* scalar) { memset(scalar, 0, sizeof(*scalar)); },
+              });
 
     ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
       return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map.arena());
@@ -2915,7 +2900,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     // It could be because we failed to parse, or because insertion returned
     // an overwritten node.
     if (ABSL_PREDICT_FALSE(node != nullptr && map.arena() == nullptr)) {
-      DestroyMapNode(node, map_info, map);
+      map.DeleteNode(node);
     }
 
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {

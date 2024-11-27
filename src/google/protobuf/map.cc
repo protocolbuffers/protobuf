@@ -30,6 +30,15 @@ namespace internal {
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
+void UntypedMapBase::DeleteNode(NodeBase* node) {
+  const auto destroy = absl::Overload{
+      [](std::string* str) { str->~basic_string(); },
+      [](MessageLite* msg) { msg->DestroyInstance(); }, [](void*) {}};
+  VisitKey(node, destroy);
+  VisitValue(node, destroy);
+  DeallocNode(node);
+}
+
 void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 

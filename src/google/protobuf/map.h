@@ -456,6 +456,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // Space used for the table and nodes.
   size_t SpaceUsedExcludingSelfLong() const;
 
+  TypeInfo type_info() const { return type_info_; }
+
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
   enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
@@ -544,18 +546,14 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using AllocFor = absl::allocator_traits<Allocator>::template rebind_alloc<T>;
 
   // Alignment of the nodes is the same as alignment of NodeBase.
-  NodeBase* AllocNode(MapNodeSizeInfoT size_info) {
-    return AllocNode(SizeFromInfo(size_info));
-  }
+  NodeBase* AllocNode() { return AllocNode(type_info_.node_size); }
 
   NodeBase* AllocNode(size_t node_size) {
     PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
     return AllocFor<NodeBase>(alloc_).allocate(node_size / sizeof(NodeBase));
   }
 
-  void DeallocNode(NodeBase* node, MapNodeSizeInfoT size_info) {
-    DeallocNode(node, SizeFromInfo(size_info));
-  }
+  void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
     PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
@@ -577,6 +575,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
     memset(result, 0, n * sizeof(result[0]));
     return result;
   }
+
+  void DeleteNode(NodeBase* node);
 
   template <typename Node>
   static void DestroyNode(NodeBase* node) {
@@ -963,30 +963,10 @@ class RustMapHelper {
  public:
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
 
-  static void GetSizeAndAlignment(const google::protobuf::MessageLite* m, uint16_t* size,
-                                  uint8_t* alignment) {
-    const auto* class_data = m->GetClassData();
-    *size = static_cast<uint16_t>(class_data->allocation_size());
-    *alignment = class_data->alignment();
-  }
+  static NodeBase* AllocNode(UntypedMapBase* m) { return m->AllocNode(); }
 
-  static constexpr MapNodeSizeInfoT MakeSizeInfo(uint16_t size,
-                                                 uint16_t value_offset) {
-    return MakeNodeInfo(size, value_offset);
-  }
-
-  template <typename Key, typename Value>
-  static constexpr MapNodeSizeInfoT SizeInfo() {
-    return Map<Key, Value>::Node::size_info();
-  }
-
-  static NodeBase* AllocNode(UntypedMapBase* m, MapNodeSizeInfoT size_info) {
-    return m->AllocNode(size_info);
-  }
-
-  static void DeallocNode(UntypedMapBase* m, NodeBase* node,
-                          MapNodeSizeInfoT size_info) {
-    return m->DeallocNode(node, size_info);
+  static void DeleteNode(UntypedMapBase* m, NodeBase* node) {
+    return m->DeleteNode(node);
   }
 
   template <typename Map, typename Key>
@@ -1007,12 +987,6 @@ class RustMapHelper {
   static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
                                            void* mem) {
     return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
-  }
-
-  static void DestroyMessage(MessageLite* m) { m->DestroyInstance(); }
-
-  static bool IsGlobalEmptyTable(const UntypedMapBase* m) {
-    return m->num_buckets_ == kGlobalEmptyTableSize;
   }
 };
 
@@ -1422,7 +1396,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
     auto* node = static_cast<Node*>(pos.node_);
     this->erase_no_destroy(pos.bucket_index_, node);
-    DestroyNode(node);
+    DeleteNode(node);
     return next;
   }
 
@@ -1494,7 +1468,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     };
   }
 
-  void DestroyNode(Node* node) {
+  void DeleteNode(Node* node) {
     if (this->alloc_.arena() == nullptr) {
       node->kv.first.~key_type();
       node->kv.second.~mapped_type();

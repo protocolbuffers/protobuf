@@ -1019,21 +1019,11 @@ where
 
     unsafe fn insert(m: RawMap, key: View<'_, Self>, value: MapValue) -> bool;
 
-    unsafe fn get(
-        m: RawMap,
-        prototype: MapValue,
-        key: View<'_, Self>,
-        value: *mut MapValue,
-    ) -> bool;
+    unsafe fn get(m: RawMap, key: View<'_, Self>, value: *mut MapValue) -> bool;
 
-    unsafe fn iter_get(
-        iter: &mut UntypedMapIterator,
-        prototype: MapValue,
-        key: *mut Self::FfiKey,
-        value: *mut MapValue,
-    );
+    unsafe fn iter_get(iter: &mut UntypedMapIterator, key: *mut Self::FfiKey, value: *mut MapValue);
 
-    unsafe fn remove(m: RawMap, prototype: MapValue, key: View<'_, Self>) -> bool;
+    unsafe fn remove(m: RawMap, key: View<'_, Self>) -> bool;
 }
 
 macro_rules! generate_map_key_impl {
@@ -1060,26 +1050,24 @@ macro_rules! generate_map_key_impl {
             #[inline]
             unsafe fn get(
                 m: RawMap,
-                prototype: MapValue,
                 key: View<'_, Self>,
                 value: *mut MapValue,
             ) -> bool {
-                unsafe { [< proto2_rust_map_get_ $key >](m, prototype, $to_ffi(key), value) }
+                unsafe { [< proto2_rust_map_get_ $key >](m, $to_ffi(key), value) }
             }
 
             #[inline]
             unsafe fn iter_get(
                 iter: &mut UntypedMapIterator,
-                prototype: MapValue,
                 key: *mut Self::FfiKey,
                 value: *mut MapValue,
             ) {
-                unsafe { [< proto2_rust_map_iter_get_ $key >](iter, prototype, key, value) }
+                unsafe { [< proto2_rust_map_iter_get_ $key >](iter, key, value) }
             }
 
             #[inline]
-            unsafe fn remove(m: RawMap, prototype: MapValue, key: View<'_, Self>) -> bool {
-                unsafe { [< proto2_rust_map_remove_ $key >](m, prototype, $to_ffi(key)) }
+            unsafe fn remove(m: RawMap, key: View<'_, Self>) -> bool {
+                unsafe { [< proto2_rust_map_remove_ $key >](m, $to_ffi(key)) }
             }
         }
         )*
@@ -1136,9 +1124,7 @@ where
 
     fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
         let mut value = std::mem::MaybeUninit::uninit();
-        let found = unsafe {
-            Key::get(map.as_raw(Private), Self::get_prototype(), key, value.as_mut_ptr())
-        };
+        let found = unsafe { Key::get(map.as_raw(Private), key, value.as_mut_ptr()) };
         if !found {
             return None;
         }
@@ -1146,7 +1132,7 @@ where
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
-        unsafe { Key::remove(map.as_raw(Private), Self::get_prototype(), key) }
+        unsafe { Key::remove(map.as_raw(Private), key) }
     }
 
     fn map_iter(map: MapView<Key, Self>) -> MapIter<Key, Self> {
@@ -1169,7 +1155,7 @@ where
         // - The thunk does not increment the iterator.
         unsafe {
             iter.as_raw_mut(Private).next_unchecked::<Key, Self, _, _>(
-                |iter, key, value| Key::iter_get(iter, Self::get_prototype(), key, value),
+                |iter, key, value| Key::iter_get(iter, key, value),
                 |ffi_key| Key::to_view(ffi_key),
                 |value| Self::from_map_value(value),
             )
@@ -1193,17 +1179,15 @@ macro_rules! impl_map_primitives {
                 ) -> bool;
                 pub fn $get_thunk(
                     m: RawMap,
-                    prototype: MapValue,
                     key: $cpp_type,
                     value: *mut MapValue,
                 ) -> bool;
                 pub fn $iter_get_thunk(
                     iter: &mut UntypedMapIterator,
-                    prototype: MapValue,
                     key: *mut $cpp_type,
                     value: *mut MapValue,
                 );
-                pub fn $remove_thunk(m: RawMap, prototype: MapValue, key: $cpp_type) -> bool;
+                pub fn $remove_thunk(m: RawMap, key: $cpp_type) -> bool;
             }
         )*
     };

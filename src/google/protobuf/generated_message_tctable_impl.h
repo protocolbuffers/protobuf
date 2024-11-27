@@ -1010,13 +1010,6 @@ class PROTOBUF_EXPORT TcParser final {
                                      uint32_t tag, NodeBase* node,
                                      MapAuxInfo map_info);
 
-  static void InitializeMapNodeEntry(void* obj, MapTypeCard type_card,
-                                     UntypedMapBase& map,
-                                     const TcParseTableBase::FieldAux* aux,
-                                     bool is_key);
-  PROTOBUF_NOINLINE
-  static void DestroyMapNode(NodeBase* node, MapAuxInfo map_info,
-                             UntypedMapBase& map);
   static const char* ParseOneMapEntry(NodeBase* node, const char* ptr,
                                       ParseContext* ctx,
                                       const TcParseTableBase::FieldAux* aux,
