@@ -624,7 +624,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     LazyMessageExtension& operator=(const LazyMessageExtension&) = delete;
     virtual ~LazyMessageExtension() = default;
 
-    virtual LazyMessageExtension* New(Arena* arena) const = 0;
+    virtual LazyMessageExtension* Clone(Arena* arena,
+                                        const LazyMessageExtension& other,
+                                        Arena* other_arena) const = 0;
     virtual const MessageLite& GetMessage(const MessageLite& prototype,
                                           Arena* arena) const = 0;
     virtual const MessageLite& GetMessageIgnoreUnparsed(
