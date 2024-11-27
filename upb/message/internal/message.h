@@ -141,12 +141,17 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
   size_t count;
   const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   size_t i = *iter;
-  if (i < count) {
+  while (i++ < count) {
     // Extensions are stored in reverse wire order, so to iterate in wire order,
     // we need to iterate backwards.
-    *out_e = exts[count - 1 - i].ext;
-    *out_v = exts[count - 1 - i].data;
-    *iter = i + 1;
+    const upb_Extension* ext = &exts[count - i];
+
+    // Empty repeated fields or maps semantically don't exist.
+    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+
+    *out_e = ext->ext;
+    *out_v = ext->data;
+    *iter = i;
     return true;
   }
 
@@ -159,11 +164,16 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   size_t count;
   const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   size_t i = *iter;
-  if (i < count) {
+  while (i++ < count) {
     // Extensions are stored in reverse wire order
-    *out_e = exts[i].ext;
-    *out_v = exts[i].data;
-    *iter = i + 1;
+    const upb_Extension* ext = &exts[i - 1];
+
+    // Empty repeated fields or maps semantically don't exist.
+    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+
+    *out_e = ext->ext;
+    *out_v = ext->data;
+    *iter = i;
     return true;
   }
 

@@ -117,8 +117,13 @@ bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
-  size_t count;
-  UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+  const upb_MiniTableExtension* e;
+  upb_MessageValue val;
+  size_t iter = kUpb_Message_ExtensionBegin;
+  size_t count = 0;
+  while (upb_Message_NextExtension(msg, &e, &val, &iter)) {
+    count++;
+  }
   return count;
 }
 
