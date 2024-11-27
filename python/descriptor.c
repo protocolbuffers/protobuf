@@ -23,8 +23,10 @@
 // This representation is used by all concrete descriptors.
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* pool;          // We own a ref.
+  // clang-format on
   const void* def;         // Type depends on the class. Kept alive by "pool".
   PyObject* options;       // NULL if not present or not cached.
   PyObject* features;      // NULL if not present or not cached.

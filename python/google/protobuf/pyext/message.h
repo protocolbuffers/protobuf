@@ -48,7 +48,8 @@ struct CMessageClass;
 // don't store any data, and always refer to their parent message.
 
 struct ContainerBase {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
 
   // Strong reference to a parent message object. For a CMessage there are three
   // cases:
@@ -59,6 +60,7 @@ struct ContainerBase {
   // For all other types: repeated containers, maps, it always point to a
   // valid parent CMessage.
   struct CMessage* parent;
+  // clang-format on
 
   // If this object belongs to a parent message, describes which field it comes
   // from.
@@ -139,9 +141,7 @@ struct CMessageClass {
   // This reference must stay alive until all message pointers are destructed.
   PyMessageFactory* py_message_factory;
 
-  PyObject* AsPyObject() {
-    return reinterpret_cast<PyObject*>(this);
-  }
+  PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
 };
 
 extern PyTypeObject* CMessageClass_Type;
@@ -162,20 +162,18 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension);
 // submessage as the result is cached in composite_fields.
 //
 // Corresponds to reflection api method GetMessage.
-CMessage* InternalGetSubMessage(
-    CMessage* self, const FieldDescriptor* field_descriptor);
+CMessage* InternalGetSubMessage(CMessage* self,
+                                const FieldDescriptor* field_descriptor);
 
 // Deletes a range of items in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
 //
 // Corresponds to reflection api method RemoveLast.
-int DeleteRepeatedField(CMessage* self,
-                        const FieldDescriptor* field_descriptor,
+int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
                         PyObject* slice);
 
 // Sets the specified scalar value to the message.
-int InternalSetScalar(CMessage* self,
-                      const FieldDescriptor* field_descriptor,
+int InternalSetScalar(CMessage* self, const FieldDescriptor* field_descriptor,
                       PyObject* value);
 
 // Sets the specified scalar value to the message.  Requires it is not a Oneof.
@@ -250,7 +248,6 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 
 }  // namespace cmessage
 
-
 /* Is 64bit */
 #define IS_64BIT (SIZEOF_LONG == 8)
 
@@ -302,18 +299,15 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
 void FormatTypeError(PyObject* arg, const char* expected_types);
-template<class T>
+template <class T>
 bool CheckAndGetInteger(PyObject* arg, T* value);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
 PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
-bool CheckAndSetString(
-    PyObject* arg, Message* message,
-    const FieldDescriptor* descriptor,
-    const Reflection* reflection,
-    bool append,
-    int index);
+bool CheckAndSetString(PyObject* arg, Message* message,
+                       const FieldDescriptor* descriptor,
+                       const Reflection* reflection, bool append, int index);
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
                          absl::string_view value);
 
@@ -331,7 +325,7 @@ Message* PyMessage_GetMutableMessagePointer(PyObject* msg);
 PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
                                               PyObject* py_message_factory);
 
-bool InitProto2MessageModule(PyObject *m);
+bool InitProto2MessageModule(PyObject* m);
 
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.

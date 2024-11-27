@@ -29,8 +29,10 @@ err:
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   const PyUpb_ByNameMap_Funcs* funcs;
+  // clang-format on
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
   int index;             // Current iterator index.
@@ -89,8 +91,10 @@ static PyType_Spec PyUpb_ByNameIterator_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   const PyUpb_ByNumberMap_Funcs* funcs;
+  // clang-format on
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
   int index;             // Current iterator index.
@@ -149,8 +153,10 @@ static PyType_Spec PyUpb_ByNumberIterator_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   const PyUpb_GenericSequence_Funcs* funcs;
+  // clang-format on
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_GenericSequence;
@@ -342,8 +348,10 @@ static PyType_Spec PyUpb_GenericSequence_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   const PyUpb_ByNameMap_Funcs* funcs;
+  // clang-format on
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_ByNameMap;
@@ -556,8 +564,10 @@ static PyType_Spec PyUpb_ByNameMap_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   const PyUpb_ByNumberMap_Funcs* funcs;
+  // clang-format on
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_ByNumberMap;

@@ -179,8 +179,10 @@ err:
 // The parent may also be non-present, in which case a mutation will trigger a
 // chain reaction.
 typedef struct PyUpb_Message {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   uintptr_t def;  // Tagged, low bit 1 == upb_FieldDef*, else upb_MessageDef*
   union {
     // when def is msgdef, the data for this msg.

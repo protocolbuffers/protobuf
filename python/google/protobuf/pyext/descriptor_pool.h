@@ -32,10 +32,12 @@ struct CMessageClass;
 // "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
 // namespace.
 typedef struct PyDescriptorPool {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
 
   // The C++ pool containing Descriptors.
   const DescriptorPool* pool;
+  // clang-format on
 
   // True if we should free the pointer above.
   bool is_owned;
@@ -69,7 +71,6 @@ typedef struct PyDescriptorPool {
   // Similar cache for features.
   absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
 } PyDescriptorPool;
-
 
 extern PyTypeObject PyDescriptorPool_Type;
 

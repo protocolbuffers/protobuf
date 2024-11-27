@@ -18,8 +18,10 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
 
 // Wrapper for a repeated field.
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   // The field descriptor (PyObject*).
   // The low bit indicates whether the container is reified (see ptr below).
   //   - low bit set: repeated field is a stub (no underlying data).
