@@ -1581,6 +1581,7 @@ public abstract class GeneratedMessageLite<
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(result, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
       schema.makeImmutable(result);
+      input.checkLastTagWas(0);
     } catch (InvalidProtocolBufferException e) {
       if (e.getThrownFromInputStream()) {
         e = new InvalidProtocolBufferException(e);
