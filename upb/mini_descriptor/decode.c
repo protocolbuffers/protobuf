@@ -522,11 +522,12 @@ static int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
   //  2. field_index (smallest numbers first)
   // The main goal of this is to reduce space lost to padding.
   // Later we may have more subtle reasons to prefer a different ordering.
-  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max);
-  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max);
+  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max + 1);
+  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max + 1);
   const int idx_bits = (sizeof(a->field_index) * 8);
   UPB_ASSERT(idx_bits + rep_bits + type_bits < 32);
-#define UPB_COMBINE(rep, ty, idx) (((rep << type_bits) | ty) << idx_bits) | idx
+#define UPB_COMBINE(rep, ty, idx) \
+  (((((rep) << type_bits) | (ty)) << idx_bits) | (idx))
   uint32_t a_packed = UPB_COMBINE(a->rep, a->type, a->field_index);
   uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
   UPB_ASSERT(a_packed != b_packed);
