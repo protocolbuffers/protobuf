@@ -329,6 +329,8 @@ final class MessageSetSchema<T> implements Schema<T> {
         // We haven't seen a type ID yet or we want parse message lazily.
         rawBytes = reader.readBytes();
         continue;
+      } else if (tag == WireFormat.MESSAGE_SET_ITEM_END_TAG) {
+        break loop;
       } else {
         if (!reader.skipField()) {
           break loop; // End of group
