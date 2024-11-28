@@ -543,7 +543,8 @@ class DescriptorTest(unittest.TestCase):
 
   @unittest.skipIf(
       api_implementation.Type() == 'python',
-      'Immutability of descriptors is only enforced in v2 implementation')
+      'Immutability of descriptors is only enforced in c++ and upb backends',
+  )
   def testImmutableCppDescriptor(self):
     file_descriptor = unittest_pb2.DESCRIPTOR
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -568,8 +569,19 @@ class DescriptorTest(unittest.TestCase):
       enum_descriptor.has_options = False
     with self.assertRaises(AttributeError) as e:
       message_descriptor.has_options = True
-    self.assertEqual('attribute is not writable: has_options',
-                     str(e.exception))
+
+    if api_implementation.Type() == 'cpp':
+      self.assertEqual(
+          'attribute is not writable: has_options', str(e.exception)
+      )
+    else:
+      self.assertEqual(api_implementation.Type(), 'upb')
+      self.assertEqual(
+          "attribute 'has_options' of "
+          "'google._upb._message.Descriptor' "
+          'objects is not writable',
+          str(e.exception),
+      )
 
   def testDefault(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR

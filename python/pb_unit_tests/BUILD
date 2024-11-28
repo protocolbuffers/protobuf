@@ -13,8 +13,6 @@ licenses(["notice"])
 
 pyproto_test_wrapper(name = "descriptor_pool_test")
 
-pyproto_test_wrapper(name = "descriptor_test")
-
 pyproto_test_wrapper(name = "generator_test")
 
 pyproto_test_wrapper(name = "proto_builder_test")
