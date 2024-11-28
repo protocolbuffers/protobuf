@@ -1449,22 +1449,14 @@ class Proto2Test(unittest.TestCase):
     """Assigning an invalid enum number is not allowed for closed enums."""
     m = unittest_pb2.TestAllTypes()
 
-    # TODO Enable these once upb's behavior is made conformant.
-    if api_implementation.Type() != 'upb':
-      # Can not assign unknown enum to closed enums.
-      with self.assertRaises(ValueError) as _:
-        m.optional_nested_enum = 1234567
-      self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
-      # Assignment is a different code path than append for the C++ impl.
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
-      with self.assertRaises(ValueError):
-        m.repeated_nested_enum[0] = 123456
-    else:
+    # Can not assign unknown enum to closed enums.
+    with self.assertRaises(ValueError) as _:
       m.optional_nested_enum = 1234567
-      m.repeated_nested_enum.append(1234567)
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
+    self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
+    # Assignment is a different code path than append for the C++ impl.
+    m.repeated_nested_enum.append(2)
+    m.repeated_nested_enum[0] = 2
+    with self.assertRaises(ValueError):
       m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.
@@ -2564,10 +2556,6 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_all_types[2].optional_string = 'bar'
 
-    if api_implementation.Type() == 'cpp':
-      # Need to keep the map reference because of b/27942626.
-      # TODO: Remove it.
-      unused_map = msg.map_int32_all_types  # pylint: disable=unused-variable
     msg_value = msg.map_int32_all_types[2]
     msg.Clear()
 
