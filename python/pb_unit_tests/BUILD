@@ -15,10 +15,6 @@ pyproto_test_wrapper(name = "descriptor_pool_test")
 
 pyproto_test_wrapper(name = "generator_test")
 
-pyproto_test_wrapper(name = "proto_builder_test")
-
-pyproto_test_wrapper(name = "reflection_test")
-
 filegroup(
     name = "test_files",
     srcs = glob(["*.py"]),
