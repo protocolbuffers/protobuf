@@ -1431,7 +1431,9 @@ public class CodedInputStreamTest {
     int iterations = 100000;
     new Thread(
             () -> {
-              for (int i = 0; i < iterations; i++) embeddedBytes.get();
+              for (int i = 0; i < iterations; i++) {
+                ByteString unused = embeddedBytes.get();
+              }
             })
         .start();
 
