@@ -52,7 +52,6 @@ extern bool fully_verify_message_sets_opt_out;
 
 namespace {
 
-using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
 // This test closely mirrors google/protobuf/compiler/cpp/unittest.cc

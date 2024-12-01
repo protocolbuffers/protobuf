@@ -153,18 +153,6 @@ void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
 }
 
 template <typename Key, typename T>
-size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLockImpl(
-    const MapFieldBase& map) {
-  // We can't compile this expression for DynamicMapField even though it is
-  // never used at runtime, so disable it at compile time.
-  if constexpr (!std::is_same<Map<Key, T>, Map<MapKey, MapValueRef>>::value) {
-    return static_cast<const TypeDefinedMapFieldBase&>(map)
-        .map_.SpaceUsedExcludingSelfLong();
-  }
-  return 0;
-}
-
-template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::UnsafeShallowSwapImpl(MapFieldBase& lhs,
                                                             MapFieldBase& rhs) {
   static_cast<TypeDefinedMapFieldBase&>(lhs).InternalSwap(

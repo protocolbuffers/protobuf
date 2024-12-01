@@ -128,6 +128,44 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void AddRange_ReadOnlySpanPath()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new[] { "foo", "bar" }.AsSpan());
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_ReadOnlySpan_NullsProhibited_ReferenceType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new string[] { "foo", null }.AsSpan()));
+        }
+
+        [Test]
+        public void AddRange_ReadOnlySpan_NullsProhibited_NullableValueType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new int?[] { 20, null }.AsSpan()));
+        }
+
+        [Test]
+        public void AddRange_ReadOnlySpan_AlreadyNotEmpty()
+        {
+            var list = new RepeatedField<int> { 1, 2, 3 };
+            list.AddRange(new int[] { 4, 5, 6 }.AsSpan());
+            CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5, 6 }, list);
+        }
+
+        [Test]
         public void AddRange_AlreadyNotEmpty()
         {
             var list = new RepeatedField<int> { 1, 2, 3 };

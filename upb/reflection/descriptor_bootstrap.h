@@ -6,7 +6,7 @@
 #if defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
 // This header is checked in.
 #include "upb/reflection/stage0/google/protobuf/descriptor.upb.h"
-#elif UPB_BOOTSTRAP_STAGE == 1
+#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 1
 // This header is generated at build time by the bootstrapping process.
 #include "upb/reflection/stage1/google/protobuf/descriptor.upb.h"
 #else

@@ -2,19 +2,20 @@
 
 #include <string>
 
-#include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/file.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
-#include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/command_line_interface.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/generator.h"
-#include "google/protobuf/compiler/java/test_file_name.pb.h"
-#include "google/protobuf/compiler/java/test_file_name_2024.pb.h"
-#include "google/protobuf/compiler/java/test_multiple_file_no.pb.h"
-#include "google/protobuf/compiler/java/test_multiple_file_yes.pb.h"
+#include "google/protobuf/compiler/parser.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -22,162 +23,254 @@ namespace compiler {
 namespace java {
 namespace {
 
-using ::testing::HasSubstr;
-
+#define ASSERT_OK(x) ASSERT_TRUE(x.ok())
 #define PACKAGE_PREFIX ""
 
-// Tests for Edition 2024 feature `use_old_outer_classname_default`.
-TEST(NameResolverTest, GetFileDefaultImmutableClassNameEdition2024) {
-  ClassNameResolver resolver;
+class SimpleErrorCollector : public io::ErrorCollector {
+ public:
+  void RecordError(int line, int column, absl::string_view message) override {
+    last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
+  }
 
-  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(
-                protobuf_unittest::TestFileName2024::GetDescriptor()->file()),
-            "TestFileName2024Proto");
-}
+  const std::string& last_error() { return last_error_; }
 
-TEST(NameResolverTest, GetFileDefaultImmutableClassNameEdition2023) {
-  ClassNameResolver resolver;
+ private:
+  std::string last_error_;
+};
 
-  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(
-                protobuf_unittest::TestFileName::GetDescriptor()->file()),
-            "TestFileName");
-}
+// Gets descriptors with protos built on the fly to go around the "redefinition
+// error" with bazel in OSS. This also avoids using the descriptors generated
+// from the C++ code generator for Java features; instead, we use a custom
+// descriptor pool with feature set defaults built from JavaGenerator.
+class NameResolverTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    // Set the Java FeatureSet defaults from JavaGenerator.
+    JavaGenerator generator;
+    ASSERT_OK(
+        pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
-TEST(NameResolverTest, GetFileImmutableClassNameEdition2024) {
-  ClassNameResolver resolver;
+    // Parse and build built-in protos.
+    BuildFileAndPopulatePool(
+        "google/protobuf/descriptor.proto",
+        google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  }
 
-  EXPECT_EQ(resolver.GetFileImmutableClassName(
-                protobuf_unittest::TestFileName2024::GetDescriptor()->file()),
-            "TestFileName2024Proto");
-}
+  void BuildFileAndPopulatePool(absl::string_view filename,
+                                absl::string_view contents) {
+    io::ArrayInputStream input_stream(contents.data(), contents.size());
+    SimpleErrorCollector error_collector;
+    io::Tokenizer tokenizer(&input_stream, &error_collector);
+    compiler::Parser parser;
+    parser.RecordErrorsTo(&error_collector);
+    FileDescriptorProto proto;
+    ABSL_CHECK(parser.Parse(&tokenizer, &proto))
+        << error_collector.last_error() << "\n"
+        << contents;
+    ABSL_CHECK_EQ("", error_collector.last_error());
+    proto.set_name(filename);
+    pool_.BuildFile(proto);
+  }
 
-TEST(NameResolverTest, GetFileImmutableClassNameEdition2023) {
-  ClassNameResolver resolver;
+  DescriptorPool pool_;
+};
 
-  EXPECT_EQ(resolver.GetFileImmutableClassName(
-                protobuf_unittest::TestFileName::GetDescriptor()->file()),
-            "TestFileNameOuterClass");
-}
-
-TEST(NameResolverTest, GetFileImmutableClassNameConflictingEdition2024) {
-  ClassNameResolver resolver;
-
-  // Conflicting names in Edition 2024 will not add the "OuterClass" suffix.
-  EXPECT_EQ(
-      resolver.GetFileImmutableClassName(
-          protobuf_unittest::TestFileName2024Proto::GetDescriptor()->file()),
-      "TestFileName2024Proto");
-}
-
-TEST(NameResolverTest, InvalidConflictingProtoSuffixedMessageNameEdition2024) {
-  CommandLineInterface cli;
-  ABSL_CHECK_OK(File::SetContents(
-      absl::StrCat(::testing::TempDir(), "/test_file_name.proto"),
-      R"schema(
+TEST_F(NameResolverTest, FileImmutableClassNameEdition2024) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
       edition = "2024";
-      package foo;
-      message TestFileNameProto {
+
+      package protobuf_unittest;
+
+      message TestFileName2024 {
         int32 field = 1;
       }
-      )schema",
-      true));
-  JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator, "");
-  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
-  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
-  const char* argv[] = {"protoc", java_out.c_str(), proto_path.c_str(),
-                        "test_file_name.proto", "--experimental_editions"};
-  CaptureTestStderr();
 
-  EXPECT_EQ(1, cli.Run(5, argv));
-  EXPECT_THAT(GetCapturedTestStderr(),
-              HasSubstr("Cannot generate Java output because the file's outer "
-                        "class name, \"TestFileNameProto\", matches the name "
-                        "of one of the types declared inside it"));
+      // Conflicting names in edition 2024.
+      message FooProto {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(file), "FooProto");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(file), "FooProto");
 }
 
-TEST(NameResolverTest, GetClassNameMultipleFilesServiceEdition2023) {
-  ClassNameResolver resolver;
+TEST_F(NameResolverTest, FileImmutableClassNameDefaultOverriddenEdition2024) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2024";
 
-  EXPECT_EQ(resolver.GetClassName(
-                protobuf_unittest::MultipleFileYesService::descriptor(),
-                /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesService");
-  EXPECT_EQ(resolver.GetClassName(
-                protobuf_unittest::MultipleFileNoService::descriptor(),
-                /* immutable = */ true),
-            PACKAGE_PREFIX
-            "protobuf_unittest.TestMultipleFileNo."
-            "MultipleFileNoService");
+      package protobuf_unittest;
+
+      option java_outer_classname = "BarBuz";
+
+      message FooProto {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(file), "FooProto");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(file), "BarBuz");
 }
 
-TEST(NameResolverTest, GetJavaClassNameMultipleFilesServiceEdition2023) {
-  ClassNameResolver resolver;
+TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
+  BuildFileAndPopulatePool("conflicting_file_class_name.proto",
+                           R"schema(
+      edition = "2023";
 
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileYesService::descriptor()),
-            PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesService");
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileNoService::descriptor()),
-            PACKAGE_PREFIX
-            "protobuf_unittest.TestMultipleFileNo$"
-            "MultipleFileNoService");
+      package protobuf_unittest;
+
+      message ConflictingFileClassName {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("conflicting_file_class_name.proto");
+  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(file),
+            "ConflictingFileClassName");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(file),
+            "ConflictingFileClassNameOuterClass");
 }
 
-TEST(NameResolverTest, GetClassNameMultipleFilesMessageEdition2023) {
-  ClassNameResolver resolver;
+TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
 
-  EXPECT_EQ(resolver.GetClassName(
-                protobuf_unittest::MultipleFileYesMessage::descriptor(),
-                /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesMessage");
-  EXPECT_EQ(resolver.GetClassName(
-                protobuf_unittest::MultipleFileNoMessage::descriptor(),
-                /* immutable = */ true),
-            PACKAGE_PREFIX
-            "protobuf_unittest.TestMultipleFileNo."
-            "MultipleFileNoMessage");
+      option java_generic_services = true;
+      option java_multiple_files = true;
+
+      package protobuf_unittest;
+
+      message Dummy {}
+      service FooService {
+        rpc FooMethod(Dummy) returns (Dummy) {}
+      }
+                )schema");
+
+  auto service_descriptor =
+      pool_.FindServiceByName("protobuf_unittest.FooService");
+  ClassNameResolver resolver;
+  EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.FooService");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.FooService");
 }
 
-TEST(NameResolverTest, GetJavaClassNameMultipleFilesMessageEdition2023) {
-  ClassNameResolver resolver;
+TEST_F(NameResolverTest, SingleFileServiceEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
 
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileYesMessage::descriptor()),
-            PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesMessage");
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileNoMessage::descriptor()),
-            PACKAGE_PREFIX
-            "protobuf_unittest.TestMultipleFileNo$"
-            "MultipleFileNoMessage");
+      option java_generic_services = true;
+
+      package protobuf_unittest;
+
+      message Dummy {}
+      service FooService {
+        rpc FooMethod(Dummy) returns (Dummy) {}
+      }
+                )schema");
+
+  auto service_descriptor =
+      pool_.FindServiceByName("protobuf_unittest.FooService");
+  ClassNameResolver resolver;
+  EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooService");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooService");
 }
 
-TEST(NameResolverTest, GetClassNameMultipleFilesEnumEdition2023) {
+TEST_F(NameResolverTest, MultipleFilesMessageEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
+
+      option java_multiple_files = true;
+
+      package protobuf_unittest;
+
+      message FooMessage {}
+                )schema");
+
+  auto message_descriptor =
+      pool_.FindMessageTypeByName("protobuf_unittest.FooMessage");
   ClassNameResolver resolver;
 
-  EXPECT_EQ(
-      resolver.GetClassName(protobuf_unittest::MultipleFileYesEnum_descriptor(),
-                            /* immutable = */ true),
-      PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesEnum");
-  EXPECT_EQ(
-      resolver.GetClassName(protobuf_unittest::MultipleFileNoEnum_descriptor(),
-                            /* immutable = */ true),
-      PACKAGE_PREFIX
-      "protobuf_unittest.TestMultipleFileNo."
-      "MultipleFileNoEnum");
+  EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
 }
 
-TEST(NameResolverTest, GetJavaClassNameMultipleFilesEnumEdition2023) {
+TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
+
+      package protobuf_unittest;
+
+      message FooMessage {}
+                )schema");
+
+  auto message_descriptor =
+      pool_.FindMessageTypeByName("protobuf_unittest.FooMessage");
   ClassNameResolver resolver;
 
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileYesEnum_descriptor()),
-            PACKAGE_PREFIX "protobuf_unittest.MultipleFileYesEnum");
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(
-                protobuf_unittest::MultipleFileNoEnum_descriptor()),
-            PACKAGE_PREFIX
-            "protobuf_unittest.TestMultipleFileNo$"
-            "MultipleFileNoEnum");
+  EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooMessage");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooMessage");
+}
+
+TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
+
+      package protobuf_unittest;
+
+      option java_multiple_files = true;
+
+      enum FooEnum {
+        FOO_ENUM_UNSPECIFIED = 0;
+      }
+                )schema");
+
+  auto enum_descriptor = pool_.FindEnumTypeByName("protobuf_unittest.FooEnum");
+  ClassNameResolver resolver;
+
+  EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
+}
+
+TEST_F(NameResolverTest, SingleFileEnumEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
+
+      package protobuf_unittest;
+
+      enum FooEnum {
+        FOO_ENUM_UNSPECIFIED = 0;
+      }
+                )schema");
+
+  auto enum_descriptor = pool_.FindEnumTypeByName("protobuf_unittest.FooEnum");
+  ClassNameResolver resolver;
+
+  EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooEnum");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooEnum");
 }
 
 }  // namespace
@@ -185,3 +278,5 @@ TEST(NameResolverTest, GetJavaClassNameMultipleFilesEnumEdition2023) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

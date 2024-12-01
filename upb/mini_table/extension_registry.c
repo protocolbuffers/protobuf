@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/hash/common.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
@@ -39,24 +40,32 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   return r;
 }
 
-UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
-                                       const upb_MiniTableExtension* e) {
+UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension* e) {
   char buf[EXTREG_KEY_SIZE];
   extreg_key(buf, e->UPB_PRIVATE(extendee), upb_MiniTableExtension_Number(e));
-  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, NULL)) return false;
-  return upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
-                             upb_value_constptr(e), r->arena);
+
+  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, NULL)) {
+    return kUpb_ExtensionRegistryStatus_DuplicateEntry;
+  }
+
+  if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
+                           upb_value_constptr(e), r->arena)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
+  return kUpb_ExtensionRegistryStatus_Ok;
 }
 
-bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
-                                    const upb_MiniTableExtension** e,
-                                    size_t count) {
+upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
+  upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;
   for (; e < end; e++) {
-    if (!upb_ExtensionRegistry_Add(r, *e)) goto failure;
+    status = upb_ExtensionRegistry_Add(r, *e);
+    if (status != kUpb_ExtensionRegistryStatus_Ok) goto failure;
   }
-  return true;
+  return kUpb_ExtensionRegistryStatus_Ok;
 
 failure:
   // Back out the entries previously added.
@@ -67,7 +76,8 @@ failure:
                upb_MiniTableExtension_Number(ext));
     upb_strtable_remove2(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
   }
-  return false;
+  UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);
+  return status;
 }
 
 #ifdef UPB_LINKARR_DECLARE
@@ -80,7 +90,9 @@ bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
   for (const upb_MiniTableExtension* p = start; p < stop; p++) {
     // Windows can introduce zero padding, so we have to skip zeroes.
     if (upb_MiniTableExtension_Number(p) != 0) {
-      if (!upb_ExtensionRegistry_Add(r, p)) return false;
+      if (upb_ExtensionRegistry_Add(r, p) != kUpb_ExtensionRegistryStatus_Ok) {
+        return false;
+      }
     }
   }
   return true;

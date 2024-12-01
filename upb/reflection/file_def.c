@@ -453,8 +453,15 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   if (file->ext_count) {
-    bool ok = upb_ExtensionRegistry_AddArray(
+    upb_ExtensionRegistryStatus status = upb_ExtensionRegistry_AddArray(
         _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
-    if (!ok) _upb_DefBuilder_OomErr(ctx);
+    if (status != kUpb_ExtensionRegistryStatus_Ok) {
+      if (status == kUpb_ExtensionRegistryStatus_OutOfMemory) {
+        _upb_DefBuilder_OomErr(ctx);
+      }
+
+      UPB_ASSERT(status == kUpb_ExtensionRegistryStatus_DuplicateEntry);
+      _upb_DefBuilder_Errf(ctx, "duplicate extension entry");
+    }
   }
 }

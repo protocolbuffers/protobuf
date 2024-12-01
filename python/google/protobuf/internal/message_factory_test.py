@@ -179,14 +179,19 @@ class MessageFactoryTest(unittest.TestCase):
         type_name='Duplicate',
         extendee='Container',
     )
+
     if api_implementation.Type() == 'upb':
       with self.assertRaisesRegex(
           TypeError,
-          # TODO - b/380939902: Figure out why this fails with an OOM message.
-          "Couldn't build proto file into descriptor pool: out of memory",
+          "Couldn't build proto file into descriptor pool: "
+          'duplicate extension entry',
       ):
         pool.Add(f)
     else:
+      # TODO: b/381131694 - Ensure conformance between upb/c++/python.
+      # C++ and pure Python implementations should raise an error when adding a
+      # duplicate extension number. There doesn't seem to be a benefit to failing
+      # only when GetMessageClassesForFiles is called.
       pool.Add(f)
 
       with self.assertRaises(Exception) as cm:

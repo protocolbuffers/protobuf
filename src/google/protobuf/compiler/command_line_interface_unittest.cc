@@ -84,7 +84,7 @@ using google::protobuf::io::win32::write;
 
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
-#if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+#if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
 
 namespace {

@@ -972,27 +972,13 @@ namespace {
 // already allocated and will not be going away.
 template <typename ItX, typename ItY>
 size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
-  size_t result = 0;
-  while (it_dest != end_dest && it_source != end_source) {
-    if (it_dest->first < it_source->first) {
-      ++result;
-      ++it_dest;
-    } else if (it_dest->first == it_source->first) {
-      ++result;
-      ++it_dest;
-      ++it_source;
-    } else {
-      if (!it_source->second.is_cleared) {
-        ++result;
-      }
-      ++it_source;
-    }
-  }
-  result += std::distance(it_dest, end_dest);
+  size_t result = std::distance(it_dest, end_dest);
   for (; it_source != end_source; ++it_source) {
-    if (!it_source->second.is_cleared) {
-      ++result;
+    while (it_dest != end_dest && it_dest->first < it_source->first) {
+      ++it_dest;
     }
+    result += (it_dest == end_dest || it_dest->first > it_source->first) &&
+              !it_source->second.is_cleared;
   }
   return result;
 }
@@ -1106,10 +1092,8 @@ void ExtensionSet::InternalExtensionMergeFromIntoUninitializedExtension(
     case WireFormatLite::CPPTYPE_MESSAGE: {
       if (other_extension.is_lazy) {
         dst_extension.ptr.lazymessage_value =
-            other_extension.ptr.lazymessage_value->New(arena_);
-        dst_extension.ptr.lazymessage_value->MergeFrom(
-            GetPrototypeForLazyMessage(extendee, number),
-            *other_extension.ptr.lazymessage_value, arena_, other_arena);
+            other_extension.ptr.lazymessage_value->Clone(
+                arena_, *other_extension.ptr.lazymessage_value, other_arena);
       } else {
         dst_extension.ptr.message_value =
             other_extension.ptr.message_value->New(arena_);

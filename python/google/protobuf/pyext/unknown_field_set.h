@@ -26,9 +26,11 @@ namespace python {
 struct CMessage;
 
 struct PyUnknownFieldSet {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   // If parent is nullptr, it is a top UnknownFieldSet.
   PyUnknownFieldSet* parent;
+  // clang-format on
 
   // Top UnknownFieldSet owns fields pointer. Sub UnknownFieldSet
   // does not own fields pointer.
@@ -36,10 +38,12 @@ struct PyUnknownFieldSet {
 };
 
 struct PyUnknownField {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   // Every Python PyUnknownField holds a reference to its parent
   // PyUnknownFieldSet in order to keep it alive.
   PyUnknownFieldSet* parent;
+  // clang-format on
 
   // The UnknownField index in UnknownFieldSet.
   Py_ssize_t index;

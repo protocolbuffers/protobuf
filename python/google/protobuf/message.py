@@ -13,6 +13,9 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+_INCONSISTENT_MESSAGE_ATTRIBUTES = ('Extensions',)
+
+
 class Error(Exception):
   """Base error type for this module."""
   pass
@@ -55,6 +58,20 @@ class Message(object):
     clone = type(self)()
     clone.MergeFrom(self)
     return clone
+
+  def __dir__(self):
+    """Filters out attributes that would raise AttributeError if accessed."""
+    missing_attributes = set()
+    for attribute in _INCONSISTENT_MESSAGE_ATTRIBUTES:
+      try:
+        getattr(self, attribute)
+      except AttributeError:
+        missing_attributes.add(attribute)
+    return [
+        attribute
+        for attribute in super().__dir__()
+        if attribute not in missing_attributes
+    ]
 
   def __eq__(self, other_msg):
     """Recursively compares two messages by value and structure."""

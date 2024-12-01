@@ -345,18 +345,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     impl_.AddCleanup(object, destruct);
   }
 
-  // Retrieves the arena associated with |value| if |value| is an arena-capable
-  // message, or nullptr otherwise. If possible, the call resolves at compile
-  // time. Note that we can often devirtualize calls to `value->GetArena()` so
-  // usually calling this method is unnecessary.
-  // TODO: remove this function.
-  template <typename T>
-  ABSL_DEPRECATED(
-      "This will be removed in a future release. Call value->GetArena() "
-      "instead.")
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArena(T* value) {
-    return GetArenaInternal(value);
-  }
 
   template <typename T>
   class InternalHelper {

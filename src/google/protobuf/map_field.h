@@ -417,6 +417,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
+  static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   // Tells MapFieldBase that there is new change to Map.
   void SetMapDirty() {
@@ -628,8 +629,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
-
-  static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

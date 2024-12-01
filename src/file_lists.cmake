@@ -1219,10 +1219,6 @@ set(compiler_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_file_name.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_file_name_2024.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_multiple_file_no.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/test_multiple_file_yes.proto
 )
 
 # @//src/google/protobuf/compiler:test_plugin_srcs

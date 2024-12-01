@@ -49,15 +49,17 @@ typedef enum {
   kUpb_LayoutItemType_Max = kUpb_LayoutItemType_Field,
 } upb_LayoutItemType;
 
-#define kUpb_LayoutItem_IndexSentinel ((uint16_t) - 1)
+#define kUpb_LayoutItem_IndexSentinel ((uint16_t)-1)
 
 typedef struct {
   // Index of the corresponding field.  When this is a oneof field, the field's
   // offset will be the index of the next field in a linked list.
   uint16_t field_index;
   uint16_t offset;
-  upb_FieldRep rep;
-  upb_LayoutItemType type;
+  // These two enums are stored in bytes to avoid trailing padding while
+  // preserving two-byte alignment.
+  uint8_t /* upb_FieldRep*/ rep;
+  uint8_t /* upb_LayoutItemType*/ type;
 } upb_LayoutItem;
 
 typedef struct {
@@ -520,11 +522,12 @@ static int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
   //  2. field_index (smallest numbers first)
   // The main goal of this is to reduce space lost to padding.
   // Later we may have more subtle reasons to prefer a different ordering.
-  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max);
-  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max);
+  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max + 1);
+  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max + 1);
   const int idx_bits = (sizeof(a->field_index) * 8);
   UPB_ASSERT(idx_bits + rep_bits + type_bits < 32);
-#define UPB_COMBINE(rep, ty, idx) (((rep << type_bits) | ty) << idx_bits) | idx
+#define UPB_COMBINE(rep, ty, idx) \
+  (((((rep) << type_bits) | (ty)) << idx_bits) | (idx))
   uint32_t a_packed = UPB_COMBINE(a->rep, a->type, a->field_index);
   uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
   UPB_ASSERT(a_packed != b_packed);
@@ -742,7 +745,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
   decoder->table->UPB_PRIVATE(dense_below) = 0;
   decoder->table->UPB_PRIVATE(table_mask) = -1;
   decoder->table->UPB_PRIVATE(required_count) = 0;
-#if UPB_TRACING_ENABLED
+#ifdef UPB_TRACING_ENABLED
   // MiniTables built from MiniDescriptors will not be able to vend the message
   // name unless it is explicitly set with upb_MiniTable_SetFullName().
   decoder->table->UPB_PRIVATE(full_name) = 0;

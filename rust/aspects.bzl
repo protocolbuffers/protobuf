@@ -130,7 +130,6 @@ def _generate_rust_gencode(
         additional_args = additional_args,
         generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
-        plugin_output = ctx.bin_dir.path,
     )
     return (rs_outputs, cc_outputs)
 

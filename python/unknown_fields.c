@@ -19,8 +19,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* fields;
+  // clang-format on
 } PyUpb_UnknownFieldSet;
 
 static void PyUpb_UnknownFieldSet_Dealloc(PyObject* _self) {

@@ -18,8 +18,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   // The field descriptor (upb_FieldDef*).
   // The low bit indicates whether the container is reified (see ptr below).
   //   - low bit set: repeated field is a stub (empty map, no underlying data).
@@ -457,8 +459,10 @@ static PyType_Spec PyUpb_MessageMapContainer_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyUpb_MapContainer* map;  // We own a reference.
+  // clang-format on
   size_t iter;
   int version;
 } PyUpb_MapIterator;

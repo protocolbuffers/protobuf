@@ -1,7 +1,0 @@
-edition = "2023";
-
-package protobuf_unittest;
-
-message TestFileName {
-  int32 field = 1;
-}

@@ -284,34 +284,8 @@ struct NodeBase {
   }
 };
 
-// This captures all numeric types.
-inline size_t MapValueSpaceUsedExcludingSelfLong(bool) { return 0; }
-inline size_t MapValueSpaceUsedExcludingSelfLong(const std::string& str) {
-  return StringSpaceUsedExcludingSelfLong(str);
-}
-template <typename T,
-          typename = decltype(std::declval<const T&>().SpaceUsedLong())>
-size_t MapValueSpaceUsedExcludingSelfLong(const T& message) {
-  return message.SpaceUsedLong() - sizeof(T);
-}
-
 constexpr size_t kGlobalEmptyTableSize = 1;
 PROTOBUF_EXPORT extern NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize];
-
-template <typename Map,
-          typename = typename std::enable_if<
-              !std::is_scalar<typename Map::key_type>::value ||
-              !std::is_scalar<typename Map::mapped_type>::value>::type>
-size_t SpaceUsedInValues(const Map* map) {
-  size_t size = 0;
-  for (const auto& v : *map) {
-    size += internal::MapValueSpaceUsedExcludingSelfLong(v.first) +
-            internal::MapValueSpaceUsedExcludingSelfLong(v.second);
-  }
-  return size;
-}
-
-inline size_t SpaceUsedInValues(const void*) { return 0; }
 
 class UntypedMapBase;
 
@@ -457,8 +431,19 @@ class PROTOBUF_EXPORT UntypedMapBase {
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
 
-  template <typename T = void>
+  template <typename T>
+  T* GetKey(NodeBase* node) const {
+    // Debug check that `T` matches what we expect from the type info.
+    ABSL_DCHECK_EQ(static_cast<int>(StaticTypeKind<T>()),
+                   static_cast<int>(type_info_.key_type));
+    return reinterpret_cast<T*>(node->GetVoidKey());
+  }
+
+  template <typename T>
   T* GetValue(NodeBase* node) const {
+    // Debug check that `T` matches what we expect from the type info.
+    ABSL_DCHECK_EQ(static_cast<int>(StaticTypeKind<T>()),
+                   static_cast<int>(type_info_.value_type));
     return reinterpret_cast<T*>(reinterpret_cast<char*>(node) +
                                 type_info_.value_offset);
   }
@@ -467,6 +452,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
     if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
     ClearTableImpl(reset, destroy);
   }
+
+  // Space used for the table and nodes.
+  size_t SpaceUsedExcludingSelfLong() const;
+
+  TypeInfo type_info() const { return type_info_; }
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
@@ -495,6 +485,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // All the end iterators are singletons anyway.
   static UntypedMapIterator EndIterator() { return {nullptr, nullptr, 0}; }
 
+  // Calls `f(k)` with the key of the node, where `k` is the appropriate type
+  // according to the stored TypeInfo.
+  template <typename F>
+  auto VisitKey(NodeBase* node, F f) const;
+
+  // Calls `f(v)` with the value of the node, where `v` is the appropriate type
+  // according to the stored TypeInfo.
+  // Messages are visited as `MessageLite`, and enums are visited as int32.
+  template <typename F>
+  auto VisitValue(NodeBase* node, F f) const;
+
+  // As above, but calls `f(k, v)` for every node in the map.
+  template <typename F>
+  void VisitAllNodes(F f) const;
+
  protected:
   friend class TcParser;
   friend struct MapTestPeer;
@@ -502,6 +507,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend class UntypedMapIterator;
   friend class RustMapHelper;
   friend class v2::TableDriven;
+
+  // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
+  // typedef in it representing the dynamic type of key/value of the node.
+  template <typename F>
+  auto VisitKeyType(F f) const;
+  template <typename F>
+  auto VisitValueType(F f) const;
 
   struct NodeAndBucket {
     NodeBase* node;
@@ -534,18 +546,14 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using AllocFor = absl::allocator_traits<Allocator>::template rebind_alloc<T>;
 
   // Alignment of the nodes is the same as alignment of NodeBase.
-  NodeBase* AllocNode(MapNodeSizeInfoT size_info) {
-    return AllocNode(SizeFromInfo(size_info));
-  }
+  NodeBase* AllocNode() { return AllocNode(type_info_.node_size); }
 
   NodeBase* AllocNode(size_t node_size) {
     PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
     return AllocFor<NodeBase>(alloc_).allocate(node_size / sizeof(NodeBase));
   }
 
-  void DeallocNode(NodeBase* node, MapNodeSizeInfoT size_info) {
-    DeallocNode(node, SizeFromInfo(size_info));
-  }
+  void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
     PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
@@ -568,6 +576,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return result;
   }
 
+  void DeleteNode(NodeBase* node);
+
   template <typename Node>
   static void DestroyNode(NodeBase* node) {
     static_cast<Node*>(node)->~Node();
@@ -583,10 +593,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
                : nullptr;
   }
 
-  // Space used for the table, trees, and nodes.
-  // Does not include the indirect space used. Eg the data of a std::string.
-  size_t SpaceUsedInTable(size_t sizeof_node) const;
-
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
@@ -594,6 +600,77 @@ class PROTOBUF_EXPORT UntypedMapBase {
   NodeBase** table_;  // an array with num_buckets_ entries
   Allocator alloc_;
 };
+
+template <typename F>
+auto UntypedMapBase::VisitKeyType(F f) const {
+  switch (type_info_.key_type) {
+    case TypeKind::kBool:
+      return f(std::enable_if<true, bool>{});
+    case TypeKind::kU32:
+      return f(std::enable_if<true, uint32_t>{});
+    case TypeKind::kU64:
+      return f(std::enable_if<true, uint64_t>{});
+    case TypeKind::kString:
+      return f(std::enable_if<true, std::string>{});
+
+    case TypeKind::kFloat:
+    case TypeKind::kDouble:
+    case TypeKind::kMessage:
+    case TypeKind::kUnknown:
+    default:
+      Unreachable();
+  }
+}
+
+template <typename F>
+auto UntypedMapBase::VisitValueType(F f) const {
+  switch (type_info_.value_type) {
+    case TypeKind::kBool:
+      return f(std::enable_if<true, bool>{});
+    case TypeKind::kU32:
+      return f(std::enable_if<true, uint32_t>{});
+    case TypeKind::kU64:
+      return f(std::enable_if<true, uint64_t>{});
+    case TypeKind::kFloat:
+      return f(std::enable_if<true, float>{});
+    case TypeKind::kDouble:
+      return f(std::enable_if<true, double>{});
+    case TypeKind::kString:
+      return f(std::enable_if<true, std::string>{});
+    case TypeKind::kMessage:
+      return f(std::enable_if<true, MessageLite>{});
+
+    case TypeKind::kUnknown:
+    default:
+      Unreachable();
+  }
+}
+
+template <typename F>
+void UntypedMapBase::VisitAllNodes(F f) const {
+  VisitKeyType([&](auto key_type) {
+    VisitValueType([&](auto value_type) {
+      for (auto it = begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+        f(GetKey<typename decltype(key_type)::type>(it.node_),
+          GetValue<typename decltype(value_type)::type>(it.node_));
+      }
+    });
+  });
+}
+
+template <typename F>
+auto UntypedMapBase::VisitKey(NodeBase* node, F f) const {
+  return VisitKeyType([&](auto key_type) {
+    return f(GetKey<typename decltype(key_type)::type>(node));
+  });
+}
+
+template <typename F>
+auto UntypedMapBase::VisitValue(NodeBase* node, F f) const {
+  return VisitValueType([&](auto value_type) {
+    return f(GetValue<typename decltype(value_type)::type>(node));
+  });
+}
 
 inline UntypedMapIterator UntypedMapBase::begin() const {
   map_index_t bucket_index;
@@ -886,30 +963,10 @@ class RustMapHelper {
  public:
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
 
-  static void GetSizeAndAlignment(const google::protobuf::MessageLite* m, uint16_t* size,
-                                  uint8_t* alignment) {
-    const auto* class_data = m->GetClassData();
-    *size = static_cast<uint16_t>(class_data->allocation_size());
-    *alignment = class_data->alignment();
-  }
+  static NodeBase* AllocNode(UntypedMapBase* m) { return m->AllocNode(); }
 
-  static constexpr MapNodeSizeInfoT MakeSizeInfo(uint16_t size,
-                                                 uint16_t value_offset) {
-    return MakeNodeInfo(size, value_offset);
-  }
-
-  template <typename Key, typename Value>
-  static constexpr MapNodeSizeInfoT SizeInfo() {
-    return Map<Key, Value>::Node::size_info();
-  }
-
-  static NodeBase* AllocNode(UntypedMapBase* m, MapNodeSizeInfoT size_info) {
-    return m->AllocNode(size_info);
-  }
-
-  static void DeallocNode(UntypedMapBase* m, NodeBase* node,
-                          MapNodeSizeInfoT size_info) {
-    return m->DeallocNode(node, size_info);
+  static void DeleteNode(UntypedMapBase* m, NodeBase* node) {
+    return m->DeleteNode(node);
   }
 
   template <typename Map, typename Key>
@@ -930,12 +987,6 @@ class RustMapHelper {
   static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
                                            void* mem) {
     return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
-  }
-
-  static void DestroyMessage(MessageLite* m) { m->DestroyInstance(); }
-
-  static bool IsGlobalEmptyTable(const UntypedMapBase* m) {
-    return m->num_buckets_ == kGlobalEmptyTableSize;
   }
 };
 
@@ -1345,7 +1396,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
     auto* node = static_cast<Node*>(pos.node_);
     this->erase_no_destroy(pos.bucket_index_, node);
-    DestroyNode(node);
+    DeleteNode(node);
     return next;
   }
 
@@ -1389,7 +1440,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   size_t SpaceUsedExcludingSelfLong() const {
     if (empty()) return 0;
-    return SpaceUsedInternal() + internal::SpaceUsedInValues(this);
+    return internal::UntypedMapBase::SpaceUsedExcludingSelfLong();
   }
 
   static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
@@ -1417,16 +1468,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     };
   }
 
-  void DestroyNode(Node* node) {
+  void DeleteNode(Node* node) {
     if (this->alloc_.arena() == nullptr) {
       node->kv.first.~key_type();
       node->kv.second.~mapped_type();
       this->DeallocNode(node, sizeof(Node));
     }
-  }
-
-  size_t SpaceUsedInternal() const {
-    return this->SpaceUsedInTable(sizeof(Node));
   }
 
   template <typename K, typename... Args>
