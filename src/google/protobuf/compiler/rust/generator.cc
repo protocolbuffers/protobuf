@@ -37,19 +37,6 @@ namespace compiler {
 namespace rust {
 namespace {
 
-// Emits `pub use <internal submodule name>::Type` for all messages and enums of
-// a `non_primary_src` into the `primary_file`.
-//
-// `non_primary_src` has to be a non-primary src of the current `proto_library`.
-void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
-                          const FileDescriptor& non_primary_src) {
-  auto mod = RustInternalModuleName(ctx, non_primary_src);
-  ctx.Emit({{"mod", mod}}, R"rs(
-    #[allow(unused_imports)]
-    pub use crate::$mod$::*;
-  )rs");
-}
-
 // Emits `pub use <crate_name>::<modules for parent types>::Type` for all
 // messages and enums of a `dep`. This should only be
 // called for 'import public' deps.
@@ -85,22 +72,19 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
 // Note we don't reexport entire crates, only messages and enums from files that
 // have been explicitly publicly imported. It may happen that a `proto_library`
 // defines multiple files, but not all are publicly imported.
-void EmitPublicImports(Context& ctx,
-                       const std::vector<const FileDescriptor*>& srcs) {
-  absl::flat_hash_set<const FileDescriptor*> files_in_current_target(
-      srcs.begin(), srcs.end());
-  std::vector<const FileDescriptor*> files_to_visit(srcs.begin(), srcs.end());
-  absl::c_reverse(files_to_visit);
+void EmitPublicImports(const RustGeneratorContext& rust_generator_context,
+                       Context& ctx, const FileDescriptor& file) {
+  std::vector<const FileDescriptor*> files_to_visit{&file};
   while (!files_to_visit.empty()) {
-    const FileDescriptor* file = files_to_visit.back();
+    const FileDescriptor* f = files_to_visit.back();
     files_to_visit.pop_back();
 
-    if (!files_in_current_target.contains(file)) {
-      EmitPublicImportsForDepFile(ctx, file);
+    if (!rust_generator_context.is_file_in_current_crate(*f)) {
+      EmitPublicImportsForDepFile(ctx, f);
     }
 
-    for (int i = 0; i < file->public_dependency_count(); ++i) {
-      files_to_visit.push_back(file->dependency(i));
+    for (int i = 0; i < f->public_dependency_count(); ++i) {
+      files_to_visit.push_back(f->public_dependency(i));
     }
   }
 }
@@ -121,17 +105,11 @@ void DeclareSubmodulesForNonPrimarySrcs(
              R"rs(
                         #[path="$file_path$"]
                         #[allow(non_snake_case)]
-                        pub mod $mod_name$;
-                      )rs");
-  }
-}
+                        mod $mod_name$;
 
-// Emits `pub use <...>::Msg` for all messages in non primary sources.
-void ReexportMessagesFromSubmodules(
-    Context& ctx, const FileDescriptor& primary_file,
-    absl::Span<const FileDescriptor* const> non_primary_srcs) {
-  for (const FileDescriptor* file : non_primary_srcs) {
-    EmitPubUseOfOwnTypes(ctx, primary_file, *file);
+                        #[allow(unused_imports)]
+                        pub use crate::$mod_name$::*;
+                      )rs");
   }
 }
 
@@ -192,8 +170,6 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   if (file == &rust_generator_context.primary_file()) {
     auto non_primary_srcs = absl::MakeConstSpan(file_contexts).subspan(1);
     DeclareSubmodulesForNonPrimarySrcs(ctx, *file, non_primary_srcs);
-    ReexportMessagesFromSubmodules(ctx, *file, non_primary_srcs);
-    EmitPublicImports(ctx, file_contexts);
   }
 
   std::unique_ptr<io::ZeroCopyOutputStream> thunks_cc;
@@ -229,6 +205,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "rust/cpp_kernel/strings.h"
         )cc");
   }
+
+  EmitPublicImports(rust_generator_context, ctx, *file);
 
   for (int i = 0; i < file->message_type_count(); ++i) {
     auto& msg = *file->message_type(i);
