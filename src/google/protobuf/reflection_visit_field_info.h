@@ -709,11 +709,12 @@ struct RepeatedEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedField<FieldT>(&message, field);
+    auto& rep =
+        *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedField<FieldT>(&message, field)->Clear();
+    reflection->MutableRepeatedFieldInternal<FieldT>(&message, field)->Clear();
   }
 
   const Reflection* reflection;
@@ -809,11 +810,13 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedPtrField<FieldT>(&message, field);
+    auto& rep =
+        *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedPtrField<FieldT>(&message, field)->Clear();
+    reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field)
+        ->Clear();
   }
 
   const Reflection* reflection;

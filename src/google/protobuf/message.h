@@ -150,6 +150,10 @@ class ReflectionVisit;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
+template <typename MessageT, typename FieldT>
+struct RepeatedEntityDynamicFieldInfoBase;
+template <typename MessageT, typename FieldT>
+struct RepeatedPtrEntityDynamicFieldInfoBase;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -1097,6 +1101,10 @@ class PROTOBUF_EXPORT Reflection final {
   friend class RepeatedFieldRef;
   template <typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
+  template <typename MessageT, typename FieldT>
+  friend struct internal::RepeatedEntityDynamicFieldInfoBase;
+  template <typename MessageT, typename FieldT>
+  friend struct internal::RepeatedPtrEntityDynamicFieldInfoBase;
   friend class Message;
   friend class MessageLayoutInspector;
   friend class AssignDescriptorsHelper;
