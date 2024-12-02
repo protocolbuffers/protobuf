@@ -15,6 +15,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/escaping.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -38,6 +39,7 @@
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/message.h"
 #include "upb/test/fuzz_util.h"
+#include "upb/text/debug_string.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"

@@ -133,19 +133,17 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
                                             const upb_MiniTable* m,
                                             int options) {
-  // Must have identical extension counts.
-  if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2)) {
-    return false;
-  }
-
   const upb_MiniTableExtension* e;
   upb_MessageValue val1;
 
   // Iterate over all extensions for msg1, and search msg2 for each extension.
+  size_t count1 = 0;
   size_t iter1 = kUpb_Message_ExtensionBegin;
   while (upb_Message_NextExtension(msg1, &e, &val1, &iter1)) {
     const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
     if (!ext2) return false;
+
+    count1++;
 
     const upb_MessageValue val2 = ext2->data;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
@@ -170,6 +168,11 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
     }
     if (!eq) return false;
   }
+
+  // Must have identical extension counts (this catches the case where msg2
+  // has extensions that msg1 doesn't).
+  if (count1 != upb_Message_ExtensionCount(msg2)) return false;
+
   return true;
 }
 

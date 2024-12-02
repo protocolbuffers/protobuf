@@ -217,6 +217,7 @@ cc_dist_library(
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/text",
+        "//upb/text:debug",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
         "//upb/wire:byte_size",
