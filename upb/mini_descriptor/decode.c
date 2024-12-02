@@ -13,12 +13,10 @@
 #include <stdlib.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/base/internal/log2.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map_entry.h"
-#include "upb/message/internal/types.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/decoder.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
@@ -75,6 +73,9 @@ typedef struct {
   upb_MiniTablePlatform platform;
   upb_LayoutItemVector vec;
   upb_Arena* arena;
+  // Initially tracks the count of each field rep type; then, during assignment,
+  // tracks the base offset for the next processed field of the given rep.
+  uint16_t rep_counts_offsets[kUpb_FieldRep_Max + 1];
 } upb_MtDecoder;
 
 // In each field's offset, we temporarily store a presence classifier:
@@ -267,6 +268,7 @@ static void upb_MtDecoder_PushItem(upb_MtDecoder* d, upb_LayoutItem item) {
     upb_MdDecoder_CheckOutOfMemory(&d->base, d->vec.data);
     d->vec.capacity = new_cap;
   }
+  d->rep_counts_offsets[item.rep]++;
   d->vec.data[d->vec.size++] = item;
 }
 
@@ -513,29 +515,7 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_AllocateSubs(d, sub_counts);
 }
 
-static int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
-  const upb_LayoutItem* a = _a;
-  const upb_LayoutItem* b = _b;
-  // Currently we just sort by:
-  //  1. rep (smallest fields first)
-  //  2. type (oneof cases first)
-  //  2. field_index (smallest numbers first)
-  // The main goal of this is to reduce space lost to padding.
-  // Later we may have more subtle reasons to prefer a different ordering.
-  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max + 1);
-  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max + 1);
-  const int idx_bits = (sizeof(a->field_index) * 8);
-  UPB_ASSERT(idx_bits + rep_bits + type_bits < 32);
-#define UPB_COMBINE(rep, ty, idx) \
-  (((((rep) << type_bits) | (ty)) << idx_bits) | (idx))
-  uint32_t a_packed = UPB_COMBINE(a->rep, a->type, a->field_index);
-  uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
-  UPB_ASSERT(a_packed != b_packed);
-#undef UPB_COMBINE
-  return a_packed < b_packed ? -1 : 1;
-}
-
-static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
+static void upb_MtDecoder_CalculateAlignments(upb_MtDecoder* d) {
   // Add items for all non-oneof fields (oneofs were already added).
   int n = d->table->UPB_PRIVATE(field_count);
   for (int i = 0; i < n; i++) {
@@ -547,12 +527,33 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
     upb_MtDecoder_PushItem(d, item);
   }
 
-  if (d->vec.size) {
-    qsort(d->vec.data, d->vec.size, sizeof(*d->vec.data),
-          upb_MtDecoder_CompareFields);
+  // Reserve properly aligned space for each type of field representation
+  // present in this message. When we iterate over the fields, they will obtain
+  // their offset from within the region matching their alignment requirements.
+  size_t base = d->table->UPB_PRIVATE(size);
+  // Start with the lowest alignment requirement, going up, because:
+  // 1. If there are presence bits, we won't be aligned to start, but adding
+  //    some lower-alignment fields may get us closer without wasting space to
+  //    padding.
+  // 2. The allocator enforces 8 byte alignment, so moving intermediate padding
+  //    to trailing padding doesn't save us anything.
+  for (upb_FieldRep rep = kUpb_FieldRep_1Byte; rep <= kUpb_FieldRep_Max;
+       rep++) {
+    uint16_t count = d->rep_counts_offsets[rep];
+    if (count) {
+      base = UPB_ALIGN_UP(base, upb_MtDecoder_AlignOfRep(rep, d->platform));
+      // This entry now tracks the base offset for this field representation
+      // type, instead of the count
+      d->rep_counts_offsets[rep] = base;
+      base += upb_MtDecoder_SizeOfRep(rep, d->platform) * count;
+    }
   }
-
-  return true;
+  static const size_t max = UINT16_MAX;
+  if (base > max) {
+    upb_MdDecoder_ErrorJmp(
+        &d->base, "Message size exceeded maximum size of %zu bytes", max);
+  }
+  d->table->UPB_PRIVATE(size) = (uint16_t)base;
 }
 
 static size_t upb_MiniTable_DivideRoundUp(size_t n, size_t d) {
@@ -595,16 +596,9 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
 
 static size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
   size_t size = upb_MtDecoder_SizeOfRep(rep, d->platform);
-  size_t align = upb_MtDecoder_AlignOfRep(rep, d->platform);
-  size_t ret = UPB_ALIGN_UP(d->table->UPB_PRIVATE(size), align);
-  static const size_t max = UINT16_MAX;
-  size_t new_size = ret + size;
-  if (new_size > max) {
-    upb_MdDecoder_ErrorJmp(
-        &d->base, "Message size exceeded maximum size of %zu bytes", max);
-  }
-  d->table->UPB_PRIVATE(size) = new_size;
-  return ret;
+  size_t offset = d->rep_counts_offsets[rep];
+  d->rep_counts_offsets[rep] += size;
+  return offset;
 }
 
 static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
@@ -763,7 +757,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
     case kUpb_EncodedVersion_MessageV1:
       upb_MtDecoder_ParseMessage(decoder, data, len);
       upb_MtDecoder_AssignHasbits(decoder);
-      upb_MtDecoder_SortLayoutItems(decoder);
+      upb_MtDecoder_CalculateAlignments(decoder);
       upb_MtDecoder_AssignOffsets(decoder);
       break;
 
