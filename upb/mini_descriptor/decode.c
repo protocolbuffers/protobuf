@@ -38,7 +38,6 @@
 // 64 is the first hasbit that we currently use.
 #define kUpb_Reserved_Hasbits (kUpb_Reserved_Hasbytes * 8)
 
-// Note: we sort by this number when calculating layout order.
 typedef enum {
   kUpb_LayoutItemType_OneofCase,   // Oneof case.
   kUpb_LayoutItemType_OneofField,  // Oneof field data.
@@ -53,7 +52,6 @@ typedef struct {
   // Index of the corresponding field.  When this is a oneof field, the field's
   // offset will be the index of the next field in a linked list.
   uint16_t field_index;
-  uint16_t offset;
   // These two enums are stored in bytes to avoid trailing padding while
   // preserving two-byte alignment.
   uint8_t /* upb_FieldRep*/ rep;
@@ -604,18 +602,14 @@ static size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
 static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
 
-  // Compute offsets.
-  for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
-    item->offset = upb_MtDecoder_Place(d, item->rep);
-  }
-
   // Assign oneof case offsets.  We must do these first, since assigning
   // actual offsets will overwrite the links of the linked list.
   for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
     if (item->type != kUpb_LayoutItemType_OneofCase) continue;
     upb_MiniTableField* f = &d->fields[item->field_index];
+    uint16_t offset = upb_MtDecoder_Place(d, item->rep);
     while (true) {
-      f->presence = ~item->offset;
+      f->presence = ~offset;
       if (f->UPB_PRIVATE(offset) == kUpb_LayoutItem_IndexSentinel) break;
       UPB_ASSERT(f->UPB_PRIVATE(offset) - kOneofBase <
                  d->table->UPB_PRIVATE(field_count));
@@ -625,18 +619,20 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
 
   // Assign offsets.
   for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
+    if (item->type == kUpb_LayoutItemType_OneofCase) continue;
     upb_MiniTableField* f = &d->fields[item->field_index];
+    uint16_t offset = upb_MtDecoder_Place(d, item->rep);
     switch (item->type) {
       case kUpb_LayoutItemType_OneofField:
         while (true) {
           uint16_t next_offset = f->UPB_PRIVATE(offset);
-          f->UPB_PRIVATE(offset) = item->offset;
+          f->UPB_PRIVATE(offset) = offset;
           if (next_offset == kUpb_LayoutItem_IndexSentinel) break;
           f = &d->fields[next_offset - kOneofBase];
         }
         break;
       case kUpb_LayoutItemType_Field:
-        f->UPB_PRIVATE(offset) = item->offset;
+        f->UPB_PRIVATE(offset) = offset;
         break;
       default:
         break;
