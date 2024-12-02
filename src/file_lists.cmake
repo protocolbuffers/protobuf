@@ -615,6 +615,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/reflection/method_def.c
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.c
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.c
+  ${protobuf_SOURCE_DIR}/upb/text/debug_string.c
   ${protobuf_SOURCE_DIR}/upb/text/encode.c
   ${protobuf_SOURCE_DIR}/upb/text/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.c
@@ -732,6 +733,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/method_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.h
+  ${protobuf_SOURCE_DIR}/upb/text/debug_string.h
   ${protobuf_SOURCE_DIR}/upb/text/encode.h
   ${protobuf_SOURCE_DIR}/upb/text/internal/encode.h
   ${protobuf_SOURCE_DIR}/upb/text/options.h
