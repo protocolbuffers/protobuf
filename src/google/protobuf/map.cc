@@ -42,7 +42,7 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
 void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
-  if (alloc_.arena() == nullptr) {
+  if (arena_ == nullptr) {
     const auto loop = [&, this](auto destroy_node) {
       NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;

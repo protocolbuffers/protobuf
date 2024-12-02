@@ -105,100 +105,6 @@ struct is_internal_map_key_type : std::false_type {};
 template <typename T, typename VoidT = void>
 struct is_internal_map_value_type : std::false_type {};
 
-// re-implement std::allocator to use arena allocator for memory allocation.
-// Used for Map implementation. Users should not use this class
-// directly.
-template <typename U>
-class MapAllocator {
- public:
-  using value_type = U;
-  using pointer = value_type*;
-  using const_pointer = const value_type*;
-  using reference = value_type&;
-  using const_reference = const value_type&;
-  using size_type = size_t;
-  using difference_type = ptrdiff_t;
-
-  constexpr MapAllocator() : arena_(nullptr) {}
-  explicit constexpr MapAllocator(Arena* arena) : arena_(arena) {}
-  template <typename X>
-  MapAllocator(const MapAllocator<X>& allocator)  // NOLINT(runtime/explicit)
-      : arena_(allocator.arena()) {}
-
-  // MapAllocator does not support alignments beyond 8. Technically we should
-  // support up to std::max_align_t, but this fails with ubsan and tcmalloc
-  // debug allocation logic which assume 8 as default alignment.
-  static_assert(alignof(value_type) <= 8, "");
-
-  pointer allocate(size_type n, const void* /* hint */ = nullptr) {
-    // If arena is not given, malloc needs to be called which doesn't
-    // construct element object.
-    if (arena_ == nullptr) {
-      return static_cast<pointer>(::operator new(n * sizeof(value_type)));
-    } else {
-      return reinterpret_cast<pointer>(
-          Arena::CreateArray<uint8_t>(arena_, n * sizeof(value_type)));
-    }
-  }
-
-  void deallocate(pointer p, size_type n) {
-    if (arena_ == nullptr) {
-      internal::SizedDelete(p, n * sizeof(value_type));
-    }
-  }
-
-#if !defined(GOOGLE_PROTOBUF_OS_APPLE) && !defined(GOOGLE_PROTOBUF_OS_NACL) && \
-    !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
-  template <class NodeType, class... Args>
-  void construct(NodeType* p, Args&&... args) {
-    // Clang 3.6 doesn't compile static casting to void* directly. (Issue
-    // #1266) According C++ standard 5.2.9/1: "The static_cast operator shall
-    // not cast away constness". So first the maybe const pointer is casted to
-    // const void* and after the const void* is const casted.
-    new (const_cast<void*>(static_cast<const void*>(p)))
-        NodeType(std::forward<Args>(args)...);
-  }
-
-  template <class NodeType>
-  void destroy(NodeType* p) {
-    p->~NodeType();
-  }
-#else
-  void construct(pointer p, const_reference t) { new (p) value_type(t); }
-
-  void destroy(pointer p) { p->~value_type(); }
-#endif
-
-  template <typename X>
-  struct rebind {
-    using other = MapAllocator<X>;
-  };
-
-  template <typename X>
-  bool operator==(const MapAllocator<X>& other) const {
-    return arena_ == other.arena_;
-  }
-
-  template <typename X>
-  bool operator!=(const MapAllocator<X>& other) const {
-    return arena_ != other.arena_;
-  }
-
-  // To support Visual Studio 2008
-  size_type max_size() const {
-    // parentheses around (std::...:max) prevents macro warning of max()
-    return (std::numeric_limits<size_type>::max)();
-  }
-
-  // To support gcc-4.4, which does not properly
-  // support templated friend classes
-  Arena* arena() const { return arena_; }
-
- private:
-  using DestructorSkippable_ = void;
-  Arena* arena_;
-};
-
 // To save on binary size and simplify generic uses of the map types we collapse
 // signed/unsigned versions of the same sized integer to the unsigned version.
 template <typename T, typename = void>
@@ -362,8 +268,6 @@ static_assert(
 // Having an untyped base class helps generic consumers (like the table-driven
 // parser) by having non-template code that can handle all instantiations.
 class PROTOBUF_EXPORT UntypedMapBase {
-  using Allocator = internal::MapAllocator<void*>;
-
  public:
   using size_type = size_t;
 
@@ -426,7 +330,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
         index_of_first_non_null_(internal::kGlobalEmptyTableSize),
         type_info_(type_info),
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
-        alloc_(arena) {}
+        arena_(arena) {}
 
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
@@ -463,7 +367,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
 
  public:
-  Arena* arena() const { return this->alloc_.arena(); }
+  Arena* arena() const { return arena_; }
 
   void InternalSwap(UntypedMapBase* other) {
     std::swap(num_elements_, other->num_elements_);
@@ -471,7 +375,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
     std::swap(type_info_, other->type_info_);
     std::swap(table_, other->table_);
-    std::swap(alloc_, other->alloc_);
+    std::swap(arena_, other->arena_);
   }
 
   static size_type max_size() {
@@ -542,22 +446,20 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return n < kMinTableSize ? kMinTableSize : n;
   }
 
-  template <typename T>
-  using AllocFor = absl::allocator_traits<Allocator>::template rebind_alloc<T>;
-
   // Alignment of the nodes is the same as alignment of NodeBase.
   NodeBase* AllocNode() { return AllocNode(type_info_.node_size); }
 
   NodeBase* AllocNode(size_t node_size) {
-    PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
-    return AllocFor<NodeBase>(alloc_).allocate(node_size / sizeof(NodeBase));
+    return static_cast<NodeBase*>(arena_ == nullptr
+                                      ? ::operator new(node_size)
+                                      : arena_->AllocateAligned(node_size));
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
-    PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
-    AllocFor<NodeBase>(alloc_).deallocate(node, node_size / sizeof(NodeBase));
+    ABSL_DCHECK(arena_ == nullptr);
+    internal::SizedDelete(node, node_size);
   }
 
   void DeleteTable(NodeBase** table, map_index_t n) {
@@ -571,7 +473,10 @@ class PROTOBUF_EXPORT UntypedMapBase {
   NodeBase** CreateEmptyTable(map_index_t n) {
     ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
-    NodeBase** result = AllocFor<NodeBase*>(alloc_).allocate(n);
+    NodeBase** result =
+        arena_ == nullptr
+            ? static_cast<NodeBase**>(::operator new(n * sizeof(NodeBase*)))
+            : Arena::CreateArray<NodeBase*>(arena_, n);
     memset(result, 0, n * sizeof(result[0]));
     return result;
   }
@@ -598,7 +503,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   map_index_t index_of_first_non_null_;
   TypeInfo type_info_;
   NodeBase** table_;  // an array with num_buckets_ entries
-  Allocator alloc_;
+  Arena* arena_;
 };
 
 template <typename F>
@@ -1444,7 +1349,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(Map, alloc_);
+    return PROTOBUF_FIELD_OFFSET(Map, arena_);
   }
 
  private:
@@ -1469,7 +1374,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   void DeleteNode(Node* node) {
-    if (this->alloc_.arena() == nullptr) {
+    if (this->arena_ == nullptr) {
       node->kv.first.~key_type();
       node->kv.second.~mapped_type();
       this->DeallocNode(node, sizeof(Node));
@@ -1500,13 +1405,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // submessage may have its own arena when message-owned arena is enabled.
     // Note: This only works if `Key` is not arena constructible.
     if (!internal::InitializeMapKey(const_cast<Key*>(&node->kv.first),
-                                    std::forward<K>(k), this->alloc_.arena())) {
+                                    std::forward<K>(k), this->arena_)) {
       Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
-                                  this->alloc_.arena(),
+                                  this->arena_,
                                   static_cast<TypeToInit>(std::forward<K>(k)));
     }
     // Note: if `T` is arena constructible, `Args` needs to be empty.
-    Arena::CreateInArenaStorage(&node->kv.second, this->alloc_.arena(),
+    Arena::CreateInArenaStorage(&node->kv.second, this->arena_,
                                 std::forward<Args>(args)...);
 
     this->InsertUnique(b, node);
