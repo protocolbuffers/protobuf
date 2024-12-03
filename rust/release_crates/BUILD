@@ -1,7 +1,7 @@
 # Protobuf Rust crate packaging for release.
 
 # Run the cargo test with only a bundled linux-x86_64 protoc.
-sh_binary(
+sh_test(
     name = "cargo_test",
     srcs = ["cargo_test.sh"],
     data = [
