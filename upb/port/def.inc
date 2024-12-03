@@ -374,12 +374,13 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_TSAN_CHECK_PUBLISHED(ptr) \
   UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
 #define UPB_TSAN_PUBLISH 1
-#define UPB_TSAN_CHECK_READ(member) asm volatile("" ::"r"(*(char *)&(member)))
+#define UPB_TSAN_CHECK_READ(member) \
+  __asm__ volatile("" ::"r"(*(char *)&(member)))
 #define UPB_TSAN_CHECK_WRITE(member)                                   \
   do {                                                                 \
     char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
     char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
-    asm volatile("" : "+r"(write_upb_tsan_detect_race));               \
+    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
     *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
   } while (false)
 #else
