@@ -3844,7 +3844,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
   if (sorted->end > s->cap) {
     const int oldsize = s->cap * sizeof(*s->entries);
-    s->cap = upb_Log2CeilingSize(sorted->end);
+    s->cap = upb_RoundUpToPowerOfTwo(sorted->end);
     const int newsize = s->cap * sizeof(*s->entries);
     s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
@@ -11942,7 +11942,7 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) {
     // No internal data, allocate from scratch.
-    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + overhead));
+    size_t size = UPB_MAX(128, upb_RoundUpToPowerOfTwo(need + overhead));
     in = upb_Arena_Malloc(a, size);
     if (!in) return false;
 
@@ -11952,7 +11952,7 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->ext_begin - in->unknown_end < need) {
     // Internal data is too small, reallocate.
-    size_t new_size = upb_Log2CeilingSize(in->size + need);
+    size_t new_size = upb_RoundUpToPowerOfTwo(in->size + need);
     size_t ext_bytes = in->size - in->ext_begin;
     size_t new_ext_begin = new_size - ext_bytes;
     in = upb_Arena_Realloc(a, in, in->size, new_size);
@@ -15270,7 +15270,7 @@ upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
                                        upb_StringView key) {
   size_t need = key.size + sizeof(void*);
   if (ctx->tmp_buf_size < need) {
-    ctx->tmp_buf_size = UPB_MAX(64, upb_Log2Ceiling(need));
+    ctx->tmp_buf_size = UPB_MAX(64, upb_RoundUpToPowerOfTwo(need));
     ctx->tmp_buf = upb_Arena_Malloc(ctx->tmp_arena, ctx->tmp_buf_size);
     if (!ctx->tmp_buf) _upb_DefBuilder_OomErr(ctx);
   }
