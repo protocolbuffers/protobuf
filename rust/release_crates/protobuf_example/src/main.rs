@@ -1,4 +1,4 @@
-#[path = "protos/foo.u.pb.rs"]
+#[path = "protobuf_generated/foo.u.pb.rs"]
 mod protos;
 
 use protobuf::proto;
