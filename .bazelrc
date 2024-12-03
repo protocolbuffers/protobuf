@@ -3,6 +3,9 @@ build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 # TODO: ErrorProne's SelfAssertions are violated in protobuf's test
 build --javacopt=-Xep:SelfAssertion:WARN
 
+# This flag works around some issues with Rust linking.
+build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt

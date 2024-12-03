@@ -48,6 +48,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-
-            ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite  --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+            ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite  --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
             ${{ matrix.targets }} ${{ matrix.config.flags }}
 
