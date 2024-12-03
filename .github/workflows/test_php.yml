@@ -32,17 +32,17 @@ jobs:
           - name: 8.1 Optimized
             version: "8.1.14"
             version-short: "8.1"
-            command: composer test \&\& composer test_c
+            command: composer test && composer test_c
           - name: 8.1 Debug
             version: 8.1.14-dbg
             version-short: "8.1"
-            command: composer test \&\& composer test_c
+            command: composer test && composer test_c
             continuous-only: true
           - name: 8.1 Memory Leak
             version: 8.1.14-dbg
             version-short: "8.1"
             # Run specialized memory leak & multirequest tests.
-            command: composer test_c \&\& tests/multirequest.sh \&\& tests/memory_leak_test.sh
+            command: composer test_c && tests/multirequest.sh && tests/memory_leak_test.sh
             continuous-only: true
           - name: 8.1 Valgrind
             version: 8.1.14-dbg
@@ -52,7 +52,7 @@ jobs:
           - name: 8.3 Optimized
             version: "8.3.1"
             version-short: "8.3"
-            command: composer test \&\& composer test_c
+            command: composer test && composer test_c
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
     runs-on: ubuntu-22-4core
@@ -70,21 +70,20 @@ jobs:
           directory: php
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
-          command: ${{ matrix.command }}
-
-      - name: Run conformance tests
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v3
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-90d207f4e749b54c8792bbe974dfc70323b6566e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
-          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
+          bash: |
+            set -ex
+            COMPOSER_HOME=/workspace/composer-cache
+            BAZEL_FLAGS=${{ env.BAZEL_FLAGS }}
+            pushd /workspace/php
+            composer update
+            ${{ matrix.command }}
+            popd
+            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH ${{ env.BAZEL_FLAGS }}
 
   linux-32bit:
     strategy:
@@ -179,18 +178,11 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
-            -c '
+            -cex '
             cd php;
             composer update --ignore-platform-reqs;
             composer test;
             composer test_c'
-
-      - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel@v3
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: php_linux/${{ matrix.version }}
-          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
 
   macos:
     strategy:

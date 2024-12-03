@@ -36,6 +36,8 @@ if (!ini_get('date.timezone')) {
     ini_set('date.timezone', 'UTC');
 }
 
+error_reporting(0);
+
 $test_count = 0;
 
 function doTest($request)
@@ -78,6 +80,9 @@ function doTest($request)
             } catch (Exception $e) {
                 $response->setParseError($e->getMessage());
                 return $response;
+            } catch (Error $e) {
+                $response->setParseError($e->getMessage());
+                return $response;
             }
             break;
 
@@ -104,6 +109,9 @@ function doTest($request)
             } catch (Exception $e) {
                 $response->setParseError($e->getMessage());
                 return $response;
+            } catch (Error $e) {
+                $response->setParseError($e->getMessage());
+                return $response;
             }
             break;
 
@@ -127,6 +135,9 @@ function doTest($request)
             try {
                 $response->setJsonPayload($test_message->serializeToJsonString());
             } catch (Exception $e) {
+                $response->setSerializeError($e->getMessage());
+                return $response;
+            } catch (Error $e) {
                 $response->setSerializeError($e->getMessage());
                 return $response;
             }
