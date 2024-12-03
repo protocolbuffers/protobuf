@@ -55,7 +55,7 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) {
     // No internal data, allocate from scratch.
-    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + overhead));
+    size_t size = UPB_MAX(128, upb_RoundUpToPowerOfTwo(need + overhead));
     in = upb_Arena_Malloc(a, size);
     if (!in) return false;
 
@@ -65,7 +65,7 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->ext_begin - in->unknown_end < need) {
     // Internal data is too small, reallocate.
-    size_t new_size = upb_Log2CeilingSize(in->size + need);
+    size_t new_size = upb_RoundUpToPowerOfTwo(in->size + need);
     size_t ext_bytes = in->size - in->ext_begin;
     size_t new_ext_begin = new_size - ext_bytes;
     in = upb_Arena_Realloc(a, in, in->size, new_size);

@@ -101,7 +101,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
   if (sorted->end > s->cap) {
     const int oldsize = s->cap * sizeof(*s->entries);
-    s->cap = upb_Log2CeilingSize(sorted->end);
+    s->cap = upb_RoundUpToPowerOfTwo(sorted->end);
     const int newsize = s->cap * sizeof(*s->entries);
     s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
