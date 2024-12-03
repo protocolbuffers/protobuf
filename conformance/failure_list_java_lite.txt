@@ -6,7 +6,3 @@
 
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE                               # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE                                  # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.UnmatchedEndGroup                                                                         # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.UnmatchedEndGroupUnknown                                                                  # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.UnmatchedEndGroupWithData                                                                 # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.UnmatchedEndGroupWrongType                                                                # Should have failed to parse, but didn't.
