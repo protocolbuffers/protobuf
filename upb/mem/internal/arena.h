@@ -20,7 +20,7 @@
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK 7
+#define UPB_ARENA_SIZE_HACK 8
 
 // LINT.IfChange(upb_Arena)
 

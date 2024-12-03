@@ -14,6 +14,7 @@
 #include <thread>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/thread_annotations.h"
 #include "absl/random/distributions.h"
@@ -30,6 +31,39 @@
 
 namespace {
 
+struct CustomAlloc {
+  upb_alloc alloc;
+  int counter;
+  bool ran_cleanup;
+};
+
+void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                      size_t size) {
+  CustomAlloc* custom_alloc = reinterpret_cast<CustomAlloc*>(alloc);
+  if (size == 0) {
+    custom_alloc->counter--;
+  } else {
+    custom_alloc->counter++;
+  }
+  return upb_alloc_global.func(alloc, ptr, oldsize, size);
+}
+
+void CustomAllocCleanup(upb_alloc* alloc) {
+  CustomAlloc* custom_alloc = reinterpret_cast<CustomAlloc*>(alloc);
+  EXPECT_THAT(custom_alloc->counter, 0);
+  custom_alloc->ran_cleanup = true;
+}
+
+TEST(ArenaTest, ArenaWithAllocCleanup) {
+  CustomAlloc alloc = {{&CustomAllocFunc}, 0, false};
+  upb_Arena* arena =
+      upb_Arena_Init(nullptr, 0, reinterpret_cast<upb_alloc*>(&alloc));
+  EXPECT_EQ(alloc.counter, 1);
+  upb_Arena_SetAllocCleanup(arena, CustomAllocCleanup);
+  upb_Arena_Free(arena);
+  EXPECT_TRUE(alloc.ran_cleanup);
+}
+
 TEST(ArenaTest, ArenaFuse) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
@@ -38,12 +72,6 @@ TEST(ArenaTest, ArenaFuse) {
 
   upb_Arena_Free(arena1);
   upb_Arena_Free(arena2);
-}
-
-// Do-nothing allocator for testing.
-extern "C" void* TestAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                               size_t size) {
-  return upb_alloc_global.func(alloc, ptr, oldsize, size);
 }
 
 TEST(ArenaTest, FuseWithInitialBlock) {
