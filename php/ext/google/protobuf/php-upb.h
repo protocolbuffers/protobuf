@@ -599,7 +599,7 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK 7
+#define UPB_ARENA_SIZE_HACK 8
 
 // LINT.IfChange(upb_Arena)
 
@@ -696,6 +696,8 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
 
 typedef struct upb_Arena upb_Arena;
 
+typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -706,6 +708,11 @@ extern "C" {
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
+// Sets the cleanup function for the upb_alloc used by the arena. Only one
+// cleanup function can be set, which will be called after all blocks are
+// freed.
+UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
+                                       upb_AllocCleanupFunc* func);
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
