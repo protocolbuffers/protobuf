@@ -397,7 +397,6 @@ def CoopTestCase(other_base_class):
 
   Example:
 
-    import google3
     import mox
 
     from google.protobuf.internal import _parameterized
