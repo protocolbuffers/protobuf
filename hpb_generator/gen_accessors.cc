@@ -118,7 +118,7 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                           * - both messages must be in the same arena, or in two
                           * fused arenas.
                           */
-                         void set_alias_$2($0 target);
+                         void set_alias_$2($1 target);
                        )cc",
                        MessagePtrConstType(field, /* const */ false),
                        MessagePtrConstType(field, /* const */ true),
@@ -282,7 +282,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
                 return hpb::interop::upb::MakeHandle<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
-              void $0::set_alias_$2($1 target) {
+              void $0::set_alias_$2($9 target) {
                 ABSL_CHECK(upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)));
                 upb_Message_SetBaseFieldMessage(
                     UPB_UPCAST(msg_),
@@ -294,7 +294,8 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
             resolved_field_name,
             upb::generator::CApiMessageType(desc->full_name()),
             MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
-            arena_expression, ClassName(desc), ctx.GetLayoutIndex(field));
+            arena_expression, ClassName(desc), ctx.GetLayoutIndex(field),
+            MessagePtrConstType(field, /* is_const */ true));
       }
     }
   }

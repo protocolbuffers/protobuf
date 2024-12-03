@@ -639,9 +639,9 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
-UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
-                                                    const upb_MiniTableField* f,
-                                                    struct upb_Message* value) {
+UPB_API_INLINE void upb_Message_SetBaseFieldMessage(
+    struct upb_Message* msg, const upb_MiniTableField* f,
+    const struct upb_Message* value) {
   UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
   (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
 }

@@ -20,8 +20,8 @@ extern "C" {
 #endif
 
 // Internal-only because empty messages cannot be created by the user.
-UPB_INLINE uintptr_t
-UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(struct upb_Message* ptr, bool empty) {
+UPB_INLINE uintptr_t UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(
+    const struct upb_Message* ptr, bool empty) {
   UPB_ASSERT(((uintptr_t)ptr & 1) == 0);
   return (uintptr_t)ptr | (empty ? 1 : 0);
 }

@@ -627,8 +627,8 @@ TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
 
 TEST(CppGeneratedCode, SetAlias) {
   hpb::Arena arena;
-  auto child = hpb::CreateMessage<Child>(arena);
-  child.set_peeps(12);
+  hpb::Ptr<Child> child = hpb::CreateMessage<Child>(arena);
+  child->set_peeps(12);
   auto parent1 = hpb::CreateMessage<Parent>(arena);
   auto parent2 = hpb::CreateMessage<Parent>(arena);
   parent1.set_alias_child(child);
@@ -644,8 +644,8 @@ TEST(CppGeneratedCode, SetAlias) {
 
 TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
   hpb::Arena arena;
-  auto child = hpb::CreateMessage<Child>(arena);
-  child.set_peeps(12);
+  hpb::Ptr<Child> child = hpb::CreateMessage<Child>(arena);
+  child->set_peeps(12);
   auto parent1 = hpb::CreateMessage<Parent>(arena);
   auto parent2 = hpb::CreateMessage<Parent>(arena);
   parent1.set_alias_child(child);
@@ -656,7 +656,7 @@ TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
 
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
-  auto child = hpb::CreateMessage<Child>(arena);
+  hpb::Ptr<Child> child = hpb::CreateMessage<Child>(arena);
   hpb::Arena different_arena;
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
@@ -665,7 +665,7 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
 TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
   hpb::Arena arena;
   auto parent1 = hpb::CreateMessage<Parent>(arena);
-  auto child = parent1.mutable_child();
+  hpb::Ptr<Child> child = parent1.mutable_child();
   child->set_peeps(12);
 
   hpb::Arena other_arena;
