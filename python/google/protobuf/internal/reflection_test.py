@@ -1607,6 +1607,11 @@ class Proto2ReflectionTest(unittest.TestCase):
     del extendee_proto.Extensions[extension_int32]
     self.assertEqual(len(extendee_proto.Extensions), 0)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'This test relies on a specific iteration order for extensions, '
+      'which is not reasonable to guarantee.',
+  )
   def testExtensionIter(self):
     extendee_proto = more_extensions_pb2.ExtendedMessage()
 
@@ -2740,6 +2745,11 @@ class SerializationTest(unittest.TestCase):
         self.assertRaises(message.DecodeError, unknown_fields._InternalParse,
                           serialized, 0, truncation_point)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'This test relies on a specific iteration order for extensions, '
+      'which is not reasonable to guarantee.',
+  )
   def testCanonicalSerializationOrder(self):
     proto = more_messages_pb2.OutOfOrderFields()
     # These are also their tag numbers.  Even though we're setting these in
@@ -2765,6 +2775,11 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual((5, wire_format.WIRETYPE_VARINT), ReadTag())
     self.assertEqual(5, d.ReadSInt32())
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'This test relies on a specific iteration order for extensions, '
+      'which is not reasonable to guarantee.',
+  )
   def testCanonicalSerializationOrderSameAsCpp(self):
     # Copy of the same test we use for C++.
     proto = unittest_pb2.TestFieldOrderings()
@@ -3141,19 +3156,40 @@ class SerializationTest(unittest.TestCase):
 
   def testFieldProperties(self):
     cls = unittest_pb2.TestAllTypes
-    self.assertIs(cls.optional_int32.DESCRIPTOR,
-                  cls.DESCRIPTOR.fields_by_name['optional_int32'])
-    self.assertEqual(cls.OPTIONAL_INT32_FIELD_NUMBER,
-                     cls.optional_int32.DESCRIPTOR.number)
-    self.assertIs(cls.optional_nested_message.DESCRIPTOR,
-                  cls.DESCRIPTOR.fields_by_name['optional_nested_message'])
-    self.assertEqual(cls.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER,
-                     cls.optional_nested_message.DESCRIPTOR.number)
-    self.assertIs(cls.repeated_int32.DESCRIPTOR,
-                  cls.DESCRIPTOR.fields_by_name['repeated_int32'])
-    self.assertEqual(cls.REPEATED_INT32_FIELD_NUMBER,
-                     cls.repeated_int32.DESCRIPTOR.number)
+    if api_implementation.Type() == 'upb':
+      # Class accessors are not implemented in upb.
+      with self.assertRaises(AttributeError) as e:
+        # Try to access the descriptor of the field 'optional_int32'
+        cls.optional_int32.DESCRIPTOR
+        self.assertEquals('optional_int32', str(e.exception))
+    else:
+      self.assertIs(
+          cls.optional_int32.DESCRIPTOR,
+          cls.DESCRIPTOR.fields_by_name['optional_int32'],
+      )
+      self.assertEqual(
+          cls.OPTIONAL_INT32_FIELD_NUMBER, cls.optional_int32.DESCRIPTOR.number
+      )
+      self.assertIs(
+          cls.optional_nested_message.DESCRIPTOR,
+          cls.DESCRIPTOR.fields_by_name['optional_nested_message'],
+      )
+      self.assertEqual(
+          cls.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER,
+          cls.optional_nested_message.DESCRIPTOR.number,
+      )
+      self.assertIs(
+          cls.repeated_int32.DESCRIPTOR,
+          cls.DESCRIPTOR.fields_by_name['repeated_int32'],
+      )
+      self.assertEqual(
+          cls.REPEATED_INT32_FIELD_NUMBER, cls.repeated_int32.DESCRIPTOR.number
+      )
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Class accessors are not implemented in upb: see testFieldProperties.',
+  )
   def testFieldDataDescriptor(self):
     msg = unittest_pb2.TestAllTypes()
     msg.optional_int32 = 42
