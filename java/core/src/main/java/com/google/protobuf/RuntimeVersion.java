@@ -28,7 +28,7 @@ public final class RuntimeVersion {
   public static final RuntimeDomain OSS_DOMAIN = RuntimeDomain.PUBLIC;
   public static final int OSS_MAJOR = 4;
   public static final int OSS_MINOR = 29;
-  public static final int OSS_PATCH = 1;
+  public static final int OSS_PATCH = 2;
   public static final String OSS_SUFFIX = "-dev";
 
   public static final RuntimeDomain DOMAIN = OSS_DOMAIN;
