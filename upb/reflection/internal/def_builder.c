@@ -350,7 +350,11 @@ upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
                                        upb_StringView key) {
   size_t need = key.size + sizeof(void*);
   if (ctx->tmp_buf_size < need) {
-    ctx->tmp_buf_size = UPB_MAX(64, upb_Log2Ceiling(need));
+    ctx->tmp_buf_size = 64;
+    if (upb_Log2CeilingSize(need) > 64) {
+      fprintf(stderr, "tmp_buf_size %zu\n", need);
+      exit(1);
+    }
     ctx->tmp_buf = upb_Arena_Malloc(ctx->tmp_arena, ctx->tmp_buf_size);
     if (!ctx->tmp_buf) _upb_DefBuilder_OomErr(ctx);
   }
