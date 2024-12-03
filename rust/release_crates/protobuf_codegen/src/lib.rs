@@ -129,10 +129,6 @@ impl CodeGen {
                 if file_name.ends_with(".upb_minitable.c") {
                     cc_build.file(path);
                 }
-                if file_name.ends_with(".upb.h") {
-                    Self::strip_upb_inline(&path);
-                    cc_build.file(path.with_extension("c"));
-                }
                 if file_name.ends_with(".pb.rs") {
                     Self::fix_rs_gencode(&path);
                 }
@@ -140,14 +136,6 @@ impl CodeGen {
         }
         cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
         Ok(())
-    }
-
-    // Remove UPB_INLINE from the .upb.h file.
-    fn strip_upb_inline(header: &Path) {
-        let contents = fs::read_to_string(header).unwrap().replace("UPB_INLINE ", "");
-        let mut file =
-            OpenOptions::new().write(true).truncate(true).open(header.with_extension("c")).unwrap();
-        file.write(contents.as_bytes()).unwrap();
     }
 
     // Adjust the generated Rust code to work with the crate structure.
