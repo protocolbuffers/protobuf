@@ -79,7 +79,7 @@ jobs:
 
       - name: Run conformance tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
