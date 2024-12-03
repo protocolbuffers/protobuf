@@ -35,7 +35,8 @@ namespace protobuf {
 class FailureListTrieNode {
  public:
   FailureListTrieNode() : data_("") {}
-  explicit FailureListTrieNode(absl::string_view data) : data_(data) {}
+  explicit FailureListTrieNode(absl::string_view data)
+      : data_(data), is_test_name_(false) {}
 
   // Will attempt to insert a test name into the trie returning
   // absl::StatusCode::kAlreadyExists if the test name already exists or
@@ -50,6 +51,7 @@ class FailureListTrieNode {
  private:
   absl::string_view data_;
   std::vector<std::unique_ptr<FailureListTrieNode>> children_;
+  bool is_test_name_;
   void InsertImpl(absl::string_view test_name);
 };
 }  // namespace protobuf

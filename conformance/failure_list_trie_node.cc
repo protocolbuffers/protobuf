@@ -38,27 +38,37 @@ absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
 void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
   absl::string_view section = test_name.substr(0, test_name.find('.'));
 
-  // Extracted last section -> no more '.' -> test_name_copy will be equal to
-  // section
-  if (test_name == section) {
-    children_.push_back(std::make_unique<FailureListTrieNode>(section));
-    return;
-  }
-  test_name = test_name.substr(section.length() + 1);
+  bool is_last_section = test_name == section;
+
+  // test_name cannot be overwritten
+  absl::string_view test_name_rest =
+      is_last_section ? "" : test_name.substr(section.length() + 1);
   for (auto& child : children_) {
     if (child->data_ == section) {
-      return child->InsertImpl(test_name);
+      if (is_last_section) {
+        // Extracted last section -> no more '.' -> test_name will be equal to
+        // section
+        child->is_test_name_ = true;
+      } else {
+        child->InsertImpl(test_name_rest);
+      }
+      return;
     }
   }
+
   // No match
   children_.push_back(std::make_unique<FailureListTrieNode>(section));
-  children_.back()->InsertImpl(test_name);
+  if (is_last_section) {
+    children_.back()->is_test_name_ = true;
+    return;
+  }
+  children_.back()->InsertImpl(test_name_rest);
 }
 
 absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
     absl::string_view test_name) {
   absl::string_view section = test_name.substr(0, test_name.find('.'));
-  // test_name cannot be overridden
+  // test_name cannot be overwritten
   absl::string_view to_match;
   if (section != test_name) {
     to_match = test_name.substr(section.length() + 1);
@@ -70,8 +80,7 @@ absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
       // Extracted last section -> no more '.' -> test_name will be
       // equal to section
       if (test_name == section) {
-        // Must match all the way to the bottom of the tree
-        if (child->children_.empty()) {
+        if (child->is_test_name_) {
           return std::string(appended);
         }
       } else {

@@ -1,7 +1,5 @@
 #include "failure_list_trie_node.h"
 
-#include <memory>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
@@ -120,6 +118,24 @@ TEST(FailureListTrieTest, InsertInvalidWildcardFails) {
   EXPECT_THAT(root_->Insert("This*Is.Not.A.Valid.Wildcard"),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("invalid wildcard")));
+}
+
+TEST(FailureListTrieTest, PrefixMarkedAsTestNameRecognizedWithoutWildcards) {
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
+  ASSERT_OK(root_->Insert("Recommended.Proto2.ProtobufInput.World"));
+
+  ASSERT_OK(root_->Insert("Recommended.Proto2"));
+  EXPECT_THAT(root_->WalkDownMatch("Recommended.Proto2"),
+              Optional(Eq("Recommended.Proto2")));
+}
+
+TEST(FailureListTrieTest, PrefixMarkedAsTestNameRecognizedWithWildcards) {
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
+  ASSERT_OK(root_->Insert("Recommended.*.*.*"));
+
+  ASSERT_OK(root_->Insert("Recommended.*.*"));
+  EXPECT_THAT(root_->WalkDownMatch("Recommended.*.Hello"),
+              Optional(Eq("Recommended.*.*")));
 }
 }  // namespace protobuf
 }  // namespace google
