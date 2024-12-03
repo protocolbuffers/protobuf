@@ -5037,38 +5037,32 @@ upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
 // 64 is the first hasbit that we currently use.
 #define kUpb_Reserved_Hasbits (kUpb_Reserved_Hasbytes * 8)
 
-typedef enum {
-  kUpb_LayoutItemType_OneofCase,   // Oneof case.
-  kUpb_LayoutItemType_OneofField,  // Oneof field data.
-  kUpb_LayoutItemType_Field,       // Non-oneof field data.
+#define kUpb_OneOfLayoutItem_IndexSentinel ((uint16_t)-1)
 
-  kUpb_LayoutItemType_Max = kUpb_LayoutItemType_Field,
-} upb_LayoutItemType;
-
-#define kUpb_LayoutItem_IndexSentinel ((uint16_t)-1)
+// Stores the field number of the present value of the oneof
+#define kUpb_OneOf_CaseFieldRep (kUpb_FieldRep_4Byte)
 
 typedef struct {
-  // Index of the corresponding field.  When this is a oneof field, the field's
-  // offset will be the index of the next field in a linked list.
+  // Index of the corresponding field. The field's offset will be the index of
+  // the next field in a linked list.
   uint16_t field_index;
-  // These two enums are stored in bytes to avoid trailing padding while
-  // preserving two-byte alignment.
+  // This enum is stored in bytes to avoid trailing padding while preserving
+  // two-byte alignment.
   uint8_t /* upb_FieldRep*/ rep;
-  uint8_t /* upb_LayoutItemType*/ type;
-} upb_LayoutItem;
+} upb_OneOfLayoutItem;
 
 typedef struct {
-  upb_LayoutItem* data;
+  upb_OneOfLayoutItem* data;
   size_t size;
   size_t capacity;
-} upb_LayoutItemVector;
+} upb_OneOfLayoutItemVector;
 
 typedef struct {
   upb_MdDecoder base;
   upb_MiniTable* table;
   upb_MiniTableField* fields;
   upb_MiniTablePlatform platform;
-  upb_LayoutItemVector vec;
+  upb_OneOfLayoutItemVector oneofs;
   upb_Arena* arena;
   // Initially tracks the count of each field rep type; then, during assignment,
   // tracks the base offset for the next processed field of the given rep.
@@ -5258,31 +5252,22 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
   }
 }
 
-static void upb_MtDecoder_PushItem(upb_MtDecoder* d, upb_LayoutItem item) {
-  if (d->vec.size == d->vec.capacity) {
-    size_t new_cap = UPB_MAX(8, d->vec.size * 2);
-    d->vec.data = realloc(d->vec.data, new_cap * sizeof(*d->vec.data));
-    upb_MdDecoder_CheckOutOfMemory(&d->base, d->vec.data);
-    d->vec.capacity = new_cap;
-  }
-  d->rep_counts_offsets[item.rep]++;
-  d->vec.data[d->vec.size++] = item;
-}
-
-static void upb_MtDecoder_PushOneof(upb_MtDecoder* d, upb_LayoutItem item) {
-  if (item.field_index == kUpb_LayoutItem_IndexSentinel) {
+static void upb_MtDecoder_PushOneof(upb_MtDecoder* d,
+                                    upb_OneOfLayoutItem item) {
+  if (item.field_index == kUpb_OneOfLayoutItem_IndexSentinel) {
     upb_MdDecoder_ErrorJmp(&d->base, "Empty oneof");
+  }
+  if (d->oneofs.size == d->oneofs.capacity) {
+    size_t new_cap = UPB_MAX(8, d->oneofs.size * 2);
+    d->oneofs.data = realloc(d->oneofs.data, new_cap * sizeof(*d->oneofs.data));
+    upb_MdDecoder_CheckOutOfMemory(&d->base, d->oneofs.data);
+    d->oneofs.capacity = new_cap;
   }
   item.field_index -= kOneofBase;
 
-  // Push oneof data.
-  item.type = kUpb_LayoutItemType_OneofField;
-  upb_MtDecoder_PushItem(d, item);
-
-  // Push oneof case.
-  item.rep = kUpb_FieldRep_4Byte;  // Field Number.
-  item.type = kUpb_LayoutItemType_OneofCase;
-  upb_MtDecoder_PushItem(d, item);
+  d->rep_counts_offsets[kUpb_OneOf_CaseFieldRep]++;
+  d->rep_counts_offsets[item.rep]++;
+  d->oneofs.data[d->oneofs.size++] = item;
 }
 
 static size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
@@ -5328,7 +5313,7 @@ static size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
 static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
                                                   const char* ptr,
                                                   char first_ch,
-                                                  upb_LayoutItem* item) {
+                                                  upb_OneOfLayoutItem* item) {
   uint32_t field_num;
   ptr = upb_MdDecoder_DecodeBase92Varint(
       &d->base, ptr, first_ch, kUpb_EncodedValue_MinOneofField,
@@ -5364,8 +5349,8 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
 
 static const char* upb_MtDecoder_DecodeOneofs(upb_MtDecoder* d,
                                               const char* ptr) {
-  upb_LayoutItem item = {.rep = 0,
-                         .field_index = kUpb_LayoutItem_IndexSentinel};
+  upb_OneOfLayoutItem item = {
+      .rep = 0, .field_index = kUpb_OneOfLayoutItem_IndexSentinel};
   while (ptr < d->base.end) {
     char ch = *ptr++;
     if (ch == kUpb_EncodedValue_FieldSeparator) {
@@ -5373,7 +5358,8 @@ static const char* upb_MtDecoder_DecodeOneofs(upb_MtDecoder* d,
     } else if (ch == kUpb_EncodedValue_OneofSeparator) {
       // End of oneof.
       upb_MtDecoder_PushOneof(d, item);
-      item.field_index = kUpb_LayoutItem_IndexSentinel;  // Move to next oneof.
+      item.field_index =
+          kUpb_OneOfLayoutItem_IndexSentinel;  // Move to next oneof.
     } else {
       ptr = upb_MtDecoder_DecodeOneofField(d, ptr, ch, &item);
     }
@@ -5513,15 +5499,12 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
 }
 
 static void upb_MtDecoder_CalculateAlignments(upb_MtDecoder* d) {
-  // Add items for all non-oneof fields (oneofs were already added).
+  // Add alignment counts for non-oneof fields (oneofs were added already)
   int n = d->table->UPB_PRIVATE(field_count);
   for (int i = 0; i < n; i++) {
     upb_MiniTableField* f = &d->fields[i];
     if (f->UPB_PRIVATE(offset) >= kOneofBase) continue;
-    upb_LayoutItem item = {.field_index = i,
-                           .rep = f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift,
-                           .type = kUpb_LayoutItemType_Field};
-    upb_MtDecoder_PushItem(d, item);
+    d->rep_counts_offsets[f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift]++;
   }
 
   // Reserve properly aligned space for each type of field representation
@@ -5599,42 +5582,27 @@ static size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
 }
 
 static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
-  upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
-
-  // Assign oneof case offsets.  We must do these first, since assigning
-  // actual offsets will overwrite the links of the linked list.
-  for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
-    if (item->type != kUpb_LayoutItemType_OneofCase) continue;
-    upb_MiniTableField* f = &d->fields[item->field_index];
-    uint16_t offset = upb_MtDecoder_Place(d, item->rep);
-    while (true) {
-      f->presence = ~offset;
-      if (f->UPB_PRIVATE(offset) == kUpb_LayoutItem_IndexSentinel) break;
-      UPB_ASSERT(f->UPB_PRIVATE(offset) - kOneofBase <
-                 d->table->UPB_PRIVATE(field_count));
-      f = &d->fields[f->UPB_PRIVATE(offset) - kOneofBase];
-    }
+  upb_MiniTableField* field_end =
+      UPB_PTRADD(d->fields, d->table->UPB_PRIVATE(field_count));
+  for (upb_MiniTableField* field = d->fields; field < field_end; field++) {
+    if (field->UPB_PRIVATE(offset) >= kOneofBase) continue;
+    field->UPB_PRIVATE(offset) =
+        upb_MtDecoder_Place(d, field->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift);
   }
 
-  // Assign offsets.
-  for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
-    if (item->type == kUpb_LayoutItemType_OneofCase) continue;
+  upb_OneOfLayoutItem* oneof_end = UPB_PTRADD(d->oneofs.data, d->oneofs.size);
+
+  for (upb_OneOfLayoutItem* item = d->oneofs.data; item < oneof_end; item++) {
     upb_MiniTableField* f = &d->fields[item->field_index];
-    uint16_t offset = upb_MtDecoder_Place(d, item->rep);
-    switch (item->type) {
-      case kUpb_LayoutItemType_OneofField:
-        while (true) {
-          uint16_t next_offset = f->UPB_PRIVATE(offset);
-          f->UPB_PRIVATE(offset) = offset;
-          if (next_offset == kUpb_LayoutItem_IndexSentinel) break;
-          f = &d->fields[next_offset - kOneofBase];
-        }
-        break;
-      case kUpb_LayoutItemType_Field:
-        f->UPB_PRIVATE(offset) = offset;
-        break;
-      default:
-        break;
+    uint16_t case_offset = upb_MtDecoder_Place(d, kUpb_OneOf_CaseFieldRep);
+    uint16_t data_offset = upb_MtDecoder_Place(d, item->rep);
+    while (true) {
+      f->presence = ~case_offset;
+      uint16_t next_offset = f->UPB_PRIVATE(offset);
+      f->UPB_PRIVATE(offset) = data_offset;
+      if (next_offset == kUpb_OneOfLayoutItem_IndexSentinel) break;
+      UPB_ASSERT(next_offset - kOneofBase < d->table->UPB_PRIVATE(field_count));
+      f = &d->fields[next_offset - kOneofBase];
     }
   }
 
@@ -5688,11 +5656,8 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
     UPB_UNREACHABLE();
   }
 
-  upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
-  for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
-    if (item->type == kUpb_LayoutItemType_OneofCase) {
-      upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot have oneof");
-    }
+  if (d->oneofs.size != 0) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot have oneof");
   }
 
   upb_MtDecoder_ValidateEntryField(d, &d->table->UPB_PRIVATE(fields)[0], 1);
@@ -5766,8 +5731,8 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
   }
 
 done:
-  *buf = decoder->vec.data;
-  *buf_size = decoder->vec.capacity * sizeof(*decoder->vec.data);
+  *buf = decoder->oneofs.data;
+  *buf_size = decoder->oneofs.capacity * sizeof(*decoder->oneofs.data);
   return decoder->table;
 }
 
@@ -5775,8 +5740,8 @@ static upb_MiniTable* upb_MtDecoder_BuildMiniTableWithBuf(
     upb_MtDecoder* const decoder, const char* const data, const size_t len,
     void** const buf, size_t* const buf_size) {
   if (UPB_SETJMP(decoder->base.err) != 0) {
-    *buf = decoder->vec.data;
-    *buf_size = decoder->vec.capacity * sizeof(*decoder->vec.data);
+    *buf = decoder->oneofs.data;
+    *buf_size = decoder->oneofs.capacity * sizeof(*decoder->oneofs.data);
     return NULL;
   }
 
@@ -5792,10 +5757,10 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
   upb_MtDecoder decoder = {
       .base = {.status = status},
       .platform = platform,
-      .vec =
+      .oneofs =
           {
               .data = *buf,
-              .capacity = *buf_size / sizeof(*decoder.vec.data),
+              .capacity = *buf_size / sizeof(*decoder.oneofs.data),
               .size = 0,
           },
       .arena = arena,
