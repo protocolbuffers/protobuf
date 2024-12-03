@@ -18,7 +18,7 @@ impl CodeGen {
     pub fn new() -> Self {
         Self {
             inputs: Vec::new(),
-            output_dir: std::env::current_dir().unwrap().join("src").join("protos"),
+            output_dir: std::env::current_dir().unwrap().join("src").join("protobuf_generated"),
             protoc_path: None,
             protoc_gen_upb_minitable_path: None,
             includes: Vec::new(),
