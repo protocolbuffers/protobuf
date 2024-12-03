@@ -35,29 +35,25 @@ mkdir $CARGO_HOME
 CRATE_ROOT=$TMP_DIR/protobuf
 mkdir $CRATE_ROOT
 
-PROTOBUF_TAR=$(rlocation com_google_protobuf/rust/protobuf_crate_dist.tar)
+PROTOBUF_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf/protobuf_crate.tar)
 
-echo "Expanding protobuf_crate tar"
+echo "Expanding protobuf crate tar"
 tar -xvf $PROTOBUF_TAR -C $CRATE_ROOT 
 
 CODEGEN_ROOT=$TMP_DIR/protobuf_codegen
 mkdir $CODEGEN_ROOT
 
-CODEGEN_TAR=$(rlocation com_google_protobuf/rust/codegen_crate_dist.tar)
+CODEGEN_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_codegen/protobuf_codegen_crate.tar)
 
-if [[ ! -f $CODEGEN_TAR ]]; then
-    CODEGEN_TAR=$(rlocation com_google_protobuf/rust/codegen_crate_test.tar)
-fi
-
-echo "Expanding codegen_crate tar"
+echo "Expanding protbuf_codegen crate tar"
 tar -xvf $CODEGEN_TAR -C $CODEGEN_ROOT 
 
-EXAMPLE_ROOT=$TMP_DIR/codegen_example
+EXAMPLE_ROOT=$TMP_DIR/protobuf_example
 mkdir $EXAMPLE_ROOT
 
-EXAMPLE_TAR=$(rlocation com_google_protobuf/rust/codegen_example_test.tar)
+EXAMPLE_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_example/protobuf_example_crate.tar)
 
-echo "Expanding codegen_example tar"
+echo "Expanding protobuf_example crate tar"
 tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT 
 
 cd $CRATE_ROOT

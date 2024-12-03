@@ -14,7 +14,7 @@ fn main() {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test] // allow_core_test
     fn set_strings() {
         let foo = proto!(Foo { name: "foo", bar: __ { name: "bar" } });
 
@@ -22,7 +22,7 @@ mod tests {
         assert_eq!(foo.bar().name(), "bar");
     }
 
-    #[test]
+    #[test] // allow_core_test
     fn set_ints() {
         let foo = proto!(Foo { int: 42, bar: __ { numbers: [1, 2, 3] } });
 
