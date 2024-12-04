@@ -147,19 +147,18 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   // Convenience shorthands for common symbols.
   auto v = ctx.printer().WithVars({
-      {"std", "::__std"},
+      {"std", "::std"},
       {"pb", "::__pb"},
       {"pbi", "::__pb::__internal"},
       {"pbr", "::__pb::__runtime"},
-      {"NonNull", "::__std::ptr::NonNull"},
-      {"Phantom", "::__std::marker::PhantomData"},
-      {"Result", "::__std::result::Result"},
-      {"Option", "::__std::option::Option"},
+      {"NonNull", "::std::ptr::NonNull"},
+      {"Phantom", "::std::marker::PhantomData"},
+      {"Result", "::std::result::Result"},
+      {"Option", "::std::option::Option"},
   });
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;
-    extern crate std as __std;
 
   )rs");
 

@@ -144,8 +144,7 @@ impl CodeGen {
             .unwrap()
             .replace("crate::", "")
             .replace("protobuf_upb", "protobuf")
-            .replace("::__pb", "__pb")
-            .replace("::__std", "__std");
+            .replace("::__pb", "__pb");
         let mut file = OpenOptions::new().write(true).truncate(true).open(path).unwrap();
         file.write(contents.as_bytes()).unwrap();
     }
