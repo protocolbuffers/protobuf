@@ -2,6 +2,8 @@
 name = "staging-protobuf-example"
 version = "{VERSION}"
 edition = "2021"
+description = "Example use of Rust Protocol Buffers bindings"
+license = "BSD-3-Clause"
 
 [dependencies]
 protobuf = { version = "{VERSION}", path = "../protobuf", package = "staging-protobuf" }
