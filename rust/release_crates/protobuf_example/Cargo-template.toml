@@ -1,0 +1,10 @@
+[package]
+name = "protobuf-example"
+version = "{VERSION}"
+edition = "2021"
+
+[dependencies]
+protobuf = { version = "{VERSION}", path = "../protobuf" }
+
+[build-dependencies]
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen" }
