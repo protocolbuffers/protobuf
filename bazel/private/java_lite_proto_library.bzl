@@ -176,3 +176,6 @@ rules to generate Java code for.
     provides = [JavaInfo],
     toolchains = toolchains.use_toolchain(_JAVA_LITE_PROTO_TOOLCHAIN),
 )
+
+# public re-export, note that we can't rename the original symbol because that changes the aspect id
+java_lite_proto_aspect = _java_lite_proto_aspect
