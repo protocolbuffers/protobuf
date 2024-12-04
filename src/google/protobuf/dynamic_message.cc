@@ -216,6 +216,7 @@ class DynamicMapField final
                                                const MapKey& map_key,
                                                MapValueRef* val);
   static void ClearMapNoSyncImpl(MapFieldBase& base);
+  static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
 
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
     static_cast<DynamicMapField&>(lhs).Swap(
@@ -257,6 +258,18 @@ void DynamicMapField::ClearMapNoSyncImpl(MapFieldBase& base) {
   }
 
   self.map_.clear();
+}
+
+bool DynamicMapField::DeleteMapValueImpl(MapFieldBase& base,
+                                         const MapKey& map_key) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  auto it = self.map_.find(map_key);
+  if (it == self.map_.end()) return false;
+  if (self.arena() == nullptr) {
+    it->second.DeleteData();
+  }
+  self.map_.erase(it);
+  return true;
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {

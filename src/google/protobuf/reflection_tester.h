@@ -40,6 +40,9 @@ class MapReflectionTester {
   void GetMapValueViaMapReflection(Message* message,
                                    const std::string& field_name,
                                    const MapKey& map_key, MapValueRef* map_val);
+  void DeleteMapValueViaMapReflection(Message* message,
+                                      absl::string_view field_name,
+                                      const MapKey& map_key);
   Message* GetMapEntryViaReflection(Message* message,
                                     const std::string& field_name, int index);
   MapIterator MapBegin(Message* message, const std::string& field_name);
@@ -63,7 +66,7 @@ class MapReflectionTester {
   }
 
  private:
-  const FieldDescriptor* F(const std::string& name);
+  const FieldDescriptor* F(absl::string_view name);
 
   const Descriptor* base_descriptor_;
 

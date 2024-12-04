@@ -49,6 +49,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -1244,6 +1245,91 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
 
       // Add an entry to make sure it is using the right arena.
     (*rhs.mutable_map_int32_int32())[1234] = 1234;
+  }
+}
+
+TEST_F(MapImplTest, DeleteMapValues) {
+  auto* descriptor = UNITTEST::TestMap::descriptor();
+
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> dyn_message(factory.GetPrototype(descriptor)->New());
+  std::unique_ptr<Message> gen_message = std::make_unique<TestMap>();
+  Arena arena;
+
+  for (auto* message : {gen_message.get(), dyn_message.get(),
+                        gen_message->New(&arena), dyn_message->New(&arena)}) {
+    MapReflectionTester reflection_tester(descriptor);
+    reflection_tester.SetMapFieldsViaMapReflection(message);
+
+    // Each maps has two elements. Let's remove the smallest one first, so that
+    // we can test the result. Then remove the rest and test again.
+
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      auto* field = descriptor->field(i);
+      if (!field->is_map()) continue;
+
+      MapIterator it = reflection_tester.MapBegin(message, field->name());
+      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      // It's unordered, so search for it.
+      if (it == end) continue;
+      auto next = it;
+      ++next;
+      ASSERT_NE(next, end);
+      if (next.GetKey() < it.GetKey()) {
+        it = next;
+      }
+
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 2);
+      reflection_tester.DeleteMapValueViaMapReflection(
+          message, field->name(), it.GetKey());
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 1);
+    }
+
+    EXPECT_THAT(*message, EqualsProto(R"pb(
+      map_int32_int32 { key: 1 value: 1 }
+      map_int64_int64 { key: 1 value: 1 }
+      map_uint32_uint32 { key: 1 value: 1 }
+      map_uint64_uint64 { key: 1 value: 1 }
+      map_sint32_sint32 { key: 1 value: 1 }
+      map_sint64_sint64 { key: 1 value: 1 }
+      map_fixed32_fixed32 { key: 1 value: 1 }
+      map_fixed64_fixed64 { key: 1 value: 1 }
+      map_sfixed32_sfixed32 { key: 1 value: 1 }
+      map_sfixed64_sfixed64 { key: 1 value: 1 }
+      map_int32_float { key: 1 value: 1 }
+      map_int32_double { key: 1 value: 1 }
+      map_bool_bool { key: true value: true }
+      map_string_string {
+        key: "This is another very long string that goes in the heap"
+        value: "This is another very long string that goes in the heap"
+      }
+      map_int32_bytes {
+        key: 1
+        value: "This is another very long string that goes in the heap"
+      }
+      map_int32_enum { key: 1 value: MAP_ENUM_BAZ }
+      map_int32_foreign_message {
+        key: 1
+        value { c: 1 }
+      }
+    )pb"));
+
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      auto* field = descriptor->field(i);
+      if (!field->is_map()) continue;
+
+      MapIterator it = reflection_tester.MapBegin(message, field->name());
+      MapIterator end = reflection_tester.MapEnd(message, field->name());
+
+      while (it != end) {
+        auto next = it;
+        ++next;
+        reflection_tester.DeleteMapValueViaMapReflection(
+            message, field->name(), it.GetKey());
+        it = next;
+      }
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 0);
+    }
   }
 }
 

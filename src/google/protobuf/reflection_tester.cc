@@ -192,7 +192,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
-const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
+const FieldDescriptor* MapReflectionTester::F(absl::string_view name) {
   const FieldDescriptor* result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
   ABSL_CHECK(result != nullptr);
@@ -609,6 +609,12 @@ void MapReflectionTester::GetMapValueViaMapReflection(
   const Reflection* reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
                                                   map_key, map_val));
+}
+
+void MapReflectionTester::DeleteMapValueViaMapReflection(
+    Message* message, absl::string_view field_name, const MapKey& map_key) {
+  const Reflection* reflection = message->GetReflection();
+  reflection->DeleteMapValue(message, F(field_name), map_key);
 }
 
 Message* MapReflectionTester::GetMapEntryViaReflection(
