@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 [package]
-name = "protobuf"
+name = "staging-protobuf"
 version = "{VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 links = "libupb"

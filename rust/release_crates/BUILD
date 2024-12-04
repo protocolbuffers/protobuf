@@ -12,3 +12,15 @@ sh_binary(
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
+
+sh_binary(
+    name = "release_staging",
+    srcs = ["release_staging.sh"],
+    data = [
+        "//rust/release_crates/protobuf:protobuf_crate",
+        "//rust/release_crates/protobuf_codegen:protobuf_codegen_crate",
+        "//rust/release_crates/protobuf_example:protobuf_example_crate",
+    ],
+    tags = ["manual"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
