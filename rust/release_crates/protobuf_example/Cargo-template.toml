@@ -1,10 +1,10 @@
 [package]
-name = "protobuf-example"
+name = "staging-protobuf-example"
 version = "{VERSION}"
 edition = "2021"
 
 [dependencies]
-protobuf = { version = "{VERSION}", path = "../protobuf" }
+protobuf = { version = "{VERSION}", path = "../protobuf", package = "staging-protobuf" }
 
 [build-dependencies]
-protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen" }
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "staging-protobuf-codegen" }
