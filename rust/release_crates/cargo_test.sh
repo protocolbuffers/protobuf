@@ -1,5 +1,7 @@
 #!/bin/bash
-# Runs tests that are defined in the protobuf crate using Cargo.
+# Runs tests that are defined in the protobuf crate using Cargo. This also
+# performs a publish dry-run, which catches some but not all issues that
+# would prevent the crates from being published.
 # This is not a hermetic task because Cargo will fetch the needed
 # dependencies from crates.io
 
@@ -59,9 +61,15 @@ tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT
 cd $CRATE_ROOT
 # Run all tests except doctests
 CARGO_HOME=$CARGO_HOME cargo test --lib --bins --tests
+CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $CODEGEN_ROOT
 CARGO_HOME=$CARGO_HOME cargo test --lib --bins --tests
+CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $EXAMPLE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
+# TODO: Cannot enable this dry-run yet because it checks that the versions of
+# its dependencies are published on crates.io, which they are definitely not
+# in this case.
+# CARGO_HOME=$CARGO_HOME cargo publish --dry-run

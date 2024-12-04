@@ -29,6 +29,7 @@ genrule(
 filegroup(
     name = "srcs",
     srcs = [
+        "README.md",
         ":gen_cargo_toml",
     ] + glob(["src/**/*"]),
     visibility = ["//rust:__subpackages__"],

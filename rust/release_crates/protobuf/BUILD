@@ -29,6 +29,7 @@ genrule(
 filegroup(
     name = "srcs",
     srcs = [
+        "README.md",
         "build.rs",
         ":gen_cargo_toml",
     ],
