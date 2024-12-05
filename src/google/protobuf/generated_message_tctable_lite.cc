@@ -2826,28 +2826,30 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 
   while (true) {
     NodeBase* node = map.AllocNode();
+    char* const node_end =
+        reinterpret_cast<char*>(node) + map.type_info().node_size;
+    void* const node_key = node->GetVoidKey();
 
-    map.VisitKey(node,  //
-                 absl::Overload{
-                     [&](std::string* str) {
-                       Arena::CreateInArenaStorage(str, map.arena());
-                     },
-                     [&](void* scalar) {
-                       // Due to node alignment we can guarantee that we have at
-                       // least 8 writable bytes at the key position (as long as
-                       // we do it before we initialize the value). We can
-                       // unconditionally write here.
-                       // Assert this in debug mode, just in case.
-                       ABSL_DCHECK_GE(
-                           reinterpret_cast<char*>(node) +
-                               map.type_info().node_size -
-                               reinterpret_cast<char*>(node->GetVoidKey()),
-                           sizeof(uint64_t));
-                       memset(node->GetVoidKey(), 0, sizeof(uint64_t));
-                     },
-                 });
+    // Due to node alignment we can guarantee that we have at least 8 writable
+    // bytes from the key position to the end of the node.
+    // We can initialize the first and last 8 bytes, which takes care of all the
+    // scalar value types. This makes the VisitXXX calls below faster because
+    // the switch is much smaller.
+    // Assert this in debug mode, just in case.
+    ABSL_DCHECK_GE(node_end - static_cast<char*>(node_key), sizeof(uint64_t));
+    memset(node_key, 0, sizeof(uint64_t));
+    memset(node_end - sizeof(uint64_t), 0, sizeof(uint64_t));
 
-    map.VisitValue(
+    map.VisitKey(  //
+        node, absl::Overload{
+                  [&](std::string* str) {
+                    Arena::CreateInArenaStorage(str, map.arena());
+                  },
+                  // Already initialized above. Do nothing here.
+                  [](void*) {},
+              });
+
+    map.VisitValue(  //
         node, absl::Overload{
                   [&](std::string* str) {
                     Arena::CreateInArenaStorage(str, map.arena());
@@ -2855,7 +2857,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
                   [&](MessageLite* msg) {
                     aux[1].table->class_data->PlacementNew(msg, map.arena());
                   },
-                  [](auto* scalar) { memset(scalar, 0, sizeof(*scalar)); },
+                  // Already initialized above. Do nothing here.
+                  [](void*) {},
               });
 
     ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {

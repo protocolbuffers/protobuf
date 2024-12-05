@@ -1013,6 +1013,19 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     static_assert(
         sizeof(Map) == sizeof(internal::UntypedMapBase),
         "Map must not have any data members beyond what is in UntypedMapBase.");
+
+    // Check for MpMap optimizations.
+    if constexpr (std::is_scalar_v<key_type>) {
+      static_assert(sizeof(key_type) <= sizeof(uint64_t),
+                    "Scalar must be <= than uint64_t");
+    }
+    if constexpr (std::is_scalar_v<mapped_type>) {
+      static_assert(sizeof(mapped_type) <= sizeof(uint64_t),
+                    "Scalar must be <= than uint64_t");
+    }
+    static_assert(internal::kMaxMessageAlignment >= sizeof(uint64_t));
+    static_assert(sizeof(Node) - sizeof(internal::NodeBase) >= sizeof(uint64_t),
+                  "We must have at least this bytes for MpMap initialization");
   }
 
   template <typename P>
