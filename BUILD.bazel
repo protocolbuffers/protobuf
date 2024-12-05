@@ -136,10 +136,7 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"] + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["@zlib//:zlib"],
-    }),
+    deps = [":protobuf_lite"],
 )
 
 # This provides just the header files for use in projects that need to build
@@ -1059,7 +1056,10 @@ internal_protobuf_py_tests(
         "unknown_fields_test",
         "wire_format_test",
     ],
-    deps = [":python_tests"],
+    deps = [
+        ":python_tests",
+        "@upb//python:_message"
+    ],
 )
 
 cc_library(

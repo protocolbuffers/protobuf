@@ -1,0 +1,19 @@
+test --test_output=errors
+build --copt="-w" --host_copt="-w"
+build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+
+build --action_env=CXXFLAGS=-stdlib=libc++ --action_env=LDFLAGS=-stdlib=libc++ --action_env=BAZEL_CXXOPTS=-stdlib=libc++ --action_env=BAZEL_LINKOPTS=-lc++:-lm
+
+#build --action_env=CC=clang --host_action_env=CC=clang
+#build --copt=-stdlib=libc++ --linkopt=-lc++abi --linkopt=-lc++
+
+#build --action_env=CXXFLAGS=-stdlib=libc++
+#build --action_env=LDFLAGS=-stdlib=libc++
+#build --action_env=BAZEL_CXXOPTS=-stdlib=libc++
+#build --action_env=BAZEL_LINKLIBS=-l%:libc++.a:-l%:libc++abi.a
+#build --action_env=BAZEL_LINKOPTS=-lm:-pthread
+#build --define force_libcpp=enabled
+#build --linkopt=-fuse-ld=lld
+
+#build --action_env=BAZEL_COMPILER=clang
+#build --action_env=CXX=clang++ --host_action_env=CXX=clang++

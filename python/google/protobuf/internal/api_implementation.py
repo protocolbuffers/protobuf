@@ -37,26 +37,8 @@ import sys
 import warnings
 
 
-def _ApiVersionToImplementationType(api_version):
-  if api_version == 2:
-    return 'cpp'
-  if api_version == 1:
-    raise ValueError('api_version=1 is no longer supported.')
-  if api_version == 0:
-    return 'python'
-  return None
 
-
-_implementation_type = None
-try:
-  # pylint: disable=g-import-not-at-top
-  from google.protobuf.internal import _api_implementation
-  # The compile-time constants in the _api_implementation module can be used to
-  # switch to a certain implementation of the Python API at build time.
-  _implementation_type = _ApiVersionToImplementationType(
-      _api_implementation.api_version)
-except ImportError:
-  pass  # Unspecified by compiler flags.
+_implementation_type = "upb"
 
 
 def _CanImport(mod_name):
@@ -70,22 +52,6 @@ def _CanImport(mod_name):
     return False
 
 
-if _implementation_type is None:
-  if _CanImport('google._upb._message'):
-    _implementation_type = 'upb'
-  elif _CanImport('google.protobuf.pyext._message'):
-    _implementation_type = 'cpp'
-  else:
-    _implementation_type = 'python'
-
-
-# This environment variable can be used to switch to a certain implementation
-# of the Python API, overriding the compile-time constants in the
-# _api_implementation module. Right now only 'python', 'cpp' and 'upb' are
-# valid values. Any other value will raise error.
-_implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
-                                 _implementation_type)
-
 if _implementation_type not in ('python', 'cpp', 'upb'):
   raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
                    'supported. Please set to \'python\', \'cpp\' or '
@@ -98,29 +64,13 @@ if 'PyPy' in sys.version and _implementation_type == 'cpp':
 
 _c_module = None
 
-if _implementation_type == 'cpp':
-  try:
-    # pylint: disable=g-import-not-at-top
-    from google.protobuf.pyext import _message
-    _c_module = _message
-    del _message
-  except ImportError:
-    # TODO(jieluo): fail back to python
-    warnings.warn(
-        'Selected implementation cpp is not available.')
-    pass
+if _implementation_type != 'upb':
+  assert("Only allow upb in test branch")
 
-if _implementation_type == 'upb':
-  try:
-    # pylint: disable=g-import-not-at-top
-    from google._upb import _message
-    _c_module = _message
-    del _message
-  except ImportError:
-    warnings.warn('Selected implementation upb is not available. '
-                  'Falling back to the python implementation.')
-    _implementation_type = 'python'
-    pass
+# pylint: disable=g-import-not-at-top
+from upb.python.google._upb import _message
+_c_module = _message
+del _message
 
 # Detect if serialization should be deterministic by default
 try:
