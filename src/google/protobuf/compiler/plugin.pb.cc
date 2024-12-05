@@ -593,6 +593,36 @@ PROTOBUF_NOINLINE void Version::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t Version::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const Version& this_ = static_cast<const Version&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.Version)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.compiler.Version.major
+  // google.protobuf.compiler.Version.minor
+  // google.protobuf.compiler.Version.patch
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000eu) * 9;
+   {
+    // optional string suffix = 4;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_suffix().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void Version::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Version*>(&to_msg);
   auto& from = static_cast<const Version&>(from_msg);
@@ -1010,6 +1040,52 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t CodeGeneratorRequest::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const CodeGeneratorRequest& this_ = static_cast<const CodeGeneratorRequest&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated string file_to_generate = 1;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+          9, this_._internal_file_to_generate());
+    }
+    // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_proto_file());
+    }
+    // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_source_file_descriptors());
+    }
+  }
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string parameter = 2;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_parameter().size();
+    }
+    // optional .google.protobuf.compiler.Version compiler_version = 3;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.compiler_version_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
@@ -1381,6 +1457,43 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t CodeGeneratorResponse_File::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const CodeGeneratorResponse_File& this_ = static_cast<const CodeGeneratorResponse_File&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000000fu) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional string insertion_point = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_insertion_point().size();
+    }
+    // optional string content = 15;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_content().size();
+    }
+    // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 9 + this_._impl_.generated_code_info_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
@@ -1773,6 +1886,45 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t CodeGeneratorResponse::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const CodeGeneratorResponse& this_ = static_cast<const CodeGeneratorResponse&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_file());
+    }
+  }
+  // fixed size numerics: 4
+  // google.protobuf.compiler.CodeGeneratorResponse.minimum_edition
+  // google.protobuf.compiler.CodeGeneratorResponse.maximum_edition
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000cu) * 9;
+  // fixed size numerics: 8
+  // google.protobuf.compiler.CodeGeneratorResponse.supported_features
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 13;
+   {
+    // optional string error = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_error().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse*>(&to_msg);

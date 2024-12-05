@@ -182,6 +182,7 @@ class FieldGeneratorBase {
       io::Printer* p) const = 0;
 
   virtual void GenerateByteSize(io::Printer* p) const = 0;
+  virtual void GenerateByteSizeV2(io::Printer* p) const = 0;
 
   virtual void GenerateIsInitialized(io::Printer* p) const {
     ABSL_CHECK(!NeedsIsInitialized());
@@ -201,6 +202,19 @@ class FieldGeneratorBase {
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   pb::CppFeatures::StringType GetDeclaredStringType() const;
+
+  // Constants for experimental v2 wireformat.
+  static constexpr const size_t kV2SingularFieldTagSize =
+      sizeof(uint8_t) + sizeof(uint32_t);
+  static constexpr const size_t kV2LengthSize = sizeof(uint32_t);
+  static constexpr const size_t kV2SingularLengthPrefixedFieldTagSize =
+      kV2SingularFieldTagSize + kV2LengthSize;
+
+  static constexpr const size_t kV2RepeatedFieldTagSize =
+      kV2SingularFieldTagSize + sizeof(uint32_t);
+  // tag (1B) map_tag (1B) field_number (4B) count (4B)
+  static constexpr const size_t kV2MapFieldTagSize =
+      2 * sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t);
 
  private:
   bool should_split_ = false;
@@ -475,6 +489,11 @@ class FieldGenerator {
   void GenerateByteSize(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateByteSize(p);
+  }
+
+  void GenerateByteSizeV2(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateByteSizeV2(p);
   }
 
   // Generates lines to call IsInitialized() for eligible message fields. Non

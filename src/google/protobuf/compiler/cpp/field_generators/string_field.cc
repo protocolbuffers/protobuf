@@ -138,6 +138,14 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateByteSizeV2(io::Printer* p) const override {
+    // |tag|1B| |field_number|4B| |length|4B| |payload...|
+    p->Emit({{"tag_size", kV2SingularLengthPrefixedFieldTagSize}},
+            R"cc(
+              total_size += $tag_size$ + this_._internal_$name$().size();
+            )cc");
+  }
+
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){},
@@ -805,6 +813,15 @@ class RepeatedString : public FieldGeneratorBase {
             this_._internal_$name$().Get(i));
       }
     )cc");
+  }
+
+  void GenerateByteSizeV2(io::Printer* p) const override {
+    // |tag|1B| |field_number|4B| |count|4B| |length|4B| |payload|...
+    p->Emit({{"tag_size", kV2RepeatedFieldTagSize}},
+            R"cc(
+              total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+                  $tag_size$, this_._internal_$name$());
+            )cc");
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;

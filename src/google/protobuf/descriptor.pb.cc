@@ -2568,6 +2568,32 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FileDescriptorSet::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FileDescriptorSet& this_ = static_cast<const FileDescriptorSet&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.FileDescriptorProto file = 1;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_file());
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
@@ -3192,6 +3218,87 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FileDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FileDescriptorProto& this_ = static_cast<const FileDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated string dependency = 3;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+          9, this_._internal_dependency());
+    }
+    // repeated .google.protobuf.DescriptorProto message_type = 4;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_message_type());
+    }
+    // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_enum_type());
+    }
+    // repeated .google.protobuf.ServiceDescriptorProto service = 6;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_service());
+    }
+    // repeated .google.protobuf.FieldDescriptorProto extension = 7;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_extension());
+    }
+    // repeated int32 public_dependency = 10;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_public_dependency());
+    }
+    // repeated int32 weak_dependency = 11;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_weak_dependency());
+    }
+  }
+  // fixed size numerics: 4
+  // google.protobuf.FileDescriptorProto.edition
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000020u) * 9;
+  if (cached_has_bits & 0x0000001fu) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional string package = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_package().size();
+    }
+    // optional string syntax = 12;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_syntax().size();
+    }
+    // optional .google.protobuf.FileOptions options = 8;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+    // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 9 + this_._impl_.source_code_info_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
@@ -3574,6 +3681,35 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t DescriptorProto_ExtensionRange::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const DescriptorProto_ExtensionRange& this_ = static_cast<const DescriptorProto_ExtensionRange&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ExtensionRange)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.DescriptorProto.ExtensionRange.start
+  // google.protobuf.DescriptorProto.ExtensionRange.end
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000006u) * 9;
+   {
+    // optional .google.protobuf.ExtensionRangeOptions options = 3;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
@@ -3858,6 +3994,29 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t DescriptorProto_ReservedRange::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const DescriptorProto_ReservedRange& this_ = static_cast<const DescriptorProto_ReservedRange&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ReservedRange)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.DescriptorProto.ReservedRange.start
+  // google.protobuf.DescriptorProto.ReservedRange.end
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000003u) * 9;
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
@@ -4423,6 +4582,77 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t DescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const DescriptorProto& this_ = static_cast<const DescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.FieldDescriptorProto field = 2;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_field());
+    }
+    // repeated .google.protobuf.DescriptorProto nested_type = 3;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_nested_type());
+    }
+    // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_enum_type());
+    }
+    // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_extension_range());
+    }
+    // repeated .google.protobuf.FieldDescriptorProto extension = 6;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_extension());
+    }
+    // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_oneof_decl());
+    }
+    // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_reserved_range());
+    }
+    // repeated string reserved_name = 10;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+          9, this_._internal_reserved_name());
+    }
+  }
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional .google.protobuf.MessageOptions options = 7;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
@@ -4832,6 +5062,42 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t ExtensionRangeOptions_Declaration::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const ExtensionRangeOptions_Declaration& this_ = static_cast<const ExtensionRangeOptions_Declaration&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 1
+  // google.protobuf.ExtensionRangeOptions.Declaration.reserved
+  // google.protobuf.ExtensionRangeOptions.Declaration.repeated
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000018u) * 6;
+  // fixed size numerics: 4
+  // google.protobuf.ExtensionRangeOptions.Declaration.number
+  total_size += absl::popcount(cached_has_bits & 0x00000004u) * 9;
+  if (cached_has_bits & 0x00000003u) {
+    // optional string full_name = 2;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_full_name().size();
+    }
+    // optional string type = 3;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_type().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions_Declaration*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions_Declaration&>(from_msg);
@@ -5221,6 +5487,47 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t ExtensionRangeOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const ExtensionRangeOptions& this_ = static_cast<const ExtensionRangeOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_declaration());
+    }
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 4
+  // google.protobuf.ExtensionRangeOptions.verification
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 9;
+   {
+    // optional .google.protobuf.FeatureSet features = 50;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
@@ -5766,6 +6073,60 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FieldDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FieldDescriptorProto& this_ = static_cast<const FieldDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 1
+  // google.protobuf.FieldDescriptorProto.proto3_optional
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000100u) * 6;
+  // fixed size numerics: 4
+  // google.protobuf.FieldDescriptorProto.number
+  // google.protobuf.FieldDescriptorProto.oneof_index
+  // google.protobuf.FieldDescriptorProto.label
+  // google.protobuf.FieldDescriptorProto.type
+  total_size += absl::popcount(cached_has_bits & 0x000006c0u) * 9;
+  if (cached_has_bits & 0x0000003fu) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional string extendee = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_extendee().size();
+    }
+    // optional string type_name = 6;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_type_name().size();
+    }
+    // optional string default_value = 7;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 9 + this_._internal_default_value().size();
+    }
+    // optional string json_name = 10;
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 9 + this_._internal_json_name().size();
+    }
+    // optional .google.protobuf.FieldOptions options = 8;
+    if (cached_has_bits & 0x00000020u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
@@ -6109,6 +6470,35 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t OneofDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const OneofDescriptorProto& this_ = static_cast<const OneofDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional .google.protobuf.OneofOptions options = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
@@ -6388,6 +6778,29 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t EnumDescriptorProto_EnumReservedRange::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const EnumDescriptorProto_EnumReservedRange& this_ = static_cast<const EnumDescriptorProto_EnumReservedRange&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.EnumDescriptorProto.EnumReservedRange.start
+  // google.protobuf.EnumDescriptorProto.EnumReservedRange.end
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000003u) * 9;
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
@@ -6790,6 +7203,52 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t EnumDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const EnumDescriptorProto& this_ = static_cast<const EnumDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_value());
+    }
+    // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_reserved_range());
+    }
+    // repeated string reserved_name = 5;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+          9, this_._internal_reserved_name());
+    }
+  }
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional .google.protobuf.EnumOptions options = 3;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
@@ -7130,6 +7589,38 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t EnumValueDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const EnumValueDescriptorProto& this_ = static_cast<const EnumValueDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.EnumValueDescriptorProto.number
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000004u) * 9;
+  if (cached_has_bits & 0x00000003u) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional .google.protobuf.EnumValueOptions options = 3;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
@@ -7486,6 +7977,42 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t ServiceDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const ServiceDescriptorProto& this_ = static_cast<const ServiceDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.MethodDescriptorProto method = 2;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_method());
+    }
+  }
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional .google.protobuf.ServiceOptions options = 3;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
@@ -7899,6 +8426,47 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t MethodDescriptorProto::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const MethodDescriptorProto& this_ = static_cast<const MethodDescriptorProto&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodDescriptorProto)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 1
+  // google.protobuf.MethodDescriptorProto.client_streaming
+  // google.protobuf.MethodDescriptorProto.server_streaming
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000030u) * 6;
+  if (cached_has_bits & 0x0000000fu) {
+    // optional string name = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name().size();
+    }
+    // optional string input_type = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_input_type().size();
+    }
+    // optional string output_type = 3;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_output_type().size();
+    }
+    // optional .google.protobuf.MethodOptions options = 4;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 9 + this_._impl_.options_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
@@ -8704,6 +9272,94 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FileOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FileOptions& this_ = static_cast<const FileOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.FileOptions.java_multiple_files
+  // google.protobuf.FileOptions.java_generate_equals_and_hash
+  // google.protobuf.FileOptions.java_string_check_utf8
+  // google.protobuf.FileOptions.cc_generic_services
+  // google.protobuf.FileOptions.java_generic_services
+  // google.protobuf.FileOptions.py_generic_services
+  // google.protobuf.FileOptions.deprecated
+  // google.protobuf.FileOptions.cc_enable_arenas
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x000bf800u) * 6;
+  // fixed size numerics: 4
+  // google.protobuf.FileOptions.optimize_for
+  total_size += absl::popcount(cached_has_bits & 0x00040000u) * 9;
+  if (cached_has_bits & 0x000000ffu) {
+    // optional string java_package = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_java_package().size();
+    }
+    // optional string java_outer_classname = 8;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_java_outer_classname().size();
+    }
+    // optional string go_package = 11;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_go_package().size();
+    }
+    // optional string objc_class_prefix = 36;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 9 + this_._internal_objc_class_prefix().size();
+    }
+    // optional string csharp_namespace = 37;
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 9 + this_._internal_csharp_namespace().size();
+    }
+    // optional string swift_prefix = 39;
+    if (cached_has_bits & 0x00000020u) {
+      total_size += 9 + this_._internal_swift_prefix().size();
+    }
+    // optional string php_class_prefix = 40;
+    if (cached_has_bits & 0x00000040u) {
+      total_size += 9 + this_._internal_php_class_prefix().size();
+    }
+    // optional string php_namespace = 41;
+    if (cached_has_bits & 0x00000080u) {
+      total_size += 9 + this_._internal_php_namespace().size();
+    }
+  }
+  if (cached_has_bits & 0x00000700u) {
+    // optional string php_metadata_namespace = 44;
+    if (cached_has_bits & 0x00000100u) {
+      total_size += 9 + this_._internal_php_metadata_namespace().size();
+    }
+    // optional string ruby_package = 45;
+    if (cached_has_bits & 0x00000200u) {
+      total_size += 9 + this_._internal_ruby_package().size();
+    }
+    // optional .google.protobuf.FeatureSet features = 50;
+    if (cached_has_bits & 0x00000400u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
@@ -9215,6 +9871,46 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t MessageOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const MessageOptions& this_ = static_cast<const MessageOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.MessageOptions.message_set_wire_format
+  // google.protobuf.MessageOptions.no_standard_descriptor_accessor
+  // google.protobuf.MessageOptions.deprecated
+  // google.protobuf.MessageOptions.map_entry
+  // google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000003eu) * 6;
+   {
+    // optional .google.protobuf.FeatureSet features = 12;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
@@ -9534,6 +10230,34 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FieldOptions_EditionDefault::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FieldOptions_EditionDefault& this_ = static_cast<const FieldOptions_EditionDefault&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions.EditionDefault)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.FieldOptions.EditionDefault.edition
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 9;
+   {
+    // optional string value = 2;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_value().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldOptions_EditionDefault*>(&to_msg);
@@ -9869,6 +10593,36 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FieldOptions_FeatureSupport::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FieldOptions_FeatureSupport& this_ = static_cast<const FieldOptions_FeatureSupport&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions.FeatureSupport)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.FieldOptions.FeatureSupport.edition_introduced
+  // google.protobuf.FieldOptions.FeatureSupport.edition_deprecated
+  // google.protobuf.FieldOptions.FeatureSupport.edition_removed
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000eu) * 9;
+   {
+    // optional string deprecation_warning = 3;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_deprecation_warning().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldOptions_FeatureSupport*>(&to_msg);
@@ -10465,6 +11219,66 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FieldOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FieldOptions& this_ = static_cast<const FieldOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_targets());
+    }
+    // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_edition_defaults());
+    }
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.FieldOptions.packed
+  // google.protobuf.FieldOptions.lazy
+  // google.protobuf.FieldOptions.unverified_lazy
+  // google.protobuf.FieldOptions.deprecated
+  // google.protobuf.FieldOptions.weak
+  // google.protobuf.FieldOptions.debug_redact
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x000003f0u) * 6;
+  // fixed size numerics: 4
+  // google.protobuf.FieldOptions.ctype
+  // google.protobuf.FieldOptions.jstype
+  // google.protobuf.FieldOptions.retention
+  total_size += absl::popcount(cached_has_bits & 0x0000040cu) * 9;
+  if (cached_has_bits & 0x00000003u) {
+    // optional .google.protobuf.FeatureSet features = 21;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+    // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.feature_support_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
@@ -10847,6 +11661,39 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t OneofOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const OneofOptions& this_ = static_cast<const OneofOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+   {
+    // optional .google.protobuf.FeatureSet features = 1;
+    cached_has_bits = this_._impl_._has_bits_[0];
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
@@ -11246,6 +12093,44 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t EnumOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const EnumOptions& this_ = static_cast<const EnumOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.EnumOptions.allow_alias
+  // google.protobuf.EnumOptions.deprecated
+  // google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000eu) * 6;
+   {
+    // optional .google.protobuf.FeatureSet features = 7;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
@@ -11676,6 +12561,47 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t EnumValueOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const EnumValueOptions& this_ = static_cast<const EnumValueOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.EnumValueOptions.deprecated
+  // google.protobuf.EnumValueOptions.debug_redact
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000cu) * 6;
+  if (cached_has_bits & 0x00000003u) {
+    // optional .google.protobuf.FeatureSet features = 2;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+    // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.feature_support_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
@@ -12054,6 +12980,42 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t ServiceOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const ServiceOptions& this_ = static_cast<const ServiceOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.ServiceOptions.deprecated
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 6;
+   {
+    // optional .google.protobuf.FeatureSet features = 34;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
@@ -12455,6 +13417,45 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t MethodOptions::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const MethodOptions& this_ = static_cast<const MethodOptions&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_uninterpreted_option());
+    }
+  }
+  // fixed size numerics: 1
+  // google.protobuf.MethodOptions.deprecated
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 6;
+  // fixed size numerics: 4
+  // google.protobuf.MethodOptions.idempotency_level
+  total_size += absl::popcount(cached_has_bits & 0x00000004u) * 9;
+   {
+    // optional .google.protobuf.FeatureSet features = 35;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
@@ -12765,6 +13766,34 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t UninterpretedOption_NamePart::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const UninterpretedOption_NamePart& this_ = static_cast<const UninterpretedOption_NamePart&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 1
+  // google.protobuf.UninterpretedOption.NamePart.is_extension
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000002u) * 6;
+   {
+    // required string name_part = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_name_part().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
@@ -13199,6 +14228,51 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t UninterpretedOption::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const UninterpretedOption& this_ = static_cast<const UninterpretedOption&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_name());
+    }
+  }
+  // fixed size numerics: 8
+  // google.protobuf.UninterpretedOption.positive_int_value
+  // google.protobuf.UninterpretedOption.negative_int_value
+  // google.protobuf.UninterpretedOption.double_value
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000038u) * 13;
+  if (cached_has_bits & 0x00000007u) {
+    // optional string identifier_value = 3;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_identifier_value().size();
+    }
+    // optional bytes string_value = 7;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_string_value().size();
+    }
+    // optional string aggregate_value = 8;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 9 + this_._internal_aggregate_value().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
@@ -13613,6 +14687,34 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FeatureSet::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FeatureSet& this_ = static_cast<const FeatureSet&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FeatureSet)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.FeatureSet.field_presence
+  // google.protobuf.FeatureSet.enum_type
+  // google.protobuf.FeatureSet.repeated_field_encoding
+  // google.protobuf.FeatureSet.utf8_validation
+  // google.protobuf.FeatureSet.message_encoding
+  // google.protobuf.FeatureSet.json_format
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000003fu) * 9;
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FeatureSet*>(&to_msg);
   auto& from = static_cast<const FeatureSet&>(from_msg);
@@ -13953,6 +15055,38 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  // fixed size numerics: 4
+  // google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000004u) * 9;
+  if (cached_has_bits & 0x00000003u) {
+    // optional .google.protobuf.FeatureSet overridable_features = 4;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._impl_.overridable_features_->ByteSizeV2Message();
+    }
+    // optional .google.protobuf.FeatureSet fixed_features = 5;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._impl_.fixed_features_->ByteSizeV2Message();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
@@ -14307,6 +15441,36 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t FeatureSetDefaults::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const FeatureSetDefaults& this_ = static_cast<const FeatureSetDefaults&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FeatureSetDefaults)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_defaults());
+    }
+  }
+  // fixed size numerics: 4
+  // google.protobuf.FeatureSetDefaults.minimum_edition
+  // google.protobuf.FeatureSetDefaults.maximum_edition
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x00000003u) * 9;
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FeatureSetDefaults*>(&to_msg);
@@ -14713,6 +15877,52 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t SourceCodeInfo_Location::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const SourceCodeInfo_Location& this_ = static_cast<const SourceCodeInfo_Location&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo.Location)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated int32 path = 1 [packed = true];
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_path());
+    }
+    // repeated int32 span = 2 [packed = true];
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_span());
+    }
+    // repeated string leading_detached_comments = 6;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedStringByteSizeV2(
+          9, this_._internal_leading_detached_comments());
+    }
+  }
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // optional string leading_comments = 3;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_leading_comments().size();
+    }
+    // optional string trailing_comments = 4;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 9 + this_._internal_trailing_comments().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
@@ -14992,6 +16202,32 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t SourceCodeInfo::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const SourceCodeInfo& this_ = static_cast<const SourceCodeInfo&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
+  ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSizeV2();
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_location());
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
@@ -15368,6 +16604,43 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t GeneratedCodeInfo_Annotation::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const GeneratedCodeInfo_Annotation& this_ = static_cast<const GeneratedCodeInfo_Annotation&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated int32 path = 1 [packed = true];
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+          9, this_._internal_path());
+    }
+  }
+  // fixed size numerics: 4
+  // google.protobuf.GeneratedCodeInfo.Annotation.begin
+  // google.protobuf.GeneratedCodeInfo.Annotation.end
+  // google.protobuf.GeneratedCodeInfo.Annotation.semantic
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += absl::popcount(cached_has_bits & 0x0000000eu) * 9;
+   {
+    // optional string source_file = 2;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9 + this_._internal_source_file().size();
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
@@ -15643,6 +16916,31 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t GeneratedCodeInfo::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const GeneratedCodeInfo& this_ = static_cast<const GeneratedCodeInfo&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+   {
+    // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
+    {
+      total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+          9, this_._internal_annotation());
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
