@@ -64,6 +64,7 @@ CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 
 # The example crate cannot be published due to it having a build.rs that
 # modifies files outside of the OUT_DIR.
-#cd $EXAMPLE_ROOT
-# CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
+cd $EXAMPLE_ROOT
+CARGO_HOME=$CARGO_HOME cargo build --features run-protobuf-codegen
+CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 

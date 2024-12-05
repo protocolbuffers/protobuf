@@ -5,6 +5,9 @@ edition = "2021"
 description = "Example use of Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
 
+[features]
+run-protobuf-codegen = []
+
 [dependencies]
 protobuf = { version = "{VERSION}", path = "../protobuf", package = "staging-protobuf" }
 

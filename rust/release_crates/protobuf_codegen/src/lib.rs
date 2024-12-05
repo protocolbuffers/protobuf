@@ -64,8 +64,7 @@ impl CodeGen {
         self
     }
 
-    /// Generate Rust, upb, and upb minitables. Build and link the C code.
-    pub fn compile(&self) -> Result<(), String> {
+    pub fn generate_and_compile(&self) -> Result<(), String> {
         let libupb_version = std::env::var("DEP_LIBUPB_VERSION").expect("DEP_LIBUPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
         if VERSION != libupb_version {
             panic!(
@@ -112,7 +111,11 @@ impl CodeGen {
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
         assert!(output.status.success());
+        self.compile_only()
+    }
 
+    /// Builds and links the C code.
+    pub fn compile_only(&self) -> Result<(), String> {
         let mut cc_build = cc::Build::new();
         cc_build
             .include(
