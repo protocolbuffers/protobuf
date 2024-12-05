@@ -69,7 +69,7 @@ struct PtrAndLen;
 namespace internal {
 namespace v2 {
 class TableDriven;
-};
+}  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
@@ -88,10 +88,6 @@ class TypeDefinedMapFieldBase;
 class DynamicMapField;
 
 class GeneratedMessageReflection;
-
-namespace v2 {
-class TableDriven;
-}  // namespace v2
 
 // The largest valid serialization for a message is INT_MAX, so we can't have
 // more than 32-bits worth of elements.
@@ -1120,7 +1116,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
 
     // Allow implicit conversion to const_iterator.
-    operator const_iterator() const {  // NOLINT(runtime/explicit)
+    operator const_iterator() const {  // NOLINT(google-explicit-constructor)
       return const_iterator(static_cast<const BaseIt&>(*this));
     }
 
