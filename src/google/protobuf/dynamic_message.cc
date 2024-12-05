@@ -212,6 +212,7 @@ class DynamicMapField final
   void AllocateMapValue(MapValueRef* map_val);
 
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
+  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
                                                const MapKey& map_key,
                                                MapValueRef* val);
@@ -319,6 +320,26 @@ bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
   // [] may reorder the map and iterators.
   val->CopyFrom(iter->second);
   return false;
+}
+
+void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
+  auto& lhs = static_cast<DynamicMapField&>(lhs_base);
+  auto& rhs = static_cast<DynamicMapField&>(rhs_base);
+
+  if (lhs.arena() == rhs.arena()) {
+    TypeDefinedMapFieldBase::SwapImpl(lhs, rhs);
+    return;
+  }
+
+  // Different arena, so copy objects instead.
+  DynamicMapField tmp(lhs.default_entry_);
+  tmp.MergeFrom(lhs);
+  lhs.Clear();
+  lhs.MergeFrom(rhs);
+  rhs.Clear();
+  rhs.MergeFrom(tmp);
+
+  MapFieldBase::SwapImpl(lhs, rhs);
 }
 
 void DynamicMapField::MergeFromImpl(MapFieldBase& base,
