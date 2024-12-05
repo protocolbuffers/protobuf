@@ -494,7 +494,7 @@ struct FieldChunk {
   std::vector<const FieldDescriptor*> fields;
 };
 
-using ChunkIterator = std::vector<FieldChunk>::const_iterator;
+using ChunkIterator = std::vector<FieldChunk>::iterator;
 
 // Breaks down a single chunk of fields into a few chunks that share attributes
 // controlled by "equivalent" predicate. Returns an array of chunks.
@@ -536,12 +536,65 @@ bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
          a.should_split == b.should_split;
 }
 
+// Returns an array of field descriptors that meet "predicate" in [it, end). The
+// matched fields are removed from the original range.
+template <typename Predicate>
+std::vector<const FieldDescriptor*> ExtractFields(ChunkIterator it,
+                                                  ChunkIterator end,
+                                                  const Predicate& predicate) {
+  std::vector<const FieldDescriptor*> res;
+  for (; it != end; ++it) {
+    auto& source = it->fields;
+    if (source.empty()) continue;
+
+    for (const auto* f : source) {
+      if (predicate(f)) {
+        res.push_back(f);
+      }
+    }
+    source.erase(std::remove_if(source.begin(), source.end(), predicate),
+                 source.end());
+  }
+  return res;
+}
+
+// Returns the (common) hasbit index offset. Callers must guarantee "fields" is
+// not empty. Debug-check fails if it sees different hasbit index offset in
+// "fields".
+int GetCommonHasbitIndexOffset(
+    const std::vector<const FieldDescriptor*>& fields,
+    const std::vector<int>& has_bit_indices) {
+  ABSL_CHECK(!fields.empty());
+
+  int offset = has_bit_indices[fields.front()->index()] / 32;
+  for (auto* field : fields) {
+    ABSL_DCHECK_EQ(offset, has_bit_indices[field->index()] / 32);
+  }
+  return offset;
+}
+
+// Checks if chunks in [it, end) share hasbit index offset.
+void CheckSameHasbitIndexOffset(ChunkIterator it, ChunkIterator end,
+                                const std::vector<int>& has_bit_indices) {
+  ABSL_CHECK(it != end);
+  int prev_offset = -1;
+  for (; it != end; ++it) {
+    // Skip empty chunks (likely due to extraction).
+    if (it->fields.empty()) continue;
+
+    int offset = GetCommonHasbitIndexOffset(it->fields, has_bit_indices);
+    ABSL_CHECK(prev_offset == -1 || prev_offset == offset);
+    prev_offset = offset;
+  }
+}
+
 // Returns a bit mask based on has_bit index of "fields" that are typically on
 // the same chunk. It is used in a group presence check where _has_bits_ is
 // masked to tell if any thing in "fields" is present.
 uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
                       const std::vector<int>& has_bit_indices) {
-  ABSL_CHECK(!fields.empty());
+  if (fields.empty()) return 0u;
+
   int first_index_offset = has_bit_indices[fields.front()->index()] / 32;
   uint32_t chunk_mask = 0;
   for (auto field : fields) {
@@ -560,13 +613,14 @@ uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
                       const std::vector<int>& has_bit_indices) {
   ABSL_CHECK(it != end);
 
-  int first_index_offset = has_bit_indices[it->fields.front()->index()] / 32;
-  uint32_t chunk_mask = 0;
-  do {
-    ABSL_CHECK_EQ(first_index_offset,
-                  has_bit_indices[it->fields.front()->index()] / 32);
-    chunk_mask |= GenChunkMask(it->fields, has_bit_indices);
-  } while (++it != end);
+  CheckSameHasbitIndexOffset(it, end, has_bit_indices);
+
+  uint32_t chunk_mask = 0u;
+  for (; it != end; ++it) {
+    if (!it->fields.empty()) {
+      chunk_mask |= GenChunkMask(it->fields, has_bit_indices);
+    }
+  }
   return chunk_mask;
 }
 
@@ -608,10 +662,18 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
   std::vector<HasWordMask> hasword_masks;
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, is_same_hasword);
-    hasword_masks.push_back({hasbit_word(it->fields.front()),
-                             GenChunkMask(it, next, has_bit_indices)});
+    for (; it != next; ++it) {
+      if (!it->fields.empty()) {
+        hasword_masks.push_back({hasbit_word(it->fields.front()),
+                                 GenChunkMask(it, next, has_bit_indices)});
+        break;
+      }
+    }
+    // Jump to the next batch instead.
     it = next;
   }
+
+  if (hasword_masks.empty()) return false;
 
   // Emit has_bit check for each has_bit_dword index.
   p->Emit({{"cond",
@@ -674,6 +736,7 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
 
   return vars;
 }
+
 
 }  // anonymous namespace
 
@@ -1404,6 +1467,22 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
           )cc");
 }
 
+void MessageGenerator::MayEmitUpdateCachedHasbits(
+    const FieldDescriptor* field, io::Printer* p,
+    int& cached_has_word_index) const {
+  if (!HasHasbit(field) || field->options().weak()) return;
+
+  int has_bit_index = has_bit_indices_[field->index()];
+
+  if (cached_has_word_index == (has_bit_index / 32)) return;
+
+  cached_has_word_index = (has_bit_index / 32);
+  p->Emit({{"index", cached_has_word_index}},
+          R"cc(
+            cached_has_bits = this_.$has_bits$[$index$];
+          )cc");
+}
+
 template <bool kIsV2>
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
@@ -1411,19 +1490,7 @@ void MessageGenerator::EmitUpdateByteSizeForField(
   p->Emit(
       {{"comment", [&] { PrintFieldComment(Formatter{p}, field, options_); }},
        {"update_cached_has_bits",
-        [&] {
-          if (!HasHasbit(field) || field->options().weak()) return;
-
-          int has_bit_index = has_bit_indices_[field->index()];
-
-          if (cached_has_word_index == (has_bit_index / 32)) return;
-
-          cached_has_word_index = (has_bit_index / 32);
-          p->Emit({{"index", cached_has_word_index}},
-                  R"cc(
-                    cached_has_bits = this_.$has_bits$[$index$];
-                  )cc");
-        }},
+        [&] { MayEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
         [&]() { EmitCheckAndUpdateByteSizeForField<kIsV2>(field, p); }}},
       R"cc(
@@ -1431,6 +1498,36 @@ void MessageGenerator::EmitUpdateByteSizeForField(
         $update_cached_has_bits$;
         $check_and_update_byte_size_for_field$;
       )cc");
+}
+
+void MessageGenerator::EmitUpdateByteSizeV2ForNumerics(
+    size_t field_size, io::Printer* p, int& cached_has_word_index,
+    std::vector<const FieldDescriptor*>&& fields) const {
+  if (fields.empty()) return;
+
+  auto v = p->WithVars({{"field_size", field_size}});
+  p->Emit(R"cc(
+    // fixed size numerics: $field_size$
+  )cc");
+  for (const auto* f : fields) {
+    p->Emit({{"full_name", f->full_name()}},
+            R"cc(
+              // $full_name$
+            )cc");
+  }
+
+  p->Emit({{"mask",
+            absl::StrFormat("0x%08xu", GenChunkMask(fields, has_bit_indices_))},
+           {"size", 1 + 4 + field_size},  // tag + field number + payload
+           {"update_cached_has_bits",
+            [&] {
+              MayEmitUpdateCachedHasbits(fields.front(), p,
+                                         cached_has_word_index);
+            }}},
+          R"cc(
+            $update_cached_has_bits$;
+            total_size += absl::popcount(cached_has_bits & $mask$) * $size$;
+          )cc");
 }
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
