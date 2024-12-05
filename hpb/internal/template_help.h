@@ -33,7 +33,10 @@ using RemovePtrT = typename RemovePtr<T>::type;
 
 template <typename T, typename U = RemovePtrT<T>,
           typename = std::enable_if_t<!std::is_const_v<U>>>
-using PtrOrRaw = T;
+using PtrOrRawMutable = T;
+
+template <typename T, typename U = RemovePtrT<T>>
+using PtrOrRawConst = T;
 
 template <typename T, typename = void>
 inline constexpr bool IsHpbClass = false;
