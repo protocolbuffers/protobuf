@@ -197,7 +197,7 @@ def _compile_cc(
         linking_context = linking_context,
     )
 
-def _compile_rust(ctx, attr, src, extra_srcs, deps):
+def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
     """Compiles a Rust source file.
 
     Eventually this function could be upstreamed into rules_rust and be made present in rust_common.
@@ -208,6 +208,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
       src (File): The crate root source file to be compiled.
       extra_srcs ([File]): Additional source files to include in the crate.
       deps (List[DepVariantInfo]): A list of dependencies needed.
+      runtime: The protobuf runtime target.
 
     Returns:
       A DepVariantInfo provider.
@@ -246,7 +247,11 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
             srcs = depset([src] + extra_srcs),
             deps = depset(deps),
             proc_macro_deps = depset([]),
-            aliases = {},
+            # Make "protobuf" into an alias for the runtime. This allows the
+            # generated code to use a consistent name, even though the actual
+            # name of the runtime crate varies depending on the protobuf kernel
+            # and build system.
+            aliases = {runtime: "protobuf"},
             output = lib,
             metadata = rmeta,
             edition = "2021",
@@ -355,6 +360,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             src = gencode[0],
             extra_srcs = gencode[1:],
             deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
+            runtime = runtime,
         )
         return [RustProtoInfo(
             dep_variant_infos = [dep_variant_info],

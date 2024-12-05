@@ -140,11 +140,7 @@ impl CodeGen {
 
     // Adjust the generated Rust code to work with the crate structure.
     fn fix_rs_gencode(path: &Path) {
-        let contents = fs::read_to_string(path)
-            .unwrap()
-            .replace("crate::", "")
-            .replace("protobuf_upb", "protobuf")
-            .replace("::__pb", "__pb");
+        let contents = fs::read_to_string(path).unwrap().replace("crate::", "");
         let mut file = OpenOptions::new().write(true).truncate(true).open(path).unwrap();
         file.write(contents.as_bytes()).unwrap();
     }

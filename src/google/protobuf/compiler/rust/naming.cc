@@ -140,9 +140,9 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::DOUBLE:
       return "f64";
     case RustFieldType::BYTES:
-      return "::__pb::ProtoBytes";
+      return "::protobuf::ProtoBytes";
     case RustFieldType::STRING:
-      return "::__pb::ProtoString";
+      return "::protobuf::ProtoString";
     case RustFieldType::MESSAGE:
       return GetFullyQualifiedPath(ctx, *field.message_type());
     case RustFieldType::ENUM:
@@ -169,7 +169,7 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
     case RustFieldType::BYTES:
       return absl::StrFormat("&%s [u8]", lifetime);
     case RustFieldType::STRING:
-      return absl::StrFormat("&%s ::__pb::ProtoStr", lifetime);
+      return absl::StrFormat("&%s ::protobuf::ProtoStr", lifetime);
     case RustFieldType::MESSAGE:
       if (lifetime.empty()) {
         return absl::StrFormat(
