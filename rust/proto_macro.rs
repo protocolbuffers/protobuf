@@ -11,8 +11,11 @@
 /// submessage is being defined as part of the original struct literal.
 /// Introducing an expression using () or {} as the value of a field will
 /// require another call to this macro in order to return a submessage
-/// literal.``` /*
-/// Given the following proto definition
+/// literal.
+///
+/// ```rust,no_run
+/// /*
+/// Given the following proto definition:
 /// message Data {
 ///     int32 number = 1;
 ///     string letters = 2;
@@ -29,7 +32,8 @@
 ///             x + 1
 ///         }
 ///     }
-/// }); ```
+/// });
+/// ```
 #[macro_export]
 macro_rules! proto {
     ($msgtype:ty { $($tt:tt)* }) => {
