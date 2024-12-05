@@ -1,7 +1,7 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-Copyright 2008 Google Inc.
+Copyright 2008 Google LLC.
 
 This directory contains conformance tests for testing completeness and
 correctness of Protocol Buffers implementations.  These tests are designed
