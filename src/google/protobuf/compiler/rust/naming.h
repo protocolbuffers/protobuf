@@ -38,10 +38,12 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op);
 
-// Returns an absolute path to the Proxied Rust type of the given field.
-// The absolute path is guaranteed to work in the crate that defines the field.
-// It may be crate-relative, or directly reference the owning crate of the type.
+// Returns a path to the Proxied Rust type of the given field. The path will be
+// relative if the type is in the same crate, or absolute if it is in a
+// different crate.
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field);
+std::string RsTypePath(Context& ctx, const Descriptor& message);
+std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor);
 
 // Returns the 'simple spelling' of the Rust View type for the provided field.
 // For example, `i32` for int32 fields and `SomeMsgView<'$lifetime$>` for
@@ -84,27 +86,18 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field);
 // verbatim unless it is a Rust keyword that isn't a legal symbol name.
 std::string RsSafeName(absl::string_view name);
 
-// Constructs a string of the Rust modules which will contain the message.
+// Constructs a string of the Rust modules which will contain the entity.
 //
 // Example: Given a message 'NestedMessage' which is defined in package 'x.y'
 // which is inside 'ParentMessage', the message will be placed in the
-// x::y::ParentMessage_ Rust module, so this function will return the string
-// "x::y::ParentMessage_::".
-//
-// If the message has no package and no containing messages then this returns
-// empty string.
-std::string RustModuleForContainingType(Context& ctx,
-                                        const Descriptor* containing_type);
+// x::y::parent_message Rust module, so this function will return
+// "x::y::parent_message::", with the necessary prefix to make it relative to
+// the current scope, or absolute if the entity is in a different crate.
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
-std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
-std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
-std::string GetCrateRelativeQualifiedPath(Context& ctx,
-                                          const EnumDescriptor& enum_);
-std::string GetCrateRelativeQualifiedPath(Context& ctx,
-                                          const OneofDescriptor& oneof);
+std::string RustInternalModuleName(const FileDescriptor& file);
 
 template <typename Desc>
 std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);

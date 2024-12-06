@@ -132,20 +132,10 @@ impl CodeGen {
                 if file_name.ends_with(".upb_minitable.c") {
                     cc_build.file(path);
                 }
-                if file_name.ends_with(".pb.rs") {
-                    Self::fix_rs_gencode(&path);
-                }
             }
         }
         cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
         Ok(())
-    }
-
-    // Adjust the generated Rust code to work with the crate structure.
-    fn fix_rs_gencode(path: &Path) {
-        let contents = fs::read_to_string(path).unwrap().replace("crate::", "");
-        let mut file = OpenOptions::new().write(true).truncate(true).open(path).unwrap();
-        file.write(contents.as_bytes()).unwrap();
     }
 }
 

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
@@ -44,20 +45,20 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
   std::string crate_name = GetCrateName(ctx, *dep);
   for (int i = 0; i < dep->message_type_count(); ++i) {
     auto* msg = dep->message_type(i);
-    auto path = GetCrateRelativeQualifiedPath(ctx, *msg);
-    ctx.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
+    auto path = RsTypePath(ctx, *msg);
+    ctx.Emit({{"pkg::Msg", path}},
              R"rs(
-                pub use $crate$::$pkg::Msg$;
-                pub use $crate$::$pkg::Msg$View;
-                pub use $crate$::$pkg::Msg$Mut;
+                pub use $pkg::Msg$;
+                pub use $pkg::Msg$View;
+                pub use $pkg::Msg$Mut;
               )rs");
   }
   for (int i = 0; i < dep->enum_type_count(); ++i) {
     auto* enum_ = dep->enum_type(i);
-    auto path = GetCrateRelativeQualifiedPath(ctx, *enum_);
-    ctx.Emit({{"crate", crate_name}, {"pkg::Enum", path}},
+    auto path = RsTypePath(ctx, *enum_);
+    ctx.Emit({{"pkg::Enum", path}},
              R"rs(
-                pub use $crate$::$pkg::Enum$;
+                pub use $pkg::Enum$;
               )rs");
   }
 }
@@ -101,14 +102,14 @@ void DeclareSubmodulesForNonPrimarySrcs(
     std::string relative_mod_path =
         primary_relpath.Relative(RelativePath(non_primary_file_path));
     ctx.Emit({{"file_path", relative_mod_path},
-              {"mod_name", RustInternalModuleName(ctx, *non_primary_src)}},
+              {"mod_name", RustInternalModuleName(*non_primary_src)}},
              R"rs(
                         #[path="$file_path$"]
                         #[allow(non_snake_case)]
                         mod $mod_name$;
 
                         #[allow(unused_imports)]
-                        pub use crate::$mod_name$::*;
+                        pub use $mod_name$::*;
                       )rs");
   }
 }
@@ -138,7 +139,13 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   RustGeneratorContext rust_generator_context(&files_in_current_crate,
                                               &*import_path_to_crate_name);
 
-  Context ctx_without_printer(&*opts, &rust_generator_context, nullptr);
+  std::vector<std::string> modules;
+  if (file != files_in_current_crate[0]) {
+    // This is not the primary file, so its generated code will be in a module.
+    modules.emplace_back(RustInternalModuleName(*file));
+  }
+  Context ctx_without_printer(&*opts, &rust_generator_context, nullptr,
+                              std::move(modules));
 
   auto outfile = absl::WrapUnique(
       generator_context->Open(GetRsFile(ctx_without_printer, *file)));

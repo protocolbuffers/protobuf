@@ -649,8 +649,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
               msg.real_oneof_decl_count() == 0) {
             return;
           }
-          ctx.Emit({{"mod_name", RsSafeName(CamelToSnakeCase(msg.name()))},
-                    {"nested_msgs",
+          ctx.PushModule(RsSafeName(CamelToSnakeCase(msg.name())));
+          ctx.Emit({{"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
                          GenerateRs(ctx, *msg.nested_type(i));
@@ -669,13 +669,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                        }
                      }}},
                    R"rs(
-                 pub mod $mod_name$ {
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
-                 }  // mod $mod_name$
                 )rs");
+          ctx.PopModule();
         }},
        {"raw_arena_getter_for_message",
         [&] {
