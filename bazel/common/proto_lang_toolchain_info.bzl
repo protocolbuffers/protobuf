@@ -1,6 +1,6 @@
 """ProtoLangToolchainInfo"""
 
-load("//bazel/private:native.bzl", "native_proto_common")  # buildifier: disable=bzl-visibility
+load("//bazel/private:native.bzl", "native_proto_common")
 
 # Use Starlark implementation only if native_proto_common.ProtoLangToolchainInfo doesn't exist
 ProtoLangToolchainInfo = getattr(native_proto_common, "ProtoLangToolchainInfo", provider(
