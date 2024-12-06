@@ -12791,7 +12791,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PR
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_part_, &other->_impl_.name_part_, arena);
-        swap(_impl_.is_extension_, other->_impl_.is_extension_);
+  swap(_impl_.is_extension_, other->_impl_.is_extension_);
 }
 
 ::google::protobuf::Metadata UninterpretedOption_NamePart::GetMetadata() const {
