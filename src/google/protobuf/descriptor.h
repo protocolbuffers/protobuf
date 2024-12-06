@@ -2274,6 +2274,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   // be enforced while building proto files.
   absl::Status SetFeatureSetDefaults(FeatureSetDefaults spec);
 
+  // Returns true if the descriptor pool resolves features for the given
+  // extension.
+  template <typename TypeTraitsT, uint8_t field_type, bool is_packed>
+  bool ResolvesFeaturesFor(
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) const {
+    return ResolvesFeaturesForImpl(extension.number());
+  }
+
   // Toggles enforcement of extension declarations.
   // This enforcement is disabled by default because it requires full
   // descriptors with source-retention options, which are generally not
@@ -2525,6 +2534,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool IsReadyForCheckingDescriptorExtDecl(
       absl::string_view message_name) const;
 
+
+  bool ResolvesFeaturesForImpl(int extension_number) const;
+
+  const FeatureSetDefaults& GetFeatureSetDefaults() const;
 };
 
 

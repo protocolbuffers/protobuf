@@ -33,6 +33,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
@@ -1100,20 +1101,6 @@ bool AllowedExtendeeInProto3(const absl::string_view name) {
       internal::OnShutdownDelete(NewAllowedProto3Extendee());
   return allowed_proto3_extendees->find(name) !=
          allowed_proto3_extendees->end();
-}
-
-const FeatureSetDefaults& GetCppFeatureSetDefaults() {
-  static const FeatureSetDefaults* default_spec =
-      internal::OnShutdownDelete([] {
-        auto* defaults = new FeatureSetDefaults();
-        internal::ParseNoReflection(
-            absl::string_view{
-                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-            *defaults);
-        return defaults;
-      }());
-  return *default_spec;
 }
 
 template <typename ProtoT>
@@ -4789,6 +4776,36 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   return absl::OkStatus();
 }
 
+const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
+  if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
+  static const FeatureSetDefaults* cpp_default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
+  return *cpp_default_spec;
+}
+
+bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
+  for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
+    std::vector<const FieldDescriptor*> fields;
+    auto features = edition_default.fixed_features();
+    features.MergeFrom(edition_default.overridable_features());
+    features.GetReflection()->ListFields(features, &fields);
+    if (absl::c_find_if(fields, [&](const FieldDescriptor* field) {
+          return field->number() == extension_number;
+        }) == fields.end()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 DescriptorBuilder::DescriptorBuilder(
     const DescriptorPool* pool, DescriptorPool::Tables* tables,
     DescriptorPool::DeferredValidation& deferred_validation,
@@ -5921,10 +5938,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     });
   }
 
-  const FeatureSetDefaults& defaults =
-      pool_->feature_set_defaults_spec_ == nullptr
-          ? GetCppFeatureSetDefaults()
-          : *pool_->feature_set_defaults_spec_;
+  const FeatureSetDefaults& defaults = pool_->GetFeatureSetDefaults();
 
   absl::StatusOr<FeatureResolver> feature_resolver =
       FeatureResolver::Create(file_->edition_, defaults);
