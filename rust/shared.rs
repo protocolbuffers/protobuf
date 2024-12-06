@@ -5,10 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective `__runtime`
-//! crate.
 #![deny(unsafe_op_in_unsafe_fn)]
 
 use std::fmt;
@@ -38,21 +34,23 @@ pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
 
 pub mod prelude;
 
-/// Everything in `__internal` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
+/// The `__internal` module is for necessary encapsulation breaks between
+/// generated code and the runtime.
+///
+/// These symbols are never intended to be used by application code under any
+/// circumstances.
+///
+/// In blaze/bazel builds, this symbol is actively hidden from application
+/// code by having a shim crate in front that does not re-export this symbol,
+/// and a different BUILD visibility-restricted target that is used by the
+/// generated code.
+///
+/// In Cargo builds we have no good way to technically hide this
+/// symbol while still allowing it from codegen, so it is only by private by
+/// convention. As application code should never use this module, anything
+/// changes under `__internal` is not considered a semver breaking change.
 #[path = "internal.rs"]
 pub mod __internal;
-
-/// Everything in `__runtime` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
-#[cfg(all(bzl, cpp_kernel))]
-#[path = "cpp.rs"]
-pub mod __runtime;
-#[cfg(any(not(bzl), upb_kernel))]
-#[path = "upb.rs"]
-pub mod __runtime;
 
 mod codegen_traits;
 mod cord;

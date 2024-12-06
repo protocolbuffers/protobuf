@@ -8,8 +8,8 @@
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
+    __internal::runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
     __internal::{Private, SealedInternal},
-    __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
 use std::marker::PhantomData;
 
@@ -104,7 +104,11 @@ where
 }
 
 impl<K: Proxied, V: ProxiedInMapValue<K>> Proxied for Map<K, V> {
-    type View<'msg> = MapView<'msg, K, V> where K: 'msg, V: 'msg;
+    type View<'msg>
+        = MapView<'msg, K, V>
+    where
+        K: 'msg,
+        V: 'msg;
 }
 
 impl<K: Proxied, V: ProxiedInMapValue<K>> AsView for Map<K, V> {
@@ -116,7 +120,11 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> AsView for Map<K, V> {
 }
 
 impl<K: Proxied, V: ProxiedInMapValue<K>> MutProxied for Map<K, V> {
-    type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
+    type Mut<'msg>
+        = MapMut<'msg, K, V>
+    where
+        K: 'msg,
+        V: 'msg;
 }
 
 impl<K: Proxied, V: ProxiedInMapValue<K>> AsMut for Map<K, V> {

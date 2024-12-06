@@ -19,10 +19,17 @@ pub use crate::ProtoStr;
 use crate::Proxied;
 pub use std::fmt::Debug;
 
+#[cfg(all(bzl, cpp_kernel))]
+#[path = "cpp.rs"]
+pub mod runtime;
+#[cfg(any(not(bzl), upb_kernel))]
+#[path = "upb.rs"]
+pub mod runtime;
+
 // TODO: Temporarily re-export these symbols which are now under
-// __runtime under __internal since some external callers using it through
-// __internal.
-pub use crate::__runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
+// runtime under __internal directly since some external callers using it
+// through __internal.
+pub use runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
 
 /// Used to protect internal-only items from being used accidentally.
 #[derive(Debug)]

@@ -9,8 +9,8 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
+use crate::__internal::runtime::{InnerProtoString, PtrAndLen, RawMessage};
 use crate::__internal::{Private, SealedInternal};
-use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
 use crate::{
     utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
     Proxy, View, ViewProxy,
