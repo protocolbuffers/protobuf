@@ -180,9 +180,13 @@ absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
   if (pyfile == nullptr) {
     return absl::InvalidArgumentError("DESCRIPTOR has no attribute 'file'");
   }
+  // ABSL_LOG(ERROR) << "(message_module) generated pool is:"
+  //                 << google::protobuf::DescriptorPool::generated_pool();
   auto gen_d = google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(
       descriptor_full_name);
   if (gen_d) {
+    // ABSL_LOG(ERROR) << "Create " << descriptor_full_name
+    //                 << "from generated pool";
     Py_DECREF(pyfile);
     Py_DECREF(fn);
     return google::protobuf::MessageFactory::generated_factory()
@@ -232,6 +236,8 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
           google::protobuf::python::PyMessage_GetMessagePointer(py_msg);
       google::protobuf::Message* owned_msg = nullptr;
       ABSL_DCHECK(CopyToOwnedMsg(&owned_msg, *message));
+      // ABSL_LOG(ERROR) << "cpp message " << message->GetDescriptor()->name()
+      //                 << "from " << message->GetDescriptor()->file()->pool();
       return CreatePythonConstMessagePointer(owned_msg, message, py_msg);
     }
     auto msg = CreateNewMessage(py_msg);
@@ -296,6 +302,16 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
 };
 
 }  // namespace
+namespace google {
+namespace protobuf {
+namespace python {
+PyProto_API* GetAPI() {
+  static auto api = new ApiImplementation();
+  return api;
+}
+}  // namespace python
+}  // namespace protobuf
+}  // namespace google
 
 static const char module_docstring[] =
     "python-proto2 is a module that can be used to enhance proto2 Python API\n"
@@ -335,7 +351,7 @@ PyMODINIT_FUNC PyInit__message() {
 
   // Adds the C++ API
   if (PyObject* api = PyCapsule_New(
-          new ApiImplementation(), google::protobuf::python::PyProtoAPICapsuleName(),
+          google::protobuf::python::GetAPI(), google::protobuf::python::PyProtoAPICapsuleName(),
           [](PyObject* o) {
             delete (ApiImplementation*)PyCapsule_GetPointer(
                 o, google::protobuf::python::PyProtoAPICapsuleName());
