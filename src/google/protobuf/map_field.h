@@ -51,6 +51,10 @@ namespace protobuf {
 class DynamicMessage;
 class MapIterator;
 
+namespace internal {
+class DynamicMapKey;
+}  // namespace internal
+
 // Microsoft compiler complains about non-virtual destructor,
 // even when the destructor is private.
 #ifdef _MSC_VER
@@ -501,10 +505,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   static const UntypedMapBase& GetMapImpl(const MapFieldBaseForParse& map,
                                           bool is_mutable);
-  static void ClearMapNoSyncImpl(MapFieldBase& self);
-  static void SetMapIteratorValueImpl(MapIterator* map_iter);
-  static bool LookupMapValueImpl(const MapFieldBase& self,
-                                 const MapKey& map_key, MapValueConstRef* val);
 
  private:
   friend class ContendedMapCleanTest;
@@ -601,6 +601,10 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
     return &map_;
   }
 
+  static void ClearMapNoSyncImpl(MapFieldBase& map) {
+    static_cast<TypeDefinedMapFieldBase&>(map).map_.clear();
+  }
+
   void InternalSwap(TypeDefinedMapFieldBase* other);
 
   static constexpr size_t InternalGetArenaOffsetAlt(
@@ -615,6 +619,9 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   using Iter = typename Map<Key, T>::const_iterator;
 
   static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
+  static bool LookupMapValueImpl(const MapFieldBase& self,
+                                 const MapKey& map_key, MapValueConstRef* val);
+  static void SetMapIteratorValueImpl(MapIterator* map_iter);
   static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& map,
                                                const MapKey& map_key,
                                                MapValueRef* val);

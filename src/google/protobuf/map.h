@@ -73,7 +73,6 @@ class TableDriven;
 
 template <typename Key, typename T>
 class MapFieldLite;
-class MapFieldBase;
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
@@ -344,16 +343,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return reinterpret_cast<T*>(node->GetVoidKey());
   }
 
-  void* GetVoidValue(NodeBase* node) const {
-    return reinterpret_cast<char*>(node) + type_info_.value_offset;
-  }
-
   template <typename T>
   T* GetValue(NodeBase* node) const {
     // Debug check that `T` matches what we expect from the type info.
     ABSL_DCHECK_EQ(static_cast<int>(StaticTypeKind<T>()),
                    static_cast<int>(type_info_.value_type));
-    return reinterpret_cast<T*>(GetVoidValue(node));
+    return reinterpret_cast<T*>(reinterpret_cast<char*>(node) +
+                                type_info_.value_offset);
   }
 
   void ClearTable(bool reset, void (*destroy)(NodeBase*)) {
@@ -409,7 +405,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void VisitAllNodes(F f) const;
 
  protected:
-  friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
@@ -683,7 +678,6 @@ class KeyMapBase : public UntypedMapBase {
   using KeyNode = internal::KeyNode<Key>;
 
  protected:
-  friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;

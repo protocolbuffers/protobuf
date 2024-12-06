@@ -55,13 +55,54 @@ inline absl::string_view UnwrapMapKeyImpl(const MapKey& map_key,
                                           const std::string*) {
   return map_key.GetStringValue();
 }
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
+  return map_key;
+}
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key,
+                                      const DynamicMapKey*) {
+  return map_key;
+}
 
 template <typename T>
 decltype(auto) UnwrapMapKey(const MapKey& map_key) {
   return UnwrapMapKeyImpl(map_key, static_cast<T*>(nullptr));
 }
 
+// SetMapKey
+inline void SetMapKey(MapKey* map_key, int32_t value) {
+  map_key->SetInt32Value(value);
+}
+inline void SetMapKey(MapKey* map_key, uint32_t value) {
+  map_key->SetUInt32Value(value);
+}
+inline void SetMapKey(MapKey* map_key, int64_t value) {
+  map_key->SetInt64Value(value);
+}
+inline void SetMapKey(MapKey* map_key, uint64_t value) {
+  map_key->SetUInt64Value(value);
+}
+inline void SetMapKey(MapKey* map_key, bool value) {
+  map_key->SetBoolValue(value);
+}
+inline void SetMapKey(MapKey* map_key, absl::string_view value) {
+  map_key->SetStringValue(value);
+}
+inline void SetMapKey(MapKey* map_key, const MapKey& value) {
+  *map_key = value;
+}
+// The overload of SetMapKey for DynamicMapKey is located in dynamic_message.cc
+// and is discovered via ADL.
+
 // ------------------------TypeDefinedMapFieldBase---------------
+template <typename Key, typename T>
+void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValueImpl(
+    MapIterator* map_iter) {
+  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
+  auto iter = typename Map<Key, T>::const_iterator(map_iter->iter_);
+  SetMapKey(&map_iter->key_, iter->first);
+  map_iter->value_.SetValueOrCopy(&iter->second);
+}
+
 template <typename Key, typename T>
 bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSyncImpl(
     MapFieldBase& map, const MapKey& map_key, MapValueRef* val) {
@@ -69,6 +110,20 @@ bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSyncImpl(
       UnwrapMapKey<Key>(map_key));
   val->SetValue(&res.first->second);
   return res.second;
+}
+
+template <typename Key, typename T>
+bool TypeDefinedMapFieldBase<Key, T>::LookupMapValueImpl(
+    const MapFieldBase& self, const MapKey& map_key, MapValueConstRef* val) {
+  const auto& map = static_cast<const TypeDefinedMapFieldBase&>(self).GetMap();
+  auto iter = map.find(UnwrapMapKey<Key>(map_key));
+  if (map.end() == iter) {
+    return false;
+  }
+  if (val != nullptr) {
+    val->SetValueOrCopy(&iter->second);
+  }
+  return true;
 }
 
 template <typename Key, typename T>
