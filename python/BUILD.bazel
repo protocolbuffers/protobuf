@@ -163,3 +163,45 @@ py_extension(
         "//upb/util:required_fields",
     ],
 )
+
+py_extension(
+    name = "proto_api_example_mod",
+    srcs = glob([
+        "google/protobuf/pyext/*.cc",
+        "google/protobuf/pyext/*.h",
+        "google/protobuf/proto_api.cc",
+        "google/protobuf/internal/proto_api_example.cc",
+    ]),
+    copts = COPTS + select(LIMITED_API_FLAG_SELECT) + [
+        "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+    ] + select({
+        "//upb:windows": [],
+        "//upb:fasttable_enabled_setting": [
+            "-std=gnu99",
+            "-DUPB_ENABLE_FASTTABLE",
+        ],
+        "//conditions:default": ["-Wall"],
+    }),
+    includes = ["."],
+    tags = [
+        "manual",
+    ],
+    target_compatible_with = select(_message_target_compatible_with),
+    deps = [
+        ":proto_api",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:unittest_proto3_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/util:differencer",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+    ],
+)

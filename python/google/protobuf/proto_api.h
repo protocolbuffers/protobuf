@@ -28,6 +28,7 @@
 #include <Python.h>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
 
@@ -203,6 +204,8 @@ inline const char* PyProtoAPICapsuleName() {
   static const char kCapsuleName[] = "google.protobuf.pyext._message.proto_API";
   return kCapsuleName;
 }
+
+PyProto_API* GetAPI();
 
 }  // namespace python
 }  // namespace protobuf

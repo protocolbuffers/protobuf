@@ -24,6 +24,12 @@ py_dist_module(
     module_name = "google._upb._message",
 )
 
+py_dist_module(
+    name = "proto_api_example_mod",
+    extension = "//python:google/protobuf/internal/proto_api_example_binary",
+    module_name = "google.protobuf.internal.proto_api_example_binary",
+)
+
 py_proto_library(
     name = "well_known_proto_py_pb2",
     deps = [
@@ -379,6 +385,7 @@ py_wheel(
     deps = [
         ":message_mod",
         ":plugin_py_pb2",
+        ":proto_api_example_mod",
         ":well_known_proto_py_pb2",
         "//:python_srcs",
     ],
