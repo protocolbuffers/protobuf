@@ -59,12 +59,11 @@ echo "Expanding protobuf_example crate tar"
 tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT 
 
 cd $CRATE_ROOT
-# Run all tests except doctests
-CARGO_HOME=$CARGO_HOME cargo test --lib --bins --tests
+CARGO_HOME=$CARGO_HOME cargo test
 CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $CODEGEN_ROOT
-CARGO_HOME=$CARGO_HOME cargo test --lib --bins --tests
+CARGO_HOME=$CARGO_HOME cargo test
 CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $EXAMPLE_ROOT

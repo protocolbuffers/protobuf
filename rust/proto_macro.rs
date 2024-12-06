@@ -13,7 +13,7 @@
 /// require another call to this macro in order to return a submessage
 /// literal.
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// /*
 /// Given the following proto definition:
 /// message Data {
