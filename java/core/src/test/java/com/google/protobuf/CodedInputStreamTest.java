@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1402,6 +1403,41 @@ public class CodedInputStreamTest {
       assertWithMessage(inputType.name()).that(result.get()).isEqualTo((byte) 67);
       result.position(bytesLength - 1);
       assertWithMessage(inputType.name()).that(result.get()).isEqualTo((byte) 89);
+    }
+  }
+
+  @Test
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
+    int size = 127;
+    assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);
+    ByteBuffer input = ByteBuffer.allocateDirect(1 + size);
+    input.put(0, (byte) size);
+
+    Supplier<ByteString> embeddedBytes =
+        () -> {
+          try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
+            inputStream.enableAliasing(true);
+            return inputStream.readBytes();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        };
+
+    assertThat(embeddedBytes.get().size()).isEqualTo(size);
+
+    // Concurrent reader should have no impact.
+    int iterations = 100000;
+    new Thread(
+            () -> {
+              for (int i = 0; i < iterations; i++) {
+                ByteString unused = embeddedBytes.get();
+              }
+            })
+        .start();
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(embeddedBytes.get().size()).isEqualTo(size);
     }
   }
 

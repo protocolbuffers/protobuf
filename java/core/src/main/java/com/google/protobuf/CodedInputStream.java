@@ -1306,7 +1306,8 @@ public abstract class CodedInputStream {
     }
 
     private UnsafeDirectNioDecoder(ByteBuffer buffer, boolean immutable) {
-      this.buffer = buffer;
+      // Duplicate to avoid non-threadsafe modifications in slice()
+      this.buffer = buffer.duplicate();
       address = UnsafeUtil.addressOffset(buffer);
       limit = address + buffer.limit();
       pos = address + buffer.position();
