@@ -43,7 +43,7 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     if (num == number) {
       return &base[mid];
     }
-    if (num < number) {
+    if (UPB_UNPREDICTABLE(num < number)) {
       lo = lo_mid;
     } else {
       hi = hi_mid;
