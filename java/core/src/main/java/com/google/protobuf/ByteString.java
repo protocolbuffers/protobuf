@@ -1505,7 +1505,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
           return false;
         }
 
-        return equalsRange((LiteralByteString) other, 0, size());
+        return equalsRange(otherAsLiteral, 0, size());
       } else {
         // RopeByteString and NioByteString.
         return other.equals(this);
