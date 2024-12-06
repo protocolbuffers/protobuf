@@ -15,6 +15,7 @@ module(
 bazel_dep(name = "abseil-cpp", version = "20240722.0", repo_name = "com_google_absl")
 bazel_dep(name = "bazel_skylib", version = "1.7.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
+bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "8.3.2")

@@ -24,6 +24,10 @@ load("//:protobuf_extra_deps.bzl", "protobuf_extra_deps")
 
 protobuf_extra_deps()
 
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
@@ -97,6 +101,12 @@ apple_rules_dependencies()
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 
 apple_support_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
 
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
@@ -241,6 +251,7 @@ crate_repositories()
 # For testing runtime against old gencode from a previous major version.
 http_archive(
     name = "com_google_protobuf_v25.0",
+    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
     strip_prefix = "protobuf-25.0",
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
 )

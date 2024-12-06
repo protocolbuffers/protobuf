@@ -1,6 +1,7 @@
 build:cross_config --crosstool_top=//toolchain:clang_suite
 build:cross_config --//toolchain:release=true
 build:cross_config --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:cross_config --incompatible_enable_cc_toolchain_resolution=false
 
 build:linux-aarch_64 --config=cross_config --cpu=linux-aarch_64
 build:linux-aarch64 --config=cross_config --cpu=linux-aarch_64

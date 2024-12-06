@@ -87,3 +87,5 @@ build --verbose_failures
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
+
+build --enable_platform_specific_config
