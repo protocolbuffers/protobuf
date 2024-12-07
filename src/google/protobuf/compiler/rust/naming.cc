@@ -40,6 +40,10 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
+  if (ctx.opts().build_system == BuildSystem::kCargo &&
+      cpp::IsWellKnownMessage(&dep)) {
+    return absl::StrCat("::protobuf::well_known_types");
+  }
   return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
 }
 
@@ -132,9 +136,10 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::DOUBLE:
       return "f64";
     case RustFieldType::BYTES:
-      return "::protobuf::ProtoBytes";
+      return absl::StrCat(ctx.RuntimeCrateName(), "::ProtoBytes");
+
     case RustFieldType::STRING:
-      return "::protobuf::ProtoString";
+      return absl::StrCat(ctx.RuntimeCrateName(), "::ProtoString");
     case RustFieldType::MESSAGE:
       return RsTypePath(ctx, *field.message_type());
     case RustFieldType::ENUM:
@@ -169,7 +174,9 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
     case RustFieldType::BYTES:
       return absl::StrFormat("&%s [u8]", lifetime);
     case RustFieldType::STRING:
-      return absl::StrFormat("&%s ::protobuf::ProtoStr", lifetime);
+      return absl::StrCat("&", lifetime, " ", ctx.RuntimeCrateName(),
+                          "::ProtoStr");
+
     case RustFieldType::MESSAGE:
       if (lifetime.empty()) {
         return absl::StrFormat("%sView",

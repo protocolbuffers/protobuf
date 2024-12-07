@@ -116,13 +116,14 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::BYTES:
       return "&'msg [u8]";
     case RustFieldType::STRING:
-      return "&'msg ::protobuf::ProtoStr";
+      return absl::StrCat("&'msg ", ctx.RuntimeCrateName(), "::ProtoStr");
+
     case RustFieldType::MESSAGE:
-      return absl::StrCat("::protobuf::View<'msg, ", RsTypePath(ctx, field),
-                          ">");
+      return absl::StrCat(ctx.RuntimeCrateName(), "::View<'msg, ",
+                          RsTypePath(ctx, field), ">");
     case RustFieldType::ENUM:
-      return absl::StrCat("::protobuf::View<'msg, ", RsTypePath(ctx, field),
-                          ">");
+      return absl::StrCat(ctx.RuntimeCrateName(), "::View<'msg, ",
+                          RsTypePath(ctx, field), ">");
   }
 
   ABSL_LOG(FATAL) << "Unexpected field type: " << field.type_name();

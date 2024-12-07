@@ -104,3 +104,8 @@ impl fmt::Display for SerializeError {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }
+
+#[cfg(not(bzl))]
+pub mod well_known_types {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/any.u.pb.rs"));
+}

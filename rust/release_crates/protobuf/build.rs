@@ -8,6 +8,32 @@
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
+    // Generate code for the well-known types
+    let well_known_types = &[
+        "google/protobuf/any.proto",
+        "google/protobuf/api.proto",
+        "google/protobuf/duration.proto",
+        "google/protobuf/empty.proto",
+        "google/protobuf/field_mask.proto",
+        "google/protobuf/source_context.proto",
+        "google/protobuf/struct.proto",
+        "google/protobuf/timestamp.proto",
+        "google/protobuf/type.proto",
+        "google/protobuf/wrappers.proto",
+    ];
+
+    let mut cmd = std::process::Command::new("protoc");
+    cmd.arg(format!("--rust_out={}", std::env::var("OUT_DIR").unwrap()))
+        .arg("--rust_opt=experimental-codegen=enabled,kernel=upb,build_system=cargo")
+        .arg("-Iproto");
+    for f in well_known_types {
+        cmd.arg(f);
+    }
+    let output = cmd.output().map_err(|e| format!("failed to run protoc: {}", e)).unwrap();
+    println!("{}", std::str::from_utf8(&output.stdout).unwrap());
+    eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
+    assert!(output.status.success());
+
     cc::Build::new()
         .flag("-std=c99")
         // TODO: Come up with a way to enable lto

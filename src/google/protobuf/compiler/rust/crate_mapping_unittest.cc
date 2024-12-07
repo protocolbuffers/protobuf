@@ -44,7 +44,7 @@ std::string SkipLeadingWhitespace(absl::string_view text) {
 
 TEST(RustGenerator, GetImportPathToCrateNameMapEmpty) {
   std::string mapping_file_path = WriteStringToTempFile("");
-  const Options opts = {Kernel::kUpb, mapping_file_path};
+  const Options opts = {Kernel::kUpb, BuildSystem::kBazel, mapping_file_path};
   absl::flat_hash_map<std::string, std::string> expected = {};
   auto result = GetImportPathToCrateNameMap(&opts);
   EXPECT_TRUE(result.ok());
@@ -60,7 +60,7 @@ TEST(RustGenerator, GetImportPathToCrateNameMapSimple) {
     google.protobuf.proto
     proto3.proto
   )mapping"));
-  const Options opts = {Kernel::kUpb, mapping_file_path};
+  const Options opts = {Kernel::kUpb, BuildSystem::kBazel, mapping_file_path};
   absl::flat_hash_map<std::string, std::string> expected = {
       {"proto1.proto", "crate_name"},
       {"google.protobuf.proto", "crate_name"},
@@ -79,7 +79,7 @@ TEST(RustGenerator, GetImportPathToCrateNameMapForEmptyMappingFile) {
 }
 
 TEST(RustGenerator, GetImportPathToCrateNameMapErrorsOnMissingFile) {
-  const Options opts = {Kernel::kUpb, "missing_file_path"};
+  const Options opts = {Kernel::kUpb, BuildSystem::kBazel, "missing_file_path"};
   auto result = GetImportPathToCrateNameMap(&opts);
   EXPECT_FALSE(result.ok());
   EXPECT_THAT(result.status().code(), Eq(absl::StatusCode::kNotFound));
@@ -89,7 +89,7 @@ TEST(RustGenerator, GetImportPathToCrateNameMapErrorsOnMissingFile) {
 TEST(RustGenerator, GetImportPathToCrateNameMapInvalidFormat) {
   std::string mapping_file_path =
       WriteStringToTempFile("crate_name\nnot_a_number");
-  const Options opts = {Kernel::kUpb, mapping_file_path};
+  const Options opts = {Kernel::kUpb, BuildSystem::kBazel, mapping_file_path};
   absl::flat_hash_map<std::string, std::string> expected = {};
   auto result = GetImportPathToCrateNameMap(&opts);
   EXPECT_FALSE(result.ok());

@@ -17,6 +17,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -28,6 +29,11 @@ namespace rust {
 enum class Kernel {
   kUpb,
   kCpp,
+};
+
+enum class BuildSystem {
+  kBazel,
+  kCargo,
 };
 
 inline absl::string_view KernelRsName(Kernel kernel) {
@@ -45,6 +51,7 @@ inline absl::string_view KernelRsName(Kernel kernel) {
 // Global options for a codegen invocation.
 struct Options {
   Kernel kernel;
+  BuildSystem build_system;
   std::string mapping_file_path;
   bool strip_nonfunctional_codegen = false;
 
@@ -119,6 +126,19 @@ class Context {
             io::Printer::SourceLocation loc =
                 io::Printer::SourceLocation::current()) const {
     printer_->Emit(vars, format, loc);
+  }
+
+  // Returns the name of the protobuf runtime crate. Ordinarily this is just
+  // "::protobuf", but we need to handle the special case where Cargo builds
+  // the well-known types inside the runtime crate, in which case we need to
+  // refer to the runtime as just "crate".
+  absl::string_view RuntimeCrateName() const {
+    if (opts_->build_system == BuildSystem::kCargo &&
+        cpp::IsWellKnownMessage(&rust_generator_context_->primary_file())) {
+      return "crate";
+    } else {
+      return "::protobuf";
+    }
   }
 
   absl::string_view ImportPathToCrateName(absl::string_view import_path) const {

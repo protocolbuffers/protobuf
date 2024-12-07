@@ -117,7 +117,7 @@ def _generate_rust_gencode(
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},build_system=bazel,bazel_crate_mapping={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
         ),

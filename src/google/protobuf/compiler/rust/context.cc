@@ -65,6 +65,22 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
                          kernel_arg->second));
   }
 
+  auto build_system_arg = absl::c_find_if(
+      args, [](auto& arg) { return arg.first == "build_system"; });
+  if (build_system_arg == args.end()) {
+    return absl::InvalidArgumentError(
+        "Mandatory option `build_system` missing, please specify `bazel` or "
+        "`cargo`.");
+  } else if (build_system_arg->second == "bazel") {
+    opts.build_system = BuildSystem::kBazel;
+  } else if (build_system_arg->second == "cargo") {
+    opts.build_system = BuildSystem::kCargo;
+  } else {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "Unknown build system `$0`, please specify `bazel` or `cargo`.",
+        build_system_arg->second));
+  }
+
   auto mapping_arg = absl::c_find_if(
       args, [](auto& arg) { return arg.first == "bazel_crate_mapping"; });
   if (mapping_arg != args.end()) {
