@@ -22,4 +22,6 @@ extend TestModel {
   int32 int32_ext = 13002 [default = 644];
 
   int64 int64_ext = 13003 [default = 2147483648];
+
+  repeated int32 repeated_int32_ext = 13004;
 }
