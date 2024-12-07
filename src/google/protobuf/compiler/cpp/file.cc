@@ -1477,6 +1477,17 @@ class FileGenerator::ForwardDeclarations {
               )cc");
     }
     if (ShouldGenerateExternSpecializations(options)) {
+      // We being a block of assuming nonnull pointers here to save space.
+      // Please carefully check that pointer types are either nonnull or
+      // annotated as nullable.
+      // if (!classes_.empty()) {
+      //   p->Emit(R"cc(
+      //     PROTOBUF_NONNULL_BEGIN;
+      //   )cc");
+      // }
+      // #define PROTOBUF_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+      // #define PROTOBUF_NONNULL_END _Pragma("clang assume_nonnull end")
+
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
         auto vars = p->WithVars(
@@ -1488,14 +1499,13 @@ class FileGenerator::ForwardDeclarations {
         // in callers by having duplicate definitions of the template.
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
-        p->Emit(R"cc(
-          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
-        )cc");
+        p->Emit(R"(
+          extern template void* PROTOBUF_NONNULL Arena::DefaultConstruct<$class$>(Arena* PROTOBUF_NULLABLE);
+        )");
         if (!IsMapEntryMessage(c.second)) {
-          p->Emit(R"cc(
-            extern template void* Arena::CopyConstruct<$class$>(Arena*,
-                                                                const void*);
-          )cc");
+          p->Emit(R"(
+            extern template void* PROTOBUF_NONNULL Arena::CopyConstruct<$class$>(Arena* PROTOBUF_NULLABLE, const void* PROTOBUF_NONNULL);
+          )");
         }
         // We can't make a constexpr pointer to the global if we have DLL
         // linkage so skip this.
@@ -1510,6 +1520,12 @@ class FileGenerator::ForwardDeclarations {
           )cc");
         }
       }
+
+      // if (!classes_.empty()) {
+      //   p->Emit(R"cc(
+      //     PROTOBUF_NONNULL_END;
+      //   )cc");
+      // }
     }
   }
 

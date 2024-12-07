@@ -165,7 +165,7 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
       "private:\n"
       "const ::absl::Cord& ${1$_internal_$name$$}$() const;\n"
       "void ${1$_internal_set_$name$$}$(const ::absl::Cord& value);\n"
-      "::absl::Cord* ${1$_internal_mutable_$name$$}$();\n"
+      "::absl::Cord* PROTOBUF_NONNULL ${1$_internal_mutable_$name$$}$();\n"
       "public:\n",
       field_);
 }
@@ -214,7 +214,8 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* PROTOBUF_NONNULL
+    $classname$::_internal_mutable_$name_internal$() {
       $set_hasbit$;
       return &$field$;
     }
@@ -317,7 +318,7 @@ CordOneofFieldGenerator::CordOneofFieldGenerator(
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("::absl::Cord *$name$_;\n");
+  format("::absl::Cord* PROTOBUF_NULLABLE $name$_;\n");
 }
 
 void CordOneofFieldGenerator::GenerateStaticMembers(
@@ -389,7 +390,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* PROTOBUF_NONNULL
+    $classname$::_internal_mutable_$name_internal$() {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();

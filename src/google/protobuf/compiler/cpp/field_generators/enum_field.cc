@@ -385,11 +385,11 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
     $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedField<int>* $mutable_name$();
+    $DEPRECATED$ $pb$::RepeatedField<int>* PROTOBUF_NONNULL $mutable_name$();
 
     private:
     const $pb$::RepeatedField<int>& $_internal_name$() const;
-    $pb$::RepeatedField<int>* $_internal_mutable_name$();
+    $pb$::RepeatedField<int>* PROTOBUF_NONNULL $_internal_mutable_name$();
 
     public:
   )cc");
@@ -433,7 +433,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$()
+    inline $pb$::RepeatedField<int>* PROTOBUF_NONNULL $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_mutable_list$;
@@ -449,7 +449,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* PROTOBUF_NONNULL
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
@@ -465,7 +466,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* PROTOBUF_NONNULL
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
       }
