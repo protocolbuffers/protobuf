@@ -693,7 +693,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
 #endif
-  uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s,
+  uint8_t* WriteStringMaybeAliased(uint32_t num, absl::string_view s,
                                    uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
     if (ABSL_PREDICT_FALSE(size >= 128 ||
@@ -705,7 +705,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     std::memcpy(ptr, s.data(), size);
     return ptr + size;
   }
-  uint8_t* WriteBytesMaybeAliased(uint32_t num, const std::string& s,
+  uint8_t* WriteBytesMaybeAliased(uint32_t num, absl::string_view s,
                                   uint8_t* ptr) {
     return WriteStringMaybeAliased(num, s, ptr);
   }
@@ -864,9 +864,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   uint8_t* WriteAliasedRaw(const void* data, int size, uint8_t* ptr);
 
-  uint8_t* WriteStringMaybeAliasedOutline(uint32_t num, const std::string& s,
+  uint8_t* WriteStringMaybeAliasedOutline(uint32_t num, absl::string_view s,
                                           uint8_t* ptr);
-  uint8_t* WriteStringOutline(uint32_t num, const std::string& s, uint8_t* ptr);
   uint8_t* WriteStringOutline(uint32_t num, absl::string_view s, uint8_t* ptr);
   uint8_t* WriteCordOutline(const absl::Cord& c, uint8_t* ptr);
 
@@ -1117,11 +1116,11 @@ class PROTOBUF_EXPORT CodedOutputStream {
                                   uint8_t* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
-  void WriteString(const std::string& str);
+  void WriteString(absl::string_view str);
   // Like WriteString()  but writing directly to the target array.
-  static uint8_t* WriteStringToArray(const std::string& str, uint8_t* target);
+  static uint8_t* WriteStringToArray(absl::string_view str, uint8_t* target);
   // Write the varint-encoded size of str followed by str.
-  static uint8_t* WriteStringWithSizeToArray(const std::string& str,
+  static uint8_t* WriteStringWithSizeToArray(absl::string_view str,
                                              uint8_t* target);
 
   // Like WriteString() but writes a Cord.
@@ -1790,7 +1789,7 @@ inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(
 }
 #undef PROTOBUF_CODED_STREAM_H_PREFER_BSR
 
-inline void CodedOutputStream::WriteString(const std::string& str) {
+inline void CodedOutputStream::WriteString(absl::string_view str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));
 }
 
@@ -1805,7 +1804,7 @@ inline uint8_t* CodedOutputStream::WriteRawToArray(const void* data, int size,
   return target + size;
 }
 
-inline uint8_t* CodedOutputStream::WriteStringToArray(const std::string& str,
+inline uint8_t* CodedOutputStream::WriteStringToArray(absl::string_view str,
                                                       uint8_t* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
