@@ -2600,63 +2600,49 @@ error:
   PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
+static void SerializeMapKey(UntypedMapBase& map, NodeBase* node,
+                            MapTypeCard type_card,
                             io::CodedOutputStream& coded_output) {
   switch (type_card.wiretype()) {
     case WireFormatLite::WIRETYPE_VARINT:
-      switch (type_card.cpp_type()) {
-        case MapTypeCard::kBool:
-          WireFormatLite::WriteBool(
-              1, static_cast<const KeyNode<bool>*>(node)->key(), &coded_output);
-          break;
-        case MapTypeCard::k32:
-          if (type_card.is_zigzag()) {
-            WireFormatLite::WriteSInt32(
-                1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
-                &coded_output);
-          } else if (type_card.is_signed()) {
-            WireFormatLite::WriteInt32(
-                1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
-                &coded_output);
-          } else {
-            WireFormatLite::WriteUInt32(
-                1, static_cast<const KeyNode<uint32_t>*>(node)->key(),
-                &coded_output);
-          }
-          break;
-        case MapTypeCard::k64:
-          if (type_card.is_zigzag()) {
-            WireFormatLite::WriteSInt64(
-                1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
-                &coded_output);
-          } else if (type_card.is_signed()) {
-            WireFormatLite::WriteInt64(
-                1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
-                &coded_output);
-          } else {
-            WireFormatLite::WriteUInt64(
-                1, static_cast<const KeyNode<uint64_t>*>(node)->key(),
-                &coded_output);
-          }
-          break;
-        default:
-          Unreachable();
-      }
+      map.VisitKey(node,  //
+                   absl::Overload{
+                       [&](const bool* v) {
+                         WireFormatLite::WriteBool(1, *v, &coded_output);
+                       },
+                       [&](const uint32_t* v) {
+                         if (type_card.is_zigzag()) {
+                           WireFormatLite::WriteSInt32(1, *v, &coded_output);
+                         } else if (type_card.is_signed()) {
+                           WireFormatLite::WriteInt32(1, *v, &coded_output);
+                         } else {
+                           WireFormatLite::WriteUInt32(1, *v, &coded_output);
+                         }
+                       },
+                       [&](const uint64_t* v) {
+                         if (type_card.is_zigzag()) {
+                           WireFormatLite::WriteSInt64(1, *v, &coded_output);
+                         } else if (type_card.is_signed()) {
+                           WireFormatLite::WriteInt64(1, *v, &coded_output);
+                         } else {
+                           WireFormatLite::WriteUInt64(1, *v, &coded_output);
+                         }
+                       },
+                       [](const void*) { Unreachable(); },
+                   });
       break;
     case WireFormatLite::WIRETYPE_FIXED32:
-      WireFormatLite::WriteFixed32(
-          1, static_cast<const KeyNode<uint32_t>*>(node)->key(), &coded_output);
+      WireFormatLite::WriteFixed32(1, *map.GetKey<uint32_t>(node),
+                                   &coded_output);
       break;
     case WireFormatLite::WIRETYPE_FIXED64:
-      WireFormatLite::WriteFixed64(
-          1, static_cast<const KeyNode<uint64_t>*>(node)->key(), &coded_output);
+      WireFormatLite::WriteFixed64(1, *map.GetKey<uint64_t>(node),
+                                   &coded_output);
       break;
     case WireFormatLite::WIRETYPE_LENGTH_DELIMITED:
       // We should never have a message here. They can only be values maps.
-      ABSL_DCHECK_EQ(+type_card.cpp_type(), +MapTypeCard::kString);
-      WireFormatLite::WriteString(
-          1, static_cast<const KeyNode<std::string>*>(node)->key(),
-          &coded_output);
+      WireFormatLite::WriteString(1, *map.GetKey<std::string>(node),
+                                  &coded_output);
       break;
     default:
       Unreachable();
@@ -2665,21 +2651,22 @@ static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
 
 void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
                                       const TcParseTableBase* table,
-                                      uint32_t tag, NodeBase* node,
-                                      MapAuxInfo map_info) {
+                                      UntypedMapBase& map, uint32_t tag,
+                                      NodeBase* node, MapAuxInfo map_info) {
   std::string serialized;
   {
     io::StringOutputStream string_output(&serialized);
     io::CodedOutputStream coded_output(&string_output);
-    SerializeMapKey(node, map_info.key_type_card, coded_output);
+    SerializeMapKey(map, node, map_info.key_type_card, coded_output);
     // The mapped_type is always an enum here.
     ABSL_DCHECK(map_info.value_is_validated_enum);
-    WireFormatLite::WriteInt32(2,
-                               *reinterpret_cast<int32_t*>(
-                                   node->GetVoidValue(map_info.node_size_info)),
-                               &coded_output);
+    WireFormatLite::WriteInt32(2, *map.GetValue<int32_t>(node), &coded_output);
   }
   GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
+
+  if (map.arena() == nullptr) {
+    map.DeleteNode(node);
+  }
 }
 
 template <typename T>
@@ -2865,49 +2852,39 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
       return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map.arena());
     });
 
-    if (ABSL_PREDICT_TRUE(ptr != nullptr)) {
-      if (ABSL_PREDICT_FALSE(map_info.value_is_validated_enum &&
-                             !internal::ValidateEnumInlined(
-                                 *static_cast<int32_t*>(node->GetVoidValue(
-                                     map_info.node_size_info)),
-                                 aux[1].enum_data))) {
-        WriteMapEntryAsUnknown(msg, table, saved_tag, node, map_info);
-      } else {
-        // Done parsing the node, try to insert it.
-        // If it overwrites something we get old node back to destroy it.
-        switch (map_info.key_type_card.cpp_type()) {
-          case MapTypeCard::kBool:
-            node = static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
-                static_cast<KeyMapBase<bool>::KeyNode*>(node));
-            break;
-          case MapTypeCard::k32:
-            node = static_cast<KeyMapBase<uint32_t>&>(map).InsertOrReplaceNode(
-                static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
-            break;
-          case MapTypeCard::k64:
-            node = static_cast<KeyMapBase<uint64_t>&>(map).InsertOrReplaceNode(
-                static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
-            break;
-          case MapTypeCard::kString:
-            node =
-                static_cast<KeyMapBase<std::string>&>(map).InsertOrReplaceNode(
-                    static_cast<KeyMapBase<std::string>::KeyNode*>(node));
-            break;
-          default:
-            Unreachable();
-        }
-      }
-    }
-
-    // Destroy the node if we have it.
-    // It could be because we failed to parse, or because insertion returned
-    // an overwritten node.
-    if (ABSL_PREDICT_FALSE(node != nullptr && map.arena() == nullptr)) {
-      map.DeleteNode(node);
-    }
-
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+      // Parsing failed. Delete the node that we didn't insert.
+      if (map.arena() == nullptr) map.DeleteNode(node);
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+
+    if (ABSL_PREDICT_FALSE(
+            map_info.value_is_validated_enum &&
+            !internal::ValidateEnumInlined(*map.GetValue<int32_t>(node),
+                                           aux[1].enum_data))) {
+      WriteMapEntryAsUnknown(msg, table, map, saved_tag, node, map_info);
+    } else {
+      // Done parsing the node, insert it.
+      switch (map_info.key_type_card.cpp_type()) {
+        case MapTypeCard::kBool:
+          static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
+              static_cast<KeyMapBase<bool>::KeyNode*>(node));
+          break;
+        case MapTypeCard::k32:
+          static_cast<KeyMapBase<uint32_t>&>(map).InsertOrReplaceNode(
+              static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
+          break;
+        case MapTypeCard::k64:
+          static_cast<KeyMapBase<uint64_t>&>(map).InsertOrReplaceNode(
+              static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
+          break;
+        case MapTypeCard::kString:
+          static_cast<KeyMapBase<std::string>&>(map).InsertOrReplaceNode(
+              static_cast<KeyMapBase<std::string>::KeyNode*>(node));
+          break;
+        default:
+          Unreachable();
+      }
     }
 
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {

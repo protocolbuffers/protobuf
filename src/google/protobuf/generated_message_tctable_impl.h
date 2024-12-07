@@ -1007,8 +1007,8 @@ class PROTOBUF_EXPORT TcParser final {
 
   static void WriteMapEntryAsUnknown(MessageLite* msg,
                                      const TcParseTableBase* table,
-                                     uint32_t tag, NodeBase* node,
-                                     MapAuxInfo map_info);
+                                     UntypedMapBase& map, uint32_t tag,
+                                     NodeBase* node, MapAuxInfo map_info);
 
   static const char* ParseOneMapEntry(NodeBase* node, const char* ptr,
                                       ParseContext* ctx,

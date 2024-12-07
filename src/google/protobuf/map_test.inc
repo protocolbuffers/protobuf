@@ -183,13 +183,7 @@ struct MapTestPeer {
     using Node = typename T::Node;
     auto* node = static_cast<Node*>(map.AllocNode(sizeof(Node)));
     ::new (static_cast<void*>(&node->kv)) typename T::value_type{key, value};
-    node = static_cast<Node*>(GetKeyMapBase(map).InsertOrReplaceNode(node));
-    if (node) {
-      node->~Node();
-      GetKeyMapBase(map).DeallocNode(node, sizeof(Node));
-      return false;
-    }
-    return true;
+    return GetKeyMapBase(map).InsertOrReplaceNode(node);
   }
 
   template <typename T>
