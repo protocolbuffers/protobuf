@@ -53,20 +53,26 @@ config_setting(
 
 config_setting(
     name = "full_api_3.9_win32",
+    constraint_values = [
+        "//third_party/bazel_platforms/cpu:x86_32",
+        "@platforms//os:windows",
+    ],
     flag_values = {
         ":limited_api": "False",
         ":python_version": "39",
     },
-    values = {"cpu": "win32"},
 )
 
 config_setting(
     name = "full_api_3.9_win64",
+    constraint_values = [
+        "//third_party/bazel_platforms/cpu:x86_64",
+        "@platforms//os:windows",
+    ],
     flag_values = {
         ":limited_api": "False",
         ":python_version": "39",
     },
-    values = {"cpu": "win64"},
 )
 
 selects.config_setting_group(
@@ -79,20 +85,26 @@ selects.config_setting_group(
 
 config_setting(
     name = "limited_api_3.10_win32",
+    constraint_values = [
+        "//third_party/bazel_platforms/cpu:x86_32",
+        "@platforms//os:windows",
+    ],
     flag_values = {
         ":limited_api": "True",
         ":python_version": "310",
     },
-    values = {"cpu": "win32"},
 )
 
 config_setting(
     name = "limited_api_3.10_win64",
+    constraint_values = [
+        "//third_party/bazel_platforms/cpu:x86_64",
+        "@platforms//os:windows",
+    ],
     flag_values = {
         ":limited_api": "True",
         ":python_version": "310",
     },
-    values = {"cpu": "win64"},
 )
 
 selects.config_setting_group(
