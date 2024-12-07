@@ -6,6 +6,7 @@ pkg_tar(
     name = "protobuf_crate",
     srcs = [
         ":crate_root_files",
+        ":well_known_types",
         "//:LICENSE",
         "//rust:rust_protobuf_libupb_src",
         "//rust:rust_protobuf_src_dir",
@@ -31,7 +32,14 @@ filegroup(
     srcs = [
         "README.md",
         "build.rs",
+        "crate_mapping",
         ":gen_cargo_toml",
     ],
     visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "well_known_types",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    prefix = "google/protobuf",
 )
