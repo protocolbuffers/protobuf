@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
@@ -83,7 +84,8 @@ void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
+ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
+                                absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message));
@@ -107,19 +109,6 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
     return message;
   }
   return MessageDecodeError(status);
-}
-
-template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = hpb::interop::upb::GetArena(message);
-  return upb_Decode(bytes.data(), bytes.size(),
-                    hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message),
-                    /* extreg= */ nullptr, /* options= */ 0,
-                    arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
