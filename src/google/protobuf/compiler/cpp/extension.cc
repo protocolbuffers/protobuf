@@ -69,6 +69,13 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
+  // Downgrade string to bytes if it is not UTF8 validated.
+  if (descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+    if (!descriptor_->requires_utf8_validation()) {
+      variables_["field_type"] =
+          absl::StrCat(static_cast<int>(FieldDescriptor::TYPE_BYTES));
+    }
+  }
   variables_["repeated"] = descriptor_->is_repeated() ? "true" : "false";
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
   variables_["dllexport_decl"] = options.dllexport_decl;
@@ -269,9 +276,8 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                {{&$extendee_table$, $extendee_index$}}, $preregister$)
                ? ::_pbi::ExtensionSet::RegisterExtension(
-                     ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
-                                                           $extendee_index$,
-                                                           true),
+                     ::_pbi::GetPrototypeForWeakDescriptor(
+                         &$extendee_table$, $extendee_index$, true),
                      $number$, $field_type$, $repeated$, $packed$)
                : (void)0),
         )cc");
