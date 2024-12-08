@@ -1,4 +1,1 @@
 Required.*.JsonInput.Int32FieldQuotedExponentialValue.* # Failed to parse input or produce output.
-Required.*.ProtobufInput.MismatchedNestedGroupTags # Should have failed to parse, but didn't.
-Required.Editions_Proto3.ProtobufInput.MismatchedGroupTags # Should have failed to parse, but didn't.
-Required.Proto3.ProtobufInput.MismatchedGroupTags # Should have failed to parse, but didn't.
