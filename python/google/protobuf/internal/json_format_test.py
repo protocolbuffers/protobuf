@@ -321,6 +321,15 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"int32Value": 1.0}', message)
     self.assertEqual(message.int32_value, 1)
 
+  def testIntegersRepresentedAsFloatStrings(self):
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"int32Value": "-2.147483648e9"}', message)
+    self.assertEqual(message.int32_value, -2147483648)
+    json_format.Parse('{"int32Value": "1e5"}', message)
+    self.assertEqual(message.int32_value, 100000)
+    json_format.Parse('{"int32Value": "1.0"}', message)
+    self.assertEqual(message.int32_value, 1)
+
   def testMapFields(self):
     message = json_format_proto3_pb2.TestNestedMap()
     self.assertEqual(
@@ -1168,6 +1177,16 @@ class JsonFormatTest(JsonFormatBase):
         "Couldn't parse integer: 1.5 at TestMessage.int32Value.",
     )
     self.CheckError(
+        '{"int32Value": "1.5"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse non-integer string: "1.5" at TestMessage.int32Value.',
+    )
+    self.CheckError(
+        '{"int32Value": "foo"}',
+        'Failed to parse int32Value field: invalid literal for int\(\) with'
+        " base 10: 'foo'.",
+    )
+    self.CheckError(
         '{"int32Value": 012345}',
         (r'Failed to load JSON: Expecting \'?,\'? delimiter: ' r'line 1.'),
     )
@@ -1329,10 +1348,10 @@ class JsonFormatTest(JsonFormatBase):
         message,
     )
     # Time bigger than maximum time.
-    message.value.seconds = 253402300800
-    self.assertRaisesRegex(json_format.SerializeToJsonError,
-                           'Timestamp is not valid',
-                           json_format.MessageToJson, message)
+        message.value.seconds = 253402300800
+        self.assertRaisesRegex(json_format.SerializeToJsonError,
+                               'Timestamp is not valid',
+                               json_format.MessageToJson, message)
     # Nanos smaller than 0
     message.value.seconds = 0
     message.value.nanos = -1
