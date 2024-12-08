@@ -117,3 +117,13 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
