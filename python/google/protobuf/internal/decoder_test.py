@@ -11,8 +11,10 @@
 import io
 import unittest
 
+from google.protobuf import message
 from google.protobuf.internal import decoder
 from google.protobuf.internal import testing_refleaks
+from google.protobuf.internal import wire_format
 
 
 _INPUT_BYTES = b'\x84r\x12'
@@ -33,7 +35,7 @@ class DecoderTest(unittest.TestCase):
 
   def test_decode_varint_bytes_empty(self):
     with self.assertRaises(IndexError) as context:
-      (size, pos) = decoder._DecodeVarint(b'', 0)
+      _ = decoder._DecodeVarint(b'', 0)
     self.assertIn('index out of range', str(context.exception))
 
   def test_decode_varint_bytesio(self):
@@ -50,7 +52,57 @@ class DecoderTest(unittest.TestCase):
   def test_decode_varint_bytesio_empty(self):
     input_io = io.BytesIO(b'')
     size = decoder._DecodeVarint(input_io)
-    self.assertEqual(size, None)
+    self.assertIsNone(size)
+
+  def test_decode_unknown_group_field(self):
+    data = memoryview(b'\013\020\003\014\040\005')
+    parsed, pos = decoder._DecodeUnknownField(
+        data, 1, len(data), 1, wire_format.WIRETYPE_START_GROUP
+    )
+
+    self.assertEqual(pos, 4)
+    self.assertEqual(len(parsed), 1)
+    self.assertEqual(parsed[0].field_number, 2)
+    self.assertEqual(parsed[0].data, 3)
+
+  def test_decode_unknown_group_field_nested(self):
+    data = memoryview(b'\013\023\013\030\004\014\024\014\050\006')
+    parsed, pos = decoder._DecodeUnknownField(
+        data, 1, len(data), 1, wire_format.WIRETYPE_START_GROUP
+    )
+
+    self.assertEqual(pos, 8)
+    self.assertEqual(len(parsed), 1)
+    self.assertEqual(parsed[0].field_number, 2)
+    self.assertEqual(len(parsed[0].data), 1)
+    self.assertEqual(parsed[0].data[0].field_number, 1)
+    self.assertEqual(len(parsed[0].data[0].data), 1)
+    self.assertEqual(parsed[0].data[0].data[0].field_number, 3)
+    self.assertEqual(parsed[0].data[0].data[0].data, 4)
+
+  def test_decode_unknown_mismatched_end_group(self):
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Missing group end tag.*',
+        decoder._DecodeUnknownField,
+        memoryview(b'\013\024'),
+        1,
+        2,
+        1,
+        wire_format.WIRETYPE_START_GROUP,
+    )
+
+  def test_decode_unknown_mismatched_end_group_nested(self):
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Missing group end tag.*',
+        decoder._DecodeUnknownField,
+        memoryview(b'\013\023\034\024\014'),
+        1,
+        5,
+        1,
+        wire_format.WIRETYPE_START_GROUP,
+    )
 
 
 if __name__ == '__main__':

@@ -69,12 +69,23 @@ class MessageTest(unittest.TestCase):
     msg = message_module.TestAllTypes()
     self.assertRaises(TypeError, msg.FromString, 0)
     self.assertRaises(Exception, msg.FromString, '0')
+
+    # Unexpected end group tag.
     end_tag = encoder.TagBytes(1, 4)
     with self.assertRaises(message.DecodeError) as context:
       msg.FromString(end_tag)
     if api_implementation.Type() != 'upb':
       # upb raises a less specific exception.
       self.assertRegex(str(context.exception), 'Unexpected end-group tag.*')
+
+    # Unmatched start group tag.
+    start_tag = encoder.TagBytes(2, 3)
+    with self.assertRaises(message.DecodeError):
+      msg.FromString(start_tag)
+
+    # Mismatched end group tag.
+    with self.assertRaises(message.DecodeError):
+      msg.FromString(start_tag + end_tag)
 
     # Field number 0 is illegal.
     self.assertRaises(message.DecodeError, msg.FromString, b'\3\4')
@@ -1265,16 +1276,16 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(True, m.repeated_bool[0])
 
   def testDir(self, message_module):
-      m = message_module.TestAllTypes()
-      attributes = dir(m)
-      self.assertGreaterEqual(len(attributes), 55)
-      self.assertIn('DESCRIPTOR', attributes)
+    m = message_module.TestAllTypes()
+    attributes = dir(m)
+    self.assertGreaterEqual(len(attributes), 55)
+    self.assertIn('DESCRIPTOR', attributes)
 
-      class_attributes = dir(type(m))
-      attribute_set = set(attributes)
-      for attr in class_attributes:
-        if attr != 'Extensions':
-          self.assertIn(attr, attribute_set)
+    class_attributes = dir(type(m))
+    attribute_set = set(attributes)
+    for attr in class_attributes:
+      if attr != 'Extensions':
+        self.assertIn(attr, attribute_set)
 
   def testAllAttributeFromDirAccessible(self, message_module):
     m = message_module.TestAllTypes()
