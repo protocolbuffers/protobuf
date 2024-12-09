@@ -228,19 +228,19 @@ proto_library(
 
 upb_c_proto_library(
     name = "descriptor_upb_c_proto",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":descriptor_proto"],
 )
 
 upb_minitable_proto_library(
     name = "descriptor_upb_minitable_proto",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":descriptor_proto"],
 )
 
 upb_proto_reflection_library(
     name = "descriptor_upb_reflection_proto",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":descriptor_proto"],
 )
 
