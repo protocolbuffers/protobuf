@@ -104,3 +104,53 @@ impl fmt::Display for SerializeError {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }
+
+#[cfg(not(bzl))]
+pub mod any_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/any.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod api_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/api.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod duration_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/duration.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod empty_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/empty.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod field_mask_proto {
+    include!(concat!(env!("OUT_DIR"),
+"/google/protobuf/field_mask.u.pb.rs")); }
+
+#[cfg(not(bzl))]
+pub mod source_context_proto {
+    include!(concat!(env!("OUT_DIR"),
+"/google/protobuf/source_context.u.pb.rs")); }
+
+#[cfg(not(bzl))]
+pub mod struct_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/struct.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod timestamp_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/timestamp.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod type_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/type.u.pb.rs"));
+}
+
+#[cfg(not(bzl))]
+pub mod wrappers_proto {
+    include!(concat!(env!("OUT_DIR"), "/google/protobuf/wrappers.u.pb.rs"));
+}
