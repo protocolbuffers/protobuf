@@ -17,11 +17,14 @@ import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -368,6 +371,29 @@ public class TimestampsTest {
     // TODO: b/379874415 - this shouldn't parse successfully
     assertThat(Timestamps.parse(value)).isEqualTo(Timestamps.parse(expected));
     assertThat(Timestamps.parseUnchecked(value)).isEqualTo(Timestamps.parse(expected));
+  }
+
+  @Test
+  @GwtIncompatible("Calendar is not supported in Xplat")
+  @J2ObjCIncompatible
+  // this test shows that the buggy behavior is due to SimpleDateFormat/Calendar, not Timestamps
+  public void testMonthOutOfBoundsParsingWithSimpleDateFormat() throws Exception {
+    final String value = "2000-40-01T00:00:00Z";
+
+    // below is copied from Timestamps.createTimestampFormat() in an attempt to isolate the bug
+    GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+    // We use Proleptic Gregorian Calendar (i.e., Gregorian calendar extends
+    // backwards to year one) for timestamp formatting.
+    calendar.setGregorianChange(new Date(Long.MIN_VALUE));
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
+    sdf.setCalendar(calendar);
+
+    Date parsedDate = sdf.parse(value);
+    assertThat(parsedDate.getMonth()).isEqualTo(2); // MARCH (getMonth() is 0-indexed)
+
+    Calendar calendar2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+    calendar2.setTime(parsedDate);
+    assertThat(calendar2.get(Calendar.MONTH)).isEqualTo(3); // MARCH
   }
 
   @GwtIncompatible("ParseException is not supported in Xplat")
