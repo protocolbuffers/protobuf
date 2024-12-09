@@ -83,4 +83,32 @@ message JavaFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "true" },
     edition_defaults = { edition: EDITION_2024, value: "false" }
   ];
+
+  enum NestInFileClass {
+    // Invalid default, which should never be used.
+    NEST_IN_FILE_CLASS_UNKNOWN = 0;
+    // Do not nest the generated class in the file class.
+    NO = 1;
+    // Nest the generated class in the file class.
+    YES = 2;
+    // Fall back to the `java_multiple_files` option. Users won't be able to
+    // set this option.
+    LEGACY = 3 [feature_support = {
+      edition_introduced: EDITION_2024
+      edition_removed: EDITION_2024
+    }];
+  }
+
+  optional NestInFileClass nest_in_file_class = 5 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_SERVICE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "NO" }
+  ];
 }
