@@ -186,6 +186,8 @@ def _compile(
 
     if plugin_output:
         args.add(plugin_output, format = proto_lang_toolchain_info.out_replacement_format_flag)
+        if proto_lang_toolchain_info.out_replacement_format_flag.startswith("--python"):
+            args.add(plugin_output, format = "--pyi_out=%s")
     if proto_lang_toolchain_info.plugin:
         tools.append(proto_lang_toolchain_info.plugin)
         args.add(proto_lang_toolchain_info.plugin.executable, format = proto_lang_toolchain_info.plugin_format_flag)
