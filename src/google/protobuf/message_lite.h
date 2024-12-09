@@ -825,8 +825,12 @@ class PROTOBUF_EXPORT MessageLite {
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   size_t ByteSizeLong() const { return _class_data_->byte_size_long(*this); }
+  size_t ByteSizeV2() const { return 2 + ByteSizeV2Impl(); }
+  size_t ByteSizeV2Impl() const { return _class_data_->byte_size_v2(*this); }
 #else
   virtual size_t ByteSizeLong() const = 0;
+  virtual size_t ByteSizeV2() const { return 2 + ByteSizeV2Impl(); }
+  virtual size_t ByteSizeV2Impl() const { return ByteSizeLong(); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Legacy ByteSize() API.
