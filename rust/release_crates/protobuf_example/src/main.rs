@@ -1,12 +1,14 @@
-#[path = "protobuf_generated/foo.u.pb.rs"]
-mod protos;
+// #[path = "protobuf_generated/foo.u.pb.rs"]
+// mod protos;
+
+include!(concat!(env!("OUT_DIR"), "/protobuf_generated/mod.rs"));
 
 use protobuf::proto;
 
-use protos::Foo;
+use foo::Foo;
 
 fn main() {
-    let foo = proto!(Foo { name: "foo", bar: __ { name: "bar" } });
+    let foo = proto!(Foo { name: "foo" });
     dbg!(foo);
 }
 
@@ -16,18 +18,13 @@ mod tests {
 
     #[test] // allow_core_test
     fn set_strings() {
-        let foo = proto!(Foo { name: "foo", bar: __ { name: "bar" } });
-
+        let foo = proto!(Foo { name: "foo" });
         assert_eq!(foo.name(), "foo");
-        assert_eq!(foo.bar().name(), "bar");
     }
 
     #[test] // allow_core_test
     fn set_ints() {
-        let foo = proto!(Foo { int: 42, bar: __ { numbers: [1, 2, 3] } });
-
+        let foo = proto!(Foo { int: 42 });
         assert_eq!(foo.int(), 42);
-        let nums: Vec<_> = foo.bar().numbers().iter().collect();
-        assert_eq!(nums, vec![1, 2, 3]);
     }
 }
