@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/options.h"
 #include "google/protobuf/hpb/requires.h"
 
 namespace {
@@ -307,8 +308,11 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   EXPECT_EQ(true, bytes.ok());
 
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(),
-                              hpb::ExtensionRegistry::generated_registry())
+      hpb::Parse<TestModel>(
+          bytes.value(),
+          hpb::UpbParseOptions{
+              .extension_registry =
+                  &hpb::ExtensionRegistry::generated_registry()})
           .value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
@@ -393,8 +397,11 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
   // Test with ExtensionRegistry
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(data,
-                              hpb::ExtensionRegistry::generated_registry())
+      ::hpb::Parse<TestModel>(
+          data,
+          hpb::UpbParseOptions{
+              .extension_registry =
+                  &hpb::ExtensionRegistry::generated_registry()})
           .value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
