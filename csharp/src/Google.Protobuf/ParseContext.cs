@@ -30,21 +30,28 @@ namespace Google.Protobuf
         internal ParserInternalState state;
 
         /// <summary>
-        /// Initialize a <see cref="ParseContext"/>, building all <see cref="ParserInternalState"/> from defaults and
-        /// the given <paramref name="buffer"/>.
+        /// Initialize a <see cref="ParseContext"/>, building all <see cref="ParserInternalState"/> from defaults,
+        /// the given <paramref name="buffer"/>, and the given size/recursion limits.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySpan<byte> buffer, out ParseContext ctx)
+        internal static void Initialize(ReadOnlySpan<byte> buffer, int sizeLimit, int recursionLimit, out ParseContext ctx)
         {
             ParserInternalState state = default;
-            state.sizeLimit = DefaultSizeLimit;
-            state.recursionLimit = DefaultRecursionLimit;
+            state.sizeLimit = sizeLimit;
+            state.recursionLimit = recursionLimit;
             state.currentLimit = int.MaxValue;
             state.bufferSize = buffer.Length;
             // Equivalent to Initialize(buffer, ref state, out ctx);
             ctx.buffer = buffer;
             ctx.state = state;
         }
+
+        /// <summary>
+        /// Initialize a <see cref="ParseContext"/>, building all <see cref="ParserInternalState"/> from defaults and
+        /// the given <paramref name="buffer"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySpan<byte> buffer, out ParseContext ctx) => Initialize(buffer, DefaultSizeLimit, DefaultRecursionLimit, out ctx);
 
         /// <summary>
         /// Initialize a <see cref="ParseContext"/> using existing <see cref="ParserInternalState"/>, e.g. from <see cref="CodedInputStream"/>.
@@ -75,17 +82,17 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Initialize(ReadOnlySequence<byte> input, out ParseContext ctx)
         {
-            Initialize(input, DefaultRecursionLimit, out ctx);
+            Initialize(input, DefaultSizeLimit, DefaultRecursionLimit, out ctx);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySequence<byte> input, int recursionLimit, out ParseContext ctx)
+        internal static void Initialize(ReadOnlySequence<byte> input, int sizeLimit, int recursionLimit, out ParseContext ctx)
         {
             ctx.buffer = default;
             ctx.state = default;
             ctx.state.lastTag = 0;
             ctx.state.recursionDepth = 0;
-            ctx.state.sizeLimit = DefaultSizeLimit;
+            ctx.state.sizeLimit = sizeLimit;
             ctx.state.recursionLimit = recursionLimit;
             ctx.state.currentLimit = int.MaxValue;
             SegmentedBufferHelper.Initialize(input, out ctx.state.segmentedBufferHelper, out ctx.buffer);
