@@ -272,8 +272,6 @@ module Google
             status = Google::Protobuf::FFI::Status.new
             result = Google::Protobuf::FFI.json_decode_message_detecting_nonconformance(data, data.bytesize, message.instance_variable_get(:@msg), message.class.descriptor, pool_def, decoding_options, message.instance_variable_get(:@arena), status)
             case result
-            when Google::Protobuf::FFI::Upb_JsonDecodeResult_OkWithEmptyStringNumerics
-              warn Google::Protobuf::FFI.error_message(status)
             when Google::Protobuf::FFI::Upb_JsonDecodeResult_Error
               raise ParseError.new "Error occurred during parsing: #{Google::Protobuf::FFI.error_message(status)}"
             end

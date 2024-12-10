@@ -1,11 +1,1 @@
-Required.*.JsonInput.DoubleFieldEmptyString                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldEmptyString                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.Int32FieldEmptyString                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.Int64FieldEmptyString                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.Uint32FieldEmptyString                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.Uint64FieldEmptyString                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldStringValueNonNumeric       # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldStringValuePartiallyNumeric # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldStringValueNonNumeric        # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldStringValuePartiallyNumeric  # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.

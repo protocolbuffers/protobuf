@@ -38,36 +38,14 @@ end
 
 class NonConformantNumericsTest < Test::Unit::TestCase
   def test_empty_json_numerics
-    if defined? JRUBY_VERSION and Google::Protobuf::IMPLEMENTATION != :FFI
-      # In a future version, CRuby and JRuby FFI will also have this behavior.
-      assert_raises Google::Protobuf::ParseError do
-        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalInt32":""}')
-      end
-    else
-      warnings = CaptureWarnings.capture {
-        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalInt32":""}')
-        assert_equal 0, msg.optional_int32
-        assert msg.has_optional_int32?
-      }
-      assert_equal 1, warnings.size
-      assert_match "Empty string is not a valid number (field: basic_test_proto2.TestMessage.optional_int32)", warnings[0]
+    assert_raises Google::Protobuf::ParseError do
+      msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalInt32":""}')
     end
   end
 
   def test_trailing_non_numeric_characters
-    if defined? JRUBY_VERSION and Google::Protobuf::IMPLEMENTATION != :FFI
-      # In a future version, CRuby and JRuby FFI will also have this behavior.
-      assert_raises Google::Protobuf::ParseError do
-        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalDouble":"123abc"}')
-      end
-    else
-      warnings = CaptureWarnings.capture {
-        msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalDouble":"123abc"}')
-        assert_equal 123, msg.optional_double
-        assert msg.has_optional_double?
-      }
-      assert_equal 1, warnings.size
-      assert_match "Non-number characters in quoted number (field: basic_test_proto2.TestMessage.optional_double)", warnings[0]
+    assert_raises Google::Protobuf::ParseError do
+      msg = ::BasicTestProto2::TestMessage.decode_json('{"optionalDouble":"123abc"}')
     end
   end
 end
