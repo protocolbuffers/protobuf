@@ -43,7 +43,9 @@ public abstract class CodedInputStream {
   private static volatile int defaultRecursionLimit = 100;
 
   /** Visible for subclasses. See setRecursionLimit() */
-  int recursionDepth;
+  int messageDepth;
+
+  int groupDepth;
 
   int recursionLimit = defaultRecursionLimit;
 
@@ -173,8 +175,15 @@ public abstract class CodedInputStream {
   }
 
   public void checkRecursionLimit() throws InvalidProtocolBufferException {
-    if (recursionDepth >= recursionLimit) {
+    if (messageDepth + groupDepth >= recursionLimit) {
       throw InvalidProtocolBufferException.recursionLimitExceeded();
+    }
+  }
+
+  // Verifies that the last tag was 0 if we aren't inside a group.
+  public void checkValidEndTag() throws InvalidProtocolBufferException {
+    if (groupDepth == 0) {
+      checkLastTagWas(0);
     }
   }
 
@@ -231,9 +240,9 @@ public abstract class CodedInputStream {
         return;
       }
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       boolean fieldSkipped = skipField(tag);
-      --recursionDepth;
+      --groupDepth;
       if (!fieldSkipped) {
         return;
       }
@@ -251,9 +260,9 @@ public abstract class CodedInputStream {
         return;
       }
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       boolean fieldSkipped = skipField(tag, output);
-      --recursionDepth;
+      --groupDepth;
       if (!fieldSkipped) {
         return;
       }
@@ -668,6 +677,7 @@ public abstract class CodedInputStream {
               WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           skipRawBytes(FIXED32_SIZE);
@@ -714,6 +724,7 @@ public abstract class CodedInputStream {
           }
         case WireFormat.WIRETYPE_END_GROUP:
           {
+            checkValidEndTag();
             return false;
           }
         case WireFormat.WIRETYPE_FIXED32:
@@ -815,10 +826,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
     }
 
     @Override
@@ -828,10 +839,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
       return result;
     }
 
@@ -849,10 +860,10 @@ public abstract class CodedInputStream {
       final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -865,10 +876,10 @@ public abstract class CodedInputStream {
       int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -1361,6 +1372,7 @@ public abstract class CodedInputStream {
               WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           skipRawBytes(FIXED32_SIZE);
@@ -1407,6 +1419,7 @@ public abstract class CodedInputStream {
           }
         case WireFormat.WIRETYPE_END_GROUP:
           {
+            checkValidEndTag();
             return false;
           }
         case WireFormat.WIRETYPE_FIXED32:
@@ -1513,10 +1526,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
     }
 
     @Override
@@ -1526,10 +1539,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
       return result;
     }
 
@@ -1547,10 +1560,10 @@ public abstract class CodedInputStream {
       final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -1563,10 +1576,10 @@ public abstract class CodedInputStream {
       int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -2107,6 +2120,7 @@ public abstract class CodedInputStream {
               WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           skipRawBytes(FIXED32_SIZE);
@@ -2153,6 +2167,7 @@ public abstract class CodedInputStream {
           }
         case WireFormat.WIRETYPE_END_GROUP:
           {
+            checkValidEndTag();
             return false;
           }
         case WireFormat.WIRETYPE_FIXED32:
@@ -2296,10 +2311,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
     }
 
     @Override
@@ -2309,10 +2324,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
       return result;
     }
 
@@ -2330,10 +2345,10 @@ public abstract class CodedInputStream {
       final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -2346,10 +2361,10 @@ public abstract class CodedInputStream {
       int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -3234,6 +3249,7 @@ public abstract class CodedInputStream {
               WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           skipRawBytes(FIXED32_SIZE);
@@ -3280,6 +3296,7 @@ public abstract class CodedInputStream {
           }
         case WireFormat.WIRETYPE_END_GROUP:
           {
+            checkValidEndTag();
             return false;
           }
         case WireFormat.WIRETYPE_FIXED32:
@@ -3393,10 +3410,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
     }
 
     @Override
@@ -3406,10 +3423,10 @@ public abstract class CodedInputStream {
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       checkRecursionLimit();
-      ++recursionDepth;
+      ++groupDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-      --recursionDepth;
+      --groupDepth;
       return result;
     }
 
@@ -3427,10 +3444,10 @@ public abstract class CodedInputStream {
       final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
@@ -3443,10 +3460,10 @@ public abstract class CodedInputStream {
       int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
-      ++recursionDepth;
+      ++messageDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
-      --recursionDepth;
+      --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
