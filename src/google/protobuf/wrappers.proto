@@ -29,9 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Wrappers for primitive (non-message) types. These types are useful
-// for embedding primitives in the `google.protobuf.Any` type and for places
-// where we need to distinguish between the absence of a primitive
-// typed field and its default value.
+// for embedding primitives in the `google.protobuf.Any` type.
+//
+// Historically these wrappers were useful to have presence on proto3 primitive
+// fields, but proto3 syntax has been updated to support the `optional` keyword.
+// Using that keyword is now the strongly preferred way to add presence to
+// proto3 primitive fields.
 //
 // These wrappers have no meaningful use within repeated fields as they lack
 // the ability to detect presence on individual elements.
