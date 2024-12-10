@@ -410,7 +410,7 @@ jobs:
       # Workaround for Abseil incompatibility with CMake 3.30 (b/352354235).
       - name: Downgrade CMake
         if: ${{ runner.os == 'Windows' }}
-        run: choco install cmake --version 3.29.6 --force
+        run: choco install cmake --version 3.29.8 --force
         shell: bash
 
       # Workaround for incompatibility between gcloud and windows-2019 runners.
