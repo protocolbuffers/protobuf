@@ -40,6 +40,7 @@
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/parser_traits.h"
+#include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -170,6 +171,28 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
 }
 
 template <typename T>
+static absl::Status ParseFloatStringAsInt(
+    const LocationWith<MaybeOwnedString>& x, T* out, double lo, double hi) {
+  double d;
+  if (!absl::SimpleAtod(x.value.AsView(), &d) || !std::isfinite(d)) {
+    return x.loc.Invalid(
+        absl::StrFormat("invalid number: '%s'", x.value.AsView()));
+  }
+
+  // Conversion overflow here would be UB.
+  if (lo > d || d > hi) {
+    return x.loc.Invalid("JSON number out of range for int");
+  }
+  *out = static_cast<T>(d);
+  if (d - static_cast<double>(*out) != 0) {
+    return x.loc.Invalid(
+        "expected integer, but JSON number had fractional part");
+  }
+
+  return absl::OkStatus();
+}
+
+template <typename T>
 absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
                                               double hi) {
   absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
@@ -185,26 +208,15 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
         break;
       }
 
-      double d;
-      if (!absl::SimpleAtod(x->value.AsView(), &d) || !std::isfinite(d)) {
-        return x->loc.Invalid(
-            absl::StrFormat("invalid number: '%s'", x->value.AsView()));
-      }
-
-      // Conversion overflow here would be UB.
-      if (lo > d || d > hi) {
-        return lex.Invalid("JSON number out of range for int");
-      }
-      n.value = static_cast<T>(d);
-      if (d - static_cast<double>(n.value) != 0) {
-        return lex.Invalid(
-            "expected integer, but JSON number had fractional part");
-      }
+      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*x, &n.value, lo, hi));
       break;
     }
     case JsonLexer::kStr: {
       absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
+
+      n.loc = str->loc;
+
       // SimpleAtoi will ignore leading and trailing whitespace, so we need
       // to check for it ourselves.
       for (char c : str->value.AsView()) {
@@ -212,10 +224,11 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
           return lex.Invalid("non-number characters in quoted number");
         }
       }
-      if (!absl::SimpleAtoi(str->value.AsView(), &n.value)) {
-        return str->loc.Invalid("non-number characters in quoted number");
+      if (absl::SimpleAtoi(str->value.AsView(), &n.value)) {
+        break;
       }
-      n.loc = str->loc;
+
+      RETURN_IF_ERROR(ParseFloatStringAsInt<T>(*str, &n.value, lo, hi));
       break;
     }
     default:

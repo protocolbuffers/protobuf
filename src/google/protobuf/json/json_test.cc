@@ -347,6 +347,39 @@ TEST_P(JsonTest, QuotedEnumValue) {
   EXPECT_THAT(m->enum_value1(), proto3::BAR);
 }
 
+TEST_P(JsonTest, QuotedIntegerValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "2"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 2);
+}
+
+TEST_P(JsonTest, QuotedIntegerFloatValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "2.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 2);
+}
+
+TEST_P(JsonTest, QuotedIntegerExponentValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "1e2"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 100);
+}
+
+TEST_P(JsonTest, TestInvalidIntegerValue) {
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": ""})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": 1.001})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": "1.2e1"})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, WebSafeBytes) {
   auto m = ToProto<TestMessage>(R"json({
       "bytesValue": "-_"
