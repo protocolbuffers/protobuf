@@ -30,6 +30,7 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
     variables_["has_property_check"] = absl::StrCat(name(), "_ != null");
     variables_["has_not_property_check"] = absl::StrCat(name(), "_ == null");
   }
+  variables_["nrt_annotation"] = this->options()->enable_nullable_reference_types ? "?" : "";
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {
@@ -44,7 +45,7 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
+    "$access_level$ $type_name$$nrt_annotation$ $property_name$ {\n"
     "  get { return $name$_; }\n"
     "  set {\n"
     "    $name$_ = value;\n"
