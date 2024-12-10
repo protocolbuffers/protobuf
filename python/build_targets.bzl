@@ -17,7 +17,16 @@ load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+
+#load("//python:py_extension.bzl", "py_extension")
+#load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
+
+LIMITED_API_FLAG_SELECT = {
+    ":limited_api_3.9": ["-DPy_LIMITED_API=0x03090000"],
+    ":limited_api_3.10": ["-DPy_LIMITED_API=0x030a0000"],
+    "//conditions:default": [],
+}
 
 def build_targets(name):
     """
@@ -459,6 +468,7 @@ def build_targets(name):
             "//src/google/protobuf/io",
             "@com_google_absl//absl/log:absl_check",
             "@com_google_absl//absl/status",
+            "@com_google_absl//absl/status:statusor",
             "@system_python//:python_headers",
         ],
     )
@@ -466,6 +476,53 @@ def build_targets(name):
     internal_py_test(
         name = "python_version_test",
         srcs = ["python_version_test.py"],
+    )
+
+    #py_extension(
+    #    name = "proto_api_example",
+    #    srcs = ["google/protobuf/internal/proto_api_example.cc"],
+    #    copts = COPTS + select(LIMITED_API_FLAG_SELECT) + [
+    # The Python API requires patterns that are ISO C incompatible, like
+    # casts between function pointers and object pointers.
+    #        "-Wno-pedantic",
+    #    ],
+    #    deps = [
+    #        ":proto_api",
+    #        "//src/google/protobuf",
+    #        "//src/google/protobuf:unittest_proto3_cc_proto",
+    #        "@com_google_absl//absl/strings",
+    #    ],
+    #)
+
+    native.cc_binary(
+        name = "google/protobuf/internal/proto_api_example.so",
+        srcs = ["google/protobuf/internal/proto_api_example.cc"],
+        copts = COPTS + select(LIMITED_API_FLAG_SELECT) + [
+            # The Python API requires patterns that are ISO C incompatible, like
+            # casts between function pointers and object pointers.
+            "-Wno-pedantic",
+        ],
+        linkopts = selects.with_or({
+            (
+                "//python/dist:osx_x86_64",
+                "//python/dist:osx_aarch64",
+            ): ["-Wl,-undefined,dynamic_lookup"],
+            "//conditions:default": [],
+        }),
+        deps = [
+            ":proto_api",
+            "//src/google/protobuf",
+            "//src/google/protobuf:unittest_proto3_cc_proto",
+            "@com_google_absl//absl/strings",
+        ],
+    )
+
+    internal_py_test(
+        name = "proto_api_test",
+        srcs = ["google/protobuf/internal/proto_api_test.py"],
+        deps = [
+            "google/protobuf/internal/proto_api_example.so",
+        ],
     )
 
     conformance_test(
