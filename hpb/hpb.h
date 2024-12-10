@@ -79,7 +79,7 @@ void DeepCopy(const T* source_message, T* target_message) {
 }
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
+void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
   backend::ClearMessage(message);
 }
 
