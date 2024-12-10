@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "absl/functional/overload.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -48,6 +49,13 @@ template <typename Key>
 using KeyMap = internal::KeyMapBase<
     internal::KeyForBase<typename FromViewType<Key>::type>>;
 
+template <typename T>
+T AsViewType(T t) {
+  return t;
+}
+
+absl::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
+
 void InitializeMessageValue(void* raw_ptr, MessageLite* msg) {
   MessageLite* new_msg = internal::RustMapHelper::PlacementNew(msg, raw_ptr);
   auto* full_msg = DynamicCastMessage<Message>(new_msg);
@@ -86,28 +94,8 @@ bool Insert(internal::UntypedMapBase* m, Key key, MapValue value) {
                           },
                       });
 
-  node = internal::RustMapHelper::InsertOrReplaceNode(
+  return internal::RustMapHelper::InsertOrReplaceNode(
       static_cast<KeyMap<Key>*>(m), node);
-  if (node == nullptr) {
-    return true;
-  }
-  internal::RustMapHelper::DeleteNode(m, node);
-  return false;
-}
-
-template <typename Map, typename Key,
-          typename = typename std::enable_if<
-              !std::is_same<Key, google::protobuf::rust::PtrAndLen>::value>::type>
-internal::RustMapHelper::NodeAndBucket FindHelper(Map* m, Key key) {
-  return internal::RustMapHelper::FindHelper(
-      m, static_cast<internal::KeyForBase<Key>>(key));
-}
-
-template <typename Map>
-internal::RustMapHelper::NodeAndBucket FindHelper(Map* m,
-                                                  google::protobuf::rust::PtrAndLen key) {
-  return internal::RustMapHelper::FindHelper(
-      m, absl::string_view(key.ptr, key.len));
 }
 
 void PopulateMapValue(const internal::UntypedMapBase& map,
@@ -147,7 +135,7 @@ void PopulateMapValue(const internal::UntypedMapBase& map,
 template <typename Key>
 bool Get(internal::UntypedMapBase* m, Key key, MapValue* value) {
   auto* map_base = static_cast<KeyMap<Key>*>(m);
-  internal::RustMapHelper::NodeAndBucket result = FindHelper(map_base, key);
+  auto result = internal::RustMapHelper::FindHelper(map_base, AsViewType(key));
   if (result.node == nullptr) {
     return false;
   }
@@ -158,13 +146,7 @@ bool Get(internal::UntypedMapBase* m, Key key, MapValue* value) {
 template <typename Key>
 bool Remove(internal::UntypedMapBase* m, Key key) {
   auto* map_base = static_cast<KeyMap<Key>*>(m);
-  internal::RustMapHelper::NodeAndBucket result = FindHelper(map_base, key);
-  if (result.node == nullptr) {
-    return false;
-  }
-  internal::RustMapHelper::EraseNoDestroy(map_base, result.bucket, result.node);
-  internal::RustMapHelper::DeleteNode(m, result.node);
-  return true;
+  return internal::RustMapHelper::EraseImpl(map_base, AsViewType(key));
 }
 
 template <typename Key>

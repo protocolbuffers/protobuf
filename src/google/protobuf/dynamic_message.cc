@@ -269,7 +269,7 @@ bool DynamicMapField::DeleteMapValueImpl(MapFieldBase& base,
   if (self.arena() == nullptr) {
     it->second.DeleteData();
   }
-  self.map_.erase(it);
+  self.map_.EraseDynamic(it);
   return true;
 }
 

@@ -680,7 +680,8 @@ class KeyMapBase : public UntypedMapBase {
   friend class RustMapHelper;
   friend class v2::TableDriven;
 
-  PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
+  PROTOBUF_NOINLINE size_type EraseImpl(map_index_t b, KeyNode* node,
+                                        bool do_destroy) {
     // Force bucket_index to be in range.
     b &= (num_buckets_ - 1);
 
@@ -708,6 +709,20 @@ class KeyMapBase : public UntypedMapBase {
         ++index_of_first_non_null_;
       }
     }
+
+    if (arena() == nullptr && do_destroy) {
+      DeleteNode(node);
+    }
+
+    // To allow for the other overload of EraseImpl to do a tail call.
+    return 1;
+  }
+
+  PROTOBUF_NOINLINE size_type EraseImpl(typename TS::ViewType k) {
+    if (auto result = FindHelper(k); result.node != nullptr) {
+      return EraseImpl(result.bucket, static_cast<KeyNode*>(result.node), true);
+    }
+    return 0;
   }
 
   NodeAndBucket FindHelper(typename TS::ViewType k) const {
@@ -721,22 +736,20 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   // Insert the given node.
-  // If the key is a duplicate, it inserts the new node and returns the old one.
-  // Gives ownership to the caller.
-  // If the key is unique, it returns `nullptr`.
-  KeyNode* InsertOrReplaceNode(KeyNode* node) {
-    KeyNode* to_erase = nullptr;
+  // If the key is a duplicate, it inserts the new node and deletes the old one.
+  bool InsertOrReplaceNode(KeyNode* node) {
+    bool is_new = true;
     auto p = this->FindHelper(node->key());
     map_index_t b = p.bucket;
-    if (p.node != nullptr) {
-      erase_no_destroy(p.bucket, static_cast<KeyNode*>(p.node));
-      to_erase = static_cast<KeyNode*>(p.node);
+    if (ABSL_PREDICT_FALSE(p.node != nullptr)) {
+      EraseImpl(p.bucket, static_cast<KeyNode*>(p.node), true);
+      is_new = false;
     } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
       b = BucketNumber(node->key());  // bucket_number
     }
     InsertUnique(b, node);
     ++num_elements_;
-    return to_erase;
+    return is_new;
   }
 
   // Insert the given Node in bucket b.  If that would make bucket b too big,
@@ -876,13 +889,13 @@ class RustMapHelper {
   }
 
   template <typename Map>
-  static typename Map::KeyNode* InsertOrReplaceNode(Map* m, NodeBase* node) {
+  static bool InsertOrReplaceNode(Map* m, NodeBase* node) {
     return m->InsertOrReplaceNode(static_cast<typename Map::KeyNode*>(node));
   }
 
-  template <typename Map>
-  static void EraseNoDestroy(Map* m, map_index_t bucket, NodeBase* node) {
-    m->erase_no_destroy(bucket, static_cast<typename Map::KeyNode*>(node));
+  template <typename Map, typename Key>
+  static bool EraseImpl(Map* m, const Key& key) {
+    return m->EraseImpl(key);
   }
 
   static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
@@ -1296,21 +1309,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   // Erase and clear
   template <typename K = key_type>
   size_type erase(const key_arg<K>& key) {
-    iterator it = find(key);
-    if (it == end()) {
-      return 0;
-    } else {
-      erase(it);
-      return 1;
-    }
+    return this->EraseImpl(TS::ToView(key));
   }
 
   iterator erase(iterator pos) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto next = std::next(pos);
     ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
-    auto* node = static_cast<Node*>(pos.node_);
-    this->erase_no_destroy(pos.bucket_index_, node);
-    DeleteNode(node);
+    this->EraseImpl(pos.bucket_index_, static_cast<Node*>(pos.node_), true);
     return next;
   }
 
@@ -1429,6 +1434,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                           true);
   }
 
+  // For DynamicMapField, which needs a special destructor.
+  void EraseDynamic(iterator it) {
+    this->EraseImpl(it.bucket_index_,
+                    static_cast<typename Map::KeyNode*>(it.node_), false);
+    if (this->arena() == nullptr) {
+      delete static_cast<Node*>(it.node_);
+    }
+  }
+
   using Base::arena;
 
   friend class Arena;
@@ -1438,6 +1452,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using DestructorSkippable_ = void;
   template <typename K, typename V>
   friend class internal::MapFieldLite;
+  friend class internal::DynamicMapField;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
