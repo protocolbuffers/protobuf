@@ -3,11 +3,24 @@
 #include <cstring>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "rust/cpp_kernel/rust_alloc_for_cpp_api.h"
 
 namespace google {
 namespace protobuf {
 namespace rust {
+
+std::string PtrAndLen::CopyToString() const {
+  return len == 0 ? "" : std::string(ptr, len);
+}
+
+absl::string_view PtrAndLen::AsStringView() const {
+  return absl::string_view(len == 0 ? nullptr : ptr, len);
+}
+
+void PtrAndLen::PlacementNewString(void* location) {
+  new (location) std::string(len == 0 ? nullptr : ptr, len);
+}
 
 RustStringRawParts::RustStringRawParts(std::string src) {
   if (src.empty()) {
@@ -27,7 +40,7 @@ RustStringRawParts::RustStringRawParts(std::string src) {
 
 extern "C" {
 std::string* proto2_rust_cpp_new_string(google::protobuf::rust::PtrAndLen src) {
-  return new std::string(src.ptr, src.len);
+  return new std::string(src.CopyToString());
 }
 
 void proto2_rust_cpp_delete_string(std::string* str) { delete str; }

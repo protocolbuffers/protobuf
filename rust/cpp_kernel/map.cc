@@ -1,6 +1,5 @@
 #include "google/protobuf/map.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -8,7 +7,7 @@
 #include <utility>
 
 #include "absl/functional/overload.h"
-#include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/strings.h"
@@ -67,7 +66,7 @@ template <typename Key>
 bool Insert(internal::UntypedMapBase* m, Key key, MapValue value) {
   internal::NodeBase* node = internal::RustMapHelper::AllocNode(m);
   if constexpr (std::is_same<Key, PtrAndLen>::value) {
-    new (node->GetVoidKey()) std::string(key.ptr, key.len);
+    key.PlacementNewString(node->GetVoidKey());
   } else {
     *static_cast<Key*>(node->GetVoidKey()) = key;
   }
