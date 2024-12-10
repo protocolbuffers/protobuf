@@ -321,6 +321,15 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"int32Value": 1.0}', message)
     self.assertEqual(message.int32_value, 1)
 
+  def testIntegersRepresentedAsFloatStrings(self):
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"int32Value": "-2.147483648e9"}', message)
+    self.assertEqual(message.int32_value, -2147483648)
+    json_format.Parse('{"int32Value": "1e5"}', message)
+    self.assertEqual(message.int32_value, 100000)
+    json_format.Parse('{"int32Value": "1.0"}', message)
+    self.assertEqual(message.int32_value, 1)
+
   def testMapFields(self):
     message = json_format_proto3_pb2.TestNestedMap()
     self.assertEqual(
@@ -1166,6 +1175,16 @@ class JsonFormatTest(JsonFormatBase):
         '{"int32Value": 1.5}',
         'Failed to parse int32Value field: '
         "Couldn't parse integer: 1.5 at TestMessage.int32Value.",
+    )
+    self.CheckError(
+        '{"int32Value": "1.5"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse non-integer string: "1.5" at TestMessage.int32Value.',
+    )
+    self.CheckError(
+        '{"int32Value": "foo"}',
+        'Failed to parse int32Value field: invalid literal for int\(\) with'
+        " base 10: 'foo'.",
     )
     self.CheckError(
         '{"int32Value": 012345}',

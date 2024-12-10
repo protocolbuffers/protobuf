@@ -6,4 +6,3 @@
 #
 # TODO: insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
-Required.*.JsonInput.Int32FieldQuotedExponentialValue.* # Failed to parse input or produce output.
