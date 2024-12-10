@@ -944,14 +944,16 @@ def _DecodeUnknownFieldSet(buffer, pos, end_pos=None):
     field_number, wire_type = wire_format.UnpackTag(tag)
     if wire_type == wire_format.WIRETYPE_END_GROUP:
       break
-    (data, pos) = _DecodeUnknownField(buffer, pos, wire_type)
+    (data, pos) = _DecodeUnknownField(
+        buffer, pos, end_pos, field_number, wire_type
+    )
     # pylint: disable=protected-access
     unknown_field_set._add(field_number, wire_type, data)
 
   return (unknown_field_set, pos)
 
 
-def _DecodeUnknownField(buffer, pos, wire_type):
+def _DecodeUnknownField(buffer, pos, end_pos, field_number, wire_type):
   """Decode a unknown field.  Returns the UnknownField and new position."""
 
   if wire_type == wire_format.WIRETYPE_VARINT:
@@ -965,7 +967,13 @@ def _DecodeUnknownField(buffer, pos, wire_type):
     data = buffer[pos:pos+size].tobytes()
     pos += size
   elif wire_type == wire_format.WIRETYPE_START_GROUP:
-    (data, pos) = _DecodeUnknownFieldSet(buffer, pos)
+    end_tag_bytes = encoder.TagBytes(
+        field_number, wire_format.WIRETYPE_END_GROUP
+    )
+    data, pos = _DecodeUnknownFieldSet(buffer, pos, end_pos)
+    # Check end tag.
+    if buffer[pos - len(end_tag_bytes) : pos] != end_tag_bytes:
+      raise _DecodeError('Missing group end tag.')
   elif wire_type == wire_format.WIRETYPE_END_GROUP:
     return (0, -1)
   else:

@@ -78,7 +78,8 @@ else:
           if field_number == 0:
             raise RuntimeError('Field number 0 is illegal.')
           (data, _) = decoder._DecodeUnknownField(
-              memoryview(buffer), 0, wire_type)
+              memoryview(buffer), 0, len(buffer), field_number, wire_type
+          )
           InternalAdd(field_number, wire_type, data)
 
     def __getitem__(self, index):

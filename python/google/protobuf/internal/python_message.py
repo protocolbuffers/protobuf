@@ -1234,7 +1234,8 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
         # TODO: remove old_pos.
         old_pos = new_pos
         (data, new_pos) = decoder._DecodeUnknownField(
-            buffer, new_pos, wire_type)  # pylint: disable=protected-access
+            buffer, new_pos, end, field_number, wire_type
+        )  # pylint: disable=protected-access
         if new_pos == -1:
           return pos
         # TODO: remove _unknown_fields.
