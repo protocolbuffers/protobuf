@@ -30,7 +30,7 @@ STALENESS_TESTS=(
 
 # Run and fix all staleness tests.
 for test in ${STALENESS_TESTS[@]}; do
-  ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix
+  ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix --noenable_bzlmod
 done
 
 # Generate C# code.
