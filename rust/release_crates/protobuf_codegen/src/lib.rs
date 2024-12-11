@@ -18,7 +18,7 @@ impl CodeGen {
     pub fn new() -> Self {
         Self {
             inputs: Vec::new(),
-            output_dir: std::env::current_dir().unwrap().join("src").join("protobuf_generated"),
+            output_dir: Path::join(std::env::var("OUT_DIR"), "protobuf_generated"),
             protoc_path: None,
             protoc_gen_upb_minitable_path: None,
             includes: Vec::new(),
@@ -111,6 +111,16 @@ impl CodeGen {
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
         assert!(output.status.success());
+
+        std::fs::write(
+            output_dir.join("mod.rs"),
+            r#"
+            #[path = "foo.u.pb.rs"]
+            mod foo;
+            "#,
+        )
+        .map_err(|_| format!("failed to write mod.rs"))?;
+
         self.compile_only()
     }
 
