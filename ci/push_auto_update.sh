@@ -19,9 +19,10 @@ if (echo "$previous_commit_title" | grep -q "^Auto-generate files"); then
   exit 0
 fi
 
-BAZEL=bazelisk
-USE_BAZEL_VERSION=7.2.1
-source regenerate_stale_files.sh
+export BAZEL=bazelisk
+export USE_BAZEL_VERSION=7.2.1
+
+./regenerate_stale_files.sh
 
 # Try to determine the most recent CL or pull request.
 pr_from_merge=$(echo "$previous_commit_title" | sed -n 's/^Merge pull request #\([0-9]\+\).*/\1/p')
