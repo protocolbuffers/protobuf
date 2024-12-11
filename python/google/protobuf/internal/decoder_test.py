@@ -12,7 +12,9 @@ import io
 import unittest
 
 from google.protobuf import message
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import wire_format
 
@@ -102,6 +104,28 @@ class DecoderTest(unittest.TestCase):
         5,
         1,
         wire_format.WIRETYPE_START_GROUP,
+    )
+
+  def test_decode_message_set_unknown_mismatched_end_group(self):
+    proto = message_set_extensions_pb2.TestMessageSet()
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Unexpected end-group tag.'
+        if api_implementation.Type() == 'python'
+        else '.*',
+        proto.ParseFromString,
+        b'\013\054\014',
+    )
+
+  def test_unknown_message_set_decoder_mismatched_end_group(self):
+    # This behavior isn't actually reachable in practice, but it's good to
+    # test anyway.
+    decode = decoder.UnknownMessageSetItemDecoder()
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Unexpected end-group tag.',
+        decode,
+        memoryview(b'\054\014'),
     )
 
 
