@@ -9,7 +9,7 @@
 name = "staging-protobuf"
 version = "{VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
-links = "libupb"
+links = "upb"
 license = "BSD-3-Clause"
 rust-version = "1.74"
 description = "Protocol Buffers - Google's data interchange format"

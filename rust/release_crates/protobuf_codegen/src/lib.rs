@@ -65,11 +65,11 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let libupb_version = std::env::var("DEP_LIBUPB_VERSION").expect("DEP_LIBUPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
-        if VERSION != libupb_version {
+        let upb_version = std::env::var("DEP_UPB_VERSION").expect("DEP_UPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
+        if VERSION != upb_version {
             panic!(
                 "protobuf-codegen version {} does not match protobuf version {}.",
-                VERSION, libupb_version
+                VERSION, upb_version
             );
         }
 
@@ -119,8 +119,8 @@ impl CodeGen {
         let mut cc_build = cc::Build::new();
         cc_build
             .include(
-                std::env::var_os("DEP_LIBUPB_INCLUDE")
-                    .expect("DEP_LIBUPB_INCLUDE should have been set, make sure that the Protobuf crate is a dependency"),
+                std::env::var_os("DEP_UPB_INCLUDE")
+                    .expect("DEP_UPB_INCLUDE should have been set, make sure that the Protobuf crate is a dependency"),
             )
             .include(self.output_dir.clone())
             .flag("-std=c99");
