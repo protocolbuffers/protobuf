@@ -8,14 +8,20 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 #define GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 
+#include <cstdint>
+#include <string>
+
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 namespace google {
 namespace protobuf {
 namespace internal {
+
 // A base class for RepeatedFieldAccessor implementations that can support
 // random-access efficiently. All iterator methods delegates the work to
 // corresponding random-access methods.
@@ -64,7 +70,7 @@ class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
 template <typename T>
 class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
  public:
-  RepeatedFieldWrapper() {}
+  RepeatedFieldWrapper() = default;
   bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
@@ -188,7 +194,7 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 // MapFieldBase.
 class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
  public:
-  MapFieldAccessor() {}
+  MapFieldAccessor() = default;
   virtual ~MapFieldAccessor() {}
   bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
@@ -227,10 +233,11 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   }
 
  protected:
-  typedef RepeatedPtrField<Message> RepeatedFieldType;
+  using RepeatedFieldType = RepeatedPtrField<Message>;
+
   static const RepeatedFieldType* GetRepeatedField(const Field* data) {
     return reinterpret_cast<const RepeatedFieldType*>(
-        (&reinterpret_cast<const MapFieldBase*>(data)->GetRepeatedField()));
+        &(reinterpret_cast<const MapFieldBase*>(data)->GetRepeatedField()));
   }
   static RepeatedFieldType* MutableRepeatedField(Field* data) {
     return reinterpret_cast<RepeatedFieldType*>(
@@ -255,12 +262,13 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
 // Default implementations of RepeatedFieldAccessor for primitive types.
 template <typename T>
 class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
+
   using RepeatedFieldWrapper<T>::MutableRepeatedField;
 
  public:
-  RepeatedFieldPrimitiveAccessor() {}
+  RepeatedFieldPrimitiveAccessor() = default;
   void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
             Field* other_data) const override {
     // Currently RepeatedFieldPrimitiveAccessor is the only implementation of
@@ -284,12 +292,13 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
 // ctype=STRING.
 class RepeatedPtrFieldStringAccessor final
     : public RepeatedPtrFieldWrapper<std::string> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
+
   using RepeatedFieldAccessor::Add;
 
  public:
-  RepeatedPtrFieldStringAccessor() {}
+  RepeatedPtrFieldStringAccessor() = default;
   void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
             Field* other_data) const override {
     if (this == other_mutator) {
@@ -323,14 +332,14 @@ class RepeatedPtrFieldStringAccessor final
 
 class RepeatedPtrFieldMessageAccessor final
     : public RepeatedPtrFieldWrapper<Message> {
-  typedef void Field;
-  typedef void Value;
+  using Field = void;
+  using Value = void;
 
  public:
-  RepeatedPtrFieldMessageAccessor() {}
+  RepeatedPtrFieldMessageAccessor() = default;
   void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
             Field* other_data) const override {
-    ABSL_CHECK(this == other_mutator);
+    ABSL_CHECK_EQ(this, other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 
@@ -346,6 +355,7 @@ class RepeatedPtrFieldMessageAccessor final
     return static_cast<const Value*>(&value);
   }
 };
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
