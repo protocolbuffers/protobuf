@@ -15,6 +15,7 @@ module(
 bazel_dep(name = "abseil-cpp", version = "20240722.0", repo_name = "com_google_absl")
 bazel_dep(name = "bazel_skylib", version = "1.7.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
+bazel_dep(name = "rules_apple", version = "3.13.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
@@ -47,16 +48,20 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 [
     python.toolchain(
+        # Disable root warning for possible .pyc cache misses since CI runs as root:
+        # Error in fail: The current user is root, please run as non-root when using the hermetic Python interpreter.
+        # See https://github.com/bazelbuild/rules_python/pull/713
+        ignore_root_user_error = True,
         is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
         python_version = python_version,
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
-use_repo(
-    python,
-    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
-)
+# use_repo(
+#     python,
+#     system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+# )
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 

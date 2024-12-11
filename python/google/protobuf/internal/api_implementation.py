@@ -121,13 +121,14 @@ try:
   _python_deterministic_proto_serialization = True
 except ImportError:
   _python_deterministic_proto_serialization = False
-
+warnings.warn('DEBUG_SET_PYTHON_IMPLEMENTATION: ' + _implementation_type)
 
 # Usage of this function is discouraged. Clients shouldn't care which
 # implementation of the API is in use. Note that there is no guarantee
 # that differences between APIs will be maintained.
 # Please don't use this function if possible.
 def Type():
+  warnings.warn('DEBUG_PYTHON_IMPLEMENTATION: ' + _implementation_type)
   return _implementation_type
 
 
