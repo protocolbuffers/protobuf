@@ -2636,7 +2636,7 @@ class MiscTest : public testing::Test {
     }
   }
 
-  const char* GetTypeNameForFieldType(FieldDescriptor::Type type) {
+  absl::string_view GetTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->type_name() : "";
   }
@@ -2647,7 +2647,7 @@ class MiscTest : public testing::Test {
                             : static_cast<FieldDescriptor::CppType>(0);
   }
 
-  const char* GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
+  absl::string_view GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->cpp_type_name() : "";
   }
@@ -2672,24 +2672,40 @@ TEST_F(MiscTest, TypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", GetTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", GetTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", GetTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("group", GetTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", GetTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", GetTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", GetTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", GetTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", GetTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"),
+            GetTypeNameForFieldType(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"),
+            GetTypeNameForFieldType(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetTypeNameForFieldType(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetTypeNameForFieldType(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetTypeNameForFieldType(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("fixed64"),
+            GetTypeNameForFieldType(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("fixed32"),
+            GetTypeNameForFieldType(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"), GetTypeNameForFieldType(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"),
+            GetTypeNameForFieldType(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("group"),
+            GetTypeNameForFieldType(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"),
+            GetTypeNameForFieldType(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("bytes"),
+            GetTypeNameForFieldType(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetTypeNameForFieldType(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"), GetTypeNameForFieldType(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("sfixed32"),
+            GetTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("sfixed64"),
+            GetTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("sint32"),
+            GetTypeNameForFieldType(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("sint64"),
+            GetTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticTypeNames) {
@@ -2697,24 +2713,24 @@ TEST_F(MiscTest, StaticTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", FD::TypeName(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::TypeName(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", FD::TypeName(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", FD::TypeName(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", FD::TypeName(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", FD::TypeName(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", FD::TypeName(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", FD::TypeName(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", FD::TypeName(FD::TYPE_STRING));
-  EXPECT_STREQ("group", FD::TypeName(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", FD::TypeName(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", FD::TypeName(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", FD::TypeName(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", FD::TypeName(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", FD::TypeName(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", FD::TypeName(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", FD::TypeName(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", FD::TypeName(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"), FD::TypeName(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"), FD::TypeName(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"), FD::TypeName(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"), FD::TypeName(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"), FD::TypeName(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("fixed64"), FD::TypeName(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("fixed32"), FD::TypeName(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"), FD::TypeName(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"), FD::TypeName(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("group"), FD::TypeName(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"), FD::TypeName(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("bytes"), FD::TypeName(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"), FD::TypeName(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"), FD::TypeName(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("sfixed32"), FD::TypeName(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("sfixed64"), FD::TypeName(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("sint32"), FD::TypeName(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("sint64"), FD::TypeName(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, CppTypes) {
@@ -2747,24 +2763,42 @@ TEST_F(MiscTest, CppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetCppTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetCppTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"),
+            GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"),
+            GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetCppTypeNameForFieldType(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"),
+            GetCppTypeNameForFieldType(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"),
+            GetCppTypeNameForFieldType(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("message"),
+            GetCppTypeNameForFieldType(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"),
+            GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("string"),
+            GetCppTypeNameForFieldType(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetCppTypeNameForFieldType(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"),
+            GetCppTypeNameForFieldType(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticCppTypeNames) {
@@ -2772,16 +2806,16 @@ TEST_F(MiscTest, StaticCppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("int32", FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_STREQ("int64", FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_STREQ("uint32", FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_STREQ("uint64", FD::CppTypeName(FD::CPPTYPE_UINT64));
-  EXPECT_STREQ("double", FD::CppTypeName(FD::CPPTYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::CppTypeName(FD::CPPTYPE_FLOAT));
-  EXPECT_STREQ("bool", FD::CppTypeName(FD::CPPTYPE_BOOL));
-  EXPECT_STREQ("enum", FD::CppTypeName(FD::CPPTYPE_ENUM));
-  EXPECT_STREQ("string", FD::CppTypeName(FD::CPPTYPE_STRING));
-  EXPECT_STREQ("message", FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("int32"), FD::CppTypeName(FD::CPPTYPE_INT32));
+  EXPECT_EQ(absl::string_view("int64"), FD::CppTypeName(FD::CPPTYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint32"), FD::CppTypeName(FD::CPPTYPE_UINT32));
+  EXPECT_EQ(absl::string_view("uint64"), FD::CppTypeName(FD::CPPTYPE_UINT64));
+  EXPECT_EQ(absl::string_view("double"), FD::CppTypeName(FD::CPPTYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"), FD::CppTypeName(FD::CPPTYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("bool"), FD::CppTypeName(FD::CPPTYPE_BOOL));
+  EXPECT_EQ(absl::string_view("enum"), FD::CppTypeName(FD::CPPTYPE_ENUM));
+  EXPECT_EQ(absl::string_view("string"), FD::CppTypeName(FD::CPPTYPE_STRING));
+  EXPECT_EQ(absl::string_view("message"), FD::CppTypeName(FD::CPPTYPE_MESSAGE));
 }
 
 TEST_F(MiscTest, MessageType) {

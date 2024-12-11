@@ -195,9 +195,13 @@ namespace internal {
 // `typedef` instead of `using` for SWIG
 #if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
 typedef absl::string_view DescriptorStringView;
+// typedef absl::string_view DescriptorTypeStringView;
 #else
 typedef const std::string& DescriptorStringView;
+// typedef const char* DescriptorTypeStringView;
 #endif
+// DO NOT SUBMIT: Just testing to see how much stuff breaks.
+typedef absl::string_view DescriptorTypeStringView;
 
 class FlatAllocator;
 
@@ -870,9 +874,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   internal::DescriptorStringView camelcase_name() const;
 
   Type type() const;                  // Declared type of this field.
-  const char* type_name() const;      // Name of the declared type.
+  // Name of the declared type.
+  internal::DescriptorTypeStringView type_name() const;
   CppType cpp_type() const;           // C++ type of this field.
-  const char* cpp_type_name() const;  // Name of the C++ type.
+  // Name of the C++ type.
+  internal::DescriptorTypeStringView cpp_type_name() const;
   Label label() const;                // optional/required/repeated
 
 #ifndef SWIG
@@ -1024,10 +1030,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   static CppType TypeToCppType(Type type);
 
   // Helper method to get the name of a Type.
-  static const char* TypeName(Type type);
+  static internal::DescriptorTypeStringView TypeName(Type type);
 
   // Helper method to get the name of a CppType.
-  static const char* CppTypeName(CppType cpp_type);
+  static internal::DescriptorTypeStringView CppTypeName(CppType cpp_type);
 
   // Return true iff [packed = true] is valid for fields of this type.
   static inline bool IsTypePackable(Type field_type);
@@ -2864,7 +2870,7 @@ inline int MethodDescriptor::index() const {
   return static_cast<int>(this - service_->methods_);
 }
 
-inline const char* FieldDescriptor::type_name() const {
+inline internal::DescriptorTypeStringView FieldDescriptor::type_name() const {
   return kTypeToName[type()];
 }
 
@@ -2872,7 +2878,8 @@ inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
   return kTypeToCppTypeMap[type()];
 }
 
-inline const char* FieldDescriptor::cpp_type_name() const {
+inline internal::DescriptorTypeStringView FieldDescriptor::cpp_type_name()
+    const {
   return kCppTypeToName[kTypeToCppTypeMap[type()]];
 }
 
@@ -2880,11 +2887,12 @@ inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
   return kTypeToCppTypeMap[type];
 }
 
-inline const char* FieldDescriptor::TypeName(Type type) {
+inline internal::DescriptorTypeStringView FieldDescriptor::TypeName(Type type) {
   return kTypeToName[type];
 }
 
-inline const char* FieldDescriptor::CppTypeName(CppType cpp_type) {
+inline internal::DescriptorTypeStringView FieldDescriptor::CppTypeName(
+    CppType cpp_type) {
   return kCppTypeToName[cpp_type];
 }
 

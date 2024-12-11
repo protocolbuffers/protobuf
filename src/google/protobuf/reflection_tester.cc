@@ -624,19 +624,19 @@ Message* MapReflectionTester::GetMapEntryViaReflection(
 }
 
 MapIterator MapReflectionTester::MapBegin(Message* message,
-                                          const std::string& field_name) {
+                                          absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
 MapIterator MapReflectionTester::MapEnd(Message* message,
-                                        const std::string& field_name) {
+                                        absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
 
 int MapReflectionTester::MapSize(const Message& message,
-                                 const std::string& field_name) {
+                                 absl::string_view field_name) {
   const Reflection* reflection = message.GetReflection();
   return reflection->MapSize(message, F(field_name));
 }
