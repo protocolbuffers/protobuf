@@ -19,6 +19,8 @@ if (echo "$previous_commit_title" | grep -q "^Auto-generate files"); then
   exit 0
 fi
 
+BAZEL=bazelisk
+USE_BAZEL_VERSION=7.2.1
 ./regenerate_stale_files.sh
 
 # Try to determine the most recent CL or pull request.
