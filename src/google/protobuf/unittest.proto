@@ -252,6 +252,11 @@ message TestAllTypes {
       lazy = true
     ];
   }
+
+  // bool implicit_bool = 118 [features.field_presence = IMPLICIT];
+  uint32 implicit_uint32 = 119 [features.field_presence = IMPLICIT];
+  // uint64 implicit_uint64 = 120 [features.field_presence = IMPLICIT];
+  // string implicit_string = 121 [features.field_presence = IMPLICIT];
 }
 
 // This proto includes a recursively nested message.
