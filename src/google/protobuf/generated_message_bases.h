@@ -12,11 +12,13 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 
+#include <cstddef>
+#include <cstdint>
+
+#include "absl/base/attributes.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/parse_context.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -46,14 +48,15 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
   static void Clear(MessageLite& msg);
-  static size_t ByteSizeLong(const MessageLite& msg);
+  static size_t ByteSizeLong(const MessageLite& base);
   static ::uint8_t* _InternalSerialize(const MessageLite& msg,
                                        ::uint8_t* target,
                                        io::EpsCopyOutputStream* stream);
 
+  // The following naming is required to match protobuf naming conventions.
   struct {
-    internal::CachedSize _cached_size_;
-  } _impl_;
+    internal::CachedSize _cached_size_;  // NOLINT
+  } _impl_;                              // NOLINT
 };
 
 }  // namespace internal
