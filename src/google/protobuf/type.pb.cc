@@ -2314,7 +2314,7 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-        swap(_impl_.number_, other->_impl_.number_);
+  swap(_impl_.number_, other->_impl_.number_);
 }
 
 ::google::protobuf::Metadata EnumValue::GetMetadata() const {

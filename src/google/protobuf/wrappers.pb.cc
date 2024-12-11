@@ -640,7 +640,7 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata DoubleValue::GetMetadata() const {
@@ -873,7 +873,7 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata FloatValue::GetMetadata() const {
@@ -1107,7 +1107,7 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata Int64Value::GetMetadata() const {
@@ -1341,7 +1341,7 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata UInt64Value::GetMetadata() const {
@@ -1575,7 +1575,7 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata Int32Value::GetMetadata() const {
@@ -1809,7 +1809,7 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata UInt32Value::GetMetadata() const {
@@ -2042,7 +2042,7 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-        swap(_impl_.value_, other->_impl_.value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata BoolValue::GetMetadata() const {
