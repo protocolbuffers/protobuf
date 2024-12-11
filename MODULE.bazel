@@ -15,6 +15,7 @@ module(
 bazel_dep(name = "abseil-cpp", version = "20240722.0", repo_name = "com_google_absl")
 bazel_dep(name = "bazel_skylib", version = "1.7.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
+bazel_dep(name = "rules_apple", version = "3.13.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
@@ -115,8 +116,8 @@ bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(
     name = "abseil-py",
     version = "2.1.0",
-    repo_name = "com_google_absl_py",
     dev_dependency = True,
+    repo_name = "com_google_absl_py",
 )
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests

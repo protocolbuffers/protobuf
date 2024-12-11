@@ -29,6 +29,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        bzlmod: [false]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -50,6 +51,8 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
+          - bzlmod: false
+            flags: --noenable_bzlmod
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -76,6 +79,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: [ "3.12", "3.13" ]
+        bzlmod: [false]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -84,6 +88,8 @@ jobs:
             flags: --define=use_fast_cpp_protos=true
           - version: "3.13"
             continuous-only: true
+          - bzlmod: false
+            flags: --noenable_bzlmod
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
     runs-on: macos-13

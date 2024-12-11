@@ -45,7 +45,7 @@ jobs:
             cache_key: Bazel7
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
-          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace --cxxopt="-Wno-self-assign-overloaded" }
+          - config: { name: "Bazel7 with Bzlmod", flags: --cxxopt="-Wno-self-assign-overloaded" }
             cache_key: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
@@ -342,13 +342,13 @@ jobs:
           - name: MacOS Bazel
             os: macos-13
             cache_key: macos-13-bazel7
-            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            bazel: test --cxxopt="-Wunknown-warning-option" //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-13
             cache_key: macos-13-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            bazel: build --cpu=darwin_arm64 --cxxopt="-Wunknown-warning-option" //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-bazel7
