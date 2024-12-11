@@ -34,6 +34,7 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.j2objc:j2objc-annotations:2.8",
     "com.google.guava:guava:32.0.1-jre",
     "com.google.guava:guava-testlib:32.0.1-jre",
+    "com.google.testparameterinjector:test-parameter-injector:1.18",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",

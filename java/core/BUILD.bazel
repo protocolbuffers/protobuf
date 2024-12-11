@@ -446,6 +446,7 @@ junit_tests(
         ":lite_test_protos_java_proto",
         ":test_util",
         "@protobuf_maven//:com_google_guava_guava",
+        "@protobuf_maven//:com_google_testparameterinjector_test_parameter_injector",
         "@protobuf_maven//:com_google_truth_truth",
         "@protobuf_maven//:junit_junit",
         "@protobuf_maven//:org_mockito_mockito_core",

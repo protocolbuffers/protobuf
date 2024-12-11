@@ -531,6 +531,7 @@ public final class UnknownFieldSet implements MessageLite {
           getFieldBuilder(number).addGroup(subBuilder.build());
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          input.checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           getFieldBuilder(number).addFixed32(input.readFixed32());
