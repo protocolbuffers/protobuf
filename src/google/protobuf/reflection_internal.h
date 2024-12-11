@@ -87,6 +87,7 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
+  // TODO: Remove.
   void Reserve(Field* data, int size) const override {
     MutableRepeatedField(data)->Reserve(size);
   }
@@ -146,6 +147,7 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
+  // TODO: Remove.
   void Reserve(Field* data, int size) const override {
     MutableRepeatedField(data)->Reserve(size);
   }
