@@ -129,15 +129,8 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(const T* message, hpb::Arena& arena,
-                                            int options = 0) {
-  return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
-                                    ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), options);
-}
-
-template <typename T>
-absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, hpb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
+                                            hpb::Arena& arena,
                                             int options = 0) {
   return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
                                     ::hpb::interop::upb::GetMiniTable(message),
