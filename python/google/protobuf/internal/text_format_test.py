@@ -979,6 +979,20 @@ class TextFormatParserTests(TextFormatBase):
          r'have multiple "optional_int32" fields.'), text_format.Parse, text,
         message)
 
+  def testParseDuplicateNegativeZero(self, message_module):
+    message = message_module.TestAllTypes()
+    text = 'optional_double: -0.0 optional_double: 3'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (
+            r'1:40 : Message type "\w+.TestAllTypes" should not '
+            r'have multiple "optional_double" fields.'
+        ),
+        text_format.Parse,
+        text,
+        message,
+    )
+
   def testParseExistingScalarInMessage(self, message_module):
     message = message_module.TestAllTypes(optional_int32=42)
     text = 'optional_int32: 67'
@@ -2141,83 +2155,245 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(text_format.MessageToString(msg2), text)
 
 
-class TokenizerTest(unittest.TestCase):
+class TokenizerTest(_parameterized.TestCase):
 
-  def testSimpleTokenCases(self):
-    text = ('identifier1:"string1"\n     \n\n'
-            'identifier2 : \n \n123  \n  identifier3 :\'string\'\n'
-            'identifiER_4 : 1.1e+2 ID5:-0.23 ID6:\'aaaa\\\'bbbb\'\n'
-            'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
-            'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
-            'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
-            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f '
-            'False_bool: False True_bool: True X:iNf Y:-inF Z:nAN')
+  @_parameterized.named_parameters([
+      dict(
+          testcase_name='string_double_quotes',
+          text='identifier1:"string1"\n',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier1'),
+              ':',
+              (text_format.Tokenizer.ConsumeString, 'string1'),
+          ],
+      ),
+      dict(
+          testcase_name='integer',
+          text='identifier2 : \n \n123 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier2'),
+              ':',
+              (text_format.Tokenizer.ConsumeInteger, 123),
+          ],
+      ),
+      dict(
+          testcase_name='string_single_quotes',
+          text="\n  identifier3:'string'\n",
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier3'),
+              ':',
+              (text_format.Tokenizer.ConsumeString, 'string'),
+          ],
+      ),
+      dict(
+          testcase_name='float_exponent',
+          text='identifiER_4 : 1.1e+2 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifiER_4'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, 1.1e2),
+          ],
+      ),
+      dict(
+          testcase_name='float',
+          text='ID5:-0.23',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID5'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, -0.23),
+          ],
+      ),
+      dict(
+          testcase_name='escape_single_quote',
+          text="ID6:'aaaa\\'bbbb'\n",
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID6'),
+              ':',
+              (text_format.Tokenizer.ConsumeString, "aaaa'bbbb"),
+          ],
+      ),
+      dict(
+          testcase_name='escape_double_quote',
+          text='ID7 : "aa\\"bb"\n\n\n\n ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID7'),
+              ':',
+              (text_format.Tokenizer.ConsumeString, 'aa"bb'),
+          ],
+      ),
+      dict(
+          testcase_name='submessage',
+          text='ID8: {A:inf B:-inf C:true D:false}\n',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID8'),
+              ':',
+              '{',
+              (text_format.Tokenizer.ConsumeIdentifier, 'A'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'B'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'C'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, True),
+              (text_format.Tokenizer.ConsumeIdentifier, 'D'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, False),
+              '}',
+          ],
+      ),
+      dict(
+          testcase_name='large_negative_integer',
+          text='ID10: -111111111111111111 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID10'),
+              ':',
+              (text_format.Tokenizer.ConsumeInteger, -111111111111111111),
+          ],
+      ),
+      dict(
+          testcase_name='negative_integer',
+          text='ID11: -22\n',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID11'),
+              ':',
+              (text_format.Tokenizer.ConsumeInteger, -22),
+          ],
+      ),
+      dict(
+          testcase_name='large_integer',
+          text='ID12: 2222222222222222222 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID12'),
+              ':',
+              (text_format.Tokenizer.ConsumeInteger, 2222222222222222222),
+          ],
+      ),
+      dict(
+          testcase_name='float_suffix',
+          text='ID13: 1.23456f ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='float_capital_suffix',
+          text='ID13: 1.23456F ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='float_exponent_suffix',
+          text='ID14: 1.2e+2f ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID14'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, 1.2e2),
+          ],
+      ),
+      dict(
+          testcase_name='bool_zero',
+          text='false_bool:  0 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_bool'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='bool_t',
+          text='true_BOOL:t ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_BOOL'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='bool_one',
+          text='true_bool1:  1 ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_bool1'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='bool_f',
+          text='false_BOOL1:f ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_BOOL1'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='bool_false',
+          text='False_bool: False ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'False_bool'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='bool_true',
+          text='True_bool: True ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'True_bool'),
+              ':',
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='float_inf',
+          text='X:iNf ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'X'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+          ],
+      ),
+      dict(
+          testcase_name='float_negative_inf',
+          text='Y:-inF ',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'Y'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+          ],
+      ),
+      dict(
+          testcase_name='float_nan',
+          text='Z:nAN',
+          expected_tokens=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'Z'),
+              ':',
+              (text_format.Tokenizer.ConsumeFloat, float('nan')),
+          ],
+      ),
+  ])
+  def testSimpleTokenCases(self, text, expected_tokens):
     tokenizer = text_format.Tokenizer(text.splitlines())
-    methods = [(tokenizer.ConsumeIdentifier, 'identifier1'), ':',
-               (tokenizer.ConsumeString, 'string1'),
-               (tokenizer.ConsumeIdentifier, 'identifier2'), ':',
-               (tokenizer.ConsumeInteger, 123),
-               (tokenizer.ConsumeIdentifier, 'identifier3'), ':',
-               (tokenizer.ConsumeString, 'string'),
-               (tokenizer.ConsumeIdentifier, 'identifiER_4'), ':',
-               (tokenizer.ConsumeFloat, 1.1e+2),
-               (tokenizer.ConsumeIdentifier, 'ID5'), ':',
-               (tokenizer.ConsumeFloat, -0.23),
-               (tokenizer.ConsumeIdentifier, 'ID6'), ':',
-               (tokenizer.ConsumeString, 'aaaa\'bbbb'),
-               (tokenizer.ConsumeIdentifier, 'ID7'), ':',
-               (tokenizer.ConsumeString, 'aa\"bb'),
-               (tokenizer.ConsumeIdentifier, 'ID8'), ':', '{',
-               (tokenizer.ConsumeIdentifier, 'A'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'B'), ':',
-               (tokenizer.ConsumeFloat, -float('inf')),
-               (tokenizer.ConsumeIdentifier, 'C'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'D'), ':',
-               (tokenizer.ConsumeBool, False), '}',
-               (tokenizer.ConsumeIdentifier, 'ID9'), ':',
-               (tokenizer.ConsumeInteger, 22),
-               (tokenizer.ConsumeIdentifier, 'ID10'), ':',
-               (tokenizer.ConsumeInteger, -111111111111111111),
-               (tokenizer.ConsumeIdentifier, 'ID11'), ':',
-               (tokenizer.ConsumeInteger, -22),
-               (tokenizer.ConsumeIdentifier, 'ID12'), ':',
-               (tokenizer.ConsumeInteger, 2222222222222222222),
-               (tokenizer.ConsumeIdentifier, 'ID13'), ':',
-               (tokenizer.ConsumeFloat, 1.23456),
-               (tokenizer.ConsumeIdentifier, 'ID14'), ':',
-               (tokenizer.ConsumeFloat, 1.2e+2),
-               (tokenizer.ConsumeIdentifier, 'false_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'true_BOOL'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'true_bool1'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'false_BOOL1'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'False_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'True_bool'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'X'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'Y'), ':',
-               (tokenizer.ConsumeFloat, float('-inf')),
-               (tokenizer.ConsumeIdentifier, 'Z'), ':',
-               (tokenizer.ConsumeFloat, float('nan'))]
 
     i = 0
     while not tokenizer.AtEnd():
-      m = methods[i]
+      self.assertLess(i, len(expected_tokens))
+      m = expected_tokens[i]
       if isinstance(m, str):
         token = tokenizer.token
         self.assertEqual(token, m)
         tokenizer.NextToken()
       elif isinstance(m[1], float) and math.isnan(m[1]):
-        self.assertTrue(math.isnan(m[0]()))
+        self.assertTrue(math.isnan(m[0](tokenizer)))
       else:
-        self.assertEqual(m[1], m[0]())
+        self.assertEqual(m[1], m[0](tokenizer))
       i += 1
 
   def testConsumeAbstractIntegers(self):

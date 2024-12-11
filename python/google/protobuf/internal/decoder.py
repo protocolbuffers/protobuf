@@ -71,6 +71,27 @@ from google.protobuf.internal import wire_format
 _DecodeError = message.DecodeError
 
 
+def IsDefaultScalarValue(value):
+  """Returns whether or not a scalar value is the default value of its type.
+
+  Specifically, this should be used to determine presence of implicit-presence
+  fields, where we disallow custom defaults.
+
+  Args:
+    value: A scalar value to check.
+
+  Returns:
+    True if the value is equivalent to a default value, False otherwise.
+  """
+  if isinstance(value, float) and math.copysign(1.0, value) < 0:
+    # Special case for negative zero, where "truthiness" fails to give the right
+    # answer.
+    return False
+
+  # Normally, we can just use Python's boolean conversion.
+  return not value
+
+
 def _VarintDecoder(mask, result_type):
   """Return an encoder for a basic varint value (does not include tag).
 
@@ -237,7 +258,7 @@ def _SimpleDecoder(wire_type, decode_value):
         (new_value, pos) = decode_value(buffer, pos)
         if pos > end:
           raise _DecodeError('Truncated message.')
-        if clear_if_default and not new_value:
+        if clear_if_default and IsDefaultScalarValue(new_value):
           field_dict.pop(key, None)
         else:
           field_dict[key] = new_value
@@ -478,7 +499,7 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
       (enum_value, pos) = _DecodeSignedVarint32(buffer, pos)
       if pos > end:
         raise _DecodeError('Truncated message.')
-      if clear_if_default and not enum_value:
+      if clear_if_default and IsDefaultScalarValue(enum_value):
         field_dict.pop(key, None)
         return pos
       # pylint: disable=protected-access
@@ -573,7 +594,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      if clear_if_default and not size:
+      if clear_if_default and IsDefaultScalarValue(size):
         field_dict.pop(key, None)
       else:
         field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
@@ -614,7 +635,7 @@ def BytesDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      if clear_if_default and not size:
+      if clear_if_default and IsDefaultScalarValue(size):
         field_dict.pop(key, None)
       else:
         field_dict[key] = buffer[pos:new_pos].tobytes()
