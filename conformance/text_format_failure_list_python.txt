@@ -23,8 +23,6 @@ Required.*.TextFormatInput.FloatFieldNoLeadingZeroWithExponent_F.ProtobufOutput 
 Required.*.TextFormatInput.FloatFieldNoLeadingZeroWithExponent_F.TextFormatOutput                                  # Failed to parse input or produce output.
 Required.*.TextFormatInput.FloatFieldNoLeadingZero_F.ProtobufOutput                                                # Failed to parse input or produce output.
 Required.*.TextFormatInput.FloatFieldNoLeadingZero_F.TextFormatOutput                                              # Failed to parse input or produce output.
-Required.*.TextFormatInput.FloatFieldNoNegativeOctal                                                               # Should have failed to parse, but didn't.
-Required.*.TextFormatInput.FloatFieldNoOctal                                                                       # Should have failed to parse, but didn't.
 Required.*.TextFormatInput.FloatFieldTooLarge_F.ProtobufOutput                                                     # Failed to parse input or produce output.
 Required.*.TextFormatInput.FloatFieldTooLarge_F.TextFormatOutput                                                   # Failed to parse input or produce output.
 Required.*.TextFormatInput.FloatFieldTooSmall_F.ProtobufOutput                                                     # Failed to parse input or produce output.

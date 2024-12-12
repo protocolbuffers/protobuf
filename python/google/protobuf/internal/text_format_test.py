@@ -2141,7 +2141,7 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(text_format.MessageToString(msg2), text)
 
 
-class TokenizerTest(unittest.TestCase):
+class TokenizerTest(_parameterized.TestCase):
 
   def testSimpleTokenCases(self):
     text = ('identifier1:"string1"\n     \n\n'
@@ -2297,6 +2297,17 @@ class TokenizerTest(unittest.TestCase):
     self.assertEqual(1, tokenizer.ConsumeInteger())
     self.assertTrue(tokenizer.AtEnd())
 
+  @_parameterized.parameters('00', '09', '01.123', '-00', '-09', '-01.234')
+  def testConsumeOctalFloats(self, text):
+    """Test rejection of for octal-formatted floats."""
+    tokenizer = text_format.Tokenizer([text])
+
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid octal float: %s' % text,
+        tokenizer.ConsumeFloat,
+    )
+
   def testConsumeByteString(self):
     text = '"string1\''
     tokenizer = text_format.Tokenizer(text.splitlines())
@@ -2418,19 +2429,19 @@ class TokenizerTest(unittest.TestCase):
 
     msg = unittest_pb2.TestAllTypes(
         repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)])
-    if api_implementation.Type() == 'upb':
-      self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
-    else:
-      self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
+      if api_implementation.Type() == 'upb':
+        self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
+      else:
+        self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
 
   def testPrintGroupLikeDelimited(self):
     msg = unittest_delimited_pb2.TestDelimited(
         grouplike=unittest_delimited_pb2.TestDelimited.GroupLike(a=1)
     )
-    if api_implementation.Type() == 'upb':
-      self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
-    else:
-      self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
+      if api_implementation.Type() == 'upb':
+        self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
+      else:
+        self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
 
   def testPrintGroupLikeDelimitedExtension(self):
     msg = unittest_delimited_pb2.TestDelimited()
