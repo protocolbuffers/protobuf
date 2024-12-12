@@ -7,6 +7,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+# TODO: Replace this with the now-open-sourced absl-py version.
+
 """Adds support for parameterized tests to Python's unittest TestCase class.
 
 A parameterized test is a method in a test case that is invoked with different
@@ -139,6 +141,8 @@ ADDR_RE = re.compile(r'\<([a-zA-Z0-9_\-\.]+) object at 0x[a-fA-F0-9]+\>')
 _SEPARATOR = uuid.uuid1().hex
 _FIRST_ARG = object()
 _ARGUMENT_REPR = object()
+_NAMED = object()
+_NAMED_DICT_KEY = 'testcase_name'
 
 
 def _CleanRepr(obj):
@@ -156,6 +160,14 @@ def _NonStringIterable(obj):
           not isinstance(obj, str))
 
 
+def _NonStringOrBytesIterable(obj):
+  return (
+      isinstance(obj, collections_abc.Iterable)
+      and not isinstance(obj, str)
+      and not isinstance(obj, bytes)
+  )
+
+
 def _FormatParameterList(testcase_params):
   if isinstance(testcase_params, collections_abc.Mapping):
     return ', '.join('%s=%s' % (argname, _CleanRepr(value))
@@ -169,7 +181,7 @@ def _FormatParameterList(testcase_params):
 class _ParameterizedTestIter(object):
   """Callable and iterable class for producing new test cases."""
 
-  def __init__(self, test_method, testcases, naming_type):
+  def __init__(self, test_method, testcases, naming_type, original_name=None):
     """Returns concrete test functions for a test and a list of parameters.
 
     The naming_type is used to determine the name of the concrete
@@ -179,13 +191,22 @@ class _ParameterizedTestIter(object):
 
     Args:
       test_method: The decorated test method.
-      testcases: (list of tuple/dict) A list of parameter
-                 tuples/dicts for individual test invocations.
+      testcases: (list of tuple/dict) A list of parameter tuples/dicts for
+        individual test invocations.
       naming_type: The test naming type, either _NAMED or _ARGUMENT_REPR.
+      original_name: The original test method name. When decorated on a test
+        method, None is passed to __init__ and test_method.__name__ is used.
+        Note test_method.__name__ might be different than the original defined
+        test method because of the use of other decorators. A more accurate
+        value is set by TestGeneratorMetaclass.__new__ later.
     """
+    if original_name is None:
+      original_name = test_method.__name__
+
     self._test_method = test_method
     self.testcases = testcases
     self._naming_type = naming_type
+    self._original_name = original_name
 
   def __call__(self, *args, **kwargs):
     raise RuntimeError('You appear to be running a parameterized test case '
@@ -207,12 +228,45 @@ class _ParameterizedTestIter(object):
         else:
           test_method(self, testcase_params)
 
-      if naming_type is _FIRST_ARG:
+      if naming_type is _NAMED:
         # Signal the metaclass that the name of the test function is unique
         # and descriptive.
         BoundParamTest.__x_use_name__ = True
-        BoundParamTest.__name__ += str(testcase_params[0])
-        testcase_params = testcase_params[1:]
+
+        testcase_name = None
+        if isinstance(testcase_params, collections_abc.Mapping):
+          if _NAMED_DICT_KEY not in testcase_params:
+            raise RuntimeError(
+                'Dict for named tests must contain key "%s"' % _NAMED_DICT_KEY
+            )
+          # Create a new dict to avoid modifying the supplied testcase_params.
+          testcase_name = testcase_params[_NAMED_DICT_KEY]
+          testcase_params = {
+              k: v for k, v in testcase_params.items() if k != _NAMED_DICT_KEY
+          }
+        elif _NonStringOrBytesIterable(testcase_params):
+          if not isinstance(testcase_params[0], str):
+            raise RuntimeError(
+                'The first element of named test parameters is the test name '
+                'suffix and must be a string'
+            )
+          testcase_name = testcase_params[0]
+          testcase_params = testcase_params[1:]
+        else:
+          raise RuntimeError(
+              'Named tests must be passed a dict or non-string iterable.'
+          )
+
+        test_method_name = self._original_name
+        # Support PEP-8 underscore style for test naming if used.
+        if (
+            test_method_name.startswith('test_')
+            and testcase_name
+            and not testcase_name.startswith('_')
+        ):
+          test_method_name += '_'
+
+        BoundParamTest.__name__ = test_method_name + str(testcase_name)
       elif naming_type is _ARGUMENT_REPR:
         # __x_extra_id__ is used to pass naming information to the __new__
         # method of TestGeneratorMetaclass.
@@ -249,8 +303,11 @@ def _ModifyClass(class_object, testcases, naming_type):
       delattr(class_object, name)
       methods = {}
       _UpdateClassDictForParamTestCase(
-          methods, id_suffix, name,
-          _ParameterizedTestIter(obj, testcases, naming_type))
+          methods,
+          id_suffix,
+          name,
+          _ParameterizedTestIter(obj, testcases, naming_type, name),
+      )
       for name, meth in methods.items():
         setattr(class_object, name, meth)
 
@@ -302,18 +359,23 @@ def parameters(*testcases):  # pylint: disable=invalid-name
 def named_parameters(*testcases):  # pylint: disable=invalid-name
   """A decorator for creating parameterized tests.
 
-  See the module docstring for a usage example. The first element of
-  each parameter tuple should be a string and will be appended to the
-  name of the test method.
+  See the module docstring for a usage example. For every parameter tuple
+  passed, the first element of the tuple should be a string and will be appended
+  to the name of the test method. Each parameter dict passed must have a value
+  for the key "testcase_name", the string representation of that value will be
+  appended to the name of the test method.
 
   Args:
-    *testcases: Parameters for the decorated method, either a single
-                iterable, or a list of tuples.
+    *testcases: Parameters for the decorated method, either a single iterable,
+      or a list of tuples or dicts.
+
+  Raises:
+    NoTestsError: Raised when the decorator generates no tests.
 
   Returns:
      A test generator to be handled by TestGeneratorMetaclass.
   """
-  return _ParameterDecorator(_FIRST_ARG, testcases)
+  return _ParameterDecorator(_NAMED, testcases)
 
 
 class TestGeneratorMetaclass(type):
@@ -334,6 +396,12 @@ class TestGeneratorMetaclass(type):
     for name, obj in dct.copy().items():
       if (name.startswith(unittest.TestLoader.testMethodPrefix) and
           _NonStringIterable(obj)):
+        if isinstance(obj, _ParameterizedTestIter):
+          # Update the original test method name so it's more accurate.
+          # The mismatch might happen when another decorator is used inside
+          # the parameterized decrators, and the inner decorator doesn't
+          # preserve its __name__.
+          obj._original_name = name
         iterator = iter(obj)
         dct.pop(name)
         _UpdateClassDictForParamTestCase(dct, id_suffix, name, iterator)
