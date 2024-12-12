@@ -99,7 +99,7 @@ jobs:
       - name: Set Test Type Variables
         id: set-test-type-vars
         run: |
-          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${{ !contains(toJson(github.event.pull_request.body), '\n#test-continuous') }}; then
+          if ([ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]) && ${{ !contains(toJson(github.event.pull_request.body), '#test-continuous') }}; then
             echo "continuous-run=" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=[SKIPPED] (Continuous)" >> "$GITHUB_OUTPUT"
           else
