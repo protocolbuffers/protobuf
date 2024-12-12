@@ -20,6 +20,7 @@
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/options.h"
 #include "upb/mem/arena.hpp"
 #include "upb/mini_table/extension.h"
 
@@ -61,7 +62,10 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
   ::hpb::internal::upb_extension_locker_global.store(&lock_func,
                                                      std::memory_order_release);
   const std::string payload = GenerateTestData();
-  TestModel parsed_model = ::hpb::Parse<TestModel>(payload, registry).value();
+  TestModel parsed_model =
+      ::hpb::Parse<TestModel>(
+          payload, hpb::UpbParseOptions{.extension_registry = &registry})
+          .value();
   const auto test_main = [&] { EXPECT_EQ("str", parsed_model.str1()); };
   const auto test_theme = [&] {
     ASSERT_TRUE(::hpb::HasExtension(&parsed_model, theme));

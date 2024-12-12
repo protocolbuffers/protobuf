@@ -8,7 +8,6 @@
 #ifndef PROTOBUF_HPB_HPB_H_
 #define PROTOBUF_HPB_HPB_H_
 
-#include <cstdint>
 #include <type_traits>
 
 #include "absl/base/attributes.h"
@@ -20,9 +19,9 @@
 #include "google/protobuf/hpb/internal/internal.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/options.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
-#include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 
 #ifdef HPB_BACKEND_UPB
@@ -113,15 +112,15 @@ absl::StatusOr<T> Parse(absl::string_view bytes) {
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry,
-                        int options = 0) {
+                        const hpb::ParseOptions& options) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
-  upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::interop::upb::GetMiniTable(&message),
-                 ::hpb::internal::GetUpbExtensions(extension_registry),
-                 /* options= */ 0, arena);
+  auto upb_options = std::get<hpb::UpbParseOptions>(options);
+  upb_DecodeStatus status = upb_Decode(
+      bytes.data(), bytes.size(), message.msg(),
+      hpb::interop::upb::GetMiniTable(&message),
+      ::hpb::internal::GetUpbExtensions(*upb_options.extension_registry),
+      upb_options.parse_options, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
   }
