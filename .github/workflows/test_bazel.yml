@@ -36,9 +36,11 @@ jobs:
             # Not running Bazel 6 with bzlmod, because it doesn't support use_repo_rule in rules_jvm_external
             bzlmod: false
           - runner: ubuntu
+            bazelversion: '7.1.2'
             bzlmod: false
             toolchain_resolution: --incompatible_enable_proto_toolchain_resolution=true
           - runner: ubuntu
+            bazelversion: '7.1.2'
             bzlmod: true
             toolchain_resolution: --incompatible_enable_proto_toolchain_resolution=true
     runs-on: ${{ matrix.runner }}-latest
