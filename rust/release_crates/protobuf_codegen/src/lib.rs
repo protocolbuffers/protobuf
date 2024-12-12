@@ -98,7 +98,7 @@ impl CodeGen {
         }
 
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
-            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
+            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb,build_system=cargo")
             .arg(format!(
                 "--plugin=protoc-gen-upb_minitable={}",
                 protoc_gen_upb_minitable_path.display()
