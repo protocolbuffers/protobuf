@@ -138,8 +138,8 @@ def build_targets(name):
             "manual",
         ],
         deps = [
-            ":proto_api",
             "//src/google/protobuf",
+            ":proto_api",
             "//src/google/protobuf:port",
             "//src/google/protobuf:protobuf_lite",
             "//src/google/protobuf/io",
@@ -448,6 +448,11 @@ def build_targets(name):
         srcs = ["google/protobuf/internal/proto_json_test.py"],
     )
 
+    internal_py_test(
+        name = "python_version_test",
+        srcs = ["python_version_test.py"],
+    )
+
     native.cc_library(
         name = "proto_api",
         srcs = ["google/protobuf/proto_api.cc"],
@@ -459,13 +464,66 @@ def build_targets(name):
             "//src/google/protobuf/io",
             "@com_google_absl//absl/log:absl_check",
             "@com_google_absl//absl/status",
+            "@com_google_absl//absl/status:statusor",
             "@system_python//:python_headers",
         ],
     )
 
+    native.cc_binary(
+        name = "google/protobuf/internal/proto_api_example.so",
+        srcs = native.glob([
+            "google/protobuf/pyext/*.cc",
+            "google/protobuf/pyext/*.h",
+            "google/protobuf/internal/proto_api_example.cc",
+        ]),
+        copts = COPTS + [
+            "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+            # The Python API requires patterns that are ISO C incompatible, like
+            # casts between function pointers and object pointers.
+            "-Wno-pedantic",
+        ],
+        linkopts = selects.with_or({
+            (
+                "//python/dist:osx_x86_64",
+                "//python/dist:osx_aarch64",
+            ): ["-Wl,-undefined,dynamic_lookup"],
+            "//python/dist:windows_x86_32": ["-static-libgcc"],
+            "//conditions:default": [],
+        }),
+        includes = ["."],
+        linkshared = 1,
+        linkstatic = 1,
+        deps = [
+            ":proto_api",
+            "//src/google/protobuf",
+            "//src/google/protobuf:port",
+            "//src/google/protobuf:protobuf_lite",
+            "//src/google/protobuf/io",
+            "//src/google/protobuf/io:tokenizer",
+            "//src/google/protobuf/stubs:lite",
+            "//src/google/protobuf/util:differencer",
+            "@com_google_absl//absl/container:flat_hash_map",
+            "@com_google_absl//absl/log:absl_check",
+            "@com_google_absl//absl/status",
+            "//src/google/protobuf:unittest_proto3_cc_proto",
+            "@com_google_absl//absl/log:absl_log",
+            "@com_google_absl//absl/strings",
+        ] + select({
+            "//python:limited_api_3.9": ["@python-3.9.0//:python_headers"],
+            "//python:full_api_3.9_win32": ["@nuget_python_i686_3.9.0//:python_full_api"],
+            "//python:full_api_3.9_win64": ["@nuget_python_x86-64_3.9.0//:python_full_api"],
+            "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
+            "//python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
+            "//conditions:default": ["@system_python//:python_headers"],
+        }),
+    )
+
     internal_py_test(
-        name = "python_version_test",
-        srcs = ["python_version_test.py"],
+        name = "proto_api_test",
+        srcs = ["google/protobuf/internal/proto_api_test.py"],
+        deps = [
+            ":google/protobuf/internal/proto_api_example.so",
+        ],
     )
 
     conformance_test(
