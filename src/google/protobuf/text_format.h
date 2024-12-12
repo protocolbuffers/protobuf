@@ -46,7 +46,6 @@ PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_string_safe_format;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
-PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
 
 // This enum contains all the APIs that convert protos to human-readable
 // formats. A higher-level API must correspond to a greater number than any
@@ -616,6 +615,11 @@ class PROTOBUF_EXPORT TextFormat {
     ParseLocationRange() : start(), end() {}
     ParseLocationRange(ParseLocation start_param, ParseLocation end_param)
         : start(start_param), end(end_param) {}
+  };
+
+  struct RedactionState {
+    bool redact;
+    bool report;
   };
 
   // Data structure which is populated with the locations of each field

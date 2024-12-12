@@ -25,6 +25,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <thread>  // NOLINT
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -11694,6 +11695,65 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
   EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::test));
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
+}
+
+class DescriptorPoolMemoizationTest : public ::testing::Test {
+ protected:
+  template <typename Func>
+  auto MemoizeProjection(const DescriptorPool* pool,
+                         const FieldDescriptor* field, Func func) {
+    return pool->MemoizeProjection(field, func);
+  };
+};
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
+  static int counter = 0;
+  auto name_lambda = [](const FieldDescriptor* field) {
+    counter++;
+    return field->full_name();
+  };
+  protobuf_unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+
+  auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+  auto dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+
+  ASSERT_EQ(counter, 1);
+  ASSERT_EQ(name, "protobuf_unittest.TestAllTypes.optional_int32");
+  ASSERT_EQ(dupe_name, "protobuf_unittest.TestAllTypes.optional_int32");
+
+  auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(1), name_lambda);
+
+  ASSERT_EQ(counter, 2);
+  ASSERT_NE(other_name, "protobuf_unittest.TestAllTypes.optional_int32");
+}
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
+  auto name_lambda = [](const FieldDescriptor* field) {
+    return field->full_name();
+  };
+  protobuf_unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+  std::vector<std::thread> threads;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    threads.emplace_back([this, name_lambda, descriptor, i]() {
+      auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+          descriptor->file()->pool(), descriptor->field(i), name_lambda);
+      auto first_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+          descriptor->file()->pool(), descriptor->field(0), name_lambda);
+      ASSERT_THAT(name, HasSubstr("protobuf_unittest.TestAllTypes"));
+      if (i != 0) {
+        ASSERT_NE(name, "protobuf_unittest.TestAllTypes.optional_int32");
+      }
+      ASSERT_EQ(first_name, "protobuf_unittest.TestAllTypes.optional_int32");
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
 }
 
 

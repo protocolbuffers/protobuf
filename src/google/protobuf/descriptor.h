@@ -31,17 +31,20 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <any>
 #include <atomic>
 #include <cstdint>
 #include <iterator>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/optimization.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
@@ -133,6 +136,7 @@ class Formatter;
 }  // namespace compiler
 
 namespace descriptor_unittest {
+class DescriptorPoolMemoizationTest;
 class DescriptorTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
@@ -2432,9 +2436,34 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class FileDescriptor;
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
+  friend class google::protobuf::descriptor_unittest::DescriptorPoolMemoizationTest;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
   friend class ::google::protobuf::compiler::CommandLineInterface;
-
+  friend class TextFormat;
+  // Memoize a projection of a field.  This is used to cache the results of
+  // calling a function on a field, used for expensive descriptor calculations.
+  template <typename Func>
+  auto MemoizeProjection(const FieldDescriptor* field, Func func) const {
+    using ResultT = decltype(func(field));
+    ABSL_DCHECK(field->file()->pool() == this);
+    static_assert(std::is_empty_v<Func>);
+    // This static bool is unique per-Func, so its address can be used as a key.
+    static bool type_key;
+    auto key = std::pair<const void*, const void*>(field, &type_key);
+    {
+      absl::ReaderMutexLock lock(&field_memo_table_mutex_);
+      auto it = field_memo_table_.find(key);
+      if (it != field_memo_table_.end()) {
+        return std::any_cast<ResultT>(it->second);
+      }
+    }
+    ResultT result = func(field);
+    {
+      absl::MutexLock lock(&field_memo_table_mutex_);
+      field_memo_table_[key] = result;
+    }
+    return result;
+  }
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
   // definition of such types is already known.)
@@ -2492,6 +2521,10 @@ class PROTOBUF_EXPORT DescriptorPool {
                         PlaceholderType placeholder_type) const;
   Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
                                      PlaceholderType placeholder_type) const;
+
+  mutable absl::Mutex field_memo_table_mutex_;
+  mutable absl::flat_hash_map<std::pair<const void*, const void*>, std::any>
+      field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_);
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
