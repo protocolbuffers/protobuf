@@ -1,6 +1,6 @@
 # Minimum CMake required. If available, accept the policy-controlled behavior up
 # to 3.26.
-cmake_minimum_required(VERSION 3.10...3.26)
+cmake_minimum_required(VERSION 3.16...3.26)
 
 # Revert to old behavior for MSVC debug symbols.
 if(POLICY CMP0141)

@@ -114,7 +114,7 @@ class Converter(object):
     #
     # Changes to this file will be overwritten based on Bazel definitions.
 
-    if(${CMAKE_VERSION} VERSION_GREATER 3.10 OR ${CMAKE_VERSION} VERSION_EQUAL 3.10)
+    if(${CMAKE_VERSION} VERSION_GREATER 3.16 OR ${CMAKE_VERSION} VERSION_EQUAL 3.16)
       include_guard()
     endif()
 
