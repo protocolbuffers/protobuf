@@ -1,8 +1,8 @@
-#[path = "protobuf_generated/foo.u.pb.rs"]
-mod protos;
-
 use protobuf::proto;
 
+mod protos {
+    include!(concat!(env!("OUT_DIR"), "/protobuf_generated/foo.u.pb.rs"));
+}
 use protos::Foo;
 
 fn main() {

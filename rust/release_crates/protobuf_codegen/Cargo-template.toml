@@ -9,5 +9,4 @@ rust-version = "1.74"
 
 
 [dependencies]
-walkdir = "2.5.0"
 cc = "1.1.6"

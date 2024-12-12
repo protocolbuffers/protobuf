@@ -1,7 +1,4 @@
-use std::fs::{self, OpenOptions};
-use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
 
 #[derive(Debug)]
 pub struct CodeGen {
@@ -18,7 +15,7 @@ impl CodeGen {
     pub fn new() -> Self {
         Self {
             inputs: Vec::new(),
-            output_dir: std::env::current_dir().unwrap().join("src").join("protobuf_generated"),
+            output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             protoc_path: None,
             protoc_gen_upb_minitable_path: None,
             includes: Vec::new(),
@@ -62,6 +59,28 @@ impl CodeGen {
     pub fn includes(&mut self, includes: impl Iterator<Item = impl AsRef<Path>>) -> &mut Self {
         self.includes.extend(includes.into_iter().map(|include| include.as_ref().to_owned()));
         self
+    }
+
+    fn expected_generated_rs_files(&self) -> Vec<PathBuf> {
+        self.inputs
+            .iter()
+            .map(|input| {
+                let mut input = input.clone();
+                assert!(input.set_extension("u.pb.rs"));
+                self.output_dir.join(input)
+            })
+            .collect()
+    }
+
+    fn expected_generated_c_files(&self) -> Vec<PathBuf> {
+        self.inputs
+            .iter()
+            .map(|input| {
+                let mut input = input.clone();
+                assert!(input.set_extension("upb_minitable.c"));
+                self.output_dir.join(input)
+            })
+            .collect()
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
@@ -124,15 +143,19 @@ impl CodeGen {
             )
             .include(self.output_dir.clone())
             .flag("-std=c99");
-        for entry in WalkDir::new(&self.output_dir) {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                println!("cargo:rerun-if-changed={}", path.display());
-                let file_name = path.file_name().unwrap().to_str().unwrap();
-                if file_name.ends_with(".upb_minitable.c") {
-                    cc_build.file(path);
-                }
+
+        for path in &self.expected_generated_rs_files() {
+            if !path.exists() {
+                return Err(format!("expected generated file {} does not exist", path.display()));
             }
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+        for path in &self.expected_generated_c_files() {
+            if !path.exists() {
+                return Err(format!("expected generated file {} does not exist", path.display()));
+            }
+            println!("cargo:rerun-if-changed={}", path.display());
+            cc_build.file(path);
         }
         cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
         Ok(())

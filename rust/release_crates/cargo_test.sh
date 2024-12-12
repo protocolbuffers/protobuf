@@ -67,7 +67,7 @@ CARGO_HOME=$CARGO_HOME cargo test
 CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $EXAMPLE_ROOT
-CARGO_HOME=$CARGO_HOME cargo test --features run-protobuf-codegen
+CARGO_HOME=$CARGO_HOME cargo test
 # TODO: Cannot enable this dry-run yet because it checks that the versions of
 # its dependencies are published on crates.io, which they are definitely not
 # in this case.
