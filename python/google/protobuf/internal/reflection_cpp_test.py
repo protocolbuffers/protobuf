@@ -12,12 +12,12 @@ import copy
 import unittest
 
 from google.protobuf.internal import testing_refleaks
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 
 
-@_parameterized.named_parameters(
+@parameterized.named_parameters(
     ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
 )
 @testing_refleaks.TestCase

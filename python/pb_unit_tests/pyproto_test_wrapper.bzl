@@ -16,6 +16,7 @@ def pyproto_test_wrapper(name, deps = []):
             "//:python_specific_test_protos",
             "//:python_test_srcs",
             "//:python_srcs",
+            "@com_google_absl_py//absl/testing:parameterized",
         ] + deps,
         target_compatible_with = select({
             "@system_python//:supported": [],

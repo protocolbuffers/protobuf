@@ -26,7 +26,7 @@ from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
@@ -75,7 +75,7 @@ class TextFormatBase(unittest.TestCase):
     return text
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToStringTests(TextFormatBase):
 
   def testPrintExotic(self, message_module):
@@ -610,7 +610,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
                                                  as_one_line=True))
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToTextBytesTests(TextFormatBase):
 
   def testMessageToBytes(self, message_module):
@@ -676,7 +676,7 @@ class TextFormatMessageToTextBytesTests(TextFormatBase):
          parsed_message.repeated_string[0]))
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatParserTests(TextFormatBase):
 
   def testParseAllFields(self, message_module):
@@ -988,7 +988,7 @@ class TextFormatParserTests(TextFormatBase):
                            text_format.Parse, text, message)
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
 
   def testMergeDuplicateScalarsInText(self, message_module):
@@ -2519,7 +2519,7 @@ class TokenizerTest(unittest.TestCase):
       text_format.Parse('NotGroupLikeScope { b:1 }', msg)
 
 # Tests for pretty printer functionality.
-@_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
+@parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
 class PrettyPrinterTest(TextFormatBase):
 
   def testPrettyPrintNoMatch(self, message_module):

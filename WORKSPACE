@@ -194,6 +194,15 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 install_deps()
 
 http_archive(
+    name = "com_google_absl_py",
+    sha256 = "8a3d0830e4eb4f66c4fa907c06edf6ce1c719ced811a12e26d9d3162f8471758",
+    strip_prefix = "abseil-py-2.1.0",
+    urls = [
+        "https://github.com/abseil/abseil-py/archive/refs/tags/v2.1.0.tar.gz",
+    ],
+)
+
+http_archive(
     name = "rules_fuzzing",
     patch_args = ["-p1"],
     patches = ["//third_party:rules_fuzzing.patch"],
