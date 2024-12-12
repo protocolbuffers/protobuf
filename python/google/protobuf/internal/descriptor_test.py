@@ -22,7 +22,7 @@ from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
@@ -1231,9 +1231,9 @@ class MakeDescriptorTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class FeaturesTest(_parameterized.TestCase):
+class FeaturesTest(parameterized.TestCase):
 
-  @_parameterized.named_parameters([
+  @parameterized.named_parameters([
       ('File', lambda: descriptor_pb2.DESCRIPTOR),
       ('Message', lambda: descriptor_pb2.FeatureSet.DESCRIPTOR),
       (
