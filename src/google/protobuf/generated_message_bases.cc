@@ -8,15 +8,16 @@
 #include "google/protobuf/generated_message_bases.h"
 
 #include <cstddef>
+#include <cstdint>
 
+#include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 // Must be last:
 #include "google/protobuf/port_def.inc"
