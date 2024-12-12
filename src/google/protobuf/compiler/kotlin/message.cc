@@ -174,6 +174,17 @@ void MessageGenerator::GenerateTopLevelMembers(io::Printer* printer) const {
           name_resolver_->GetClassName(descriptor_, true)),
       "message_kt",
       name_resolver_->GetKotlinExtensionsClassNameEscaped(descriptor_));
+  if (!lite_) printer->Print("@kotlin.jvm.JvmSynthetic\n");
+  printer->Print(
+      "public inline fun $message$?.copyOrCreate(block: $message_kt$.Dsl.() -> "
+      "kotlin.Unit): $message$ =\n"
+      "  $message_kt$.Dsl._create(this?.toBuilder() ?: $message$.newBuilder())"
+      ".apply { block() }._build()\n\n",
+      "message",
+      java::EscapeKotlinKeywords(
+          name_resolver_->GetClassName(descriptor_, true)),
+      "message_kt",
+      name_resolver_->GetKotlinExtensionsClassNameEscaped(descriptor_));
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     if (java::IsMapEntry(descriptor_->nested_type(i))) continue;
