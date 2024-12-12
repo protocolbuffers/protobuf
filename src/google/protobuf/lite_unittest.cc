@@ -83,7 +83,7 @@ bool ParseFrom(const std::string& data, MessageLite& msg) {
 }
 
 bool ParseFrom(const absl::Cord& data, MessageLite& msg) {
-  return msg.ParseFromCord(data);
+  return msg.ParseFromString(data);
 }
 
 template <typename T>
@@ -488,7 +488,7 @@ TYPED_TEST(LiteTest, AllLite13CordStream) {
       coded_output.WriteVarint32(20);
     }
     absl::Cord buffer = output_stream.Consume();
-    message.ParseFromCord(buffer);
+    message.ParseFromString(buffer);
     data = SerializeAs<TypeParam>(message);
     EXPECT_EQ(data, buffer);
   }

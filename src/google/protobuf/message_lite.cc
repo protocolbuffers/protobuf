@@ -643,7 +643,7 @@ std::string MessageLite::SerializePartialAsString() const {
 bool MessageLite::AppendToString(absl::Cord* output) const {
   ABSL_DCHECK(IsInitialized())
       << InitializationErrorMessage("serialize", *this);
-  return AppendPartialToCord(output);
+  return AppendPartialToString(output);
 }
 
 bool MessageLite::AppendPartialToString(absl::Cord* output) const {
@@ -694,23 +694,23 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
 
 bool MessageLite::SerializeToString(absl::Cord* output) const {
   output->Clear();
-  return AppendToCord(output);
+  return AppendToString(output);
 }
 
 bool MessageLite::SerializePartialToString(absl::Cord* output) const {
   output->Clear();
-  return AppendPartialToCord(output);
+  return AppendPartialToString(output);
 }
 
 absl::Cord MessageLite::SerializeAsCord() const {
   absl::Cord output;
-  if (!AppendToCord(&output)) output.Clear();
+  if (!AppendToString(&output)) output.Clear();
   return output;
 }
 
 absl::Cord MessageLite::SerializePartialAsCord() const {
   absl::Cord output;
-  if (!AppendPartialToCord(&output)) output.Clear();
+  if (!AppendPartialToString(&output)) output.Clear();
   return output;
 }
 

@@ -955,7 +955,7 @@ bool TestSerialize<std::string>(const MessageLite& message,
 
 template <>
 bool TestSerialize<absl::Cord>(const MessageLite& message, absl::Cord* output) {
-  return message.SerializeToCord(output);
+  return message.SerializeToString(output);
 }
 
 template <typename T>
