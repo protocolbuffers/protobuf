@@ -47,9 +47,9 @@ class MapReflectionTester {
                                       const MapKey& map_key);
   Message* GetMapEntryViaReflection(Message* message,
                                     const std::string& field_name, int index);
-  MapIterator MapBegin(Message* message, const std::string& field_name);
-  MapIterator MapEnd(Message* message, const std::string& field_name);
-  int MapSize(const Message& message, const std::string& field_name);
+  MapIterator MapBegin(Message* message, absl::string_view field_name);
+  MapIterator MapEnd(Message* message, absl::string_view field_name);
+  int MapSize(const Message& message, absl::string_view field_name);
 
   static std::optional<MapValueConstRef> LookupMapValue(
       const Reflection& reflection, const Message& message,
