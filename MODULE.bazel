@@ -112,6 +112,12 @@ use_repo(maven, "protobuf_maven")
 bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True, repo_name = "com_google_googletest")
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(
+    name = "abseil-py",
+    version = "2.1.0",
+    repo_name = "com_google_absl_py",
+    dev_dependency = True,
+)
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)
