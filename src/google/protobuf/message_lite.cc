@@ -533,6 +533,8 @@ bool MessageLite::SerializeToZeroCopyStream(
 bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
+  ABSL_LOG(ERROR) << "dl_log: " << GetTypeName()
+                  << " SerializePartialToZeroCopyStream size: " << size;
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << size;
@@ -581,6 +583,8 @@ bool MessageLite::AppendToString(std::string* output) const {
 bool MessageLite::AppendPartialToString(std::string* output) const {
   size_t old_size = output->size();
   size_t byte_size = ByteSizeLong();
+  ABSL_LOG(ERROR) << "dl_log: AppendPartialToString old_size: " << old_size
+                  << " byte_size: " << byte_size;
   if (byte_size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << byte_size;
