@@ -12,6 +12,8 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import unittest
 import warnings
 
+from absl.testing import parameterized
+
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
@@ -22,7 +24,6 @@ from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
-from absl.testing import parameterized
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
