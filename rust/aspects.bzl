@@ -384,14 +384,6 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps"],
         requires = ([upb_minitable_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         attrs = {
-            "_cc_toolchain": attr.label(
-                doc = (
-                    "In order to use find_cc_toolchain, your rule has to depend " +
-                    "on C++ toolchain. See `@rules_cc//cc:find_cc_toolchain.bzl` " +
-                    "docs for details."
-                ),
-                default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
-            ),
             "_collect_cc_coverage": attr.label(
                 default = Label("@rules_rust//util:collect_coverage"),
                 executable = True,
