@@ -25,6 +25,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:versions",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",

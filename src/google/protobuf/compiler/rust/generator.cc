@@ -18,7 +18,9 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -28,6 +30,7 @@
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/relative_path.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -163,6 +166,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"Result", "::std::result::Result"},
       {"Option", "::std::option::Option"},
   });
+
+  std::string expected_runtime_version = absl::StrCat(
+      absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"), "-beta");
+
+  ctx.Emit({{"expected_runtime_version", expected_runtime_version}},
+           R"rs(
+    const _: () = $pbi$::assert_compatible_gencode_version("$expected_runtime_version$");
+  )rs");
 
   std::vector<const FileDescriptor*> file_contexts(
       files_in_current_crate.begin(), files_in_current_crate.end());

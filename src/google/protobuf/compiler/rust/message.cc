@@ -7,11 +7,8 @@
 
 #include "google/protobuf/compiler/rust/message.h"
 
-#include <string>
-
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
