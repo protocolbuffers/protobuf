@@ -127,8 +127,8 @@ static TestStatus FormatFailureMessage(const TestStatus& input) {
   // Remove newlines
   Normalize(formatted_failure_message);
   // Truncate failure message if needed
-  if (formatted_failure_message.length() > 128) {
-    formatted_failure_message = formatted_failure_message.substr(0, 128);
+  if (formatted_failure_message.length() > 300) {
+    formatted_failure_message = formatted_failure_message.substr(0, 300);
   }
   TestStatus properly_formatted;
   properly_formatted.set_name(input.name());
@@ -303,8 +303,8 @@ std::string ConformanceTestSuite::ConformanceRequestSetting::OutputFormatString(
 }
 
 void ConformanceTestSuite::TruncateDebugPayload(string* payload) {
-  if (payload != nullptr && payload->size() > 200) {
-    payload->resize(200);
+  if (payload != nullptr && payload->size() > 500) {
+    payload->resize(500);
     payload->append("...(truncated)");
   }
 }
