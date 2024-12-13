@@ -1804,7 +1804,7 @@ def ParseFloat(text):
     else:
       # assume '1.0f' format
       try:
-        return float(text.rstrip('f'))
+        return float(text.rstrip('fF'))
       except ValueError:
         raise ValueError("Couldn't parse float: %s" % text)
 

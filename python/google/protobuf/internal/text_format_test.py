@@ -2274,6 +2274,15 @@ class TokenizerTest(_parameterized.TestCase):
           ],
       ),
       dict(
+          testcase_name='_float_capital_suffix',
+          text='ID13: 1.23456F ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
           testcase_name='_float_exponent_suffix',
           text='ID14: 1.2e+2f ',
           expected=[
