@@ -12,16 +12,18 @@ the same actions can be performed using appropriate GUI tools.
 
 ## C++ Version
 
-By default, CMake will use whatever C++ version is the system default.  Since
-protobuf requires C++14 or newer, sometimes you will need to explicitly override
-this.  For example, the following:
+By default, CMake will use whatever C++ version is the system default. Since
+protobuf requires C++17 or newer, sometimes you will need to explicitly override
+this. For example, the following:
 
 ```
-cmake . -DCMAKE_CXX_STANDARD=14
+cmake . -DCMAKE_CXX_STANDARD=17
 cmake --build .
 ```
 
-will build protobuf using C++14 (see [CXX_STANDARD](https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html#prop_tgt:CXX_STANDARD){.external} for all available options).
+will build protobuf using C++17 (see
+[CXX_STANDARD](https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html#prop_tgt:CXX_STANDARD){.external}
+for all available options).
 
 # Windows Builds
 
@@ -118,7 +120,7 @@ For example:
 ```console
 C:\Path\to\build\protobuf> cmake -S. -Bcmake-out \
                            -DCMAKE_INSTALL_PREFIX=/tmp/protobuf \
-                           -DCMAKE_CXX_STANDARD=14 \
+                           -DCMAKE_CXX_STANDARD=17 \
                            -DCMAKE_PREFIX_PATH=/tmp/absl  # Path to where I installed Abseil
 ```
 
