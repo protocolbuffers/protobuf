@@ -97,6 +97,9 @@ def CUnescape(text: str) -> bytes:
   # allow single-digit hex escapes (like '\xf').
   result = _CUNESCAPE_HEX.sub(ReplaceHex, text)
 
+  # Special handling due to C++ trigraphs :(.
+  result = result.replace('\\?', '?')
+
   # Replaces Unicode escape sequences with their character equivalents.
   result = result.encode('raw_unicode_escape').decode('raw_unicode_escape')
   # Encode Unicode characters as UTF-8, then decode to Latin-1 escaping
