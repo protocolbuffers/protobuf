@@ -621,118 +621,122 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     return;
   }
   ctx.Emit(
-      {{"Msg", RsSafeName(msg.name())},
-       {"Msg::new", [&] { MessageNew(ctx, msg); }},
-       {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-       {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
-       {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
-       {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
-       {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
-       {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
-       {"default_instance_impl",
-        [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
-       {"accessor_fns",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::OWNED);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::OWNED);
-          }
-        }},
-       {"nested_in_msg",
-        [&] {
-          // If we have no nested types, enums, or oneofs, bail out without
-          // emitting an empty mod some_msg.
-          if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
-              msg.real_oneof_decl_count() == 0) {
-            return;
-          }
-          ctx.PushModule(RsSafeName(CamelToSnakeCase(msg.name())));
-          ctx.Emit({{"nested_msgs",
-                     [&] {
-                       for (int i = 0; i < msg.nested_type_count(); ++i) {
-                         GenerateRs(ctx, *msg.nested_type(i));
-                       }
-                     }},
-                    {"nested_enums",
-                     [&] {
-                       for (int i = 0; i < msg.enum_type_count(); ++i) {
-                         GenerateEnumDefinition(ctx, *msg.enum_type(i));
-                       }
-                     }},
-                    {"oneofs",
-                     [&] {
-                       for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-                         GenerateOneofDefinition(ctx, *msg.real_oneof_decl(i));
-                       }
-                     }}},
-                   R"rs(
+      {
+          {"Msg", RsSafeName(msg.name())},
+          {"Msg::new", [&] { MessageNew(ctx, msg); }},
+          {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+          {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
+          {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
+          {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+          {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
+          {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
+          {"default_instance_impl",
+           [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
+          {"accessor_fns",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::OWNED);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::OWNED);
+             }
+           }},
+          {"nested_in_msg",
+           [&] {
+             // If we have no nested types, enums, or oneofs, bail out without
+             // emitting an empty mod some_msg.
+             if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
+                 msg.real_oneof_decl_count() == 0) {
+               return;
+             }
+             ctx.PushModule(RsSafeName(CamelToSnakeCase(msg.name())));
+             ctx.Emit(
+                 {{"nested_msgs",
+                   [&] {
+                     for (int i = 0; i < msg.nested_type_count(); ++i) {
+                       GenerateRs(ctx, *msg.nested_type(i));
+                     }
+                   }},
+                  {"nested_enums",
+                   [&] {
+                     for (int i = 0; i < msg.enum_type_count(); ++i) {
+                       GenerateEnumDefinition(ctx, *msg.enum_type(i));
+                     }
+                   }},
+                  {"oneofs",
+                   [&] {
+                     for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+                       GenerateOneofDefinition(ctx, *msg.real_oneof_decl(i));
+                     }
+                   }}},
+                 R"rs(
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
                 )rs");
-          ctx.PopModule();
-        }},
-       {"raw_arena_getter_for_message",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit({}, R"rs(
+             ctx.PopModule();
+           }},
+          {"raw_arena_getter_for_message",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     &self.inner.arena
                   }
                   )rs");
-          }
-        }},
-       {"raw_arena_getter_for_msgmut",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit({}, R"rs(
+             }
+           }},
+          {"raw_arena_getter_for_msgmut",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     self.inner.arena()
                   }
                   )rs");
-          }
-        }},
-       {"accessor_fns_for_views",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::VIEW);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::VIEW);
-          }
-        }},
-       {"accessor_fns_for_muts",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::MUT);
-          }
-        }},
-       {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
-       {"upb_generated_message_trait_impls",
-        [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
-       {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
-       {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
-       {"unwrap_upb",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit(".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block())");
-          }
-        }},
-       {"upb_arena",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit(", inner.msg_ref().arena().raw()");
-          }
-        }}},
+             }
+           }},
+          {"accessor_fns_for_views",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::VIEW);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::VIEW);
+             }
+           }},
+          {"accessor_fns_for_muts",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::MUT);
+             }
+           }},
+          {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
+          {"upb_generated_message_trait_impls",
+           [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
+          {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
+          {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
+          {"unwrap_upb",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit(
+                   ".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block())");
+             }
+           }},
+          {"upb_arena",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit(", inner.msg_ref().arena().raw()");
+             }
+           }},
+      },
       R"rs(
         #[allow(non_camel_case_types)]
         pub struct $Msg$ {

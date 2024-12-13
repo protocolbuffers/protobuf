@@ -12,6 +12,14 @@ load(
     "rust_upb_proto_library_aspect",
 )
 
+ProtoCrateNamesInfo = provider(
+    doc = """A provider that contains both names a Protobuf crate has throughout the build.""",
+    fields = {
+        "crate_name": "The name of rust_proto_library.",
+        "old_crate_name": "The name of the proto_library.",
+    },
+)
+
 def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
@@ -112,6 +120,10 @@ def _rust_proto_library_impl(ctx):
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [
+        ProtoCrateNamesInfo(
+            crate_name = crate_info_with_rust_proto_name.name,
+            old_crate_name = crate_info.name,
+        ),
         crate_info_with_rust_proto_name,
         dep_variant_info.dep_info,
         dep_variant_info.cc_info,
