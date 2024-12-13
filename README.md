@@ -56,8 +56,6 @@ bazel_dep(name = "protobuf", version = <VERSION>, repo_name = "com_google_protob
 Users can also add the following to their legacy
 [WORKSPACE](https://bazel.build/external/overview#workspace-system) file.
 
-Note that the `protobuf_extra_deps.bzl` is added in the `v30.x` release.
-
 ```
 http_archive(
     name = "com_google_protobuf",
@@ -69,10 +67,6 @@ http_archive(
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
-
-load("@com_google_protobuf//:protobuf_extra_deps.bzl", "protobuf_extra_deps")
-
-protobuf_extra_deps();
 ```
 
 Protobuf Compiler Installation
