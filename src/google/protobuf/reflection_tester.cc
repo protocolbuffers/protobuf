@@ -604,7 +604,7 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
 }
 
 void MapReflectionTester::GetMapValueViaMapReflection(
-    Message* message, const std::string& field_name, const MapKey& map_key,
+    Message* message, absl::string_view field_name, const MapKey& map_key,
     MapValueRef* map_val) {
   const Reflection* reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
@@ -618,25 +618,25 @@ void MapReflectionTester::DeleteMapValueViaMapReflection(
 }
 
 Message* MapReflectionTester::GetMapEntryViaReflection(
-    Message* message, const std::string& field_name, int index) {
+    Message* message, absl::string_view field_name, int index) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
 MapIterator MapReflectionTester::MapBegin(Message* message,
-                                          const std::string& field_name) {
+                                          absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
 MapIterator MapReflectionTester::MapEnd(Message* message,
-                                        const std::string& field_name) {
+                                        absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
 
 int MapReflectionTester::MapSize(const Message& message,
-                                 const std::string& field_name) {
+                                 absl::string_view field_name) {
   const Reflection* reflection = message.GetReflection();
   return reflection->MapSize(message, F(field_name));
 }

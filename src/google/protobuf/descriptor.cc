@@ -7375,7 +7375,7 @@ void DescriptorBuilder::CheckExtensionDeclarationFieldType(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view type) {
   if (had_errors_) return;
-  std::string actual_type = field.type_name();
+  std::string actual_type(field.type_name());
   std::string expected_type(type);
   if (field.message_type() || field.enum_type()) {
     // Field message type descriptor can be in a partial state which will cause
