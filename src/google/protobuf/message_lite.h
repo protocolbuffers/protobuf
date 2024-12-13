@@ -242,9 +242,7 @@ class PROTOBUF_EXPORT CachedSize {
 
 auto GetClassData(const MessageLite& msg);
 
-// TODO: Upgrade to `auto` parameters when we drop C++14 support.
-template <typename T, const T* kDefault, typename ClassData,
-          const ClassData* kClassData>
+template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
   static constexpr const auto* class_data() { return kClassData->base(); }

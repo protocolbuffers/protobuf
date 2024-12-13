@@ -1503,9 +1503,8 @@ class FileGenerator::ForwardDeclarations {
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
             template <>
-            internal::GeneratedMessageTraitsT<
-                decltype($default_name$), &$default_name$,
-                decltype($class$_class_data_), &$class$_class_data_>
+            internal::GeneratedMessageTraitsT<&$default_name$,
+                                              &$class$_class_data_>
                 internal::MessageTraitsImpl::value<$class$>;
           )cc");
         }
