@@ -189,3 +189,22 @@ fn test_is_known_for_open_enum() {
     assert_that!(TestEnumWithNumericNames::is_known(3), eq(true));
     assert_that!(TestEnumWithNumericNames::is_known(4), eq(false));
 }
+
+#[googletest::test]
+fn test_debug_string() {
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::_2020 }),
+        eq("TestEnumWithNumericNames::_2020")
+    );
+
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::from(2) }),
+        eq("TestEnumWithNumericNames::_2021")
+    );
+
+    // There is no name for 42, so the integer number is printed instead:
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::from(42) }),
+        eq("TestEnumWithNumericNames::from(42)")
+    );
+}
