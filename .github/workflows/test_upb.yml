@@ -167,11 +167,11 @@ jobs:
           bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: python-wheels
           path: wheels/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
@@ -216,13 +216,13 @@ jobs:
     steps:
       - name: Download Wheels
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: requirements
           path: requirements
@@ -281,7 +281,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels
