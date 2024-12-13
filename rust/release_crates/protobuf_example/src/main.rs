@@ -1,7 +1,7 @@
 use protobuf::proto;
 
 mod protos {
-    include!(concat!(env!("OUT_DIR"), "/protobuf_generated/foo.u.pb.rs"));
+    include!(concat!(env!("OUT_DIR"), "/protobuf_generated/proto_example/foo.u.pb.rs"));
 }
 use protos::Foo;
 
