@@ -29,6 +29,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import datetime
 from io import BytesIO
+import math
 import struct
 import sys
 import warnings
@@ -716,14 +717,14 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
 
   def field_setter(self, new_value):
     # pylint: disable=protected-access
-    # Testing the value for truthiness captures all of the proto3 defaults
-    # (0, 0.0, enum 0, and False).
+    # Testing the value for truthiness captures all of the implicit presence
+    # defaults (0, 0.0, enum 0, and False), except for -0.0.
     try:
       new_value = type_checker.CheckValue(new_value)
     except TypeError as e:
       raise TypeError(
           'Cannot set %s to %.1024r: %s' % (field.full_name, new_value, e))
-    if not field.has_presence and not new_value:
+    if not field.has_presence and decoder.IsDefaultScalarValue(new_value):
       self._fields.pop(field, None)
     else:
       self._fields[field] = new_value

@@ -1165,7 +1165,9 @@ class _Parser(object):
           else:
             # For field that doesn't represent presence, try best effort to
             # check multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
+            duplicate_error = not decoder.IsDefaultScalarValue(
+                getattr(message, field.name)
+            )
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(

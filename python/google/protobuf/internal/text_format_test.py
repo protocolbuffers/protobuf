@@ -979,6 +979,20 @@ class TextFormatParserTests(TextFormatBase):
          r'have multiple "optional_int32" fields.'), text_format.Parse, text,
         message)
 
+  def testParseDuplicateNegativeZero(self, message_module):
+    message = message_module.TestAllTypes()
+    text = 'optional_double: -0.0 optional_double: 3'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (
+            r'1:40 : Message type "\w+.TestAllTypes" should not '
+            r'have multiple "optional_double" fields.'
+        ),
+        text_format.Parse,
+        text,
+        message,
+    )
+
   def testParseExistingScalarInMessage(self, message_module):
     message = message_module.TestAllTypes(optional_int32=42)
     text = 'optional_int32: 67'
