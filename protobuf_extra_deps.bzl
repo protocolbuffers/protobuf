@@ -21,7 +21,8 @@ protobuf_extra_deps();
 ```
 """
 
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
 
 def protobuf_extra_deps():
     """Loads extra dependencies needed for the external repositories defined in protobuf_deps.bzl."""
