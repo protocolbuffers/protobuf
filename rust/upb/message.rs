@@ -306,9 +306,9 @@ extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+    use googletest::gtest;
 
-    #[googletest::test]
+    #[gtest]
     fn assert_message_linked() {
         use crate::assert_linked;
         assert_linked!(upb_Message_New);

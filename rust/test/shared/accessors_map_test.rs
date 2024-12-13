@@ -20,7 +20,7 @@ macro_rules! generate_map_primitives_tests {
         $(,)?
     ) => {
         paste! { $(
-            #[googletest::test]
+            #[gtest]
             fn [< test_map_ $k_field _ $v_field >]() {
                 let mut msg = TestMap::new();
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(0));
@@ -96,7 +96,7 @@ generate_map_primitives_tests!(
     (i32, MapEnum, int32, enum, 1, MapEnum::Baz),
 );
 
-#[googletest::test]
+#[gtest]
 fn collect_as_hashmap() {
     // Highlights conversion from protobuf map to hashmap.
     let mut msg = TestMap::new();
@@ -115,7 +115,7 @@ fn collect_as_hashmap() {
     );
 }
 
-#[googletest::test]
+#[gtest]
 fn test_string_maps() {
     let mut msg = TestMap::new();
     msg.map_string_string_mut().insert("hello", "world");
@@ -127,7 +127,7 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().len(), eq(0));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_nested_enum_maps() {
     // Verify that C++ thunks are generated and are with the right name for strings
     TestMapWithNestedEnum::new()
@@ -135,7 +135,7 @@ fn test_nested_enum_maps() {
         .insert("foo", test_map_with_nested_enum::inner_nested::NestedEnum::Foo);
 }
 
-#[googletest::test]
+#[gtest]
 fn test_bytes_and_string_copied() {
     let mut msg = TestMap::new();
 
@@ -155,7 +155,7 @@ fn test_bytes_and_string_copied() {
     assert_that!(msg.map_int32_bytes_mut().get(1).unwrap(), eq(b"world"));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_map_setter() {
     // Set Map
     {
@@ -268,7 +268,7 @@ macro_rules! generate_map_with_msg_values_tests {
         $(,)?
     ) => {
         paste! { $(
-            #[googletest::test]
+            #[gtest]
             fn [< test_map_ $k_field _all_types >]() {
                 // We need to cover the following upb/c++ thunks:
                 // TODO - b/323883851: Add test once Map::new is public.

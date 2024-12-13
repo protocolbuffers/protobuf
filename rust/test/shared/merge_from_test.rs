@@ -2,7 +2,7 @@ use googletest::prelude::*;
 use protobuf::prelude::*;
 use unittest_rust_proto::{NestedTestAllTypes, TestAllTypes};
 
-#[googletest::test]
+#[gtest]
 fn merge_from_empty() {
     let mut dst = TestAllTypes::new();
     let src = TestAllTypes::new();
@@ -10,7 +10,7 @@ fn merge_from_empty() {
     assert_that!(dst.as_view().has_optional_int32(), eq(false));
 }
 
-#[googletest::test]
+#[gtest]
 fn merge_from_non_empty() {
     let mut dst = TestAllTypes::new();
     let src = proto!(TestAllTypes { optional_int32: 42 });
@@ -18,7 +18,7 @@ fn merge_from_non_empty() {
     assert_eq!(dst.as_view().optional_int32(), 42);
 }
 
-#[googletest::test]
+#[gtest]
 fn merge_repeated_empty() {
     let mut dst = TestAllTypes::new();
     let mut src = TestAllTypes::new();
@@ -30,7 +30,7 @@ fn merge_repeated_empty() {
     );
 }
 
-#[googletest::test]
+#[gtest]
 fn merge_repeated_non_empty() {
     let mut dst = TestAllTypes::new();
     let mut src = TestAllTypes::new();
@@ -43,7 +43,7 @@ fn merge_repeated_non_empty() {
     );
 }
 
-#[googletest::test]
+#[gtest]
 fn merge_from_sub_message() {
     let mut dst = NestedTestAllTypes::new();
     let src = proto!(NestedTestAllTypes {

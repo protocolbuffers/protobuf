@@ -204,9 +204,9 @@ extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+    use googletest::gtest;
 
-    #[googletest::test]
+    #[gtest]
     fn assert_arena_linked() {
         use crate::assert_linked;
         assert_linked!(upb_Arena_New);
@@ -215,7 +215,7 @@ mod tests {
         assert_linked!(upb_Arena_Fuse);
     }
 
-    #[googletest::test]
+    #[gtest]
     fn raw_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
@@ -226,7 +226,7 @@ mod tests {
         }
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_arena_new_and_free() {
         let arena = Arena::new();
         drop(arena);

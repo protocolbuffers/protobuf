@@ -591,7 +591,7 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[googletest::test]
+    #[gtest]
     fn test_primitive_repeated() {
         macro_rules! primitive_repeated_tests {
             ($($t:ty => [$($vals:expr),* $(,)?]),* $(,)?) => {
@@ -632,7 +632,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_repeated_extend() {
         let mut r = Repeated::<i32>::new();
 
@@ -649,7 +649,7 @@ mod tests {
         assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_repeated_iter_into_proxied() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);

@@ -8,7 +8,7 @@
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
-#[googletest::test]
+#[gtest]
 fn test_canonical_types() {
     let _child = child_rust_proto::Child::new();
     let _parent = parent_rust_proto::Parent::new();
@@ -17,12 +17,12 @@ fn test_canonical_types() {
     let _parent_from_child: child_rust_proto::Parent = parent_rust_proto::Parent::new();
 }
 
-#[googletest::test]
+#[gtest]
 fn test_parent_serialization() {
     assert_that!(*parent_rust_proto::Parent::new().serialize().unwrap(), empty());
 }
 
-#[googletest::test]
+#[gtest]
 fn test_child_serialization() {
     assert_that!(*child_rust_proto::Child::new().serialize().unwrap(), empty());
 }
