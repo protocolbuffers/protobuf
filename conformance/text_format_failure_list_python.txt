@@ -7,12 +7,3 @@ Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput        
 Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput                                         # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
 Required.*.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput                                          # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
 Required.*.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput                                        # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
-
-# Optional float interpreted as `inf`
-Required.*.TextFormatInput.FloatFieldMaxValue.ProtobufOutput                                                       # Output was not equivalent to reference message
-Required.*.TextFormatInput.FloatFieldMaxValue.TextFormatOutput                                                     # Output was not equivalent to reference message
-Required.*.TextFormatInput.FloatFieldMaxValue_f.ProtobufOutput                                                     # Output was not equivalent to reference message
-Required.*.TextFormatInput.FloatFieldMaxValue_f.TextFormatOutput                                                   # Output was not equivalent to reference message
-Required.*.TextFormatInput.FloatFieldMaxValue_F.ProtobufOutput                                                     # Output was not equivalent to reference message
-Required.*.TextFormatInput.FloatFieldMaxValue_F.TextFormatOutput                                                   # Output was not equivalent to reference message
-

@@ -231,6 +231,7 @@ class Uint64ValueChecker(IntValueChecker):
 # The max 4 bytes float is about 3.4028234663852886e+38
 _FLOAT_MAX = float.fromhex('0x1.fffffep+127')
 _FLOAT_MIN = -_FLOAT_MAX
+_MAX_FLOAT_AS_DOUBLE_ROUNDED = 3.4028235677973366e38
 _INF = float('inf')
 _NEG_INF = float('-inf')
 
@@ -269,8 +270,12 @@ class FloatValueChecker(DoubleValueChecker):
     converted_value = super().CheckValue(proposed_value)
     # This inf rounding matches the C++ proto SafeDoubleToFloat logic.
     if converted_value > _FLOAT_MAX:
+      if converted_value <= _MAX_FLOAT_AS_DOUBLE_ROUNDED:
+        return _FLOAT_MAX
       return _INF
     if converted_value < _FLOAT_MIN:
+      if converted_value >= -_MAX_FLOAT_AS_DOUBLE_ROUNDED:
+        return _FLOAT_MIN
       return _NEG_INF
 
     return TruncateToFourByteFloat(converted_value)
