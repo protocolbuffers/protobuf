@@ -69,6 +69,7 @@ using ::testing::FieldsAre;
 using ::testing::Ge;
 using ::testing::Le;
 using ::testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAreArray;
 
 
 TEST(MapTest, CopyConstructIntegers) {
@@ -171,6 +172,18 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["1"].GetArena(), &arena);
   EXPECT_EQ(map1["2"].optional_int32(), 2);
   EXPECT_EQ(map1["2"].GetArena(), &arena);
+}
+
+TEST(MapTest, CopyConstructionMaintainsProperLoadFactor) {
+  Map<int, int> original;
+  for (size_t size = 1; size < 50; ++size) {
+    // Add one element.
+    original[size];
+    Map<int, int> copy = original;
+    ASSERT_THAT(copy, UnorderedElementsAreArray(original));
+    EXPECT_LE(copy.size(),
+              MapTestPeer::CalculateHiCutoff(MapTestPeer::NumBuckets(copy)));
+  }
 }
 
 TEST(MapTest, AlwaysSerializesBothEntries) {

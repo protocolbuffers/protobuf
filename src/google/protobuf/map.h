@@ -360,7 +360,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
-  enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
+  static constexpr map_index_t kMinTableSize = 16 / sizeof(void*);
 
  public:
   Arena* arena() const { return arena_; }
@@ -434,12 +434,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     // Doing modulo with a prime mixes the bits more.
     return absl::HashOf(node, table_) % 13 > 6;
 #endif
-  }
-
-  // Return a power of two no less than max(kMinTableSize, n).
-  // Assumes either n < kMinTableSize or n is a power of two.
-  map_index_t TableSize(map_index_t n) {
-    return n < kMinTableSize ? kMinTableSize : n;
   }
 
   // Alignment of the nodes is the same as alignment of NodeBase.
@@ -726,6 +720,7 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   NodeAndBucket FindHelper(typename TS::ViewType k) const {
+    AssertLoadFactor();
     map_index_t b = BucketNumber(k);
     for (auto* node = table_[b]; node != nullptr; node = node->next) {
       if (TS::ToView(static_cast<KeyNode*>(node)->key()) == k) {
@@ -764,6 +759,7 @@ class KeyMapBase : public UntypedMapBase {
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
     ABSL_DCHECK(FindHelper(TS::ToView(node->key())).node == nullptr);
+    AssertLoadFactor();
     auto*& head = table_[b];
     if (head == nullptr) {
       head = node;
@@ -788,6 +784,10 @@ class KeyMapBase : public UntypedMapBase {
     //    tables and saves memory.
     //  - Otherwise, make it 75% of num_buckets_.
     return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
+  }
+
+  void AssertLoadFactor() const {
+    ABSL_DCHECK_LE(num_elements_, CalculateHiCutoff(num_buckets_));
   }
 
   // Returns whether it did resize.  Currently this is only used when
@@ -834,6 +834,7 @@ class KeyMapBase : public UntypedMapBase {
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
+      ABSL_DCHECK_GE(kMinTableSize, new_num_buckets);
       num_buckets_ = index_of_first_non_null_ = kMinTableSize;
       table_ = CreateEmptyTable(num_buckets_);
       return;
@@ -981,6 +982,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // won't trigger for leaked maps that never get destructed.
     StaticValidityCheck();
 
+    this->AssertLoadFactor();
     this->ClearTable(false, this->template GetDestroyNode<Node>());
   }
 
