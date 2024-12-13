@@ -8,6 +8,8 @@ sh_binary(
         "//rust/release_crates/protobuf:protobuf_crate",
         "//rust/release_crates/protobuf_codegen:protobuf_codegen_crate",
         "//rust/release_crates/protobuf_example:protobuf_example_crate",
+        "//src/google/protobuf/compiler:protoc",
+        "//upb_generator/minitable:protoc-gen-upb_minitable",
     ],
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],

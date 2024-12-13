@@ -93,7 +93,7 @@ bootstrap_cc_binary(
     visibility = [
         "//editions/codegen_tests:__pkg__",
         "//net/proto2/contrib/protoc_explorer:__pkg__",
-        "//rust:__pkg__",
+        "//rust:__subpackages__",
         "//third_party/prototiller/transformer:__pkg__",
     ],
 )

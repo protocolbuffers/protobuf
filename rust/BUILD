@@ -291,18 +291,3 @@ pkg_filegroup(
     prefix = "libupb",
     visibility = ["//rust/release_crates:__subpackages__"],
 )
-
-# Bundle only the linux-x86_64 protoc for testing.
-pkg_cross_compiled_binaries(
-    name = "vendored_protocs_test",
-    cpus = [
-        "linux-x86_64",
-    ],
-    prefix = "bin",
-    tags = ["manual"],
-    targets = [
-        "//upb_generator/minitable:protoc-gen-upb_minitable",
-        "//:protoc",
-    ],
-    visibility = ["//rust/release_crates:__subpackages__"],
-)

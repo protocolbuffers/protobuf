@@ -10,3 +10,6 @@ rust-version = "1.74"
 
 [dependencies]
 cc = "1.1.6"
+
+[dev-dependencies]
+googletest = "0.12.0"

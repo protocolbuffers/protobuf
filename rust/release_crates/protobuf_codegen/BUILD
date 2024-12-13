@@ -7,7 +7,6 @@ pkg_tar(
     srcs = [
         ":protobuf_codegen_files",
         "//:LICENSE",
-        "//rust:vendored_protocs_test",
     ],
     tags = ["manual"],
     visibility = ["//rust:__subpackages__"],
