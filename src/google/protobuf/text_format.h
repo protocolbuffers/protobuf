@@ -801,6 +801,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_field_number_;
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
+    bool allow_unknown_type_in_any_;
     int recursion_limit_;
     UnsetFieldsMetadata* no_op_fields_ = nullptr;
   };

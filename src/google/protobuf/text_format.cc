@@ -350,8 +350,8 @@ class TextFormat::Parser::ParserImpl {
              bool allow_case_insensitive_field, bool allow_unknown_field,
              bool allow_unknown_extension, bool allow_unknown_enum,
              bool allow_field_number, bool allow_relaxed_whitespace,
-             bool allow_partial, int recursion_limit,
-             UnsetFieldsMetadata* no_op_fields)
+             bool allow_partial, bool allow_unknown_type_in_any,
+             int recursion_limit, UnsetFieldsMetadata* no_op_fields)
       : error_collector_(error_collector),
         finder_(finder),
         parse_info_tree_(parse_info_tree),
@@ -365,6 +365,7 @@ class TextFormat::Parser::ParserImpl {
         allow_unknown_enum_(allow_unknown_enum),
         allow_field_number_(allow_field_number),
         allow_partial_(allow_partial),
+        allow_unknown_type_in_any_(allow_unknown_type_in_any),
         initial_recursion_limit_(recursion_limit),
         recursion_limit_(recursion_limit),
         had_silent_marker_(false),
@@ -533,12 +534,22 @@ class TextFormat::Parser::ParserImpl {
           finder_ ? finder_->FindAnyType(*message, prefix, full_type_name)
                   : DefaultFinderFindAnyType(*message, prefix, full_type_name);
       if (value_descriptor == nullptr) {
-        ReportError(absl::StrCat("Could not find type \"",
-                                 prefix_and_full_type_name,
-                                 "\" stored in google.protobuf.Any."));
-        return false;
+        if (!allow_unknown_type_in_any_) {
+          ReportError(absl::StrCat("Could not find type \"",
+                                   prefix_and_full_type_name,
+                                   "\" stored in google.protobuf.Any."));
+          return false;
+        } else {
+          ReportWarning(absl::StrCat("Ignoring unresolved type \"",
+                                     prefix_and_full_type_name,
+                                     "\" stored in google.protobuf.Any."));
+        }
       }
-      DO(ConsumeAnyValue(value_descriptor, &serialized_value));
+      if (value_descriptor == nullptr && allow_unknown_type_in_any_) {
+        return SkipFieldMessage();
+      } else {
+        DO(ConsumeAnyValue(value_descriptor, &serialized_value));
+      }
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.
         if ((!any_type_url_field->is_repeated() &&
@@ -1440,6 +1451,7 @@ class TextFormat::Parser::ParserImpl {
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
   const bool allow_partial_;
+  const bool allow_unknown_type_in_any_;
   const int initial_recursion_limit_;
   int recursion_limit_;
   bool had_silent_marker_;
@@ -1794,6 +1806,7 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
+      allow_unknown_type_in_any_(false),
       recursion_limit_(std::numeric_limits<int>::max()) {}
 
 TextFormat::Parser::~Parser() {}
@@ -1823,12 +1836,12 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
       allow_singular_overwrites_ ? ParserImpl::ALLOW_SINGULAR_OVERWRITES
                                  : ParserImpl::FORBID_SINGULAR_OVERWRITES;
 
-  ParserImpl parser(output->GetDescriptor(), input, error_collector_, finder_,
-                    parse_info_tree_, overwrites_policy,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), input, error_collector_, finder_,
+      parse_info_tree_, overwrites_policy, allow_case_insensitive_field_,
+      allow_unknown_field_, allow_unknown_extension_, allow_unknown_enum_,
+      allow_field_number_, allow_relaxed_whitespace_, allow_partial_,
+      allow_unknown_type_in_any_, recursion_limit_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1853,7 +1866,8 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+                    allow_partial_, allow_unknown_type_in_any_,
+                    recursion_limit_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1883,13 +1897,13 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
                                                    const FieldDescriptor* field,
                                                    Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
-  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
-                    finder_, parse_info_tree_,
-                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), &input_stream, error_collector_, finder_,
+      parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+      allow_case_insensitive_field_, allow_unknown_field_,
+      allow_unknown_extension_, allow_unknown_enum_, allow_field_number_,
+      allow_relaxed_whitespace_, allow_partial_, allow_unknown_type_in_any_,
+      recursion_limit_, no_op_fields_);
   return parser.ParseField(field, output);
 }
 
