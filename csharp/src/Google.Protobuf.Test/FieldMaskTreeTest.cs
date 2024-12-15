@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -449,6 +449,72 @@ namespace Google.Protobuf
 
             // ...including default values which were not explicitly set in the destination object.
             Assert.IsNull(destination.FloatField);
+        }
+
+        [Test]
+        public void MergeWellKnownStruct()
+        {
+            // Instantiate a destination with wrapper-based field types.
+            var destination = new Struct()
+            {
+                Fields = {
+                    ["first"] = new Value() { NumberValue = 10 },
+                    ["second"] = new Value() { StringValue = "hello" },
+                }
+            };
+
+            // Set up a targeted update.
+            var source = new Struct()
+            {
+                Fields = {
+                    ["second"] = new Value() { NumberValue = 300 },
+                    ["third"] = new Value() { StringValue = "value"},
+                }
+            };
+
+            Merge(new FieldMaskTree().AddFieldPath("fields"),
+                source,
+                destination,
+                new FieldMask.MergeOptions(),
+                false);
+
+            // Make sure the targeted fields changed.
+            Assert.AreEqual(destination.Fields["first"], new Value() { NumberValue = 10 });
+            Assert.AreEqual(destination.Fields["second"], source.Fields["second"]);
+            Assert.AreEqual(destination.Fields["third"], source.Fields["third"]);
+        }
+
+        [Test]
+        public void MergeWellKnownStructWithPathAsFieldKeys()
+        {
+            // Instantiate a destination with wrapper-based field types.
+            var destination = new Struct()
+            {
+                Fields = {
+                    ["first"] = new Value() { NumberValue = 10 },
+                    ["second"] = new Value() { StringValue = "hello" },
+                }
+            };
+
+            // Set up a targeted update.
+            var source = new Struct()
+            {
+                Fields = {
+                    ["second"] = new Value() { NumberValue = 300 },
+                    ["third"] = new Value() { StringValue = "value"},
+                }
+            };
+
+            Merge(new FieldMaskTree().AddFieldPath("fields.second.number_value"),
+                source,
+                destination,
+                new FieldMask.MergeOptions(),
+                false);
+
+            // Make sure the targeted fields changed.
+            Assert.AreEqual(destination.Fields["first"], new Value() { NumberValue = 10 });
+            Assert.AreEqual(destination.Fields["second"], source.Fields["second"]);
+            Assert.IsFalse(destination.Fields.ContainsKey("third")); // third was not included in the mask.
         }
 
         [Test]
