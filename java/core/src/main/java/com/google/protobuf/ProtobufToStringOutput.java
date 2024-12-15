@@ -17,13 +17,6 @@ public final class ProtobufToStringOutput {
   private static final ThreadLocal<OutputMode> outputMode =
       ThreadLocal.withInitial(() -> OutputMode.TEXT_FORMAT);
 
-  // Many tests are bound to the traditional Message.toString() output format (the text format). To
-  // accelerate the debug format adoption while avoiding breaking such tests, we introduce this
-  // test-only flag to disable the debug format in tests for certain libraries in which the output
-  // of Message.toString() is unlikely to be deserialized.
-  private static final ThreadLocal<Boolean> disableDebugFormatForTests =
-      ThreadLocal.withInitial(() -> false);
-
   private ProtobufToStringOutput() {}
 
   @CanIgnoreReturnValue
@@ -52,9 +45,5 @@ public final class ProtobufToStringOutput {
 
   public static boolean shouldOutputDebugFormat() {
     return outputMode.get() == OutputMode.DEBUG_FORMAT;
-  }
-
-  static void setDisableDebugFormatForTests(boolean disable) {
-    disableDebugFormatForTests.set(disable);
   }
 }
