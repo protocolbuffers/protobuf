@@ -572,7 +572,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // subclass.
   friend class google::protobuf::Reflection;
   friend class internal::SwapFieldHelper;
-  friend class LazyRepeatedPtrField;
 
   friend class RustRepeatedMessageHelper;
 
