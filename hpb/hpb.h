@@ -113,8 +113,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes) {
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry,
-                        int options = 0) {
+                        const ::hpb::ExtensionRegistry& extension_registry) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
