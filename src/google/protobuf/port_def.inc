@@ -631,6 +631,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_DID_UNDEF_LINUX
 #endif
 
+// netdb.h defines this on some platforms.
+#ifdef NO_DATA
+#pragma push_macro("NO_DATA")
+#undef NO_DATA
+#define PROTOBUF_DID_UNDEF_NO_DATA
+#endif
+
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32
