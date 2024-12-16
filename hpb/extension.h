@@ -30,7 +30,12 @@
 namespace hpb {
 class ExtensionRegistry;
 
+template <typename T>
+class RepeatedField;
+
 namespace internal {
+template <typename Extendee, typename Extension>
+class ExtensionIdentifier;
 
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
@@ -52,20 +57,44 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
 template <typename T, typename = void>
 struct UpbExtensionTrait;
 
+template <typename T>
+struct UpbExtensionTrait<hpb::RepeatedField<T>> {
+  using ReturnType = typename RepeatedField<T>::CProxy;
+  using DefaultType = std::false_type;
+
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    auto upb_arr = upb_Message_GetExtensionArray(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext());
+    return ReturnType(upb_arr, hpb::interop::upb::GetArena(message));
+  }
+};
+
 template <>
 struct UpbExtensionTrait<int32_t> {
   using DefaultType = int32_t;
   using ReturnType = int32_t;
-  static constexpr auto kGetter = upb_Message_GetExtensionInt32;
   static constexpr auto kSetter = upb_Message_SetExtensionInt32;
+
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
+    return upb_Message_GetExtensionInt32(hpb::interop::upb::GetMessage(message),
+                                         id.mini_table_ext(), default_val);
+  }
 };
 
 template <>
 struct UpbExtensionTrait<int64_t> {
   using DefaultType = int64_t;
   using ReturnType = int64_t;
-  static constexpr auto kGetter = upb_Message_GetExtensionInt64;
   static constexpr auto kSetter = upb_Message_SetExtensionInt64;
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
+    return upb_Message_GetExtensionInt64(hpb::interop::upb::GetMessage(message),
+                                         id.mini_table_ext(), default_val);
+  }
 };
 
 // TODO: b/375460289 - flesh out non-promotional msg support that does
@@ -74,6 +103,19 @@ template <typename T>
 struct UpbExtensionTrait<T> {
   using DefaultType = std::false_type;
   using ReturnType = Ptr<const T>;
+  template <typename Msg, typename Id>
+  static constexpr absl::StatusOr<ReturnType> Get(Msg message, const Id& id) {
+    upb_MessageValue value;
+    const bool ok = ::hpb::internal::GetOrPromoteExtension(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+        hpb::interop::upb::GetArena(message), &value);
+    if (!ok) {
+      return ExtensionNotFoundError(
+          upb_MiniTableExtension_Number(id.mini_table_ext()));
+    }
+    return Ptr<const T>(::hpb::interop::upb::MakeCHandle<T>(
+        value.msg_val, hpb::interop::upb::GetArena(message)));
+  }
 };
 
 // -------------------------------------------------------------------
@@ -285,25 +327,7 @@ absl::StatusOr<typename internal::UpbExtensionTrait<Extension>::ReturnType>
 GetExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  if constexpr (std::is_integral_v<Extension>) {
-    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
-    absl::StatusOr<Extension> res =
-        hpb::internal::UpbExtensionTrait<Extension>::kGetter(
-            hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
-            default_val);
-    return res;
-  } else {
-    upb_MessageValue value;
-    const bool ok = ::hpb::internal::GetOrPromoteExtension(
-        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
-        hpb::interop::upb::GetArena(message), &value);
-    if (!ok) {
-      return ExtensionNotFoundError(
-          upb_MiniTableExtension_Number(id.mini_table_ext()));
-    }
-    return Ptr<const Extension>(::hpb::interop::upb::MakeCHandle<Extension>(
-        value.msg_val, hpb::interop::upb::GetArena(message)));
-  }
+  return hpb::internal::UpbExtensionTrait<Extension>::Get(message, id);
 }
 
 template <typename T, typename Extendee, typename Extension,

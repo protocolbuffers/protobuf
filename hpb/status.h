@@ -8,6 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_HPB_STATUS_H__
 #define GOOGLE_PROTOBUF_HPB_STATUS_H__
 
+#include <cstdint>
+
 #include "absl/status/status.h"
 #include "absl/types/source_location.h"
 #include "upb/wire/decode.h"
@@ -30,7 +32,7 @@ absl::Status MessageAllocationError(
     SourceLocation loc = SourceLocation::current());
 
 absl::Status ExtensionNotFoundError(
-    int extension_number, SourceLocation loc = SourceLocation::current());
+    uint32_t extension_number, SourceLocation loc = SourceLocation::current());
 
 absl::Status MessageDecodeError(upb_DecodeStatus status,
                                 SourceLocation loc = SourceLocation::current());

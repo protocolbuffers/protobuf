@@ -25,6 +25,9 @@ using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
 using ::hpb_unittest::someotherpackage::protos::int32_ext;
 using ::hpb_unittest::someotherpackage::protos::int64_ext;
+using ::hpb_unittest::someotherpackage::protos::repeated_int32_ext;
+using ::hpb_unittest::someotherpackage::protos::repeated_int64_ext;
+using ::hpb_unittest::someotherpackage::protos::repeated_string_ext;
 
 using ::testing::status::IsOkAndHolds;
 
@@ -401,6 +404,52 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
 TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
   EXPECT_EQ(12003, ::hpb::ExtensionNumber(ThemeExtension::theme_extension));
+}
+
+TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
+  TestModel model;
+  upb::Arena arena;
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(repeated_int32_ext);
+  // These bytes are the serialized form of a repeated int32 field
+  // with two elements: [2, 3] @index 13004
+  auto bytes = "\342\254\006\002\002\003";
+  auto parsed_model = hpb::Parse<TestModel>(bytes, extensions).value();
+  auto res = hpb::GetExtension(&parsed_model, repeated_int32_ext);
+  EXPECT_EQ(true, res.ok());
+  EXPECT_EQ(res->size(), 2);
+  EXPECT_EQ((*res)[0], 2);
+  EXPECT_EQ((*res)[1], 3);
+}
+
+TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
+  TestModel model;
+  upb::Arena arena;
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(repeated_int64_ext);
+  // These bytes represent a repeated int64 field with one element: [322].
+  auto bytes = "\352\254\006\002\302\002";
+  auto parsed_model = hpb::Parse<TestModel>(bytes, extensions).value();
+  auto res = hpb::GetExtension(&parsed_model, repeated_int64_ext);
+  EXPECT_EQ(true, res.ok());
+  EXPECT_EQ(res->size(), 1);
+  EXPECT_EQ((*res)[0], 322);
+}
+
+TEST(CppGeneratedCode, GetExtensionRepeatedString) {
+  TestModel model;
+  upb::Arena arena;
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(repeated_string_ext);
+  // These bytes represent a repeated string field with two elements:
+  // ["hello", "world"] @index 13006.
+  auto bytes = "\362\254\006\005hello\362\254\006\005world";
+  auto parsed_model = hpb::Parse<TestModel>(bytes, extensions).value();
+  auto res = hpb::GetExtension(&parsed_model, repeated_string_ext);
+  EXPECT_EQ(true, res.ok());
+  EXPECT_EQ(res->size(), 2);
+  EXPECT_EQ((*res)[0], "hello");
+  EXPECT_EQ((*res)[1], "world");
 }
 
 }  // namespace
