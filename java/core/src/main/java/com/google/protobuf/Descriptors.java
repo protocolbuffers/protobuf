@@ -849,7 +849,7 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(oneofs).subList(0, realOneofCount));
     }
 
-    /** Get a list of this message type's extensions. */
+    /** Get a list of the extensions defined nested within this message type's scope. */
     public List<FieldDescriptor> getExtensions() {
       return Collections.unmodifiableList(Arrays.asList(extensions));
     }
