@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "absl/log/absl_check.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 namespace google {
@@ -15,8 +14,8 @@ namespace python {
 PythonMessageMutator::PythonMessageMutator(Message* owned_msg, Message* message,
                                            PyObject* py_msg)
     : owned_msg_(owned_msg), message_(message), py_msg_(py_msg) {
-  ABSL_DCHECK(py_msg != nullptr);
-  ABSL_DCHECK(message != nullptr);
+  GOOGLE_DCHECK(py_msg != nullptr);
+  GOOGLE_DCHECK(message != nullptr);
   Py_INCREF(py_msg_);
 }
 
@@ -60,8 +59,8 @@ PythonConstMessagePointer::PythonConstMessagePointer(Message* owned_msg,
                                                      const Message* message,
                                                      PyObject* py_msg)
     : owned_msg_(owned_msg), message_(message), py_msg_(py_msg) {
-  ABSL_DCHECK(py_msg != nullptr);
-  ABSL_DCHECK(message != nullptr);
+  GOOGLE_DCHECK(py_msg != nullptr);
+  GOOGLE_DCHECK(message != nullptr);
   Py_INCREF(py_msg_);
 }
 
@@ -76,7 +75,7 @@ PythonConstMessagePointer::PythonConstMessagePointer(
 }
 
 bool PythonConstMessagePointer::NotChanged() {
-  ABSL_DCHECK(!PyErr_Occurred());
+  GOOGLE_DCHECK(!PyErr_Occurred());
   if (owned_msg_ == nullptr) {
     return false;
   }
@@ -123,12 +122,12 @@ bool PythonConstMessagePointer::NotChanged() {
 
 PythonConstMessagePointer::~PythonConstMessagePointer() {
   if (py_msg_ == nullptr) {
-    ABSL_DCHECK(message_ == nullptr);
-    ABSL_DCHECK(owned_msg_ == nullptr);
+    GOOGLE_DCHECK(message_ == nullptr);
+    GOOGLE_DCHECK(owned_msg_ == nullptr);
     return;
   }
-  ABSL_DCHECK(owned_msg_ != nullptr);
-  ABSL_DCHECK(NotChanged());
+  GOOGLE_DCHECK(owned_msg_ != nullptr);
+  GOOGLE_DCHECK(NotChanged());
   Py_DECREF(py_msg_);
 }
 

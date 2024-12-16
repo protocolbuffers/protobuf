@@ -120,6 +120,7 @@ class StatusOr {
   // DCHECKed. In optimized builds, passing a null pointer here will have
   // the effect of passing PosixErrorSpace::EINVAL as a fallback.
   StatusOr(const T& value);  // NOLINT
+  StatusOr(T&& value);
 
   // Copy constructor.
   StatusOr(const StatusOr& other);
@@ -195,6 +196,9 @@ inline StatusOr<T>::StatusOr(const T& value) {
     value_ = value;
   }
 }
+
+template<typename T>
+inline StatusOr<T>::StatusOr(T&& value) : value_(std::move(value)) {}
 
 template<typename T>
 inline StatusOr<T>::StatusOr(const StatusOr<T>& other)

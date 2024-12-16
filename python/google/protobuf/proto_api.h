@@ -50,9 +50,9 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include "absl/status/status.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/stubs/statusor.h"
 
 PyObject* pymessage_mutate_const(PyObject* self, PyObject* args);
 
@@ -86,7 +86,7 @@ struct PyProto_API {
   // calling back into Python.
   // Warning: there is a risk of deadlock with Python/C++ if users use the
   // returned message->GetDescriptor()->file->pool()
-  virtual absl::StatusOr<PythonMessageMutator> GetClearedMessageMutator(
+  virtual util::StatusOr<PythonMessageMutator> GetClearedMessageMutator(
       PyObject* msg) const = 0;
 
   // Returns a PythonConstMessagePointer. For UPB and Pure Python, it points
@@ -94,7 +94,7 @@ struct PyProto_API {
   // points the internal c++ message.
   // User should not hold onto the returned PythonConstMessagePointer
   // while calling back into Python.
-  virtual absl::StatusOr<PythonConstMessagePointer> GetConstMessagePointer(
+  virtual util::StatusOr<PythonConstMessagePointer> GetConstMessagePointer(
       PyObject* msg) const = 0;
 
   // If the passed object is a Python Message, returns its internal pointer.
@@ -179,6 +179,7 @@ struct PyProto_API {
 // User should not hold onto this object while calling back into Python
 class PythonMessageMutator {
  public:
+  PythonMessageMutator() = default;
   PythonMessageMutator(PythonMessageMutator&& other);
   ~PythonMessageMutator();
 
@@ -204,6 +205,7 @@ class PythonMessageMutator {
 
 class PythonConstMessagePointer {
  public:
+  PythonConstMessagePointer() = default;
   PythonConstMessagePointer(PythonConstMessagePointer&& other);
   ~PythonConstMessagePointer();
 

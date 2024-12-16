@@ -1065,9 +1065,18 @@ internal_protobuf_py_tests(
 cc_library(
     name = "proto_api",
     hdrs = ["python/google/protobuf/proto_api.h"],
+    srcs = ["python/google/protobuf/proto_api.cc"],
     visibility = ["//visibility:public"],
+    copts = COPTS,
+    strip_include_prefix = "python/",
+    linkopts = LINK_OPTS,
+    includes = [
+        "python/",
+        "src/",
+    ],
     deps = [
         "//external:python_headers",
+        ":protobuf",
     ],
 )
 
