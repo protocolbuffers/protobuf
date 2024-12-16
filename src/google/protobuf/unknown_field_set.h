@@ -23,6 +23,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -85,18 +86,23 @@ class PROTOBUF_EXPORT UnknownField {
   inline uint64_t varint() const;
   inline uint32_t fixed32() const;
   inline uint64_t fixed64() const;
+  ABSL_DEPRECATED("This will be removed in the future.")
   inline internal::UFSStringView length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64_t value);
   inline void set_fixed32(uint32_t value);
   inline void set_fixed64(uint64_t value);
+  ABSL_DEPRECATED("This will be removed in the future.")
   inline void set_length_delimited(absl::string_view value);
   // template to avoid ambiguous overload resolution.
   template <int&...>
+  ABSL_DEPRECATED("This will be removed in the future.")
   inline void set_length_delimited(std::string&& value);
+  ABSL_DEPRECATED("This will be removed in the future.")
   inline void set_length_delimited(const absl::Cord& value);
 #if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
+  ABSL_DEPRECATED("This will be removed in the future.")
   inline std::string* mutable_length_delimited();
 #endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   inline UnknownFieldSet* mutable_group();
