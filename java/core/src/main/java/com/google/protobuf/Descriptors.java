@@ -479,19 +479,19 @@ public final class Descriptors {
       }
     }
 
-    /**
-     * This method is to be called by generated code only. It uses Java reflection to load the
-     * dependencies' descriptors.
-     */
-    public static FileDescriptor internalBuildGeneratedFileFrom(
-        final String[] descriptorDataParts,
-        final Class<?> descriptorOuterClass,
-        final String[] dependencyClassNames,
-        final String[] dependencyFileNames) {
-      FileDescriptor[] dependencies =
-          findDescriptors(descriptorOuterClass, dependencyClassNames, dependencyFileNames);
-      return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
-    }
+    // /**
+    //  * This method is to be called by generated code only. It uses Java reflection to load the
+    //  * dependencies' descriptors.
+    //  */
+    // public static FileDescriptor internalBuildGeneratedFileFrom(
+    //     final String[] descriptorDataParts,
+    //     final Class<?> descriptorOuterClass,
+    //     final String[] dependencyClassNames,
+    //     final String[] dependencyFileNames) {
+    //   FileDescriptor[] dependencies =
+    //       findDescriptors(descriptorOuterClass, dependencyClassNames, dependencyFileNames);
+    //   return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
+    // }
 
     /**
      * This method is to be called by generated code only. It updates the FileDescriptorProto
