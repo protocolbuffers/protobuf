@@ -19,6 +19,7 @@ extend google.protobuf.FeatureSet {
 
 message GoFeatures {
   // Whether or not to generate the deprecated UnmarshalJSON method for enums.
+  // Can only be true for proto using the Open Struct api.
   optional bool legacy_unmarshal_json_enum = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
