@@ -28,6 +28,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #ifdef major
 #undef major
 #endif
@@ -67,6 +68,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/plugin.pb.h"
