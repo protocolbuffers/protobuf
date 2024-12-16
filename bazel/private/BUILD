@@ -1,5 +1,4 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(":current_protoc.bzl", "current_protoc")
 load(":native_bool_flag.bzl", "native_bool_flag")
 
 package(default_applicable_licenses = ["//:license"])
@@ -27,11 +26,6 @@ toolchain_type(
 toolchain_type(
     name = "python_toolchain_type",
     visibility = ["//visibility:public"],
-)
-
-current_protoc(
-    name = "current_protoc",
-    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(
