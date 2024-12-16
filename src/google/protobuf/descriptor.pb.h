@@ -874,8 +874,7 @@ inline bool Edition_Parse(absl::string_view name, Edition* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption_NamePart final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
@@ -1090,8 +1089,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo_Location final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
@@ -1372,8 +1370,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
@@ -1650,8 +1647,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.FeatureSupport) */ {
  public:
   inline FieldOptions_FeatureSupport() : FieldOptions_FeatureSupport(nullptr) {}
@@ -1887,8 +1883,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_EditionDefault final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
  public:
   inline FieldOptions_EditionDefault() : FieldOptions_EditionDefault(nullptr) {}
@@ -2098,8 +2093,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSet final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
  public:
   inline FeatureSet() : FeatureSet(nullptr) {}
@@ -2660,8 +2654,7 @@ class PROTOBUF_EXPORT FeatureSet final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
@@ -2915,8 +2908,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
@@ -3121,8 +3113,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
@@ -3327,8 +3318,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
@@ -3625,8 +3615,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
@@ -4007,8 +3996,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
@@ -4206,8 +4194,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
  public:
   inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
@@ -4438,8 +4425,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
@@ -4850,8 +4836,7 @@ class PROTOBUF_EXPORT ServiceOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
@@ -5249,8 +5234,7 @@ class PROTOBUF_EXPORT OneofOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
@@ -5694,8 +5678,7 @@ class PROTOBUF_EXPORT MethodOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MessageOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
@@ -6158,8 +6141,7 @@ class PROTOBUF_EXPORT MessageOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
  public:
   inline FileOptions() : FileOptions(nullptr) {}
@@ -6874,8 +6856,7 @@ class PROTOBUF_EXPORT FileOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
@@ -7536,8 +7517,7 @@ class PROTOBUF_EXPORT FieldOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
  public:
   inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
@@ -7767,8 +7747,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
@@ -8218,8 +8197,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
@@ -8660,8 +8638,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
@@ -9098,8 +9075,7 @@ class PROTOBUF_EXPORT EnumOptions final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
@@ -9318,8 +9294,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
@@ -9600,8 +9575,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
@@ -10012,8 +9986,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
@@ -10245,8 +10218,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
@@ -10473,8 +10445,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
@@ -10712,8 +10683,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
@@ -10995,8 +10965,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
@@ -11374,8 +11343,7 @@ class PROTOBUF_EXPORT DescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
@@ -11800,8 +11768,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorSet final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
