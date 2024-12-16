@@ -5386,6 +5386,741 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
       )cc");
 }
 
+  auto vars = p->WithVars({{"type", QualifiedClassName(f->message_type())}});
+  p->Emit({{"is_lazy", has_raw_apis ? "true" : "false"}},
+          R"cc(
+            static constexpr bool is_lazy = $is_lazy$;
+          )cc");
+  if (f->has_presence()) {
+    p->Emit(R"cc(
+      $deprecated_attr$static bool Has(const message_type& msg) {
+        return msg.has_$name$();
+      }
+    )cc");
+  }
+  p->Emit(R"cc(
+    $deprecated_attr$static void Clear(message_type& msg) {
+      msg.clear_$name$();
+    }
+    $deprecated_attr$static const auto& Get(const message_type& msg) {
+      return msg.$name$();
+    }
+    $deprecated_attr$static auto& Mutable(message_type& msg) {
+      return *msg.mutable_$name$();
+    }
+    $deprecated_attr$static void SetAllocated(message_type& msg, $type$* m) {
+      msg.set_allocated_$name$(m);
+    }
+    $deprecated_attr$static auto* Release(message_type& msg) {
+      return msg.$release_name$();
+    }
+  )cc");
+
+  if (has_raw_apis) {
+    // `has_raw_apis` is set to true iff the field is lazy by "explicit"
+    // annotation (not profile-driven) and allowed to have raw APIs. Note that
+    // raw APIs refer to `encoded_$name$()`, `set_encoded_$name$()`, etc. that
+    // allow users to directly access the unparsed wireformat data. If we ever
+    // land a new wireformat, such APIs can result in correctness issue due to
+    // incorrect expectations on the wireformat.
+    //
+    // More on the difference between `is_explicitly_lazy` and `is_lazy`: the
+    // former is true only if the field is manually annotatated as
+    // lazy/unverified_lazy (non-profile driven), while the latter is true
+    // also in case the field is profile driven lazy. We need both informations
+    // because the {has,get,set}_encoded_field() methods are generated only for
+    // fields that are explicitly lazy, so we cannot simply use variable
+    // `is_lazy` to determine if we should define the methods below.
+    p->Emit(R"cc(
+      $deprecated_attr$static bool HasEncoded(const message_type& msg) {
+        return msg.has_encoded_$name$();
+      }
+      $deprecated_attr$static absl::Cord GetEncoded(const message_type& msg) {
+        return msg.encoded_$name$();
+      }
+      $deprecated_attr$static void SetEncoded(message_type& msg,
+                                              const ::absl::Cord& value) {
+        msg.set_encoded_$name$(value);
+      }
+    )cc");
+  }
+
+  if (!is_weak) {
+    p->Emit(R"cc(
+      $deprecated_attr$static auto* UnsafeArenaRelease(
+          message_type& msg, ::google::protobuf::internal::ProtoPasskey) {
+        return msg.unsafe_arena_release_$name$();
+      }
+    )cc");
+
+    p->Emit(R"cc(
+      $deprecated_attr$static void UnsafeArenaSetAllocated(
+          message_type& msg, $type$* v, ::google::protobuf::internal::ProtoPasskey) {
+        msg.unsafe_arena_set_allocated_$name$(v);
+      }
+    )cc");
+  }
+}
+
+void GenerateMessageInfoSpecialization(const google::protobuf::Descriptor* desc,
+                                       io::Printer* p,
+                                       uint64_t name_hash_mask) {
+  std::vector<int> all_field_numbers;
+  all_field_numbers.reserve(desc->field_count());
+  for (const auto* field : FieldRange(desc)) {
+    all_field_numbers.push_back(field->number());
+  }
+  bool has_extensions = desc->extension_range_count() > 0;
+  p->Emit(
+      {
+          {"classname", cpp::ClassName(desc)},
+          {"all_fields",
+           [&] {
+             if (all_field_numbers.empty()) return;
+             p->Emit({{"numbers", absl::StrJoin(all_field_numbers, ",")}},
+                     R"cc(
+                       static constexpr int all_fields[] = {$numbers$};
+                     )cc");
+           }},
+          {"all_fields_size", all_field_numbers.size()},
+          {"has_extensions", has_extensions ? "true" : "false"},
+          {"name", desc->name()},
+          {"full_name", desc->full_name()},
+          {"package", desc->file()->package()},
+          {"name_hash_mask", name_hash_mask},
+      },
+      R"cc(
+        struct $classname$::MessageInfoImpl {
+          $all_fields$;
+          static constexpr int all_fields_size = $all_fields_size$;
+          static constexpr bool has_extensions = $has_extensions$;
+          static constexpr absl::string_view name = "$name$";
+          static constexpr absl::string_view full_name = "$full_name$";
+          static constexpr absl::string_view package = "$package$";
+          static constexpr auto internal_field_name_hash_mask =
+              ::uint64_t{$name_hash_mask$u};
+        };
+      )cc");
+}
+
+void GenerateInt32DefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit({{"default_value", field->default_value_int32_t()}},
+          R"cc(
+            static constexpr ::int32_t default_value = $default_value$;
+          )cc");
+}
+void GenerateInt64DefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  // Encode in hex because many compilers don't like min
+  // literals.
+  p->Emit(
+      {
+          {"default_value",
+           absl::StrCat("0x", absl::Hex(field->default_value_int64_t()))},
+      },
+      R"cc(
+        static constexpr ::int64_t default_value = $default_value$;
+      )cc");
+}
+void GenerateUInt32DefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value", field->default_value_uint32_t()},
+      },
+      R"cc(
+        static constexpr ::uint32_t default_value = $default_value$u;
+      )cc");
+}
+void GenerateUInt64DefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value", field->default_value_uint64_t()},
+      },
+      R"cc(
+        static constexpr ::uint64_t default_value = $default_value$u;
+      )cc");
+}
+
+// Encodes a floating value taking into account nan and (-)inf.
+template <typename T>
+void EncodeFloatingValue(io::Printer* p, T value, absl::string_view type) {
+  auto vars = p->WithVars({{"type", type}, {"value", value}});
+  if (std::isnan(value)) {
+    p->Emit("std::numeric_limits<$type$>::quiet_NaN()");
+
+  } else if (std::isinf(value)) {
+    p->Emit({{"negative", value < 0 ? "-" : ""}},
+            "$negative$std::numeric_limits<$type$>::infinity()");
+  } else {
+    p->Emit("$value$");
+  }
+}
+
+void GenerateDoubleDefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value",
+           [&]() {
+             EncodeFloatingValue(p, field->default_value_double(), "double");
+           }},
+      },
+      // We need the comment after $default_value$ otherwise Emit will drop ';'
+      R"cc(
+        static constexpr double default_value = $default_value$ /**/;
+      )cc");
+}
+
+void GenerateFloatDefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value",
+           [&]() {
+             EncodeFloatingValue(p, field->default_value_float(), "float");
+           }},
+      },
+      // We need the comment after $default_value$ otherwise Emit will drop ';'
+      R"cc(
+        static constexpr float default_value = $default_value$ /**/;
+      )cc");
+}
+
+void GenerateBoolDefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value", field->default_value_bool()},
+      },
+      R"cc(
+        static constexpr bool default_value = $default_value$;
+      )cc");
+}
+
+void GenerateEnumDefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  p->Emit(
+      {
+          {"default_value", field->default_value_enum()->number()},
+          {"enum_type", cpp::QualifiedClassName(field->enum_type())},
+      },
+      R"cc(
+        static constexpr $enum_type$ default_value =
+            static_cast<$enum_type$>($default_value$);
+      )cc");
+}
+
+void GenerateStringDefaultValue(io::Printer* p, const FieldDescriptor* field) {
+  absl::string_view default_value = field->default_value_string();
+  std::string escaped_str = absl::CEscape(default_value);
+  p->Emit({{"default_value", escaped_str},
+           {"default_value_size", default_value.size()}},
+          R"cc(
+            static constexpr auto default_value =
+                absl::string_view("$default_value$", $default_value_size$);
+          )cc");
+}
+
+void GenerateOneOfFieldInfoSpecialization(
+    const google::protobuf::Descriptor* descriptor, const google::protobuf::OneofDescriptor* oneof,
+    io::Printer* p, const google::protobuf::compiler::cpp::Options& options,
+    const absl::flat_hash_set<std::pair<int, uint64_t>>& hash_collisions,
+    uint64_t name_hash_mask) {
+  std::vector<int> field_numbers;
+  field_numbers.reserve(static_cast<size_t>(oneof->field_count()));
+  for (const auto* field : internal::FieldRange(oneof)) {
+    field_numbers.push_back(field->number());
+  }
+
+  const absl::string_view oneof_name = oneof->name();
+  auto hash_field = google::protobuf::internal::HashField(oneof_name);
+
+  // Skip if there is a collision for the name.
+  if (hash_collisions.contains(std::make_pair(oneof_name.size(), hash_field))) {
+    p->Emit(R"cc(
+      // Did not generate specialization for $name$ because of hash collision
+    )cc");
+  } else {
+    p->Emit(
+        {
+            {"classname", cpp::ClassName(descriptor)},
+            {"name", oneof_name},
+            {"name_size", oneof_name.size()},
+            {"num_fields", oneof->field_count()},
+            {"hash_field", absl::StrCat(hash_field, "u")},
+            {"hash_field_mask", hash_field & name_hash_mask},
+            {"fields_size", field_numbers.size()},
+            {"fields_array",
+             [&] {
+               if (field_numbers.empty()) return;
+               p->Emit({{"numbers", absl::StrJoin(field_numbers, ",")}},
+                       R"cc(
+                         static constexpr int fields[] = {$numbers$};
+                       )cc");
+             }},
+        },
+        R"cc(
+          template <>
+          struct $classname$::FieldInfoImpl<::google::protobuf::FieldName<$name_size$>,
+                                            ::google::protobuf::FieldName<$name_size$>{
+                                                $hash_field_mask$}> {
+            static constexpr bool is_field_info_specialized = true;
+            static constexpr bool has_presence = false;
+            using message_type = $classname$;
+            static constexpr ::google::protobuf::FieldInfoType field_info_type =
+                ::google::protobuf::FieldInfoType::kOneOf;
+            static constexpr int num_fields = $num_fields$;
+            static constexpr absl::string_view name = "$name$";
+            static constexpr ::uint64_t internal_field_name_hash = $hash_field$;
+            static void Clear(message_type& msg) { msg.clear_$name$(); }
+            static int Case(const message_type& msg) {
+              return static_cast<int>(msg.$name$_case());
+            }
+            $fields_array$;
+            static constexpr int fields_size = $fields_size$;
+          };
+        )cc");
+  }
+}
+
+void GenerateFieldInfoSpecialization(
+    const google::protobuf::Descriptor* descriptor, const google::protobuf::FieldDescriptor* field,
+    io::Printer* p, const google::protobuf::compiler::cpp::Options& options,
+    const absl::flat_hash_set<std::pair<int, uint64_t>>& hash_collisions,
+    uint64_t name_hash_mask, MessageSCCAnalyzer* scc_analyzer) {
+  bool has_has_method = field->has_presence();
+  const auto* real_containing_oneof = field->real_containing_oneof();
+  const absl::string_view field_name = field->name();
+  auto vars = p->WithVars(
+      {{"classname", cpp::ClassName(descriptor)},
+       {"name", FieldName(field)},
+       {"orig_name", field_name},
+       {"has_presence", has_has_method ? "true" : "false"},
+       {"is_oneof_member", real_containing_oneof ? "true" : "false"},
+       {"index_in_oneof",
+        real_containing_oneof ? absl::StrCat(field->index_in_oneof()) : "0"},
+       {"oneof_name",
+        real_containing_oneof ? real_containing_oneof->name() : "\"\""},
+       {"release_name",
+        SafeFunctionName(field->containing_type(), field, "release_")},
+       {"deprecated_attr", DeprecatedAttribute(options, field)},
+       {"has_default_value", field->has_default_value() ? "true" : "false"},
+       {"number", field->number()}});
+
+  auto field_impl = [&]() {
+    p->Emit(R"cc(
+      // Specialization of FieldInfoImpl for $classname$::$orig_name$: $number$.
+      template <>
+      struct $classname$::FieldInfoImpl<::google::protobuf::FieldNumber,
+                                        ::google::protobuf::FieldNumber{$number$}>
+    )cc");
+  };
+
+  auto common_fields = [&]() {
+    p->Emit(R"cc(
+      using message_type = $classname$;
+      static constexpr absl::string_view name = "$orig_name$";
+      static constexpr int number = $number$;
+      static constexpr bool has_default_value = $has_default_value$;
+    )cc");
+
+    if (real_containing_oneof) {
+      p->Emit(R"cc(
+        static constexpr int index_in_oneof = $index_in_oneof$;
+        static constexpr auto oneof_field = ::google::protobuf::Field("$oneof_name$");
+      )cc");
+    }
+  };
+
+  {
+    if (field->is_repeated() && !field->is_map()) {
+      bool is_repeated_enum =
+          field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM;
+
+      auto enum_type = [&]() {
+        if (is_repeated_enum) {
+          p->Emit({{"enum_type", cpp::QualifiedClassName(field->enum_type())}},
+                  "using enum_type = $enum_type$;");
+        }
+      };
+
+      p->Emit(
+          {{"is_repeated_enum", is_repeated_enum ? "true" : "false"},
+           {"enum_type", enum_type},
+           {"common_fields", common_fields},
+           {"field_impl", field_impl},
+           {"type", field->type()},
+           {"is_packed", field->is_packed() ? "true" : "false"},
+           {"members",
+            [p]() { GenerateFieldInfoImplRepeatedFieldMembers(p); }}},
+          R"cc(
+            $field_impl$
+                : ::google::protobuf::internal::RepeatedFieldInfo<
+                      $type$, $is_oneof_member$, $has_presence$, $is_packed$> {
+              $common_fields$;
+              static constexpr bool is_repeated_enum = $is_repeated_enum$;
+              $enum_type$;
+              $members$;
+            };
+          )cc");
+    } else if (field->is_map()) {
+      p->Emit({{"field_impl", field_impl},
+               {"common_fields", common_fields},
+               {"key_type", field->message_type()->map_key()->type()},
+               {"value_type", field->message_type()->map_value()->type()},
+               {"members", [p]() { GenerateFieldInfoImplMapMembers(p); }}},
+              R"cc(
+                $field_impl$
+                    : ::google::protobuf::internal::MapFieldInfo<$key_type$, $value_type$,
+                                                       $is_oneof_member$,
+                                                       $has_presence$> {
+                  $common_fields$;
+                  $members$;
+                };
+              )cc");
+
+    } else {
+      auto singular_numeric_info = [&]() {
+        p->Emit(R"cc(
+          ::google::protobuf::internal::SingularNumericOrEnumFieldInfo<
+              $type$, $is_oneof_member$, $has_presence$>
+        )cc");
+      };
+
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_INT32:
+          p->Emit({{"default_value",
+                    [&]() { GenerateInt32DefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+          break;
+        case FieldDescriptor::CPPTYPE_INT64:
+          p->Emit({{"default_value",
+                    [&]() { GenerateInt64DefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+          break;
+        case FieldDescriptor::CPPTYPE_UINT32:
+          p->Emit({{"default_value",
+                    [&]() { GenerateUInt32DefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+          break;
+        case FieldDescriptor::CPPTYPE_UINT64:
+          p->Emit({{"default_value",
+                    [&]() { GenerateUInt64DefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+
+          break;
+        case FieldDescriptor::CPPTYPE_DOUBLE:
+          p->Emit({{"default_value",
+                    [&]() { GenerateDoubleDefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+          break;
+        case FieldDescriptor::CPPTYPE_FLOAT:
+          p->Emit({{"default_value",
+                    [&]() { GenerateFloatDefaultValue(p, field); }},
+                   {"field_impl", field_impl},
+                   {"members",
+                    [&]() {
+                      GenerateFieldInfoImplSingularNumericMembers(p, field);
+                    }},
+                   {"common_fields", common_fields},
+                   {"type", field->type()},
+                   {"singular_numeric_info", singular_numeric_info}},
+                  R"cc(
+                    $field_impl$ : $singular_numeric_info$ {
+                      $common_fields$;
+                      $default_value$;
+                      $members$;
+                    };
+                  )cc");
+
+          break;
+        case FieldDescriptor::CPPTYPE_BOOL:
+          p->Emit(
+              {{"default_value", [&]() { GenerateBoolDefaultValue(p, field); }},
+               {"field_impl", field_impl},
+               {"members",
+                [&]() {
+                  GenerateFieldInfoImplSingularNumericMembers(p, field);
+                }},
+               {"common_fields", common_fields},
+               {"type", field->type()},
+               {"singular_numeric_info", singular_numeric_info}},
+              R"cc(
+                $field_impl$ : $singular_numeric_info$ {
+                  $common_fields$;
+                  $default_value$;
+                  $members$;
+                };
+              )cc");
+
+          break;
+        case FieldDescriptor::CPPTYPE_ENUM:
+          p->Emit(
+              {{"default_value", [&]() { GenerateEnumDefaultValue(p, field); }},
+               {"field_impl", field_impl},
+               {"members",
+                [&]() {
+                  GenerateFieldInfoImplSingularNumericMembers(p, field);
+                }},
+               {"common_fields", common_fields},
+               {"type", field->type()},
+               {"singular_numeric_info", singular_numeric_info}},
+              R"cc(
+                $field_impl$ : $singular_numeric_info$ {
+                  $common_fields$;
+                  $default_value$;
+                  $members$;
+                };
+              )cc");
+
+          break;
+        case FieldDescriptor::CPPTYPE_STRING:
+          p->Emit(
+              {
+                  {"default_value",
+                   [&]() { GenerateStringDefaultValue(p, field); }},
+                  {"field_impl", field_impl},
+                  {"members",
+                   [&]() {
+                     GenerateFieldInfoImplSingulaStringMembers(
+                         field, p, field->cpp_string_type());
+                   }},
+                  {"common_fields", common_fields},
+                  {"type", field->type()},
+              },
+              R"cc(
+                $field_impl$ : ::google::protobuf::internal::SingularStringFieldInfo<
+                                   $type$, $is_oneof_member$, $has_presence$> {
+                  $common_fields$;
+                  $default_value$;
+                  $members$;
+                };
+              )cc");
+
+          break;
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+
+          p->Emit(
+              {
+                  {"field_impl", field_impl},
+                  {"members",
+                   [&]() {
+                     const bool is_lazy = IsLazy(field, options, scc_analyzer);
+                     GenerateFieldInfoImplSingularMessageMembers(
+                         field, p, IsWeak(field, options),
+                         /*is_lazy=*/is_lazy,
+                         /*is_explicitly_lazy=*/is_lazy &&
+                             IsExplicitLazy(field));
+                   }},
+                  {"common_fields", common_fields},
+                  {"type", field->type()},
+              },
+              R"cc(
+                $field_impl$ : ::google::protobuf::internal::SingularMessageFieldInfo<
+                                   $type$, $is_oneof_member$, $has_presence$> {
+                  $common_fields$;
+                  $members$;
+                };
+              )cc");
+          break;
+      }
+    }
+  }
+
+  // Only generate the specialization for the field name if there are no
+  // hash collisions for the name.
+  auto field_hash = google::protobuf::internal::HashField(field_name);
+  if (hash_collisions.contains(std::make_pair(field_name.size(), field_hash))) {
+    p->Emit(R"cc(
+      // Did not generate specialization for $orig_name$ because of hash
+      // collision.
+    )cc");
+
+  } else {
+    p->Emit(
+        {{"field_name_size", field_name.size()},
+         {"masked_field_hash", field_hash & name_hash_mask},
+         {"field_hash", field_hash}},
+        R"cc(
+          template <>
+          struct $classname$::FieldInfoImpl<
+              ::google::protobuf::FieldName<$field_name_size$>,
+              ::google::protobuf::FieldName<$field_name_size$>{$masked_field_hash$u}>
+              : $classname$::FieldInfoImpl<::google::protobuf::FieldNumber,
+                                           ::google::protobuf::FieldNumber{$number$}> {
+            static constexpr ::uint64_t internal_field_name_hash = $field_hash$u;
+          };
+        )cc");
+  }
+}
+
+uint64_t CalculateNameHashMask(
+    const absl::flat_hash_set<std::pair<int, uint64_t>>& hashes,
+    bool collisions) {
+  uint64_t name_hash_mask = std::numeric_limits<uint64_t>::max();
+  if (!collisions) {
+    // Calculate the minimum number of bits required to represent all the hashes
+    // without any collisions. This is a variation of the shortest unique prefix
+    // problem (with reversed bits), except that we just need to find the max
+    // length of the shortest unique prefix. To do this efficiently, we first
+    // sort the hashes lexicographically starting at the least significant
+    // bit(Note: this is different that just sorting by the value which will be
+    // lexicographic but start with most significant bit). Then for the hashes
+    // where the length matches, we find the max of the minimum bit position
+    // each hash differs from its neighbors.
+    std::vector<std::pair<int, uint64_t>> hashes_vector(hashes.begin(),
+                                                        hashes.end());
+    std::sort(hashes_vector.begin(), hashes_vector.end(),
+              [](const auto& a, const auto& b) {
+                if (a.first != b.first) {
+                  return a.first < b.first;
+                }
+                if (a.second != b.second) {
+                  int least_significant_different_bit =
+                      absl::countr_zero(a.second ^ b.second);
+                  auto mask = uint64_t{1} << least_significant_different_bit;
+                  return (a.second & mask) < (b.second & mask);
+                }
+                return false;
+              });
+
+    int max_least_significant_different_bit = 0;
+    for (size_t i = 1; i < hashes_vector.size(); ++i) {
+      if (hashes_vector[i - 1].first != hashes_vector[i].first) continue;
+      int least_significant_different_bit = absl::countr_zero(
+          hashes_vector[i - 1].second ^ hashes_vector[i].second);
+      max_least_significant_different_bit = std::max(
+          max_least_significant_different_bit, least_significant_different_bit);
+    }
+    name_hash_mask >>= (64 - max_least_significant_different_bit - 1);
+  }
+  return name_hash_mask;
+}
+
+}  // namespace
+
+void MessageGenerator::GenerateFieldInfoSpecializations(io::Printer* p) {
+  if (options_.opensource_runtime) return;
+
+  auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
+
+  // Check for any collisions.
+  absl::flat_hash_set<std::pair<int, uint64_t>> hash_collisions;
+  absl::flat_hash_set<std::pair<int, uint64_t>> hashes;
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    const auto* field = descriptor_->field(i);
+    const absl::string_view field_name = field->name();
+    auto key = std::make_pair(field_name.size(),
+                              google::protobuf::internal::HashField(field_name));
+    if (!hashes.insert(key).second) {
+      hash_collisions.insert(key);
+    }
+  }
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); ++i) {
+    const auto* oneof = descriptor_->oneof_decl(i);
+    const absl::string_view field_name = oneof->name();
+    auto key = std::make_pair(field_name.size(),
+                              google::protobuf::internal::HashField(field_name));
+    if (!hashes.insert(key).second) {
+      hash_collisions.insert(key);
+    }
+  }
+
+  uint64_t name_hash_mask =
+      CalculateNameHashMask(hashes, !hash_collisions.empty());
+
+  GenerateMessageInfoSpecialization(descriptor_, p, name_hash_mask);
+
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    const auto* field = descriptor_->field(i);
+    if (field->is_extension()) continue;
+    GenerateFieldInfoSpecialization(descriptor_, field, p, options_,
+                                    hash_collisions, name_hash_mask,
+                                    scc_analyzer_);
+  }
+
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); ++i) {
+    const auto* oneof = descriptor_->oneof_decl(i);
+    GenerateOneOfFieldInfoSpecialization(descriptor_, oneof, p, options_,
+                                         hash_collisions, name_hash_mask);
+  }
+}
+void MessageGenerator::GenerateStaticReflectionDeclarationsAndInlineDefinitions(
+    io::Printer* p) {
+  if (options_.opensource_runtime) return;
+  p->Emit(R"cc(
+    template <typename FieldType, FieldType>
+    struct FieldInfoImpl;
+    struct MessageInfoImpl;
+  )cc");
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
