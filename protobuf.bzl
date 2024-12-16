@@ -2,6 +2,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:current_protoc.bzl", "ProtocFilesToRun")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -310,7 +311,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
             args.add_all([src.path[offset:] for src in dep.direct_sources])
 
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = ctx.attr._protoc[ProtocFilesToRun].files_to_run,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -335,9 +336,7 @@ internal_gen_well_known_protos_java = rule(
             default = False,
         ),
         "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
+            default = "//bazel/private:current_protoc",
         ),
     },
 )
@@ -373,7 +372,7 @@ def _internal_gen_kt_protos(ctx):
             args.add_all([src.path[offset:] for src in dep.direct_sources])
 
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = ctx.attr._protoc[ProtocFilesToRun].files_to_run,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -398,9 +397,7 @@ internal_gen_kt_protos = rule(
             default = False,
         ),
         "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
+            default = "//bazel/private:current_protoc",
         ),
     },
 )
