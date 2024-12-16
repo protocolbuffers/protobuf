@@ -703,8 +703,7 @@ inline bool Edition_Parse(absl::string_view name, Edition* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption_NamePart final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
@@ -920,8 +919,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo_Location final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
@@ -1204,8 +1202,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
@@ -1483,8 +1480,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.FeatureSupport) */ {
  public:
   inline FieldOptions_FeatureSupport() : FieldOptions_FeatureSupport(nullptr) {}
@@ -1721,8 +1717,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_EditionDefault final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
  public:
   inline FieldOptions_EditionDefault() : FieldOptions_EditionDefault(nullptr) {}
@@ -1933,8 +1928,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSet final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
  public:
   inline FeatureSet() : FeatureSet(nullptr) {}
@@ -2497,8 +2491,7 @@ class PROTOBUF_EXPORT FeatureSet final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
@@ -2754,8 +2747,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
@@ -2960,8 +2952,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
@@ -3166,8 +3157,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
@@ -3467,8 +3457,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
@@ -3851,8 +3840,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
@@ -4050,8 +4038,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
  public:
   inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
@@ -4282,8 +4269,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
@@ -4696,8 +4682,7 @@ class PROTOBUF_EXPORT ServiceOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
@@ -5097,8 +5082,7 @@ class PROTOBUF_EXPORT OneofOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
@@ -5544,8 +5528,7 @@ class PROTOBUF_EXPORT MethodOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MessageOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
@@ -6010,8 +5993,7 @@ class PROTOBUF_EXPORT MessageOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
  public:
   inline FileOptions() : FileOptions(nullptr) {}
@@ -6738,8 +6720,7 @@ class PROTOBUF_EXPORT FileOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
@@ -7402,8 +7383,7 @@ class PROTOBUF_EXPORT FieldOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
  public:
   inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
@@ -7633,8 +7613,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
@@ -8086,8 +8065,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
@@ -8530,8 +8508,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumOptions final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
@@ -8970,8 +8947,7 @@ class PROTOBUF_EXPORT EnumOptions final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
@@ -9191,8 +9167,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
@@ -9476,8 +9451,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
@@ -9893,8 +9867,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
@@ -10127,8 +10100,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
@@ -10355,8 +10327,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
@@ -10595,8 +10566,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
@@ -10879,8 +10849,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
@@ -11259,8 +11228,7 @@ class PROTOBUF_EXPORT DescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorProto final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
@@ -11688,8 +11656,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorSet final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
