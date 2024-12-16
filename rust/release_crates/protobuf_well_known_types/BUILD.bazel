@@ -1,0 +1,38 @@
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//:protobuf_version.bzl", "PROTOBUF_RUST_VERSION")
+
+pkg_tar(
+    name = "crate",
+    srcs = [
+        ":crate_root_files",
+        ":well_known_types",
+        "//:LICENSE",
+    ],
+    visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "crate_root_files",
+    srcs = [":srcs"],
+    strip_prefix = strip_prefix.from_root("rust/release_crates/protobuf_well_known_types"),
+)
+
+genrule(
+    name = "gen_cargo_toml",
+    srcs = ["Cargo-template.toml"],
+    outs = ["Cargo.toml"],
+    cmd = "cat $(SRCS) | sed -e 's/{{VERSION}}/{0}-beta/g' > $(OUTS)".format(PROTOBUF_RUST_VERSION),
+)
+
+filegroup(
+    name = "srcs",
+    srcs = [":gen_cargo_toml"] + glob(["**/*"]),
+    visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "well_known_types",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    prefix = "proto/google/protobuf",
+)

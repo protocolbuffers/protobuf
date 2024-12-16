@@ -176,7 +176,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
                           }
                         }}},
                       R"rs(
-                fn constant_name(&self) -> Option<&'static str> {
+                fn constant_name(&self) -> $Option$<&'static str> {
                   #[allow(unreachable_patterns)] // In the case of aliases, just emit them all and let the first one match.
                   Some(match self.0 {
                     $name_cases$

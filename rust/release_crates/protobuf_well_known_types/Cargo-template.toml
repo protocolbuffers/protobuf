@@ -1,0 +1,12 @@
+[package]
+name = "staging-protobuf-well-known-types"
+version = "{VERSION}"
+edition = "2021"
+description = "Protobuf Well-Known Types"
+license = "BSD-3-Clause"
+
+[dependencies]
+protobuf = { version = "{VERSION}", path = "../protobuf", package = "staging-protobuf" }
+
+[build-dependencies]
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "staging-protobuf-codegen" }
