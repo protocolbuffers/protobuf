@@ -224,7 +224,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
       },
       R"rs(
       #[repr(transparent)]
-      #[derive(Clone, Copy, PartialEq, Eq)]
+      #[derive(Clone, Copy, PartialEq, Eq, Hash)]
       pub struct $name$(i32);
 
       #[allow(non_upper_case_globals)]
