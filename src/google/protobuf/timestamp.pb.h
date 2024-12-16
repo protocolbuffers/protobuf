@@ -70,8 +70,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Timestamp final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}

@@ -102,8 +102,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt64Value final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
@@ -294,8 +293,7 @@ class PROTOBUF_EXPORT UInt64Value final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt32Value final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
@@ -486,8 +484,7 @@ class PROTOBUF_EXPORT UInt32Value final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT StringValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   inline StringValue() : StringValue(nullptr) {}
@@ -683,8 +680,7 @@ class PROTOBUF_EXPORT StringValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int64Value final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   inline Int64Value() : Int64Value(nullptr) {}
@@ -875,8 +871,7 @@ class PROTOBUF_EXPORT Int64Value final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int32Value final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   inline Int32Value() : Int32Value(nullptr) {}
@@ -1067,8 +1062,7 @@ class PROTOBUF_EXPORT Int32Value final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FloatValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   inline FloatValue() : FloatValue(nullptr) {}
@@ -1259,8 +1253,7 @@ class PROTOBUF_EXPORT FloatValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DoubleValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
@@ -1451,8 +1444,7 @@ class PROTOBUF_EXPORT DoubleValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BytesValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   inline BytesValue() : BytesValue(nullptr) {}
@@ -1648,8 +1640,7 @@ class PROTOBUF_EXPORT BytesValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BoolValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   inline BoolValue() : BoolValue(nullptr) {}
