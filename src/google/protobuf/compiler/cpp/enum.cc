@@ -44,7 +44,6 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);
   return {
-      {"DEPRECATED", enum_->options().deprecated() ? "[[deprecated]]" : ""},
       {"Enum", std::string(enum_->name())},
       {"Enum_", ResolveKeyword(enum_->name())},
       {"Msg_Enum", classname},
@@ -163,7 +162,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
            }},
       },
       R"cc(
-        enum $DEPRECATED $$Msg_Enum_annotated$ : int {
+        enum $Msg_Enum_annotated$ : int {
           $values$,
           $open_enum_sentinels$,
         };

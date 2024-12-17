@@ -502,7 +502,6 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       {"Msg", ClassName(desc, false)},
       {"pkg::Msg", QualifiedClassName(desc, opts)},
       {"pkg.Msg", desc->full_name()},
-      {"deprecated", desc->options().deprecated() ? "[[deprecated]]" : ""},
 
       // Old-style names, to be removed once all usages are gone in this and
       // other files.
@@ -2058,8 +2057,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   )cc");
         }}},
       R"cc(
-        class $dllexport_decl $$deprecated $$classname$ final
-            : public $superclass$
+        class $dllexport_decl $$classname$ final : public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
          public:
           inline $classname$() : $classname$(nullptr) {}
