@@ -485,7 +485,10 @@ bool HasMapFields(const FileDescriptor* file);
 bool HasEnumDefinitions(const FileDescriptor* file);
 
 // Returns true if any message in the file can have v2 table.
-bool HasV2Table(const FileDescriptor* file, const Options& options);
+bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
+bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
 
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,

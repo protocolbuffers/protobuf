@@ -1256,10 +1256,18 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
   return false;
 }
 
-bool HasV2Table(const FileDescriptor* file, const Options& options) {
+bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (HasV2Table(file->message_type(i), options)) return true;
   }
+  return false;
+}
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasV2ParseTable(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
