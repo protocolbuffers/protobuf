@@ -388,7 +388,7 @@ module Google
 
         # Should always be the last expression of the initializer to avoid
         # leaking references to this object before construction is complete.
-        OBJECT_CACHE.try_add(@map_ptr.address, self)
+        Google::Protobuf::Internal::OBJECT_CACHE.try_add(@map_ptr.address, self)
       end
 
       ##

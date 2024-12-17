@@ -19,7 +19,7 @@ module Google
           pool_def = Google::Protobuf::FFI.file_def_pool file_def
           raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
           raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool = Google::Protobuf::OBJECT_CACHE.get(pool_def.address)
+          pool = Google::Protobuf::Internal::OBJECT_CACHE.get(pool_def.address)
           raise "Cannot find pool in ObjectCache!" if pool.nil?
           descriptor = pool.descriptor_class_by_def[pointer.address]
           if descriptor.nil?

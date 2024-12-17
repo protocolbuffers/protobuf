@@ -339,10 +339,10 @@ module Google
           # @param field_descriptor [FieldDescriptor] Field to retrieve.
           def empty_frozen_map(field_descriptor)
             sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field_descriptor
-            frozen_map = OBJECT_CACHE.get sub_message_def
+            frozen_map = Google::Protobuf::Internal::OBJECT_CACHE.get sub_message_def
             if frozen_map.nil?
               frozen_map = Google::Protobuf::Map.send(:construct_for_field, field_descriptor)
-              OBJECT_CACHE.try_add(sub_message_def, frozen_map.freeze)
+              Google::Protobuf::Internal::OBJECT_CACHE.try_add(sub_message_def, frozen_map.freeze)
             end
             raise "Empty Frozen Map is not frozen" unless frozen_map.frozen?
             frozen_map
@@ -378,10 +378,10 @@ module Google
           # @param field_descriptor [FieldDescriptor] Field to retrieve.
           def empty_frozen_repeated_field(field_descriptor)
             sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field_descriptor
-            frozen_repeated_field = OBJECT_CACHE.get sub_message_def
+            frozen_repeated_field = Google::Protobuf::Internal::OBJECT_CACHE.get sub_message_def
             if frozen_repeated_field.nil?
               frozen_repeated_field = Google::Protobuf::RepeatedField.send(:construct_for_field, field_descriptor)
-              OBJECT_CACHE.try_add(sub_message_def, frozen_repeated_field.freeze)
+              Google::Protobuf::Internal::OBJECT_CACHE.try_add(sub_message_def, frozen_repeated_field.freeze)
             end
             raise "Empty frozen RepeatedField is not frozen" unless frozen_repeated_field.frozen?
             frozen_repeated_field
@@ -714,7 +714,7 @@ module Google
 
             # Should always be the last expression of the initializer to avoid
             # leaking references to this object before construction is complete.
-            Google::Protobuf::OBJECT_CACHE.try_add @msg.address, self
+            Google::Protobuf::Internal::OBJECT_CACHE.try_add @msg.address, self
           end
 
           ##
@@ -755,7 +755,7 @@ module Google
           # @param field [Google::Protobuf::FieldDescriptor] Type of the repeated field
           def get_repeated_field(array, field)
             return nil if array.nil? or array.null?
-            repeated_field = OBJECT_CACHE.get(array.address)
+            repeated_field = Google::Protobuf::Internal::OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, arena: @arena, array: array)
               repeated_field.freeze if frozen?
@@ -769,7 +769,7 @@ module Google
           # @param field [Google::Protobuf::FieldDescriptor] Type of the map field
           def get_map_field(map, field)
             return nil if map.nil? or map.null?
-            map_field = OBJECT_CACHE.get(map.address)
+            map_field = Google::Protobuf::Internal::OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, arena: @arena, map: map)
               map_field.freeze if frozen?

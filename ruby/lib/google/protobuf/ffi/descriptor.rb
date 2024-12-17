@@ -137,7 +137,7 @@ module Google
 
       def self.get_message(msg, descriptor, arena)
         return nil if msg.nil? or msg.null?
-        message = OBJECT_CACHE.get(msg.address)
+        message = Google::Protobuf::Internal::OBJECT_CACHE.get(msg.address)
         if message.nil?
           message = descriptor.msgclass.send(:private_constructor, arena, msg: msg)
         end
