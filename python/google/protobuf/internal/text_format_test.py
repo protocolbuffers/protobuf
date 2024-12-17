@@ -2468,6 +2468,17 @@ class TokenizerTest(parameterized.TestCase):
     self.assertEqual(1, tokenizer.ConsumeInteger())
     self.assertTrue(tokenizer.AtEnd())
 
+  @parameterized.parameters('00', '09', '01.123', '-00', '-09', '-01.234')
+  def testConsumeOctalFloats(self, text):
+    """Test rejection of for octal-formatted floats."""
+    tokenizer = text_format.Tokenizer([text])
+
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid octal float: %s' % text,
+        tokenizer.ConsumeFloat,
+    )
+
   def testConsumeByteString(self):
     text = '"string1\''
     tokenizer = text_format.Tokenizer(text.splitlines())

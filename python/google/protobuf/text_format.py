@@ -42,6 +42,7 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
                      type_checkers.Int64ValueChecker())
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
+_FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
@@ -1791,6 +1792,8 @@ def ParseFloat(text):
   Raises:
     ValueError: If a floating point number couldn't be parsed.
   """
+  if _FLOAT_OCTAL_PREFIX.match(text):
+    raise ValueError('Invalid octal float: %s' % text)
   try:
     # Assume Python compatible syntax.
     return float(text)
