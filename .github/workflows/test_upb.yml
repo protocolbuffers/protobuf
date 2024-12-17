@@ -299,8 +299,13 @@ jobs:
           python -m venv env
           source env/bin/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
-      - name: Install numpy
-        run: pip install numpy
+      - name: Download Requirements
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        with:
+          name: requirements
+          path: requirements
+      - name: Install requirements
+        run: pip install -r requirements/requirements.txt
       - name: Install Protobuf Wheels
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Run the unit tests

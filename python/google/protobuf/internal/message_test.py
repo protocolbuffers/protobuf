@@ -40,7 +40,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor
 from google.protobuf import message
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -50,7 +50,7 @@ UCS2_MAXUNICODE = 65535
 
 warnings.simplefilter('error', DeprecationWarning)
 
-@_parameterized.named_parameters(('_proto2', unittest_pb2),
+@parameterized.named_parameters(('_proto2', unittest_pb2),
                                 ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
