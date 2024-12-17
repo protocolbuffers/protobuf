@@ -33,7 +33,7 @@ jobs:
           - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
           - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core, continuous-only: true }
           - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core, continuous-only: true }
-          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core, continuous-only: true,}
+          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
         include:
           # Set defaults
