@@ -21,8 +21,7 @@ public final class ProtobufToStringOutput {
   // accelerate the debug format adoption while avoiding breaking such tests, we introduce this
   // test-only flag to disable the debug format in tests for certain libraries in which the output
   // of Message.toString() is unlikely to be deserialized.
-  private static final ThreadLocal<Boolean> disableDebugFormatForTests =
-      ThreadLocal.withInitial(() -> false);
+  private static final AtomicBoolean disableDebugFormatForTests = new AtomicBoolean(false);
 
   private ProtobufToStringOutput() {}
 
