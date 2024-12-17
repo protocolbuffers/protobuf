@@ -201,8 +201,7 @@ inline bool Syntax_Parse(absl::string_view name, Syntax* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   inline Option() : Option(nullptr) {}
@@ -416,8 +415,7 @@ class PROTOBUF_EXPORT Option final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   inline Field() : Field(nullptr) {}
@@ -803,8 +801,7 @@ class PROTOBUF_EXPORT Field final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   inline EnumValue() : EnumValue(nullptr) {}
@@ -1031,8 +1028,7 @@ class PROTOBUF_EXPORT EnumValue final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Type final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   inline Type() : Type(nullptr) {}
@@ -1338,8 +1334,7 @@ class PROTOBUF_EXPORT Type final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   inline Enum() : Enum(nullptr) {}
