@@ -17,14 +17,17 @@
 
 #include <assert.h>
 
-#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -118,11 +121,11 @@ class PROTOBUF_EXPORT UnknownField {
   uint32_t number_;
   uint32_t type_;
   union {
-    uint64_t varint_;
-    uint32_t fixed32_;
-    uint64_t fixed64_;
+    uint64_t varint;
+    uint32_t fixed32;
+    uint64_t fixed64;
     std::string* string_value;
-    UnknownFieldSet* group_;
+    UnknownFieldSet* group;
   } data_;
 };
 
@@ -268,8 +271,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void SwapSlow(UnknownFieldSet* other);
 
   template <typename MessageType,
-            typename std::enable_if<
-                std::is_base_of<Message, MessageType>::value, int>::type = 0>
+            typename std::enable_if_t<
+                std::is_base_of<Message, MessageType>::value, int> = 0>
   bool InternalMergeFromMessage(const MessageType& message) {
     MergeFrom(message.GetReflection()->GetUnknownFields(message));
     return true;
@@ -364,15 +367,15 @@ inline UnknownField::Type UnknownField::type() const {
 
 inline uint64_t UnknownField::varint() const {
   assert(type() == TYPE_VARINT);
-  return data_.varint_;
+  return data_.varint;
 }
 inline uint32_t UnknownField::fixed32() const {
   assert(type() == TYPE_FIXED32);
-  return data_.fixed32_;
+  return data_.fixed32;
 }
 inline uint64_t UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
-  return data_.fixed64_;
+  return data_.fixed64;
 }
 inline internal::UFSStringView UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
@@ -380,20 +383,20 @@ inline internal::UFSStringView UnknownField::length_delimited() const {
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
-  return *data_.group_;
+  return *data_.group;
 }
 
 inline void UnknownField::set_varint(uint64_t value) {
   assert(type() == TYPE_VARINT);
-  data_.varint_ = value;
+  data_.varint = value;
 }
 inline void UnknownField::set_fixed32(uint32_t value) {
   assert(type() == TYPE_FIXED32);
-  data_.fixed32_ = value;
+  data_.fixed32 = value;
 }
 inline void UnknownField::set_fixed64(uint64_t value) {
   assert(type() == TYPE_FIXED64);
-  data_.fixed64_ = value;
+  data_.fixed64 = value;
 }
 inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
@@ -416,7 +419,7 @@ inline std::string* UnknownField::mutable_length_delimited() {
 #endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
-  return data_.group_;
+  return data_.group;
 }
 template <typename MessageType>
 bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
