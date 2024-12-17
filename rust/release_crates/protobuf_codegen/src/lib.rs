@@ -9,6 +9,20 @@ pub struct CodeGen {
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+fn missing_protoc_error_message() -> String {
+    format!(
+        "
+Please make sure you have protoc and protoc-gen-upb_minitable available in your PATH. You can \
+build these binaries from source as follows: \
+git clone https://github.com/protocolbuffers/protobuf.git; \
+cd protobuf; \
+git checkout rust-prerelease-{}; \
+cmake . -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON; \
+cmake --build . --parallel 12",
+        VERSION
+    )
+}
+
 // Given the output of "protoc --version", returns a shortened version string
 // suitable for comparing against the protobuf crate version.
 //
@@ -108,10 +122,9 @@ impl CodeGen {
         }
 
         let mut version_cmd = std::process::Command::new("protoc");
-        let output = version_cmd
-            .arg("--version")
-            .output()
-            .map_err(|e| format!("failed to run protoc --version: {}", e))?;
+        let output = version_cmd.arg("--version").output().map_err(|e| {
+            format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
+        })?;
 
         let protoc_version = protoc_version(&String::from_utf8(output.stdout).unwrap());
         let expected_protoc_version = expected_protoc_version(VERSION);
@@ -121,6 +134,18 @@ impl CodeGen {
                 expected_protoc_version, protoc_version
             );
         }
+
+        // We cannot easily check the version of the minitable plugin, but let's at
+        // least verify that it is present.
+        std::process::Command::new("protoc-gen-upb_minitable")
+            .stdin(std::process::Stdio::null())
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Unable to find protoc-gen-upb_minitable: {}",
+                    missing_protoc_error_message()
+                )
+            })?;
 
         let mut cmd = std::process::Command::new("protoc");
         for input in &self.inputs {
