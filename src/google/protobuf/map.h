@@ -680,6 +680,10 @@ class KeyMapBase : public UntypedMapBase {
   friend class RustMapHelper;
   friend class v2::TableDriven;
 
+  Key* GetKey(NodeBase* node) const {
+    return UntypedMapBase::GetKey<Key>(node);
+  }
+
   PROTOBUF_NOINLINE size_type EraseImpl(map_index_t b, KeyNode* node,
                                         bool do_destroy) {
     // Force bucket_index to be in range.
