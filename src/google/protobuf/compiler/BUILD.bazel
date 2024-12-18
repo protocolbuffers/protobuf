@@ -14,7 +14,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
 
 proto_library(
@@ -260,12 +260,12 @@ cc_binary(
     ],
 )
 
-# Note: this is an alias for now. In the future, this rule will become the
-# cc_binary for protoc, and //:protoc will become an alias.
-alias(
+cc_binary(
     name = "protoc",
-    actual = "//:protoc",
+    copts = COPTS,
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
+    deps = [":protoc_lib"],
 )
 
 # Test that the protoc binary is built for the correct architecture.
