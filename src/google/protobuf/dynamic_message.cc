@@ -214,8 +214,9 @@ class DynamicMapField final
   static void ClearMapNoSyncImpl(MapFieldBase& base);
   static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
   static void SetMapIteratorValueImpl(MapIterator* map_iter);
-  static bool LookupMapValueImpl(const MapFieldBase& self,
-                                 const MapKey& map_key, MapValueConstRef* val);
+  static bool LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                       const MapKey& map_key,
+                                       MapValueConstRef* val);
 
   static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
     static_cast<DynamicMapField&>(lhs).Swap(
@@ -278,10 +279,10 @@ void DynamicMapField::SetMapIteratorValueImpl(MapIterator* map_iter) {
   map_iter->value_.CopyFrom(iter->second);
 }
 
-bool DynamicMapField::LookupMapValueImpl(const MapFieldBase& self,
-                                         const MapKey& map_key,
-                                         MapValueConstRef* val) {
-  const auto& map = static_cast<const DynamicMapField&>(self).GetMap();
+bool DynamicMapField::LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                               const MapKey& map_key,
+                                               MapValueConstRef* val) {
+  const auto& map = static_cast<const DynamicMapField&>(self).map_;
   auto iter = map.find(map_key);
   if (map.end() == iter) {
     return false;

@@ -285,6 +285,14 @@ template <typename MessageT>
 struct MapDynamicFieldInfo;
 struct MapFieldTestPeer;
 
+// Return the prototype message for a Map entry.
+// REQUIRES: `default_entry` is a map entry message.
+// REQUIRES: mapped_type is of type message.
+inline const Message& GetMapEntryValuePrototype(const Message& default_entry) {
+  return default_entry.GetReflection()->GetMessage(
+      default_entry, default_entry.GetDescriptor()->map_value());
+}
+
 // This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
 // reflection implementation only. Users should never use this directly.
@@ -302,8 +310,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   ~MapFieldBase();
 
   struct VTable : MapFieldBaseForParse::VTable {
-    bool (*lookup_map_value)(const MapFieldBase& map, const MapKey& map_key,
-                             MapValueConstRef* val);
+    bool (*lookup_map_value_no_sync)(const MapFieldBase& map,
+                                     const MapKey& map_key,
+                                     MapValueConstRef* val);
     bool (*delete_map_value)(MapFieldBase& map, const MapKey& map_key);
     void (*set_map_iterator_value)(MapIterator* map_iter);
     bool (*insert_or_lookup_no_sync)(MapFieldBase& map, const MapKey& map_key,
@@ -321,7 +330,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   static constexpr VTable MakeVTable() {
     VTable out{};
     out.get_map = &T::GetMapImpl;
-    out.lookup_map_value = &T::LookupMapValueImpl;
+    out.lookup_map_value_no_sync = &T::LookupMapValueNoSyncImpl;
     out.delete_map_value = &T::DeleteMapValueImpl;
     out.set_map_iterator_value = &T::SetMapIteratorValueImpl;
     out.insert_or_lookup_no_sync = &T::InsertOrLookupMapValueNoSyncImpl;
@@ -349,7 +358,8 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     return LookupMapValue(map_key, static_cast<MapValueConstRef*>(nullptr));
   }
   bool LookupMapValue(const MapKey& map_key, MapValueConstRef* val) const {
-    return vtable()->lookup_map_value(*this, map_key, val);
+    SyncMapWithRepeatedField();
+    return vtable()->lookup_map_value_no_sync(*this, map_key, val);
   }
   bool LookupMapValue(const MapKey&, MapValueRef*) const = delete;
 
@@ -503,8 +513,13 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
                                           bool is_mutable);
   static void ClearMapNoSyncImpl(MapFieldBase& self);
   static void SetMapIteratorValueImpl(MapIterator* map_iter);
-  static bool LookupMapValueImpl(const MapFieldBase& self,
-                                 const MapKey& map_key, MapValueConstRef* val);
+  static bool LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                       const MapKey& map_key,
+                                       MapValueConstRef* val);
+  static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& self,
+                                               const MapKey& map_key,
+                                               MapValueRef* val);
+  static bool DeleteMapValueImpl(MapFieldBase& self, const MapKey& map_key);
 
  private:
   friend class ContendedMapCleanTest;
@@ -512,6 +527,21 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   friend class MapFieldAccessor;
   friend class google::protobuf::Reflection;
   friend class google::protobuf::DynamicMessage;
+
+  template <typename T, typename... U>
+  void InitializeKeyValue(T* v, const U&... init) {
+    ::new (static_cast<void*>(v)) T(init...);
+    if constexpr (std::is_same_v<std::string, T>) {
+      if (arena() != nullptr) {
+        arena()->OwnDestructor(v);
+      }
+    }
+  }
+
+  void InitializeKeyValue(MessageLite* msg) {
+    GetClassData(GetMapEntryValuePrototype(*GetPrototype()))
+        ->PlacementNew(msg, arena());
+  }
 
   // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
   const UntypedMapBase& GetMapRaw() const {
@@ -613,11 +643,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   friend struct MapFieldTestPeer;
 
   using Iter = typename Map<Key, T>::const_iterator;
-
-  static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
-  static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& map,
-                                               const MapKey& map_key,
-                                               MapValueRef* val);
 
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
