@@ -1182,6 +1182,12 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
     mutable std::atomic<const Message*> default_generated_instance_;
   };
 
+  int original_ctype_ : 3;
+
+ public:
+  int original_ctype() const { return original_ctype_; }
+
+ private:
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];
 
   static const char* const kTypeToName[MAX_TYPE + 1];
@@ -1198,7 +1204,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {

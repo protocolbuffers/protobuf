@@ -386,55 +386,25 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
+    if ((unresolved_features.string_type() == pb::CppFeatures::CORD ||
+         field.original_ctype() == FieldOptions::CORD) &&
+        field.is_extension()) {
+      status = absl::FailedPreconditionError(
+          absl::StrCat("Extension ", field.full_name(),
+                       " specifies CORD string type which is not supported "
+                       "for extensions."));
+    }
+
     if (unresolved_features.has_string_type()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
             " specifies string_type, but is not a string nor bytes field."));
-      } else if (unresolved_features.string_type() == pb::CppFeatures::CORD &&
-                 field.is_extension()) {
-        status = absl::FailedPreconditionError(
-            absl::StrCat("Extension ", field.full_name(),
-                         " specifies string_type=CORD which is not supported "
-                         "for extensions."));
-      } else if (field.options().has_ctype()) {
-        // NOTE: this is just a sanity check. This case should never happen
-        // because descriptor builder makes string_type override ctype.
-        const FieldOptions::CType ctype = field.options().ctype();
-        const pb::CppFeatures::StringType string_type =
-            unresolved_features.string_type();
-        if ((ctype == FieldOptions::STRING &&
-             string_type != pb::CppFeatures::STRING) ||
-            (ctype == FieldOptions::CORD &&
-             string_type != pb::CppFeatures::CORD)) {
-          status = absl::FailedPreconditionError(
-              absl::StrCat(field.full_name(),
-                           " specifies inconsistent string_type and ctype."));
-        }
-      }
-    }
-
-    if (field.options().has_ctype()) {
-      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+      } else if (field.original_ctype() != -1) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
-            " specifies ctype, but is not a string nor bytes field."));
+            " specifies both string_type and ctype which is not supported."));
       }
-      if (field.options().ctype() == FieldOptions::CORD) {
-        if (field.is_extension()) {
-          status = absl::FailedPreconditionError(absl::StrCat(
-              "Extension ", field.full_name(),
-              " specifies Cord type which is not supported for extensions."));
-        }
-      }
-    }
-
-    if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-        field.cpp_string_type() == FieldDescriptor::CppStringType::kCord &&
-        field.is_extension()) {
-      status = absl::FailedPreconditionError(absl::StrCat(
-          "Extension ", field.full_name(),
-          " specifies Cord type which is not supported for extensions."));
     }
   });
   return status;
