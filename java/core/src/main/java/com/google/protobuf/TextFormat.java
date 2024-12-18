@@ -135,7 +135,7 @@ public final class TextFormat {
     private static final Printer DEFAULT_DEBUG_FORMAT =
         new Printer(
             /* escapeNonAscii= */ true,
-            /* useShortRepeatedPrimitives= */ true,
+            /* useShortRepeatedPrimitives= */ false,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
             /* enablingSafeDebugFormat= */ true,
