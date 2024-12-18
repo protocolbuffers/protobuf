@@ -163,7 +163,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
   }
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
+UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
     const upb_MiniTableField* f, void* to, const void* from) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:
@@ -183,7 +183,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
   UPB_UNREACHABLE();
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
+UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     const upb_MiniTableField* f, const void* a, const void* b) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:

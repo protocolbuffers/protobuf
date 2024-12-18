@@ -16,6 +16,7 @@
 #undef UPB_API
 #undef UPBC_API
 #undef UPB_API_INLINE
+#undef UPB_API_INLINE_IF_NOT_GCC
 #undef UPB_ALIGN_UP
 #undef UPB_ALIGN_DOWN
 #undef UPB_ALIGN_MALLOC
