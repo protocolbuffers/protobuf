@@ -18,6 +18,12 @@ _CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
 
 _ProtoCcFilesInfo = provider(fields = ["files"], doc = "Provide cc proto files.")
 _ProtoCcHeaderInfo = provider(fields = ["headers"], doc = "Provide cc proto headers.")
+_ProtoCcAspectHintInfo = provider(
+    doc = "Provide extra C++ specific info to proto compile actions",
+    fields = {
+        "copts": "Compiler flags to pass to the C++ compile acitons for the generated proto sources",
+    },
+)
 
 def _get_output_files(actions, proto_info, suffixes):
     result = []
@@ -87,6 +93,11 @@ def _aspect_impl(target, ctx):
     else:  # shouldn't generate code
         header_provider = _ProtoCcHeaderInfo(headers = depset())
 
+    copts = []
+    for hint in getattr(ctx.rule.attr, "aspect_hints", []):
+        if _ProtoCcAspectHintInfo in hint:
+            copts.extend(hint[_ProtoCcAspectHintInfo].copts)
+
     proto_common.compile(
         actions = ctx.actions,
         proto_info = proto_info,
@@ -107,6 +118,7 @@ def _aspect_impl(target, ctx):
         headers = headers,
         textual_hdrs = textual_hdrs,
         strip_include_prefix = _get_strip_include_prefix(ctx, proto_info),
+        user_compile_flags = copts,
     )
 
     return [
@@ -195,4 +207,47 @@ rules to generate C++ code for.""",
     }),
     provides = [CcInfo],
     toolchains = toolchains.use_toolchain(_CC_PROTO_TOOLCHAIN),
+)
+
+def _aspect_hint_impl(ctx):
+    return _ProtoCcAspectHintInfo(copts = ctx.attr.copts)
+
+cc_proto_aspect_hint = rule(
+    implementation = _aspect_hint_impl,
+    attrs = {
+        "copts": attr.string_list(),
+    },
+    doc = """
+<p>
+<code>cc_proto_aspect_hint</code> allows you to custom how generated C++ code compiles.
+</p>
+
+<p>
+<code>copts</code> custom compiler flags to pass to the C++ compiler.
+</p>
+
+<p>
+Example:
+</p>
+
+<pre>
+<code class="lang-starlark">
+cc_proto_library(
+    name = "foo_cc_proto",
+    deps = [":foo_proto"],
+)
+
+cc_proto_aspect_hint(
+    name = "custom_cc_flags",
+    copts = ["-Wno-all"],
+)
+
+proto_library(
+    name = "foo_proto",
+    srcs = ["foo.proto"],
+    aspect_hints = [":custom_cc_flags"],
+)
+</code>
+</pre>
+""",
 )
