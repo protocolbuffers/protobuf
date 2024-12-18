@@ -56,15 +56,16 @@ EXAMPLE_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_example
 echo "Expanding protobuf_example crate tar"
 tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT 
 
-cd $CRATE_ROOT
-CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
+# Put the Bazel-built protoc and plugin at the beginning of $PATH
+PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
+PATH=$(dirname $(rlocation com_google_protobuf/upb_generator/minitable/protoc-gen-upb_minitable)):$PATH
 
-cd $CODEGEN_ROOT
-CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
+# cd $CRATE_ROOT
+# CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 
-# The example crate cannot be published due to it having a build.rs that
-# modifies files outside of the OUT_DIR.
+# cd $CODEGEN_ROOT
+# CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
+
 cd $EXAMPLE_ROOT
-CARGO_HOME=$CARGO_HOME cargo build --features run-protobuf-codegen
 CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 
