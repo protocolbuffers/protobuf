@@ -3053,10 +3053,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
 
   if (&options() != &FieldOptions::default_instance()) {
     *proto->mutable_options() = options();
-    if (proto_features_->GetExtension(pb::cpp).has_string_type()) {
-      // ctype must have been set in InferLegacyProtoFeatures so avoid copying.
-      proto->mutable_options()->clear_ctype();
-    }
+  }
+  if (has_legacy_proto_ctype()) {
+    proto->mutable_options()->set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -3663,6 +3663,10 @@ void FieldDescriptor::DebugString(
 
   FieldOptions full_options = options();
   CopyFeaturesToOptions(proto_features_, &full_options);
+  if (has_legacy_proto_ctype()) {
+    full_options.set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
+  }
   std::string formatted_options;
   if (FormatBracketedOptions(depth, full_options, file()->pool(),
                              &formatted_options)) {
@@ -3903,6 +3907,10 @@ void MethodDescriptor::DebugString(
 }
 
 // Feature methods ===============================================
+
+bool FieldDescriptor::has_legacy_proto_ctype() const {
+  return legacy_proto_ctype_ <= FieldOptions::CType_MAX;
+}
 
 bool EnumDescriptor::is_closed() const {
   return features().enum_type() == FeatureSet::CLOSED;
@@ -5527,23 +5535,6 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   }
 }
 
-// TODO: we should update proto code to not need ctype to be set
-// when string_type is set.
-static void EnforceCTypeStringTypeConsistency(
-    Edition edition, FieldDescriptor::CppType type,
-    const pb::CppFeatures& cpp_features, FieldOptions& options) {
-  if (&options == &FieldOptions::default_instance()) return;
-  if (type == FieldDescriptor::CPPTYPE_STRING) {
-    switch (cpp_features.string_type()) {
-      case pb::CppFeatures::CORD:
-        options.set_ctype(FieldOptions::CORD);
-        break;
-      default:
-        break;
-    }
-  }
-}
-
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     Edition edition, const typename DescriptorT::Proto& proto,
@@ -5634,6 +5625,13 @@ void DescriptorBuilder::PostProcessFieldFeatures(
         !type.descriptor()->options().map_entry()) {
       field.type_ = FieldDescriptor::TYPE_GROUP;
     }
+  }
+
+  if (field.options_->has_ctype()) {
+    field.legacy_proto_ctype_ = field.options_->ctype();
+    const_cast<FieldOptions*>(  // NOLINT(google3-runtime-proto-const-cast)
+        field.options_)
+        ->clear_ctype();
   }
 }
 
@@ -6167,24 +6165,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
 
-    // TODO: move this check back to generator.cc once we no longer
-    // need to set both ctype and string_type internally.
-    internal::VisitDescriptors(
-        *result, proto,
-        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
-          if (field.options_->has_ctype() && field.options_->features()
-                                                 .GetExtension(pb::cpp)
-                                                 .has_string_type()) {
-            AddError(field.full_name(), proto,
-                     DescriptorPool::ErrorCollector::TYPE, [&] {
-                       return absl::StrFormat(
-                           "Field %s specifies both string_type and ctype "
-                           "which is not supported.",
-                           field.full_name());
-                     });
-          }
-        });
-
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
     {
@@ -6205,22 +6185,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                 alloc);
           });
     }
-
-    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-      if (result->edition() >= Edition::EDITION_2024 &&
-          field.options().has_ctype()) {
-        // "ctype" is no longer supported in edition 2024 and beyond.
-        AddError(
-            field.full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-            "ctype option is not allowed under edition 2024 and beyond. Use "
-            "the feature string_type = VIEW|CORD|STRING|... instead.");
-      }
-      EnforceCTypeStringTypeConsistency(
-          field.file()->edition(), field.cpp_type(),
-          field.merged_features_->GetExtension(pb::cpp),
-          const_cast<  // NOLINT(google3-runtime-proto-const-cast)
-              FieldOptions&>(*field.options_));
-    });
 
     // Post-process cleanup for field features.
     internal::VisitDescriptors(
@@ -6617,6 +6581,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->is_oneof_ = false;
   result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
+  result->legacy_proto_ctype_ = FieldOptions::CType_MAX + 1;
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
@@ -7964,6 +7929,13 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   }
 
   ValidateFieldFeatures(field, proto);
+
+  if (field->file()->edition() >= Edition::EDITION_2024 &&
+      field->has_legacy_proto_ctype()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "ctype option is not allowed under edition 2024 and beyond. Use "
+             "the feature string_type = VIEW|CORD|STRING|... instead.");
+  }
 
   // Only message type fields may be lazy.
   if (field->options().lazy() || field->options().unverified_lazy()) {
