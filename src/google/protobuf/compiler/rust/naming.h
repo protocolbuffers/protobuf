@@ -22,6 +22,12 @@ namespace compiler {
 namespace rust {
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
 
+// Gets the file name for the entry point rs file. This path will be in the same
+// directory as the provided file. This will be the path provided by command
+// line flag, or a default path relative to the provided `file` (which should
+// be the first .proto src proto file).
+std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file);
+
 std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file);
