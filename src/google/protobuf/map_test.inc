@@ -5,6 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+#include <cstddef>
 
 // A hack to include windows.h first, which ensures the GetMessage macro can
 // be undefined when we include <google/protobuf/stubs/common.h>
@@ -201,14 +202,20 @@ struct MapTestPeer {
     map.Resize(num_buckets);
   }
 
-  static int CalculateHiCutoff(int num_buckets) {
+  static size_t CalculateHiCutoff(size_t num_buckets) {
     return Map<int, int>::CalculateHiCutoff(num_buckets);
+  }
+
+  static size_t CalculateCapacityForSize(size_t size) {
+    return Map<int, int>::CalculateCapacityForSize(size);
   }
 
   template <typename Map>
   static auto GetTypeInfo() {
     return Map::GetTypeInfo();
   }
+
+  static constexpr size_t kMinTableSize = UntypedMapBase::kMinTableSize;
 };
 
 namespace {
