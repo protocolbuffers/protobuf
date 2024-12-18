@@ -822,7 +822,8 @@ class KeyMapBase : public UntypedMapBase {
       // So, estimate how much to shrink by making sure we don't shrink so
       // much that we would need to grow the table after a few inserts.
       const size_type hypothetical_size = new_size * 5 / 4 + 1;
-      while ((hypothetical_size << lg2_of_size_reduction_factor) < hi_cutoff) {
+      while ((hypothetical_size << (1 + lg2_of_size_reduction_factor)) <
+             hi_cutoff) {
         ++lg2_of_size_reduction_factor;
       }
       size_type new_num_buckets = std::max<size_type>(
@@ -862,6 +863,7 @@ class KeyMapBase : public UntypedMapBase {
       }
     }
     DeleteTable(old_table, old_table_size);
+    AssertLoadFactor();
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {

@@ -274,6 +274,27 @@ TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
   EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
+TEST(MapTest, ErasingEnoughCausesDownwardRehashOnNextInsert) {
+  for (size_t capacity = 1; capacity < 1000; capacity *= 2) {
+    const size_t max_size = MapTestPeer::CalculateHiCutoff(capacity);
+    for (size_t min_size = 1; min_size < max_size / 4; ++min_size) {
+      Map<int, int> m;
+      while (m.size() < max_size) m[m.size()];
+      const size_t num_buckets = MapTestPeer::NumBuckets(m);
+      while (m.size() > min_size) m.erase(m.size() - 1);
+      // Erasing doesn't shrink the table.
+      ASSERT_EQ(num_buckets, MapTestPeer::NumBuckets(m));
+      // This insertion causes a shrinking rehash because the load factor is too
+      // low.
+      m[99999];
+      size_t new_num_buckets = MapTestPeer::NumBuckets(m);
+      EXPECT_LT(new_num_buckets, num_buckets);
+      EXPECT_LE(m.size(),
+                MapTestPeer::CalculateHiCutoff(MapTestPeer::NumBuckets(m)));
+    }
+  }
+}
+
 // We changed the internal implementation to use a smaller size type, but the
 // public API will still use size_t to avoid changing the API. Test that.
 TEST(MapTest, SizeTypeIsSizeT) {
