@@ -21,6 +21,7 @@
 #include "upb/message/internal/message.h"
 
 // Must be last.
+#include "upb/message/internal/message.h"
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
