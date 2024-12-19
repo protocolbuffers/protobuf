@@ -1379,6 +1379,13 @@ TEST_P(MapTestWithParams, SwapMapsFieldsViaReflection) {
 
   reflection_tester.ExpectClearViaReflectionIterator(lhs);
   reflection_tester.ExpectMapFieldsSetViaReflectionIterator(rhs);
+
+  if (lhs_arena == rhs_arena) {
+    // If they are the same arena, we can try the unsafe swap.
+    lhs->GetReflection()->UnsafeArenaSwapFields(lhs, rhs, fields);
+    reflection_tester.ExpectClearViaReflectionIterator(rhs);
+    reflection_tester.ExpectMapFieldsSetViaReflectionIterator(lhs);
+  }
 }
 
 class MapTestCodegenOrDynamic : public testing::TestWithParam<bool> {};
