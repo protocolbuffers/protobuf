@@ -8,10 +8,12 @@
 #include "google/protobuf/repeated_ptr_field.h"
 
 #include <algorithm>
+#include <csignal>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <iterator>
 #include <list>
 #include <memory>
@@ -960,6 +962,37 @@ TEST(RepeatedPtrField, Cleanups) {
 }
 
 
+TEST(RepeatedPtrField, CheckedGetOrAbortTest) {
+  RepeatedPtrField<std::string> field;
+
+  // Empty container tests.
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 0");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, field.size()),
+               "index: 0, size: 0");
+
+  // Non-empty container tests
+  field.Add()->assign("foo");
+  field.Add()->assign("bar");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2), "index: 2, size: 2");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
+}
+
+TEST(RepeatedPtrField, CheckedMutableOrAbortTest) {
+  RepeatedPtrField<std::string> field;
+
+  // Empty container tests.
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
+               "index: -1, size: 0");
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
+               "index: 0, size: 0");
+
+  // Non-empty container tests
+  field.Add()->assign("foo");
+  field.Add()->assign("bar");
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2), "index: 2, size: 2");
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
+               "index: -1, size: 2");
+}
 // ===================================================================
 
 class RepeatedPtrFieldIteratorTest : public testing::Test {

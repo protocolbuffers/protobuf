@@ -857,6 +857,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                p->Emit(", $pbi$::BytesTag{}");
              }
            }},
+          GetEmitRepeatedFieldMutableSub(*opts_, p),
       },
       R"cc(
         inline std::string* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -879,14 +880,13 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $WeakDescriptorSelfPin$;
           $annotate_mutable$;
           // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-          return _internal_mutable_$name_internal$()->Mutable(index);
+          return $mutable$;
         }
         template <typename Arg_, typename... Args_>
         inline void $Msg$::set_$name$(int index, Arg_&& value, Args_... args) {
           $WeakDescriptorSelfPin$;
-          $pbi$::AssignToString(
-              *_internal_mutable_$name_internal$()->Mutable(index),
-              std::forward<Arg_>(value), args... $bytes_tag$);
+          $pbi$::AssignToString(*$mutable$, std::forward<Arg_>(value),
+                                args... $bytes_tag$);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }

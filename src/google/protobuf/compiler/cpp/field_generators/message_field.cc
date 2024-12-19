@@ -762,16 +762,18 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
-  p->Emit(R"cc(
-    inline $Submsg$* $Msg$::mutable_$name$(int index)
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_mutable$;
-      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-      $StrongRef$;
-      return _internal_mutable_$name_internal$()->Mutable(index);
-    }
-  )cc");
+  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
+          R"cc(
+            inline $Submsg$* $Msg$::mutable_$name$(int index)
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $annotate_mutable$;
+              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+              $StrongRef$;
+              return $mutable$;
+            }
+          )cc");
+
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
