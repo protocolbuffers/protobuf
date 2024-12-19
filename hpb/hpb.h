@@ -42,6 +42,17 @@ typename T::Proxy CreateMessage(hpb::Arena& arena) {
 }
 
 template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
+  return hpb::internal::PrivateAccess::Proxy<T>(
+      hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
+                               T::minitable(), arena.ptr()),
+      arena.ptr());
+}
+
+// Deprecated; do not use. There is one extant caller which we plan to migrate.
+// Please use CloneMessage(Ptr<T>, hpb::Arena&) instead.
+// Tracking deletion TODO: b/385138477
+template <typename T>
 typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
   return ::hpb::internal::PrivateAccess::Proxy<T>(
       ::hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
