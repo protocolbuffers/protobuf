@@ -767,7 +767,7 @@ void SwapFieldHelper::SwapRepeatedMessageField(const Reflection* r,
     auto* lhs_map = r->MutableRaw<MapFieldBase>(lhs, field);
     auto* rhs_map = r->MutableRaw<MapFieldBase>(rhs, field);
     if (unsafe_shallow_swap) {
-      lhs_map->UnsafeShallowSwap(rhs_map);
+      lhs_map->InternalSwap(rhs_map);
     } else {
       lhs_map->Swap(rhs_map);
     }
