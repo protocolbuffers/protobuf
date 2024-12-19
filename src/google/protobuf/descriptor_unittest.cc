@@ -10295,7 +10295,7 @@ TEST_F(FeaturesTest, NoCtypeFromEdition2024) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: ctype option is not allowed under edition "
+      "foo.proto: Foo.bar: TYPE: ctype option is not allowed under edition "
       "2024 and beyond. Use the feature string_type = VIEW|CORD|STRING|... "
       "instead.\n");
 }

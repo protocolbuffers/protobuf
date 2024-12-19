@@ -255,7 +255,7 @@ TEST_F(CppGeneratorTest, StringTypeCordNotForExtension) {
       "--experimental_editions foo.proto");
 
   ExpectErrorSubstring(
-      "Extension bar specifies Cord type which is not supported for "
+      "Extension bar specifies string_type=CORD which is not supported for "
       "extensions.");
 }
 
@@ -280,7 +280,7 @@ TEST_F(CppGeneratorTest, InheritedStringTypeCordNotForExtension) {
   ExpectNoErrors();
 }
 
-TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
+TEST_F(CppGeneratorTest, CtypeOnNonStringFieldTest) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
@@ -290,8 +290,7 @@ TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "Field Foo.bar specifies ctype, but is not "
-      "a string nor bytes field.");
+      "ctype can only be specified for string or bytes field.");
 }
 
 TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
@@ -306,9 +305,7 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
     })schema");
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
-  ExpectErrorSubstring(
-      "Extension bar specifies Cord type which is "
-      "not supported for extensions.");
+  ExpectErrorSubstring("ctype=CORD is not supported for extensions.");
 }
 }  // namespace
 }  // namespace cpp

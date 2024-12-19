@@ -68,6 +68,8 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::FOO, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_FOO, m.optional_foreign_enum());
 
+  EXPECT_EQ(0, m.optional_string_piece().size());
+  EXPECT_EQ(0, m.optional_cord().size());
 
   EXPECT_EQ(0, m.repeated_int32_size());
   EXPECT_EQ(0, m.repeated_int64_size());
@@ -89,6 +91,8 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(0, m.repeated_proto2_message_size());
   EXPECT_EQ(0, m.repeated_nested_enum_size());
   EXPECT_EQ(0, m.repeated_foreign_enum_size());
+  EXPECT_EQ(0, m.repeated_string_piece_size());
+  EXPECT_EQ(0, m.repeated_cord_size());
   EXPECT_EQ(0, m.repeated_lazy_message_size());
   EXPECT_EQ(TestAllTypes::ONEOF_FIELD_NOT_SET, m.oneof_field_case());
 }
@@ -114,6 +118,8 @@ void FillValues(TestAllTypes* m) {
   m->mutable_optional_proto2_message()->set_optional_int32(44);
   m->set_optional_nested_enum(TestAllTypes::BAZ);
   m->set_optional_foreign_enum(FOREIGN_BAZ);
+  m->set_optional_string_piece("test");
+  m->set_optional_cord("test");
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
@@ -135,6 +141,8 @@ void FillValues(TestAllTypes* m) {
   m->add_repeated_proto2_message()->set_optional_int32(48);
   m->add_repeated_nested_enum(TestAllTypes::BAZ);
   m->add_repeated_foreign_enum(FOREIGN_BAZ);
+  m->add_repeated_string_piece("test");
+  m->add_repeated_cord("test");
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -166,6 +174,8 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
   EXPECT_EQ(TestAllTypes::BAZ, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_BAZ, m.optional_foreign_enum());
+  EXPECT_EQ("test", m.optional_string_piece());
+  EXPECT_EQ("test", m.optional_cord());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
 
@@ -209,6 +219,10 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::BAZ, m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
   EXPECT_EQ(FOREIGN_BAZ, m.repeated_foreign_enum(0));
+  EXPECT_EQ(1, m.repeated_string_piece_size());
+  EXPECT_EQ("test", m.repeated_string_piece(0));
+  EXPECT_EQ(1, m.repeated_cord_size());
+  EXPECT_EQ("test", m.repeated_cord(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
@@ -733,9 +747,6 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != FieldOptions::STRING) {
-      continue;
-    }
     EXPECT_EQ(true, r->HasField(message, field));
   }
 
@@ -1027,6 +1038,8 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   message.set_optional_bytes("");
   message.set_optional_nested_enum(TestAllTypes::FOO);  // first enum entry
   message.set_optional_foreign_enum(FOREIGN_FOO);       // first enum entry
+  message.set_optional_string_piece("");
+  message.set_optional_cord("");
 
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(0, this->GetOutput().size());
@@ -1054,6 +1067,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, NullMutableSerializesEmpty) {
   // No-op mutable calls -> no output.
   message.mutable_optional_string();
   message.mutable_optional_bytes();
+  message.mutable_optional_cord();
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_TRUE(this->GetOutput().empty());
 
