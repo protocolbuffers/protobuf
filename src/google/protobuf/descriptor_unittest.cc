@@ -5079,6 +5079,222 @@ TEST_F(ValidationErrorTest, InvalidDefaults) {
       "values.\n");
 }
 
+static constexpr absl::string_view kNullChar("\0", 1);
+
+TEST_F(ValidationErrorTest, InvalidDefaultIntegerValues) {
+  // A null char in the middle
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            default_value: "1\0"
+          }
+        }
+      )pb",
+      absl::StrCat(
+          "foo.proto: bar.foo: DEFAULT_VALUE: Couldn't parse default value \"1",
+          kNullChar, "\".\n"));
+
+  // Other chars after
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            default_value: "1a"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Couldn't parse default value "
+      "\"1a\".\n");
+
+  // Overflow of int32_t
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: "3000000000"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"3000000000\" out of "
+      "range.\n");
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: "-3000000000"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"-3000000000\" out of "
+      "range.\n");
+
+  // Overflow of uint32_t
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_UINT32
+            default_value: "5000000000"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"5000000000\" out of "
+      "range.\n");
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_UINT32
+            default_value: "-1"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"-1\" out of range.\n");
+
+  // Overflow of int64_t
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            default_value: "9999999999999999999"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"9999999999999999999\" out of "
+      "range.\n");
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            default_value: "-9999999999999999999"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"-9999999999999999999\" out "
+      "of range.\n");
+
+  // Overflow of uint64_t
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_UINT64
+            default_value: "19999999999999999999"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"19999999999999999999\" out "
+      "of "
+      "range.\n");
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_UINT64
+            default_value: "-1"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Value \"-1\" out "
+      "of range.\n");
+}
+
+TEST_F(ValidationErrorTest, InvalidDefaultFloatingValues) {
+  // A null char in the middle
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_FLOAT
+            default_value: "1\0"
+          }
+        }
+      )pb",
+      absl::StrCat(
+          "foo.proto: bar.foo: DEFAULT_VALUE: Couldn't parse default value \"1",
+          kNullChar, "\".\n"));
+
+  // Other chars after
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "bar"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_DOUBLE
+            default_value: "1j"
+          }
+        }
+      )pb",
+      "foo.proto: bar.foo: DEFAULT_VALUE: Couldn't parse default value "
+      "\"1j\".\n");
+}
+
 TEST_F(ValidationErrorTest, NegativeFieldNumber) {
   BuildFileWithErrors(
       "name: \"foo.proto\" "

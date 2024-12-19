@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cerrno>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -6591,6 +6592,28 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   }
 }
 
+template <typename T>
+std::optional<std::string> ParseIntegralDefault(const std::string& value,
+                                                T& out) {
+  static_assert(sizeof(int64_t) <= sizeof(long long));            // NOLINT
+  static_assert(sizeof(uint64_t) <= sizeof(unsigned long long));  // NOLINT
+  char* end_pos;
+  using Large = std::conditional_t<std::is_signed_v<T>, int64_t, uint64_t>;
+  errno = 0;
+  Large parsed = std::is_signed_v<T>
+                     ? std::strtoll(value.c_str(), &end_pos, 0)    // NOLINT
+                     : std::strtoull(value.c_str(), &end_pos, 0);  // NOLINT
+  out = static_cast<T>(parsed);
+  if (errno == ERANGE || parsed != out ||
+      (value[0] == '-' && !std::is_signed_v<T>)) {
+    return absl::StrCat("Value \"", value, "\" out of range.");
+  }
+  if (value.empty() || end_pos != &value[value.size()]) {
+    return absl::StrCat("Couldn't parse default value \"", value, "\".");
+  }
+  return std::nullopt;
+}
+
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -6667,25 +6690,36 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
       char* end_pos = nullptr;
       switch (result->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32:
-          result->default_value_int32_t_ =
-              std::strtol(proto.default_value().c_str(), &end_pos, 0);
+          if (auto error = ParseIntegralDefault(
+                  proto.default_value(), result->default_value_int32_t_)) {
+            AddError(result->full_name(), proto,
+                     DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                     [&] { return *error; });
+          }
           break;
         case FieldDescriptor::CPPTYPE_INT64:
-          static_assert(sizeof(int64_t) == sizeof(long long),  // NOLINT
-                        "sizeof int64_t is not sizeof long long");
-          result->default_value_int64_t_ =
-              std::strtoll(proto.default_value().c_str(), &end_pos, 0);
+          if (auto error = ParseIntegralDefault(
+                  proto.default_value(), result->default_value_int64_t_)) {
+            AddError(result->full_name(), proto,
+                     DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                     [&] { return *error; });
+          }
           break;
         case FieldDescriptor::CPPTYPE_UINT32:
-          result->default_value_uint32_t_ =
-              std::strtoul(proto.default_value().c_str(), &end_pos, 0);
+          if (auto error = ParseIntegralDefault(
+                  proto.default_value(), result->default_value_uint32_t_)) {
+            AddError(result->full_name(), proto,
+                     DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                     [&] { return *error; });
+          }
           break;
         case FieldDescriptor::CPPTYPE_UINT64:
-          static_assert(
-              sizeof(uint64_t) == sizeof(unsigned long long),  // NOLINT
-              "sizeof uint64_t is not sizeof unsigned long long");
-          result->default_value_uint64_t_ =
-              std::strtoull(proto.default_value().c_str(), &end_pos, 0);
+          if (auto error = ParseIntegralDefault(
+                  proto.default_value(), result->default_value_uint64_t_)) {
+            AddError(result->full_name(), proto,
+                     DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                     [&] { return *error; });
+          }
           break;
         case FieldDescriptor::CPPTYPE_FLOAT:
           if (proto.default_value() == "inf") {
@@ -6760,7 +6794,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
         // end_pos is only set non-null by the parsers for numeric types,
         // above. This checks that the default was non-empty and had no extra
         // junk after the end of the number.
-        if (proto.default_value().empty() || *end_pos != '\0') {
+        if (proto.default_value().empty() ||
+            end_pos != &proto.default_value()[proto.default_value().size()]) {
           AddError(result->full_name(), proto,
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE, [&] {
                      return absl::StrCat("Couldn't parse default value \"",
