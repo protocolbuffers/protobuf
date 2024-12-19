@@ -555,6 +555,45 @@ static void encode_ext(upb_encstate* e, const upb_MiniTableExtension* ext,
   }
 }
 
+static void encode_exts(upb_encstate* e, const upb_MiniTable* m,
+                        const upb_Message* msg) {
+  if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return;
+
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return;
+
+  /* Encode all extensions together. Unlike C++, we do not attempt to keep
+   * these in field number order relative to normal fields or even to each
+   * other. */
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext;
+  upb_MessageValue ext_val;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
+                                                      &iter)) {
+    // Message has no extensions.
+    return;
+  }
+
+  if (e->options & kUpb_EncodeOption_Deterministic) {
+    _upb_sortedmap sorted;
+    if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
+      // TODO: b/378744096 - handle alloc failure
+    }
+    const upb_Extension* ext;
+    while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+      encode_ext(e, ext->ext, ext->data,
+                 m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    }
+    _upb_mapsorter_popmap(&e->sorter, &sorted);
+  } else {
+    do {
+      encode_ext(e, ext, ext_val,
+                 m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
+                                                            &iter));
+  }
+}
+
 static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size) {
   size_t pre_len = e->limit - e->ptr;
@@ -587,35 +626,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
-    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (in) {
-      /* Encode all extensions together. Unlike C++, we do not attempt to keep
-       * these in field number order relative to normal fields or even to each
-       * other. */
-      if (e->options & kUpb_EncodeOption_Deterministic) {
-        _upb_sortedmap sorted;
-        if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-          // TODO: b/378744096 - handle alloc failure
-        }
-        const upb_Extension* ext;
-        while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-          encode_ext(e, ext->ext, ext->data,
-                     m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-        }
-        _upb_mapsorter_popmap(&e->sorter, &sorted);
-      } else {
-        const upb_MiniTableExtension* ext;
-        upb_MessageValue ext_val;
-        uintptr_t iter = kUpb_Message_ExtensionBegin;
-        while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-            msg, &ext, &ext_val, &iter)) {
-          encode_ext(e, ext, ext_val,
-                     m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-        }
-      }
-    }
-  }
+  encode_exts(e, m, msg);
 
   if (upb_MiniTable_FieldCount(m)) {
     const upb_MiniTableField* f =
