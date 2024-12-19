@@ -20,11 +20,16 @@ extend TestModel {
 
 extend TestModel {
   int32 int32_ext = 13002 [default = 644];
-
   int64 int64_ext = 13003 [default = 2147483648];
 
   repeated int32 repeated_int32_ext = 13004;
   repeated int64 repeated_int64_ext = 13005;
-
   repeated string repeated_string_ext = 13006;
+
+  uint32 uint32_ext = 13007 [default = 12];
+  uint64 uint64_ext = 13008 [default = 4294967296];
+  float float_ext = 13009 [default = 3.14];
+  double double_ext = 13010
+      [default = 340282000000000000000000000000000000001.23];
+  bool bool_ext = 13011 [default = true];
 }

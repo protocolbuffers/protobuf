@@ -139,6 +139,16 @@ std::string DefaultValue(const FieldDescriptor* field) {
       return absl::StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_INT64:
       return absl::StrCat(field->default_value_int64());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return absl::StrCat(field->default_value_uint32());
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return absl::StrCat(field->default_value_uint64());
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return absl::StrCat(field->default_value_float());
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return absl::StrCat(field->default_value_double());
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "::std::false_type()";
     default:

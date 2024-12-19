@@ -70,32 +70,31 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
   }
 };
 
-template <>
-struct UpbExtensionTrait<int32_t> {
-  using DefaultType = int32_t;
-  using ReturnType = int32_t;
-  static constexpr auto kSetter = upb_Message_SetExtensionInt32;
+#define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                                 \
+  template <>                                                               \
+  struct UpbExtensionTrait<CppType> {                                       \
+    using DefaultType = CppType;                                            \
+    using ReturnType = CppType;                                             \
+    static constexpr auto kSetter = upb_Message_SetExtension##UpbFunc;      \
+                                                                            \
+    template <typename Msg, typename Id>                                    \
+    static constexpr ReturnType Get(Msg message, const Id& id) {            \
+      auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id); \
+      return upb_Message_GetExtension##UpbFunc(                             \
+          hpb::interop::upb::GetMessage(message), id.mini_table_ext(),      \
+          default_val);                                                     \
+    }                                                                       \
+  };
 
-  template <typename Msg, typename Id>
-  static constexpr ReturnType Get(Msg message, const Id& id) {
-    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
-    return upb_Message_GetExtensionInt32(hpb::interop::upb::GetMessage(message),
-                                         id.mini_table_ext(), default_val);
-  }
-};
+UPB_EXT_PRIMITIVE(bool, Bool);
+UPB_EXT_PRIMITIVE(int32_t, Int32);
+UPB_EXT_PRIMITIVE(int64_t, Int64);
+UPB_EXT_PRIMITIVE(uint32_t, UInt32);
+UPB_EXT_PRIMITIVE(uint64_t, UInt64);
+UPB_EXT_PRIMITIVE(float, Float);
+UPB_EXT_PRIMITIVE(double, Double);
 
-template <>
-struct UpbExtensionTrait<int64_t> {
-  using DefaultType = int64_t;
-  using ReturnType = int64_t;
-  static constexpr auto kSetter = upb_Message_SetExtensionInt64;
-  template <typename Msg, typename Id>
-  static constexpr ReturnType Get(Msg message, const Id& id) {
-    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
-    return upb_Message_GetExtensionInt64(hpb::interop::upb::GetMessage(message),
-                                         id.mini_table_ext(), default_val);
-  }
-};
+#undef UPB_EXT_PRIMITIVE
 
 // TODO: b/375460289 - flesh out non-promotional msg support that does
 // not return an error if missing but the default msg
@@ -245,7 +244,7 @@ absl::Status SetExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
-  if constexpr (std::is_integral_v<Extension>) {
+  if constexpr (std::is_arithmetic_v<Extension>) {
     bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
         hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
         hpb::interop::upb::GetArena(message));
