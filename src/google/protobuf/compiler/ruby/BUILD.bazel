@@ -8,8 +8,14 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "ruby",
-    srcs = ["ruby_generator.cc"],
-    hdrs = ["ruby_generator.h"],
+    srcs = [
+        "ruby_generator.cc",
+        "rbs_generator.cc",
+    ],
+    hdrs = [
+        "ruby_generator.h",
+        "rbs_generator.h",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -31,19 +37,27 @@ cc_library(
 
 cc_test(
     name = "generator_unittest",
-    srcs = ["ruby_generator_unittest.cc"],
+    srcs = [
+        "ruby_generator_unittest.cc",
+        "rbs_generator_unittest.cc",
+    ],
     data = [
         "ruby_generated_code.proto",
         "ruby_generated_code_pb.rb",
+        "ruby_generated_code_pb.rbs",
         "ruby_generated_code_proto2.proto",
         "ruby_generated_code_proto2_import.proto",
         "ruby_generated_code_proto2_pb.rb",
+        "ruby_generated_code_proto2_pb.rbs",
         "ruby_generated_pkg_explicit.proto",
         "ruby_generated_pkg_explicit_legacy.proto",
         "ruby_generated_pkg_explicit_legacy_pb.rb",
+        "ruby_generated_pkg_explicit_legacy_pb.rbs",
         "ruby_generated_pkg_explicit_pb.rb",
+        "ruby_generated_pkg_explicit_pb.rbs",
         "ruby_generated_pkg_implicit.proto",
         "ruby_generated_pkg_implicit_pb.rb",
+        "ruby_generated_pkg_implicit_pb.rbs",
         "//src/google/protobuf:testdata",
     ],
     deps = [
