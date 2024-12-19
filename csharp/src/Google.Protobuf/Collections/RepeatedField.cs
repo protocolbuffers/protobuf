@@ -8,11 +8,13 @@
 #endregion
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
 #if NET5_0_OR_GREATER
 using System.Runtime.CompilerServices;
@@ -116,12 +118,31 @@ namespace Google.Protobuf.Collections
                     {
                         EnsureSize(count + (length / codec.FixedSize));
 
-                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+
+                        // if little endian try to copy packed buffer into RepeatedField array
+                        if(BitConverter.IsLittleEndian)
                         {
-                            // Only FieldCodecs with a fixed size can reach here, and they are all known
-                            // types that don't allow the user to specify a custom reader action.
-                            // reader action will never return null.
-                            array[count++] = reader(ref ctx);
+                            unsafe
+                            {
+                                GCHandle gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
+                                IntPtr addr = gcHandle.AddrOfPinnedObject();
+                                Span<byte> span = new Span<byte>(addr.ToPointer(), array.Length * codec.FixedSize)
+                                    .Slice(count * codec.FixedSize);
+                                Debug.Assert(span.Length >= length);
+                                ParsingPrimitives.ReadPackedFieldLittleEndian(ref ctx.buffer, ref ctx.state, length, span);
+                                count += length / codec.FixedSize;
+                                gcHandle.Free();
+                            }
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                // Only FieldCodecs with a fixed size can reach here, and they are all known
+                                // types that don't allow the user to specify a custom reader action.
+                                // reader action will never return null.
+                                array[count++] = reader(ref ctx);
+                            }
                         }
                     }
                     else
