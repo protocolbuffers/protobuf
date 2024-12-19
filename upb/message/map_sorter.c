@@ -146,8 +146,10 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
 }
 
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
-                             size_t count, _upb_sortedmap* sorted) {
+                             _upb_sortedmap* sorted) {
+  size_t count = (in->size - in->ext_begin) / sizeof(upb_Extension);
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
+  if (count == 0) return true;
   const upb_Extension* exts =
       UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
 
