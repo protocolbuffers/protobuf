@@ -1797,9 +1797,8 @@ inline std::string* Type::mutable_oneofs(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void Type::set_oneofs(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_oneofs()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_oneofs()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
 }
 template <typename Arg_, typename... Args_>
