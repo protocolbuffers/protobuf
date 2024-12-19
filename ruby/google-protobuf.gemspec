@@ -32,6 +32,8 @@ Gem::Specification.new do |s|
     s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   end
   s.required_ruby_version = '>= 3.0'
+  # bigdecimal must be used as a non-built in gem as of ruby-3.4
+  s.add_dependency "bigdecimal"
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
