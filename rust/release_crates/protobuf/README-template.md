@@ -42,7 +42,7 @@ You can build a compatible protoc from source as follows:
 ```
 git clone https://github.com/protocolbuffers/protobuf.git
 cd protobuf
-git checkout $TAG
+git checkout rust-prerelease-{VERSION}
 cmake . -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
 cmake --build . --parallel 12"
 ```
