@@ -210,11 +210,8 @@ import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Handler;
@@ -233,6 +230,281 @@ import org.junit.Assert;
  */
 public final class TestUtil {
   private TestUtil() {}
+
+  public static final String ALL_FIELDS_SET_TEXT =
+      ""
+          + "optional_int32: 101\n"
+          + "optional_int64: 102\n"
+          + "optional_uint32: 103\n"
+          + "optional_uint64: 104\n"
+          + "optional_sint32: 105\n"
+          + "optional_sint64: 106\n"
+          + "optional_fixed32: 107\n"
+          + "optional_fixed64: 108\n"
+          + "optional_sfixed32: 109\n"
+          + "optional_sfixed64: 110\n"
+          + "optional_float: 111.0\n"
+          + "optional_double: 112.0\n"
+          + "optional_bool: true\n"
+          + "optional_string: \"115\"\n"
+          + "optional_bytes: \"116\"\n"
+          + "OptionalGroup {\n"
+          + "  a: 117\n"
+          + "}\n"
+          + "optional_nested_message {\n"
+          + "  bb: 118\n"
+          + "}\n"
+          + "optional_foreign_message {\n"
+          + "  c: 119\n"
+          + "}\n"
+          + "optional_import_message {\n"
+          + "  d: 120\n"
+          + "}\n"
+          + "optional_nested_enum: BAZ\n"
+          + "optional_foreign_enum: FOREIGN_BAZ\n"
+          + "optional_import_enum: IMPORT_BAZ\n"
+          + "optional_string_piece: \"124\"\n"
+          + "optional_cord: \"125\"\n"
+          + "optional_public_import_message {\n"
+          + "  e: 126\n"
+          + "}\n"
+          + "optional_lazy_message {\n"
+          + "  bb: 127\n"
+          + "}\n"
+          + "optional_unverified_lazy_message {\n"
+          + "  bb: 128\n"
+          + "}\n"
+          + "repeated_int32: 201\n"
+          + "repeated_int32: 301\n"
+          + "repeated_int64: 202\n"
+          + "repeated_int64: 302\n"
+          + "repeated_uint32: 203\n"
+          + "repeated_uint32: 303\n"
+          + "repeated_uint64: 204\n"
+          + "repeated_uint64: 304\n"
+          + "repeated_sint32: 205\n"
+          + "repeated_sint32: 305\n"
+          + "repeated_sint64: 206\n"
+          + "repeated_sint64: 306\n"
+          + "repeated_fixed32: 207\n"
+          + "repeated_fixed32: 307\n"
+          + "repeated_fixed64: 208\n"
+          + "repeated_fixed64: 308\n"
+          + "repeated_sfixed32: 209\n"
+          + "repeated_sfixed32: 309\n"
+          + "repeated_sfixed64: 210\n"
+          + "repeated_sfixed64: 310\n"
+          + "repeated_float: 211.0\n"
+          + "repeated_float: 311.0\n"
+          + "repeated_double: 212.0\n"
+          + "repeated_double: 312.0\n"
+          + "repeated_bool: true\n"
+          + "repeated_bool: false\n"
+          + "repeated_string: \"215\"\n"
+          + "repeated_string: \"315\"\n"
+          + "repeated_bytes: \"216\"\n"
+          + "repeated_bytes: \"316\"\n"
+          + "RepeatedGroup {\n"
+          + "  a: 217\n"
+          + "}\n"
+          + "RepeatedGroup {\n"
+          + "  a: 317\n"
+          + "}\n"
+          + "repeated_nested_message {\n"
+          + "  bb: 218\n"
+          + "}\n"
+          + "repeated_nested_message {\n"
+          + "  bb: 318\n"
+          + "}\n"
+          + "repeated_foreign_message {\n"
+          + "  c: 219\n"
+          + "}\n"
+          + "repeated_foreign_message {\n"
+          + "  c: 319\n"
+          + "}\n"
+          + "repeated_import_message {\n"
+          + "  d: 220\n"
+          + "}\n"
+          + "repeated_import_message {\n"
+          + "  d: 320\n"
+          + "}\n"
+          + "repeated_nested_enum: BAR\n"
+          + "repeated_nested_enum: BAZ\n"
+          + "repeated_foreign_enum: FOREIGN_BAR\n"
+          + "repeated_foreign_enum: FOREIGN_BAZ\n"
+          + "repeated_import_enum: IMPORT_BAR\n"
+          + "repeated_import_enum: IMPORT_BAZ\n"
+          + "repeated_string_piece: \"224\"\n"
+          + "repeated_string_piece: \"324\"\n"
+          + "repeated_cord: \"225\"\n"
+          + "repeated_cord: \"325\"\n"
+          + "repeated_lazy_message {\n"
+          + "  bb: 227\n"
+          + "}\n"
+          + "repeated_lazy_message {\n"
+          + "  bb: 327\n"
+          + "}\n"
+          + "default_int32: 401\n"
+          + "default_int64: 402\n"
+          + "default_uint32: 403\n"
+          + "default_uint64: 404\n"
+          + "default_sint32: 405\n"
+          + "default_sint64: 406\n"
+          + "default_fixed32: 407\n"
+          + "default_fixed64: 408\n"
+          + "default_sfixed32: 409\n"
+          + "default_sfixed64: 410\n"
+          + "default_float: 411.0\n"
+          + "default_double: 412.0\n"
+          + "default_bool: false\n"
+          + "default_string: \"415\"\n"
+          + "default_bytes: \"416\"\n"
+          + "default_nested_enum: FOO\n"
+          + "default_foreign_enum: FOREIGN_FOO\n"
+          + "default_import_enum: IMPORT_FOO\n"
+          + "default_string_piece: \"424\"\n"
+          + "default_cord: \"425\"\n"
+          + "oneof_bytes: \"604\"\n";
+
+  public static final String ALL_EXTENSIONS_SET_TEXT =
+      ""
+          + "[protobuf_unittest.optional_int32_extension]: 101\n"
+          + "[protobuf_unittest.optional_int64_extension]: 102\n"
+          + "[protobuf_unittest.optional_uint32_extension]: 103\n"
+          + "[protobuf_unittest.optional_uint64_extension]: 104\n"
+          + "[protobuf_unittest.optional_sint32_extension]: 105\n"
+          + "[protobuf_unittest.optional_sint64_extension]: 106\n"
+          + "[protobuf_unittest.optional_fixed32_extension]: 107\n"
+          + "[protobuf_unittest.optional_fixed64_extension]: 108\n"
+          + "[protobuf_unittest.optional_sfixed32_extension]: 109\n"
+          + "[protobuf_unittest.optional_sfixed64_extension]: 110\n"
+          + "[protobuf_unittest.optional_float_extension]: 111.0\n"
+          + "[protobuf_unittest.optional_double_extension]: 112.0\n"
+          + "[protobuf_unittest.optional_bool_extension]: true\n"
+          + "[protobuf_unittest.optional_string_extension]: \"115\"\n"
+          + "[protobuf_unittest.optional_bytes_extension]: \"116\"\n"
+          + "[protobuf_unittest.optionalgroup_extension] {\n"
+          + "  a: 117\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_nested_message_extension] {\n"
+          + "  bb: 118\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_foreign_message_extension] {\n"
+          + "  c: 119\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_import_message_extension] {\n"
+          + "  d: 120\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_nested_enum_extension]: BAZ\n"
+          + "[protobuf_unittest.optional_foreign_enum_extension]: FOREIGN_BAZ\n"
+          + "[protobuf_unittest.optional_import_enum_extension]: IMPORT_BAZ\n"
+          + "[protobuf_unittest.optional_string_piece_extension]: \"124\"\n"
+          + "[protobuf_unittest.optional_cord_extension]: \"125\"\n"
+          + "[protobuf_unittest.optional_public_import_message_extension] {\n"
+          + "  e: 126\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_lazy_message_extension] {\n"
+          + "  bb: 127\n"
+          + "}\n"
+          + "[protobuf_unittest.optional_unverified_lazy_message_extension] {\n"
+          + "  bb: 128\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_int32_extension]: 201\n"
+          + "[protobuf_unittest.repeated_int32_extension]: 301\n"
+          + "[protobuf_unittest.repeated_int64_extension]: 202\n"
+          + "[protobuf_unittest.repeated_int64_extension]: 302\n"
+          + "[protobuf_unittest.repeated_uint32_extension]: 203\n"
+          + "[protobuf_unittest.repeated_uint32_extension]: 303\n"
+          + "[protobuf_unittest.repeated_uint64_extension]: 204\n"
+          + "[protobuf_unittest.repeated_uint64_extension]: 304\n"
+          + "[protobuf_unittest.repeated_sint32_extension]: 205\n"
+          + "[protobuf_unittest.repeated_sint32_extension]: 305\n"
+          + "[protobuf_unittest.repeated_sint64_extension]: 206\n"
+          + "[protobuf_unittest.repeated_sint64_extension]: 306\n"
+          + "[protobuf_unittest.repeated_fixed32_extension]: 207\n"
+          + "[protobuf_unittest.repeated_fixed32_extension]: 307\n"
+          + "[protobuf_unittest.repeated_fixed64_extension]: 208\n"
+          + "[protobuf_unittest.repeated_fixed64_extension]: 308\n"
+          + "[protobuf_unittest.repeated_sfixed32_extension]: 209\n"
+          + "[protobuf_unittest.repeated_sfixed32_extension]: 309\n"
+          + "[protobuf_unittest.repeated_sfixed64_extension]: 210\n"
+          + "[protobuf_unittest.repeated_sfixed64_extension]: 310\n"
+          + "[protobuf_unittest.repeated_float_extension]: 211.0\n"
+          + "[protobuf_unittest.repeated_float_extension]: 311.0\n"
+          + "[protobuf_unittest.repeated_double_extension]: 212.0\n"
+          + "[protobuf_unittest.repeated_double_extension]: 312.0\n"
+          + "[protobuf_unittest.repeated_bool_extension]: true\n"
+          + "[protobuf_unittest.repeated_bool_extension]: false\n"
+          + "[protobuf_unittest.repeated_string_extension]: \"215\"\n"
+          + "[protobuf_unittest.repeated_string_extension]: \"315\"\n"
+          + "[protobuf_unittest.repeated_bytes_extension]: \"216\"\n"
+          + "[protobuf_unittest.repeated_bytes_extension]: \"316\"\n"
+          + "[protobuf_unittest.repeatedgroup_extension] {\n"
+          + "  a: 217\n"
+          + "}\n"
+          + "[protobuf_unittest.repeatedgroup_extension] {\n"
+          + "  a: 317\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_nested_message_extension] {\n"
+          + "  bb: 218\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_nested_message_extension] {\n"
+          + "  bb: 318\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_foreign_message_extension] {\n"
+          + "  c: 219\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_foreign_message_extension] {\n"
+          + "  c: 319\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_import_message_extension] {\n"
+          + "  d: 220\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_import_message_extension] {\n"
+          + "  d: 320\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_nested_enum_extension]: BAR\n"
+          + "[protobuf_unittest.repeated_nested_enum_extension]: BAZ\n"
+          + "[protobuf_unittest.repeated_foreign_enum_extension]: FOREIGN_BAR\n"
+          + "[protobuf_unittest.repeated_foreign_enum_extension]: FOREIGN_BAZ\n"
+          + "[protobuf_unittest.repeated_import_enum_extension]: IMPORT_BAR\n"
+          + "[protobuf_unittest.repeated_import_enum_extension]: IMPORT_BAZ\n"
+          + "[protobuf_unittest.repeated_string_piece_extension]: \"224\"\n"
+          + "[protobuf_unittest.repeated_string_piece_extension]: \"324\"\n"
+          + "[protobuf_unittest.repeated_cord_extension]: \"225\"\n"
+          + "[protobuf_unittest.repeated_cord_extension]: \"325\"\n"
+          + "[protobuf_unittest.repeated_lazy_message_extension] {\n"
+          + "  bb: 227\n"
+          + "}\n"
+          + "[protobuf_unittest.repeated_lazy_message_extension] {\n"
+          + "  bb: 327\n"
+          + "}\n"
+          + "[protobuf_unittest.default_int32_extension]: 401\n"
+          + "[protobuf_unittest.default_int64_extension]: 402\n"
+          + "[protobuf_unittest.default_uint32_extension]: 403\n"
+          + "[protobuf_unittest.default_uint64_extension]: 404\n"
+          + "[protobuf_unittest.default_sint32_extension]: 405\n"
+          + "[protobuf_unittest.default_sint64_extension]: 406\n"
+          + "[protobuf_unittest.default_fixed32_extension]: 407\n"
+          + "[protobuf_unittest.default_fixed64_extension]: 408\n"
+          + "[protobuf_unittest.default_sfixed32_extension]: 409\n"
+          + "[protobuf_unittest.default_sfixed64_extension]: 410\n"
+          + "[protobuf_unittest.default_float_extension]: 411.0\n"
+          + "[protobuf_unittest.default_double_extension]: 412.0\n"
+          + "[protobuf_unittest.default_bool_extension]: false\n"
+          + "[protobuf_unittest.default_string_extension]: \"415\"\n"
+          + "[protobuf_unittest.default_bytes_extension]: \"416\"\n"
+          + "[protobuf_unittest.default_nested_enum_extension]: FOO\n"
+          + "[protobuf_unittest.default_foreign_enum_extension]: FOREIGN_FOO\n"
+          + "[protobuf_unittest.default_import_enum_extension]: IMPORT_FOO\n"
+          + "[protobuf_unittest.default_string_piece_extension]: \"424\"\n"
+          + "[protobuf_unittest.default_cord_extension]: \"425\"\n"
+          + "[protobuf_unittest.oneof_uint32_extension]: 601\n"
+          + "[protobuf_unittest.oneof_nested_message_extension] {\n"
+          + "  bb: 602\n"
+          + "}\n"
+          + "[protobuf_unittest.oneof_string_extension]: \"603\"\n"
+          + "[protobuf_unittest.oneof_bytes_extension]: \"604\"\n";
 
   public static final TestRequired TEST_REQUIRED_UNINITIALIZED =
       TestRequired.newBuilder().setA(1).buildPartial();
@@ -1895,6 +2167,55 @@ public final class TestUtil {
 
     assertEqualsExactType("524", message.getExtension(repeatedStringPieceExtension, 1));
     assertEqualsExactType("525", message.getExtension(repeatedCordExtension, 1));
+  }
+
+  public static void assertRepeatedExtensionsImmutable(TestAllExtensionsOrBuilder message) {
+    List<List<?>> extensions =
+        Arrays.asList(
+            message.getExtension(repeatedInt32Extension),
+            message.getExtension(repeatedInt64Extension),
+            message.getExtension(repeatedUint32Extension),
+            message.getExtension(repeatedUint64Extension),
+            message.getExtension(repeatedSint32Extension),
+            message.getExtension(repeatedSint64Extension),
+            message.getExtension(repeatedFixed32Extension),
+            message.getExtension(repeatedFixed64Extension),
+            message.getExtension(repeatedSfixed32Extension),
+            message.getExtension(repeatedSfixed64Extension),
+            message.getExtension(repeatedFloatExtension),
+            message.getExtension(repeatedDoubleExtension),
+            message.getExtension(repeatedBoolExtension),
+            message.getExtension(repeatedStringExtension),
+            message.getExtension(repeatedBytesExtension),
+            message.getExtension(repeatedGroupExtension),
+            message.getExtension(repeatedNestedMessageExtension),
+            message.getExtension(repeatedForeignMessageExtension),
+            message.getExtension(repeatedImportMessageExtension),
+            message.getExtension(repeatedLazyMessageExtension),
+            message.getExtension(repeatedNestedEnumExtension),
+            message.getExtension(repeatedForeignEnumExtension),
+            message.getExtension(repeatedImportEnumExtension),
+            message.getExtension(repeatedStringPieceExtension),
+            message.getExtension(repeatedCordExtension));
+
+    ArrayList<String> errors = new ArrayList<>();
+    for (List<?> extension : extensions) {
+      String listContents = extension.toString();
+      try {
+        extension.clear();
+        errors.add(
+            "List should not be immutable, but was able to be cleared, so it's mutable: "
+                + listContents
+                + " "
+                + extension.getClass());
+      } catch (UnsupportedOperationException expected) {
+        // We expect this exception to be thrown, since the list should be
+        // immutable.
+      }
+    }
+    if (!errors.isEmpty()) {
+      throw new AssertionError(String.join("\n", errors));
+    }
   }
 
   public static void setPackedExtensions(TestPackedExtensions.Builder message) {
@@ -3764,108 +4085,6 @@ public final class TestUtil {
     }
   }
 
-  /** @param filePath The path relative to {@link #getTestDataDir}. */
-  public static String readTextFromFile(String filePath) {
-    return readBytesFromFile(filePath)
-        .toStringUtf8()
-        .replace(System.getProperty("line.separator"), "\n");
-  }
-
-  private static File getTestDataDir() {
-    // Search each parent directory looking for "src/google/protobuf".
-    File ancestor = new File(System.getProperty("protobuf.dir", "."));
-    String initialPath = ancestor.getAbsolutePath();
-    try {
-      ancestor = ancestor.getCanonicalFile();
-    } catch (IOException e) {
-      throw new RuntimeException("Couldn't get canonical name of working directory.", e);
-    }
-
-    String srcRootCheck = "src/google/protobuf";
-
-    // If we're running w/ Bazel on Windows, we're not in a sandbox, so we
-    // we must change our source root check condition to find the true test data dir.
-    String testBinaryName = System.getenv("TEST_BINARY");
-    if (testBinaryName != null && testBinaryName.endsWith(".exe")) {
-      srcRootCheck = srcRootCheck + "/descriptor.cc";
-    }
-
-    while (ancestor != null && ancestor.exists()) {
-      // Identify the true source root.
-      if (new File(ancestor, srcRootCheck).exists()) {
-        return new File(ancestor, "src/google/protobuf/testdata");
-      }
-      ancestor = ancestor.getParentFile();
-    }
-
-    throw new RuntimeException(
-        "Could not find golden files.  This test must be run from within the "
-            + "protobuf source package so that it can read test data files from the "
-            + "C++ source tree: "
-            + initialPath);
-  }
-
-  /** @param filename The path relative to {@link #getTestDataDir}. */
-  public static ByteString readBytesFromFile(String filename) {
-    File fullPath = new File(getTestDataDir(), filename);
-    try {
-      RandomAccessFile file = new RandomAccessFile(fullPath, "r");
-      byte[] content = new byte[(int) file.length()];
-      file.readFully(content);
-      return ByteString.copyFrom(content);
-    } catch (IOException e) {
-      // Throw a RuntimeException here so that we can call this function from
-      // static initializers.
-      throw new IllegalArgumentException("Couldn't read file: " + fullPath.getPath(), e);
-    }
-  }
-  // END FULL-RUNTIME
-
-  private static ByteString readBytesFromResource(String name) {
-    try {
-      InputStream in = TestUtil.class.getResourceAsStream(name);
-      if (in == null) { //
-        throw new RuntimeException("Tests data file " + name + " is missing.");
-      }
-      return ByteString.readFrom(in);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Get the bytes of the "golden message". This is a serialized TestAllTypes with all fields set as
-   * they would be by {@link #setAllFields(TestAllTypes.Builder)}, but it is loaded from a file on
-   * disk rather than generated dynamically. The file is actually generated by C++ code, so testing
-   * against it verifies compatibility with C++.
-   */
-  public static ByteString getGoldenMessage() {
-    if (goldenMessage == null) {
-      goldenMessage =
-          readBytesFromResource("/google/protobuf/testdata/golden_message_oneof_implemented");
-    }
-    return goldenMessage;
-  }
-
-  private static ByteString goldenMessage = null;
-
-  /**
-   * Get the bytes of the "golden packed fields message". This is a serialized TestPackedTypes with
-   * all fields set as they would be by {@link #setPackedFields(TestPackedTypes.Builder)}, but it is
-   * loaded from a file on disk rather than generated dynamically. The file is actually generated by
-   * C++ code, so testing against it verifies compatibility with C++.
-   */
-  public static ByteString getGoldenPackedFieldsMessage() {
-    if (goldenPackedFieldsMessage == null) {
-      goldenPackedFieldsMessage =
-          readBytesFromResource("/google/protobuf/testdata/golden_packed_fields_message");
-    }
-    return goldenPackedFieldsMessage;
-  }
-
-  private static ByteString goldenPackedFieldsMessage = null;
-
-  // BEGIN FULL-RUNTIME
   /**
    * Mock implementation of {@link GeneratedMessage.BuilderParent} for testing.
    *

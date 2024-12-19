@@ -18,9 +18,12 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/log/absl_check.h"
 #include "absl/types/span.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -127,7 +130,7 @@ struct TcFieldData {
 struct TcParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+typedef PROTOBUF_CC const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
 
 namespace field_layout {
 struct Offset {
@@ -284,7 +287,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
-  const MessageLite* default_instance;
+  const ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
@@ -309,7 +312,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const MessageLite* default_instance,
+                             const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -328,7 +331,7 @@ struct alignas(uint64_t) TcParseTableBase {
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
-        default_instance(default_instance),
+        class_data(class_data),
         post_loop_handler(post_loop_handler),
         fallback(fallback)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -425,8 +428,6 @@ struct alignas(uint64_t) TcParseTableBase {
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
-    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
-        : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
     struct {
@@ -438,7 +439,6 @@ struct alignas(uint64_t) TcParseTableBase {
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
-    void (*create_in_arena)(Arena*, void*);
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
@@ -473,6 +473,8 @@ struct alignas(uint64_t) TcParseTableBase {
                                    aux_offset +
                                    num_aux_entries * sizeof(FieldAux));
   }
+
+  const MessageLite* default_instance() const { return class_data->prototype; }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)
@@ -542,14 +544,16 @@ static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
 
-template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
-const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
   return func(static_cast<T*>(msg), ptr, ctx);
 }
 
-template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 constexpr TcParseTable<0> CreateStubTcParseTable(
-    const MessageLite* default_instance,
+    const ClassData* class_data,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
   return {
       {
@@ -563,7 +567,7 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
           0,                  // num_field_entries
           0,                  // num_aux_entries
           0,                  // aux_offset
-          default_instance,   //
+          class_data,         //
           post_loop_handler,  //
           nullptr,            // fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

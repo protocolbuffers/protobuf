@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package utf8_test_protos;
+
+message TestUtf8 {
+  optional string optional_string = 1;
+  repeated string repeated_string = 2;
+  map<string, string> map_string_string = 3;
+}

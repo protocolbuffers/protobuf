@@ -23,8 +23,10 @@
 // This representation is used by all concrete descriptors.
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* pool;          // We own a ref.
+  // clang-format on
   const void* def;         // Type depends on the class. Kept alive by "pool".
   PyObject* options;       // NULL if not present or not cached.
   PyObject* features;      // NULL if not present or not cached.
@@ -1062,6 +1064,11 @@ static PyObject* PyUpb_FieldDescriptor_GetIsExtension(
   return PyBool_FromLong(upb_FieldDef_IsExtension(self->def));
 }
 
+static PyObject* PyUpb_FieldDescriptor_GetIsPacked(PyUpb_DescriptorBase* self,
+                                                   void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsPacked(self->def));
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetNumber(PyUpb_DescriptorBase* self,
                                                  void* closure) {
   return PyLong_FromLong(upb_FieldDef_Number(self->def));
@@ -1164,6 +1171,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Default Value"},
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
+    {"is_packed", (getter)PyUpb_FieldDescriptor_GetIsPacked, NULL, "Is Packed"},
     // TODO
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,

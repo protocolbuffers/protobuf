@@ -17,9 +17,11 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -67,7 +69,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->AllocateAligned<alloc_client>(n);
     } else {
       return AllocateAlignedFallback<alloc_client>(n);
@@ -75,8 +77,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
   void ReturnArrayMemory(void* p, size_t size) {
-    SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+    SerialArena* arena = nullptr;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       arena->ReturnArrayMemory(p, size);
     }
   }
@@ -87,8 +89,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // have fallback function calls in tail position. This substantially improves
   // code for the happy path.
   PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
-    SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+    SerialArena* arena = nullptr;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->MaybeAllocateAligned(n, out);
     }
     return false;
@@ -109,6 +111,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend class TcParser;
   friend class SerialArena;
   friend struct SerialArenaChunkHeader;
+  friend class cleanup::ChunkList;
   static uint64_t GetNextLifeCycleId();
 
   class SerialArenaChunk;
@@ -128,6 +131,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // Adds SerialArena to the chunked list. May create a new chunk.
   void AddSerialArena(void* id, SerialArena* serial);
+
+  void UnpoisonAllArenaBlocks() const;
 
   // Members are declared here to track sizeof(ThreadSafeArena) and hotness
   // centrally.
@@ -171,7 +176,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     // This fast path optimizes the case where multiple threads allocate from
     // the same arena.
     ThreadCache* tc = &thread_cache();
-    if (PROTOBUF_PREDICT_TRUE(tc->last_lifecycle_id_seen == tag_and_id_)) {
+    if (ABSL_PREDICT_TRUE(tc->last_lifecycle_id_seen == tag_and_id_)) {
       *arena = tc->last_serial_arena;
       return true;
     }
@@ -205,7 +210,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SizedPtr Free(size_t* space_allocated);
+  SizedPtr Free();
 
   // ThreadCache is accessed very frequently, so we align it such that it's
   // located within a single cache line.

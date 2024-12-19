@@ -58,13 +58,6 @@ class FileGenerator {
 
   void Generate(io::Printer* printer);
 
-  std::string GetKotlinClassname();
-  void GenerateKotlin(io::Printer* printer);
-  void GenerateKotlinSiblings(const std::string& package_dir,
-                              GeneratorContext* generator_context,
-                              std::vector<std::string>* file_list,
-                              std::vector<std::string>* annotation_list);
-
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
@@ -88,8 +81,8 @@ class FileGenerator {
 
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-  std::unique_ptr<GeneratorFactory> generator_factory_;
   std::unique_ptr<Context> context_;
+  std::unique_ptr<GeneratorFactory> generator_factory_;
   ClassNameResolver* name_resolver_;
   const Options options_;
   bool immutable_api_;

@@ -223,6 +223,7 @@ cc_library(
     deps = [
         ":descriptor_traits",
         ":lexer",
+        ":zero_copy_buffered_stream",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",

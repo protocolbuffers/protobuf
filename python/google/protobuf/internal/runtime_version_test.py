@@ -118,6 +118,19 @@ class RuntimeVersionTest(unittest.TestCase):
           'foo.proto',
       )
 
+  def test_gencode_one_major_version_older_warning(self):
+    with self.assertWarnsRegex(
+        Warning, expected_regex='is exactly one major version older'
+    ):
+      runtime_version.ValidateProtobufRuntimeVersion(
+          runtime_version.DOMAIN,
+          runtime_version.MAJOR - 1,
+          runtime_version.MINOR,
+          runtime_version.PATCH,
+          runtime_version.SUFFIX,
+          'foo.proto',
+      )
+
 
 if __name__ == '__main__':
   unittest.main()

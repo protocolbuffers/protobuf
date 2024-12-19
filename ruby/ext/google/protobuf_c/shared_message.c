@@ -35,33 +35,3 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   upb_Status_SetErrorMessage(status, "Error calculating hash");
   return 0;
 }
-
-// Support function for Message_Equal
-bool shared_Message_Equal(const upb_Message* m1, const upb_Message* m2,
-                          const upb_MessageDef* m, upb_Status* status) {
-  if (m1 == m2) return true;
-
-  size_t size1, size2;
-  int encode_opts =
-      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
-  upb_Arena* arena_tmp = upb_Arena_New();
-  const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
-
-  // Compare deterministically serialized payloads with no unknown fields.
-  char* data1;
-  char* data2;
-  upb_EncodeStatus status1 =
-      upb_Encode(m1, layout, encode_opts, arena_tmp, &data1, &size1);
-  upb_EncodeStatus status2 =
-      upb_Encode(m2, layout, encode_opts, arena_tmp, &data2, &size2);
-
-  if (status1 == kUpb_EncodeStatus_Ok && status2 == kUpb_EncodeStatus_Ok) {
-    bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
-    upb_Arena_Free(arena_tmp);
-    return ret;
-  }
-
-  upb_Arena_Free(arena_tmp);
-  upb_Status_SetErrorMessage(status, "Error comparing messages");
-  return 0;
-}

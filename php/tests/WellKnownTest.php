@@ -416,4 +416,44 @@ class WellKnownTest extends TestBase {
             ['\Google\Protobuf\Syntax'],
         ];
     }
+
+    /**
+     * @dataProvider optionalFieldsDataProvider
+     */
+    public function testReflectionProperty($property, $default)
+    {
+        $testMessage = new TestMessage();
+
+        $functionName = implode('', array_map('ucwords', explode('_', $property)));
+
+        $reflectionProperty = new \ReflectionProperty($testMessage, $property);
+
+        self::assertFalse(call_user_func([$testMessage, 'has'.$functionName]));
+        self::assertEquals($default, call_user_func([$testMessage, 'get'.$functionName]));
+        self::assertNull($reflectionProperty->getValue($testMessage));
+    }
+
+    public function optionalFieldsDataProvider()
+    {
+        return [
+            ['true_optional_int32', 0],
+            ['true_optional_int64', 0],
+            ['true_optional_uint32', 0],
+            ['true_optional_uint64', 0],
+            ['true_optional_sint32', 0],
+            ['true_optional_sint64', 0],
+            ['true_optional_fixed32', 0],
+            ['true_optional_fixed64', 0],
+            ['true_optional_sfixed32', 0],
+            ['true_optional_sfixed64', 0],
+            ['true_optional_float', 0.0],
+            ['true_optional_double', 0.0],
+            ['true_optional_bool', false],
+            ['true_optional_string', ''],
+            ['true_optional_bytes', ''],
+            ['true_optional_enum', null],
+            ['true_optional_message', null],
+            ['true_optional_included_message', null],
+        ];
+    }
 }

@@ -19,6 +19,7 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -38,16 +39,17 @@ const char* DefaultPackage(Options options) {
 bool IsReservedName(absl::string_view name) {
   static const auto& kReservedNames =
       *new absl::flat_hash_set<absl::string_view>({
-          "abstract",   "assert",       "boolean",   "break",      "byte",
-          "case",       "catch",        "char",      "class",      "const",
-          "continue",   "default",      "do",        "double",     "else",
-          "enum",       "extends",      "final",     "finally",    "float",
-          "for",        "goto",         "if",        "implements", "import",
-          "instanceof", "int",          "interface", "long",       "native",
-          "new",        "package",      "private",   "protected",  "public",
-          "return",     "short",        "static",    "strictfp",   "super",
-          "switch",     "synchronized", "this",      "throw",      "throws",
-          "transient",  "try",          "void",      "volatile",   "while",
+          "abstract", "assert",     "boolean",  "break",     "byte",
+          "case",     "catch",      "char",     "class",     "const",
+          "continue", "default",    "do",       "double",    "else",
+          "enum",     "extends",    "false",    "final",     "finally",
+          "float",    "for",        "goto",     "if",        "implements",
+          "import",   "instanceof", "int",      "interface", "java",
+          "long",     "native",     "new",      "null",      "package",
+          "private",  "protected",  "public",   "return",    "short",
+          "static",   "strictfp",   "super",    "switch",    "synchronized",
+          "this",     "throw",      "throws",   "transient", "true",
+          "try",      "void",       "volatile", "while",
       });
   return kReservedNames.contains(name);
 }
@@ -83,7 +85,7 @@ std::string FieldName(const FieldDescriptor* field) {
   // Groups are hacky:  The name of the field is just the lower-cased name
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
-  if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*field)) {
     field_name = field->message_type()->name();
   } else {
     field_name = field->name();
@@ -139,8 +141,20 @@ std::string FileJavaPackage(const FileDescriptor* file, Options options) {
   return FileJavaPackage(file, true /* immutable */, options);
 }
 
+std::string JavaPackageDirectory(const FileDescriptor* file) {
+  return JavaPackageToDir(FileJavaPackage(file));
+}
+
+std::string FileClassName(const FileDescriptor* file) {
+  return FileClassName(file, /*immutable=*/true);
+}
+
 std::string CapitalizedFieldName(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), true);
+}
+
+std::string CapitalizedOneofName(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCase(oneof->name(), true);
 }
 
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {

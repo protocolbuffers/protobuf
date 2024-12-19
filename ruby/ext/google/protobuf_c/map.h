@@ -11,10 +11,14 @@
 #include "protobuf.h"
 #include "ruby-upb.h"
 
+// Returns a frozen sentinel Ruby wrapper object for an empty upb_Map with the
+// key and value types specified by the field. Creates one if it doesn't exist.
+VALUE Map_EmptyFrozen(const upb_FieldDef* f);
+
 // Returns a Ruby wrapper object for the given map, which will be created if
 // one does not exist already.
-VALUE Map_GetRubyWrapper(upb_Map *map, upb_CType key_type, TypeInfo value_type,
-                         VALUE arena);
+VALUE Map_GetRubyWrapper(const upb_Map *map, upb_CType key_type,
+                         TypeInfo value_type, VALUE arena);
 
 // Gets the underlying upb_Map for this Ruby map object, which must have
 // key/value type that match |field|. If this is not a map or the type doesn't

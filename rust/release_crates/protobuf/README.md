@@ -1,0 +1,1 @@
+The runtime of the official Google Rust Protobuf implementation.

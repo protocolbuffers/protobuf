@@ -413,7 +413,7 @@ namespace Google.Protobuf
                 var builder = StringBuilderCache.Acquire();
                 if (initialCharacter == '-')
                 {
-                    builder.Append("-");
+                    builder.Append('-');
                 }
                 else
                 {

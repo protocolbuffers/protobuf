@@ -114,4 +114,5 @@ message ReservedAsMapFieldWithEnumValue {
 // https://github.com/protocolbuffers/protobuf/issues/9785
 message MapContainer {
   map<string, string> my_map = 1;
+  map<uint32, string> m = 3;
 }

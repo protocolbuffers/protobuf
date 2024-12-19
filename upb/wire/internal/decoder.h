@@ -13,6 +13,8 @@
 #ifndef UPB_WIRE_INTERNAL_DECODER_H_
 #define UPB_WIRE_INTERNAL_DECODER_H_
 
+#include <stddef.h>
+
 #include "upb/mem/internal/arena.h"
 #include "upb/message/internal/message.h"
 #include "upb/wire/decode.h"
@@ -22,13 +24,12 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define DECODE_NOGROUP (uint32_t) - 1
+#define DECODE_NOGROUP (uint32_t)-1
 
 typedef struct upb_Decoder {
   upb_EpsCopyInputStream input;
   const upb_ExtensionRegistry* extreg;
-  const char* unknown;       // Start of unknown data, preserve at buffer flip
-  upb_Message* unknown_msg;  // Pointer to preserve data to
+  upb_Message* original_msg;  // Pointer to preserve data to
   int depth;                 // Tracks recursion depth to bound stack usage.
   uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
@@ -88,14 +89,6 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
   upb_Decoder* d = (upb_Decoder*)e;
   if (!old_end) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-
-  if (d->unknown) {
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-            d->unknown_msg, d->unknown, old_end - d->unknown, &d->arena)) {
-      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    }
-    d->unknown = new_start;
-  }
   return new_start;
 }
 

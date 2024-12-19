@@ -65,7 +65,7 @@ ConformanceResponse doTest(ConformanceRequest request) {
   switch (request.requestedOutputFormat) {
     case WireFormat.PROTOBUF:
       try {
-        response.protobufPayload = pb.GeneratedMessage.toBuffer(testMessage);
+        response.protobufPayload = pb.GeneratedMessage.toBinary(testMessage);
       } catch (e) {
         response.serializeError = '$e';
       }
@@ -86,7 +86,7 @@ Future<bool> doTestIo() async {
   }
   final request = ConformanceRequest.fromBuffer(serializedMsg);
   final response = doTest(request);
-  final serializedOutput = pb.GeneratedMessage.toBuffer(response);
+  final serializedOutput = pb.GeneratedMessage.toBinary(response);
   writeLittleEndianIntToStdout(serializedOutput.length);
   stdout.add(serializedOutput);
   await stdout.flush();

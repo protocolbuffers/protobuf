@@ -7,6 +7,7 @@
 #include "google/protobuf/reflection_tester.h"
 
 #include <array>
+#include <string>
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -22,7 +23,7 @@ namespace protobuf {
 MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  std::string package = base_descriptor->file()->package();
+  const absl::string_view package = base_descriptor->file()->package();
 
   map_enum_foo_ =
       pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_FOO"));
@@ -191,7 +192,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
-const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
+const FieldDescriptor* MapReflectionTester::F(absl::string_view name) {
   const FieldDescriptor* result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
   ABSL_CHECK(result != nullptr);
@@ -402,6 +403,7 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
   MapValueConstRef map_val_const;
 
   // Add first element.
+  std::string map_key_string;
   MapKey map_key;
   map_key.SetInt32Value(0);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_int32_int32"),
@@ -476,7 +478,8 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                                  map_key, &map_val));
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string());
+  map_key_string = long_string();
+  map_key.SetStringValue(map_key_string);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_string_string"),
                                           map_key, &map_val_const));
   EXPECT_TRUE(reflection->InsertOrLookupMapValue(
@@ -576,7 +579,8 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(true);
 
-  map_key.SetStringValue(long_string_2());
+  map_key_string = long_string_2();
+  map_key.SetStringValue(map_key_string);
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
   map_val.SetStringValue(long_string_2());
@@ -600,33 +604,39 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
 }
 
 void MapReflectionTester::GetMapValueViaMapReflection(
-    Message* message, const std::string& field_name, const MapKey& map_key,
+    Message* message, absl::string_view field_name, const MapKey& map_key,
     MapValueRef* map_val) {
   const Reflection* reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
                                                   map_key, map_val));
 }
 
+void MapReflectionTester::DeleteMapValueViaMapReflection(
+    Message* message, absl::string_view field_name, const MapKey& map_key) {
+  const Reflection* reflection = message->GetReflection();
+  reflection->DeleteMapValue(message, F(field_name), map_key);
+}
+
 Message* MapReflectionTester::GetMapEntryViaReflection(
-    Message* message, const std::string& field_name, int index) {
+    Message* message, absl::string_view field_name, int index) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
 MapIterator MapReflectionTester::MapBegin(Message* message,
-                                          const std::string& field_name) {
+                                          absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
 MapIterator MapReflectionTester::MapEnd(Message* message,
-                                        const std::string& field_name) {
+                                        absl::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
 
 int MapReflectionTester::MapSize(const Message& message,
-                                 const std::string& field_name) {
+                                 absl::string_view field_name) {
   const Reflection* reflection = message.GetReflection();
   return reflection->MapSize(message, F(field_name));
 }
@@ -659,6 +669,7 @@ void MapReflectionTester::ModifyMapFieldsViaReflection(Message* message) {
   Message* sub_foreign_message;
 
   // Modify the second element
+  std::string map_key_string;
   MapKey map_key;
   map_key.SetInt32Value(1);
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F("map_int32_int32"),
@@ -725,7 +736,8 @@ void MapReflectionTester::ModifyMapFieldsViaReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string_2());
+  map_key_string = long_string_2();
+  map_key.SetStringValue(map_key_string);
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
   map_val.SetStringValue("2");

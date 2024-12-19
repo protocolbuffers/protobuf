@@ -7,29 +7,31 @@
 
 //! Tests covering codegen of import public statements.
 
-#[test]
+use googletest::prelude::*;
+
+#[gtest]
 fn test_import_public_types_are_reexported() {
-    let _: import_public_proto::PrimarySrcPubliclyImportedMsg;
-    let _: import_public_proto::PrimarySrcPubliclyImportedMsgView;
-    let _: import_public_proto::PrimarySrcPubliclyImportedMsgMut;
+    let _: import_public_rust_proto::PrimarySrcPubliclyImportedMsg;
+    let _: import_public_rust_proto::PrimarySrcPubliclyImportedMsgView;
+    let _: import_public_rust_proto::PrimarySrcPubliclyImportedMsgMut;
 
-    let _: import_public_proto::PrimarySrcPubliclyImportedEnum;
+    let _: import_public_rust_proto::PrimarySrcPubliclyImportedEnum;
 
-    let _: import_public_proto::GrandparentMsg;
-    let _: import_public_proto::GrandparentMsgView;
-    let _: import_public_proto::GrandparentMsgMut;
+    let _: import_public_rust_proto::GrandparentMsg;
+    let _: import_public_rust_proto::GrandparentMsgView;
+    let _: import_public_rust_proto::GrandparentMsgMut;
 
-    let _: import_public_proto::GrandparentEnum;
+    let _: import_public_rust_proto::GrandparentEnum;
 
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg1;
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg1View;
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg1Mut;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg1;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg1View;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg1Mut;
 
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedEnum1;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedEnum1;
 
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg2;
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg2View;
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedMsg2Mut;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg2;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg2View;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedMsg2Mut;
 
-    let _: import_public_proto::NonPrimarySrcPubliclyImportedEnum2;
+    let _: import_public_rust_proto::NonPrimarySrcPubliclyImportedEnum2;
 }

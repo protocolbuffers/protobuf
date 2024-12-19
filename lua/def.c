@@ -597,7 +597,7 @@ const upb_FileDef* lupb_FileDef_check(lua_State* L, int narg) {
 
 static int lupb_FileDef_Dependency(lua_State* L) {
   const upb_FileDef* f = lupb_FileDef_check(L, 1);
-  int index = luaL_checkint(L, 2);
+  int index = lupb_checkint32(L, 2);
   const upb_FileDef* dep = upb_FileDef_Dependency(f, index);
   lupb_wrapper_pushwrapper(L, 1, dep, LUPB_FILEDEF);
   return 1;
@@ -611,7 +611,7 @@ static int lupb_FileDef_DependencyCount(lua_State* L) {
 
 static int lupb_FileDef_enum(lua_State* L) {
   const upb_FileDef* f = lupb_FileDef_check(L, 1);
-  int index = luaL_checkint(L, 2);
+  int index = lupb_checkint32(L, 2);
   const upb_EnumDef* e = upb_FileDef_TopLevelEnum(f, index);
   lupb_wrapper_pushwrapper(L, 1, e, LUPB_ENUMDEF);
   return 1;
@@ -625,7 +625,7 @@ static int lupb_FileDef_enumcount(lua_State* L) {
 
 static int lupb_FileDef_msg(lua_State* L) {
   const upb_FileDef* f = lupb_FileDef_check(L, 1);
-  int index = luaL_checkint(L, 2);
+  int index = lupb_checkint32(L, 2);
   const upb_MessageDef* m = upb_FileDef_TopLevelMessage(f, index);
   lupb_wrapper_pushwrapper(L, 1, m, LUPB_MSGDEF);
   return 1;

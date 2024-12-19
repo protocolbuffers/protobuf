@@ -7,7 +7,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -18,10 +18,10 @@ namespace rust {
 
 void UnsupportedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                  AccessorCase accessor_case) const {
-  ctx.Emit({{"reason", reason_}}, R"rs(
-    // Unsupported! :( Reason: $reason$
+  ctx.Emit(R"rs(
+    // Unsupported field! :(
+
     )rs");
-  ctx.printer().PrintRaw("\n");
 }
 
 }  // namespace rust

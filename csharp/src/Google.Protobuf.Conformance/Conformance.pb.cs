@@ -25,32 +25,36 @@ namespace Conformance {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch1jb25mb3JtYW5jZS9jb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2Ui",
-            "HQoKRmFpbHVyZVNldBIPCgdmYWlsdXJlGAEgAygJIuMCChJDb25mb3JtYW5j",
-            "ZVJlcXVlc3QSGgoQcHJvdG9idWZfcGF5bG9hZBgBIAEoDEgAEhYKDGpzb25f",
-            "cGF5bG9hZBgCIAEoCUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgAEhYKDHRl",
-            "eHRfcGF5bG9hZBgIIAEoCUgAEjgKF3JlcXVlc3RlZF9vdXRwdXRfZm9ybWF0",
-            "GAMgASgOMhcuY29uZm9ybWFuY2UuV2lyZUZvcm1hdBIUCgxtZXNzYWdlX3R5",
-            "cGUYBCABKAkSMAoNdGVzdF9jYXRlZ29yeRgFIAEoDjIZLmNvbmZvcm1hbmNl",
-            "LlRlc3RDYXRlZ29yeRI+ChVqc3BiX2VuY29kaW5nX29wdGlvbnMYBiABKAsy",
-            "Hy5jb25mb3JtYW5jZS5Kc3BiRW5jb2RpbmdDb25maWcSHAoUcHJpbnRfdW5r",
-            "bm93bl9maWVsZHMYCSABKAhCCQoHcGF5bG9hZCL6AQoTQ29uZm9ybWFuY2VS",
-            "ZXNwb25zZRIVCgtwYXJzZV9lcnJvchgBIAEoCUgAEhkKD3NlcmlhbGl6ZV9l",
-            "cnJvchgGIAEoCUgAEhcKDXRpbWVvdXRfZXJyb3IYCSABKAlIABIXCg1ydW50",
-            "aW1lX2Vycm9yGAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgA",
-            "EhYKDGpzb25fcGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIABIW",
-            "Cgxqc3BiX3BheWxvYWQYByABKAlIABIWCgx0ZXh0X3BheWxvYWQYCCABKAlI",
-            "AEIICgZyZXN1bHQiNwoSSnNwYkVuY29kaW5nQ29uZmlnEiEKGXVzZV9qc3Bi",
-            "X2FycmF5X2FueV9mb3JtYXQYASABKAgqUAoKV2lyZUZvcm1hdBIPCgtVTlNQ",
-            "RUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACEggKBEpTUEIQAxIP",
-            "CgtURVhUX0ZPUk1BVBAEKo8BCgxUZXN0Q2F0ZWdvcnkSFAoQVU5TUEVDSUZJ",
-            "RURfVEVTVBAAEg8KC0JJTkFSWV9URVNUEAESDQoJSlNPTl9URVNUEAISJAog",
-            "SlNPTl9JR05PUkVfVU5LTk9XTl9QQVJTSU5HX1RFU1QQAxINCglKU1BCX1RF",
-            "U1QQBBIUChBURVhUX0ZPUk1BVF9URVNUEAVCLwofY29tLmdvb2dsZS5wcm90",
-            "b2J1Zi5jb25mb3JtYW5jZaICC0NvbmZvcm1hbmNlYgZwcm90bzM="));
+            "SQoKVGVzdFN0YXR1cxIMCgRuYW1lGAEgASgJEhcKD2ZhaWx1cmVfbWVzc2Fn",
+            "ZRgCIAEoCRIUCgxtYXRjaGVkX25hbWUYAyABKAkiOQoKRmFpbHVyZVNldBIl",
+            "CgR0ZXN0GAIgAygLMhcuY29uZm9ybWFuY2UuVGVzdFN0YXR1c0oECAEQAiLj",
+            "AgoSQ29uZm9ybWFuY2VSZXF1ZXN0EhoKEHByb3RvYnVmX3BheWxvYWQYASAB",
+            "KAxIABIWCgxqc29uX3BheWxvYWQYAiABKAlIABIWCgxqc3BiX3BheWxvYWQY",
+            "ByABKAlIABIWCgx0ZXh0X3BheWxvYWQYCCABKAlIABI4ChdyZXF1ZXN0ZWRf",
+            "b3V0cHV0X2Zvcm1hdBgDIAEoDjIXLmNvbmZvcm1hbmNlLldpcmVGb3JtYXQS",
+            "FAoMbWVzc2FnZV90eXBlGAQgASgJEjAKDXRlc3RfY2F0ZWdvcnkYBSABKA4y",
+            "GS5jb25mb3JtYW5jZS5UZXN0Q2F0ZWdvcnkSPgoVanNwYl9lbmNvZGluZ19v",
+            "cHRpb25zGAYgASgLMh8uY29uZm9ybWFuY2UuSnNwYkVuY29kaW5nQ29uZmln",
+            "EhwKFHByaW50X3Vua25vd25fZmllbGRzGAkgASgIQgkKB3BheWxvYWQi+gEK",
+            "E0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIZ",
+            "Cg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg10aW1lb3V0X2Vycm9yGAkg",
+            "ASgJSAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3Bh",
+            "eWxvYWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lw",
+            "cGVkGAUgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSAASFgoMdGV4dF9w",
+            "YXlsb2FkGAggASgJSABCCAoGcmVzdWx0IjcKEkpzcGJFbmNvZGluZ0NvbmZp",
+            "ZxIhChl1c2VfanNwYl9hcnJheV9hbnlfZm9ybWF0GAEgASgIKlAKCldpcmVG",
+            "b3JtYXQSDwoLVU5TUEVDSUZJRUQQABIMCghQUk9UT0JVRhABEggKBEpTT04Q",
+            "AhIICgRKU1BCEAMSDwoLVEVYVF9GT1JNQVQQBCqPAQoMVGVzdENhdGVnb3J5",
+            "EhQKEFVOU1BFQ0lGSUVEX1RFU1QQABIPCgtCSU5BUllfVEVTVBABEg0KCUpT",
+            "T05fVEVTVBACEiQKIEpTT05fSUdOT1JFX1VOS05PV05fUEFSU0lOR19URVNU",
+            "EAMSDQoJSlNQQl9URVNUEAQSFAoQVEVYVF9GT1JNQVRfVEVTVBAFQi8KH2Nv",
+            "bS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2WiAgtDb25mb3JtYW5jZWIG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestStatus), global::Conformance.TestStatus.Parser, new[]{ "Name", "FailureMessage", "MatchedName" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Test" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "TimeoutError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null, null)
@@ -105,6 +109,287 @@ namespace Conformance {
 
   #region Messages
   /// <summary>
+  /// Meant to encapsulate all types of tests: successes, skips, failures, etc.
+  /// Therefore, this may or may not have a failure message. Failure messages
+  /// may be truncated for our failure lists.
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class TestStatus : pb::IMessage<TestStatus>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TestStatus> _parser = new pb::MessageParser<TestStatus>(() => new TestStatus());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TestStatus> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestStatus() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestStatus(TestStatus other) : this() {
+      name_ = other.name_;
+      failureMessage_ = other.failureMessage_;
+      matchedName_ = other.matchedName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TestStatus Clone() {
+      return new TestStatus(this);
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "failure_message" field.</summary>
+    public const int FailureMessageFieldNumber = 2;
+    private string failureMessage_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string FailureMessage {
+      get { return failureMessage_; }
+      set {
+        failureMessage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "matched_name" field.</summary>
+    public const int MatchedNameFieldNumber = 3;
+    private string matchedName_ = "";
+    /// <summary>
+    /// What an actual test name matched to in a failure list. Can be wildcarded or
+    /// an exact match without wildcards.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string MatchedName {
+      get { return matchedName_; }
+      set {
+        matchedName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TestStatus);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TestStatus other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      if (FailureMessage != other.FailureMessage) return false;
+      if (MatchedName != other.MatchedName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (FailureMessage.Length != 0) hash ^= FailureMessage.GetHashCode();
+      if (MatchedName.Length != 0) hash ^= MatchedName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (FailureMessage.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FailureMessage);
+      }
+      if (MatchedName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(MatchedName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (FailureMessage.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FailureMessage);
+      }
+      if (MatchedName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(MatchedName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (FailureMessage.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FailureMessage);
+      }
+      if (MatchedName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MatchedName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TestStatus other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.FailureMessage.Length != 0) {
+        FailureMessage = other.FailureMessage;
+      }
+      if (other.MatchedName.Length != 0) {
+        MatchedName = other.MatchedName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            FailureMessage = input.ReadString();
+            break;
+          }
+          case 26: {
+            MatchedName = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            FailureMessage = input.ReadString();
+            break;
+          }
+          case 26: {
+            MatchedName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
   /// The conformance runner will request a list of failures as the first request.
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
@@ -124,7 +409,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -144,7 +429,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FailureSet(FailureSet other) : this() {
-      failure_ = other.failure_.Clone();
+      test_ = other.test_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -154,15 +439,15 @@ namespace Conformance {
       return new FailureSet(this);
     }
 
-    /// <summary>Field number for the "failure" field.</summary>
-    public const int FailureFieldNumber = 1;
-    private static readonly pb::FieldCodec<string> _repeated_failure_codec
-        = pb::FieldCodec.ForString(10);
-    private readonly pbc::RepeatedField<string> failure_ = new pbc::RepeatedField<string>();
+    /// <summary>Field number for the "test" field.</summary>
+    public const int TestFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Conformance.TestStatus> _repeated_test_codec
+        = pb::FieldCodec.ForMessage(18, global::Conformance.TestStatus.Parser);
+    private readonly pbc::RepeatedField<global::Conformance.TestStatus> test_ = new pbc::RepeatedField<global::Conformance.TestStatus>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<string> Failure {
-      get { return failure_; }
+    public pbc::RepeatedField<global::Conformance.TestStatus> Test {
+      get { return test_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -180,7 +465,7 @@ namespace Conformance {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if(!failure_.Equals(other.failure_)) return false;
+      if(!test_.Equals(other.test_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -188,7 +473,7 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      hash ^= failure_.GetHashCode();
+      hash ^= test_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -207,7 +492,7 @@ namespace Conformance {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      failure_.WriteTo(output, _repeated_failure_codec);
+      test_.WriteTo(output, _repeated_test_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -218,7 +503,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      failure_.WriteTo(ref output, _repeated_failure_codec);
+      test_.WriteTo(ref output, _repeated_test_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -229,7 +514,7 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      size += failure_.CalculateSize(_repeated_failure_codec);
+      size += test_.CalculateSize(_repeated_test_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -242,7 +527,7 @@ namespace Conformance {
       if (other == null) {
         return;
       }
-      failure_.Add(other.failure_);
+      test_.Add(other.test_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -254,12 +539,16 @@ namespace Conformance {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            failure_.AddEntriesFrom(input, _repeated_failure_codec);
+          case 18: {
+            test_.AddEntriesFrom(input, _repeated_test_codec);
             break;
           }
         }
@@ -273,12 +562,16 @@ namespace Conformance {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 10: {
-            failure_.AddEntriesFrom(ref input, _repeated_failure_codec);
+          case 18: {
+            test_.AddEntriesFrom(ref input, _repeated_test_codec);
             break;
           }
         }
@@ -310,7 +603,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -487,7 +780,10 @@ namespace Conformance {
     /// <summary>
     /// The full name for the test message to use; for the moment, either:
     /// protobuf_test_messages.proto3.TestAllTypesProto3 or
-    /// protobuf_test_messages.google.protobuf.TestAllTypesProto2.
+    /// protobuf_test_messages.proto2.TestAllTypesProto2 or
+    /// protobuf_test_messages.editions.proto2.TestAllTypesProto2 or
+    /// protobuf_test_messages.editions.proto3.TestAllTypesProto3 or
+    /// protobuf_test_messages.editions.TestAllTypesEdition2023.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -804,7 +1100,11 @@ namespace Conformance {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -858,7 +1158,11 @@ namespace Conformance {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -926,7 +1230,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1522,7 +1826,11 @@ namespace Conformance {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1573,7 +1881,11 @@ namespace Conformance {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1638,7 +1950,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1782,7 +2094,11 @@ namespace Conformance {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1801,7 +2117,11 @@ namespace Conformance {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;

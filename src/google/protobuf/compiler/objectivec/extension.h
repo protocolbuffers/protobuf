@@ -34,15 +34,14 @@ class ExtensionGenerator {
 
   void GenerateMembersHeader(io::Printer* printer) const;
   void GenerateStaticVariablesInitialization(io::Printer* printer) const;
-  void GenerateRegistrationSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineNeededFiles(
       absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
  private:
+  std::string root_or_message_class_name_;
   std::string method_name_;
-  std::string full_method_name_;
   const FieldDescriptor* descriptor_;
   const GenerationOptions& generation_options_;
 };

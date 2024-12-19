@@ -1,5 +1,5 @@
 # This information is extracted from the MacOS runner specs located at:
-# https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+# https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
 #
 # When updating, also ensure the "xcode_destination" entries in
 # `.github/workflows/test_objectivec.yml` are supported for the given versions

@@ -51,7 +51,7 @@ static const char kModuleDocstring[] =
 "\n"
 "It complements api_implementation.py by setting defaults using compile-time\n"
 "constants defined in C, such that one can set defaults at compilation\n"
-"(e.g. with blaze flag --copt=-DPYTHON_PROTO2_CPP_IMPL_V2).";
+"(e.g. with bazel flag --copt=-DPYTHON_PROTO2_CPP_IMPL_V2).";
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef _module = {

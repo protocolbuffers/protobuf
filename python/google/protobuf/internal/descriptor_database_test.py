@@ -56,8 +56,26 @@ class DescriptorDatabaseTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory2Enum.FACTORY_2_VALUE_0'))
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.FACTORY_2_VALUE_0'))
-    self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
-        '.NO_PACKAGE_VALUE_0'))
+    self.assertEqual(
+        file_desc_proto2, db.FindFileContainingSymbol('NO_PACKAGE_VALUE_0')
+    )
+    self.assertEqual(
+        file_desc_proto2, db.FindFileContainingSymbol('.NO_PACKAGE_VALUE_0')
+    )
+    self.assertEqual(
+        file_desc_proto2, db.FindFileContainingSymbol('NoPackageMessage')
+    )
+    self.assertEqual(
+        file_desc_proto2, db.FindFileContainingSymbol('.NoPackageMessage')
+    )
+    self.assertEqual(
+        file_desc_proto2,
+        db.FindFileContainingSymbol('NoPackageEnum'),
+    )
+    self.assertEqual(
+        file_desc_proto2,
+        db.FindFileContainingSymbol('.NoPackageEnum'),
+    )
     # Can find top level extension.
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.another_field'))
@@ -79,6 +97,11 @@ class DescriptorDatabaseTest(unittest.TestCase):
 
     with self.assertRaisesRegex(KeyError, r'\'protobuf_unittest\.NoneMessage\''):
       db.FindFileContainingSymbol('protobuf_unittest.NoneMessage')
+
+    with self.assertRaises(KeyError):
+      db.FindFileContainingSymbol(
+          '.google.protobuf.python.internal.FACTORY_2_VALUE_0'
+      )
 
   def testConflictRegister(self):
     db = descriptor_database.DescriptorDatabase()

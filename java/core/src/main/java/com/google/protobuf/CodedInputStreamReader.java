@@ -184,16 +184,14 @@ final class CodedInputStreamReader implements Reader {
   private <T> void mergeMessageFieldInternal(
       T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
     int size = input.readUInt32();
-    if (input.recursionDepth >= input.recursionLimit) {
-      throw InvalidProtocolBufferException.recursionLimitExceeded();
-    }
+    input.checkRecursionLimit();
 
     // Push the new limit.
     final int prevLimit = input.pushLimit(size);
-    ++input.recursionDepth;
+    ++input.messageDepth;
     schema.mergeFrom(target, this, extensionRegistry);
     input.checkLastTagWas(0);
-    --input.recursionDepth;
+    --input.messageDepth;
     // Restore the previous limit.
     input.popLimit(prevLimit);
   }

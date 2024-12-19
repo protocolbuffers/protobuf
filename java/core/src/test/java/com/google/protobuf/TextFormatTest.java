@@ -14,6 +14,7 @@ import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static org.junit.Assert.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -25,6 +26,11 @@ import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
 import com.google.protobuf.testing.proto.TestProto3Optional;
 import com.google.protobuf.testing.proto.TestProto3Optional.NestedEnum;
 import any_test.AnyTestProto.TestAny;
+import editions_unittest.GroupLikeFileScope;
+import editions_unittest.MessageImport;
+import editions_unittest.NotGroupLikeScope;
+import editions_unittest.TestDelimited;
+import editions_unittest.UnittestDelimited;
 import map_test.MapTestProto.TestMap;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
@@ -60,11 +66,6 @@ public class TextFormatTest {
       "\\\"A string with \\' characters \\n and \\r newlines "
           + "and \\t tabs and \\001 slashes \\\\";
 
-  private static final String ALL_FIELDS_SET_TEXT =
-      TestUtil.readTextFromFile("text_format_unittest_data_oneof_implemented.txt");
-  private static final String ALL_EXTENSIONS_SET_TEXT =
-      TestUtil.readTextFromFile("text_format_unittest_extensions_data.txt");
-
   private static final String EXOTIC_TEXT =
       ""
           + "repeated_int32: -1\n"
@@ -80,6 +81,7 @@ public class TextFormatTest {
           + "repeated_double: 0.125\n"
           + "repeated_double: .125\n"
           + "repeated_double: -.125\n"
+          + "repeated_double: .0\n"
           + "repeated_double: 1.23E17\n"
           + "repeated_double: 1.23E+17\n"
           + "repeated_double: -1.23e-17\n"
@@ -140,12 +142,7 @@ public class TextFormatTest {
   public void testPrintMessage() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllSet());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_FIELDS_SET_TEXT);
   }
 
   @Test
@@ -160,12 +157,7 @@ public class TextFormatTest {
   public void testPrintMessageBuilder() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllSetBuilder());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_FIELDS_SET_TEXT);
   }
 
   /** Print TestAllExtensions and compare with golden file. */
@@ -173,12 +165,7 @@ public class TextFormatTest {
   public void testPrintExtensions() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllExtensionsSet());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_EXTENSIONS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_EXTENSIONS_SET_TEXT);
   }
 
   // Creates an example unknown field set.
@@ -255,6 +242,39 @@ public class TextFormatTest {
         .isEqualTo("optional_nested_message {\n  bb: 42\n}\n");
   }
 
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesRegularNotationForMessageType()
+      throws Exception {
+    final FieldDescriptor repeatedMessageField =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_message");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(
+                    repeatedMessageField,
+                    ImmutableList.of(
+                        TestAllTypes.NestedMessage.getDefaultInstance(),
+                        TestAllTypes.NestedMessage.getDefaultInstance())))
+        .isEqualTo("repeated_nested_message {\n}\nrepeated_nested_message {\n}\n");
+  }
+
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesShortNotationForPrimitiveType()
+      throws Exception {
+    final FieldDescriptor repeatedInt32Field =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_int32");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0)))
+        .isEqualTo("repeated_int32: [0]\n");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0, 1, 2, 3)))
+        .isEqualTo("repeated_int32: [0, 1, 2, 3]\n");
+  }
+
   /**
    * Helper to construct a ByteString from a String containing only 8-bit characters. The characters
    * are converted directly to bytes, *not* encoded using UTF-8.
@@ -295,6 +315,7 @@ public class TextFormatTest {
             .addRepeatedDouble(0.125)
             .addRepeatedDouble(.125)
             .addRepeatedDouble(-.125)
+            .addRepeatedDouble(.0)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(-1.23e-17)
@@ -354,13 +375,13 @@ public class TextFormatTest {
   @Test
   public void testMerge() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    TextFormat.merge(ALL_FIELDS_SET_TEXT, builder);
+    TextFormat.merge(TestUtil.ALL_FIELDS_SET_TEXT, builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
   @Test
   public void testParse() throws Exception {
-    TestUtil.assertAllFieldsSet(TextFormat.parse(ALL_FIELDS_SET_TEXT, TestAllTypes.class));
+    TestUtil.assertAllFieldsSet(TextFormat.parse(TestUtil.ALL_FIELDS_SET_TEXT, TestAllTypes.class));
   }
 
   @Test
@@ -400,14 +421,15 @@ public class TextFormatTest {
   @Test
   public void testMergeReader() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    TextFormat.merge(new StringReader(ALL_FIELDS_SET_TEXT), builder);
+    TextFormat.merge(new StringReader(TestUtil.ALL_FIELDS_SET_TEXT), builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
   @Test
   public void testMergeExtensions() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
-    TextFormat.merge(ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), builder);
+    TextFormat.merge(
+        TestUtil.ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), builder);
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
@@ -415,7 +437,9 @@ public class TextFormatTest {
   public void testParseExtensions() throws Exception {
     TestUtil.assertAllExtensionsSet(
         TextFormat.parse(
-            ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), TestAllExtensions.class));
+            TestUtil.ALL_EXTENSIONS_SET_TEXT,
+            TestUtil.getFullExtensionRegistry(),
+            TestAllExtensions.class));
   }
 
   @Test
@@ -927,6 +951,9 @@ public class TextFormatTest {
         "1:23: Enum type \"protobuf_unittest.TestAllTypes.NestedEnum\" has no "
             + "value with number 123.",
         "optional_nested_enum: 123");
+    assertParseError("1:18: Couldn't parse number: For input string: \".\"", "repeated_double: .");
+    assertParseError(
+        "1:18: Couldn't parse number: For input string: \".+\"", "repeated_double: .+");
 
     // Delimiters must match.
     assertParseError("1:22: Expected identifier. Found '}'", "OptionalGroup < a: 1 }");
@@ -1588,6 +1615,202 @@ public class TextFormatTest {
         "1:17: Couldn't parse integer: For input string: \"[\"", "optional_int32: [1]\n");
     assertParseErrorWithOverwriteForbidden(
         "1:17: Couldn't parse integer: For input string: \"[\"", "optional_int32: []\n");
+  }
+
+  // =======================================================================
+  // test delimited
+
+  @Test
+  public void testPrintGroupLikeDelimited() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message)).isEqualTo("GroupLike {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeDelimitedExtension() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setExtension(
+                UnittestDelimited.groupLikeFileScope,
+                GroupLikeFileScope.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("[editions_unittest.grouplikefilescope] {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeNotDelimited() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setLengthprefixed(TestDelimited.LengthPrefixed.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("lengthprefixed {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeMismatchedName() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setNotgrouplike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("notgrouplike {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeExtensionMismatchedName() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setExtension(
+                UnittestDelimited.notGroupLikeScope, NotGroupLikeScope.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("[editions_unittest.not_group_like_scope] {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeMismatchedScope() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setNotgrouplikescope(NotGroupLikeScope.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("notgrouplikescope {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeExtensionMismatchedScope() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setExtension(
+                UnittestDelimited.grouplike, TestDelimited.GroupLike.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("[editions_unittest.grouplike] {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintGroupLikeMismatchedFile() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setMessageimport(MessageImport.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("messageimport {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testParseDelimitedGroupLikeType() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("GroupLike { a: 1 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+                .build());
+  }
+
+  @Test
+  public void testParseDelimitedGroupLikeField() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("grouplike { a: 2 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(2).build())
+                .build());
+  }
+
+  @Test
+  public void testParseDelimitedGroupLikeExtension() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(UnittestDelimited.grouplike);
+    TextFormat.merge("[editions_unittest.grouplike] { a: 2 }", registry, message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setExtension(
+                    UnittestDelimited.grouplike,
+                    TestDelimited.GroupLike.newBuilder().setA(2).build())
+                .build());
+  }
+
+  @Test
+  public void testParseDelimitedGroupLikeInvalid() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    try {
+      TextFormat.merge("GROUPlike { a: 3 }", message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:1: Input contains unknown fields and/or extensions:\n"
+                  + "1:1:\teditions_unittest.TestDelimited.GROUPlike");
+    }
+  }
+
+  @Test
+  public void testParseDelimitedGroupLikeInvalidExtension() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(UnittestDelimited.grouplike);
+    try {
+      TextFormat.merge("[editions_unittest.GroupLike] { a: 2 }", registry, message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:20: Input contains unknown fields and/or extensions:\n"
+                  + "1:20:\teditions_unittest.TestDelimited.[editions_unittest.GroupLike]");
+    }
+  }
+
+  @Test
+  public void testParseDelimited() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("notgrouplike { b: 3 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setNotgrouplike(TestDelimited.GroupLike.newBuilder().setB(3).build())
+                .build());
+  }
+
+  @Test
+  public void testParseDelimitedInvalid() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    try {
+      TextFormat.merge("NotGroupLike { a: 3 }", message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:1: Input contains unknown fields and/or extensions:\n"
+                  + "1:1:\teditions_unittest.TestDelimited.NotGroupLike");
+    }
+  }
+
+  @Test
+  public void testParseDelimitedInvalidScope() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    try {
+      TextFormat.merge("NotGroupLikeScope { a: 3 }", message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:1: Input contains unknown fields and/or extensions:\n"
+                  + "1:1:\teditions_unittest.TestDelimited.NotGroupLikeScope");
+    }
   }
 
   // =======================================================================

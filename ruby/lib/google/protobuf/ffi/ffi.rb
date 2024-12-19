@@ -36,6 +36,10 @@ module Google
       ## JSON Decoding options
       Upb_JsonDecode_IgnoreUnknown = 1
 
+      ## JSON Decoding results
+      Upb_JsonDecodeResult_Ok = 0
+      Upb_JsonDecodeResult_Error = 2
+
       typedef :pointer, :Array
       typedef :pointer, :DefPool
       typedef :pointer, :EnumValueDef

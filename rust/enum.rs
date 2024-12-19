@@ -19,9 +19,16 @@ use std::{
 ///   representation as erased enums in the runtime.
 ///   - For C++, this is `proto2::RepeatedField<c_int>`
 ///   - For UPB, this is an array compatible with `int32`
-pub unsafe trait Enum {
+pub unsafe trait Enum: TryFrom<i32> {
     /// The name of the enum.
     const NAME: &'static str;
+
+    /// Returns `true` if the given numeric value matches one of the `Self`'s
+    /// defined values.
+    ///
+    /// If `Self` is a closed enum, then `TryFrom<i32>` for `value` succeeds if
+    /// and only if this function returns `true`.
+    fn is_known(value: i32) -> bool;
 }
 
 /// An integer value wasn't known for an enum while converting.

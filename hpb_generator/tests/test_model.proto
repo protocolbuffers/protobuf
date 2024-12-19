@@ -1,0 +1,195 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package hpb_unittest;
+
+import "google/protobuf/compiler/hpb/tests/child_model.proto";
+
+option features.enum_type = CLOSED;
+option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
+
+message TestModelContainer {
+  repeated TestModel models = 1;
+  ChildModel3 proto_3_child = 2;
+
+  extensions 10000 to max
+  [verification = UNVERIFIED];
+}
+
+message TestModel {
+  int32 value = 1;
+  repeated int32 value_array = 2;  // _UPB_MODE_ARRAY
+  repeated int32 value_packed_array = 3
+      [features.repeated_field_encoding =
+           PACKED];  // _UPB_MODE_ARRAY | _UPB_MODE_IS_PACKED
+
+  repeated int32 value_deprec = 4 [deprecated = true];
+
+  string str1 = 115;
+  bool b1 = 9;
+  bool b2 = 10;
+  string str2 = 50;
+  string str3 = 11;
+  float optional_float = 14;
+  double optional_double = 15;
+  int64 optional_int64 = 16;
+  uint32 optional_uint32 = 17;
+  uint64 optional_uint64 = 18;
+  sint32 optional_sint32 = 19;
+  sint64 optional_sint64 = 20;
+  fixed32 optional_fixed32 = 21;
+  fixed64 optional_fixed64 = 22;
+  sfixed32 optional_sfixed32 = 23;
+  sfixed64 optional_sfixed64 = 24;
+  repeated int64 repeated_int64 = 25;
+  repeated uint64 repeated_uint64 = 26;
+  repeated fixed64 repeated_fixed64 = 27;
+  repeated sfixed64 repeated_sfixed64 = 28;
+  repeated bool repeated_bool = 29;
+  repeated string repeated_string = 35;
+  bytes optional_bytes = 36;
+
+  message NestedChild {
+    string nested_child_name = 211;
+  }
+
+  NestedChild nested_child_1 = 212;
+  ChildModel1 child_model_1 = 222;
+  repeated ChildModel1 child_models = 223;
+  ChildModel1 bar = 224;
+
+  oneof child_oneof1 {
+    string oneof_member1 = 98;
+    bool oneof_member2 = 99;
+  }
+
+  int32 int_value_with_default = 31 [default = 65];  // Not supported yet
+
+  string string_value_with_default = 32
+      [default = "hello"];  // Not supported yet
+
+  float float_value_with_default = 33 [default = inf];
+
+  float double_value_with_default = 34 [default = -inf];
+
+  map<int32, ChildModel1> child_map = 225;
+  TestModel recursive_child = 226;
+  map<string, ChildModel1> child_str_map = 227;
+  map<string, int32> str_to_int_map = 228;
+  map<string, string> str_to_str_map = 229;
+
+  extend TestAnnotation {
+    OtherExtension in_message_ext = 15000;
+  }
+
+  enum Category {
+    IMAGES = 5;
+    NEWS = 6;
+    VIDEO = 7;
+    RADIO = 8 [deprecated = true];
+  }
+
+  Category category = 37;
+
+  // keyword collisions (double, template, ...)
+  oneof type {
+    string string = 230;
+    int64 int64 = 231;
+    double double = 232;
+  }
+
+  string template = 233;
+  string msg = 234;
+  string arena = 235;
+
+  // Tests publicly imported enum.
+  TestEnum imported_enum = 238;
+
+  string phase = 239;
+  bool clear_phase = 240;
+  string doc_id = 241;
+  bool set_doc_id = 242;
+
+  extensions 10000 to max
+  [verification = UNVERIFIED];
+}
+
+// Old version with fewer fields to test backward/forward compatibility.
+message TestModelContainerV1 {
+  repeated TestModelV1 models = 1;
+}
+
+message TestModelV1 {
+  int32 value = 1;
+  repeated int32 value2 = 2;
+  repeated int32 value3 = 3 [features.repeated_field_encoding = PACKED];
+
+  repeated int32 value4 = 4 [deprecated = true];
+
+  bool b1 = 9;
+  bool b2 = 10;
+  string str2 = 50;
+}
+
+enum PrimaryColors {
+  RED = 1;
+  GREEN = 2;
+  BLUE = 3;
+}
+
+// TestModel extension.
+message ThemeExtension {
+  extend TestModel {
+    ThemeExtension theme_extension = 12003;
+  }
+
+  string ext_name = 1;
+  bool ext_bool = 2;
+}
+
+extend TestModel {
+  ThemeExtension theme = 12001;
+}
+
+message ContainerExtension {
+  extend TestModelContainer {
+    ContainerExtension container_extension = 12004;
+  }
+
+  string ext_container_name = 1;
+}
+
+extend TestModelContainer {
+  ContainerExtension container_ext = 12005;
+}
+
+message OtherExtension {
+  string ext2_name = 1;
+}
+
+extend TestModel {
+  OtherExtension other_ext = 12002;
+}
+
+message TestAnnotation {
+  extensions 10000 to max
+  [verification = UNVERIFIED];
+}
+
+message TestMessageHasEnum {
+  EnumDeclaredAfterMessage enum_declared_after_message = 1;
+}
+
+enum EnumDeclaredAfterMessage {
+  ZERO = 0;
+  ONE = 1;
+  TWO = 2;
+  THREE = 3;
+}

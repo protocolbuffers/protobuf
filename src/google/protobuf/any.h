@@ -10,8 +10,9 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/arenastring.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.
@@ -35,75 +36,80 @@ PROTOBUF_EXPORT extern const char kTypeGoogleProdComPrefix[];
 std::string GetTypeUrl(absl::string_view message_name,
                        absl::string_view type_url_prefix);
 
+template <typename T>
+absl::string_view GetAnyMessageName() {
+  return T::FullMessageName();
+}
+
 // Helper class used to implement google::protobuf::Any.
-class PROTOBUF_EXPORT AnyMetadata {
-  typedef ArenaStringPtr UrlType;
-  typedef ArenaStringPtr ValueType;
- public:
-  // AnyMetadata does not take ownership of "type_url" and "value".
-  constexpr AnyMetadata(UrlType* type_url, ValueType* value)
-      : type_url_(type_url), value_(value) {}
-  AnyMetadata(const AnyMetadata&) = delete;
-  AnyMetadata& operator=(const AnyMetadata&) = delete;
+#define URL_TYPE std::string
+#define VALUE_TYPE std::string
 
-  // Packs a message using the default type URL prefix: "type.googleapis.com".
-  // The resulted type URL will be "type.googleapis.com/<message_full_name>".
-  // Returns false if serializing the message failed.
-  template <typename T>
-  bool PackFrom(Arena* arena, const T& message) {
-    return InternalPackFrom(arena, message, kTypeGoogleApisComPrefix,
-                            T::FullMessageName());
-  }
+// Helper functions that only require 'lite' messages to work.
+PROTOBUF_EXPORT bool InternalPackFromLite(const MessageLite& message,
+                                          absl::string_view type_url_prefix,
+                                          absl::string_view type_name,
+                                          URL_TYPE* dst_url,
+                                          VALUE_TYPE* dst_value);
+PROTOBUF_EXPORT bool InternalUnpackToLite(absl::string_view type_name,
+                                          absl::string_view type_url,
+                                          const VALUE_TYPE& value,
+                                          MessageLite* dst_message);
+PROTOBUF_EXPORT bool InternalIsLite(absl::string_view type_name,
+                                    absl::string_view type_url);
 
-  bool PackFrom(Arena* arena, const Message& message);
+// Packs a message using the default type URL prefix: "type.googleapis.com".
+// The resulted type URL will be "type.googleapis.com/<message_full_name>".
+// Returns false if serializing the message failed.
+template <typename T>
+bool InternalPackFrom(const T& message, URL_TYPE* dst_url,
+                      VALUE_TYPE* dst_value) {
+  return InternalPackFromLite(message, kTypeGoogleApisComPrefix,
+                              GetAnyMessageName<T>(), dst_url, dst_value);
+}
+PROTOBUF_EXPORT bool InternalPackFrom(const Message& message, URL_TYPE* dst_url,
+                                      VALUE_TYPE* dst_value);
 
-  // Packs a message using the given type URL prefix. The type URL will be
-  // constructed by concatenating the message type's full name to the prefix
-  // with an optional "/" separator if the prefix doesn't already end with "/".
-  // For example, both PackFrom(message, "type.googleapis.com") and
-  // PackFrom(message, "type.googleapis.com/") yield the same result type
-  // URL: "type.googleapis.com/<message_full_name>".
-  // Returns false if serializing the message failed.
-  template <typename T>
-  bool PackFrom(Arena* arena, const T& message,
-                absl::string_view type_url_prefix) {
-    return InternalPackFrom(arena, message, type_url_prefix,
-                            T::FullMessageName());
-  }
+// Packs a message using the given type URL prefix. The type URL will be
+// constructed by concatenating the message type's full name to the prefix
+// with an optional "/" separator if the prefix doesn't already end with "/".
+// For example, both InternalPackFrom(message, "type.googleapis.com") and
+// InternalPackFrom(message, "type.googleapis.com/") yield the same result type
+// URL: "type.googleapis.com/<message_full_name>".
+// Returns false if serializing the message failed.
+template <typename T>
+bool InternalPackFrom(const T& message, absl::string_view type_url_prefix,
+                      URL_TYPE* dst_url, VALUE_TYPE* dst_value) {
+  return InternalPackFromLite(message, type_url_prefix, GetAnyMessageName<T>(),
+                              dst_url, dst_value);
+}
+PROTOBUF_EXPORT bool InternalPackFrom(const Message& message,
+                                      absl::string_view type_url_prefix,
+                                      URL_TYPE* dst_url, VALUE_TYPE* dst_value);
 
-  bool PackFrom(Arena* arena, const Message& message,
-                absl::string_view type_url_prefix);
+// Unpacks the payload into the given message. Returns false if the message's
+// type doesn't match the type specified in the type URL (i.e., the full
+// name after the last "/" of the type URL doesn't match the message's actual
+// full name) or parsing the payload has failed.
+template <typename T>
+bool InternalUnpackTo(absl::string_view type_url, const VALUE_TYPE& value,
+                      T* message) {
+  return InternalUnpackToLite(GetAnyMessageName<T>(), type_url, value, message);
+}
+PROTOBUF_EXPORT bool InternalUnpackTo(absl::string_view type_url,
+                                      const VALUE_TYPE& value,
+                                      Message* message);
 
-  // Unpacks the payload into the given message. Returns false if the message's
-  // type doesn't match the type specified in the type URL (i.e., the full
-  // name after the last "/" of the type URL doesn't match the message's actual
-  // full name) or parsing the payload has failed.
-  template <typename T>
-  bool UnpackTo(T* message) const {
-    return InternalUnpackTo(T::FullMessageName(), message);
-  }
+// Checks whether the type specified in the type URL matches the given type.
+// A type is considered matching if its full name matches the full name after
+// the last "/" in the type URL.
+template <typename T>
+bool InternalIs(absl::string_view type_url) {
+  return InternalIsLite(GetAnyMessageName<T>(), type_url);
+}
 
-  bool UnpackTo(Message* message) const;
-
-  // Checks whether the type specified in the type URL matches the given type.
-  // A type is considered matching if its full name matches the full name after
-  // the last "/" in the type URL.
-  template <typename T>
-  bool Is() const {
-    return InternalIs(T::FullMessageName());
-  }
-
- private:
-  bool InternalPackFrom(Arena* arena, const MessageLite& message,
-                        absl::string_view type_url_prefix,
-                        absl::string_view type_name);
-  bool InternalUnpackTo(absl::string_view type_name,
-                        MessageLite* message) const;
-  bool InternalIs(absl::string_view type_name) const;
-
-  UrlType* type_url_;
-  ValueType* value_;
-};
+#undef URL_TYPE
+#undef VALUE_TYPE
 
 // Get the proto type name from Any::type_url value. For example, passing
 // "type.googleapis.com/rpc.QueryOrigin" will return "rpc.QueryOrigin" in

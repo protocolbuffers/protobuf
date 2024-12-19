@@ -278,7 +278,7 @@ final class MessageSetSchema<T> implements Schema<T> {
               reader, extension, extensionRegistry, extensions);
           return true;
         } else {
-          return unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader);
+          return unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader, /* currentDepth= */ 0);
         }
       } else {
         return reader.skipField();
@@ -329,6 +329,8 @@ final class MessageSetSchema<T> implements Schema<T> {
         // We haven't seen a type ID yet or we want parse message lazily.
         rawBytes = reader.readBytes();
         continue;
+      } else if (tag == WireFormat.MESSAGE_SET_ITEM_END_TAG) {
+        break loop;
       } else {
         if (!reader.skipField()) {
           break loop; // End of group

@@ -113,8 +113,6 @@ internal_copy_files(
     srcs = [
         "//src/google/protobuf:test_messages_proto2.proto",
         "//src/google/protobuf:test_messages_proto3.proto",
-        "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
-        "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
     ],
     strip_prefix = "src",
 )
@@ -128,6 +126,25 @@ internal_ruby_proto_library(
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
     ],
+    deps = [":well_known_ruby_protos"],
+)
+
+internal_copy_files(
+    name = "copied_conformance_editions_test_files",
+    testonly = 1,
+    srcs = [
+        "//editions:golden/test_messages_proto2_editions.proto",
+        "//editions:golden/test_messages_proto3_editions.proto",
+    ],
+    strip_prefix = "editions/golden/",
+)
+
+internal_ruby_proto_library(
+    name = "conformance_editions_test_ruby_proto",
+    testonly = 1,
+    srcs = [":copied_conformance_editions_test_files"],
+    includes = ["."],
+    visibility = ["//conformance:__pkg__"],
     deps = [":well_known_ruby_protos"],
 )
 

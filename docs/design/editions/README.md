@@ -21,6 +21,7 @@ The following topics are in this repository:
 
 *   [What are Protobuf Editions?](what-are-protobuf-editions.md)
 *   [Life of an Edition](life-of-an-edition.md)
+*   [Edition Lifetimes](edition-lifetimes.md)
 *   [Protobuf Editions Design: Features](protobuf-editions-design-features.md)
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Edition Zero Features](edition-zero-features.md)
@@ -37,3 +38,4 @@ The following topics are in this repository:
 *   [Editions Feature Visibility](editions-feature-visibility.md)
 *   [Legacy Syntax Editions](legacy-syntax-editions.md)
 *   [Editions: Feature Extension Layout](editions-feature-extension-layout.md)
+*   [Editions: Group Migration Issues](group-migration-issues.md)

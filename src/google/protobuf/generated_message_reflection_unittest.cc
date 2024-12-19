@@ -36,11 +36,12 @@
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
+#include "google/protobuf/unittest_proto3.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -357,6 +358,19 @@ TEST_P(GeneratedMessageReflectionSwapTest, Extensions) {
 
   TestUtil::ExpectExtensionsClear(lhs);
   TestUtil::ExpectAllExtensionsSet(rhs);
+}
+
+TEST_P(GeneratedMessageReflectionSwapTest, PackedExtensions) {
+  unittest::TestPackedExtensions lhs;
+  unittest::TestPackedExtensions rhs;
+
+  TestUtil::SetPackedExtensions(&lhs);
+
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+
+  EXPECT_EQ(lhs.SerializeAsString(), "");
+
+  TestUtil::ExpectPackedExtensionsSet(rhs);
 }
 
 TEST_P(GeneratedMessageReflectionSwapTest, Unknown) {
@@ -694,6 +708,18 @@ TEST(GeneratedMessageReflectionTest, RemoveLastExtensions) {
   TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
 }
 
+TEST(GeneratedMessageReflectionTest, RemoveLastPackedExtensions) {
+  unittest::TestPackedExtensions message;
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestPackedExtensions::descriptor());
+
+  TestUtil::SetPackedExtensions(&message);
+
+  reflection_tester.RemoveLastRepeatedsViaReflection(&message);
+
+  TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
+}
+
 TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
@@ -714,15 +740,15 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   (void)expected;  // unused in somce configurations
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
-#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
-  EXPECT_EQ(expected, released.get());
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (!internal::DebugHardenForceCopyInRelease()) {
+    EXPECT_EQ(expected, released.get());
+  }
 }
 
 TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  GTEST_SKIP() << "Won't work with FORCE_COPY_IN_RELEASE.";
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (internal::DebugHardenForceCopyInRelease()) {
+    GTEST_SKIP() << "Won't work with FORCE_COPY_IN_RELEASE.";
+  }
 
   unittest::TestAllExtensions message;
   const Descriptor* descriptor = message.GetDescriptor();
@@ -792,6 +818,24 @@ TEST(GeneratedMessageReflectionTest, Extensions) {
 
   reflection_tester.ModifyRepeatedFieldsViaReflection(&message);
   TestUtil::ExpectRepeatedExtensionsModified(message);
+}
+
+TEST(GeneratedMessageReflectionTest, PackedExtensions) {
+  // Set every extension to a unique value then go back and check all those
+  // values.
+  unittest::TestPackedExtensions message;
+
+  // First set the extensions via the generated API (see b/366468123).
+  TestUtil::SetPackedExtensions(&message);
+  TestUtil::ExpectPackedExtensionsSet(message);
+  message.Clear();
+
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestPackedExtensions::descriptor());
+
+  reflection_tester.SetPackedFieldsViaReflection(&message);
+  TestUtil::ExpectPackedExtensionsSet(message);
+  reflection_tester.ExpectPackedFieldsSetViaReflection(message);
 }
 
 TEST(GeneratedMessageReflectionTest, FindExtensionTypeByNumber) {
@@ -1154,9 +1198,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_TRUE(released != nullptr);
-#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
-  EXPECT_EQ(&sub_message, released);
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (!internal::DebugHardenForceCopyInRelease()) {
+    EXPECT_EQ(&sub_message, released);
+  }
   delete released;
 
   TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
@@ -1174,9 +1218,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_message"));
   EXPECT_TRUE(released != nullptr);
-#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
-  EXPECT_EQ(&sub_message2, released);
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (!internal::DebugHardenForceCopyInRelease()) {
+    EXPECT_EQ(&sub_message2, released);
+  }
   delete released;
 }
 
@@ -1297,9 +1341,9 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
       &message, descriptor->FindFieldByName("foo_lazy_message"));
 
   EXPECT_TRUE(released != nullptr);
-#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
-  EXPECT_EQ(&sub_message, released);
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (!internal::DebugHardenForceCopyInRelease()) {
+    EXPECT_EQ(&sub_message, released);
+  }
   delete released;
 
   released = reflection->ReleaseMessage(
@@ -1756,6 +1800,15 @@ TEST(GeneratedMessageReflection, ListFieldsSorted) {
                           Pointee(Property(&FieldDescriptor::number, 101))));
 }
 
+TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
+  proto3_unittest::TestHasbits lhs, rhs;
+  rhs.mutable_child()->set_optional_int32(-1);
+  lhs.GetReflection()->Swap(&lhs, &rhs);
+  EXPECT_EQ(lhs.child().optional_int32(), -1);
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

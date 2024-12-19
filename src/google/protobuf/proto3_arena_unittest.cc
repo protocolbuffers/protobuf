@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -273,7 +274,7 @@ TEST(Proto3ArenaTest, CheckMessageFieldIsCleared) {
 
 TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
   if (!internal::DebugHardenClearOneofMessageOnArena()) {
-    GTEST_SKIP() << "arena allocated oneof message fields are not cleared.";
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
   }
 
   Arena arena;
@@ -286,7 +287,13 @@ TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
   child->set_bb(100);
   msg->Clear();
 
-  EXPECT_EQ(child->bb(), 0);
+  if (internal::HasMemoryPoisoning()) {
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(EXPECT_EQ(child->bb(), 100), "use-after-poison");
+#endif  // !GTEST_HAS_DEATH_TEST
+  } else {
+    EXPECT_EQ(child->bb(), 0);
+  }
 }
 
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
@@ -629,3 +636,5 @@ TEST(Proto3OptionalTest, PlainFields) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

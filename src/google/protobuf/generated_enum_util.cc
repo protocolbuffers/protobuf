@@ -219,3 +219,5 @@ std::vector<uint32_t> GenerateEnumData(absl::Span<const int32_t> values) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

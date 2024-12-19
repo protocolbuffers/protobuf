@@ -29,14 +29,14 @@ class AnyBase extends \Google\Protobuf\Internal\Message
             throw new \Exception(
                 "Type url needs to be type.googleapis.com/fully-qulified");
         }
-        $fully_qualifed_name =
+        $fully_qualified_name =
             substr($this->type_url, $url_prifix_len);
 
         // Create message according to fully qualified name.
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
-        $desc = $pool->getDescriptorByProtoName($fully_qualifed_name);
+        $desc = $pool->getDescriptorByProtoName($fully_qualified_name);
         if (is_null($desc)) {
-            throw new \Exception("Class ".$fully_qualifed_name
+            throw new \Exception("Class ".$fully_qualified_name
                                      ." hasn't been added to descriptor pool");
         }
         $klass = $desc->getClass();
@@ -66,8 +66,8 @@ class AnyBase extends \Google\Protobuf\Internal\Message
         // Set type url.
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class($msg));
-        $fully_qualifed_name = $desc->getFullName();
-        $this->type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
+        $fully_qualified_name = $desc->getFullName();
+        $this->type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualified_name;
     }
 
     /**
@@ -79,8 +79,8 @@ class AnyBase extends \Google\Protobuf\Internal\Message
     {
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName($klass);
-        $fully_qualifed_name = $desc->getFullName();
-        $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
+        $fully_qualified_name = $desc->getFullName();
+        $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualified_name;
         return $this->type_url === $type_url;
     }
 }

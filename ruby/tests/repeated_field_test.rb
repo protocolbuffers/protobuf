@@ -215,28 +215,16 @@ class RepeatedFieldTest < Test::Unit::TestCase
       arr[-5..-1]
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      # Infinite range; introduce in Ruby 2.7.
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
-        eval "arr[0..]"
-      end
+      eval "arr[0..]"
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      # Beginless range; introduced in Ruby 2.7.
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
-        eval "arr[..-1]"
-      end
+      eval "arr[..-1]"
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      # Infinite range; introduce in Ruby 2.7.
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
-        eval "arr[0...]" # Exclusive range
-      end
+      eval "arr[0...]" # Exclusive range
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      # Beginless range; introduced in Ruby 2.7.
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
-        eval "arr[...-1]" # Exclusive range
-      end
+      eval "arr[...-1]" # Exclusive range
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
       arr[-1, 1]

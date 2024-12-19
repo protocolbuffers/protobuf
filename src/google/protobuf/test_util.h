@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL_H__
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/unittest.pb.h"
 
 #define UNITTEST ::protobuf_unittest
@@ -105,10 +106,10 @@ inline TestUtil::ReflectionTester::ReflectionTester(
     const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  std::string package = base_descriptor->file()->package();
+  const absl::string_view package = base_descriptor->file()->package();
   const FieldDescriptor* import_descriptor = pool->FindFieldByName(
       absl::StrCat(package, ".TestAllTypes.optional_import_message"));
-  std::string import_package =
+  const absl::string_view import_package =
       import_descriptor->message_type()->file()->package();
 
   nested_b_ = pool->FindFieldByName(
@@ -223,6 +224,8 @@ inline void TestUtil::ReflectionTester::SetAllFieldsViaReflection(
 
   reflection->SetString(message, F("optional_string_piece"), "124");
   reflection->SetString(message, F("optional_cord"), "125");
+  reflection->SetString(message, F("optional_bytes_cord"),
+                        "optional bytes cord");
 
   sub_message =
       reflection->MutableMessage(message, F("optional_public_import_message"));
@@ -491,6 +494,7 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
 
   EXPECT_TRUE(reflection->HasField(message, F("optional_string_piece")));
   EXPECT_TRUE(reflection->HasField(message, F("optional_cord")));
+  EXPECT_TRUE(reflection->HasField(message, F("optional_bytes_cord")));
 
   EXPECT_EQ(101, reflection->GetInt32(message, F("optional_int32")));
   EXPECT_EQ(102, reflection->GetInt64(message, F("optional_int64")));
@@ -551,6 +555,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
   EXPECT_EQ("125", reflection->GetString(message, F("optional_cord")));
   EXPECT_EQ("125", reflection->GetStringReference(message, F("optional_cord"),
                                                   &scratch));
+
+  EXPECT_EQ("optional bytes cord",
+            reflection->GetString(message, F("optional_bytes_cord")));
+  EXPECT_EQ("optional bytes cord",
+            reflection->GetStringReference(message, F("optional_bytes_cord"),
+                                           &scratch));
+  EXPECT_EQ("optional bytes cord",
+            reflection->GetCord(message, F("optional_bytes_cord")));
 
   EXPECT_TRUE(reflection->HasField(message, F("oneof_bytes")));
   EXPECT_EQ("604", reflection->GetString(message, F("oneof_bytes")));
@@ -912,6 +924,7 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
 
   EXPECT_FALSE(reflection->HasField(message, F("optional_string_piece")));
   EXPECT_FALSE(reflection->HasField(message, F("optional_cord")));
+  EXPECT_FALSE(reflection->HasField(message, F("optional_bytes_cord")));
 
   // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0, reflection->GetInt32(message, F("optional_int32")));
@@ -977,6 +990,11 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_EQ("", reflection->GetString(message, F("optional_cord")));
   EXPECT_EQ("", reflection->GetStringReference(message, F("optional_cord"),
                                                &scratch));
+
+  EXPECT_EQ("", reflection->GetString(message, F("optional_bytes_cord")));
+  EXPECT_EQ("", reflection->GetStringReference(
+                    message, F("optional_bytes_cord"), &scratch));
+  EXPECT_EQ("", reflection->GetCord(message, F("optional_bytes_cord")));
 
   // Repeated fields are empty.
   EXPECT_EQ(0, reflection->FieldSize(message, F("repeated_int32")));

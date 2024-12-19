@@ -8,16 +8,17 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -35,12 +36,6 @@ class ParseFunctionGenerator {
       MessageSCCAnalyzer* scc_analyzer,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
-
-  // Emits class-level method declarations to `printer`:
-  void GenerateMethodDecls(io::Printer* printer);
-
-  // Emits out-of-class method implementation definitions to `printer`:
-  void GenerateMethodImpls(io::Printer* printer);
 
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);

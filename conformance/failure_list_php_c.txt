@@ -1,4 +1,5 @@
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
+Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.
 Required.Proto2.JsonInput.BoolFieldFalse.JsonOutput
 Required.Proto2.JsonInput.BoolFieldFalse.ProtobufOutput
 Required.Proto2.JsonInput.EnumField.JsonOutput

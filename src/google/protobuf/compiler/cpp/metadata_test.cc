@@ -12,7 +12,6 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/annotation_test_util.h"

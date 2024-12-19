@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -27,7 +27,10 @@ namespace Google.Protobuf.Conformance
             var output = new BinaryWriter(Console.OpenStandardOutput());
             var typeRegistry = TypeRegistry.FromMessages(
                 ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
-                ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor);
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor,
+                ProtobufTestMessages.Editions.TestAllTypesEdition2023.Descriptor,
+                ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Descriptor,
+                ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Descriptor);
 
             int count = 0;
             while (RunTest(input, output, typeRegistry))
@@ -66,6 +69,20 @@ namespace Google.Protobuf.Conformance
                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension,
                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension
             };
+            ExtensionRegistry editionsProto2ExtensionRegistry = new ExtensionRegistry
+            {
+              ProtobufTestMessages.Editions.Proto2.TestMessagesProto2EditionsExtensions
+                  .ExtensionInt32,
+              ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types
+                  .MessageSetCorrectExtension1.Extensions.MessageSetExtension,
+              ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types
+                  .MessageSetCorrectExtension2.Extensions.MessageSetExtension
+            };
+            ExtensionRegistry edition2023ExtensionRegistry = new ExtensionRegistry {
+              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.ExtensionInt32,
+              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.DelimitedExt,
+              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.GroupLikeType
+            };
             IMessage message;
             try
             {
@@ -76,23 +93,53 @@ namespace Google.Protobuf.Conformance
                         JsonParser parser = new JsonParser(new JsonParser.Settings(20, typeRegistry).WithIgnoreUnknownFields(ignoreUnknownFields));
                         message = request.MessageType switch
                         {
-                            "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
-                            "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
-                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                          "protobuf_test_messages.proto2.TestAllTypesProto2" =>
+                              parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(
+                                  request.JsonPayload),
+                          "protobuf_test_messages.proto3.TestAllTypesProto3" =>
+                              parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(
+                                  request.JsonPayload),
+                          "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
+                              parser.Parse<ProtobufTestMessages.Editions.TestAllTypesEdition2023>(
+                                  request.JsonPayload),
+                          "protobuf_test_messages.editions.proto2.TestAllTypesProto2" =>
+                              parser.Parse<ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2>(
+                                  request.JsonPayload),
+                          "protobuf_test_messages.editions.proto3.TestAllTypesProto3" =>
+                              parser.Parse<ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3>(
+                                  request.JsonPayload),
+                          _ => throw new Exception(
+                              $" Protobuf request doesn't have specific payload type ({request.MessageType})"),
                         };
                         break;
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                        message = request.MessageType switch
-                        {
-                            "protobuf_test_messages.proto3.TestAllTypesProto3" => ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload),
-                            "protobuf_test_messages.proto2.TestAllTypesProto2" => ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser
-                                                                .WithExtensionRegistry(proto2ExtensionRegistry)
-                                                                .ParseFrom(request.ProtobufPayload),
-                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
-                        };
-                        break;
-					case ConformanceRequest.PayloadOneofCase.TextPayload:
-						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
+                      message = request.MessageType switch
+                      {
+                        "protobuf_test_messages.proto2.TestAllTypesProto2" =>
+                            ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser
+                                .WithExtensionRegistry(proto2ExtensionRegistry)
+                                .ParseFrom(request.ProtobufPayload),
+                        "protobuf_test_messages.proto3.TestAllTypesProto3" =>
+                            ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(
+                                request.ProtobufPayload),
+                        "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
+                            ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser
+                                .WithExtensionRegistry(edition2023ExtensionRegistry)
+                                .ParseFrom(request.ProtobufPayload),
+                        "protobuf_test_messages.editions.proto2.TestAllTypesProto2" =>
+                            ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Parser
+                                .WithExtensionRegistry(editionsProto2ExtensionRegistry)
+                                .ParseFrom(request.ProtobufPayload),
+                        "protobuf_test_messages.editions.proto3.TestAllTypesProto3" =>
+                            ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Parser
+                                .ParseFrom(request.ProtobufPayload),
+                        _ => throw new Exception(
+                            $" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                      };
+                      break;
+                    case ConformanceRequest.PayloadOneofCase.TextPayload:
+                      return new ConformanceResponse { Skipped =
+                                                           "CSharp doesn't support text format" };
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }
@@ -115,7 +162,7 @@ namespace Google.Protobuf.Conformance
                     case global::Conformance.WireFormat.Protobuf:
                         return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
                     default:
-                        throw new Exception("Unsupported request output format: " + request.RequestedOutputFormat);
+                        return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
                 }
             }
             catch (InvalidOperationException e)

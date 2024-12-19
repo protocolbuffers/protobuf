@@ -160,6 +160,9 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       if (comment_index != absl::string_view::npos) {
         line_text = line_text.substr(0, comment_index);
         if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
+          // If the first line is part of an ignored comment, consider that a
+          // first line as well.
+          is_first = false;
           continue;
         }
       }

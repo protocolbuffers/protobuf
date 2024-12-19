@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -29,7 +30,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-std::string EscapeJavadoc(const std::string& input) {
+std::string EscapeJavadoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -87,7 +88,7 @@ std::string EscapeJavadoc(const std::string& input) {
   return result;
 }
 
-static std::string EscapeKdoc(const std::string& input) {
+static std::string EscapeKdoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -142,7 +143,7 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
       comments = EscapeJavadoc(comments);
     }
 
-    std::vector<std::string> lines = absl::StrSplit(comments, "\n");
+    std::vector<std::string> lines = absl::StrSplit(comments, '\n');
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
@@ -156,7 +157,7 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
     for (size_t i = 0; i < lines.size(); i++) {
       // Lines should start with a single space and any extraneous leading
       // spaces should be stripped. For lines starting with a /, the leading
-      // space will prevent putting it right after the leading asterick from
+      // space will prevent putting it right after the leading asterisk from
       // closing the comment.
       std::string line = lines[i];
       line.erase(line.begin(),

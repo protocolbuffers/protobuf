@@ -21,6 +21,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+static UPB_ATOMIC(size_t) max_block_size = 32 << 10;
+
+void upb_Arena_SetMaxBlockSize(size_t max) { max_block_size = max; }
+
 typedef struct upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
   UPB_ATOMIC(struct upb_MemBlock*) next;
@@ -32,6 +36,10 @@ typedef struct upb_ArenaInternal {
   // upb_alloc* together with a low bit which signals if there is an initial
   // block.
   uintptr_t block_alloc;
+
+  // The cleanup for the allocator. This is called after all the blocks are
+  // freed in an arena.
+  upb_AllocCleanupFunc* upb_alloc_cleanup;
 
   // When multiple arenas are fused together, each arena points to a parent
   // arena (root points to itself). The root tracks how many live arenas
@@ -153,7 +161,7 @@ void upb_Arena_LogFree(const upb_Arena* arena) {
 }
 #endif  // UPB_TRACING_ENABLED
 
-static upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
+static upb_ArenaRoot _upb_Arena_FindRoot(const upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
@@ -258,7 +266,14 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   if (!ai->block_alloc) return false;
   upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
   size_t last_size = last_block != NULL ? last_block->size : 128;
-  size_t block_size = UPB_MAX(size, last_size * 2) + kUpb_MemblockReserve;
+
+  // Don't naturally grow beyond the max block size.
+  size_t clamped_size = UPB_MIN(last_size * 2, max_block_size);
+
+  // We may need to exceed the max block size if the user requested a large
+  // allocation.
+  size_t block_size = UPB_MAX(size, clamped_size) + kUpb_MemblockReserve;
+
   upb_MemBlock* block =
       upb_malloc(_upb_ArenaInternal_BlockAlloc(ai), block_size);
 
@@ -293,6 +308,7 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
   upb_Atomic_Init(&a->body.blocks, NULL);
+  a->body.upb_alloc_cleanup = NULL;
 
   _upb_Arena_AddBlock(&a->head, mem, n);
 
@@ -331,6 +347,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
   upb_Atomic_Init(&a->body.blocks, NULL);
+  a->body.upb_alloc_cleanup = NULL;
 
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = mem;
@@ -349,12 +366,16 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
         (upb_ArenaInternal*)upb_Atomic_Load(&ai->next, memory_order_acquire);
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
     upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
+    upb_AllocCleanupFunc* alloc_cleanup = *ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
       upb_MemBlock* next_block =
           upb_Atomic_Load(&block->next, memory_order_acquire);
       upb_free(block_alloc, block);
       block = next_block;
+    }
+    if (alloc_cleanup != NULL) {
+      alloc_cleanup(block_alloc);
     }
     ai = next_arena;
   }
@@ -420,9 +441,16 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
   upb_Atomic_Store(&parent->tail, parent_tail, memory_order_relaxed);
 }
 
-static upb_ArenaInternal* _upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2,
+void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  UPB_ASSERT(ai->upb_alloc_cleanup == NULL);
+  ai->upb_alloc_cleanup = func;
+}
+
+static upb_ArenaInternal* _upb_Arena_DoFuse(const upb_Arena* a1,
+                                            const upb_Arena* a2,
                                             uintptr_t* ref_delta) {
-  // `parent_or_count` has two disctint modes
+  // `parent_or_count` has two distinct modes
   // -  parent pointer mode
   // -  refcount mode
   //
@@ -492,7 +520,7 @@ static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
                                           memory_order_relaxed);
 }
 
-bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
+bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   if (a1 == a2) return true;  // trivial fuse
 
 #ifdef UPB_TRACING_ENABLED
@@ -519,7 +547,18 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
 }
 
-bool upb_Arena_IncRefFor(upb_Arena* a, const void* owner) {
+bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b) {
+  if (a == b) return true;  // trivial fuse
+  while (true) {
+    upb_ArenaRoot ra = _upb_Arena_FindRoot(a);
+    if (ra.root == _upb_Arena_FindRoot(b).root) return true;
+    if (ra.root == _upb_Arena_FindRoot(a).root) return false;
+
+    // a's root changed since we last checked.  Retry.
+  }
+}
+
+bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (_upb_ArenaInternal_HasInitialBlock(ai)) return false;
   upb_ArenaRoot r;
@@ -538,7 +577,14 @@ retry:
   goto retry;
 }
 
-void upb_Arena_DecRefFor(upb_Arena* a, const void* owner) { upb_Arena_Free(a); }
+void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner) {
+  upb_Arena_Free((upb_Arena*)a);
+}
+
+upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  return _upb_ArenaInternal_BlockAlloc(ai);
+}
 
 void UPB_PRIVATE(_upb_Arena_SwapIn)(upb_Arena* des, const upb_Arena* src) {
   upb_ArenaInternal* desi = upb_Arena_Internal(des);

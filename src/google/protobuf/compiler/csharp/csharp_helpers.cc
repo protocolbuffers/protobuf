@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -191,44 +192,6 @@ std::string GetEnumValueName(absl::string_view enum_name,
   return result;
 }
 
-uint GetGroupEndTag(const Descriptor* descriptor) {
-  const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type != nullptr) {
-    const FieldDescriptor* field;
-    for (int i = 0; i < containing_type->field_count(); i++) {
-      field = containing_type->field(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-    for (int i = 0; i < containing_type->extension_count(); i++) {
-      field = containing_type->extension(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-  } else {
-    const FileDescriptor* containing_file = descriptor->file();
-    if (containing_file != nullptr) {
-      const FieldDescriptor* field;
-      for (int i = 0; i < containing_file->extension_count(); i++) {
-        field = containing_file->extension(i);
-        if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-            field->message_type() == descriptor) {
-          return internal::WireFormatLite::MakeTag(
-              field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
 std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
   if (descriptor->extension_scope()) {
     return absl::StrCat(GetClassName(descriptor->extension_scope()),
@@ -242,17 +205,12 @@ std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
 // Groups in proto2 are hacky: The name of the field is just the lower-cased
 // name of the group type. In C#, though, we would like to retain the original
 // capitalization of the type name. Fields with an encoding of "delimited" in
-// editions are like groups, but have a real name, so we use that. This means
-// upgrading a proto from proto2 to editions *can* be a breaking change for C#,
-// but it's unlikely to cause significant issues (as C# has primarily been used
-// with proto3, and even with proto2 groups, only some group names will cause
-// compatibility issues).
+// editions are like groups, but have a real name, so we use that.
 std::string GetFieldName(const FieldDescriptor* descriptor) {
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP &&
-      Generator::GetEdition(*descriptor->file()) == Edition::EDITION_PROTO2) {
-    return descriptor->message_type()->name();
+  if (internal::cpp::IsGroupLike(*descriptor)) {
+    return std::string(descriptor->message_type()->name());
   } else {
-    return descriptor->name();
+    return std::string(descriptor->name());
   }
 }
 

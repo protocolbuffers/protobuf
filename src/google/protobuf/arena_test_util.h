@@ -21,46 +21,6 @@
 
 namespace google {
 namespace protobuf {
-
-template <typename T, bool use_arena>
-void TestParseCorruptedString(const T& message) {
-  int success_count = 0;
-  std::string s;
-  {
-    // Map order is not deterministic. To make the test deterministic we want
-    // to serialize the proto deterministically.
-    io::StringOutputStream output(&s);
-    io::CodedOutputStream out(&output);
-    out.SetSerializationDeterministic(true);
-    message.SerializePartialToCodedStream(&out);
-  }
-#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_TSAN) || defined(PROTOBUF_MSAN)
-  // Make the test smaller in sanitizer mode.
-  const int kMaxIters = 200;
-#else
-  const int kMaxIters = 900;
-#endif
-  const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
-  const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;
-  for (int i = start; i < s.size(); i += stride) {
-    for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3)) {
-      s[i] ^= c;
-      Arena arena;
-      T* message = Arena::Create<T>(use_arena ? &arena : nullptr);
-      if (message->ParseFromString(s)) {
-        ++success_count;
-      }
-      if (!use_arena) {
-        delete message;
-      }
-      s[i] ^= c;  // Restore s to its original state.
-    }
-  }
-  // This next line is a low bar.  But getting through the test without crashing
-  // due to use-after-free or other bugs is a big part of what we're checking.
-  ABSL_CHECK_GT(success_count, 0);
-}
-
 namespace internal {
 
 struct ArenaTestPeer {

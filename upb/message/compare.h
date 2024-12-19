@@ -20,6 +20,12 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+enum {
+  // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
+  // By its very nature this comparison is inexact.
+  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif

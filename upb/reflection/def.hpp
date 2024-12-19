@@ -61,6 +61,13 @@ class FieldDefPtr {
     return upb_FieldDef_MiniTable(ptr_);
   }
 
+  std::string MiniDescriptorEncode() const {
+    upb::Arena arena;
+    upb_StringView md;
+    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    return std::string(md.data, md.size);
+  }
+
   const UPB_DESC(FieldOptions) * options() const {
     return upb_FieldDef_Options(ptr_);
   }
@@ -86,9 +93,13 @@ class FieldDefPtr {
   // whatever message this field belongs to.  Guaranteed to be less than
   // f->containing_type()->field_count().  May only be accessed once the def has
   // been finalized.
+  // The index ordering here is *dependent* on the order of the fields in the
+  // .proto file.
   uint32_t index() const { return upb_FieldDef_Index(ptr_); }
 
-  // Index into msgdef->layout->fields or file->exts
+  // Index into msgdef->layout->fields or file->exts.
+  // This is the index that the MiniTable uses, and is independent of the order
+  // of the fields in the .proto file.
   uint32_t layout_index() const { return upb_FieldDef_LayoutIndex(ptr_); }
 
   // The MessageDef to which this field belongs (for extensions, the extended
@@ -105,6 +116,7 @@ class FieldDefPtr {
   OneofDefPtr real_containing_oneof() const;
 
   // Convenient field type tests.
+  bool IsEnum() const { return upb_FieldDef_IsEnum(ptr_); }
   bool IsSubMessage() const { return upb_FieldDef_IsSubMessage(ptr_); }
   bool IsString() const { return upb_FieldDef_IsString(ptr_); }
   bool IsSequence() const { return upb_FieldDef_IsRepeated(ptr_); }
@@ -419,6 +431,7 @@ class EnumDefPtr {
   const upb_EnumDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
+  FileDefPtr file() const;
   const char* full_name() const { return upb_EnumDef_FullName(ptr_); }
   const char* name() const { return upb_EnumDef_Name(ptr_); }
   bool is_closed() const { return upb_EnumDef_IsClosed(ptr_); }
@@ -514,6 +527,10 @@ class FileDefPtr {
     return FieldDefPtr(upb_FileDef_TopLevelExtension(ptr_, index));
   }
 
+  bool resolves(const char* path) const {
+    return upb_FileDef_Resolves(ptr_, path);
+  }
+
   explicit operator bool() const { return ptr_ != nullptr; }
 
   friend bool operator==(FileDefPtr lhs, FileDefPtr rhs) {
@@ -571,6 +588,10 @@ class DefPool {
  private:
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
+
+inline FileDefPtr EnumDefPtr::file() const {
+  return FileDefPtr(upb_EnumDef_File(ptr_));
+}
 
 inline FileDefPtr FieldDefPtr::file() const {
   return FileDefPtr(upb_FieldDef_File(ptr_));

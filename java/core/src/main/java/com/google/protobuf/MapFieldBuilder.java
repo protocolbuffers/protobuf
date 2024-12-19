@@ -166,7 +166,8 @@ public class MapFieldBuilder<
 
   @SuppressWarnings("unchecked")
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(
+          Object object) {
     if (!(object instanceof MapFieldBuilder)) {
       return false;
     }

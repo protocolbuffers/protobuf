@@ -26,6 +26,7 @@ message TestField {
   optional int32 c = 1;
   repeated int32 rc = 2;
   optional TestField m = 5;
+  repeated TestField rm = 6;
 
   extend TestDiffMessage {
     optional TestField tf = 100;

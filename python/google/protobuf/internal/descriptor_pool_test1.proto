@@ -18,7 +18,7 @@ extend DescriptorPoolTest1 {
   optional TopLevelEnumTest1 top_level_extension_test1 = 1000;
 }
 
-service DescriporPoolTestService {}
+service DescriptorPoolTestService {}
 
 message DescriptorPoolTest1 {
   extensions 1000 to max;

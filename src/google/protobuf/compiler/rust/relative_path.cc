@@ -7,11 +7,12 @@
 
 #include "google/protobuf/compiler/rust/relative_path.h"
 
-#include <iostream>
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
@@ -63,7 +64,7 @@ std::string RelativePath::Relative(const RelativePath& dest) const {
     result.push_back(segment);
   }
   // Push `..` from the common ancestor to the current path.
-  for (int i = 0; i < current_segments.size(); ++i) {
+  for (size_t i = 0; i < current_segments.size(); ++i) {
     result.push_back("..");
   }
   absl::c_reverse(result);

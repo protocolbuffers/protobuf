@@ -14,8 +14,9 @@
 #include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
-#include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
@@ -100,7 +101,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
   if (sorted->end > s->cap) {
     const int oldsize = s->cap * sizeof(*s->entries);
-    s->cap = upb_Log2CeilingSize(sorted->end);
+    s->cap = upb_RoundUpToPowerOfTwo(sorted->end);
     const int newsize = s->cap * sizeof(*s->entries);
     s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
@@ -144,14 +145,15 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   return a_num < b_num ? -1 : 1;
 }
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              size_t count, _upb_sortedmap* sorted) {
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
+  const upb_Extension* exts =
+      UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
 
   for (size_t i = 0; i < count; i++) {
     s->entries[sorted->start + i] = &exts[i];
   }
-
   qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
         _upb_mapsorter_cmpext);
   return true;

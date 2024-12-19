@@ -27,7 +27,9 @@ this file*.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import datetime
 from io import BytesIO
+import math
 import struct
 import sys
 import warnings
@@ -50,6 +52,8 @@ from google.protobuf.internal import wire_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
+_StructFullTypeName = 'google.protobuf.Struct'
+_ListValueFullTypeName = 'google.protobuf.ListValue'
 _ExtensionDict = extension_dict._ExtensionDict
 
 class GeneratedProtocolMessageType(type):
@@ -69,7 +73,7 @@ class GeneratedProtocolMessageType(type):
   mydescriptor = Descriptor(.....)
   factory = symbol_database.Default()
   factory.pool.AddDescriptor(mydescriptor)
-  MyProtoClass = factory.GetPrototype(mydescriptor)
+  MyProtoClass = message_factory.GetMessageClass(mydescriptor)
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...
@@ -117,7 +121,7 @@ class GeneratedProtocolMessageType(type):
     # to achieve similar results.
     #
     # This most commonly happens in `text_format.py` when using descriptors from
-    # a custom pool; it calls symbol_database.Global().getPrototype() on a
+    # a custom pool; it calls message_factory.GetMessageClass() on a
     # descriptor which already has an existing concrete class.
     new_class = getattr(descriptor, '_concrete_class', None)
     if new_class:
@@ -514,36 +518,63 @@ def _AddInitMethod(message_descriptor, cls):
         # field=None is the same as no field at all.
         continue
       if field.label == _FieldDescriptor.LABEL_REPEATED:
-        copy = field._default_constructor(self)
+        field_copy = field._default_constructor(self)
         if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:  # Composite
           if _IsMapField(field):
             if _IsMessageMapField(field):
               for key in field_value:
-                copy[key].MergeFrom(field_value[key])
+                field_copy[key].MergeFrom(field_value[key])
             else:
-              copy.update(field_value)
+              field_copy.update(field_value)
           else:
             for val in field_value:
               if isinstance(val, dict):
-                copy.add(**val)
+                field_copy.add(**val)
               else:
-                copy.add().MergeFrom(val)
+                field_copy.add().MergeFrom(val)
         else:  # Scalar
           if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
             field_value = [_GetIntegerEnumValue(field.enum_type, val)
                            for val in field_value]
-          copy.extend(field_value)
-        self._fields[field] = copy
+          field_copy.extend(field_value)
+        self._fields[field] = field_copy
       elif field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-        copy = field._default_constructor(self)
-        new_val = field_value
-        if isinstance(field_value, dict):
-          new_val = field.message_type._concrete_class(**field_value)
-        try:
-          copy.MergeFrom(new_val)
-        except TypeError:
-          _ReraiseTypeErrorWithFieldName(message_descriptor.name, field_name)
-        self._fields[field] = copy
+        field_copy = field._default_constructor(self)
+        new_val = None
+        if isinstance(field_value, message_mod.Message):
+          new_val = field_value
+        elif isinstance(field_value, dict):
+          if field.message_type.full_name == _StructFullTypeName:
+            field_copy.Clear()
+            if len(field_value) == 1 and 'fields' in field_value:
+              try:
+                field_copy.update(field_value)
+              except:
+                # Fall back to init normal message field
+                field_copy.Clear()
+                new_val = field.message_type._concrete_class(**field_value)
+            else:
+              field_copy.update(field_value)
+          else:
+            new_val = field.message_type._concrete_class(**field_value)
+        elif hasattr(field_copy, '_internal_assign'):
+          field_copy._internal_assign(field_value)
+        else:
+          raise TypeError(
+              'Message field {0}.{1} must be initialized with a '
+              'dict or instance of same class, got {2}.'.format(
+                  message_descriptor.name,
+                  field_name,
+                  type(field_value).__name__,
+              )
+          )
+
+        if new_val != None:
+          try:
+            field_copy.MergeFrom(new_val)
+          except TypeError:
+            _ReraiseTypeErrorWithFieldName(message_descriptor.name, field_name)
+        self._fields[field] = field_copy
       else:
         if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
           field_value = _GetIntegerEnumValue(field.enum_type, field_value)
@@ -686,14 +717,14 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
 
   def field_setter(self, new_value):
     # pylint: disable=protected-access
-    # Testing the value for truthiness captures all of the proto3 defaults
-    # (0, 0.0, enum 0, and False).
+    # Testing the value for truthiness captures all of the implicit presence
+    # defaults (0, 0.0, enum 0, and False), except for -0.0.
     try:
       new_value = type_checker.CheckValue(new_value)
     except TypeError as e:
       raise TypeError(
           'Cannot set %s to %.1024r: %s' % (field.full_name, new_value, e))
-    if not field.has_presence and not new_value:
+    if not field.has_presence and decoder.IsDefaultScalarValue(new_value):
       self._fields.pop(field, None)
     else:
       self._fields[field] = new_value
@@ -753,8 +784,25 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   # We define a setter just so we can throw an exception with a more
   # helpful error message.
   def setter(self, new_value):
-    raise AttributeError('Assignment not allowed to composite field '
-                         '"%s" in protocol message object.' % proto_field_name)
+    if field.message_type.full_name == 'google.protobuf.Timestamp':
+      getter(self)
+      self._fields[field].FromDatetime(new_value)
+    elif field.message_type.full_name == 'google.protobuf.Duration':
+      getter(self)
+      self._fields[field].FromTimedelta(new_value)
+    elif field.message_type.full_name == _StructFullTypeName:
+      getter(self)
+      self._fields[field].Clear()
+      self._fields[field].update(new_value)
+    elif field.message_type.full_name == _ListValueFullTypeName:
+      getter(self)
+      self._fields[field].Clear()
+      self._fields[field].extend(new_value)
+    else:
+      raise AttributeError(
+          'Assignment not allowed to composite field '
+          '"%s" in protocol message object.' % proto_field_name
+      )
 
   # Add a property to encapsulate the getter.
   doc = 'Magic attribute generated for "%s" proto field.' % proto_field_name
@@ -941,7 +989,10 @@ def _InternalUnpackAny(msg):
   if descriptor is None:
     return None
 
-  message_class = factory.GetPrototype(descriptor)
+  # Unable to import message_factory at top because of circular import.
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import message_factory
+  message_class = message_factory.GetMessageClass(descriptor)
   message = message_class()
 
   message.ParseFromString(msg.value)
@@ -951,6 +1002,15 @@ def _InternalUnpackAny(msg):
 def _AddEqualsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def __eq__(self, other):
+    if self.DESCRIPTOR.full_name == _ListValueFullTypeName and isinstance(
+        other, list
+    ):
+      return self._internal_compare(other)
+    if self.DESCRIPTOR.full_name == _StructFullTypeName and isinstance(
+        other, dict
+    ):
+      return self._internal_compare(other)
+
     if (not isinstance(other, message_mod.Message) or
         other.DESCRIPTOR != self.DESCRIPTOR):
       return NotImplemented
@@ -998,6 +1058,21 @@ def _AddUnicodeMethod(unused_message_descriptor, cls):
   def __unicode__(self):
     return text_format.MessageToString(self, as_utf8=True).decode('utf-8')
   cls.__unicode__ = __unicode__
+
+
+def _AddContainsMethod(message_descriptor, cls):
+
+  if message_descriptor.full_name == 'google.protobuf.Struct':
+    def __contains__(self, key):
+      return key in self.fields
+  elif message_descriptor.full_name == 'google.protobuf.ListValue':
+    def __contains__(self, value):
+      return value in self.items()
+  else:
+    def __contains__(self, field):
+      return self.HasField(field)
+
+  cls.__contains__ = __contains__
 
 
 def _BytesForNonRepeatedElement(value, field_number, field_type):
@@ -1118,8 +1193,6 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     return length   # Return this for legacy reasons.
   cls.MergeFromString = MergeFromString
 
-  local_ReadTag = decoder.ReadTag
-  local_SkipField = decoder.SkipField
   fields_by_tag = cls._fields_by_tag
   message_set_decoders_by_tag = cls._message_set_decoders_by_tag
 
@@ -1141,7 +1214,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     self._Modified()
     field_dict = self._fields
     while pos != end:
-      (tag_bytes, new_pos) = local_ReadTag(buffer, pos)
+      (tag_bytes, new_pos) = decoder.ReadTag(buffer, pos)
       field_decoder, field_des = message_set_decoders_by_tag.get(
           tag_bytes, (None, None)
       )
@@ -1152,23 +1225,17 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       if field_des is None:
         if not self._unknown_fields:   # pylint: disable=protected-access
           self._unknown_fields = []    # pylint: disable=protected-access
-        # pylint: disable=protected-access
-        (tag, _) = decoder._DecodeVarint(tag_bytes, 0)
-        field_number, wire_type = wire_format.UnpackTag(tag)
+        field_number, wire_type = decoder.DecodeTag(tag_bytes)
         if field_number == 0:
           raise message_mod.DecodeError('Field number 0 is illegal.')
-        # TODO: remove old_pos.
-        old_pos = new_pos
         (data, new_pos) = decoder._DecodeUnknownField(
-            buffer, new_pos, wire_type)  # pylint: disable=protected-access
-        if new_pos == -1:
-          return pos
-        # TODO: remove _unknown_fields.
-        new_pos = local_SkipField(buffer, old_pos, end, tag_bytes)
+            buffer, new_pos, end, field_number, wire_type
+        )  # pylint: disable=protected-access
         if new_pos == -1:
           return pos
         self._unknown_fields.append(
-            (tag_bytes, buffer[old_pos:new_pos].tobytes()))
+            (tag_bytes, buffer[pos + len(tag_bytes) : new_pos].tobytes())
+        )
         pos = new_pos
       else:
         _MaybeAddDecoder(cls, field_des)
@@ -1394,6 +1461,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddStrMethod(message_descriptor, cls)
   _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
+  _AddContainsMethod(message_descriptor, cls)
   _AddByteSizeMethod(message_descriptor, cls)
   _AddSerializeToStringMethod(message_descriptor, cls)
   _AddSerializePartialToStringMethod(message_descriptor, cls)

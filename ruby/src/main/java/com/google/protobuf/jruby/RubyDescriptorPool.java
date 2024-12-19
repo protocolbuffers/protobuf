@@ -100,8 +100,8 @@ public class RubyDescriptorPool extends RubyObject {
    * call-seq:
    *     DescriptorPool.lookup(name) => descriptor
    *
-   * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it, or nil if none
-   * exists with the given name.
+   * Finds a Descriptor, EnumDescriptor, FieldDescriptor or ServiceDescriptor by name and returns it,
+   * or nil if none exists with the given name.
    *
    * This currently lazy loads the ruby descriptor objects as they are requested.
    * This allows us to leave the heavy lifting to the java library

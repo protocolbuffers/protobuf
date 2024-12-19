@@ -34,3 +34,5 @@ int ProtocMain(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   return google::protobuf::compiler::ProtocMain(argc, argv);
 }
+
+#include "google/protobuf/port_undef.inc"

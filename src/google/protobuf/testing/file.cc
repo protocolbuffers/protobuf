@@ -196,8 +196,8 @@ void File::DeleteRecursively(const std::string& name, void* dummy1,
 #endif
 }
 
-bool File::ChangeWorkingDirectory(const std::string& new_working_directory) {
-  return chdir(new_working_directory.c_str()) == 0;
+bool File::ChangeWorkingDirectory(absl::string_view new_working_directory) {
+  return chdir(new_working_directory.data()) == 0;
 }
 
 }  // namespace protobuf

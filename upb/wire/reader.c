@@ -20,8 +20,7 @@ UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
     UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val) {
   UPB_PRIVATE(_upb_WireReader_LongVarint) ret = {NULL, 0};
   uint64_t byte;
-  int i;
-  for (i = 1; i < 10; i++) {
+  for (int i = 1; i < 10; i++) {
     byte = (uint8_t)ptr[i];
     val += (byte - 1) << (i * 7);
     if (!(byte & 0x80)) {

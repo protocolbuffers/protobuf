@@ -24,12 +24,26 @@ public final class RuntimeVersion {
 
   // The version of this runtime.
   // Automatically updated by Protobuf release process. Do not edit manually.
+  // These OSS versions are not stripped to avoid merging conflicts.
+  public static final RuntimeDomain OSS_DOMAIN = RuntimeDomain.PUBLIC;
+  public static final int OSS_MAJOR = 4;
+  public static final int OSS_MINOR = 30;
+  public static final int OSS_PATCH = 0;
+  public static final String OSS_SUFFIX = "-dev";
 
-  public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
-  public static final int MAJOR = 4;
-  public static final int MINOR = 27;
-  public static final int PATCH = 0;
-  public static final String SUFFIX = "-dev";
+  public static final RuntimeDomain DOMAIN = OSS_DOMAIN;
+  public static final int MAJOR = OSS_MAJOR;
+  public static final int MINOR = OSS_MINOR;
+  public static final int PATCH = OSS_PATCH;
+  public static final String SUFFIX = OSS_SUFFIX;
+
+  private static final int MAX_WARNING_COUNT = 20;
+
+  @SuppressWarnings("NonFinalStaticField")
+  static int majorWarningLoggedCount = 0;
+
+  @SuppressWarnings("NonFinalStaticField")
+  static int minorWarningLoggedCount = 0;
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
@@ -51,9 +65,6 @@ public final class RuntimeVersion {
    */
   public static void validateProtobufGencodeVersion(
       RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
-    if (checkDisabled()) {
-      return;
-    }
     validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
   }
 
@@ -63,10 +74,10 @@ public final class RuntimeVersion {
     if (checkDisabled()) {
       return;
     }
-    String gencodeVersionString = versionString(major, minor, patch, suffix);
     // Check that version numbers are valid.
     if (major < 0 || minor < 0 || patch < 0) {
-      throw new ProtobufRuntimeVersionException("Invalid gencode version: " + gencodeVersionString);
+      throw new ProtobufRuntimeVersionException(
+          "Invalid gencode version: " + versionString(major, minor, patch, suffix));
     }
 
     // Check that runtime domain is the same as the gencode domain.
@@ -78,17 +89,33 @@ public final class RuntimeVersion {
               location, domain, DOMAIN));
     }
 
+    String gencodeVersionString = null;
+
     // Check that runtime major version is the same as the gencode major version.
     if (major != MAJOR) {
-      throw new ProtobufRuntimeVersionException(
-          String.format(
-              "Detected mismatched Protobuf Gencode/Runtime major versions when loading %s: gencode"
-                  + " %s, runtime %s. Same major version is required.",
-              location, gencodeVersionString, VERSION_STRING));
+      if (major == MAJOR - 1 && majorWarningLoggedCount < MAX_WARNING_COUNT) {
+        gencodeVersionString = versionString(major, minor, patch, suffix);
+        logger.warning(
+            String.format(
+                " Protobuf gencode version %s is exactly one major version older than the runtime"
+                    + " version %s at %s. Please update the gencode to avoid compatibility"
+                    + " violations in the next runtime release.",
+                gencodeVersionString, VERSION_STRING, location));
+        majorWarningLoggedCount++;
+      } else {
+        throw new ProtobufRuntimeVersionException(
+            String.format(
+                "Detected mismatched Protobuf Gencode/Runtime major versions when loading %s:"
+                    + " gencode %s, runtime %s. Same major version is required.",
+                location, versionString(major, minor, patch, suffix), VERSION_STRING));
+      }
     }
 
     // Check that runtime version is newer than the gencode version.
-    if (MINOR < minor || (MINOR == minor && PATCH < patch)) {
+    if (MINOR < minor || (minor == MINOR && PATCH < patch)) {
+      if (gencodeVersionString == null) {
+        gencodeVersionString = versionString(major, minor, patch, suffix);
+      }
       throw new ProtobufRuntimeVersionException(
           String.format(
               "Detected incompatible Protobuf Gencode/Runtime versions when loading %s: gencode %s,"
@@ -98,6 +125,9 @@ public final class RuntimeVersion {
 
     // Check that runtime version suffix is the same as the gencode version suffix.
     if (!suffix.equals(SUFFIX)) {
+      if (gencodeVersionString == null) {
+        gencodeVersionString = versionString(major, minor, patch, suffix);
+      }
       throw new ProtobufRuntimeVersionException(
           String.format(
               "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading %s:"
@@ -123,7 +153,7 @@ public final class RuntimeVersion {
 
   private static boolean checkDisabled() {
     // Check the environmental variable, and temporarily disable validation if it's set to true.
-    String disableFlag = java.lang.System.getenv("TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
+    String disableFlag = java.lang.System.getenv("TEMPORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
     if ((disableFlag != null && disableFlag.equals("true"))) {
       return true;
     }

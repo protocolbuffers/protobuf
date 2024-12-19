@@ -51,6 +51,9 @@ int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f);
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i);
 int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
 
+// Returns whether |symbol| is transitively included by |f|
+bool upb_FileDef_Resolves(const upb_FileDef* f, const char* symbol);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

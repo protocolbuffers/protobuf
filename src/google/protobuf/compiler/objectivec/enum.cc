@@ -17,7 +17,7 @@
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/options.h"
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -170,7 +170,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
     text_blob += short_name + '\0';
     if (UnCamelCaseEnumShortName(short_name) != v->name()) {
       text_format_decode_data.AddString(enum_value_description_key, short_name,
-                                        v->name());
+                                        std::string(v->name()));
     }
   }
 

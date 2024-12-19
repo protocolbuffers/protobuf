@@ -1,8 +1,4 @@
-Recommended.Proto3.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput
-Recommended.Proto3.ProtobufInput.GroupUnknownFields_Print.TextFormatOutput
-Recommended.Proto3.ProtobufInput.MessageUnknownFields_Drop.TextFormatOutput
-Recommended.Proto3.ProtobufInput.MessageUnknownFields_Print.TextFormatOutput
-Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput
-Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Print.TextFormatOutput
-Recommended.Proto3.ProtobufInput.ScalarUnknownFields_Drop.TextFormatOutput
-Recommended.Proto3.ProtobufInput.ScalarUnknownFields_Print.TextFormatOutput
+Recommended.*.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput # Failed to parse input or produce output.
+Recommended.*.ProtobufInput.GroupUnknownFields_Print.TextFormatOutput # Failed to parse input or produce output.
+Recommended.*.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput # Failed to parse input or produce output.
+Recommended.*.ProtobufInput.RepeatedUnknownFields_Print.TextFormatOutput # Failed to parse input or produce output.

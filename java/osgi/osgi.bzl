@@ -1,6 +1,6 @@
 """ Custom rule to generate OSGi Manifest """
 
-load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:defs.bzl", "JavaInfo", "java_library")
 
 # Note that this rule is currently agnostic of protobuf concerns and could be
 # pulled out as a general purpose helper to allow migrations from maven to bazel

@@ -44,9 +44,12 @@ macro(_check_and_save_build_option OPTION VALUE)
   endif()
   set(${PACKAGE_FIND_NAME}_${OPTION} ${VALUE} PARENT_SCOPE)
 endmacro()
-_check_and_save_build_option(WITH_ZLIB @protobuf_WITH_ZLIB@)
-_check_and_save_build_option(MSVC_STATIC_RUNTIME @protobuf_MSVC_STATIC_RUNTIME@)
-_check_and_save_build_option(BUILD_SHARED_LIBS @protobuf_BUILD_SHARED_LIBS@)
+
+if(PACKAGE_VERSION_COMPATIBLE)
+    _check_and_save_build_option(WITH_ZLIB @protobuf_WITH_ZLIB@)
+    _check_and_save_build_option(MSVC_STATIC_RUNTIME @protobuf_MSVC_STATIC_RUNTIME@)
+    _check_and_save_build_option(BUILD_SHARED_LIBS @protobuf_BUILD_SHARED_LIBS@)
+endif()
 
 # if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
 if(CMAKE_SIZEOF_VOID_P AND "@CMAKE_SIZEOF_VOID_P@")

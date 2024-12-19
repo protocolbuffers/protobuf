@@ -7,14 +7,7 @@
 
 syntax = "proto2";
 
-import public "google/protobuf/rust/test/no_package_import.proto";
-
-import "devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto/optouts.proto";
-
-option (proto_best_practices.file_optouts) = {
-  // package intentionally left unspecified.
-  categories: GLOBAL_PACKAGE
-};
+import public "rust/test/no_package_import.proto";
 
 message MsgWithoutPackage {}
 

@@ -159,9 +159,19 @@ class PROTOBUF_EXPORT Importer {
   // contents are stored.
   inline const DescriptorPool* pool() const { return &pool_; }
 
-  void AddUnusedImportTrackFile(const std::string& file_name,
-                                bool is_error = false);
-  void ClearUnusedImportTrackFiles();
+  void AddDirectInputFile(absl::string_view file_name,
+                          bool unused_import_is_error = false);
+  void ClearDirectInputFiles();
+
+#if !defined(PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT) && !defined(SWIG)
+  ABSL_DEPRECATED("Use AddDirectInputFile")
+  void AddUnusedImportTrackFile(absl::string_view file_name,
+                                bool is_error = false) {
+    AddDirectInputFile(file_name, is_error);
+  }
+  ABSL_DEPRECATED("Use AddDirectInputFile")
+  void ClearUnusedImportTrackFiles() { ClearDirectInputFiles(); }
+#endif  // !PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT && !SWIG
 
 
  private:

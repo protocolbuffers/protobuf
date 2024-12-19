@@ -40,7 +40,7 @@ void SetCommonFieldVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*descriptor)) {
     raw_field_name = descriptor->message_type()->name();
   } else {
     raw_field_name = descriptor->name();
@@ -137,8 +137,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool();
     case FieldDescriptor::CPPTYPE_STRING: {
-      const std::string& default_string = field->default_value_string();
-      return !default_string.empty();
+      return !field->default_value_string().empty();
     }
     case FieldDescriptor::CPPTYPE_ENUM:
       // The default value for an enum field is the first enum value, so there

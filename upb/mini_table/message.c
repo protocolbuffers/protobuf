@@ -7,7 +7,6 @@
 
 #include "upb/mini_table/message.h"
 
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -27,21 +26,30 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   }
 
   // Slow case: binary search
-  int lo = m->UPB_PRIVATE(dense_below);
-  int hi = m->UPB_PRIVATE(field_count) - 1;
-  while (lo <= hi) {
-    int mid = (lo + hi) / 2;
-    uint32_t num = m->UPB_PRIVATE(fields)[mid].UPB_PRIVATE(number);
-    if (num < number) {
-      lo = mid + 1;
-      continue;
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  int32_t hi = m->UPB_PRIVATE(field_count) - 1;
+  const upb_MiniTableField* base = m->UPB_PRIVATE(fields);
+  while (hi >= (int32_t)lo) {
+    uint32_t mid = (hi + lo) / 2;
+    uint32_t num = base[mid].UPB_ONLYBITS(number);
+    // These comparison operations allow, on ARM machines, to fuse all these
+    // branches into one comparison followed by two CSELs to set the lo/hi
+    // values, followed by a BNE to continue or terminate the loop. Since binary
+    // search branches are generally unpredictable (50/50 in each direction),
+    // this is a good deal. We use signed for the high, as this decrement may
+    // underflow if mid is 0.
+    int32_t hi_mid = mid - 1;
+    uint32_t lo_mid = mid + 1;
+    if (num == number) {
+      return &base[mid];
     }
-    if (num > number) {
-      hi = mid - 1;
-      continue;
+    if (UPB_UNPREDICTABLE(num < number)) {
+      lo = lo_mid;
+    } else {
+      hi = hi_mid;
     }
-    return &m->UPB_PRIVATE(fields)[mid];
   }
+
   return NULL;
 }
 

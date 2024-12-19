@@ -41,8 +41,8 @@ bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
   }
 }
 
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o) {
+const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                const upb_OneofDef* o) {
   const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
   if (upb_OneofDef_IsSynthetic(o)) {
     UPB_ASSERT(upb_OneofDef_FieldCount(o) == 1);
@@ -65,6 +65,7 @@ upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
                                             const upb_FieldDef* f,
                                             upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_FieldDef_IsSubMessage(f) || upb_FieldDef_IsRepeated(f));
   if (upb_FieldDef_HasPresence(f) && !upb_Message_HasFieldByDef(msg, f)) {
     // We need to skip the upb_Message_GetFieldByDef() call in this case.
@@ -103,10 +104,20 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    return upb_Message_SetExtension(msg, (const upb_MiniTableExtension*)m_f,
+                                    &val, a);
+  } else {
+    upb_Message_SetBaseField(msg, m_f, &val);
+    return true;
+  }
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
 
   if (upb_MiniTableField_IsExtension(m_f)) {
@@ -117,6 +128,7 @@ void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
 }
 
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Clear(msg, upb_MessageDef_MiniTable(m));
 }
 
@@ -126,7 +138,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
   size_t i = *iter;
   size_t n = upb_MiniTable_FieldCount(mt);
-  const upb_MessageValue zero = {0};
+  upb_MessageValue zero = upb_MessageValue_Zero();
   UPB_UNUSED(ext_pool);
 
   // Iterate over normal fields, returning the first one that is set.
@@ -178,6 +190,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 
 bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                  int depth) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
   upb_MessageValue val;

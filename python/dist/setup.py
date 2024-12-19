@@ -11,9 +11,8 @@
 import glob
 import os
 import sys
-import sysconfig
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension, find_namespace_packages
 
 
 def GetVersion():
@@ -54,14 +53,13 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
-    namespace_packages=['google'],
-    packages=find_packages(),
+    packages=find_namespace_packages(include=['google*']),
     install_requires=[],
     ext_modules=[
         Extension(
@@ -75,5 +73,5 @@ setup(
             extra_link_args=extra_link_args,
         )
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.9',
 )

@@ -30,7 +30,7 @@ namespace util {
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
     const absl::Status _status = (expr);                                     \
-    if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status;               \
+    if (ABSL_PREDICT_FALSE(!_status.ok())) return _status;                   \
   } while (0)
 
 // Internal helper for concatenating macro values.
@@ -47,7 +47,7 @@ absl::Status DoAssignOrReturn(T& lhs, absl::StatusOr<T> result) {
 
 #define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr)       \
   absl::Status status = DoAssignOrReturn(lhs, (rexpr)); \
-  if (PROTOBUF_PREDICT_FALSE(!status.ok())) return status;
+  if (ABSL_PREDICT_FALSE(!status.ok())) return status;
 
 // Executes an expression that returns a util::StatusOr, extracting its value
 // into the variable defined by lhs (or returning on error).

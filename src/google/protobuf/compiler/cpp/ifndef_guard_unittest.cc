@@ -36,7 +36,7 @@ TEST_F(IfnDefGuardTest, Basic) {
   {
     io::Printer printer(output(), '$');
 
-    const IfdefGuardPrinter ifdef_guard(&printer, "A/B/E/alpha");
+    const IfdefGuardPrinter ifdef_guard(&printer, "A/B-E.alpha");
 
     EXPECT_FALSE(printer.failed());
   }

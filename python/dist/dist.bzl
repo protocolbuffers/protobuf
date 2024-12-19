@@ -29,6 +29,7 @@ def _get_suffix(limited_api, python_version, cpu):
             "linux-aarch_64": "aarch64-linux-gnu",
             "linux-x86_64": "x86_64-linux-gnu",
             "k8": "x86_64-linux-gnu",
+            "s390x": "s390x-linux-gnu",
         }
 
         return ".cpython-{}-{}.{}".format(

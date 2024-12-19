@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
@@ -54,6 +55,23 @@ class PROTOBUF_EXPORT FeatureResolver {
   // for any extensions that were used to construct the defaults.
   absl::StatusOr<FeatureSet> MergeFeatures(
       const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const;
+
+  // Validates an unresolved FeatureSet object to make sure they obey the
+  // lifetime requirements.  This needs to run *within* the pool being built, so
+  // that the descriptors of any feature extensions are known and can be
+  // validated.  `pool_descriptor` should point to the FeatureSet descriptor
+  // inside the pool, or nullptr if one doesn't exist,
+  //
+  // This will return error messages for any explicitly set features used before
+  // their introduction or after their removal.  Warnings will be included for
+  // any explicitly set features that have been deprecated.
+  struct ValidationResults {
+    std::vector<std::string> errors;
+    std::vector<std::string> warnings;
+  };
+  static ValidationResults ValidateFeatureLifetimes(
+      Edition edition, const FeatureSet& features,
+      const Descriptor* pool_descriptor);
 
  private:
   explicit FeatureResolver(FeatureSet defaults)

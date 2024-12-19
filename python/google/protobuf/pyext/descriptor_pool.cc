@@ -569,10 +569,11 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   CMessage* defaults = reinterpret_cast<CMessage*>(pdefaults);
   if (defaults->message->GetDescriptor() !=
       FeatureSetDefaults::GetDescriptor()) {
-    PyErr_Format(PyExc_TypeError,
-                 "SetFeatureSetDefaults called with invalid type: "
-                 " got %s.",
-                 defaults->message->GetDescriptor()->full_name().c_str());
+    PyErr_Format(
+        PyExc_TypeError,
+        "SetFeatureSetDefaults called with invalid type: "
+        " got %s.",
+        std::string(defaults->message->GetDescriptor()->full_name()).c_str());
     return nullptr;
   }
 

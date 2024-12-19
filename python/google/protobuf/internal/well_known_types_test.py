@@ -13,13 +13,16 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
+from google.protobuf import json_format
+from google.protobuf import text_format
+from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import well_known_types
+from google.protobuf.internal import well_known_types_test_pb2
+
 from google.protobuf import any_pb2
-from google.protobuf.internal import any_test_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
-from google.protobuf.internal import well_known_types
-from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_pb2
 
@@ -351,6 +354,125 @@ class TimeUtilTest(TimeUtilTestBase):
         tz_aware_min_datetime, ts.ToDatetime(datetime.timezone.utc)
     )
 
+  # Two hours after the Unix Epoch, around the world.
+  @_parameterized.named_parameters(
+      ('London', [1970, 1, 1, 2], datetime.timezone.utc),
+      ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
+      ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
+  )
+  def testTimestampAssignment(self, date_parts, tzinfo):
+    original_datetime = datetime.datetime(*date_parts, tzinfo=tzinfo)  # pylint:disable=g-tzinfo-datetime
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_timestamp = original_datetime
+    self.assertEqual(7200, msg.optional_timestamp.seconds)
+    self.assertEqual(0, msg.optional_timestamp.nanos)
+
+  # Two hours after the Unix Epoch, around the world.
+  @_parameterized.named_parameters(
+      ('London', [1970, 1, 1, 2], datetime.timezone.utc),
+      ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
+      ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
+  )
+  def testTimestampCreation(self, date_parts, tzinfo):
+    original_datetime = datetime.datetime(*date_parts, tzinfo=tzinfo)  # pylint:disable=g-tzinfo-datetime
+    msg = well_known_types_test_pb2.WKTMessage(
+        optional_timestamp=original_datetime
+    )
+    self.assertEqual(7200, msg.optional_timestamp.seconds)
+    self.assertEqual(0, msg.optional_timestamp.nanos)
+
+    msg2 = well_known_types_test_pb2.WKTMessage(
+        optional_timestamp=msg.optional_timestamp
+    )
+    self.assertEqual(7200, msg2.optional_timestamp.seconds)
+    self.assertEqual(0, msg2.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'tz_aware_min_dt',
+          datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -62135564400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testTimestampAdd(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_timestamp = old_time
+
+    # Timestamp + timedelta
+    new_msg1 = well_known_types_test_pb2.WKTMessage()
+    new_msg1.optional_timestamp = msg.optional_timestamp + time_delta
+    self.assertEqual(expected_sec, new_msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg1.optional_timestamp.nanos)
+
+    # timedelta + Timestamp
+    new_msg2 = well_known_types_test_pb2.WKTMessage()
+    new_msg2.optional_timestamp = time_delta + msg.optional_timestamp
+    self.assertEqual(expected_sec, new_msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg2.optional_timestamp.nanos)
+
+    # Timestamp + Duration
+    msg.optional_duration.FromTimedelta(time_delta)
+    new_msg3 = well_known_types_test_pb2.WKTMessage()
+    new_msg3.optional_timestamp = msg.optional_timestamp + msg.optional_duration
+    self.assertEqual(expected_sec, new_msg3.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg3.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'test1',
+          datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -30641792400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testTimestampSub(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_timestamp = old_time
+
+    # Timestamp - timedelta
+    new_msg1 = well_known_types_test_pb2.WKTMessage()
+    new_msg1.optional_timestamp = msg.optional_timestamp - time_delta
+    self.assertEqual(expected_sec, new_msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg1.optional_timestamp.nanos)
+
+    # Timestamp - Duration
+    msg.optional_duration = time_delta
+    new_msg2 = well_known_types_test_pb2.WKTMessage()
+    new_msg2.optional_timestamp = msg.optional_timestamp - msg.optional_duration
+    self.assertEqual(expected_sec, new_msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg2.optional_timestamp.nanos)
+
+    result_msg = well_known_types_test_pb2.WKTMessage()
+    result_msg.optional_timestamp = old_time - time_delta
+    # Timestamp - Timestamp
+    td = msg.optional_timestamp - result_msg.optional_timestamp
+    self.assertEqual(time_delta, td)
+
+    # Timestamp - datetime
+    td1 = msg.optional_timestamp - result_msg.optional_timestamp.ToDatetime()
+    self.assertEqual(time_delta, td1)
+
+    # datetime - Timestamp
+    td2 = msg.optional_timestamp.ToDatetime() - result_msg.optional_timestamp
+    self.assertEqual(time_delta, td2)
+
   def testNanosOneSecond(self):
     tz = _TZ_PACIFIC
     ts = timestamp_pb2.Timestamp(nanos=1_000_000_000)
@@ -413,6 +535,18 @@ class TimeUtilTest(TimeUtilTestBase):
                            message.ToJsonString)
     self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.FromSeconds, -62135596801)
+    msg = well_known_types_test_pb2.WKTMessage()
+    with self.assertRaises(AttributeError):
+      msg.optional_timestamp = 1
+
+    with self.assertRaises(AttributeError):
+      msg2 = well_known_types_test_pb2.WKTMessage(optional_timestamp=1)
+
+    with self.assertRaises(TypeError):
+      msg.optional_timestamp + ''
+
+    with self.assertRaises(TypeError):
+      msg.optional_timestamp - 123
 
   def testInvalidDuration(self):
     message = duration_pb2.Duration()
@@ -446,6 +580,105 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError,
                            r'Duration is not valid\: Sign mismatch.',
                            message.ToJsonString)
+    msg = well_known_types_test_pb2.WKTMessage()
+    with self.assertRaises(AttributeError):
+      msg.optional_duration = 1
+
+    with self.assertRaises(AttributeError):
+      msg2 = well_known_types_test_pb2.WKTMessage(optional_duration=1)
+
+    with self.assertRaises(TypeError):
+      msg.optional_duration + ''
+
+    with self.assertRaises(TypeError):
+      123 - msg.optional_duration
+
+  @_parameterized.named_parameters(
+      ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
+  )
+  def testDurationAssignment(self, microseconds, expected_sec, expected_nano):
+    message = well_known_types_test_pb2.WKTMessage()
+    expected_td = datetime.timedelta(microseconds=microseconds)
+    message.optional_duration = expected_td
+    self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
+    self.assertEqual(expected_sec, message.optional_duration.seconds)
+    self.assertEqual(expected_nano, message.optional_duration.nanos)
+
+  @_parameterized.named_parameters(
+      ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
+  )
+  def testDurationCreation(self, microseconds, expected_sec, expected_nano):
+    message = well_known_types_test_pb2.WKTMessage(
+        optional_duration=datetime.timedelta(microseconds=microseconds)
+    )
+    expected_td = datetime.timedelta(microseconds=microseconds)
+    self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
+    self.assertEqual(expected_sec, message.optional_duration.seconds)
+    self.assertEqual(expected_nano, message.optional_duration.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'tz_aware_min_dt',
+          datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -62135564400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testDurationAdd(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_duration = time_delta
+    msg.optional_timestamp = old_time
+
+    # Duration + datetime
+    msg1 = well_known_types_test_pb2.WKTMessage()
+    msg1.optional_timestamp = msg.optional_duration + old_time
+    self.assertEqual(expected_sec, msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg1.optional_timestamp.nanos)
+
+    # datetime + Duration
+    msg2 = well_known_types_test_pb2.WKTMessage()
+    msg2.optional_timestamp = old_time + msg.optional_duration
+    self.assertEqual(expected_sec, msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg2.optional_timestamp.nanos)
+
+    # Duration + Timestamp
+    msg3 = well_known_types_test_pb2.WKTMessage()
+    msg3.optional_timestamp = msg.optional_duration + msg.optional_timestamp
+    self.assertEqual(expected_sec, msg3.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg3.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'test1',
+          datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -30641792400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testDurationSub(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_duration = time_delta
+
+    # datetime - Duration
+    msg.optional_timestamp = old_time - msg.optional_duration
+    self.assertEqual(expected_sec, msg.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg.optional_timestamp.nanos)
 
 
 class StructTest(unittest.TestCase):
@@ -569,6 +802,36 @@ class StructTest(unittest.TestCase):
     self.assertEqual([6, True, False, None, inner_struct],
                      list(struct['key5'].items()))
 
+  def testInOperator(self):
+    # in operator for Struct
+    struct = struct_pb2.Struct()
+    struct['key'] = 5
+
+    self.assertIn('key', struct)
+    self.assertNotIn('fields', struct)
+    with self.assertRaises(TypeError) as e:
+      1 in struct
+
+    # in operator for ListValue
+    struct_list = struct.get_or_create_list('key2')
+    self.assertIsInstance(struct_list, collections_abc.Sequence)
+    struct_list.extend([6, 'seven', True, False, None])
+    struct_list.add_struct()['subkey'] = 9
+    inner_struct = struct.__class__()
+    inner_struct['subkey'] = 9
+
+    self.assertIn(6, struct_list)
+    self.assertIn('seven', struct_list)
+    self.assertIn(True, struct_list)
+    self.assertIn(False, struct_list)
+    self.assertIn(None, struct_list)
+    self.assertIn(inner_struct, struct_list)
+    self.assertNotIn('values', struct_list)
+    self.assertNotIn(10, struct_list)
+
+    for item in struct_list:
+      self.assertIn(item, struct_list)
+
   def testStructAssignment(self):
     # Tests struct assignment from another struct
     s1 = struct_pb2.Struct()
@@ -577,6 +840,73 @@ class StructTest(unittest.TestCase):
       s1['x'] = value
       s2['x'] = s1['x']
       self.assertEqual(s1['x'], s2['x'])
+
+    dictionary = {
+        'key1': 5.0,
+        'key2': 'abc',
+        'key3': {'subkey': 11.0, 'k': False},
+    }
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_struct = dictionary
+    self.assertEqual(msg.optional_struct, dictionary)
+
+    # Tests assign is not merge
+    dictionary2 = {
+        'key4': {'subkey': 11.0, 'k': True},
+    }
+    msg.optional_struct = dictionary2
+    self.assertEqual(msg.optional_struct, dictionary2)
+
+    # Tests assign empty
+    msg2 = well_known_types_test_pb2.WKTMessage()
+    self.assertNotIn('optional_struct', msg2)
+    msg2.optional_struct = {}
+    self.assertIn('optional_struct', msg2)
+    self.assertEqual(msg2.optional_struct, {})
+
+  def testListValueAssignment(self):
+    list_value = [6, 'seven', True, False, None, {}]
+    msg = well_known_types_test_pb2.WKTMessage()
+    msg.optional_list_value = list_value
+    self.assertEqual(msg.optional_list_value, list_value)
+
+  def testStructConstruction(self):
+    dictionary = {
+        'key1': 5.0,
+        'key2': 'abc',
+        'key3': {'subkey': 11.0, 'k': False},
+    }
+    list_value = [6, 'seven', True, False, None, dictionary]
+    msg = well_known_types_test_pb2.WKTMessage(
+        optional_struct=dictionary, optional_list_value=list_value
+    )
+    self.assertEqual(len(msg.optional_struct), len(dictionary))
+    self.assertEqual(msg.optional_struct, dictionary)
+    self.assertEqual(len(msg.optional_list_value), len(list_value))
+    self.assertEqual(msg.optional_list_value, list_value)
+
+    msg2 = well_known_types_test_pb2.WKTMessage(
+        optional_struct={}, optional_list_value=[]
+    )
+    self.assertIn('optional_struct', msg2)
+    self.assertIn('optional_list_value', msg2)
+    self.assertEqual(msg2.optional_struct, {})
+    self.assertEqual(msg2.optional_list_value, [])
+
+  def testSpecialStructConstruct(self):
+    dictionary = {'key1': 6.0}
+    msg = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary)
+    self.assertEqual(msg.optional_struct, dictionary)
+
+    dictionary2 = {'fields': 7.0}
+    msg2 = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary2)
+    self.assertEqual(msg2.optional_struct, dictionary2)
+
+    # Construct Struct as normal message
+    value_msg = struct_pb2.Value(number_value=5.0)
+    dictionary3 = {'fields': {'key1': value_msg}}
+    msg3 = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary3)
+    self.assertEqual(msg3.optional_struct, {'key1': 5.0})
 
   def testMergeFrom(self):
     struct = struct_pb2.Struct()
@@ -628,7 +958,7 @@ class AnyTest(unittest.TestCase):
 
   def testAnyMessage(self):
     # Creates and sets message.
-    msg = any_test_pb2.TestAny()
+    msg = well_known_types_test_pb2.TestAny()
     msg_descriptor = msg.DESCRIPTOR
     all_types = unittest_pb2.TestAllTypes()
     all_descriptor = all_types.DESCRIPTOR
@@ -658,7 +988,7 @@ class AnyTest(unittest.TestCase):
                            msg_descriptor.full_name)
 
   def testUnpackWithNoSlashInTypeUrl(self):
-    msg = any_test_pb2.TestAny()
+    msg = well_known_types_test_pb2.TestAny()
     all_types = unittest_pb2.TestAllTypes()
     all_descriptor = all_types.DESCRIPTOR
     msg.value.Pack(all_types)
@@ -670,14 +1000,14 @@ class AnyTest(unittest.TestCase):
 
   def testMessageName(self):
     # Creates and sets message.
-    submessage = any_test_pb2.TestAny()
+    submessage = well_known_types_test_pb2.TestAny()
     submessage.int_value = 12345
     msg = any_pb2.Any()
     msg.Pack(submessage)
     self.assertEqual(msg.TypeName(), 'google.protobuf.internal.TestAny')
 
   def testPackWithCustomTypeUrl(self):
-    submessage = any_test_pb2.TestAny()
+    submessage = well_known_types_test_pb2.TestAny()
     submessage.int_value = 12345
     msg = any_pb2.Any()
     # Pack with a custom type URL prefix.
@@ -693,12 +1023,12 @@ class AnyTest(unittest.TestCase):
     self.assertEqual(msg.type_url,
                      '/%s' % submessage.DESCRIPTOR.full_name)
     # Test unpacking the type.
-    unpacked_message = any_test_pb2.TestAny()
+    unpacked_message = well_known_types_test_pb2.TestAny()
     self.assertTrue(msg.Unpack(unpacked_message))
     self.assertEqual(submessage, unpacked_message)
 
   def testPackDeterministic(self):
-    submessage = any_test_pb2.TestAny()
+    submessage = well_known_types_test_pb2.TestAny()
     for i in range(10):
       submessage.map_value[str(i)] = i * 2
     msg = any_pb2.Any()
@@ -710,6 +1040,36 @@ class AnyTest(unittest.TestCase):
               b'\x05\n\x015\x10\n\x1a\x05\n\x016\x10\x0c\x1a\x05\n\x017\x10'
               b'\x0e\x1a\x05\n\x018\x10\x10\x1a\x05\n\x019\x10\x12')
     self.assertEqual(golden, serialized)
+
+  def testJsonStruct(self):
+    value = struct_pb2.Value(struct_value=struct_pb2.Struct())
+    value_dict = json_format.MessageToDict(
+        value,
+        always_print_fields_with_no_presence=True,
+        preserving_proto_field_name=True,
+        use_integers_for_enums=True,
+    )
+    self.assertDictEqual(value_dict, {})
+
+    s = struct_pb2.Struct(
+        fields={
+            'a': struct_pb2.Value(struct_value=struct_pb2.Struct()),
+        },
+    )
+
+    sdict = json_format.MessageToDict(
+        s,
+        always_print_fields_with_no_presence=True,
+        preserving_proto_field_name=True,
+        use_integers_for_enums=True,
+    )
+
+    self.assertDictEqual(
+        sdict,
+        {
+            'a': {},
+        },
+    )
 
 
 if __name__ == '__main__':

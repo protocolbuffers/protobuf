@@ -23,36 +23,12 @@ attach_upb_aspect = rule(
     },
 )
 
-CcAspectHelperInfo = provider(
-    fields = {
-        "rust_proto_info": "RustProtoInfo from the proto_library",
-        "actions_info": "Actions of the proto_library",
-    },
-    doc = "A provider passing data from proto_library through cc_proto_library",
-)
-
-def _cc_aspect_helper_impl(_target, ctx):
-    if ctx.rule.kind == "cc_proto_library":
-        return CcAspectHelperInfo(
-            rust_proto_info = ctx.rule.attr.deps[0][RustProtoInfo],
-            actions_info = ActionsInfo(actions = ctx.rule.attr.deps[0].actions),
-        )
-
-    return []
-
-_cc_aspect_helper = aspect(
-    implementation = _cc_aspect_helper_impl,
-    requires = [rust_cc_proto_library_aspect],
-    attr_aspects = ["deps"],
-)
-
 def _attach_cc_aspect_impl(ctx):
-    helper = ctx.attr.dep[CcAspectHelperInfo]
-    return [helper.rust_proto_info, helper.actions_info]
+    return [ctx.attr.dep[RustProtoInfo], ActionsInfo(actions = ctx.attr.dep.actions)]
 
 attach_cc_aspect = rule(
     implementation = _attach_cc_aspect_impl,
     attrs = {
-        "dep": attr.label(aspects = [_cc_aspect_helper]),
+        "dep": attr.label(aspects = [rust_cc_proto_library_aspect]),
     },
 )

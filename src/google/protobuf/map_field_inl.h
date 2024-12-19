@@ -16,6 +16,7 @@
 #include <type_traits>
 
 #include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_type_handler.h"
@@ -50,11 +51,15 @@ inline uint64_t UnwrapMapKeyImpl(const MapKey& map_key, const uint64_t*) {
 inline bool UnwrapMapKeyImpl(const MapKey& map_key, const bool*) {
   return map_key.GetBoolValue();
 }
-inline const std::string& UnwrapMapKeyImpl(const MapKey& map_key,
-                                           const std::string*) {
+inline absl::string_view UnwrapMapKeyImpl(const MapKey& map_key,
+                                          const std::string*) {
   return map_key.GetStringValue();
 }
 inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
+  return map_key;
+}
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key,
+                                      const DynamicMapKey*) {
   return map_key;
 }
 
@@ -79,12 +84,14 @@ inline void SetMapKey(MapKey* map_key, uint64_t value) {
 inline void SetMapKey(MapKey* map_key, bool value) {
   map_key->SetBoolValue(value);
 }
-inline void SetMapKey(MapKey* map_key, const std::string& value) {
+inline void SetMapKey(MapKey* map_key, absl::string_view value) {
   map_key->SetStringValue(value);
 }
 inline void SetMapKey(MapKey* map_key, const MapKey& value) {
-  map_key->CopyFrom(value);
+  *map_key = value;
 }
+// The overload of SetMapKey for DynamicMapKey is located in dynamic_message.cc
+// and is discovered via ADL.
 
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
@@ -143,23 +150,6 @@ void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
   other_field.SyncMapWithRepeatedField();
   internal::MapMergeFrom(self.map_, other_field.map_);
   self.SetMapDirty();
-}
-
-template <typename Key, typename T>
-size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLockImpl(
-    const MapFieldBase& map) {
-  auto& self = static_cast<const TypeDefinedMapFieldBase&>(map);
-  size_t size = 0;
-  if (auto* p = self.maybe_payload()) {
-    size += p->repeated_field.SpaceUsedExcludingSelfLong();
-  }
-  // We can't compile this expression for DynamicMapField even though it is
-  // never used at runtime, so disable it at compile time.
-  std::get<std::is_same<Map<Key, T>, Map<MapKey, MapValueRef>>::value>(
-      std::make_tuple(
-          [&](const auto& map) { size += map.SpaceUsedExcludingSelfLong(); },
-          [](const auto&) {}))(self.map_);
-  return size;
 }
 
 template <typename Key, typename T>

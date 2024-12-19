@@ -2,6 +2,7 @@
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -44,7 +45,8 @@ RustFieldType GetRustFieldType(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_ENUM:
       return RustFieldType::ENUM;
   }
-  ABSL_LOG(FATAL) << "Unknown field type: " << type;
+  ABSL_LOG(ERROR) << "Unknown field type: " << type;
+  internal::Unreachable();
 }
 
 }  // namespace rust

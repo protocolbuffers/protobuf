@@ -49,7 +49,7 @@ bool IsReservedName(absl::string_view name) {
   return false;
 }
 
-std::string ReservedNamePrefix(const std::string& classname,
+std::string ReservedNamePrefix(const absl::string_view classname,
                                const FileDescriptor* file) {
   if (IsReservedName(classname)) {
     if (file->package() == "google.protobuf") {
@@ -65,7 +65,7 @@ std::string ReservedNamePrefix(const std::string& classname,
 namespace {
 
 template <typename DescriptorType>
-std::string ClassNamePrefixImpl(const std::string& classname,
+std::string ClassNamePrefixImpl(const absl::string_view classname,
                                 const DescriptorType* desc) {
   const std::string& prefix = (desc->file()->options()).php_class_prefix();
   if (!prefix.empty()) {
@@ -77,19 +77,20 @@ std::string ClassNamePrefixImpl(const std::string& classname,
 
 template <typename DescriptorType>
 std::string GeneratedClassNameImpl(const DescriptorType* desc) {
-  std::string classname = ClassNamePrefixImpl(desc->name(), desc) + desc->name();
+  std::string classname =
+      absl::StrCat(ClassNamePrefixImpl(desc->name(), desc), desc->name());
   const Descriptor* containing = desc->containing_type();
   while (containing != nullptr) {
-    classname = ClassNamePrefixImpl(containing->name(), desc) + containing->name()
-       + '\\' + classname;
+    classname = absl::StrCat(ClassNamePrefixImpl(containing->name(), desc),
+                             containing->name(), "\\", classname);
     containing = containing->containing_type();
   }
   return classname;
 }
 
 std::string GeneratedClassNameImpl(const ServiceDescriptor* desc) {
-  std::string classname = desc->name();
-  return ClassNamePrefixImpl(classname, desc) + classname;
+  const absl::string_view classname = desc->name();
+  return absl::StrCat(ClassNamePrefixImpl(classname, desc), classname);
 }
 
 }  // namespace

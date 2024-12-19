@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <cstring>
-#include <iostream>
+#include <string>
 
 #ifndef _WIN32
 #include <errno.h>

@@ -33,13 +33,5 @@ from google.protobuf.internal.descriptor_pool_test import *
 
 SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 
-# begin:github_only
 if __name__ == '__main__':
   unittest.main(verbosity=2)
-# end:github_only
-
-# begin:google_only
-# from absl import app
-# if __name__ == '__main__':
-#   app.run(lambda argv: unittest.main(verbosity=2))
-# end:google_only

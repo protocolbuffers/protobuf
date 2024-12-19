@@ -30,8 +30,8 @@ UPB_API upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
                                                     upb_Arena* a);
 
 // Returns the field that is set in the oneof, or NULL if none are set.
-UPB_API const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                                   const upb_OneofDef* o);
+UPB_API const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                        const upb_OneofDef* o);
 
 // Clear all data and unknown fields.
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m);

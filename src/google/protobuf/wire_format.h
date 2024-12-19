@@ -16,15 +16,19 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
-#include "google/protobuf/stubs/common.h"
+#include <cstddef>
+#include <cstdint>
+
 #include "absl/base/casts.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
 #ifdef SWIG
@@ -44,6 +48,8 @@ class UnknownFieldSet;  // unknown_field_set.h
 namespace google {
 namespace protobuf {
 namespace internal {
+
+class TcParser;
 
 // This class is for internal use by the protocol buffer library and by
 // protocol-compiler-generated message classes.  It must not be called
@@ -242,7 +248,7 @@ class PROTOBUF_EXPORT WireFormat {
 
   // Computes the byte size of a field, excluding tags. For packed fields, it
   // only includes the size of the raw data, and not the size of the total
-  // length, but for other length-delimited types, the size of the length is
+  // length, but for other length-prefixed types, the size of the length is
   // included.
   static size_t FieldDataOnlyByteSize(
       const FieldDescriptor* field,  // Cannot be nullptr
@@ -260,7 +266,8 @@ class PROTOBUF_EXPORT WireFormat {
   // The NamedField variant takes a field name in order to produce an
   // informative error message if verification fails.
   static void VerifyUTF8StringNamedField(const char* data, int size,
-                                         Operation op, const char* field_name);
+                                         Operation op,
+                                         absl::string_view field_name);
 
  private:
   struct MessageSetParser;
@@ -286,9 +293,9 @@ class PROTOBUF_EXPORT WireFormat {
 // Subclass of FieldSkipper which saves skipped fields to an UnknownFieldSet.
 class PROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
  public:
-  UnknownFieldSetFieldSkipper(UnknownFieldSet* unknown_fields)
+  explicit UnknownFieldSetFieldSkipper(UnknownFieldSet* unknown_fields)
       : unknown_fields_(unknown_fields) {}
-  ~UnknownFieldSetFieldSkipper() override {}
+  ~UnknownFieldSetFieldSkipper() override = default;
 
   // implements FieldSkipper -----------------------------------------
   bool SkipField(io::CodedInputStream* input, uint32_t tag) override;
@@ -345,9 +352,9 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
 #endif
 }
 
-inline void WireFormat::VerifyUTF8StringNamedField(const char* data, int size,
-                                                   WireFormat::Operation op,
-                                                   const char* field_name) {
+inline void WireFormat::VerifyUTF8StringNamedField(
+    const char* data, int size, WireFormat::Operation op,
+    const absl::string_view field_name) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(
       data, size, static_cast<WireFormatLite::Operation>(op), field_name);

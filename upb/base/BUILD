@@ -5,7 +5,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "base",
@@ -37,7 +39,16 @@ cc_library(
     deps = ["//upb:port"],
 )
 
-# begin:github_only
+cc_test(
+    name = "string_view_test",
+    srcs = ["string_view_test.cc"],
+    deps = [
+        ":base",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -52,4 +63,3 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
-# end:github_only

@@ -72,8 +72,8 @@ class TestGenerator : public CodeGenerator {
 
  private:
   uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
-  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition_ = ProtocMinimumEdition();
+  Edition maximum_edition_ = ProtocMaximumEdition();
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 };
@@ -271,8 +271,9 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
-                  features {
+                  edition: EDITION_LEGACY
+                  overridable_features {}
+                  fixed_features {
                     field_presence: EXPLICIT
                     enum_type: CLOSED
                     repeated_field_encoding: EXPANDED
@@ -283,7 +284,8 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                 }
                 defaults {
                   edition: EDITION_PROTO3
-                  features {
+                  overridable_features {}
+                  fixed_features {
                     field_presence: IMPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
@@ -294,7 +296,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                 }
                 defaults {
                   edition: EDITION_2023
-                  features {
+                  overridable_features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
@@ -302,9 +304,10 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
+                  fixed_features {}
                 }
-                minimum_edition: EDITION_99997_TEST_ONLY
-                maximum_edition: EDITION_99999_TEST_ONLY
+                minimum_edition: EDITION_PROTO2
+                maximum_edition: EDITION_2024
               )pb")));
 }
 
@@ -317,8 +320,15 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
   auto result = generator.BuildFeatureSetDefaults();
 
   ASSERT_TRUE(result.ok()) << result.status().message();
-  EXPECT_EQ(result->minimum_edition(), PROTOBUF_MINIMUM_EDITION);
-  EXPECT_EQ(result->maximum_edition(), PROTOBUF_MAXIMUM_EDITION);
+  EXPECT_EQ(result->minimum_edition(), ProtocMinimumEdition());
+  EXPECT_EQ(result->maximum_edition(), MaximumKnownEdition());
+}
+
+TEST_F(CodeGeneratorTest, SupportedEditionRangeIsDense) {
+  for (int i = static_cast<int>(ProtocMinimumEdition());
+       i <= static_cast<int>(ProtocMaximumEdition()); ++i) {
+    EXPECT_TRUE(Edition_IsValid(i));
+  }
 }
 
 #include "google/protobuf/port_undef.inc"

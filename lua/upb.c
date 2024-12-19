@@ -41,11 +41,13 @@
 /* Lua compatibility code *****************************************************/
 
 /* Shims for upcoming Lua 5.3 functionality. */
+#if LUA_VERSION_NUM < 503
 static bool lua_isinteger(lua_State* L, int argn) {
   LUPB_UNUSED(L);
   LUPB_UNUSED(argn);
   return false;
 }
+#endif
 
 /* Utility functions **********************************************************/
 

@@ -9,4 +9,4 @@ syntax = "proto2";
 
 package import_public;
 
-import public "google/protobuf/rust/test/import_public_primary_src.proto";
+import public "rust/test/import_public_primary_src.proto";

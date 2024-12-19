@@ -7,13 +7,13 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
-#include <algorithm>
-#include <cstddef>
+#include <string>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -47,7 +47,9 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestVerifyBigFieldNumberUint32.Nested",
       "TestUnpackedTypes",
       "TestUnpackedExtensions",
+      "TestString",
       "TestReservedFields",
+      "TestRequiredOpenEnum",
       "TestRequiredOneof.NestedMessage",
       "TestRequiredNoMaskMulti",
       "TestRequiredEnumNoMask",
@@ -93,6 +95,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestExtensionInsideTable",
       "TestEmptyMessageWithExtensions",
       "TestEmptyMessage",
+      "TestEagerlyVerifiedLazyMessage.LazyMessage",
       "TestDynamicExtensions.DynamicMessageType",
       "TestDupFieldNumber.Foo",
       "TestDupFieldNumber.Bar",
@@ -111,10 +114,14 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "RedactedFields.MapUnredactedStringEntry",
       "RedactedFields.MapRedactedStringEntry",
       "OptionalGroup_extension",
+      "OpenEnumMessage",
       "OneString",
       "OneBytes",
       "MoreString",
       "MoreBytes",
+      "MessageCreatorZeroInit",
+      "MessageCreatorMemcpy.M2Entry",
+      "MessageCreatorFunc",
       "ManyOptionalString",
       "Int64ParseTester",
       "Int64Message",
@@ -144,6 +151,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestGroup",
       "TestForeignNested",
       "TestFieldOrderings",
+      "TestEagerlyVerifiedLazyMessage",
       "TestEagerMaybeLazy.NestedMessage",
       "TestDynamicExtensions",
       "TestDupFieldNumber",
@@ -153,6 +161,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestCamelCaseFieldNames",
       "TestAllTypes",
       "RedactedFields",
+      "MessageCreatorMemcpy",
       "TestVerifyUint32BigFieldNumber",
       "TestVerifyUint32",
       "TestVerifyOneUint32",
@@ -190,26 +199,14 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestLazyMessageRepeated",
       "TestNestedRequiredForeign",
   };
-  static constexpr size_t kExpectedDescriptorCount =
-      std::end(kExpectedDescriptorOrder) - std::begin(kExpectedDescriptorOrder);
-  std::vector<const Descriptor*> actual_descriptor_order =
-      FileGeneratorFriendForTesting::MessagesInTopologicalOrder(fgen);
-  EXPECT_TRUE(kExpectedDescriptorCount == actual_descriptor_order.size())
-      << "Expected: " << kExpectedDescriptorCount
-      << ", got: " << actual_descriptor_order.size();
-
-  auto limit =
-      std::min(kExpectedDescriptorCount, actual_descriptor_order.size());
-  for (auto i = 0u; i < limit; ++i) {
-    const Descriptor* desc = actual_descriptor_order[i];
-    bool match = absl::EndsWith(desc->full_name(), kExpectedDescriptorOrder[i]);
-    EXPECT_TRUE(match) << "failed to match; expected "
-                       << kExpectedDescriptorOrder[i] << ", got "
-                       << desc->full_name();
-    if (!match) {
-      break;
-    }
+  std::vector<std::string> actual_order;
+  for (const Descriptor* desc :
+       FileGeneratorFriendForTesting::MessagesInTopologicalOrder(fgen)) {
+    actual_order.emplace_back(
+        absl::StripPrefix(desc->full_name(), "protobuf_unittest."));
   }
+  EXPECT_THAT(actual_order,
+              ::testing::ElementsAreArray(kExpectedDescriptorOrder));
 }
 
 }  // namespace
@@ -217,3 +214,5 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

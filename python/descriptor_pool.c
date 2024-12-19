@@ -13,6 +13,7 @@
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/upcast.h"
+#include "upb/message/compare.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
@@ -21,8 +22,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   upb_DefPool* symtab;
+  // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
 } PyUpb_DescriptorPool;
 
@@ -197,8 +200,9 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+    const int options = kUpb_CompareOption_IncludeUnknownFields;
     if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
-                                 /*options=*/0)) {
+                                 options)) {
       result = PyUpb_FileDescriptor_Get(file);
       goto done;
     }

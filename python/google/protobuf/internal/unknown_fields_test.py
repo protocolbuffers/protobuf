@@ -212,7 +212,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
                            unknown_field_set,
                            (17, 0, 117))
 
-    self.assertEqual(98, len(unknown_field_set))
+    self.assertEqual(99, len(unknown_field_set))
 
   def testCopyFrom(self):
     message = unittest_pb2.TestEmptyMessage()
@@ -250,7 +250,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.empty_message.Clear()
     # All cleared, even unknown fields.
     self.assertEqual(self.empty_message.SerializeToString(), b'')
-    self.assertEqual(len(unknown_field_set), 98)
+    self.assertEqual(len(unknown_field_set), 99)
 
   @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
                    'tracemalloc requires python 3.4+')
@@ -309,7 +309,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 98)
+    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 99)
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 

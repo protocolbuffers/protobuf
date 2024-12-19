@@ -19,7 +19,7 @@ import unittest
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import descriptor_pb2
-from google.protobuf.internal import any_test_pb2 as test_extend_any
+from google.protobuf.internal import well_known_types_test_pb2 as test_extend_any
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
@@ -31,6 +31,8 @@ from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_custom_options_pb2
+from google.protobuf import unittest_delimited_pb2
+from google.protobuf import unittest_delimited_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 # pylint: enable=g-import-not-at-top
@@ -977,6 +979,20 @@ class TextFormatParserTests(TextFormatBase):
          r'have multiple "optional_int32" fields.'), text_format.Parse, text,
         message)
 
+  def testParseDuplicateNegativeZero(self, message_module):
+    message = message_module.TestAllTypes()
+    text = 'optional_double: -0.0 optional_double: 3'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (
+            r'1:40 : Message type "\w+.TestAllTypes" should not '
+            r'have multiple "optional_double" fields.'
+        ),
+        text_format.Parse,
+        text,
+        message,
+    )
+
   def testParseExistingScalarInMessage(self, message_module):
     message = message_module.TestAllTypes(optional_int32=42)
     text = 'optional_int32: 67'
@@ -1177,6 +1193,73 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     test_util.SetAllFields(message)
     self.assertEqual(message, parsed_message)
 
+  def testPrintMapEmptyKeys(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[0] = 123
+    message.map_int64_int64[0] = 2**33
+    message.map_uint32_uint32[0] = 123
+    message.map_uint64_uint64[0] = 2**33
+    message.map_string_string[''] = 'world'
+    message.map_int32_foreign_message[0].c = 111
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  value: "world"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  value {\n'
+        '    c: 111\n'
+        '  }\n'
+        '}\n',
+    )
+
+  def testPrintMapEmptyValues(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[-123] = 0
+    message.map_int64_int64[-(2**33)] = 0
+    message.map_uint32_uint32[123] = 0
+    message.map_uint64_uint64[2**33] = 0
+    message.map_string_string['hello'] = ''
+    message.map_int32_foreign_message[111].c = 0
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  key: -123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  key: -8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  key: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "hello"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 0\n'
+        '  }\n'
+        '}\n',
+    )
+
   def testPrintMap(self):
     message = map_unittest_pb2.TestMap()
 
@@ -1341,6 +1424,23 @@ class Proto2Tests(TextFormatBase):
         '[google.protobuf.internal.TestMessageSetExtension3] {\n'
         '  text: \"bar\"\n'
         '}\n')
+
+  def testMessageSetExtensionNotFirst(self):
+    desc = message_set_extensions_pb2.TestMessageSetExtension1.DESCRIPTOR
+    self.assertEqual('first_extension', desc.extensions[0].name)
+    self.assertEqual('message_set_extension', desc.extensions[1].name)
+    message = message_set_extensions_pb2.TestMessageSet()
+    ext = (
+        message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+    )
+    message.Extensions[ext].i = 123
+    expected_str = (
+        '[google.protobuf.internal.TestMessageSetExtension1] {\n  i: 123\n}\n'
+    )
+    self.CompareToGoldenText(text_format.MessageToString(message), expected_str)
+    parsed = message_set_extensions_pb2.TestMessageSet()
+    text_format.Parse(expected_str, parsed)
+    self.CompareToGoldenText(text_format.MessageToString(parsed), expected_str)
 
   def testPrintMessageSetByFieldNumber(self):
     out = text_format.TextWriter(False)
@@ -1797,6 +1897,32 @@ class Proto3Tests(unittest.TestCase):
         '  }\n'
         '}\n')
 
+  def testPrintStructInAny(self):
+    packed_message = struct_pb2.Struct()
+    packed_message['name'] = 'Jim'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    print(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        )
+    )
+    self.assertEqual(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
+        'any_value {\n'
+        '  [type.googleapis.com/google.protobuf.Struct] {\n'
+        '    fields {\n'
+        '      key: "name"\n'
+        '      value {\n'
+        '        string_value: "Jim"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n',
+    )
+
   def testTopAnyMessage(self):
     packed_msg = unittest_pb2.OneString()
     msg = any_pb2.Any()
@@ -2029,84 +2155,241 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(text_format.MessageToString(msg2), text)
 
 
-class TokenizerTest(unittest.TestCase):
+def _CreateConsumeLiteralToken(expected_literal):
+  def _Consume(tokenizer):
+    tokenizer.Consume(expected_literal)
+    return expected_literal
 
-  def testSimpleTokenCases(self):
-    text = ('identifier1:"string1"\n     \n\n'
-            'identifier2 : \n \n123  \n  identifier3 :\'string\'\n'
-            'identifiER_4 : 1.1e+2 ID5:-0.23 ID6:\'aaaa\\\'bbbb\'\n'
-            'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
-            'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
-            'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
-            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f '
-            'False_bool: False True_bool: True X:iNf Y:-inF Z:nAN')
+  return (_Consume, expected_literal)
+
+
+class TokenizerTest(_parameterized.TestCase):
+
+  @_parameterized.named_parameters([
+      dict(
+          testcase_name='_string_double_quotes',
+          text='identifier1:"string1"\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'string1'),
+          ],
+      ),
+      dict(
+          testcase_name='_integer',
+          text='identifier2 : \n \n123 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier2'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, 123),
+          ],
+      ),
+      dict(
+          testcase_name='_string_single_quotes',
+          text="\n  identifier3:'string'\n",
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier3'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'string'),
+          ],
+      ),
+      dict(
+          testcase_name='_float_exponent',
+          text='identifiER_4 : 1.1e+2 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifiER_4'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.1e2),
+          ],
+      ),
+      dict(
+          testcase_name='_float',
+          text='ID5:-0.23',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID5'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, -0.23),
+          ],
+      ),
+      dict(
+          testcase_name='_escape_single_quote',
+          text="ID6:'aaaa\\'bbbb'\n",
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID6'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, "aaaa'bbbb"),
+          ],
+      ),
+      dict(
+          testcase_name='_escape_double_quote',
+          text='ID7 : "aa\\"bb"\n\n\n\n ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID7'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'aa"bb'),
+          ],
+      ),
+      dict(
+          testcase_name='_submessage',
+          text='ID8: {A:inf B:-inf C:true D:false}\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID8'),
+              _CreateConsumeLiteralToken(':'),
+              _CreateConsumeLiteralToken('{'),
+              (text_format.Tokenizer.ConsumeIdentifier, 'A'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'B'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'C'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+              (text_format.Tokenizer.ConsumeIdentifier, 'D'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+              _CreateConsumeLiteralToken('}'),
+          ],
+      ),
+      dict(
+          testcase_name='_large_negative_integer',
+          text='ID10: -111111111111111111 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID10'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, -111111111111111111),
+          ],
+      ),
+      dict(
+          testcase_name='_negative_integer',
+          text='ID11: -22\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID11'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, -22),
+          ],
+      ),
+      dict(
+          testcase_name='_large_integer',
+          text='ID12: 2222222222222222222 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID12'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, 2222222222222222222),
+          ],
+      ),
+      dict(
+          testcase_name='_float_suffix',
+          text='ID13: 1.23456f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='_float_capital_suffix',
+          text='ID13: 1.23456F ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='_float_exponent_suffix',
+          text='ID14: 1.2e+2f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID14'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.2e2),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_zero',
+          text='false_bool:  0 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_t',
+          text='true_BOOL:t ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_BOOL'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_one',
+          text='true_bool1:  1 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_bool1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_f',
+          text='false_BOOL1:f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_BOOL1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_false',
+          text='False_bool: False ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'False_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_true',
+          text='True_bool: True ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'True_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_float_inf',
+          text='X:iNf ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'X'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+          ],
+      ),
+      dict(
+          testcase_name='_float_negative_inf',
+          text='Y:-inF ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'Y'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+          ],
+      ),
+  ])
+  def testSimpleTokenCases(self, text, expected):
+    consume_functions, expected_tokens = zip(*expected)
     tokenizer = text_format.Tokenizer(text.splitlines())
-    methods = [(tokenizer.ConsumeIdentifier, 'identifier1'), ':',
-               (tokenizer.ConsumeString, 'string1'),
-               (tokenizer.ConsumeIdentifier, 'identifier2'), ':',
-               (tokenizer.ConsumeInteger, 123),
-               (tokenizer.ConsumeIdentifier, 'identifier3'), ':',
-               (tokenizer.ConsumeString, 'string'),
-               (tokenizer.ConsumeIdentifier, 'identifiER_4'), ':',
-               (tokenizer.ConsumeFloat, 1.1e+2),
-               (tokenizer.ConsumeIdentifier, 'ID5'), ':',
-               (tokenizer.ConsumeFloat, -0.23),
-               (tokenizer.ConsumeIdentifier, 'ID6'), ':',
-               (tokenizer.ConsumeString, 'aaaa\'bbbb'),
-               (tokenizer.ConsumeIdentifier, 'ID7'), ':',
-               (tokenizer.ConsumeString, 'aa\"bb'),
-               (tokenizer.ConsumeIdentifier, 'ID8'), ':', '{',
-               (tokenizer.ConsumeIdentifier, 'A'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'B'), ':',
-               (tokenizer.ConsumeFloat, -float('inf')),
-               (tokenizer.ConsumeIdentifier, 'C'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'D'), ':',
-               (tokenizer.ConsumeBool, False), '}',
-               (tokenizer.ConsumeIdentifier, 'ID9'), ':',
-               (tokenizer.ConsumeInteger, 22),
-               (tokenizer.ConsumeIdentifier, 'ID10'), ':',
-               (tokenizer.ConsumeInteger, -111111111111111111),
-               (tokenizer.ConsumeIdentifier, 'ID11'), ':',
-               (tokenizer.ConsumeInteger, -22),
-               (tokenizer.ConsumeIdentifier, 'ID12'), ':',
-               (tokenizer.ConsumeInteger, 2222222222222222222),
-               (tokenizer.ConsumeIdentifier, 'ID13'), ':',
-               (tokenizer.ConsumeFloat, 1.23456),
-               (tokenizer.ConsumeIdentifier, 'ID14'), ':',
-               (tokenizer.ConsumeFloat, 1.2e+2),
-               (tokenizer.ConsumeIdentifier, 'false_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'true_BOOL'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'true_bool1'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'false_BOOL1'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'False_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'True_bool'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'X'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'Y'), ':',
-               (tokenizer.ConsumeFloat, float('-inf')),
-               (tokenizer.ConsumeIdentifier, 'Z'), ':',
-               (tokenizer.ConsumeFloat, float('nan'))]
+    tokens = [consume(tokenizer) for consume in consume_functions]
 
-    i = 0
-    while not tokenizer.AtEnd():
-      m = methods[i]
-      if isinstance(m, str):
-        token = tokenizer.token
-        self.assertEqual(token, m)
-        tokenizer.NextToken()
-      elif isinstance(m[1], float) and math.isnan(m[1]):
-        self.assertTrue(math.isnan(m[0]()))
-      else:
-        self.assertEqual(m[1], m[0]())
-      i += 1
+    self.assertTrue(tokenizer.AtEnd())
+    self.assertEqual(tokens, [token for token in expected_tokens])
+
+  def testConsumeNan(self):
+    tokenizer = text_format.Tokenizer(['nAN'])
+    token = tokenizer.ConsumeFloat()
+    self.assertTrue(math.isnan(token), 'Expected NaN, got %s' % token)
 
   def testConsumeAbstractIntegers(self):
     # This test only tests the failures in the integer parsing methods as well
@@ -2310,6 +2593,101 @@ class TokenizerTest(unittest.TestCase):
       self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
     else:
       self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
+
+  def testPrintGroupLikeDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        grouplike=unittest_delimited_pb2.TestDelimited.GroupLike(a=1)
+    )
+    if api_implementation.Type() == 'upb':
+      self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
+    else:
+      self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
+
+  def testPrintGroupLikeDelimitedExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.grouplikefilescope].b = 5
+    self.assertEqual(
+        str(msg), '[editions_unittest.grouplikefilescope] {\n  b: 5\n}\n'
+    )
+
+  def testPrintGroupLikeNotDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        lengthprefixed=unittest_delimited_pb2.TestDelimited.LengthPrefixed(b=9)
+    )
+    self.assertEqual(str(msg), 'lengthprefixed {\n  b: 9\n}\n')
+
+  def testPrintGroupLikeMismatchedName(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        notgrouplike=unittest_delimited_pb2.TestDelimited.GroupLike(b=2)
+    )
+    self.assertEqual(str(msg), 'notgrouplike {\n  b: 2\n}\n')
+
+  def testPrintGroupLikeExtensionMismatchedName(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.not_group_like_scope].b = 5
+    self.assertEqual(
+        str(msg), '[editions_unittest.not_group_like_scope] {\n  b: 5\n}\n'
+    )
+
+  def testPrintGroupLikeMismatchedScope(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        notgrouplikescope=unittest_delimited_pb2.NotGroupLikeScope(b=9)
+    )
+    self.assertEqual(str(msg), 'notgrouplikescope {\n  b: 9\n}\n')
+
+  def testPrintGroupLikeExtensionMismatchedScope(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.grouplike].b = 1
+    self.assertEqual(str(msg), '[editions_unittest.grouplike] {\n  b: 1\n}\n')
+
+  def testPrintGroupLikeMismatchedFile(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        messageimport=unittest_delimited_import_pb2.MessageImport(b=9)
+    )
+    self.assertEqual(str(msg), 'messageimport {\n  b: 9\n}\n')
+
+  def testParseDelimitedGroupLikeType(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('GroupLike { a: 1 }', msg)
+    self.assertEqual(msg.grouplike.a, 1)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeField(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('grouplike { a: 2 }', msg)
+    self.assertEqual(msg.grouplike.a, 2)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('[editions_unittest.grouplike] { a: 2 }', msg)
+    self.assertEqual(msg.Extensions[unittest_delimited_pb2.grouplike].a, 2)
+
+  def testParseDelimitedGroupLikeInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('GROUPlike { b:1 }', msg)
+
+  def testParseDelimitedGroupLikeInvalidExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('[editions_unittest.GroupLike] { a: 2 }', msg)
+
+  def testParseDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('notgrouplike { b: 1 }', msg)
+    self.assertEqual(msg.notgrouplike.b, 1)
+    self.assertFalse(msg.HasField('grouplike'))
+
+  def testParseDelimitedInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('NotGroupLike { b:1 }', msg)
+
+  def testParseDelimitedInvalidScope(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('NotGroupLikeScope { b:1 }', msg)
 
 # Tests for pretty printer functionality.
 @_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))

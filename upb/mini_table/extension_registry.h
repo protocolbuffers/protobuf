@@ -8,6 +8,9 @@
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -55,21 +58,42 @@ extern "C" {
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
+typedef enum {
+  kUpb_ExtensionRegistryStatus_Ok = 0,
+  kUpb_ExtensionRegistryStatus_DuplicateEntry = 1,
+  kUpb_ExtensionRegistryStatus_OutOfMemory = 2,
+} upb_ExtensionRegistryStatus;
+
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
 UPB_API upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
-UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
-                                       const upb_MiniTableExtension* e);
+UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension* e);
 
 // Adds the given extension info for the array |e| of size |count| into the
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
 // Possible errors include OOM or an extension number that already exists.
-// TODO: There is currently no way to know the exact reason for failure.
-bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
-                                    const upb_MiniTableExtension** e,
-                                    size_t count);
+upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
+
+#ifdef UPB_LINKARR_DECLARE
+
+// Adds all extensions linked into the binary into the registry.  The set of
+// linked extensions is assembled by the linker using linker arrays.  This
+// will likely not work properly if the extensions are split across multiple
+// shared libraries.
+//
+// Returns true if all extensions were added successfully, false on out of
+// memory or if any extensions were already present.
+//
+// This API is currently not available on MSVC (though it *is* available on
+// Windows using clang-cl).
+UPB_API bool upb_ExtensionRegistry_AddAllLinkedExtensions(
+    upb_ExtensionRegistry* r);
+
+#endif  // UPB_LINKARR_DECLARE
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.

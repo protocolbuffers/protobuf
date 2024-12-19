@@ -85,7 +85,7 @@ namespace Google.Protobuf {
 
     static JsonFormatter() {
       for (int i = 0; i < CommonRepresentations.Length; i++) {
-        if (CommonRepresentations[i] == "") {
+        if (CommonRepresentations[i].Length == 0) {
           CommonRepresentations[i] = ((char)i).ToString();
         }
       }
@@ -291,7 +291,7 @@ namespace Google.Protobuf {
       return descriptor.FieldType switch {
         FieldType.Bool => (bool)value == false,
         FieldType.Bytes => (ByteString)value == ByteString.Empty,
-        FieldType.String => (string)value == "",
+        FieldType.String => ((string)value).Length == 0,
         FieldType.Double => (double)value == 0.0,
         FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum =>
             (int)value == 0,
@@ -481,6 +481,7 @@ namespace Google.Protobuf {
       }
       IMessage message = descriptor.Parser.ParseFrom(data);
       WriteBracketOpen(writer, ObjectOpenBracket);
+      MaybeWriteValueWhitespace(writer, indentationLevel + 1);
       WriteString(writer, AnyTypeUrlField);
       writer.Write(NameValueSeparator);
       WriteString(writer, typeUrl);
@@ -489,14 +490,14 @@ namespace Google.Protobuf {
         writer.Write(ValueSeparator);
         WriteString(writer, AnyWellKnownTypeValueField);
         writer.Write(NameValueSeparator);
-        WriteWellKnownTypeValue(writer, descriptor, message, indentationLevel);
+        WriteWellKnownTypeValue(writer, descriptor, message, indentationLevel + 1);
       } else {
-        WriteMessageFields(writer, message, true, indentationLevel);
+        WriteMessageFields(writer, message, true, indentationLevel + 1);
       }
       WriteBracketClose(writer, ObjectCloseBracket, true, indentationLevel);
     }
 
-    private void WriteDiagnosticOnlyAny(TextWriter writer, IMessage value) {
+    private static void WriteDiagnosticOnlyAny(TextWriter writer, IMessage value) {
       string typeUrl =
           (string)value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
       ByteString data =

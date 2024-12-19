@@ -120,7 +120,7 @@ namespace Google.Protobuf.Reflection
             // a MapField, but that feels a tad nasty.
             PropertyName = propertyName;
             Extension = extension;
-            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
+            JsonName =  Proto.JsonName.Length == 0 ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsMap => FieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
+        public bool IsMap => FieldType == FieldType.Message && messageType.IsMapEntry;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
@@ -379,7 +379,12 @@ namespace Google.Protobuf.Reflection
                 IDescriptor typeDescriptor =
                     File.DescriptorPool.LookupSymbol(Proto.TypeName, this);
 
-                // TODO: See how much of this is actually required.
+                // In most cases, the type will be specified in the descriptor proto. This may be
+                // guaranteed in descriptor.proto in the future (with respect to spring 2024), but
+                // we may still see older descriptors created by old versions of protoc, and there
+                // may be some code creating descriptor protos directly. This code effectively
+                // maintains backward compatibility, but we don't expect it to be a path taken
+                // often at all.
                 if (!Proto.HasType)
                 {
                     // Choose field type based on symbol.
@@ -407,6 +412,11 @@ namespace Google.Protobuf.Reflection
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = m;
+                    if (m.Proto.Options?.MapEntry == true || ContainingType?.Proto.Options?.MapEntry == true)
+                    {
+                        // Maps can't inherit delimited encoding.
+                        FieldType = FieldType.Message;
+                    }
 
                     if (Proto.HasDefaultValue)
                     {

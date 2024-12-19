@@ -7,40 +7,42 @@
 
 //! Tests covering proto packages.
 
-#[test]
+use googletest::prelude::*;
+
+#[gtest]
 fn test_message_packages() {
     // empty package, message declared in the first .proto source
-    let _: no_package_proto::MsgWithoutPackage;
+    let _: no_package_rust_proto::MsgWithoutPackage;
     // empty package, message declared in other .proto source
-    let _: no_package_proto::OtherMsgWithoutPackage;
+    let _: no_package_rust_proto::OtherMsgWithoutPackage;
     // empty package, import public of a message
-    let _: no_package_proto::ImportedMsgWithoutPackage;
+    let _: no_package_rust_proto::ImportedMsgWithoutPackage;
 
     // package, message declared in the first .proto source
-    let _: package_proto::MsgWithPackage;
+    let _: package_rust_proto::MsgWithPackage;
     // package, message declared in the other .proto source with the same package
-    let _: package_proto::OtherMsgWithPackage;
+    let _: package_rust_proto::OtherMsgWithPackage;
     // package, message declared in the other .proto source with a different package
-    let _: package_proto::OtherMsgInDifferentPackage;
+    let _: package_rust_proto::OtherMsgInDifferentPackage;
     // package, import public of a message
-    let _: package_proto::ImportedMsgWithPackage;
+    let _: package_rust_proto::ImportedMsgWithPackage;
 }
 
-#[test]
+#[gtest]
 fn test_enum_packages() {
     // empty package, enum declared in the first .proto source
-    let _: no_package_proto::EnumWithoutPackage;
+    let _: no_package_rust_proto::EnumWithoutPackage;
     // empty package, enum declared in other .proto source
-    let _: no_package_proto::OtherEnumWithoutPackage;
+    let _: no_package_rust_proto::OtherEnumWithoutPackage;
     // empty package, import public of a enum
-    let _: no_package_proto::ImportedEnumWithoutPackage;
+    let _: no_package_rust_proto::ImportedEnumWithoutPackage;
 
     // package, enum declared in the first .proto source
-    let _: package_proto::EnumWithPackage;
+    let _: package_rust_proto::EnumWithPackage;
     // package, enum declared in the other .proto source with the same package
-    let _: package_proto::OtherEnumWithPackage;
+    let _: package_rust_proto::OtherEnumWithPackage;
     // package, enum declared in the other .proto source with a different package
-    let _: package_proto::OtherEnumInDifferentPackage;
+    let _: package_rust_proto::OtherEnumInDifferentPackage;
     // package, import public of a enum
-    let _: package_proto::ImportedEnumWithPackage;
+    let _: package_rust_proto::ImportedEnumWithPackage;
 }

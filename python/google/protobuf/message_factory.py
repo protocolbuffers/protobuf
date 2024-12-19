@@ -18,9 +18,9 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import warnings
 
-from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor_pool
 from google.protobuf import message
+from google.protobuf.internal import api_implementation
 
 if api_implementation.Type() == 'python':
   from google.protobuf.internal import python_message as message_impl
@@ -58,8 +58,7 @@ def GetMessageClassesForFiles(files, pool):
 
   Args:
     files: The file names to extract messages from.
-    pool: The descriptor pool to find the files including the dependent
-      files.
+    pool: The descriptor pool to find the files including the dependent files.
 
   Returns:
     A dictionary mapping proto names to the message classes.
@@ -80,7 +79,7 @@ def GetMessageClassesForFiles(files, pool):
     # an error if they were different.
 
     for extension in file_desc.extensions_by_name.values():
-      extended_class = GetMessageClass(extension.containing_type)
+      _ = GetMessageClass(extension.containing_type)
       if api_implementation.Type() != 'python':
         # TODO: Remove this check here. Duplicate extension
         # register check should be in descriptor_pool.
@@ -113,10 +112,12 @@ def _InternalCreateMessageClass(descriptor):
           'DESCRIPTOR': descriptor,
           # If module not set, it wrongly points to message_factory module.
           '__module__': None,
-      })
+      },
+  )
   for field in descriptor.fields:
     if field.message_type:
       GetMessageClass(field.message_type)
+
   for extension in result_class.DESCRIPTOR.extensions:
     extended_class = GetMessageClass(extension.containing_type)
     if api_implementation.Type() != 'python':
@@ -141,69 +142,6 @@ class MessageFactory(object):
     """Initializes a new factory."""
     self.pool = pool or descriptor_pool.DescriptorPool()
 
-  def GetPrototype(self, descriptor):
-    """Obtains a proto2 message class based on the passed in descriptor.
-
-    Passing a descriptor with a fully qualified name matching a previous
-    invocation will cause the same class to be returned.
-
-    Args:
-      descriptor: The descriptor to build from.
-
-    Returns:
-      A class describing the passed in descriptor.
-    """
-    warnings.warn(
-        'MessageFactory class is deprecated. Please use '
-        'GetMessageClass() instead of MessageFactory.GetPrototype. '
-        'MessageFactory class will be removed after 2024.',
-        stacklevel=2,
-    )
-    return GetMessageClass(descriptor)
-
-  def CreatePrototype(self, descriptor):
-    """Builds a proto2 message class based on the passed in descriptor.
-
-    Don't call this function directly, it always creates a new class. Call
-    GetMessageClass() instead.
-
-    Args:
-      descriptor: The descriptor to build from.
-
-    Returns:
-      A class describing the passed in descriptor.
-    """
-    warnings.warn(
-        'Directly call CreatePrototype is wrong. Please use '
-        'GetMessageClass() method instead. Directly use '
-        'CreatePrototype will raise error after July 2023.',
-        stacklevel=2,
-    )
-    return _InternalCreateMessageClass(descriptor)
-
-  def GetMessages(self, files):
-    """Gets all the messages from a specified file.
-
-    This will find and resolve dependencies, failing if the descriptor
-    pool cannot satisfy them.
-
-    Args:
-      files: The file names to extract messages from.
-
-    Returns:
-      A dictionary mapping proto names to the message classes. This will include
-      any dependent messages as well as any messages defined in the same file as
-      a specified message.
-    """
-    warnings.warn(
-        'MessageFactory class is deprecated. Please use '
-        'GetMessageClassesForFiles() instead of '
-        'MessageFactory.GetMessages(). MessageFactory class '
-        'will be removed after 2024.',
-        stacklevel=2,
-    )
-    return GetMessageClassesForFiles(files, self.pool)
-
 
 def GetMessages(file_protos, pool=None):
   """Builds a dictionary of all the messages available in a set of files.
@@ -221,13 +159,16 @@ def GetMessages(file_protos, pool=None):
   # message in topological order of the dependency graph.
   des_pool = pool or descriptor_pool.DescriptorPool()
   file_by_name = {file_proto.name: file_proto for file_proto in file_protos}
+
   def _AddFile(file_proto):
     for dependency in file_proto.dependency:
       if dependency in file_by_name:
         # Remove from elements to be visited, in order to cut cycles.
         _AddFile(file_by_name.pop(dependency))
     des_pool.Add(file_proto)
+
   while file_by_name:
     _AddFile(file_by_name.popitem()[1])
   return GetMessageClassesForFiles(
-      [file_proto.name for file_proto in file_protos], des_pool)
+      [file_proto.name for file_proto in file_protos], des_pool
+  )

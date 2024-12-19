@@ -12,8 +12,6 @@ module Google
   module Protobuf
     module Internal
       class Arena
-        attr :pinned_messages
-
         # FFI Interface methods and setup
         extend ::FFI::DataConverter
         native_type ::FFI::Type::POINTER
@@ -45,10 +43,6 @@ module Google
           unless Google::Protobuf::FFI.fuse_arena(self, other_arena)
             raise RuntimeError.new "Unable to fuse arenas. This should never happen since Ruby does not use initial blocks"
           end
-        end
-
-        def pin(message)
-          pinned_messages.push message
         end
       end
     end

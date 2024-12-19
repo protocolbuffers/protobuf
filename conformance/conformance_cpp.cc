@@ -7,31 +7,33 @@
 
 #include <errno.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
 #include <string>
 
-#include "google/protobuf/util/json_util.h"
-#include "google/protobuf/util/type_resolver_util.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
-#include "conformance/conformance.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "editions/golden/test_messages_proto2_editions.pb.h"
+#include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
+#include "google/protobuf/json/json.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -47,6 +49,7 @@ using ::google::protobuf::util::JsonParseOptions;
 using ::google::protobuf::util::JsonToBinaryString;
 using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
+using ::protobuf_test_messages::editions::TestAllTypesEdition2023;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -84,6 +87,7 @@ class Harness {
   Harness() {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
+    google::protobuf::LinkMessageReflection<TestAllTypesEdition2023>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
 
@@ -238,8 +242,9 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
                           serialized_output.size()));
 
   if (verbose_) {
-    ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()
-                   << ", response=" << response->ShortDebugString();
+    ABSL_LOG(INFO) << "conformance-cpp: request="
+                   << google::protobuf::ShortFormat(request)
+                   << ", response=" << google::protobuf::ShortFormat(*response);
   }
   return false;
 }
@@ -263,3 +268,5 @@ int main() {
   ABSL_LOG(INFO) << "conformance-cpp: received EOF from test runner after "
                  << total_runs << " tests";
 }
+
+#include "google/protobuf/port_undef.inc"

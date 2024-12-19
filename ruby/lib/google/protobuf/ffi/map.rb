@@ -9,18 +9,20 @@ module Google
   module Protobuf
     class FFI
       # Map
-      attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
-      attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
-      attach_function :map_get,    :upb_Map_Get,                      [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
-      attach_function :create_map, :upb_Map_New,                      [Internal::Arena, CType, CType], :Map
-      attach_function :map_size,   :upb_Map_Size,                     [:Map], :size_t
-      attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena], :bool
+      attach_function :map_clear,   :upb_Map_Clear,         [:Map], :void
+      attach_function :map_delete,  :upb_Map_Delete,        [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
+      attach_function :map_get,     :upb_Map_Get,           [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
+      attach_function :create_map,  :upb_Map_New,           [Internal::Arena, CType, CType], :Map
+      attach_function :map_size,    :upb_Map_Size,          [:Map], :size_t
+      attach_function :map_set,     :upb_Map_Set,           [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena], :bool
+      attach_function :map_freeze,  :upb_Map_Freeze,        [:Map, MiniTable.by_ref], :void
+      attach_function :map_frozen?, :upb_Map_IsFrozen,      [:Map], :bool
 
       # MapIterator
-      attach_function :map_next,   :upb_MapIterator_Next,             [:Map, :pointer], :bool
-      attach_function :map_done,   :upb_MapIterator_Done,             [:Map, :size_t], :bool
-      attach_function :map_key,    :upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
-      attach_function :map_value,  :upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
+      attach_function :map_next,    :upb_MapIterator_Next,  [:Map, :pointer], :bool
+      attach_function :map_done,    :upb_MapIterator_Done,  [:Map, :size_t], :bool
+      attach_function :map_key,     :upb_MapIterator_Key,   [:Map, :size_t], MessageValue.by_value
+      attach_function :map_value,   :upb_MapIterator_Value, [:Map, :size_t], MessageValue.by_value
     end
     class Map
       include Enumerable
@@ -155,17 +157,35 @@ module Google
       end
       alias size length
 
-      def freeze
-        return self if frozen?
-        super
-        @arena.pin self
-        if value_type == :message
-          internal_iterator do |iterator|
-            value_message_value = Google::Protobuf::FFI.map_value(@map_ptr, iterator)
-            convert_upb_to_ruby(value_message_value, value_type, descriptor, arena).freeze
-          end
+      ##
+      # Is this object frozen?
+      # Returns true if either this Ruby wrapper or the underlying
+      # representation are frozen. Freezes the wrapper if the underlying
+      # representation is already frozen but this wrapper isn't.
+      def frozen?
+        unless Google::Protobuf::FFI.map_frozen? @map_ptr
+          raise RuntimeError.new "Ruby frozen Map with mutable representation" if super
+          return false
         end
-        self
+        method(:freeze).super_method.call unless super
+        true
+      end
+
+      ##
+      # Freezes the map object. We have to intercept this so we can freeze the
+      # underlying representation, not just the Ruby wrapper. Returns self.
+      def freeze
+        if method(:frozen?).super_method.call
+          unless Google::Protobuf::FFI.map_frozen? @map_ptr
+            raise RuntimeError.new "Underlying representation of map still mutable despite frozen wrapper"
+          end
+          return self
+        end
+        unless Google::Protobuf::FFI.map_frozen? @map_ptr
+          mini_table = (value_type == :message) ? Google::Protobuf::FFI.get_mini_table(@descriptor) : nil
+          Google::Protobuf::FFI.map_freeze(@map_ptr, mini_table)
+        end
+        super
       end
 
       ##
@@ -371,10 +391,14 @@ module Google
         OBJECT_CACHE.try_add(@map_ptr.address, self)
       end
 
-      # @param field [FieldDescriptor] Descriptor of the field where the RepeatedField will be assigned
-      # @param values [Hash|Map] Initial value; may be nil or empty
+      ##
+      # Constructor that uses the type information from the given
+      # FieldDescriptor to configure the new Map instance.
+      # @param field [FieldDescriptor] Type information for the new Map
       # @param arena [Arena] Owning message's arena
-      def self.construct_for_field(field, arena, value: nil, map: nil)
+      # @param value [Hash|Map] Initial value
+      # @param map [::FFI::Pointer] Existing upb_Map
+      def self.construct_for_field(field, arena: nil, value: nil, map: nil)
         raise ArgumentError.new "Expected Hash object as initializer value for map field '#{field.name}' (given #{value.class})." unless value.nil? or value.is_a? Hash
         instance = allocate
         raise ArgumentError.new "Expected field with type :message, instead got #{field.class}" unless field.type == :message

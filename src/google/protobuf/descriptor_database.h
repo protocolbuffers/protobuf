@@ -311,10 +311,17 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
                   FileDescriptorProto* output);
 };
 
+struct PROTOBUF_EXPORT DescriptorPoolDatabaseOptions {
+  // If true, the database will preserve source code info when returning
+  // descriptors.
+  bool preserve_source_code_info = false;
+};
+
 // A DescriptorDatabase that fetches files from a given pool.
 class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
  public:
-  explicit DescriptorPoolDatabase(const DescriptorPool& pool);
+  explicit DescriptorPoolDatabase(const DescriptorPool& pool,
+                                  DescriptorPoolDatabaseOptions options = {});
   DescriptorPoolDatabase(const DescriptorPoolDatabase&) = delete;
   DescriptorPoolDatabase& operator=(const DescriptorPoolDatabase&) = delete;
   ~DescriptorPoolDatabase() override;
@@ -332,6 +339,7 @@ class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
 
  private:
   const DescriptorPool& pool_;
+  DescriptorPoolDatabaseOptions options_;
 };
 
 // A DescriptorDatabase that wraps two or more others.  It first searches the
