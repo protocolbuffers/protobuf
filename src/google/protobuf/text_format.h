@@ -16,8 +16,11 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -205,7 +208,7 @@ class PROTOBUF_EXPORT TextFormat {
                              BaseTextGenerator* generator) const;
     virtual void PrintBytes(const std::string& val,
                             BaseTextGenerator* generator) const;
-    virtual void PrintEnum(int32_t val, const std::string& name,
+    virtual void PrintEnum(int32_t val, absl::string_view name,
                            BaseTextGenerator* generator) const;
     virtual void PrintFieldName(const Message& message, int field_index,
                                 int field_count, const Reflection* reflection,
@@ -247,7 +250,7 @@ class PROTOBUF_EXPORT TextFormat {
     virtual std::string PrintDouble(double val) const;
     virtual std::string PrintString(const std::string& val) const;
     virtual std::string PrintBytes(const std::string& val) const;
-    virtual std::string PrintEnum(int32_t val, const std::string& name) const;
+    virtual std::string PrintEnum(int32_t val, absl::string_view name) const;
     virtual std::string PrintFieldName(const Message& message,
                                        const Reflection* reflection,
                                        const FieldDescriptor* field) const;

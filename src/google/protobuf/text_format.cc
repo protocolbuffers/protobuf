@@ -1982,7 +1982,7 @@ std::string TextFormat::FieldValuePrinter::PrintBytes(
   return PrintString(val);
 }
 std::string TextFormat::FieldValuePrinter::PrintEnum(
-    int32_t val, const std::string& name) const {
+    int32_t val, const absl::string_view name) const {
   FORWARD_IMPL(PrintEnum, val, name);
 }
 std::string TextFormat::FieldValuePrinter::PrintFieldName(
@@ -2039,7 +2039,7 @@ void TextFormat::FastFieldValuePrinter::PrintDouble(
   generator->PrintString(!std::isnan(val) ? io::SimpleDtoa(val) : "nan");
 }
 void TextFormat::FastFieldValuePrinter::PrintEnum(
-    int32_t /*val*/, const std::string& name,
+    int32_t /*val*/, const absl::string_view name,
     BaseTextGenerator* generator) const {
   generator->PrintString(name);
 }
@@ -2149,7 +2149,7 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintBytes(val));
   }
-  void PrintEnum(int32_t val, const std::string& name,
+  void PrintEnum(int32_t val, const absl::string_view name,
                  TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintEnum(val, name));
   }
