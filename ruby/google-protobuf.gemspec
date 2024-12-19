@@ -42,5 +42,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
   # bigdecimal must be used as a non-built in gem as of ruby-3.4
-  s.add_development_dependency "bigdecimal"
+  s.add_development_dependency "bigdecimal" if RUBY_PLATFORM >= '3.4.0'
 end
