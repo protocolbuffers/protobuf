@@ -181,15 +181,36 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   bool submsg = upb_FieldDef_IsSubMessage(f);
   PyObject* e;
 
-  while ((e = PyIter_Next(it))) {
-    PyObject* ret;
-    if (submsg) {
-      ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
-    } else {
-      ret = PyUpb_RepeatedScalarContainer_Append(_self, e);
+  Py_ssize_t size = PyObject_Size(value);
+  if (size < 0) {
+    PyErr_Clear();
+  }
+  if ((size > 0) && (!submsg)) {
+    upb_Arena* arena = PyUpb_Arena_Get(self->arena);
+    const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
+    upb_Array_Resize(arr, start_size + size, arena);
+    int index = start_size;
+    while ((e = PyIter_Next(it))) {
+      upb_MessageValue msgval;
+      if (!PyUpb_PyToUpb(e, f, &msgval, arena)) {
+        Py_DECREF(e);
+        break;
+      }
+      upb_Array_Set(arr, index, msgval);
+      Py_DECREF(e);
+      index++;
     }
-    Py_XDECREF(ret);
-    Py_DECREF(e);
+  } else {
+    while ((e = PyIter_Next(it))) {
+      PyObject* ret;
+      if (submsg) {
+        ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
+      } else {
+        ret = PyUpb_RepeatedScalarContainer_Append(_self, e);
+      }
+      Py_XDECREF(ret);
+      Py_DECREF(e);
+    }
   }
 
   Py_DECREF(it);

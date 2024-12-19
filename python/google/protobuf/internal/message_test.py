@@ -1068,6 +1068,8 @@ class MessageTest(unittest.TestCase):
     self.assertSequenceEqual([0, 1, 2], m.repeated_int32)
     m.repeated_int32.extend([3, 4])
     self.assertSequenceEqual([0, 1, 2, 3, 4], m.repeated_int32)
+    with self.assertRaises(TypeError):
+      m.repeated_int32.extend([5, 6, 'hi', 7])
 
   def testExtendFloatWithPythonList(self, message_module):
     """Test extending repeated float fields with python lists."""
