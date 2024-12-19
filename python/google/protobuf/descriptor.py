@@ -1043,7 +1043,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
         None, serialized_start=serialized_start,
         serialized_end=serialized_end, serialized_options=serialized_options)
     self.index = index
-    self.methods = methods
+    self.methods: list[MethodDescriptor] = methods
     self.methods_by_name = dict((m.name, m) for m in methods)
     # Set the containing service for each method in this service.
     for method in self.methods:
