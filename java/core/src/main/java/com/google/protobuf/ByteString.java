@@ -1090,6 +1090,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     @Override
+    public synchronized void write(byte[] b) {
+      this.write(b, 0, b.length);
+    }
+
+    @Override
     public synchronized void write(byte[] b, int offset, int length) {
       if (length <= buffer.length - bufferPos) {
         // The bytes can fit into the current buffer.
