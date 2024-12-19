@@ -172,8 +172,9 @@ py_extension(
         "google/protobuf/proto_api.cc",
         "google/protobuf/internal/proto_api_example.cc",
     ]),
-    copts = COPTS + select(LIMITED_API_FLAG_SELECT) + [
+    copts = select(LIMITED_API_FLAG_SELECT) + [
         "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+        "-Wno-pedantic",
     ] + select({
         "//upb:windows": [],
         "//upb:fasttable_enabled_setting": [
