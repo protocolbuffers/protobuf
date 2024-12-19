@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <iterator>
 #include <limits>
 #include <new>
@@ -1977,7 +1978,13 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
 };
 
 // A utility function for logging that doesn't need any template types.
-void LogIndexOutOfBounds(int index, int size);
+PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
+
+// A utility function for logging that doesn't need any template types. Same as
+// LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
+// instead of DFATAL.
+[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
+                                                              int size);
 
 template <typename T>
 const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
@@ -1986,6 +1993,26 @@ const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
     return GenericTypeHandler<T>::default_instance();
   }
   return field.Get(index);
+}
+
+template <typename T>
+inline void CheckIndexInBoundsOrAbort(const RepeatedPtrField<T>& field,
+                                      int index) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+    LogIndexOutOfBoundsAndAbort(index, field.size());
+  }
+}
+
+template <typename T>
+const T& CheckedGetOrAbort(const RepeatedPtrField<T>& field, int index) {
+  CheckIndexInBoundsOrAbort(field, index);
+  return field.Get(index);
+}
+
+template <typename T>
+inline T* CheckedMutableOrAbort(RepeatedPtrField<T>* field, int index) {
+  CheckIndexInBoundsOrAbort(*field, index);
+  return field->Mutable(index);
 }
 
 }  // namespace internal

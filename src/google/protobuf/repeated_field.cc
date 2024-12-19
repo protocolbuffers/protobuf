@@ -19,6 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -32,6 +33,9 @@ void LogIndexOutOfBounds(int index, int size) {
   ABSL_DLOG(FATAL) << "Index " << index << " out of bounds " << size;
 }
 
+[[noreturn]] void LogIndexOutOfBoundsAndAbort(int index, int size) {
+  ABSL_LOG(FATAL) << "index: " << index << ", size: " << size;
+}
 }  // namespace internal
 
 template <>

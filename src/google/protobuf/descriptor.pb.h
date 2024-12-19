@@ -12383,9 +12383,8 @@ inline std::string* FileDescriptorProto::mutable_dependency(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::set_dependency(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_dependency()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_dependency()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 template <typename Arg_, typename... Args_>
@@ -13751,9 +13750,8 @@ inline std::string* DescriptorProto::mutable_reserved_name(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void DescriptorProto::set_reserved_name(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_reserved_name()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 template <typename Arg_, typename... Args_>
@@ -15351,9 +15349,8 @@ inline std::string* EnumDescriptorProto::mutable_reserved_name(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void EnumDescriptorProto::set_reserved_name(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_reserved_name()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 template <typename Arg_, typename... Args_>
@@ -20689,9 +20686,8 @@ inline std::string* SourceCodeInfo_Location::mutable_leading_detached_comments(i
 }
 template <typename Arg_, typename... Args_>
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_leading_detached_comments()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_leading_detached_comments()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 template <typename Arg_, typename... Args_>
