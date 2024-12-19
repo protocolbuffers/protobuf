@@ -454,7 +454,9 @@ public class RubyMessage extends RubyObject {
         fieldDescriptor = descriptor.findFieldByName(methodName);
 
         if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
-          return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
+          return (fields.containsKey(fieldDescriptor) || builder.hasField(fieldDescriptor))
+              ? runtime.getTrue()
+              : runtime.getFalse();
         }
 
       } else if (methodName.endsWith(AS_VALUE_SUFFIX)) {
