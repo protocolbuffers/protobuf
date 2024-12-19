@@ -270,7 +270,7 @@ absl::StatusOr<AccessInfo> AccessInfoFromFile(absl::string_view profile) {
   }
 
   AccessInfo access_info_proto;
-  if (!access_info_proto.ParseFromCord(cord)) {
+  if (!access_info_proto.ParseFromString(cord)) {
     return absl::DataLossError("Failed to parse AccessInfo");
   }
 
