@@ -593,28 +593,25 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
       /* Encode all extensions together. Unlike C++, we do not attempt to keep
        * these in field number order relative to normal fields or even to each
        * other. */
-      size_t ext_count = upb_Message_ExtensionCount(msg);
-      if (ext_count) {
-        if (e->options & kUpb_EncodeOption_Deterministic) {
-          _upb_sortedmap sorted;
-          if (!_upb_mapsorter_pushexts(&e->sorter, in, ext_count, &sorted)) {
-            // TODO: b/378744096 - handle alloc failure
-          }
-          const upb_Extension* ext;
-          while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-            encode_ext(e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-          }
-          _upb_mapsorter_popmap(&e->sorter, &sorted);
-        } else {
-          const upb_MiniTableExtension* ext;
-          upb_MessageValue ext_val;
-          uintptr_t iter = kUpb_Message_ExtensionBegin;
-          while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-              msg, &ext, &ext_val, &iter)) {
-            encode_ext(e, ext, ext_val,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-          }
+      if (e->options & kUpb_EncodeOption_Deterministic) {
+        _upb_sortedmap sorted;
+        if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
+          // TODO: b/378744096 - handle alloc failure
+        }
+        const upb_Extension* ext;
+        while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+          encode_ext(e, ext->ext, ext->data,
+                     m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+        }
+        _upb_mapsorter_popmap(&e->sorter, &sorted);
+      } else {
+        const upb_MiniTableExtension* ext;
+        upb_MessageValue ext_val;
+        uintptr_t iter = kUpb_Message_ExtensionBegin;
+        while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+            msg, &ext, &ext_val, &iter)) {
+          encode_ext(e, ext, ext_val,
+                     m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }
       }
     }
