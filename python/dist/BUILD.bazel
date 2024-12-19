@@ -27,7 +27,7 @@ py_dist_module(
 py_dist_module(
     name = "proto_api_example_mod",
     extension = "//python:proto_api_example_binary",
-    module_name = "google.protobuf.internal.proto_api_example_binary",
+    module_name = "google.protobuf.internal.proto_api_example",
 )
 
 py_proto_library(
