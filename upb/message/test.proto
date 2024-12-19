@@ -31,6 +31,11 @@ extend TestExtensions {
       1002;
 }
 
+extend TestExtensions {
+  repeated protobuf_test_messages.proto3.TestAllTypesProto3 repeated_msg_ext =
+      1003;
+}
+
 message TestMessageSet {
   option message_set_wire_format = true;
 
