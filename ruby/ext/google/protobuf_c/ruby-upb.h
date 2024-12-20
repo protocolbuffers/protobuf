@@ -3099,8 +3099,8 @@ upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
 
 typedef struct upb_Message_Internal {
   // Total number of entries set in aux_data
-  size_t size;
-  size_t capacity;
+  uint32_t size;
+  uint32_t capacity;
   // Tagged pointers to upb_StringView or upb_Extension
   upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
@@ -3212,7 +3212,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return false;
   uintptr_t i = *iter;
-  size_t size = in->size;
+  uint32_t size = in->size;
   while (i < size) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
     i++;
