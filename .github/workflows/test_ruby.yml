@@ -34,10 +34,12 @@ jobs:
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true }
           - { name: Ruby 3.1, ruby: ruby-3.1.0, continuous-only: true }
           - { name: Ruby 3.2, ruby: ruby-3.2.0, continuous-only: true }
-          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-head-90d207f4e749b54c8792bbe974dfc70323b6566e' }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, continuous-only: true }
+# Uncomment after Christmas 2024 when Ruby 3.4 is released
+#          - { name: Ruby 3.3, ruby: ruby-3.4.0, ffi: NATIVE }
+#          - { name: Ruby 3.3, ruby: ruby-3.4.0, ffi: FFI }
           - { name: Ruby Head, ruby: ruby-head, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-head-90d207f4e749b54c8792bbe974dfc70323b6566e' }
-          - { name: Ruby Head, ruby: ruby-head, ffi: FFI }
+          - { name: Ruby Head, ruby: ruby-head, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-head-90d207f4e749b54c8792bbe974dfc70323b6566e' }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
