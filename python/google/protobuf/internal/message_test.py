@@ -1278,11 +1278,15 @@ class MessageTest(unittest.TestCase):
   def testDir(self, message_module):
     m = message_module.TestAllTypes()
     attributes = dir(m)
-    self.assertGreaterEqual(len(attributes), 55)
+    self.assertGreaterEqual(len(attributes), 124)
+
+    attribute_set = set(attributes)
     self.assertIn('DESCRIPTOR', attributes)
+    self.assertIn('oneof_string', attribute_set)
+    self.assertIn('optional_double', attribute_set)
+    self.assertIn('repeated_float', attribute_set)
 
     class_attributes = dir(type(m))
-    attribute_set = set(attributes)
     for attr in class_attributes:
       if attr != 'Extensions':
         self.assertIn(attr, attribute_set)
