@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * The protocol compiler can output a FileDescriptorSet containing the .proto
@@ -30,7 +30,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<\Google\Protobuf\Internal\FileDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $file
+     *     @type \Google\Protobuf\Internal\FileDescriptorProto[] $file
      * }
      */
     public function __construct($data = NULL) {
@@ -40,7 +40,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\FileDescriptorProto>
      */
     public function getFile()
     {
@@ -49,7 +49,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
-     * @param array<\Google\Protobuf\Internal\FileDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\FileDescriptorProto[] $var
      * @return $this
      */
     public function setFile($var)

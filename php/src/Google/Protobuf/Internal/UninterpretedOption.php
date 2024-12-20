@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * A message representing a option the parser does not recognize. This only
@@ -61,7 +61,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<\Google\Protobuf\Internal\UninterpretedOption\NamePart>|\Google\Protobuf\Internal\RepeatedField $name
+     *     @type \Google\Protobuf\Internal\UninterpretedOption\NamePart[] $name
      *     @type string $identifier_value
      *           The value of the uninterpreted option, in whatever type the tokenizer
      *           identified it as during parsing. Exactly one of these should be set.
@@ -79,7 +79,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\UninterpretedOption\NamePart>
      */
     public function getName()
     {
@@ -88,7 +88,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
-     * @param array<\Google\Protobuf\Internal\UninterpretedOption\NamePart>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\UninterpretedOption\NamePart[] $var
      * @return $this
      */
     public function setName($var)
