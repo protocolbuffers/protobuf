@@ -89,6 +89,7 @@ set(protobuf_HEADERS
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
   ${java_features_proto_proto_srcs}
+  ${go_features_proto_proto_srcs}
 )
 if (protobuf_BUILD_LIBUPB)
   list(APPEND protobuf_HEADERS ${libupb_hdrs})
@@ -101,14 +102,22 @@ if (protobuf_BUILD_LIBUPB)
     COMPONENT protobuf-headers
   )
 endif ()
+set(protobuf_STRIP_PREFIXES
+  "/src"
+  "/java/core/src/main/resources"
+  "/go"
+  "/"
+)
 foreach(_header ${protobuf_HEADERS})
-  string(FIND ${_header} "${protobuf_SOURCE_DIR}/src" _find_src)
-  string(FIND ${_header} "${protobuf_SOURCE_DIR}" _find_nosrc)
-  if (_find_src GREATER -1)
-    set(_from_dir "${protobuf_SOURCE_DIR}/src")
-  elseif (_find_nosrc GREATER -1)
-    set(_from_dir "${protobuf_SOURCE_DIR}")
-  endif()
+  foreach(_strip_prefix ${protobuf_STRIP_PREFIXES})
+    string(FIND ${_header} "${protobuf_SOURCE_DIR}${_strip_prefix}" _find_src)
+    if(_find_src GREATER -1)
+      set(_from_dir "${protobuf_SOURCE_DIR}${_strip_prefix}")
+      break()
+    endif()
+  endforeach()
+  message(${_from_dir} "-" ${_header})
+
   # Escape _from_dir for regex special characters in the directory name.
   string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" _from_dir_regexp "${_from_dir}")
   # On some platforms `_form_dir` ends up being just "protobuf", which can
