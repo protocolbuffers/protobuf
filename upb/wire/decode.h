@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 enum {
-  /* If set, strings will alias the input buffer instead of copying into the
-   * arena. */
+  /* If set, strings and unknown fields will alias the input buffer instead of
+   * copying into the arena. */
   kUpb_DecodeOption_AliasString = 1,
 
   /* If set, the parse will return failure if any message is missing any

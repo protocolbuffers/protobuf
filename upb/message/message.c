@@ -43,11 +43,18 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
     return false;
   }
-  upb_StringView* view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
-  if (!view) return false;
-  char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
-  memcpy(copy, data, len);
-  view->data = copy;
+  upb_StringView* view;
+  if (alias) {
+    view = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+    if (!view) return false;
+    view->data = data;
+  } else {
+    view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
+    if (!view) return false;
+    char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
+    memcpy(copy, data, len);
+    view->data = copy;
+  }
   view->size = len;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
