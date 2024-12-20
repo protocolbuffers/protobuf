@@ -101,17 +101,14 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   }
   upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
-  upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
+  upb_Extension* ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
+  ext->ext = ext_table;
   ext->data.msg_val = extension_msg;
+  upb_Message_ReplaceUnknownWithExtension(msg, result.iter, ext);
   value->msg_val = extension_msg;
-  // Our storage may have been reallocated by adding the extension, but our
-  // iterators are stable.
-  upb_StringView data = upb_StringView_FromDataAndSize(result.ptr, result.len);
-  upb_Message_DeleteUnknown(msg, &data, &result.iter);
   return kUpb_GetExtension_Ok;
 }
 
