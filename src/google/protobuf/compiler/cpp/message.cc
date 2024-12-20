@@ -4642,7 +4642,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
                p->Emit("$ndebug$");
              } else {
                p->Emit(R"cc(
-                 //~ force indenting level
 #ifdef NDEBUG
                  $ndebug$;
 #else   // NDEBUG

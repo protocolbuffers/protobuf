@@ -113,12 +113,33 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
     // a while loop, not a do/while loop.
 
     absl::string_view orig = format_string;
+    absl::string_view first_pp_directive;
     while (absl::ConsumePrefix(&format_string, "\n")) {
+      // clang-format will think a # at the beginning of the line in a raw
+      // string is a preprocessor directive and put it at the beginning of
+      // the line, which throws of indent calculations.
+      // Skip past those and see if there is code is indent more realistically.
+      if (absl::StartsWith(format_string, "#")) {
+        // We don't want to drop the #... line, we just want to skip past
+        // for raw_string_indent calculations, so remember it and reset later.
+        if (first_pp_directive.empty()) {
+          first_pp_directive = format_string;
+        }
+        size_t next_newline = format_string.find('\n');
+        if (next_newline != absl::string_view::npos) {
+          format_string = format_string.substr(next_newline);
+          continue;
+        }
+      }
       raw_string_indent = 0;
       format.is_raw_string = true;
       while (absl::ConsumePrefix(&format_string, " ")) {
         ++raw_string_indent;
       }
+    }
+    // reset if we skipped past a #... line, so that we don't drop it.
+    if (!first_pp_directive.empty()) {
+      format_string = first_pp_directive;
     }
 
     // If we consume the entire string, this probably wasn't a raw string and
