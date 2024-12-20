@@ -94,8 +94,8 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return;
-  size_t size = 0;
-  for (size_t i = 0; i < in->size; i++) {
+  uint32_t size = 0;
+  for (uint32_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       in->aux_data[size++] = tagged_ptr;
@@ -175,7 +175,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // Extensions.
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   // TODO: b/376969853 - use iterator API
-  size_t size = in ? in->size : 0;
+  uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
