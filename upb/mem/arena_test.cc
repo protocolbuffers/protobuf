@@ -16,12 +16,14 @@
 #include <cstdlib>
 #include <memory>
 #include <thread>
+#include <type_traits>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/synchronization/mutex.h"
@@ -67,6 +69,99 @@ TEST(ArenaTest, ArenaWithAllocCleanup) {
   upb_Arena_SetAllocCleanup(arena, CustomAllocCleanup);
   upb_Arena_Free(arena);
   EXPECT_TRUE(alloc.ran_cleanup);
+}
+
+struct SizeTracker {
+  upb_alloc alloc;
+  upb_alloc* delegate_alloc;
+  absl::flat_hash_map<void*, size_t>* sizes;
+};
+
+static_assert(std::is_standard_layout<SizeTracker>());
+
+static void* size_checking_allocfunc(upb_alloc* alloc, void* ptr,
+                                     size_t oldsize, size_t size) {
+  SizeTracker* size_alloc = reinterpret_cast<SizeTracker*>(alloc);
+  void* result = size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size);
+  if (ptr != nullptr) {
+    UPB_ASSERT(size_alloc->sizes->at(ptr) == oldsize);
+    size_alloc->sizes->erase(ptr);
+  }
+  if (result != nullptr) {
+    size_alloc->sizes->emplace(result, size);
+  }
+  return result;
+}
+
+TEST(ArenaTest, SizedFree) {
+  absl::flat_hash_map<void*, size_t> sizes;
+  SizeTracker alloc;
+  alloc.alloc.func = size_checking_allocfunc;
+  alloc.delegate_alloc = &upb_alloc_global;
+  alloc.sizes = &sizes;
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 0, &alloc.alloc);
+  (void)upb_Arena_Malloc(arena, 500);
+  void* to_resize = upb_Arena_Malloc(arena, 2000);
+  void* resized = upb_Arena_Realloc(arena, to_resize, 2000, 4000);
+  upb_Arena_ShrinkLast(arena, resized, 4000, 1);
+  EXPECT_GT(sizes.size(), 0);
+  upb_Arena_Free(arena);
+  EXPECT_EQ(sizes.size(), 0);
+}
+
+TEST(ArenaTest, SizeHint) {
+  absl::flat_hash_map<void*, size_t> sizes;
+  SizeTracker alloc;
+  alloc.alloc.func = size_checking_allocfunc;
+  alloc.delegate_alloc = &upb_alloc_global;
+  alloc.sizes = &sizes;
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 2459, &alloc.alloc);
+  EXPECT_EQ(sizes.size(), 1);
+  (void)upb_Arena_Malloc(arena, 500);
+  (void)upb_Arena_Malloc(arena, 500);
+  (void)upb_Arena_Malloc(arena, 500);
+  (void)upb_Arena_Malloc(arena, 500);
+  EXPECT_EQ(sizes.size(), 1);
+  upb_Arena_Free(arena);
+  EXPECT_EQ(sizes.size(), 0);
+}
+
+TEST(ArenaTest, MassiveBlock) {
+  upb_Arena_SetMaxBlockSize(4096);
+  absl::Cleanup reset_max_block_size = [] {
+    upb_Arena_SetMaxBlockSize(32 << 10);
+  };
+  absl::flat_hash_map<void*, size_t> sizes;
+  SizeTracker alloc;
+  alloc.alloc.func = size_checking_allocfunc;
+  alloc.delegate_alloc = &upb_alloc_global;
+  alloc.sizes = &sizes;
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 512, &alloc.alloc);
+  EXPECT_EQ(sizes.size(), 1);
+  uintptr_t first = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_EQ(first, 512);
+  // Big block!
+  (void)upb_Arena_Malloc(arena, 4000);
+  EXPECT_EQ(sizes.size(), 2);
+  uintptr_t second = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_LE(second - first, 4100);
+  for (int i = 0; i < 4; i++) {
+    (void)upb_Arena_Malloc(arena, 64);
+  }
+  // Subsequent small allocations did not allocate further!
+  EXPECT_EQ(sizes.size(), 2);
+  // Another batch of small allocations does not force allocation of a max-sized
+  // block
+  for (int i = 0; i < 4; i++) {
+    (void)upb_Arena_Malloc(arena, 100);
+  }
+  EXPECT_EQ(sizes.size(), 3);
+  uintptr_t third = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_LT(third - second, 4096);
+  upb_Arena_Free(arena);
 }
 
 TEST(ArenaTest, ArenaFuse) {
