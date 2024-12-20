@@ -1,0 +1,39 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_unittest;
+
+option java_multiple_files = true;
+option features = { enum_type : OPEN repeated_field_encoding : EXPANDED utf8_validation : NONE };
+
+message TestImplicitAndExplicit {
+  message NestedMessage {
+    fixed32 a = 1;
+    fixed64 b = 2;
+  }
+
+  NestedMessage explicit_nested_message_1 = 1;
+  NestedMessage explicit_nested_message_2 = 2;
+
+  int32 explicit_int32_3 = 3;
+  int32 explicit_int32_4 = 4;
+  int64 explicit_int64_5 = 5;
+  int64 explicit_int64_6 = 6;
+
+  int32 implicit_int32_7 = 7 [features.field_presence = IMPLICIT];
+  int32 implicit_int32_8 = 8 [features.field_presence = IMPLICIT];
+  int64 implicit_int64_9 = 9 [features.field_presence = IMPLICIT];
+  int64 implicit_int64_10 = 10 [features.field_presence = IMPLICIT];
+
+  bytes explicit_bytes_11 = 11;
+  bytes explicit_bytes_12 = 12;
+
+  bytes implicit_bytes_13 = 13 [features.field_presence = IMPLICIT];
+  bytes implicit_bytes_14 = 14 [features.field_presence = IMPLICIT];
+}
