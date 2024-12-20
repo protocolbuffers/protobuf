@@ -51,6 +51,7 @@ std::string NumberedCcFileName(absl::string_view basename, int number) {
 absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
+  bool annotate_nullability = options.annotate_nullability && !is_oss;
   return {
       {"proto_ns", std::string(ProtobufNamespace(options))},
       {"pb", absl::StrCat("::", ProtobufNamespace(options))},
@@ -66,6 +67,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
 
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
+
+      {"nullable", annotate_nullability ? "PROTOBUF_NULLABLE" : ""},
+      {"nonnull", annotate_nullability ? "PROTOBUF_NONNULL" : ""},
 
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
@@ -186,6 +190,16 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
+    } else if (key == "annotate_nullability") {
+      int enable_annotate_nullability = 0;
+      if (absl::SimpleAtoi(value, &enable_annotate_nullability) &&
+          (enable_annotate_nullability == 0 ||
+           enable_annotate_nullability == 1)) {
+        file_options.annotate_nullability = enable_annotate_nullability != 0;
+      } else {
+        *error = absl::StrCat("Invalid value for ", key, ": ", value);
+        return false;
+      }
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;
