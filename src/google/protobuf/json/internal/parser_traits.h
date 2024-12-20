@@ -110,7 +110,16 @@ struct ParseProto2Descriptor : Proto2Descriptor {
       new_msg = msg.msg_->GetReflection()->MutableMessage(msg.msg_, f);
     }
     Msg wrapper(new_msg);
-    return body(*f->message_type(), wrapper);
+    absl::Status result = body(*f->message_type(), wrapper);
+    // If `body` failed, revert the potentially partial work executed.
+    if (!result.ok()) {
+      if (f->is_repeated()) {
+        msg.msg_->GetReflection()->RemoveLast(msg.msg_, f);
+      } else {
+        msg.msg_->GetReflection()->ClearField(msg.msg_, f);
+      }
+    }
+    return result;
   }
 
   // Adds a new dynamic message with the given type name and calls body on it.
