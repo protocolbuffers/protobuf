@@ -39,6 +39,7 @@
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
@@ -963,10 +964,28 @@ struct SymbolByFullNameEq {
 using SymbolsByNameSet =
     absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
 
-struct ParentNameQuery {
+struct ParentNameQueryBase {
   std::pair<const void*, absl::string_view> query;
   std::pair<const void*, absl::string_view> parent_name_key() const {
     return query;
+  }
+};
+struct ParentNameQuery : public ParentNameQueryBase {
+  using SymbolT = Symbol;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    return *it;
+  }
+};
+struct ParentNameFieldQuery : public ParentNameQueryBase {
+  using SymbolT = const FieldDescriptor*;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    SymbolT field = it->field_descriptor();
+    ABSL_ASSUME(field != nullptr);
+    return field;
   }
 };
 struct SymbolByParentHash {
@@ -979,6 +998,14 @@ struct SymbolByParentHash {
 };
 struct SymbolByParentEq {
   using is_transparent = void;
+
+  bool operator()(const Symbol& symbol,
+                  const ParentNameFieldQuery& query) const {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    return field != nullptr && !field->is_extension() &&
+           field->containing_type() == query.query.first &&
+           field->name() == query.query.second;
+  }
 
   template <typename T, typename U>
   bool operator()(const T& a, const U& b) const {
@@ -1212,8 +1239,9 @@ class FileDescriptorTables {
   // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
-  inline Symbol FindNestedSymbol(const void* parent,
-                                 absl::string_view name) const;
+  template <typename K = ParentNameQuery>
+  inline auto FindNestedSymbol(const void* parent,
+                               absl::string_view name) const;
 
   // These return nullptr if not found.
   inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
@@ -1682,10 +1710,12 @@ inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
   return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
-inline Symbol FileDescriptorTables::FindNestedSymbol(
+template <typename K>
+inline auto FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
-  auto it = symbols_by_parent_.find(ParentNameQuery{{parent, name}});
-  return it == symbols_by_parent_.end() ? Symbol() : *it;
+  auto it = symbols_by_parent_.find(K{{{parent, name}}});
+  return it == symbols_by_parent_.end() ? typename K::SymbolT()
+                                        : K::IterToSymbol(it);
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -2506,9 +2536,7 @@ const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
 
 const FieldDescriptor* Descriptor::FindFieldByName(
     absl::string_view name) const {
-  const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
-  return field != nullptr && !field->is_extension() ? field : nullptr;
+  return file()->tables_->FindNestedSymbol<ParentNameFieldQuery>(this, name);
 }
 
 const OneofDescriptor* Descriptor::FindOneofByName(
