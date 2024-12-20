@@ -8,25 +8,24 @@
 #include "google/protobuf/util/type_resolver_util.h"
 
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/util/type_resolver.h"
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/util/type_resolver.h"
 
 namespace google {
 namespace protobuf {
@@ -421,18 +420,8 @@ class DescriptorPoolTypeResolverSyntaxTest : public testing::Test {
   DescriptorPoolTypeResolverSyntaxTest()
       : resolver_(NewTypeResolverForDescriptorPool(kUrlPrefix, &pool_)) {}
 
-  const FileDescriptor* BuildFile(
-      absl::string_view syntax,
-      absl::optional<Edition> edition = absl::nullopt) {
-    FileDescriptorProto proto;
-    proto.set_package("test");
-    proto.set_name("foo");
-    proto.set_syntax(syntax);
-    if (edition.has_value()) {
-      proto.set_edition(*edition);
-    }
-    DescriptorProto* message = proto.add_message_type();
-    message->set_name("MyMessage");
+  const FileDescriptor* BuildFile(absl::string_view file_contents) {
+    FileDescriptorProto proto = ParseTextOrDie(file_contents);
     const FileDescriptor* file = pool_.BuildFile(proto);
     ABSL_CHECK(file != nullptr);
     return file;
@@ -443,8 +432,12 @@ class DescriptorPoolTypeResolverSyntaxTest : public testing::Test {
 };
 
 TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto2) {
-  const FileDescriptor* file = BuildFile("proto2");
-  ASSERT_EQ(FileDescriptorLegacy(file).edition(), Edition::EDITION_PROTO2);
+  BuildFile(R"pb(
+    package: "test"
+    name: "foo"
+    syntax: "proto2"
+    message_type { name: "MyMessage" }
+  )pb");
 
   Type type;
   ASSERT_TRUE(
@@ -454,8 +447,12 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto2) {
 }
 
 TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto3) {
-  const FileDescriptor* file = BuildFile("proto3");
-  ASSERT_EQ(FileDescriptorLegacy(file).edition(), Edition::EDITION_PROTO3);
+  BuildFile(R"pb(
+    package: "test"
+    name: "foo"
+    syntax: "proto3"
+    message_type { name: "MyMessage" }
+  )pb");
 
   Type type;
   ASSERT_TRUE(
@@ -464,6 +461,94 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto3) {
   EXPECT_EQ(type.edition(), "");
 }
 
+TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxEditions) {
+  BuildFile(R"pb(
+    package: "test"
+    name: "foo"
+    syntax: "editions"
+    edition: EDITION_2023
+    message_type { name: "MyMessage" }
+  )pb");
+
+  Type type;
+  ASSERT_TRUE(
+      resolver_->ResolveMessageType(GetTypeUrl("test.MyMessage"), &type).ok());
+  EXPECT_EQ(type.syntax(), Syntax::SYNTAX_EDITIONS);
+  EXPECT_EQ(type.edition(), "2023");
+}
+
+TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsFieldFeatures) {
+  BuildFile(R"pb(
+    package: "test"
+    name: "foo"
+    syntax: "editions"
+    edition: EDITION_2023
+    message_type {
+      name: "MyMessage"
+      field {
+        name: "field"
+        number: 1
+        type: TYPE_BYTES
+        options {
+          features {
+            [pb.cpp] { string_type: CORD }
+          }
+        }
+      }
+    }
+  )pb");
+
+  Type type;
+  ASSERT_TRUE(
+      resolver_->ResolveMessageType(GetTypeUrl("test.MyMessage"), &type).ok());
+  ASSERT_EQ(type.fields_size(), 1);
+  EXPECT_THAT(type.fields(0), EqualsProto(R"pb(
+                kind: TYPE_BYTES
+                cardinality: CARDINALITY_OPTIONAL
+                number: 1
+                name: "field"
+                options {
+                  name: "features"
+                  value {
+                    [type.googleapis.com/google.protobuf.FeatureSet] {
+                      [pb.cpp] { string_type: CORD }
+                    }
+                  }
+                }
+                json_name: "field"
+              )pb"));
+}
+
+TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsEnumFeatures) {
+  BuildFile(R"pb(
+    package: "test"
+    name: "foo"
+    syntax: "editions"
+    edition: EDITION_2023
+    enum_type {
+      name: "MyEnum"
+      value: { name: "FOO" number: 1 }
+      options { features { enum_type: CLOSED } }
+    }
+  )pb");
+
+  Enum enm;
+  ASSERT_TRUE(resolver_->ResolveEnumType(GetTypeUrl("test.MyEnum"), &enm).ok());
+  EXPECT_THAT(
+      enm, EqualsProto(R"pb(
+        name: "test.MyEnum"
+        enumvalue { name: "FOO" number: 1 }
+        options {
+          name: "features"
+          value {
+            [type.googleapis.com/google.protobuf.FeatureSet] { enum_type: CLOSED }
+          }
+        }
+        source_context { file_name: "foo" }
+        syntax: SYNTAX_EDITIONS
+        edition: "2023"
+      )pb"));
+}
 
 TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
   Type type = ConvertDescriptorToType(
