@@ -172,44 +172,6 @@ TEST(ArenaTest, FuzzSingleThreaded) {
   }
 }
 
-TEST(ArenaTest, Contains) {
-  upb_Arena* arena1 = upb_Arena_New();
-  upb_Arena* arena2 = upb_Arena_New();
-  void* ptr1a = upb_Arena_Malloc(arena1, 8);
-  void* ptr2a = upb_Arena_Malloc(arena2, 8);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-
-  void* ptr1b = upb_Arena_Malloc(arena1, 1000000);
-  void* ptr2b = upb_Arena_Malloc(arena2, 1000000);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
-
-  upb_Arena_Fuse(arena1, arena2);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
-
-  upb_Arena_Free(arena1);
-  upb_Arena_Free(arena2);
-}
-
 TEST(ArenaTest, LargeAlloc) {
   // Tests an allocation larger than the max block size.
   upb_Arena* arena = upb_Arena_New();
@@ -282,6 +244,32 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
   }
   done.Notify();
   for (auto& t : threads) t.join();
+}
+
+TEST(ArenaTest, FuzzAllocSpaceAllocatedRace) {
+  Environment env;
+  upb_Arena_SetMaxBlockSize(512);
+  upb_Arena* arena = upb_Arena_New();
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      while (!done.HasBeenNotified()) {
+        size_t count;
+        upb_Arena_SpaceAllocated(arena, &count);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    upb_Arena_Malloc(arena, 256);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+  upb_Arena_Free(arena);
+  upb_Arena_SetMaxBlockSize(32 << 10);
 }
 
 TEST(ArenaTest, ArenaIncRef) {

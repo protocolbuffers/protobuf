@@ -50,6 +50,11 @@ UPB_INLINE void upb_free(upb_alloc* alloc, void* ptr) {
   alloc->func(alloc, ptr, 0, 0);
 }
 
+UPB_INLINE void upb_free_sized(upb_alloc* alloc, void* ptr, size_t size) {
+  UPB_ASSERT(alloc);
+  alloc->func(alloc, ptr, size, 0);
+}
+
 // The global allocator used by upb. Uses the standard malloc()/free().
 
 extern upb_alloc upb_alloc_global;
