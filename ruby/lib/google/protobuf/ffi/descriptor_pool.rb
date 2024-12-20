@@ -31,7 +31,7 @@ module Google
 
         # Should always be the last expression of the initializer to avoid
         # leaking references to this object before construction is complete.
-        Google::Protobuf::OBJECT_CACHE.try_add @descriptor_pool.address, self
+        Google::Protobuf::Internal::OBJECT_CACHE.try_add @descriptor_pool.address, self
       end
 
       def add_serialized_file(file_contents)
