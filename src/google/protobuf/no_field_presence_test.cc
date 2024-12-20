@@ -733,7 +733,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != FieldOptions::STRING) {
+    if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field)) {
       continue;
     }
     EXPECT_EQ(true, r->HasField(message, field));
