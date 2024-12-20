@@ -29,20 +29,17 @@ Gem::Specification.new do |s|
       ext/google/protobuf_c/extconf.rb
       ext/google/protobuf_c/Rakefile
     ]
-    s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
+    s.add_development_dependency "rake-compiler-dock", ">= 1.7.0"
   end
   s.required_ruby_version = '>= 3.0'
-  # bigdecimal must be used as a non-built in gem as of ruby-3.4
   s.add_dependency "bigdecimal"
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
   # https://github.com/protocolbuffers/protobuf/pull/15203
   s.add_dependency "rake", ">= 13"
-  s.add_development_dependency "ffi", "~>1"
+  s.add_development_dependency "ffi", ">= 1.17.0"
   s.add_development_dependency "ffi-compiler", "~>1"
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
-  # bigdecimal must be used as a non-built in gem as of ruby-3.4
-  s.add_development_dependency "bigdecimal" if RUBY_PLATFORM >= '3.4.0'
 end
