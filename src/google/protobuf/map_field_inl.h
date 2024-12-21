@@ -81,7 +81,7 @@ bool TypeDefinedMapFieldBase<Key, T>::DeleteMapValueImpl(
 template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::SwapImpl(MapFieldBase& lhs,
                                                MapFieldBase& rhs) {
-  MapFieldBase::SwapImpl(lhs, rhs);
+  MapFieldBase::SwapPayload(lhs, rhs);
   static_cast<TypeDefinedMapFieldBase&>(lhs).map_.swap(
       static_cast<TypeDefinedMapFieldBase&>(rhs).map_);
 }
@@ -95,20 +95,6 @@ void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
   other_field.SyncMapWithRepeatedField();
   internal::MapMergeFrom(self.map_, other_field.map_);
   self.SetMapDirty();
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::UnsafeShallowSwapImpl(MapFieldBase& lhs,
-                                                            MapFieldBase& rhs) {
-  static_cast<TypeDefinedMapFieldBase&>(lhs).InternalSwap(
-      static_cast<TypeDefinedMapFieldBase*>(&rhs));
-}
-
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::InternalSwap(
-    TypeDefinedMapFieldBase* other) {
-  MapFieldBase::InternalSwap(other);
-  map_.InternalSwap(&other->map_);
 }
 
 // ----------------------------------------------------------------------
