@@ -122,17 +122,12 @@ namespace Google.Protobuf.Collections
                         // if little endian try to copy packed buffer into RepeatedField array
                         if(BitConverter.IsLittleEndian)
                         {
-                            unsafe
-                            {
-                                GCHandle gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
-                                IntPtr addr = gcHandle.AddrOfPinnedObject();
-                                Span<byte> span = new Span<byte>(addr.ToPointer(), array.Length * codec.FixedSize)
-                                    .Slice(count * codec.FixedSize);
-                                Debug.Assert(span.Length >= length);
-                                ParsingPrimitives.ReadPackedFieldLittleEndian(ref ctx.buffer, ref ctx.state, length, span);
-                                count += length / codec.FixedSize;
-                                gcHandle.Free();
-                            }
+                            GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
+                            span = span.Slice(count * codec.FixedSize);
+                            Debug.Assert(span.Length >= length);
+                            ParsingPrimitives.ReadPackedFieldLittleEndian(ref ctx.buffer, ref ctx.state, length, span);
+                            count += length / codec.FixedSize;
+                            handle.Free();
                         }
                         else
                         {
@@ -263,21 +258,17 @@ namespace Google.Protobuf.Collections
                 ctx.WriteTag(tag);
                 ctx.WriteLength(size);
 
-                if(BitConverter.IsLittleEndian && codec.FixedSize > 0 && ctx.buffer.Length - ctx.state.position >= (size))
+                if(BitConverter.IsLittleEndian && codec.FixedSize > 0 && ctx.buffer.Length - ctx.state.position >= size)
                 {
-                    unsafe
-                    {
-                        GCHandle gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
-                        IntPtr addr = gcHandle.AddrOfPinnedObject();
-                        Span<byte> span = new Span<byte>(addr.ToPointer(), Count * codec.FixedSize);
+                    GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
+                    span = span.Slice(0, Count * codec.FixedSize);
 
-                        var destination = ctx.buffer.Slice(ctx.state.position, size);
-                        Debug.Assert(span.Length == destination.Length);
-                        span.CopyTo(destination);
-                        ctx.state.position += size;
+                    var destination = ctx.buffer.Slice(ctx.state.position, size);
+                    Debug.Assert(span.Length == destination.Length);
+                    span.CopyTo(destination);
+                    ctx.state.position += size;
 
-                        gcHandle.Free();
-                    }
+                    handle.Free();
                 }
                 else
                 {
@@ -718,6 +709,15 @@ namespace Google.Protobuf.Collections
 #endif
 
             count = targetCount;
+        }
+
+        [SecuritySafeCritical]
+        private unsafe GCHandle AsSpanPinnedUnsafe(out Span<byte> span, FieldCodec<T> codec)
+        {
+            Debug.Assert(codec.FixedSize > 0);
+            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            span = new Span<byte>(handle.AddrOfPinnedObject().ToPointer(), array.Length * codec.FixedSize);
+            return handle;
         }
 
         #region Explicit interface implementation for IList and ICollection.
