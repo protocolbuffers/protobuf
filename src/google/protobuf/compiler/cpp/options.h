@@ -72,6 +72,9 @@ struct Options {
   bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
   bool strip_nonfunctional_codegen = false;
+  // TODO: clean this up once the change is complete
+  // and rolled out.
+  bool annotate_nullability = false;
 };
 
 }  // namespace cpp
