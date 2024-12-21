@@ -258,16 +258,12 @@ namespace Google.Protobuf.Collections
                 ctx.WriteTag(tag);
                 ctx.WriteLength(size);
 
-                if(BitConverter.IsLittleEndian && codec.FixedSize > 0 && ctx.buffer.Length - ctx.state.position >= size)
+                if(BitConverter.IsLittleEndian && codec.FixedSize > 0)
                 {
                     GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
                     span = span.Slice(0, Count * codec.FixedSize);
 
-                    var destination = ctx.buffer.Slice(ctx.state.position, size);
-                    Debug.Assert(span.Length == destination.Length);
-                    span.CopyTo(destination);
-                    ctx.state.position += size;
-
+                    WritingPrimitives.WriteRawBytes(ref ctx.buffer, ref ctx.state, span);
                     handle.Free();
                 }
                 else
