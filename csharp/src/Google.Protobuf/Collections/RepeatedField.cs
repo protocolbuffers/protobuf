@@ -119,7 +119,7 @@ namespace Google.Protobuf.Collections
                         EnsureSize(count + (length / codec.FixedSize));
 
 
-                        // if little endian try to copy packed buffer into RepeatedField array
+                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
                         if(BitConverter.IsLittleEndian)
                         {
                             GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
@@ -258,6 +258,7 @@ namespace Google.Protobuf.Collections
                 ctx.WriteTag(tag);
                 ctx.WriteLength(size);
 
+                // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
                 if(BitConverter.IsLittleEndian && codec.FixedSize > 0)
                 {
                     GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
