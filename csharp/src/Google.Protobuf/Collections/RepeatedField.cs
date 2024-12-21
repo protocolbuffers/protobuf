@@ -262,9 +262,29 @@ namespace Google.Protobuf.Collections
                 int size = CalculatePackedDataSize(codec);
                 ctx.WriteTag(tag);
                 ctx.WriteLength(size);
-                for (int i = 0; i < count; i++)
+
+                if(BitConverter.IsLittleEndian && codec.FixedSize > 0 && ctx.buffer.Length - ctx.state.position >= (size))
                 {
-                    writer(ref ctx, array[i]);
+                    unsafe
+                    {
+                        GCHandle gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
+                        IntPtr addr = gcHandle.AddrOfPinnedObject();
+                        Span<byte> span = new Span<byte>(addr.ToPointer(), Count * codec.FixedSize);
+
+                        var destination = ctx.buffer.Slice(ctx.state.position, size);
+                        Debug.Assert(span.Length == destination.Length);
+                        span.CopyTo(destination);
+                        ctx.state.position += size;
+
+                        gcHandle.Free();
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        writer(ref ctx, array[i]);
+                    }
                 }
             }
             else
