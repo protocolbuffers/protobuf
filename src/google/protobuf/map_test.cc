@@ -186,6 +186,24 @@ TEST(MapTest, CopyConstructionMaintainsProperLoadFactor) {
   }
 }
 
+TEST(MapTest, CalculateCapacityForSizeTest) {
+  for (size_t size = 1; size < 1000; ++size) {
+    size_t capacity = MapTestPeer::CalculateCapacityForSize(size);
+    // Verify is large enough for `size`.
+    EXPECT_LE(size, MapTestPeer::CalculateHiCutoff(capacity));
+    if (capacity > MapTestPeer::kMinTableSize) {
+      // Verify it's the smallest capacity that's large enough.
+      EXPECT_GT(size, MapTestPeer::CalculateHiCutoff(capacity / 2));
+    }
+  }
+
+  // Verify very large size does not overflow bucket calculation.
+  for (size_t size : {0x30000001u, 0x40000000u, 0x50000000u, 0x60000000u,
+                      0x70000000u, 0x80000000u, 0x90000000u, 0xFFFFFFFFu}) {
+    EXPECT_EQ(0x80000000u, MapTestPeer::CalculateCapacityForSize(size));
+  }
+}
+
 TEST(MapTest, AlwaysSerializesBothEntries) {
   for (const Message* prototype :
        {static_cast<const Message*>(
