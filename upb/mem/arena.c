@@ -439,7 +439,7 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
     }
 
     upb_ArenaInternal* displaced =
-        upb_Atomic_Exchange(&parent_tail->next, child, memory_order_relaxed);
+        upb_Atomic_Exchange(&parent_tail->next, child, memory_order_release);
     parent_tail = upb_Atomic_Load(&child->tail, memory_order_relaxed);
 
     // If we displaced something that got installed racily, we can simply
@@ -447,7 +447,7 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
     child = displaced;
   } while (child != NULL);
 
-  upb_Atomic_Store(&parent->tail, parent_tail, memory_order_relaxed);
+  upb_Atomic_Store(&parent->tail, parent_tail, memory_order_release);
 }
 
 void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
