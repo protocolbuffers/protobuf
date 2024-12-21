@@ -32,6 +32,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
@@ -54,6 +55,7 @@ struct PDProtoAnalysis {
   PDProtoScale usage = PDProtoScale::kDefault;
   uint64_t presence_count = 0;
   uint64_t usage_count = 0;
+  float presence_probability = 0.0;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
@@ -119,6 +121,8 @@ class PDProtoAnalyzer {
       return analysis;
     }
 
+    analysis.presence_probability = GetPresenceProbability(field);
+
     if (IsLikelyPresent(field)) {
       analysis.presence = PDProtoScale::kLikely;
     } else if (IsRarelyPresent(field)) {
@@ -180,6 +184,13 @@ class PDProtoAnalyzer {
 
     return info_map_.IsCold(field, AccessInfoMap::kRead, kColdRatio) &&
            info_map_.IsCold(field, AccessInfoMap::kWrite, kColdRatio);
+  }
+
+  float GetPresenceProbability(const FieldDescriptor* field) {
+    // Since message count is max(#parse, #serialization), return the max of
+    // access ratio of both parse and serialization.
+    return std::max(info_map_.AccessRatio(field, AccessInfoMap::kWrite),
+                    info_map_.AccessRatio(field, AccessInfoMap::kRead));
   }
 
   cpp::Options options_;
@@ -443,6 +454,8 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
                   stream << " " << analysis.usage << "_USED("
                          << analysis.usage_count << ")";
                 }
+                stream << absl::StrFormat(" presence_probability=%.2f%%",
+                                          analysis.presence_probability * 100);
               }
               if (optimized != PDProtoOptimization::kNone) {
                 stream << " " << optimized;
