@@ -656,6 +656,12 @@ module BasicTest
       assert file_descriptor.options.deprecated
     end
 
+    def test_file_descriptor_to_proto
+      file_descriptor = TestMessage.descriptor.file_descriptor
+
+      assert_instance_of Google::Protobuf::FileDescriptorProto, file_descriptor.to_proto
+    end
+
     def test_field_descriptor_options
       field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
 

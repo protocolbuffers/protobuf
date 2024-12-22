@@ -558,12 +558,35 @@ static VALUE FileDescriptor_options(VALUE _self) {
   return file_options;
 }
 
+/*
+ * call-seq:
+ *     FileDescriptor.to_proto => FileDescriptorProto
+ *
+ * Returns the `FileDescriptorProto` of this `FileDescriptor`.
+ */
+static VALUE FileDescriptor_to_proto(VALUE _self) {
+  FileDescriptor* self = ruby_to_FileDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_FileDescriptorProto* file_proto = upb_FileDef_ToProto(
+    self->filedef, arena);
+
+  size_t size;
+  const char* serialized = google_protobuf_FileDescriptorProto_serialize(
+    file_proto, arena, &size);
+
+  upb_Arena_Free(arena);
+  VALUE file_proto_class = rb_path2class(
+    "Google::Protobuf::FileDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, file_proto_class, false);
+}
+
 static void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "options", FileDescriptor_options, 0);
+  rb_define_method(klass, "to_proto", FileDescriptor_to_proto, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }

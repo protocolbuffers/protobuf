@@ -33,6 +33,13 @@ char* FileDescriptor_serialized_options(const upb_FileDef* filedef,
   return serialized;
 }
 
+char* FileDescriptor_serialized_to_proto(const upb_FileDef* filedef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_FileDescriptorProto* file_proto = upb_FileDef_ToProto(filedef, arena);
+  char* serialized = google_protobuf_FileDescriptorProto_serialize(file_proto, arena, size);
+  return serialized;
+}
+
 char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t* size,
                                     upb_Arena* arena) {
   const google_protobuf_MessageOptions* opts = upb_MessageDef_Options(msgdef);
