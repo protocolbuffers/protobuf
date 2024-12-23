@@ -217,11 +217,6 @@ class DynamicMapField final
   static bool LookupMapValueImpl(const MapFieldBase& self,
                                  const MapKey& map_key, MapValueConstRef* val);
 
-  static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
-    static_cast<DynamicMapField&>(lhs).Swap(
-        static_cast<DynamicMapField*>(&rhs));
-  }
-
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   static const Message* GetPrototypeImpl(const MapFieldBase& map);
@@ -358,7 +353,7 @@ void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
   rhs.Clear();
   rhs.MergeFrom(tmp);
 
-  MapFieldBase::SwapImpl(lhs, rhs);
+  MapFieldBase::SwapPayload(lhs, rhs);
 }
 
 void DynamicMapField::MergeFromImpl(MapFieldBase& base,

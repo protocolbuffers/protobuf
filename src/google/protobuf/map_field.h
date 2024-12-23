@@ -312,7 +312,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     void (*clear_map_no_sync)(MapFieldBase& map);
     void (*merge_from)(MapFieldBase& map, const MapFieldBase& other);
     void (*swap)(MapFieldBase& lhs, MapFieldBase& rhs);
-    void (*unsafe_shallow_swap)(MapFieldBase& lhs, MapFieldBase& rhs);
     size_t (*space_used_excluding_self_nolock)(const MapFieldBase& map);
 
     const Message* (*get_prototype)(const MapFieldBase& map);
@@ -328,7 +327,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     out.clear_map_no_sync = &T::ClearMapNoSyncImpl;
     out.merge_from = &T::MergeFromImpl;
     out.swap = &T::SwapImpl;
-    out.unsafe_shallow_swap = &T::UnsafeShallowSwapImpl;
     out.space_used_excluding_self_nolock = &T::SpaceUsedExcludingSelfNoLockImpl;
     out.get_prototype = &T::GetPrototypeImpl;
     return out;
@@ -366,9 +364,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     vtable()->merge_from(*this, other);
   }
   void Swap(MapFieldBase* other) { vtable()->swap(*this, *other); }
-  void UnsafeShallowSwap(MapFieldBase* other) {
-    vtable()->unsafe_shallow_swap(*this, *other);
-  }
+  void InternalSwap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
   int size() const;
   void Clear();
@@ -411,8 +407,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   void SyncMapWithRepeatedField() const;
   void SyncMapWithRepeatedFieldNoLock();
 
-  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
-  static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
+  static void SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs);
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
   // Tells MapFieldBase that there is new change to Map.
@@ -435,8 +430,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   bool InsertOrLookupMapValueNoSync(const MapKey& map_key, MapValueRef* val) {
     return vtable()->insert_or_lookup_no_sync(*this, map_key, val);
   }
-
-  void InternalSwap(MapFieldBase* other);
 
   // Support thread sanitizer (tsan) by making const / mutable races
   // more apparent.  If one thread calls MutableAccess() while another
@@ -605,8 +598,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
     return &map_;
   }
 
-  void InternalSwap(TypeDefinedMapFieldBase* other);
-
   static constexpr size_t InternalGetArenaOffsetAlt(
       internal::InternalVisibility access) {
     return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
@@ -625,7 +616,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
-  static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

@@ -167,9 +167,9 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
   return *ToPayload(p);
 }
 
-void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
   if (lhs.arena() == rhs.arena()) {
-    lhs.InternalSwap(&rhs);
+    SwapRelaxed(lhs.payload_, rhs.payload_);
     return;
   }
   auto* p1 = lhs.maybe_payload();
@@ -182,13 +182,9 @@ void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
   SwapRelaxed(p1->state, p2->state);
 }
 
-void MapFieldBase::UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
-  ABSL_DCHECK_EQ(lhs.arena(), rhs.arena());
-  lhs.InternalSwap(&rhs);
-}
-
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
-  SwapRelaxed(payload_, other->payload_);
+  GetMapRaw().InternalSwap(&other->GetMapRaw());
+  SwapPayload(*this, *other);
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
