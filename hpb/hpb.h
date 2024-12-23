@@ -8,7 +8,6 @@
 #ifndef PROTOBUF_HPB_HPB_H_
 #define PROTOBUF_HPB_HPB_H_
 
-#include <cstdint>
 #include <type_traits>
 
 #include "absl/base/attributes.h"
@@ -22,7 +21,6 @@
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
-#include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 
 #ifdef HPB_BACKEND_UPB
@@ -67,12 +65,6 @@ void DeepCopy(Ptr<const T> source_message, T* target_message) {
 }
 
 template <typename T>
-void DeepCopy(const T* source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(Ptr(source_message), target_message);
-}
-
-template <typename T>
 void DeepCopy(const T* source_message, T* target_message) {
   static_assert(!std::is_const_v<T>);
   DeepCopy(Ptr(source_message), Ptr(target_message));
@@ -113,8 +105,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes) {
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry,
-                        int options = 0) {
+                        const ::hpb::ExtensionRegistry& extension_registry) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =

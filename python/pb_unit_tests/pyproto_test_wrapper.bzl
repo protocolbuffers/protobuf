@@ -11,6 +11,7 @@ def pyproto_test_wrapper(name, deps = []):
         main = src,
         data = ["//src/google/protobuf:testdata"],
         deps = [
+            "@com_google_absl_py//absl/testing:parameterized",
             "//python:_message",
             "//:python_common_test_protos",
             "//:python_specific_test_protos",

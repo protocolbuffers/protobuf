@@ -176,7 +176,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
                           }
                         }}},
                       R"rs(
-                fn constant_name(&self) -> Option<&'static str> {
+                fn constant_name(&self) -> $Option$<&'static str> {
                   #[allow(unreachable_patterns)] // In the case of aliases, just emit them all and let the first one match.
                   Some(match self.0 {
                     $name_cases$
@@ -224,7 +224,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
       },
       R"rs(
       #[repr(transparent)]
-      #[derive(Clone, Copy, PartialEq, Eq)]
+      #[derive(Clone, Copy, PartialEq, Eq, Hash)]
       pub struct $name$(i32);
 
       #[allow(non_upper_case_globals)]

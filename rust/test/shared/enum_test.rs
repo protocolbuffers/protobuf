@@ -208,3 +208,15 @@ fn test_debug_string() {
         eq("TestEnumWithNumericNames::from(42)")
     );
 }
+
+#[gtest]
+fn test_enum_in_hash_set() {
+    use test_all_types::NestedEnum;
+    let mut s = std::collections::HashSet::<NestedEnum>::new();
+    s.insert(NestedEnum::Foo);
+    s.insert(NestedEnum::Bar);
+    s.insert(NestedEnum::try_from(1).unwrap()); // FOO = 1
+    assert_that!(s.len(), eq(2));
+    assert_that!(s.contains(&NestedEnum::Bar), eq(true));
+    assert_that!(s.contains(&NestedEnum::Baz), eq(false));
+}

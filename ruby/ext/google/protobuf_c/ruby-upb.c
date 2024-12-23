@@ -87,6 +87,13 @@ Error, UINTPTR_MAX is undefined
 #define UPB_INLINE static
 #endif
 
+// UPB_INLINE_IF_NOT_GCC: because gcc can be very noisy at times.
+#if defined(__GNUC__) && !defined(__clang__)
+#define UPB_INLINE_IF_NOT_GCC static
+#else
+#define UPB_INLINE_IF_NOT_GCC UPB_INLINE
+#endif
+
 #ifdef UPB_BUILD_API
 #define UPB_API UPB_EXPORT
 #define UPB_API_INLINE UPB_EXPORT
@@ -457,10 +464,6 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
 #ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Properly enforce closed enums in python.
-// Owner: mkruskal@
-#define UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT 1
 
 #endif
 
@@ -2886,9 +2889,11 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 // Must be last.
 
-static UPB_ATOMIC(size_t) max_block_size = 32 << 10;
+static UPB_ATOMIC(size_t) g_max_block_size = 32 << 10;
 
-void upb_Arena_SetMaxBlockSize(size_t max) { max_block_size = max; }
+void upb_Arena_SetMaxBlockSize(size_t max) {
+  upb_Atomic_Store(&g_max_block_size, max, memory_order_relaxed);
+}
 
 typedef struct upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
@@ -3129,8 +3134,15 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
 static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return false;
-  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
-  size_t last_size = last_block != NULL ? last_block->size : 128;
+  size_t last_size = 128;
+  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
+  if (last_block) {
+    last_size = a->UPB_PRIVATE(end) - (char*)last_block;
+  }
+
+  // Relaxed order is safe here as we don't need any ordering with the setter.
+  size_t max_block_size =
+      upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
 
   // Don't naturally grow beyond the max block size.
   size_t clamped_size = UPB_MIN(last_size * 2, max_block_size);
@@ -3787,6 +3799,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -3916,13 +3929,20 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
 }
 
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
-                             size_t count, _upb_sortedmap* sorted) {
+                             _upb_sortedmap* sorted) {
+  size_t count = 0;
+  for (size_t i = 0; i < in->size; i++) {
+    count += upb_TaggedAuxPtr_IsExtension(in->aux_data[i]);
+  }
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
-  const upb_Extension* exts =
-      UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
-
-  for (size_t i = 0; i < count; i++) {
-    s->entries[sorted->start + i] = &exts[i];
+  if (count == 0) return true;
+  const upb_Extension** entry =
+      (const upb_Extension**)&s->entries[sorted->start];
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      *entry++ = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    }
   }
   qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
         _upb_mapsorter_cmpext);
@@ -3948,10 +3968,24 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
-  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, len, arena)) return false;
+  if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
+    return false;
+  }
+  upb_StringView* view;
+  if (alias) {
+    view = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+    if (!view) return false;
+    view->data = data;
+  } else {
+    view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
+    if (!view) return false;
+    char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
+    memcpy(copy, data, len);
+    view->data = copy;
+  }
+  view->size = len;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
-  in->unknown_end += len;
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
   return true;
 }
 
@@ -3965,71 +3999,66 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   for (size_t i = 0; i < count; i++) {
     total_len += data[i].size;
   }
-  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, total_len, arena))
-    return false;
+  if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) return false;
 
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  upb_StringView* view =
+      upb_Arena_Malloc(arena, sizeof(upb_StringView) + total_len);
+  if (!view) return false;
+  char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
+  view->data = copy;
+  view->size = total_len;
   for (size_t i = 0; i < count; i++) {
-    memcpy(UPB_PTR_AT(in, in->unknown_end, char), data[i].data, data[i].size);
-    in->unknown_end += data[i].size;
+    memcpy(copy, data[i].data, data[i].size);
+    copy += data[i].size;
   }
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
   return true;
 }
 
 void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (in) {
-    in->unknown_end = sizeof(upb_Message_Internal);
+  if (!in) return;
+  uint32_t size = 0;
+  for (uint32_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      in->aux_data[size++] = tagged_ptr;
+    }
   }
-}
-
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (in) {
-    *len = in->unknown_end - sizeof(upb_Message_Internal);
-    return (char*)(in + 1);
-  } else {
-    *len = 0;
-    return NULL;
-  }
+  in->size = size;
 }
 
 bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
                                uintptr_t* iter) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(*iter == kUpb_Message_UnknownBegin + 1);
+  UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
-
+  UPB_ASSERT(in);
+  UPB_ASSERT(*iter <= in->size);
 #ifndef NDEBUG
-  size_t full_unknown_size;
-  const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
-  UPB_ASSERT((uintptr_t)data->data >= (uintptr_t)full_unknown);
-  UPB_ASSERT((uintptr_t)data->data <
-             (uintptr_t)(full_unknown + full_unknown_size));
-  UPB_ASSERT((uintptr_t)(data->data + data->size) > (uintptr_t)data->data);
-  UPB_ASSERT((uintptr_t)(data->data + data->size) <=
-             (uintptr_t)internal_unknown_end);
+  upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(unknown_ptr));
+  upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(unknown_ptr);
+  UPB_ASSERT(unknown->data == data->data);
+  UPB_ASSERT(unknown->size == data->size);
 #endif
-  const char* end = data->data + data->size;
-  size_t offset = data->data - (const char*)in;
-  if (end != internal_unknown_end) {
-    memmove(UPB_PTR_AT(in, offset, char), end, internal_unknown_end - end);
-  }
-  in->unknown_end -= data->size;
-  data->size = in->unknown_end - offset;
-  return data->size != 0;
+  in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+
+  return upb_Message_NextUnknown(msg, data, iter);
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
-  const upb_MiniTableExtension* e;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return 0;
+  const upb_MiniTableExtension* ext;
   upb_MessageValue val;
-  size_t iter = kUpb_Message_ExtensionBegin;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
   size_t count = 0;
-  while (upb_Message_NextExtension(msg, &e, &val, &iter)) {
+  while (upb_Message_NextExtension(msg, &ext, &val, &iter)) {
     count++;
   }
   return count;
@@ -4072,12 +4101,21 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   }
 
   // Extensions.
-  uintptr_t iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* e;
-  upb_MessageValue val;
-  while (upb_Message_NextExtension(msg, &e, &val, &iter)) {
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  // TODO: b/376969853 - use iterator API
+  uint32_t size = in ? in->size : 0;
+  for (size_t i = 0; i < size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      continue;
+    }
+    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+
+    upb_MessageValue val;
+    memcpy(&val, &(ext->data), sizeof(upb_MessageValue));
 
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array: {
@@ -4825,41 +4863,44 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     }
   }
   // Clone extensions.
-  size_t ext_count;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(src, &ext_count);
-  for (size_t i = 0; i < ext_count; ++i) {
-    const upb_Extension* msg_ext = &ext[i];
-    const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-        dst, msg_ext->ext, arena);
-    if (!dst_ext) return NULL;
-    if (upb_MiniTableField_IsScalar(field)) {
-      if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(src);
+  if (!in) return dst;
+
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      // Clone extension
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
+      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+          dst, msg_ext->ext, arena);
+      if (!dst_ext) return NULL;
+      if (upb_MiniTableField_IsScalar(field)) {
+        if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
+          return NULL;
+        }
+      } else {
+        upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
+        UPB_ASSERT(msg_array);
+        upb_Array* cloned_array = upb_Array_DeepClone(
+            msg_array, upb_MiniTableField_CType(field),
+            upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
+        if (!cloned_array) {
+          return NULL;
+        }
+        dst_ext->data.array_val = cloned_array;
+      }
+    } else if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
+      // Clone unknown
+      upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      // Make a copy into destination arena.
+      if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknown->data,
+                                                unknown->size, arena, false)) {
         return NULL;
       }
-    } else {
-      upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
-      UPB_ASSERT(msg_array);
-      upb_Array* cloned_array = upb_Array_DeepClone(
-          msg_array, upb_MiniTableField_CType(field),
-          upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
-      if (!cloned_array) {
-        return NULL;
-      }
-      dst_ext->data.array_val = cloned_array;
     }
   }
 
-  // Clone unknowns.
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknowns;
-  while (upb_Message_NextUnknown(src, &unknowns, &iter)) {
-    // Make a copy into destination arena.
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknowns.data, unknowns.size,
-                                              arena, false)) {
-      return NULL;
-    }
-  }
   return dst;
 }
 
@@ -8247,6 +8288,45 @@ static void encode_ext(upb_encstate* e, const upb_MiniTableExtension* ext,
   }
 }
 
+static void encode_exts(upb_encstate* e, const upb_MiniTable* m,
+                        const upb_Message* msg) {
+  if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return;
+
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return;
+
+  /* Encode all extensions together. Unlike C++, we do not attempt to keep
+   * these in field number order relative to normal fields or even to each
+   * other. */
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext;
+  upb_MessageValue ext_val;
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
+                                                      &iter)) {
+    // Message has no extensions.
+    return;
+  }
+
+  if (e->options & kUpb_EncodeOption_Deterministic) {
+    _upb_sortedmap sorted;
+    if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
+      // TODO: b/378744096 - handle alloc failure
+    }
+    const upb_Extension* ext;
+    while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
+      encode_ext(e, ext->ext, ext->data,
+                 m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    }
+    _upb_mapsorter_popmap(&e->sorter, &sorted);
+  } else {
+    do {
+      encode_ext(e, ext, ext_val,
+                 m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+    } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
+                                                            &iter));
+  }
+}
+
 static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size) {
   size_t pre_len = e->limit - e->ptr;
@@ -8279,38 +8359,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
-    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (in) {
-      /* Encode all extensions together. Unlike C++, we do not attempt to keep
-       * these in field number order relative to normal fields or even to each
-       * other. */
-      size_t ext_count = upb_Message_ExtensionCount(msg);
-      if (ext_count) {
-        if (e->options & kUpb_EncodeOption_Deterministic) {
-          _upb_sortedmap sorted;
-          if (!_upb_mapsorter_pushexts(&e->sorter, in, ext_count, &sorted)) {
-            // TODO: b/378744096 - handle alloc failure
-          }
-          const upb_Extension* ext;
-          while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-            encode_ext(e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-          }
-          _upb_mapsorter_popmap(&e->sorter, &sorted);
-        } else {
-          const upb_MiniTableExtension* ext;
-          upb_MessageValue ext_val;
-          uintptr_t iter = kUpb_Message_ExtensionBegin;
-          while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-              msg, &ext, &ext_val, &iter)) {
-            encode_ext(e, ext, ext_val,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-          }
-        }
-      }
-    }
-  }
+  encode_exts(e, m, msg);
 
   if (upb_MiniTable_FieldCount(m)) {
     const upb_MiniTableField* f =
@@ -11848,6 +11897,7 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 }
 
 
+#include <stdint.h>
 #include <string.h>
 
 
@@ -11855,31 +11905,20 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* e) {
-  size_t n;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return NULL;
 
-  // For now we use linear search exclusively to find extensions.
-  // If this becomes an issue due to messages with lots of extensions,
-  // we can introduce a table of some sort.
-  for (size_t i = 0; i < n; i++) {
-    if (ext[i].ext == e) {
-      return &ext[i];
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (ext->ext == e) {
+        return ext;
+      }
     }
   }
 
   return NULL;
-}
-
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
-    const struct upb_Message* msg, size_t* count) {
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (in) {
-    *count = (in->size - in->ext_begin) / sizeof(upb_Extension);
-    return UPB_PTR_AT(in, in->ext_begin, const upb_Extension);
-  } else {
-    *count = 0;
-    return NULL;
-  }
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
@@ -11887,18 +11926,32 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_EnsureAvailable)(msg, sizeof(upb_Extension), a))
-    return NULL;
+
+  if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  in->ext_begin -= sizeof(upb_Extension);
-  ext = UPB_PTR_AT(in, in->ext_begin, void);
+  ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext);
   return ext;
 }
 
+void upb_Message_ReplaceUnknownWithExtension(struct upb_Message* msg,
+                                             uintptr_t iter,
+                                             const upb_Extension* ext) {
+  UPB_ASSERT(iter != 0);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  UPB_ASSERT(in);
+  size_t index = iter - 1;
+  upb_TaggedAuxPtr tagged_ptr = in->aux_data[index];
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(tagged_ptr));
+  in->aux_data[index] = upb_TaggedAuxPtr_MakeExtension(ext);
+}
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -11934,41 +11987,32 @@ const float kUpb_FltInfinity = UPB_INFINITY;
 const double kUpb_Infinity = UPB_INFINITY;
 const double kUpb_NaN = UPB_NAN;
 
-bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
-                                               size_t need, upb_Arena* a) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  const size_t overhead = sizeof(upb_Message_Internal);
+static size_t _upb_Message_SizeOfInternal(uint32_t count) {
+  return UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, count);
+}
 
+bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
+                                           upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) {
     // No internal data, allocate from scratch.
-    size_t size = UPB_MAX(128, upb_RoundUpToPowerOfTwo(need + overhead));
-    in = upb_Arena_Malloc(a, size);
+    uint32_t capacity = 4;
+    in = upb_Arena_Malloc(a, _upb_Message_SizeOfInternal(capacity));
     if (!in) return false;
-
-    in->size = size;
-    in->unknown_end = overhead;
-    in->ext_begin = size;
+    in->size = 0;
+    in->capacity = capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
-  } else if (in->ext_begin - in->unknown_end < need) {
+  } else if (in->capacity == in->size) {
     // Internal data is too small, reallocate.
-    size_t new_size = upb_RoundUpToPowerOfTwo(in->size + need);
-    size_t ext_bytes = in->size - in->ext_begin;
-    size_t new_ext_begin = new_size - ext_bytes;
-    in = upb_Arena_Realloc(a, in, in->size, new_size);
+    uint32_t new_capacity = upb_RoundUpToPowerOfTwo(in->size + 1);
+    in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
+                           _upb_Message_SizeOfInternal(new_capacity));
     if (!in) return false;
-
-    if (ext_bytes) {
-      // Need to move extension data to the end.
-      char* ptr = (char*)in;
-      memmove(ptr + new_ext_begin, ptr + in->ext_begin, ext_bytes);
-    }
-    in->ext_begin = new_ext_begin;
-    in->size = new_size;
+    in->capacity = new_capacity;
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   }
-
-  UPB_ASSERT(in->ext_begin - in->unknown_end >= need);
+  UPB_ASSERT(in->capacity - in->size >= 1);
   return true;
 }
 
@@ -15509,15 +15553,18 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   }
 
   if (ext_pool) {
-    // Return any extensions that are set.
-    size_t count;
-    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-    if (i - n < count) {
-      ext += count - 1 - (i - n);
-      memcpy(out_val, &ext->data, sizeof(*out_val));
-      *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
-      *iter = i;
-      return true;
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (!in) return false;
+
+    for (; (i - n) < in->size; i++) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i - n];
+      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+        memcpy(out_val, &ext->data, sizeof(*out_val));
+        *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+        *iter = i;
+        return true;
+      }
     }
   }
 
@@ -16799,6 +16846,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_API
 #undef UPBC_API
 #undef UPB_API_INLINE
+#undef UPB_API_INLINE_IF_NOT_GCC
 #undef UPB_ALIGN_UP
 #undef UPB_ALIGN_DOWN
 #undef UPB_ALIGN_MALLOC
@@ -16847,4 +16895,3 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
 #undef UPB_FUTURE_BREAKING_CHANGES
-#undef UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT

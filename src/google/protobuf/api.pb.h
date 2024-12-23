@@ -80,8 +80,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Mixin final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
  public:
   inline Mixin() : Mixin(nullptr) {}
@@ -294,8 +293,7 @@ class PROTOBUF_EXPORT Mixin final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Method final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
  public:
   inline Method() : Method(nullptr) {}
@@ -580,8 +578,7 @@ class PROTOBUF_EXPORT Method final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Api final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
  public:
   inline Api() : Api(nullptr) {}

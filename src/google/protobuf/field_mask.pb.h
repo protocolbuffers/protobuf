@@ -70,8 +70,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldMask final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   inline FieldMask() : FieldMask(nullptr) {}
@@ -317,9 +316,8 @@ inline std::string* FieldMask::mutable_paths(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void FieldMask::set_paths(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_paths()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_paths()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
 template <typename Arg_, typename... Args_>

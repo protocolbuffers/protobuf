@@ -837,7 +837,7 @@ TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
   ASSERT_TRUE(field_set.SerializeToCord(&cord));
 
   unittest::TestPackedTypes message;
-  ASSERT_TRUE(message.ParseFromCord(cord));
+  ASSERT_TRUE(message.ParseFromString(cord));
   EXPECT_THAT(message.packed_int32(), ElementsAre(-1, -2, -3, -4));
   EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
 }

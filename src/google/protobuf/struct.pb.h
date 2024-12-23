@@ -127,8 +127,7 @@ inline bool NullValue_Parse(absl::string_view name, NullValue* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ListValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
@@ -325,8 +324,7 @@ class PROTOBUF_EXPORT ListValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull ListValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Struct final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
@@ -565,8 +563,7 @@ class Struct_FieldsEntry_DoNotUse final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Value final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}

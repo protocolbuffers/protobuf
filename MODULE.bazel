@@ -58,7 +58,7 @@ use_repo(
     system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
 )
 
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
 [
     pip.parse(
@@ -71,7 +71,7 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
 use_repo(pip, "pip_deps")
 
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
     package = "googletest",
     version = ">0.0.0",
@@ -83,7 +83,7 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
 maven.install(
     name = "protobuf_maven",
     artifacts = [
@@ -112,6 +112,12 @@ use_repo(maven, "protobuf_maven")
 bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True, repo_name = "com_google_googletest")
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(
+    name = "abseil-py",
+    version = "2.1.0",
+    dev_dependency = True,
+    repo_name = "com_google_absl_py",
+)
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)

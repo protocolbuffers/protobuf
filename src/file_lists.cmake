@@ -932,6 +932,26 @@ set(java_features_proto_files
   ${protobuf_SOURCE_DIR}/java/core/java_features_proto-descriptor-set.proto.bin
 )
 
+# @//go:go_features_proto
+set(go_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/go/google/protobuf/go_features.proto
+)
+
+# @//go:go_features_proto
+set(go_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/go/go_features.proto.pb.cc
+)
+
+# @//go:go_features_proto
+set(go_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/go/go_features.proto.pb.h
+)
+
+# @//go:go_features_proto
+set(go_features_proto_files
+  ${protobuf_SOURCE_DIR}/go/go_features_proto-descriptor-set.proto.bin
+)
+
 # @//pkg:common_test
 set(common_test_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_tester.cc

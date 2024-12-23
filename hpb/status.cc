@@ -7,6 +7,8 @@
 
 #include "google/protobuf/hpb/status.h"
 
+#include <cstdint>
+
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/source_location.h"

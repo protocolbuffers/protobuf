@@ -23,25 +23,30 @@ public final class DebugFormat {
   }
 
   public String toString(MessageOrBuilder message) {
-    return TextFormat.printer()
+    if (!this.isSingleLine) {
+      return TextFormat.debugFormatPrinter()
+          .printToString(message, TextFormat.Printer.FieldReporterLevel.DEBUG_MULTILINE);
+    }
+    return TextFormat.debugFormatPrinter()
         .emittingSingleLine(this.isSingleLine)
-        .enablingSafeDebugFormat(true)
-        .printToString(message, this.isSingleLine
-                ? TextFormat.Printer.FieldReporterLevel.DEBUG_SINGLE_LINE
-                : TextFormat.Printer.FieldReporterLevel.DEBUG_MULTILINE);
+        .printToString(message, TextFormat.Printer.FieldReporterLevel.DEBUG_SINGLE_LINE);
   }
 
   public String toString(FieldDescriptor field, Object value) {
-    return TextFormat.printer()
+    if (!this.isSingleLine) {
+      return TextFormat.debugFormatPrinter().printFieldToString(field, value);
+    }
+    return TextFormat.debugFormatPrinter()
         .emittingSingleLine(this.isSingleLine)
-        .enablingSafeDebugFormat(true)
         .printFieldToString(field, value);
   }
 
   public String toString(UnknownFieldSet fields) {
-    return TextFormat.printer()
+    if (!this.isSingleLine) {
+      return TextFormat.debugFormatPrinter().printToString(fields);
+    }
+    return TextFormat.debugFormatPrinter()
         .emittingSingleLine(this.isSingleLine)
-        .enablingSafeDebugFormat(true)
         .printToString(fields);
   }
 

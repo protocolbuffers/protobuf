@@ -22,7 +22,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -41,6 +40,14 @@ namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
   return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
+}
+
+std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {
+  size_t last_slash = file.name().find_last_of('/');
+  std::string dir = last_slash == std::string::npos
+                        ? ""
+                        : file.name().substr(0, last_slash + 1);
+  return absl::StrCat(dir, ctx.opts().generated_entry_point_rs_file_name);
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -232,7 +239,11 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
 
 std::string RustInternalModuleName(const FileDescriptor& file) {
   return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {{"_", "__"}, {"/", "_s"}}));
+      absl::StrReplaceAll(StripProto(file.name()), {
+                                                       {"_", "__"},
+                                                       {"/", "_s"},
+                                                       {"-", "__"},
+                                                   }));
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {

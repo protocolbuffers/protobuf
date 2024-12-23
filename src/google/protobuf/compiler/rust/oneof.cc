@@ -151,7 +151,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              }
            }},
       },
-      // TODO: Revisit if isize is the optimal repr for this enum.
       // Note: This enum deliberately has a 'msg lifetime associated with it
       // even if all fields were scalars; we could conditionally exclude the
       // lifetime under that case, but it would mean changing the .proto file
@@ -161,7 +160,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
       #[non_exhaustive]
       #[derive(Debug, Clone, Copy)]
       #[allow(dead_code)]
-      #[repr(isize)]
+      #[repr(u32)]
       pub enum $view_enum_name$<'msg> {
         $view_fields$
 

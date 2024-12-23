@@ -90,7 +90,7 @@ class ModuleFileFunctions(object):
   def use_repo(self, *args, **kwargs):
     pass
 
-  def use_extension(self, *args):
+  def use_extension(self, *args, **kwargs):
     return ExtensionFunctions()
 
 

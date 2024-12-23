@@ -99,6 +99,11 @@
 #pragma pop_macro("linux")
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_NO_DATA
+#pragma pop_macro("NO_DATA")
+#undef PROTOBUF_DID_UNDEF_NO_DATA
+#endif
+
 #ifdef _WIN32
 #pragma pop_macro("CompareString")
 #pragma pop_macro("CREATE_NEW")

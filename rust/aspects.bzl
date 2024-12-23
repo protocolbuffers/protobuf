@@ -106,6 +106,12 @@ def _generate_rust_gencode(
         proto_info = proto_info,
         extension = ".{}.pb.rs".format("u" if is_upb else "c"),
     )
+
+    entry_point_rs_output = actions.declare_file(
+        "{}.generated.{}.rs".format(ctx.label.name, "u" if is_upb else "c"),
+        sibling = proto_info.direct_sources[0],
+    )
+
     if is_upb:
         cc_outputs = []
     else:
@@ -117,9 +123,10 @@ def _generate_rust_gencode(
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={},generated_entry_point_rs_file_name={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
+            entry_point_rs_output.basename,
         ),
     )
 
@@ -128,10 +135,10 @@ def _generate_rust_gencode(
         proto_info = proto_info,
         additional_inputs = depset(direct = [crate_mapping]),
         additional_args = additional_args,
-        generated_files = rs_outputs + cc_outputs,
+        generated_files = [entry_point_rs_output] + rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
     )
-    return (rs_outputs, cc_outputs)
+    return (entry_point_rs_output, rs_outputs, cc_outputs)
 
 def _get_crate_info(providers):
     for provider in providers:
@@ -316,7 +323,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         mapping_for_current_target,
     )
 
-    (gencode, thunks) = _generate_rust_gencode(
+    (entry_point_rs_output, rs_gencode, cc_thunks_gencode) = _generate_rust_gencode(
         ctx,
         target[ProtoInfo],
         proto_lang_toolchain,
@@ -338,7 +345,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             attr = attr,
             cc_toolchain = cc_toolchain,
             cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
-        ) for thunk in thunks])
+        ) for thunk in cc_thunks_gencode])
 
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
@@ -357,8 +364,8 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         dep_variant_info = _compile_rust(
             ctx = ctx,
             attr = ctx.rule.attr,
-            src = gencode[0],
-            extra_srcs = gencode[1:],
+            src = entry_point_rs_output,
+            extra_srcs = rs_gencode,
             deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
             runtime = runtime,
         )

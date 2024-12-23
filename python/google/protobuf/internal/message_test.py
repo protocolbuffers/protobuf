@@ -40,7 +40,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor
 from google.protobuf import message
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -50,7 +50,7 @@ UCS2_MAXUNICODE = 65535
 
 warnings.simplefilter('error', DeprecationWarning)
 
-@_parameterized.named_parameters(('_proto2', unittest_pb2),
+@parameterized.named_parameters(('_proto2', unittest_pb2),
                                 ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
@@ -1278,11 +1278,15 @@ class MessageTest(unittest.TestCase):
   def testDir(self, message_module):
     m = message_module.TestAllTypes()
     attributes = dir(m)
-    self.assertGreaterEqual(len(attributes), 55)
+    self.assertGreaterEqual(len(attributes), 124)
+
+    attribute_set = set(attributes)
     self.assertIn('DESCRIPTOR', attributes)
+    self.assertIn('oneof_string', attribute_set)
+    self.assertIn('optional_double', attribute_set)
+    self.assertIn('repeated_float', attribute_set)
 
     class_attributes = dir(type(m))
-    attribute_set = set(attributes)
     for attr in class_attributes:
       if attr != 'Extensions':
         self.assertIn(attr, attribute_set)
@@ -1456,22 +1460,14 @@ class Proto2Test(unittest.TestCase):
     """Assigning an invalid enum number is not allowed for closed enums."""
     m = unittest_pb2.TestAllTypes()
 
-    # TODO Enable these once upb's behavior is made conformant.
-    if api_implementation.Type() != 'upb':
-      # Can not assign unknown enum to closed enums.
-      with self.assertRaises(ValueError) as _:
-        m.optional_nested_enum = 1234567
-      self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
-      # Assignment is a different code path than append for the C++ impl.
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
-      with self.assertRaises(ValueError):
-        m.repeated_nested_enum[0] = 123456
-    else:
+    # Can not assign unknown enum to closed enums.
+    with self.assertRaises(ValueError) as _:
       m.optional_nested_enum = 1234567
-      m.repeated_nested_enum.append(1234567)
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
+    self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
+    # Assignment is a different code path than append for the C++ impl.
+    m.repeated_nested_enum.append(2)
+    m.repeated_nested_enum[0] = 2
+    with self.assertRaises(ValueError):
       m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.

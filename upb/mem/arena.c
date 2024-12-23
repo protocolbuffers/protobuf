@@ -21,9 +21,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static UPB_ATOMIC(size_t) max_block_size = 32 << 10;
+static UPB_ATOMIC(size_t) g_max_block_size = 32 << 10;
 
-void upb_Arena_SetMaxBlockSize(size_t max) { max_block_size = max; }
+void upb_Arena_SetMaxBlockSize(size_t max) {
+  upb_Atomic_Store(&g_max_block_size, max, memory_order_relaxed);
+}
 
 typedef struct upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
@@ -264,8 +266,15 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
 static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return false;
-  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
-  size_t last_size = last_block != NULL ? last_block->size : 128;
+  size_t last_size = 128;
+  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
+  if (last_block) {
+    last_size = a->UPB_PRIVATE(end) - (char*)last_block;
+  }
+
+  // Relaxed order is safe here as we don't need any ordering with the setter.
+  size_t max_block_size =
+      upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
 
   // Don't naturally grow beyond the max block size.
   size_t clamped_size = UPB_MIN(last_size * 2, max_block_size);

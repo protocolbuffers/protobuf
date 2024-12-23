@@ -274,7 +274,7 @@ void WriteModelPublicDeclaration(
         friend absl::StatusOr<$2>(::hpb::Parse<$2>(absl::string_view bytes));
         friend absl::StatusOr<$2>(::hpb::Parse<$2>(
             absl::string_view bytes,
-            const ::hpb::ExtensionRegistry& extension_registry, int options));
+            const ::hpb::ExtensionRegistry& extension_registry));
         friend upb_Arena* hpb::interop::upb::GetArena<$0>($0* message);
         friend upb_Arena* hpb::interop::upb::GetArena<$0>(::hpb::Ptr<$0> message);
         friend $0(hpb::interop::upb::MoveMessage<$0>(upb_Message* msg,

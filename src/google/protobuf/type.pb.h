@@ -232,8 +232,7 @@ inline bool Syntax_Parse(absl::string_view name, Syntax* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   inline Option() : Option(nullptr) {}
@@ -446,8 +445,7 @@ class PROTOBUF_EXPORT Option final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   inline Field() : Field(nullptr) {}
@@ -830,8 +828,7 @@ class PROTOBUF_EXPORT Field final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   inline EnumValue() : EnumValue(nullptr) {}
@@ -1058,8 +1055,7 @@ class PROTOBUF_EXPORT EnumValue final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Type final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   inline Type() : Type(nullptr) {}
@@ -1363,8 +1359,7 @@ class PROTOBUF_EXPORT Type final
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum final
-    : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   inline Enum() : Enum(nullptr) {}
@@ -1802,9 +1797,8 @@ inline std::string* Type::mutable_oneofs(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void Type::set_oneofs(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_oneofs()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_oneofs()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
 }
 template <typename Arg_, typename... Args_>

@@ -131,8 +131,7 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT Version final
-    : public ::google::protobuf::Message
+class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   inline Version() : Version(nullptr) {}
@@ -368,8 +367,7 @@ class PROTOC_EXPORT Version final
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File final
-    : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
@@ -619,8 +617,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse final
-    : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
@@ -896,8 +893,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest final
-    : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
@@ -1379,9 +1375,8 @@ inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index)
 }
 template <typename Arg_, typename... Args_>
 inline void CodeGeneratorRequest::set_file_to_generate(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(
-      *_internal_mutable_file_to_generate()->Mutable(index),
-      std::forward<Arg_>(value), args... );
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_file_to_generate()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 template <typename Arg_, typename... Args_>
