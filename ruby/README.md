@@ -51,12 +51,12 @@ puts MyTestMessage.encode_json(mymessage)
 
 Installation from Source (Building Gem)
 ---------------------------------------
- 
+
 
 Protocol Buffers has a new experimental backend that uses the
 [ffi](https://github.com/ffi/ffi) gem to provide a unified C-based
 implementation across Ruby interpreters based on
-[UPB](https://github.com/protocolbuffers/upb). For now, use of the FFI
+[UPB](https://github.com/protocolbuffers/protobuf/tree/main/upb). For now, use of the FFI
 implementation is opt-in. If any of the following are true, the traditional
 platform-native implementations (MRI-ruby based on CRuby, Java based on JRuby)
 are used instead of the new FFI-based implementation: 1. `ffi` and
