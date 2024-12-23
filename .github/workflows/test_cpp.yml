@@ -184,15 +184,18 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        type: [package, fetch]
+        type: [package, static, fetch]
         include:
           # Set defaults
           - type: package
             name: Install
-            flags: -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON
+            flags: -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON -Dprotobuf_BUILD_SHARED_LIBS=ON
+          - type: static
+            name: Install (static)
+            flags: -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=ON -Dprotobuf_BUILD_SHARED_LIBS=OFF
           - type: fetch
             name: Install (Fetch)
-            flags: -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
+            flags: -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON -Dprotobuf_BUILD_SHARED_LIBS=ON
             continuous-only: true
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -219,7 +222,9 @@ jobs:
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
             ${{ matrix.flags }}
-            -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
+            \&\&
+            cp build/install_manifest.txt .
+            \&\&
             /test.sh
             ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
@@ -227,6 +232,66 @@ jobs:
             -Dprotobuf_BUILD_CONFORMANCE=ON
             -DCMAKE_CXX_STANDARD=17
             ${{ matrix.flags }}
+
+      - name: Clean up install manifest
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        run: |
+          set -ex
+          mkdir manifest
+          cat install_manifest.txt | sort | sed 's:/usr/local/::g' > manifest/all.txt
+          cat manifest/all.txt | grep -E '^include/' | grep -vE 'internal' | sed 's:^include/::g' > manifest/include.txt
+          cat manifest/all.txt | grep -E '^bin/' | grep -vE '\-[0-9]+\.[0-9]+\.[0-9]+$' | sed 's:^bin/::g' > manifest/bin.txt
+          cat manifest/all.txt | grep -E '^lib/' | grep -vE '\.[0-9]+\.[0-9]+\.[0-9]+$' | sed 's:^lib/::g' > manifest/lib.txt
+
+      - name: Upload install manifest
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          name: installed_files_${{ matrix.type }}
+          path: manifest/*.txt
+
+  install-manifests:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        type: [include, bin, lib]
+        build: [static, package]
+        include:
+            - type: lib
+              build: static
+              golden: 'lib_static'
+            - type: lib
+              build: package
+              golden: 'lib_shared'
+    name: Check Installed Files
+    needs: linux-cmake-install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v3
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Download manifest
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        with:
+          name: installed_files_${{ matrix.build }}
+          path: ${{ matrix.build }}
+      
+      - name: Compare against golden
+        run: |
+          set +e
+          GOLDEN_FILE=cmake/installed_${{ matrix.golden || matrix.type }}_golden.txt
+          DIFF="$(diff -u ${GOLDEN_FILE} ${{ matrix.build }}/${{ matrix.type }}.txt)"
+          if [ -n "$DIFF" ]; then
+            echo "Installed files do not match goldens!"
+            echo "If this is expected, please update the golden file: ${GOLDEN_FILE}"
+            echo "The following diffs were found:"
+            echo "$DIFF"
+            exit 1
+          else
+            echo "Installed files match goldens."
+          fi
 
   # This test should always be skipped on presubmit
   linux-cmake-examples:
