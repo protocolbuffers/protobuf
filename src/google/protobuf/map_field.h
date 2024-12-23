@@ -582,6 +582,10 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   TypeDefinedMapFieldBase(const VTable* vtable, Arena* arena)
       : MapFieldBase(vtable, arena), map_(arena) {}
 
+  TypeDefinedMapFieldBase(const VTable* vtable, Arena* arena,
+                          const TypeDefinedMapFieldBase& from)
+      : MapFieldBase(vtable, arena), map_(arena, from.GetMap()) {}
+
  protected:
   ~TypeDefinedMapFieldBase() { map_.~Map(); }
 
@@ -657,9 +661,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
   MapField(InternalVisibility, Arena* arena) : MapField(arena) {}
   MapField(InternalVisibility, Arena* arena, const MapField& from)
-      : MapField(arena) {
-    this->MergeFromImpl(*this, from);
-  }
+      : TypeDefinedMapFieldBase<Key, T>(&kVTable, arena, from) {}
 
  private:
   typedef void InternalArenaConstructable_;

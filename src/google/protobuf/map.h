@@ -27,19 +27,19 @@
 #include <type_traits>
 #include <utility>
 
-#include "absl/base/optimization.h"
-#include "absl/memory/memory.h"
-#include "google/protobuf/message_lite.h"
-
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -365,6 +365,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
   static constexpr map_index_t kMinTableSize = 16 / sizeof(void*);
+  static constexpr map_index_t kMaxTableSize = map_index_t{1} << 31;
 
  public:
   Arena* arena() const { return arena_; }
@@ -792,6 +793,25 @@ class KeyMapBase : public UntypedMapBase {
     return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
   }
 
+  // For a particular size, calculate the lowest capacity `cap` where
+  // `size <= CalculateHiCutoff(cap)`.
+  static size_type CalculateCapacityForSize(size_type size) {
+    ABSL_DCHECK_NE(size, 0u);
+
+    if (size > kMaxTableSize / 2) {
+      return kMaxTableSize;
+    }
+
+    size_t capacity = size_type{1} << (std::numeric_limits<size_type>::digits -
+                                       absl::countl_zero(size - 1));
+
+    if (size > CalculateHiCutoff(capacity)) {
+      capacity *= 2;
+    }
+
+    return std::max<size_type>(capacity, kMinTableSize);
+  }
+
   void AssertLoadFactor() const {
     ABSL_DCHECK_LE(num_elements_, CalculateHiCutoff(num_buckets_));
   }
@@ -812,7 +832,9 @@ class KeyMapBase : public UntypedMapBase {
     // practice, this seems fine.
     if (ABSL_PREDICT_FALSE(new_size > hi_cutoff)) {
       if (num_buckets_ <= max_size() / 2) {
-        Resize(num_buckets_ * 2);
+        Resize(kMinTableSize > kGlobalEmptyTableSize * 2
+                   ? std::max(kMinTableSize, num_buckets_ * 2)
+                   : num_buckets_ * 2);
         return true;
       }
     } else if (ABSL_PREDICT_FALSE(new_size <= lo_cutoff &&
@@ -836,13 +858,34 @@ class KeyMapBase : public UntypedMapBase {
     return false;
   }
 
+  // Interpret `head` as a linked list and insert all the nodes into `this`.
+  // REQUIRES: this->empty()
+  // REQUIRES: the input nodes have unique keys
+  PROTOBUF_NOINLINE void MergeIntoEmpty(NodeBase* head, size_t num_nodes) {
+    ABSL_DCHECK_EQ(size(), size_t{0});
+    ABSL_DCHECK_NE(num_nodes, size_t{0});
+    if (const map_index_t needed_capacity = CalculateCapacityForSize(num_nodes);
+        needed_capacity != this->num_buckets_) {
+      Resize(std::max(kMinTableSize, needed_capacity));
+    }
+    num_elements_ = num_nodes;
+    AssertLoadFactor();
+    while (head != nullptr) {
+      KeyNode* node = static_cast<KeyNode*>(head);
+      head = head->next;
+      absl::PrefetchToLocalCacheNta(head);
+      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+    }
+  }
+
   // Resize to the given number of buckets.
   void Resize(map_index_t new_num_buckets) {
+    ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
+    ABSL_DCHECK(absl::has_single_bit(new_num_buckets));
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
-      ABSL_DCHECK_GE(kMinTableSize, new_num_buckets);
-      num_buckets_ = index_of_first_non_null_ = kMinTableSize;
+      num_buckets_ = index_of_first_non_null_ = new_num_buckets;
       table_ = CreateEmptyTable(num_buckets_);
       return;
     }
@@ -997,7 +1040,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
  private:
   Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
-    insert(other.begin(), other.end());
+    CopyFromImpl(other);
   }
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
@@ -1343,7 +1386,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   Map& operator=(const Map& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
       clear();
-      insert(other.begin(), other.end());
+      CopyFromImpl(other);
     }
     return *this;
   }
@@ -1352,12 +1395,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO: optimize this. The temporary copy can be allocated
-      // in the same arena as the other message, and the "other = copy" can
-      // be replaced with the fast-path swap above.
-      Map copy = *this;
-      *this = other;
-      other = copy;
+      size_t other_size = other.size();
+      Node* other_copy = this->CloneFromOther(other);
+      other = *this;
+      this->clear();
+      if (other_size != 0) {
+        this->MergeIntoEmpty(other_copy, other_size);
+      }
     }
   }
 
@@ -1406,18 +1450,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K, typename... Args>
-  std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
-    auto p = this->FindHelper(TS::ToView(k));
-    internal::map_index_t b = p.bucket;
-    // Case 1: key was already present.
-    if (p.node != nullptr)
-      return std::make_pair(iterator(internal::UntypedMapIterator{
-                                static_cast<Node*>(p.node), this, p.bucket}),
-                            false);
-    // Case 2: insert.
-    if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      b = this->BucketNumber(TS::ToView(k));
-    }
+  PROTOBUF_ALWAYS_INLINE Node* CreateNode(K&& k, Args&&... args) {
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
@@ -1437,7 +1470,50 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // Note: if `T` is arena constructible, `Args` needs to be empty.
     Arena::CreateInArenaStorage(&node->kv.second, this->arena_,
                                 std::forward<Args>(args)...);
+    return node;
+  }
 
+  // Copy all elements from `other`, using the arena from `this`.
+  // Return them as a linked list, using the `next` pointer in the node.
+  PROTOBUF_NOINLINE Node* CloneFromOther(const Map& other) {
+    Node* head = nullptr;
+    for (const auto& [key, value] : other) {
+      Node* new_node;
+      if constexpr (std::is_base_of_v<MessageLite, mapped_type>) {
+        new_node = CreateNode(key);
+        new_node->kv.second = value;
+      } else {
+        new_node = CreateNode(key, value);
+      }
+      new_node->next = head;
+      head = new_node;
+    }
+    return head;
+  }
+
+  void CopyFromImpl(const Map& other) {
+    if (other.empty()) return;
+    // We split the logic in two: first we clone the data which requires
+    // Key/Value types, then we insert them all which only requires Key.
+    // That way we reduce code duplication.
+    this->MergeIntoEmpty(CloneFromOther(other), other.size());
+  }
+
+  template <typename K, typename... Args>
+  std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
+    auto p = this->FindHelper(TS::ToView(k));
+    internal::map_index_t b = p.bucket;
+    // Case 1: key was already present.
+    if (p.node != nullptr) {
+      return std::make_pair(iterator(internal::UntypedMapIterator{
+                                static_cast<Node*>(p.node), this, p.bucket}),
+                            false);
+    }
+    // Case 2: insert.
+    if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
+      b = this->BucketNumber(TS::ToView(k));
+    }
+    auto* node = CreateNode(std::forward<K>(k), std::forward<Args>(args)...);
     this->InsertUnique(b, node);
     ++this->num_elements_;
     return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
