@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/testing/file.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -21,6 +20,33 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
+
+// We would love to use //file/base here, but that creates a dependency cycle,
+// since //file/base transitively depends on protoc.
+namespace {
+struct File {
+  static absl::Status ReadFileToString(const std::string& name,
+                                       std::string* output, bool text_mode) {
+    char buffer[1024];
+    FILE* file = fopen(name.c_str(), text_mode ? "rt" : "rb");
+    if (file == nullptr) return absl::NotFoundError("Could not open file");
+
+    while (true) {
+      size_t n = fread(buffer, 1, sizeof(buffer), file);
+      if (n <= 0) break;
+      output->append(buffer, n);
+    }
+
+    int error = ferror(file);
+    if (fclose(file) != 0) return absl::InternalError("Failed to close file");
+    if (error != 0) {
+      return absl::InternalError(absl::StrCat("Failed to read the file ", name,
+                                              ". Error code: ", error));
+    }
+    return absl::OkStatus();
+  }
+};
+}  // namespace
 
 absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
 GetImportPathToCrateNameMap(const Options* opts) {
