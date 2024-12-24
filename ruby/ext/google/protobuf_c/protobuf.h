@@ -16,12 +16,6 @@
 #undef NDEBUG
 #endif
 
-#include <ruby/version.h>
-
-#if RUBY_API_VERSION_CODE < 20700
-#error Protobuf requires Ruby >= 2.7
-#endif
-
 #include <assert.h>  // Must be included after the NDEBUG logic above.
 #include <ruby/encoding.h>
 #include <ruby/vm.h>
