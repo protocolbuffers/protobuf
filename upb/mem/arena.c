@@ -28,8 +28,7 @@ void upb_Arena_SetMaxBlockSize(size_t max) {
 }
 
 typedef struct upb_MemBlock {
-  // Atomic only for the benefit of SpaceAllocated().
-  UPB_ATOMIC(struct upb_MemBlock*) next;
+  struct upb_MemBlock* next;
   uint32_t size;
   // Data follows.
 } upb_MemBlock;
@@ -62,9 +61,11 @@ typedef struct upb_ArenaInternal {
   // == self when no other list members.
   UPB_ATOMIC(struct upb_ArenaInternal*) tail;
 
-  // Linked list of blocks to free/cleanup. Atomic only for the benefit of
-  // upb_Arena_SpaceAllocated().
-  UPB_ATOMIC(upb_MemBlock*) blocks;
+  // Linked list of blocks to free/cleanup.
+  upb_MemBlock* blocks;
+
+  // Total space allocated in blocks, atomic only for SpaceAllocated
+  UPB_ATOMIC(uint32_t) space_allocated;
 } upb_ArenaInternal;
 
 // All public + private state for an arena.
@@ -207,32 +208,13 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
   size_t local_fused_count = 0;
 
   while (ai != NULL) {
-    upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
-    while (block != NULL) {
-      memsize += sizeof(upb_MemBlock) + block->size;
-      block = upb_Atomic_Load(&block->next, memory_order_relaxed);
-    }
+    memsize += upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
     ai = upb_Atomic_Load(&ai->next, memory_order_relaxed);
     local_fused_count++;
   }
 
   if (fused_count) *fused_count = local_fused_count;
   return memsize;
-}
-
-bool UPB_PRIVATE(_upb_Arena_Contains)(const upb_Arena* a, void* ptr) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  UPB_ASSERT(ai);
-
-  upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
-  while (block) {
-    uintptr_t beg = (uintptr_t)block;
-    uintptr_t end = beg + block->size;
-    if ((uintptr_t)ptr >= beg && (uintptr_t)ptr < end) return true;
-    block = upb_Atomic_Load(&block->next, memory_order_relaxed);
-  }
-
-  return false;
 }
 
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
@@ -251,10 +233,10 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ptr;
 
-  // Insert into linked list.
   block->size = (uint32_t)size;
-  upb_Atomic_Init(&block->next, ai->blocks);
-  upb_Atomic_Store(&ai->blocks, block, memory_order_release);
+  // Insert into linked list.
+  block->next = ai->blocks;
+  ai->blocks = block;
 
   a->UPB_PRIVATE(ptr) = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
   a->UPB_PRIVATE(end) = UPB_PTR_AT(block, size, char);
@@ -267,7 +249,7 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return false;
   size_t last_size = 128;
-  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
+  upb_MemBlock* last_block = ai->blocks;
   if (last_block) {
     last_size = a->UPB_PRIVATE(end) - (char*)last_block;
   }
@@ -288,6 +270,13 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
 
   if (!block) return false;
   _upb_Arena_AddBlock(a, block, block_size);
+  // Atomic add not required here, as threads won't race allocating blocks, plus
+  // atomic fetch-add is slower than load/add/store on arm devices compiled
+  // targetting pre-v8.1.
+  uint32_t old_block_size =
+      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+  upb_Atomic_Store(&ai->space_allocated, block_size + old_block_size,
+                   memory_order_relaxed);
   UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
   return true;
 }
@@ -316,7 +305,8 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
-  upb_Atomic_Init(&a->body.blocks, NULL);
+  upb_Atomic_Init(&a->body.space_allocated, n);
+  a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
 
   _upb_Arena_AddBlock(&a->head, mem, n);
@@ -355,7 +345,8 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
-  upb_Atomic_Init(&a->body.blocks, NULL);
+  upb_Atomic_Init(&a->body.space_allocated, 0);
+  a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
 
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
@@ -374,13 +365,12 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     upb_ArenaInternal* next_arena =
         (upb_ArenaInternal*)upb_Atomic_Load(&ai->next, memory_order_acquire);
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
-    upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
+    upb_MemBlock* block = ai->blocks;
     upb_AllocCleanupFunc* alloc_cleanup = *ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
-      upb_MemBlock* next_block =
-          upb_Atomic_Load(&block->next, memory_order_acquire);
-      upb_free(block_alloc, block);
+      upb_MemBlock* next_block = block->next;
+      upb_free_sized(block_alloc, block, block->size);
       block = next_block;
     }
     if (alloc_cleanup != NULL) {
@@ -601,8 +591,7 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(upb_Arena* des, const upb_Arena* src) {
 
   *des = *src;
   desi->block_alloc = srci->block_alloc;
-  upb_MemBlock* blocks = upb_Atomic_Load(&srci->blocks, memory_order_relaxed);
-  upb_Atomic_Init(&desi->blocks, blocks);
+  desi->blocks = srci->blocks;
 }
 
 void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
@@ -610,6 +599,5 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
   upb_ArenaInternal* srci = upb_Arena_Internal(src);
 
   *des = *src;
-  upb_MemBlock* blocks = upb_Atomic_Load(&srci->blocks, memory_order_relaxed);
-  upb_Atomic_Store(&desi->blocks, blocks, memory_order_relaxed);
+  desi->blocks = srci->blocks;
 }
