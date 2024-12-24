@@ -6,8 +6,8 @@
 namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * A single field of a message type.
@@ -101,7 +101,7 @@ class Field extends \Google\Protobuf\Internal\Message
      *           types. The first type has index 1; zero means the type is not in the list.
      *     @type bool $packed
      *           Whether to use alternative packed wire representation.
-     *     @type array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $options
+     *     @type \Google\Protobuf\Option[] $options
      *           The protocol buffer options.
      *     @type string $json_name
      *           The field JSON name.
@@ -304,7 +304,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The protocol buffer options.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 9;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Option>
      */
     public function getOptions()
     {
@@ -315,7 +315,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The protocol buffer options.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 9;</code>
-     * @param array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Option[] $var
      * @return $this
      */
     public function setOptions($var)
