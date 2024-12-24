@@ -902,6 +902,18 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
+#ifdef PROTOBUF_NONNULL
+#error PROTOBUF_NONNULL was previously defined
+#endif
+#if defined(__clang__) && !defined(__OBJC__) && \
+    ABSL_HAVE_FEATURE(nullability_on_classes)
+#define PROTOBUF_NONNULL _Nonnull
+#define PROTOBUF_NULLABLE _Nullable
+#else
+#define PROTOBUF_NONNULL
+#define PROTOBUF_NULLABLE
+#endif
+
 namespace google {
 namespace protobuf {
 namespace internal {
