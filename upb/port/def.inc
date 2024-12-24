@@ -320,8 +320,14 @@ Error, UINTPTR_MAX is undefined
 #else
 #define UPB_CLANG_ASAN 0
 #endif
+#if __has_feature(thread_sanitizer)
+#define UPB_CLANG_TSAN 1
+#else
+#define UPB_CLANG_TSAN 0
+#endif
 #else
 #define UPB_CLANG_ASAN 0
+#define UPB_CLANG_TSAN 0
 #endif
 
 #if defined(__SANITIZE_ADDRESS__) || UPB_CLANG_ASAN
@@ -346,6 +352,21 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
   ((void)(addr), (void)(size))
 #define UPB_UNPOISON_MEMORY_REGION(addr, size) \
   ((void)(addr), (void)(size))
+#endif
+
+#if defined(__SANITIZE_THREAD__) || UPB_CLANG_TSAN
+#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published
+#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE;
+#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
+  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE);
+#define UPB_TSAN_PUBLISH 1
+#else
+#define UPB_TSAN_PUBLISHED_MEMBER
+#define UPB_TSAN_INIT_PUBLISHED(ptr)
+#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
+  do {                                \
+  } while (false && (ptr))
+#define UPB_TSAN_PUBLISH 0
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
