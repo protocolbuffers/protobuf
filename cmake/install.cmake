@@ -87,7 +87,7 @@ endif ()
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
   ${libprotobuf_hdrs}
-  ${libprotoc_hdrs}
+  ${libprotoc_public_hdrs}
   ${wkt_protos_files}
   ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
@@ -120,7 +120,6 @@ foreach(_header ${protobuf_HEADERS})
       break()
     endif()
   endforeach()
-  message(${_from_dir} "-" ${_header})
 
   # Escape _from_dir for regex special characters in the directory name.
   string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" _from_dir_regexp "${_from_dir}")
