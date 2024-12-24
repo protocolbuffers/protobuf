@@ -11,7 +11,8 @@
  * to be freed.  However the Arena does allow users to register cleanup
  * functions that will run when the arena is destroyed.
  *
- * A upb_Arena is *not* thread-safe.
+ * A upb_Arena is *not* thread-safe, although some functions related to its
+ * lifetime are.
  *
  * You could write a thread-safe arena allocator that satisfies the
  * upb_alloc interface, but it would not be as efficient for the
@@ -48,16 +49,27 @@ UPB_API void upb_Arena_Free(upb_Arena* a);
 // freed.
 UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
                                        upb_AllocCleanupFunc* func);
+
+// Fuses the lifetime of two arenas, such that no arenas that have been
+// transitively fused together will be freed until all of them have reached a
+// zero refcount. This operation is safe to use concurrently from multiple
+// threads.
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
+
+// This operation is safe to use concurrently from multiple threads.
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
 // Returns the upb_alloc used by the arena.
 UPB_API upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a);
 
+// This operation is safe to use concurrently from multiple threads.
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
+// This operation is safe to use concurrently from multiple threads.
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
+// This operation is safe to use concurrently from multiple threads.
 size_t upb_Arena_SpaceAllocated(upb_Arena* a, size_t* fused_count);
+// This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a);
 
 UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
@@ -76,6 +88,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 //
 // This API is meant for experimentation only. It will likely be removed in
 // the future.
+// This operation is safe to use concurrently from multiple threads.
 void upb_Arena_SetMaxBlockSize(size_t max);
 
 // Shrinks the last alloc from arena.

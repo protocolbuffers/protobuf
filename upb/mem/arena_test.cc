@@ -9,11 +9,15 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
+#include <cstdlib>
 #include <memory>
 #include <thread>
 #include <vector>
 
+#include <benchmark/benchmark.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/thread_annotations.h"
@@ -247,9 +251,139 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
   for (auto& t : threads) t.join();
 }
 
+static void* checking_global_allocfunc(upb_alloc* alloc, void* ptr,
+                                       size_t oldsize, size_t size) {
+  int header_size = std::max(alignof(max_align_t), sizeof(int));
+  if (ptr) {
+    ptr = UPB_PTR_AT(ptr, -header_size, void);
+    UPB_ASSERT(*reinterpret_cast<int*>(ptr) == 0x5AFE);
+  }
+  if (size == 0) {
+    free(ptr);
+    return nullptr;
+  }
+  void* ret;
+  if (oldsize == 0) {
+    ret = malloc(size + header_size);
+  } else {
+    ret = realloc(ptr, size + header_size);
+  }
+  if (ret) {
+    *reinterpret_cast<int*>(ret) = 0x5AFE;
+    return UPB_PTR_AT(ret, header_size, void);
+  }
+  return ret;
+}
+
+TEST(ArenaTest, FuzzFuseFreeAllocatorRace) {
+  upb_Arena_SetMaxBlockSize(128);
+  upb_alloc_func* old = upb_alloc_global.func;
+  upb_alloc_global.func = checking_global_allocfunc;
+  absl::Cleanup reset_max_block_size = [old] {
+    upb_Arena_SetMaxBlockSize(32 << 10);
+    upb_alloc_global.func = old;
+  };
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  size_t thread_count = 10;
+  std::vector<std::array<upb_Arena*, 11>> arenas;
+  for (size_t i = 0; i < 10000; ++i) {
+    std::array<upb_Arena*, 11> arr;
+    arr[0] = upb_Arena_New();
+    for (size_t j = 1; j < thread_count + 1; ++j) {
+      arr[j] = upb_Arena_New();
+      upb_Arena_Fuse(arr[j - 1], arr[j]);
+    }
+    arenas.push_back(arr);
+  }
+  for (size_t i = 0; i < thread_count; ++i) {
+    size_t tid = i;
+    threads.emplace_back([&, tid]() {
+      size_t arenaCtr = 0;
+      while (!done.HasBeenNotified() && arenaCtr < arenas.size()) {
+        upb_Arena* read = arenas[arenaCtr++][tid];
+        (void)upb_Arena_Malloc(read, 128);
+        (void)upb_Arena_Malloc(read, 128);
+        upb_Arena_Free(read);
+      }
+      while (arenaCtr < arenas.size()) {
+        upb_Arena_Free(arenas[arenaCtr++][tid]);
+      }
+    });
+  }
+  auto end = absl::Now() + absl::Seconds(2);
+  size_t arenaCtr = 0;
+  while (absl::Now() < end && arenaCtr < arenas.size()) {
+    upb_Arena* read = arenas[arenaCtr++][thread_count];
+    (void)upb_Arena_Malloc(read, 128);
+    (void)upb_Arena_Malloc(read, 128);
+    upb_Arena_Free(read);
+  }
+  done.Notify();
+  while (arenaCtr < arenas.size()) {
+    upb_Arena_Free(arenas[arenaCtr++][thread_count]);
+  }
+  for (auto& t : threads) t.join();
+}
+
+TEST(ArenaTest, FuzzFuseSpaceAllocatedRace) {
+  upb_Arena_SetMaxBlockSize(128);
+  absl::Cleanup reset_max_block_size = [] {
+    upb_Arena_SetMaxBlockSize(32 << 10);
+  };
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  std::vector<upb_Arena*> arenas;
+  size_t thread_count = 10;
+  size_t fuses_per_thread = 10000;
+  for (int i = 0; i < 10000; ++i) {
+    arenas.push_back(upb_Arena_New());
+    for (size_t j = 0; j < thread_count; ++j) {
+      upb_Arena_IncRefFor(arenas[i], nullptr);
+    }
+  }
+  for (size_t i = 0; i < thread_count; ++i) {
+    threads.emplace_back([&]() {
+      size_t arenaCtr = 0;
+      while (!done.HasBeenNotified() && arenaCtr < arenas.size()) {
+        upb_Arena* read = arenas[arenaCtr++];
+        for (size_t j = 0; j < fuses_per_thread; ++j) {
+          upb_Arena* fuse = upb_Arena_New();
+          upb_Arena_Fuse(read, fuse);
+          upb_Arena_Free(read);
+          read = fuse;
+        }
+        upb_Arena_Free(read);
+      }
+      while (arenaCtr < arenas.size()) {
+        upb_Arena_Free(arenas[arenaCtr++]);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  size_t arenaCtr = 0;
+  while (absl::Now() < end && arenaCtr < arenas.size()) {
+    upb_Arena* read = arenas[arenaCtr++];
+    size_t count;
+    size_t allocated;
+    do {
+      allocated = upb_Arena_SpaceAllocated(read, &count);
+      benchmark::DoNotOptimize(allocated);
+    } while (count < fuses_per_thread * thread_count);
+    upb_Arena_Free(read);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+  while (arenaCtr < arenas.size()) {
+    upb_Arena_Free(arenas[arenaCtr++]);
+  }
+}
+
 TEST(ArenaTest, FuzzAllocSpaceAllocatedRace) {
   Environment env;
-  upb_Arena_SetMaxBlockSize(512);
+  upb_Arena_SetMaxBlockSize(128);
   absl::Cleanup reset_max_block_size = [] {
     upb_Arena_SetMaxBlockSize(32 << 10);
   };
