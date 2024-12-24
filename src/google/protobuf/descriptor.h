@@ -130,6 +130,7 @@ namespace compiler {
 class CodeGenerator;
 class CommandLineInterface;
 namespace cpp {
+class CppGenerator;
 // Defined in helpers.h
 class Formatter;
 }  // namespace cpp
@@ -1078,6 +1079,14 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend const std::string& internal::DefaultValueStringAsString(
       const FieldDescriptor* field);
 
+  // Returns the original ctype specified in the .proto file.  This should not
+  // be relied on, as it no longer uniquely determines behavior.  The
+  // cpp_string_type() method should be used instead, which takes feature
+  // settings into account.  Needed by CppGenerator for validation only.
+  friend class compiler::cpp::CppGenerator;
+  int legacy_proto_ctype() const { return legacy_proto_ctype_; }
+  bool has_legacy_proto_ctype() const;
+
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
   bool has_optional_keyword() const;
@@ -1141,6 +1150,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Located here for bitpacking.
   bool in_real_oneof_ : 1;
 
+  // Actually an optional `CType`, but stored as uint8_t to save space.  This
+  // contains the original ctype option specified in the .proto file.
+  uint8_t legacy_proto_ctype_ : 2;
+
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
@@ -1198,7 +1211,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
