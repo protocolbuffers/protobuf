@@ -28,8 +28,7 @@ void upb_Arena_SetMaxBlockSize(size_t max) {
 }
 
 typedef struct upb_MemBlock {
-  // Atomic only for the benefit of SpaceAllocated().
-  UPB_ATOMIC(struct upb_MemBlock*) next;
+  struct upb_MemBlock* next;
   uint32_t size;
   // Data follows.
 } upb_MemBlock;
@@ -56,15 +55,19 @@ typedef struct upb_ArenaInternal {
   // == NULL at end of list.
   UPB_ATOMIC(struct upb_ArenaInternal*) next;
 
+  UPB_TSAN_PUBLISHED_MEMBER;
+
   // The last element of the linked list. This is present only as an
   // optimization, so that we do not have to iterate over all members for every
   // fuse.  Only significant for an arena root. In other cases it is ignored.
   // == self when no other list members.
   UPB_ATOMIC(struct upb_ArenaInternal*) tail;
 
-  // Linked list of blocks to free/cleanup. Atomic only for the benefit of
-  // upb_Arena_SpaceAllocated().
-  UPB_ATOMIC(upb_MemBlock*) blocks;
+  // Linked list of blocks to free/cleanup.
+  upb_MemBlock* blocks;
+
+  // Total space allocated in blocks, atomic only for SpaceAllocated
+  UPB_ATOMIC(size_t) space_allocated;
 } upb_ArenaInternal;
 
 // All public + private state for an arena.
@@ -165,39 +168,33 @@ void upb_Arena_LogFree(const upb_Arena* arena) {
 
 static upb_ArenaRoot _upb_Arena_FindRoot(const upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-  while (_upb_Arena_IsTaggedPointer(poc)) {
+  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_relaxed);
+  if (_upb_Arena_IsTaggedRefcount(poc)) {
+    // Fast, relaxed path - arenas that have never been fused only need relaxed
+    // memory order, since they're returning themselves and the refcount.
+    return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
+  }
+  // Slow path needs acquire order; reloading is cheaper than a fence on ARM
+  // (LDA vs DMB ISH). Even though this is a reread, we know it must be a tagged
+  // pointer because if this Arena isn't a root, it can't ever become one.
+  poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+  do {
     upb_ArenaInternal* next = _upb_Arena_PointerFromTagged(poc);
+    UPB_TSAN_CHECK_PUBLISHED(next);
     UPB_ASSERT(ai != next);
-    uintptr_t next_poc =
-        upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
+    poc = upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
 
-    if (_upb_Arena_IsTaggedPointer(next_poc)) {
+    if (_upb_Arena_IsTaggedPointer(poc)) {
       // To keep complexity down, we lazily collapse levels of the tree.  This
       // keeps it flat in the final case, but doesn't cost much incrementally.
       //
       // Path splitting keeps time complexity down, see:
       //   https://en.wikipedia.org/wiki/Disjoint-set_data_structure
-      //
-      // We can safely use a relaxed atomic here because all threads doing this
-      // will converge on the same value and we don't need memory orderings to
-      // be visible.
-      //
-      // This is true because:
-      // - If no fuses occur, this will eventually become the root.
-      // - If fuses are actively occurring, the root may change, but the
-      //   invariant is that `parent_or_count` merely points to *a* parent.
-      //
-      // In other words, it is moving towards "the" root, and that root may move
-      // further away over time, but the path towards that root will continue to
-      // be valid and the creation of the path carries all the memory orderings
-      // required.
-      UPB_ASSERT(ai != _upb_Arena_PointerFromTagged(next_poc));
-      upb_Atomic_Store(&ai->parent_or_count, next_poc, memory_order_relaxed);
+      UPB_ASSERT(ai != _upb_Arena_PointerFromTagged(poc));
+      upb_Atomic_Store(&ai->parent_or_count, poc, memory_order_release);
     }
     ai = next;
-    poc = next_poc;
-  }
+  } while (_upb_Arena_IsTaggedPointer(poc));
   return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
 }
 
@@ -207,12 +204,11 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
   size_t local_fused_count = 0;
 
   while (ai != NULL) {
-    upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
-    while (block != NULL) {
-      memsize += sizeof(upb_MemBlock) + block->size;
-      block = upb_Atomic_Load(&block->next, memory_order_relaxed);
-    }
-    ai = upb_Atomic_Load(&ai->next, memory_order_relaxed);
+    UPB_TSAN_CHECK_PUBLISHED(ai);
+    // Relaxed is safe - no subsequent reads depend this one
+    memsize += upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+
+    ai = upb_Atomic_Load(&ai->next, memory_order_acquire);
     local_fused_count++;
   }
 
@@ -220,28 +216,13 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
   return memsize;
 }
 
-bool UPB_PRIVATE(_upb_Arena_Contains)(const upb_Arena* a, void* ptr) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  UPB_ASSERT(ai);
-
-  upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
-  while (block) {
-    uintptr_t beg = (uintptr_t)block;
-    uintptr_t end = beg + block->size;
-    if ((uintptr_t)ptr >= beg && (uintptr_t)ptr < end) return true;
-    block = upb_Atomic_Load(&block->next, memory_order_relaxed);
-  }
-
-  return false;
-}
-
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  // These loads could probably be relaxed, but given that this is debug-only,
-  // it's not worth introducing a new variant for it.
+  UPB_TSAN_CHECK_PUBLISHED(ai);
   uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   while (_upb_Arena_IsTaggedPointer(poc)) {
     ai = _upb_Arena_PointerFromTagged(poc);
+    UPB_TSAN_CHECK_PUBLISHED(ai);
     poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   }
   return _upb_Arena_RefCountFromTagged(poc);
@@ -251,10 +232,10 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ptr;
 
-  // Insert into linked list.
   block->size = (uint32_t)size;
-  upb_Atomic_Init(&block->next, ai->blocks);
-  upb_Atomic_Store(&ai->blocks, block, memory_order_release);
+  // Insert into linked list.
+  block->next = ai->blocks;
+  ai->blocks = block;
 
   a->UPB_PRIVATE(ptr) = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
   a->UPB_PRIVATE(end) = UPB_PTR_AT(block, size, char);
@@ -267,7 +248,7 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return false;
   size_t last_size = 128;
-  upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
+  upb_MemBlock* last_block = ai->blocks;
   if (last_block) {
     last_size = a->UPB_PRIVATE(end) - (char*)last_block;
   }
@@ -288,6 +269,14 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
 
   if (!block) return false;
   _upb_Arena_AddBlock(a, block, block_size);
+  // Atomic add not required here, as threads won't race allocating blocks, plus
+  // atomic fetch-add is slower than load/add/store on arm devices compiled
+  // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
+  // size allocated.
+  size_t old_space_allocated =
+      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block_size,
+                   memory_order_relaxed);
   UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
   return true;
 }
@@ -316,8 +305,10 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
-  upb_Atomic_Init(&a->body.blocks, NULL);
+  upb_Atomic_Init(&a->body.space_allocated, n);
+  a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
+  UPB_TSAN_INIT_PUBLISHED(&a->body);
 
   _upb_Arena_AddBlock(&a->head, mem, n);
 
@@ -355,12 +346,13 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.tail, &a->body);
-  upb_Atomic_Init(&a->body.blocks, NULL);
+  upb_Atomic_Init(&a->body.space_allocated, 0);
+  a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
-
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = mem;
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), char);
+  UPB_TSAN_INIT_PUBLISHED(&a->body);
 #ifdef UPB_TRACING_ENABLED
   upb_Arena_LogInit(&a->head, n);
 #endif
@@ -370,16 +362,21 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
   while (ai != NULL) {
+    UPB_TSAN_CHECK_PUBLISHED(ai);
     // Load first since arena itself is likely from one of its blocks.
     upb_ArenaInternal* next_arena =
         (upb_ArenaInternal*)upb_Atomic_Load(&ai->next, memory_order_acquire);
+    // Freeing may have memory barriers that confuse tsan, so assert immdiately
+    // after load here
+    if (next_arena) {
+      UPB_TSAN_CHECK_PUBLISHED(next_arena);
+    }
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
-    upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
+    upb_MemBlock* block = ai->blocks;
     upb_AllocCleanupFunc* alloc_cleanup = *ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
-      upb_MemBlock* next_block =
-          upb_Atomic_Load(&block->next, memory_order_acquire);
+      upb_MemBlock* next_block = block->next;
       upb_free(block_alloc, block);
       block = next_block;
     }
@@ -396,6 +393,7 @@ void upb_Arena_Free(upb_Arena* a) {
 retry:
   while (_upb_Arena_IsTaggedPointer(poc)) {
     ai = _upb_Arena_PointerFromTagged(poc);
+    UPB_TSAN_CHECK_PUBLISHED(ai);
     poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   }
 
@@ -425,29 +423,33 @@ retry:
 
 static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
                                         upb_ArenaInternal* child) {
+  UPB_TSAN_CHECK_PUBLISHED(parent);
   upb_ArenaInternal* parent_tail =
-      upb_Atomic_Load(&parent->tail, memory_order_relaxed);
+      upb_Atomic_Load(&parent->tail, memory_order_acquire);
 
   do {
+    UPB_TSAN_CHECK_PUBLISHED(parent_tail);
     // Our tail might be stale, but it will always converge to the true tail.
     upb_ArenaInternal* parent_tail_next =
-        upb_Atomic_Load(&parent_tail->next, memory_order_relaxed);
+        upb_Atomic_Load(&parent_tail->next, memory_order_acquire);
     while (parent_tail_next != NULL) {
       parent_tail = parent_tail_next;
+      UPB_TSAN_CHECK_PUBLISHED(parent_tail);
       parent_tail_next =
-          upb_Atomic_Load(&parent_tail->next, memory_order_relaxed);
+          upb_Atomic_Load(&parent_tail->next, memory_order_acquire);
     }
 
+    UPB_TSAN_CHECK_PUBLISHED(child);
     upb_ArenaInternal* displaced =
-        upb_Atomic_Exchange(&parent_tail->next, child, memory_order_relaxed);
-    parent_tail = upb_Atomic_Load(&child->tail, memory_order_relaxed);
+        upb_Atomic_Exchange(&parent_tail->next, child, memory_order_acq_rel);
+    parent_tail = upb_Atomic_Load(&child->tail, memory_order_acquire);
 
     // If we displaced something that got installed racily, we can simply
     // reinstall it on our new tail.
     child = displaced;
   } while (child != NULL);
 
-  upb_Atomic_Store(&parent->tail, parent_tail, memory_order_relaxed);
+  upb_Atomic_Store(&parent->tail, parent_tail, memory_order_release);
 }
 
 void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
@@ -519,11 +521,23 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(const upb_Arena* a1,
 static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
                                  uintptr_t ref_delta) {
   if (ref_delta == 0) return true;  // No fixup required.
+  // Relaxed order is safe here as if the value is a pointer, we don't deref it
+  // or publish it anywhere else. The refcount does provide memory order
+  // between allocations on arenas and the eventual free and thus normally
+  // requires acquire/release; but in this case any edges provided by the refs
+  // we are cleaning up were already provided by the fuse operation itself. It's
+  // not valid for a decrement that could cause the overall fused arena to reach
+  // a zero refcount to race with this function, as that could result in a
+  // use-after-free anyway.
   uintptr_t poc =
       upb_Atomic_Load(&new_root->parent_or_count, memory_order_relaxed);
   if (_upb_Arena_IsTaggedPointer(poc)) return false;
   uintptr_t with_refs = poc - ref_delta;
   UPB_ASSERT(!_upb_Arena_IsTaggedPointer(with_refs));
+  // Relaxed order on success is safe here, for the same reasons as the relaxed
+  // read above. Relaxed order is safe on failure because the updated value is
+  // stored in a local variable which goes immediately out of scope; the retry
+  // loop will reread what it needs with proper memory order.
   return upb_Atomic_CompareExchangeStrong(&new_root->parent_or_count, &poc,
                                           with_refs, memory_order_relaxed,
                                           memory_order_relaxed);
@@ -578,7 +592,13 @@ retry:
           &r.root->parent_or_count, &r.tagged_count,
           _upb_Arena_TaggedFromRefcount(
               _upb_Arena_RefCountFromTagged(r.tagged_count) + 1),
-          memory_order_release, memory_order_acquire)) {
+          // Relaxed order is safe on success, incrementing the refcount
+          // need not perform any synchronization with the eventual free of the
+          // arena - that's provided by decrements.
+          memory_order_relaxed,
+          // Relaxed order is safe on failure as r.tagged_count is immediately
+          // overwritten by retrying the find root operation.
+          memory_order_relaxed)) {
     // We incremented it successfully, so we are done.
     return true;
   }
@@ -601,8 +621,7 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(upb_Arena* des, const upb_Arena* src) {
 
   *des = *src;
   desi->block_alloc = srci->block_alloc;
-  upb_MemBlock* blocks = upb_Atomic_Load(&srci->blocks, memory_order_relaxed);
-  upb_Atomic_Init(&desi->blocks, blocks);
+  desi->blocks = srci->blocks;
 }
 
 void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
@@ -610,6 +629,5 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
   upb_ArenaInternal* srci = upb_Arena_Internal(src);
 
   *des = *src;
-  upb_MemBlock* blocks = upb_Atomic_Load(&srci->blocks, memory_order_relaxed);
-  upb_Atomic_Store(&desi->blocks, blocks, memory_order_relaxed);
+  desi->blocks = srci->blocks;
 }
