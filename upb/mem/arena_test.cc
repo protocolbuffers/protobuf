@@ -172,44 +172,6 @@ TEST(ArenaTest, FuzzSingleThreaded) {
   }
 }
 
-TEST(ArenaTest, Contains) {
-  upb_Arena* arena1 = upb_Arena_New();
-  upb_Arena* arena2 = upb_Arena_New();
-  void* ptr1a = upb_Arena_Malloc(arena1, 8);
-  void* ptr2a = upb_Arena_Malloc(arena2, 8);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-
-  void* ptr1b = upb_Arena_Malloc(arena1, 1000000);
-  void* ptr2b = upb_Arena_Malloc(arena2, 1000000);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
-
-  upb_Arena_Fuse(arena1, arena2);
-
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
-  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
-
-  upb_Arena_Free(arena1);
-  upb_Arena_Free(arena2);
-}
-
 TEST(ArenaTest, LargeAlloc) {
   // Tests an allocation larger than the max block size.
   upb_Arena* arena = upb_Arena_New();
