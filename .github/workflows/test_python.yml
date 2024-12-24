@@ -29,6 +29,9 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # ERROR: error loading package 'python/dist': cannot load '@@rules_python~~python~python_3_12//:version.bzl': no such file
+        # https://github.com/protocolbuffers/protobuf/actions/runs/12470144355/job/34804733978?pr=19764
+        bzlmod: [false]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -50,6 +53,8 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
+          - bzlmod: false
+            bzlmod-flags: --noenable_bzlmod
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -66,7 +71,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.1.2-{0}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.bzlmod-flags }} --test_env=KOKORO_PYTHON_VERSION
           exclude-targets: -//python/pb_unit_tests/...
 
 
@@ -76,6 +81,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: [ "3.12", "3.13" ]
+        bzlmod: [false]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -84,6 +90,8 @@ jobs:
             flags: --define=use_fast_cpp_protos=true
           - version: "3.13"
             continuous-only: true
+          - bzlmod: false
+            bzlmod-flags: --noenable_bzlmod
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
     runs-on: macos-13
@@ -117,7 +125,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
           bazel: >-
-            test ${{ matrix.targets }} ${{ matrix.flags }}
+            test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.bzlmod-flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=11.0
           exclude-targets: -//python/pb_unit_tests/...

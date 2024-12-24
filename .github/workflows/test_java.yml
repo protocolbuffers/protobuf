@@ -31,6 +31,7 @@ jobs:
           - name: OpenJDK 8
             cache_key: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-8-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+            # TODO: https://github.com/protocolbuffers/protobuf/actions/runs/12470144355/job/34804726816?pr=19764
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
@@ -53,7 +54,6 @@ jobs:
             cache_key: 'bazel7bzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
             targets: //java/... //java/internal:java_version //compatibility/...
-            flags: --enable_bzlmod --enable_workspace
           - name: aarch64
             cache_key: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8
@@ -109,9 +109,10 @@ jobs:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-11-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
+        # Bash overrides the docker image's custom entrypoint
         bash: |
           set -ex
-          bazel build //java:release $BAZEL_FLAGS
+          /entrypoint.sh build //java:release $BAZEL_FLAGS
           mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
           mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml
