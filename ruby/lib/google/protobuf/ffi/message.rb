@@ -254,7 +254,7 @@ module Google
             decoding_options = 0
             unless options.is_a? Hash
               if options.respond_to? :to_h
-                options options.to_h
+                options = options.to_h
               else
                 #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
