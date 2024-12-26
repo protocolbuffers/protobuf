@@ -11,6 +11,8 @@
 
 #include "google/protobuf/compiler/importer.h"
 
+#include <string>
+
 #ifdef _MSC_VER
 #include <direct.h>
 #else
@@ -21,20 +23,26 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+
+#ifdef _WIN32
+#include "absl/strings/str_replace.h"
+#include "google/protobuf/io/io_win32.h"
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "absl/strings/ascii.h"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -45,10 +53,6 @@ namespace compiler {
 // them like we do below.
 using google::protobuf::io::win32::access;
 using google::protobuf::io::win32::open;
-#endif
-
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include "absl/strings/ascii.h"
 #endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
