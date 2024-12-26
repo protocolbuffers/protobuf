@@ -287,6 +287,59 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )
 
+# @//pkg:protoc_public
+set(libprotoc_public_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
+)
+
+# @//pkg:protoc_public
+set(libprotoc_public_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/options.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/nsobject_methods.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
+)
+
 # @//pkg:protoc
 set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
@@ -418,7 +471,6 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
@@ -555,7 +607,6 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
   ${protobuf_SOURCE_DIR}/upb/port/atomic.h
   ${protobuf_SOURCE_DIR}/upb/port/def.inc
   ${protobuf_SOURCE_DIR}/upb/port/undef.inc
@@ -966,6 +1017,7 @@ set(common_test_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility_for_testing.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_textproto.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
 )
 
