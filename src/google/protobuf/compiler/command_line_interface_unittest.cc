@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
@@ -4204,6 +4205,15 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     captured_stdout_ = GetCapturedTestStdout();
     captured_stderr_ = GetCapturedTestStderr();
 
+    for (const auto& line :
+         absl::StrSplit(StripCR(captured_stderr_), '\n', absl::SkipEmpty())) {
+      if (absl::StrContains(line, "warning:")) {
+        captured_warnings_.push_back(std::string(line));
+      } else {
+        captured_errors_.push_back(std::string(line));
+      }
+    }
+
     return result == 0;
   }
 
@@ -4223,6 +4233,30 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
         File::GetContents(filename, &expected_output, true));
 
     ExpectStdoutMatchesText(expected_output);
+  }
+
+  void ExpectNoErrors() { EXPECT_THAT(captured_errors_, testing::IsEmpty()); }
+
+  void ExpectNoWarnings() {
+    EXPECT_THAT(captured_warnings_, testing::IsEmpty());
+  }
+
+  void ExpectError(absl::string_view expected_text) {
+    EXPECT_THAT(captured_errors_, testing::Contains(expected_text));
+  }
+
+  void ExpectErrorSubstring(absl::string_view expected_substring) {
+    EXPECT_THAT(captured_errors_,
+                testing::Contains(testing::HasSubstr(expected_substring)));
+  }
+
+  void ExpectWarning(absl::string_view expected_text) {
+    EXPECT_THAT(captured_warnings_, testing::Contains(expected_text));
+  }
+
+  void ExpectWarningSubstring(absl::string_view expected_substring) {
+    EXPECT_THAT(captured_warnings_,
+                testing::Contains(testing::HasSubstr(expected_substring)));
   }
 
   void ExpectStdoutMatchesText(const std::string& expected_text) {
@@ -4263,6 +4297,9 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   int duped_stdin_;
   std::string captured_stdout_;
   std::string captured_stderr_;
+  std::vector<std::string> captured_warnings_;
+  std::vector<std::string> captured_errors_;
+
   std::string unittest_proto_descriptor_set_filename_;
 };
 
@@ -4286,7 +4323,7 @@ TEST_P(EncodeDecodeTest, Encode) {
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
   ExpectStdoutMatchesBinaryFile(golden_path);
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
@@ -4299,7 +4336,7 @@ TEST_P(EncodeDecodeTest, Decode) {
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, Partial) {
@@ -4308,8 +4345,7 @@ TEST_P(EncodeDecodeTest, Partial) {
       Run("google/protobuf/unittest.proto"
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText(
-      "warning:  Input message is missing required fields:  a, b, c\n");
+  ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }
 
 TEST_P(EncodeDecodeTest, DecodeRaw) {
@@ -4324,7 +4360,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   ExpectStdoutMatchesText(
       "1: 123\n"
       "14: \"foo\"\n");
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, UnknownType) {
@@ -4332,7 +4368,7 @@ TEST_P(EncodeDecodeTest, UnknownType) {
       Run("google/protobuf/unittest.proto"
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText("Type not defined: NoSuchType\n");
+  ExpectError("Type not defined: NoSuchType");
 }
 
 TEST_P(EncodeDecodeTest, ProtoParseError) {
@@ -4340,8 +4376,9 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
       Run("net/proto2/internal/no_such_file.proto "
           "--encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrContainsText(
-      "net/proto2/internal/no_such_file.proto: No such file or directory\n");
+  ExpectErrorSubstring(
+      "net/proto2/internal/no_such_file.proto: "
+      "No such file or directory");
 }
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
@@ -4357,7 +4394,7 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
   ExpectStdoutMatchesBinaryFile(golden_path);
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
@@ -4367,8 +4404,7 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   EXPECT_FALSE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
-  ExpectStderrMatchesText(
-      "Can only use --deterministic_output with --encode.\n");
+  ExpectError("Can only use --deterministic_output with --encode.");
 }
 
 INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,

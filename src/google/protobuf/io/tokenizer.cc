@@ -67,6 +67,9 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
+#include <cstddef>
+#include <string>
+
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
