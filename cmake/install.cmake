@@ -87,7 +87,7 @@ endif ()
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
   ${libprotobuf_hdrs}
-  ${libprotoc_hdrs}
+  ${libprotoc_public_hdrs}
   ${wkt_protos_files}
   ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
