@@ -136,10 +136,8 @@ class CommandLineInterfaceTester : public testing::Test {
   // The result of Run().
   int return_code_;
 
-  // The captured stderr output.
-  std::string error_text_;
+  std::string captured_stderr_;
 
-  // The captured stdout.
   std::string captured_stdout_;
 
   std::vector<std::unique_ptr<CodeGenerator>> generators_;
