@@ -38,11 +38,11 @@
 #endif
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/unittest_no_generic_services.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
@@ -55,6 +55,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest_no_generic_services.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
