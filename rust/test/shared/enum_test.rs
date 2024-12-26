@@ -220,3 +220,21 @@ fn test_enum_in_hash_set() {
     assert_that!(s.contains(&NestedEnum::Bar), eq(true));
     assert_that!(s.contains(&NestedEnum::Baz), eq(false));
 }
+
+#[gtest]
+fn test_enum_in_btree() {
+    use test_all_types::NestedEnum;
+    let mut s = std::collections::BTreeMap::<NestedEnum, i32>::new();
+
+    s.insert(NestedEnum::Baz, 1);
+    s.insert(NestedEnum::Bar, 2);
+    s.insert(NestedEnum::Foo, 3);
+    s.insert(NestedEnum::try_from(1).unwrap(), 4); // FOO = 1
+
+    // The order of entries should be sorted by the enum constant value, which is
+    // ordered FOO < BAR < BAZ.
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Foo, 4))));
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Bar, 2))));
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Baz, 1))));
+    assert_that!(s.pop_first(), none());
+}
