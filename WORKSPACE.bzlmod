@@ -4,32 +4,6 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# TODO: either replace rules_ruby with a maintained version on BCR
-# or use bzlmod extensions to depend on this specific repo
-http_archive(
-    name = "rules_ruby",
-    urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip"
-    ],
-    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
-    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
-)
-
-load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
-
-ruby_runtime("system_ruby")
-
-register_toolchains("@system_ruby//:toolchain")
-
-load("@system_ruby//:bundle.bzl", "ruby_bundle")
-
-ruby_bundle(
-    name = "protobuf_bundle",
-    srcs = ["//ruby:google-protobuf.gemspec"],
-    bundler_version = "2.4.22",
-    gemfile = "//ruby:Gemfile",
-)
-
 # For testing UPB.
 http_archive(
     name = "lua",
