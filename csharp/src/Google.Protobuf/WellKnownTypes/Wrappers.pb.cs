@@ -57,6 +57,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `double`.
   ///
   /// The JSON representation for `DoubleValue` is JSON number.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DoubleValue : pb::IMessage<DoubleValue>
@@ -263,6 +266,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `float`.
   ///
   /// The JSON representation for `FloatValue` is JSON number.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FloatValue : pb::IMessage<FloatValue>
@@ -469,6 +475,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `int64`.
   ///
   /// The JSON representation for `Int64Value` is JSON string.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int64Value : pb::IMessage<Int64Value>
@@ -675,6 +684,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `uint64`.
   ///
   /// The JSON representation for `UInt64Value` is JSON string.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt64Value : pb::IMessage<UInt64Value>
@@ -881,6 +893,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `int32`.
   ///
   /// The JSON representation for `Int32Value` is JSON number.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int32Value : pb::IMessage<Int32Value>
@@ -1087,6 +1102,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `uint32`.
   ///
   /// The JSON representation for `UInt32Value` is JSON number.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt32Value : pb::IMessage<UInt32Value>
@@ -1293,6 +1311,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `bool`.
   ///
   /// The JSON representation for `BoolValue` is JSON `true` and `false`.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BoolValue : pb::IMessage<BoolValue>
@@ -1499,6 +1520,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `string`.
   ///
   /// The JSON representation for `StringValue` is JSON string.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class StringValue : pb::IMessage<StringValue>
@@ -1705,6 +1729,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// Wrapper message for `bytes`.
   ///
   /// The JSON representation for `BytesValue` is JSON string.
+  ///
+  /// Not recommended for use in new APIs, but still useful for legacy APIs and
+  /// has no plan to be removed.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BytesValue : pb::IMessage<BytesValue>

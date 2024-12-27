@@ -12,6 +12,8 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Wrapper message for `bool`.
  * The JSON representation for `BoolValue` is JSON `true` and `false`.
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  *
  * Generated from protobuf message <code>google.protobuf.BoolValue</code>
  */
