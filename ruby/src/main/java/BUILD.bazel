@@ -14,6 +14,7 @@ java_library(
     }),
     visibility = ["//ruby:__subpackages__"],
     deps = [
+        "@ruby//:jars",
         "//java/core",
         "//java/util",
     ],

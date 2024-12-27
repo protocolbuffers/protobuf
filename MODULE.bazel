@@ -40,25 +40,9 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
-bazel_dep(name = "rules_ruby", version = "0.16.0")
+bazel_dep(name = "rules_ruby", version = "0.17.3")
 bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
-
-# Ruby
-ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
-ruby.toolchain(
-    name = "ruby",
-    version = "system",
-)
-use_repo(ruby, "ruby")
-
-ruby.bundle_fetch(
-    name = "protobuf_bundle",
-    gemfile = "//:Gemfile",
-    gemfile_lock = "//:Gemfile.lock",
-)
-use_repo(ruby, "bundle", "ruby_toolchains")
-register_toolchains("@ruby_toolchains//:all")
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
@@ -147,7 +131,7 @@ maven.install(
 use_repo(maven, "maven")
 
 # Development dependencies
-bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)
+bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(
@@ -162,4 +146,4 @@ cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_exten
 use_repo(cc_configure, "local_config_cc")
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)
+bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)

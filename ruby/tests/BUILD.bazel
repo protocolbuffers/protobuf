@@ -157,23 +157,23 @@ rb_test(
     ],
 )
 
-ruby_test(
+rb_test(
     name = "service_test",
     srcs = ["service_test.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit",
+        "@protobuf_bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "memory_test",
     srcs = ["memory_test.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit",
+        "@protobuf_bundle",
     ],
 )
 
