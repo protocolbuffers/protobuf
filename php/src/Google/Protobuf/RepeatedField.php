@@ -14,8 +14,10 @@
 
 namespace Google\Protobuf;
 
+use Google\Protobuf\Internal\DescriptorPool;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\Internal\RepeatedFieldIter;
 use Traversable;
 
 /**
@@ -42,10 +44,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @var string|class-string<T>
      */
     private $klass;
-    /**
-     * @ignore
-     */
-    private $legacy_klass;
 
     /**
      * Constructs an instance of RepeatedField.
@@ -66,7 +64,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
                 $desc = $pool->getDescriptorByClassName($klass);
             }
             $this->klass = $desc->getClass();
-            $this->legacy_klass = $desc->getLegacyClass();
         }
     }
 
@@ -85,14 +82,6 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     public function getClass()
     {
         return $this->klass;
-    }
-
-    /**
-     * @ignore
-     */
-    public function getLegacyClass()
-    {
-        return $this->legacy_klass;
     }
 
     /**
