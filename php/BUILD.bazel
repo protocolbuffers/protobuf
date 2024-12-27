@@ -52,6 +52,7 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/RepeatedFieldIter.php",
     "src/Google/Protobuf/Internal/TimestampBase.php",
     "src/Google/Protobuf/OneofDescriptor.php",
+    "src/Google/Protobuf/RepeatedField.php",
 ]
 
 filegroup(
