@@ -12,7 +12,7 @@
  * classes to manipulate repeated fields.
  */
 
-namespace Google\Protobuf\Internal;
+namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
