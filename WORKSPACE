@@ -115,8 +115,8 @@ kt_register_toolchains()
 http_archive(
     name = "rules_ruby",
     sha256 = "971b86974e5698abf3aa0a5dc285d378af19c7f2e1f1de33d2d08405460c370f",
-    strip_prefix = "rules_ruby-0.16.0",
-    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.16.0/rules_ruby-v0.16.0.tar.gz",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
 )
 
 load("@rules_ruby//ruby:deps.bzl", "rb_register_toolchains", "rb_bundle_fetch")
@@ -131,16 +131,7 @@ rb_register_toolchains(
 
 rb_bundle_fetch(
     name = "protobuf_bundle",
-    gem_checksums = {
-        "bigdecimal-3.1.8": "a89467ed5a44f8ae01824af49cbc575871fa078332e8f77ea425725c1ffe27be",
-        "bigdecimal-3.1.8-java": "b9e94c14623fff8575f17a10320852219bbba92ecff4977571503d942687326e",
-        "ffi-1.17.0": "51630e43425078311c056ca75f961bb3bda1641ab36e44ad4c455e0b0e4a231c",
-        "ffi-compiler-1.3.2": "a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0",
-        "power_assert-2.0.5": "63b511b85bb8ea57336d25156864498644f5bbf028699ceda27949e0125bc323",
-        "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
-        "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
-        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221",
-    },
+    gem_checksums = {},
     bundler_version = "2.4.22",
     gemfile = "//ruby:Gemfile",
     gemfile_lock = "//ruby:Gemfile.lock",
