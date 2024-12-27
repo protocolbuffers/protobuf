@@ -20,7 +20,7 @@
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK 8
+#define UPB_ARENA_SIZE_HACK 9
 
 // LINT.IfChange(upb_Arena)
 
@@ -39,11 +39,6 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(struct upb_Arena* des,
                                     const struct upb_Arena* src);
 void UPB_PRIVATE(_upb_Arena_SwapOut)(struct upb_Arena* des,
                                      const struct upb_Arena* src);
-
-// Returns whether |ptr| was allocated directly by |a| (so care must be used
-// with fused arenas).
-UPB_API bool UPB_ONLYBITS(_upb_Arena_Contains)(const struct upb_Arena* a,
-                                               void* ptr);
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
