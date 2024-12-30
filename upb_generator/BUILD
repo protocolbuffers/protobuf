@@ -93,10 +93,12 @@ bootstrap_cc_library(
         ":plugin_upb_proto",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:reflection",
+        "//upb_generator:file_layout",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friend_generators"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator_lite",
         "//upb:base",
         "//upb:mem",
