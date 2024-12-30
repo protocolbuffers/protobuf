@@ -48,15 +48,25 @@ UPB_API void upb_Arena_Free(upb_Arena* a);
 // freed.
 UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
                                        upb_AllocCleanupFunc* func);
+
+// Fuses the lifetime of two arenas, such that no arenas that have been
+// transitively fused together will be freed until all of them have reached a
+// zero refcount. This operation is safe to use concurrently from multiple
+// threads.
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
+
+// This operation is safe to use concurrently from multiple threads.
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
 // Returns the upb_alloc used by the arena.
 UPB_API upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a);
 
+// This operation is safe to use concurrently from multiple threads.
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
+// This operation is safe to use concurrently from multiple threads.
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
+// This operation is safe to use concurrently from multiple threads.
 size_t upb_Arena_SpaceAllocated(upb_Arena* a, size_t* fused_count);
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a);
 
