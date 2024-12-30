@@ -85,6 +85,20 @@ namespace Google.Protobuf
             }
         }
 
+        // Equivalent to the above public constructor, but with size and recursion limits.
+        internal CodedInputStream(byte[] buffer, int offset, int length, int sizeLimit, int recursionLimit)
+            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length, sizeLimit, recursionLimit, true)
+        {
+            if (offset < 0 || offset > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("offset", "Offset must be within the buffer");
+            }
+            if (length < 0 || offset + length > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("length", "Length must be non-negative and within the buffer");
+            }
+        }
+
         /// <summary>
         /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream, which will be disposed
         /// when the returned object is disposed.

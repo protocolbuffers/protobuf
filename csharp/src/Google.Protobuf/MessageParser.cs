@@ -21,15 +21,16 @@ namespace Google.Protobuf
     public class MessageParser
     {
         private readonly Func<IMessage> factory;
-        private protected bool DiscardUnknownFields { get; }
 
-        internal ExtensionRegistry Extensions { get; }
+        private protected Settings ParserSettings { get; }
 
-        internal MessageParser(Func<IMessage> factory, bool discardUnknownFields, ExtensionRegistry extensions)
+        private protected bool DiscardUnknownFields => ParserSettings.DiscardUnknownFields;
+        internal ExtensionRegistry Extensions => ParserSettings.ExtensionRegistry;
+
+        internal MessageParser(Func<IMessage> factory, Settings settings)
         {
             this.factory = factory;
-            DiscardUnknownFields = discardUnknownFields;
-            Extensions = extensions;
+            this.ParserSettings = settings;
         }
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(byte[] data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -63,7 +64,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(byte[] data, int offset, int length)
         {
             IMessage message = factory();
-            message.MergeFrom(data, offset, length, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, offset, length, ParserSettings);
             return message;
         }
 
@@ -75,7 +76,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(ByteString data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -87,7 +88,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(Stream input)
         {
             IMessage message = factory();
-            message.MergeFrom(input, DiscardUnknownFields, Extensions);
+            message.MergeFrom(input, ParserSettings);
             return message;
         }
 
@@ -100,7 +101,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(ReadOnlySequence<byte> data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -113,7 +114,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(ReadOnlySpan<byte> data)
         {
             IMessage message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -129,7 +130,7 @@ namespace Google.Protobuf
         public IMessage ParseDelimitedFrom(Stream input)
         {
             IMessage message = factory();
-            message.MergeDelimitedFrom(input, DiscardUnknownFields, Extensions);
+            message.MergeDelimitedFrom(input, ParserSettings);
             return message;
         }
 
@@ -190,7 +191,7 @@ namespace Google.Protobuf
         /// <param name="discardUnknownFields">Whether or not to discard unknown fields when parsing.</param>
         /// <returns>A newly configured message parser.</returns>
         public MessageParser WithDiscardUnknownFields(bool discardUnknownFields) =>
-            new MessageParser(factory, discardUnknownFields, Extensions);
+            WithSettings(ParserSettings.WithDiscardUnknownFields(discardUnknownFields));
 
         /// <summary>
         /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance
@@ -198,7 +199,107 @@ namespace Google.Protobuf
         /// <param name="registry">The extensions to register</param>
         /// <returns>A newly configured message parser.</returns>
         public MessageParser WithExtensionRegistry(ExtensionRegistry registry) =>
-            new MessageParser(factory, DiscardUnknownFields, registry);
+            WithSettings(ParserSettings.WithExtensionRegistry(registry));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sizeLimit"></param>
+        /// <returns></returns>
+        public MessageParser WithSizeLimit(int sizeLimit) =>
+            WithSettings(ParserSettings.WithSizeLimit(sizeLimit));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="recursionLimit"></param>
+        /// <returns></returns>
+        public MessageParser WithRecursionLimit(int recursionLimit) =>
+            WithSettings(ParserSettings.WithRecursionLimit(recursionLimit));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        public MessageParser WithSettings(Settings settings) =>
+            new MessageParser(factory, ProtoPreconditions.CheckNotNull(settings, nameof(settings)));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public sealed class Settings
+        {
+            /// <summary>
+            /// The default parser settings.
+            /// </summary>
+            public static Settings Default { get; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public bool DiscardUnknownFields { get; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public ExtensionRegistry ExtensionRegistry { get; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public int SizeLimit { get; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public int RecursionLimit { get; }
+
+            static Settings()
+            {
+                Default = new Settings(false, null, CodedInputStream.DefaultSizeLimit, CodedInputStream.DefaultRecursionLimit);
+            }
+
+            private Settings(bool discardUnknownFields, ExtensionRegistry extensionRegistry, int sizeLimit, int recursionLimit)
+            {
+                DiscardUnknownFields = discardUnknownFields;
+                ExtensionRegistry = extensionRegistry;
+                SizeLimit = sizeLimit;
+                RecursionLimit = recursionLimit;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="discardUnknownFields"></param>
+            /// <returns></returns>
+            public Settings WithDiscardUnknownFields(bool discardUnknownFields) =>
+                new Settings(discardUnknownFields, ExtensionRegistry, SizeLimit, RecursionLimit);
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="extensionRegistry"></param>
+            /// <returns></returns>
+            public Settings WithExtensionRegistry(ExtensionRegistry extensionRegistry) =>
+                new Settings(DiscardUnknownFields, extensionRegistry, SizeLimit, RecursionLimit);
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="sizeLimit"></param>
+            /// <returns></returns>
+            public Settings WithSizeLimit(int sizeLimit) =>
+                new Settings(DiscardUnknownFields, ExtensionRegistry, sizeLimit, RecursionLimit);
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="recursionLimit"></param>
+            /// <returns></returns>
+            public Settings WithRecursionLimit(int recursionLimit) =>
+                new Settings(DiscardUnknownFields, ExtensionRegistry, SizeLimit, recursionLimit);
+        }
     }
 
     /// <summary>
@@ -233,11 +334,11 @@ namespace Google.Protobuf
         /// to require a parameterless constructor: delegates are significantly faster to execute.
         /// </remarks>
         /// <param name="factory">Function to invoke when a new, empty message is required.</param>
-        public MessageParser(Func<T> factory) : this(factory, false, null)
+        public MessageParser(Func<T> factory) : this(factory, Settings.Default)
         {
         }
 
-        internal MessageParser(Func<T> factory, bool discardUnknownFields, ExtensionRegistry extensions) : base(() => factory(), discardUnknownFields, extensions)
+        internal MessageParser(Func<T> factory, Settings settings) : base(() => factory(), settings)
         {
             this.factory = factory;
         }
@@ -259,7 +360,7 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -273,7 +374,7 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data, int offset, int length)
         {
             T message = factory();
-            message.MergeFrom(data, offset, length, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, offset, length, ParserSettings);
             return message;
         }
 
@@ -285,7 +386,7 @@ namespace Google.Protobuf
         public new T ParseFrom(ByteString data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -297,7 +398,7 @@ namespace Google.Protobuf
         public new T ParseFrom(Stream input)
         {
             T message = factory();
-            message.MergeFrom(input, DiscardUnknownFields, Extensions);
+            message.MergeFrom(input, ParserSettings);
             return message;
         }
 
@@ -310,7 +411,7 @@ namespace Google.Protobuf
         public new T ParseFrom(ReadOnlySequence<byte> data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -323,7 +424,7 @@ namespace Google.Protobuf
         public new T ParseFrom(ReadOnlySpan<byte> data)
         {
             T message = factory();
-            message.MergeFrom(data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, ParserSettings);
             return message;
         }
 
@@ -339,7 +440,7 @@ namespace Google.Protobuf
         public new T ParseDelimitedFrom(Stream input)
         {
             T message = factory();
-            message.MergeDelimitedFrom(input, DiscardUnknownFields, Extensions);
+            message.MergeDelimitedFrom(input, ParserSettings);
             return message;
         }
 
@@ -375,7 +476,7 @@ namespace Google.Protobuf
         /// <param name="discardUnknownFields">Whether or not to discard unknown fields when parsing.</param>
         /// <returns>A newly configured message parser.</returns>
         public new MessageParser<T> WithDiscardUnknownFields(bool discardUnknownFields) =>
-            new MessageParser<T>(factory, discardUnknownFields, Extensions);
+            WithSettings(ParserSettings.WithDiscardUnknownFields(discardUnknownFields));
 
         /// <summary>
         /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance
@@ -383,6 +484,30 @@ namespace Google.Protobuf
         /// <param name="registry">The extensions to register</param>
         /// <returns>A newly configured message parser.</returns>
         public new MessageParser<T> WithExtensionRegistry(ExtensionRegistry registry) =>
-            new MessageParser<T>(factory, DiscardUnknownFields, registry);
+            WithSettings(ParserSettings.WithExtensionRegistry(registry));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sizeLimit"></param>
+        /// <returns></returns>
+        public new MessageParser<T> WithSizeLimit(int sizeLimit) =>
+            WithSettings(ParserSettings.WithSizeLimit(sizeLimit));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="recursionLimit"></param>
+        /// <returns></returns>
+        public new MessageParser<T> WithRecursionLimit(int recursionLimit) =>
+            WithSettings(ParserSettings.WithRecursionLimit(recursionLimit));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        public new MessageParser<T> WithSettings(Settings settings) =>
+            new MessageParser<T>(factory, ProtoPreconditions.CheckNotNull(settings, nameof(settings)));
     }
 }
