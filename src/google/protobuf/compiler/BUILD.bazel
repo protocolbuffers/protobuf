@@ -113,6 +113,15 @@ cc_library(
 )
 
 cc_library(
+    name = "plugin",
+    hdrs = ["plugin.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [":code_generator"],
+)
+
+cc_library(
     name = "code_generator_lite",
     srcs = ["code_generator_lite.cc"],
     hdrs = ["code_generator_lite.h"],
