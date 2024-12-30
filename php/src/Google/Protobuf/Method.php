@@ -6,8 +6,8 @@
 namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Method represents a method of an API interface.
@@ -75,7 +75,7 @@ class Method extends \Google\Protobuf\Internal\Message
      *           The URL of the output message type.
      *     @type bool $response_streaming
      *           If true, the response is streamed.
-     *     @type array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $options
+     *     @type \Google\Protobuf\Option[] $options
      *           Any metadata attached to the method.
      *     @type int $syntax
      *           The source syntax of this method.
@@ -220,7 +220,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * Any metadata attached to the method.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 6;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Option>
      */
     public function getOptions()
     {
@@ -231,7 +231,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * Any metadata attached to the method.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 6;</code>
-     * @param array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Option[] $var
      * @return $this
      */
     public function setOptions($var)
