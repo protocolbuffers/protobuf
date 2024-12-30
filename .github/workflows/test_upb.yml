@@ -278,7 +278,7 @@ jobs:
         # We will eventually make this into a wildcard rule once all tests
         # have been migrated to be compatible with upb.
         run: |
-          TESTS=(message_test message_factory_test descriptor_test proto_builder_test)
+          TESTS=(message_test message_factory_test descriptor_test proto_builder_test descriptor_pool_test generator_test)
           for test in ${TESTS[@]}; do
             python -m unittest -v google.protobuf.internal.${test}
           done
