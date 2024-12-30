@@ -45,7 +45,7 @@ jobs:
             cache_key: Bazel7
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
-          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace --cxxopt="-Wno-self-assign-overloaded" }
+          - config: { name: "Bazel7 with Bzlmod", flags: --cxxopt="-Wno-self-assign-overloaded" }
             cache_key: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
