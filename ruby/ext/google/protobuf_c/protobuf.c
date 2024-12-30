@@ -286,7 +286,8 @@ VALUE ObjectCache_Get(const void *key) {
 static VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
   const upb_MessageDef *m;
   upb_Message *msg = Message_GetMutable(msg_rb, &m);
-  if (!upb_Message_DiscardUnknown(msg, m, 128)) {
+  const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(m));
+  if (!upb_Message_DiscardUnknown(msg, m, ext_pool, 128)) {
     rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
   }
 

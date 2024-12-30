@@ -583,7 +583,8 @@ PHP_METHOD(Message, __construct) {
  */
 PHP_METHOD(Message, discardUnknownFields) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
-  upb_Message_DiscardUnknown(intern->msg, intern->desc->msgdef, 64);
+  upb_Message_DiscardUnknown(intern->msg, intern->desc->msgdef,
+                             DescriptorPool_GetSymbolTable(), 64);
 }
 
 /**

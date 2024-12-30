@@ -1484,7 +1484,8 @@ static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
                                                     PyObject* arg) {
   PyUpb_Message_EnsureReified(self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
-  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, 64);
+  const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
+  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
   Py_RETURN_NONE;
 }
 
