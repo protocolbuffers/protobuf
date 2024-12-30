@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
@@ -35,6 +36,58 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
+template <typename Map, typename F>
+auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
+  switch (map_key.type()) {
+#define HANDLE_TYPE(CPPTYPE, Type, KeyBaseType)                               \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                  \
+    using KMB = KeyMapBase<KeyBaseType>;                                      \
+    return f(                                                                 \
+        static_cast<                                                          \
+            std::conditional_t<std::is_const_v<Map>, const KMB&, KMB&>>(map), \
+        TransparentSupport<KeyBaseType>::ToView(map_key.Get##Type##Value())); \
+  }
+    HANDLE_TYPE(INT32, Int32, uint32_t);
+    HANDLE_TYPE(UINT32, UInt32, uint32_t);
+    HANDLE_TYPE(INT64, Int64, uint64_t);
+    HANDLE_TYPE(UINT64, UInt64, uint64_t);
+    HANDLE_TYPE(BOOL, Bool, bool);
+    HANDLE_TYPE(STRING, String, std::string);
+#undef HANDLE_TYPE
+    default:
+      Unreachable();
+  }
+}
+
+bool MapFieldBase::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& self,
+                                                    const MapKey& map_key,
+                                                    MapValueRef* val) {
+  if (LookupMapValueNoSyncImpl(self, map_key,
+                               static_cast<MapValueConstRef*>(val))) {
+    return false;
+  }
+
+  auto& map = self.GetMapRaw();
+
+  NodeBase* node = map.AllocNode();
+  map.VisitValue(node, [&](auto* v) { self.InitializeKeyValue(v); });
+  val->SetValue(map.GetVoidValue(node));
+
+  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
+    self.InitializeKeyValue(map.GetKey(node), key);
+    map.InsertOrReplaceNode(
+        static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
+    return true;
+  });
+}
+
+bool MapFieldBase::DeleteMapValueImpl(MapFieldBase& self,
+                                      const MapKey& map_key) {
+  return VisitMapKey(
+      map_key, *self.MutableMap(),
+      [](auto& map, const auto& key) { return map.EraseImpl(key); });
+}
+
 void MapFieldBase::ClearMapNoSyncImpl(MapFieldBase& self) {
   self.GetMapRaw().ClearTable(true, nullptr);
 }
@@ -56,35 +109,22 @@ void MapFieldBase::SetMapIteratorValueImpl(MapIterator* map_iter) {
   map_iter->value_.SetValue(map.GetVoidValue(node));
 }
 
-bool MapFieldBase::LookupMapValueImpl(const MapFieldBase& self,
-                                      const MapKey& map_key,
-                                      MapValueConstRef* val) {
-  auto& map = self.GetMap();
+bool MapFieldBase::LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                            const MapKey& map_key,
+                                            MapValueConstRef* val) {
+  auto& map = self.GetMapRaw();
   if (map.empty()) return false;
 
-  switch (map_key.type()) {
-#define HANDLE_TYPE(CPPTYPE, Type, KeyBaseType)                       \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                          \
-    auto& key_map = static_cast<const KeyMapBase<KeyBaseType>&>(map); \
-    auto res = key_map.FindHelper(map_key.Get##Type##Value());        \
-    if (res.node == nullptr) {                                        \
-      return false;                                                   \
-    }                                                                 \
-    if (val != nullptr) {                                             \
-      val->SetValue(map.GetVoidValue(res.node));                      \
-    }                                                                 \
-    return true;                                                      \
-  }
-    HANDLE_TYPE(INT32, Int32, uint32_t);
-    HANDLE_TYPE(UINT32, UInt32, uint32_t);
-    HANDLE_TYPE(INT64, Int64, uint64_t);
-    HANDLE_TYPE(UINT64, UInt64, uint64_t);
-    HANDLE_TYPE(BOOL, Bool, bool);
-    HANDLE_TYPE(STRING, String, std::string);
-#undef HANDLE_TYPE
-    default:
-      Unreachable();
-  }
+  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
+    auto res = map.FindHelper(key);
+    if (res.node == nullptr) {
+      return false;
+    }
+    if (val != nullptr) {
+      val->SetValue(map.GetVoidValue(res.node));
+    }
+    return true;
+  });
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map) {
