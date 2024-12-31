@@ -221,8 +221,23 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
-#ifdef __GNUC__
+#ifdef __has_extension
+#if __has_extension(c_atomic)
+#define UPB_ATOMICS_EXTENSION
+#endif
+#endif
+
+#if defined(UPB_ATOMICS_EXTENSION) || \
+    ((__STDC_VERSION__ >= 201112L) && !defined(__STDC_NO_ATOMICS__))
 #define UPB_USE_C11_ATOMICS
+#elif !defined(UPB_SUPPRESS_MISSING_ATOMICS)
+#error \
+    "Your compiler does not support C11 atomic instructions, which UPB uses. If you are using MSVC, you may need to specify /experimental:c11atomics. If you do not use UPB on multiple threads, you can suppress this error by defining UPB_SUPPRESS_MISSING_ATOMICS."
+#endif
+
+#undef UPB_ATOMICS_EXTENSION
+
+#if defined(UPB_USE_C11_ATOMICS)
 #define UPB_ATOMIC(T) _Atomic(T)
 #else
 #define UPB_ATOMIC(T) T
@@ -311,7 +326,7 @@ Error, UINTPTR_MAX is undefined
  */
 
 /* Due to preprocessor limitations, the conditional logic for setting
- * UPN_CLANG_ASAN below cannot be consolidated into a portable one-liner.
+ * UPB_CLANG_ASAN below cannot be consolidated into a portable one-liner.
  * See https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
  */
 #if defined(__has_feature)
