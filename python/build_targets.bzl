@@ -468,6 +468,11 @@ def build_targets(name):
         srcs = ["python_version_test.py"],
     )
 
+    internal_py_test(
+        name = "python_api_test",
+        srcs = ["python_api_test.py"],
+    )
+
     conformance_test(
         name = "conformance_test",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
