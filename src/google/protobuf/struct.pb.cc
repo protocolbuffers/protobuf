@@ -686,10 +686,10 @@ Value::Value(
         _impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
         break;
       case kStructValue:
-        _impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+        _impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
         break;
       case kListValue:
-        _impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+        _impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.list_value_);
         break;
   }
 
@@ -1029,8 +1029,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
       }
       case kStructValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.struct_value_ =
-              ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+          _this->_impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
         } else {
           _this->_impl_.kind_.struct_value_->MergeFrom(from._internal_struct_value());
         }
@@ -1038,8 +1037,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
       }
       case kListValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.list_value_ =
-              ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+          _this->_impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.list_value_);
         } else {
           _this->_impl_.kind_.list_value_->MergeFrom(from._internal_list_value());
         }

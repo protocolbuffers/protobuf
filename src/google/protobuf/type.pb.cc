@@ -460,9 +460,9 @@ Type::Type(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000004u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
-                              arena, *from._impl_.source_context_)
-                        : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000004u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_)
+                : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
@@ -868,8 +868,7 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
       if (_this->_impl_.source_context_ == nullptr) {
-        _this->_impl_.source_context_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+        _this->_impl_.source_context_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_);
       } else {
         _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
       }
@@ -1558,9 +1557,9 @@ Enum::Enum(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000004u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
-                              arena, *from._impl_.source_context_)
-                        : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000004u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_)
+                : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
@@ -1936,8 +1935,7 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
       if (_this->_impl_.source_context_ == nullptr) {
-        _this->_impl_.source_context_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+        _this->_impl_.source_context_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_);
       } else {
         _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
       }
@@ -2365,9 +2363,9 @@ Option::Option(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.value_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(
-                              arena, *from._impl_.value_)
-                        : nullptr;
+  _impl_.value_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.value_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
@@ -2598,8 +2596,7 @@ void Option::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.value_ != nullptr);
       if (_this->_impl_.value_ == nullptr) {
-        _this->_impl_.value_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(arena, *from._impl_.value_);
+        _this->_impl_.value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.value_);
       } else {
         _this->_impl_.value_->MergeFrom(*from._impl_.value_);
       }
