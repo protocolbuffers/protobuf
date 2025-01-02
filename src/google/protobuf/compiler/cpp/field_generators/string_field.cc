@@ -16,6 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -268,8 +269,8 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
             template <typename Arg_ = const std::string&, typename... Args_>
             $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
             $DEPRECATED$ std::string* $mutable_name$();
-            $DEPRECATED$ [[nodiscard]] std::string* $release_name$();
-            $DEPRECATED$ void $set_allocated_name$(std::string* value);
+            $DEPRECATED$ [[nodiscard]] std::string* $nullable$ $release_name$();
+            $DEPRECATED$ void $set_allocated_name$(std::string* $nullable$ value);
 
             private:
             const std::string& _internal_$name$() const;
@@ -409,95 +410,94 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
 }
 
 void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  p->Emit(
-      {
-          {"if_IsDefault",
-           [&] {
-             if (EmptyDefault() || is_oneof()) return;
-             p->Emit(R"cc(
-               if ($field_$.IsDefault()) {
-                 return $default_variable_field$.get();
-               }
-             )cc");
-           }},
-          {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof()); }},
-          {"set_args", [&] { ArgsForSetter(p, is_inlined()); }},
-          {"check_hasbit",
-           [&] {
-             if (!is_oneof()) return;
-             p->Emit(R"cc(
-               if ($not_has_field$) {
-                 return $kDefaultStr$;
-               }
-             )cc");
-           }},
-          {"release_name",
-           SafeFunctionName(field_->containing_type(), field_, "release_")},
-          {"release_impl", [&] { ReleaseImpl(p); }},
-          {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
-      },
+  std::vector<Sub> vars = {
+      {"if_IsDefault",
+       [&] {
+         if (EmptyDefault() || is_oneof()) return;
+         p->Emit(R"cc(
+           if ($field_$.IsDefault()) {
+             return $default_variable_field$.get();
+           }
+         )cc");
+       }},
+      {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof()); }},
+      {"set_args", [&] { ArgsForSetter(p, is_inlined()); }},
+      {"check_hasbit",
+       [&] {
+         if (!is_oneof()) return;
+         p->Emit(R"cc(
+           if ($not_has_field$) {
+             return $kDefaultStr$;
+           }
+         )cc");
+       }},
+      {"release_name",
+       SafeFunctionName(field_->containing_type(), field_, "release_")},
+      {"release_impl", [&] { ReleaseImpl(p); }},
+      {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
+  };
+  absl::string_view code =
       R"cc(
-        inline const std::string& $Msg$::$name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $annotate_get$;
-          // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-          $if_IsDefault$;
-          return _internal_$name_internal$();
-        }
-        template <typename Arg_, typename... Args_>
-        PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg,
-                                                      Args_... args) {
-          $WeakDescriptorSelfPin$;
-          $TsanDetectConcurrentMutation$;
-          $PrepareSplitMessageForWrite$;
-          $update_hasbit$;
-          $field_$.$Set$(static_cast<Arg_&&>(arg), args..., $set_args$);
-          $annotate_set$;
-          // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-        }
-        inline std::string* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $PrepareSplitMessageForWrite$;
-          std::string* _s = _internal_mutable_$name_internal$();
-          $annotate_mutable$;
-          // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-          return _s;
-        }
-        inline const std::string& $Msg$::_internal_$name_internal$() const {
-          $TsanDetectConcurrentRead$;
-          $check_hasbit$;
-          return $field_$.Get();
-        }
-        inline void $Msg$::_internal_set_$name_internal$(const std::string& value) {
-          $TsanDetectConcurrentMutation$;
-          $update_hasbit$;
-          //~ Don't use $Set$ here; we always want the std::string variant
-          //~ regardless of whether this is a `bytes` field.
-          $field_$.Set(value, $set_args$);
-        }
-        inline std::string* $Msg$::_internal_mutable_$name_internal$() {
-          $TsanDetectConcurrentMutation$;
-          $update_hasbit$;
-          return $field_$.Mutable($lazy_args$, $set_args$);
-        }
-        inline std::string* $Msg$::$release_name$() {
-          $WeakDescriptorSelfPin$;
-          $TsanDetectConcurrentMutation$;
-          $annotate_release$;
-          $PrepareSplitMessageForWrite$;
-          // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
-          $release_impl$;
-        }
-        inline void $Msg$::set_allocated_$name$(std::string* value) {
-          $WeakDescriptorSelfPin$;
-          $TsanDetectConcurrentMutation$;
-          $PrepareSplitMessageForWrite$;
-          $set_allocated_impl$;
-          $annotate_set$;
-          // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
-        }
-      )cc");
+    inline const std::string& $Msg$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      $if_IsDefault$;
+      return _internal_$name_internal$();
+    }
+    template <typename Arg_, typename... Args_>
+    PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg, Args_... args) {
+      $WeakDescriptorSelfPin$;
+      $TsanDetectConcurrentMutation$;
+      $PrepareSplitMessageForWrite$;
+      $update_hasbit$;
+      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., $set_args$);
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+    }
+    inline std::string* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $PrepareSplitMessageForWrite$;
+      std::string* _s = _internal_mutable_$name_internal$();
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      return _s;
+    }
+    inline const std::string& $Msg$::_internal_$name_internal$() const {
+      $TsanDetectConcurrentRead$;
+      $check_hasbit$;
+      return $field_$.Get();
+    }
+    inline void $Msg$::_internal_set_$name_internal$(const std::string& value) {
+      $TsanDetectConcurrentMutation$;
+      $update_hasbit$;
+      //~ Don't use $Set$ here; we always want the std::string variant
+      //~ regardless of whether this is a `bytes` field.
+      $field_$.Set(value, $set_args$);
+    }
+    inline std::string* $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentMutation$;
+      $update_hasbit$;
+      return $field_$.Mutable($lazy_args$, $set_args$);
+    }
+    inline std::string* $nullable$ $Msg$::$release_name$() {
+      $WeakDescriptorSelfPin$;
+      $TsanDetectConcurrentMutation$;
+      $annotate_release$;
+      $PrepareSplitMessageForWrite$;
+      // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
+      $release_impl$;
+    }
+    inline void $Msg$::set_allocated_$name$(std::string* $nullable$ value) {
+      $WeakDescriptorSelfPin$;
+      $TsanDetectConcurrentMutation$;
+      $PrepareSplitMessageForWrite$;
+      $set_allocated_impl$;
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
+    })cc";
+  p->Emit(vars, code);
 
   if (is_inlined()) {
     p->Emit(R"cc(

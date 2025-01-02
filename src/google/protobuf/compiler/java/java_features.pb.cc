@@ -54,7 +54,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[1];
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -149,7 +149,7 @@ class JavaFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
 };
 
-JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
+JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -159,7 +159,7 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
 JavaFeatures::JavaFeatures(
-    ::google::protobuf::Arena* arena, const JavaFeatures& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -171,10 +171,10 @@ JavaFeatures::JavaFeatures(
 }
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void JavaFeatures::SharedCtor(::_pb::Arena* arena) {
+inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, utf8_validation_),
@@ -194,8 +194,8 @@ inline void JavaFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* JavaFeatures::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JavaFeatures(arena);
 }
 constexpr auto JavaFeatures::InternalNewImpl_() {
