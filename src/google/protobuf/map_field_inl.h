@@ -35,14 +35,6 @@ namespace protobuf {
 namespace internal {
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::SwapImpl(MapFieldBase& lhs,
-                                               MapFieldBase& rhs) {
-  MapFieldBase::SwapPayload(lhs, rhs);
-  static_cast<TypeDefinedMapFieldBase&>(lhs).map_.swap(
-      static_cast<TypeDefinedMapFieldBase&>(rhs).map_);
-}
-
-template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
                                                     const MapFieldBase& other) {
   auto& self = static_cast<TypeDefinedMapFieldBase&>(base);

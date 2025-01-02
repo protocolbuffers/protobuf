@@ -513,6 +513,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
                                                const MapKey& map_key,
                                                MapValueRef* val);
   static bool DeleteMapValueImpl(MapFieldBase& self, const MapKey& map_key);
+  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
 
  private:
   friend class ContendedMapCleanTest;
@@ -640,7 +641,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   using Iter = typename Map<Key, T>::const_iterator;
 
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
-  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

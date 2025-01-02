@@ -379,6 +379,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(arena_, other->arena_);
   }
 
+  void UntypedMergeFrom(const UntypedMapBase& other);
+  void UntypedSwap(UntypedMapBase& other);
+
   static size_type max_size() {
     return std::numeric_limits<map_index_t>::max();
   }
@@ -674,6 +677,7 @@ class KeyMapBase : public UntypedMapBase {
   using KeyNode = internal::KeyNode<Key>;
 
  protected:
+  friend UntypedMapBase;
   friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
