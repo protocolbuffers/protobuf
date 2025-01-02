@@ -131,13 +131,12 @@ class SingularMessage : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit(
-        "$name$_{$superclass$::CopyConstruct<$Submsg$>(arena, *from.$name$_)}");
+    p->Emit("$name$_{$superclass$::CopyConstruct(arena, *from.$name$_)}");
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field$);
+      $field$ = $superclass$::CopyConstruct(arena, *from.$field$);
     )cc");
   }
 
@@ -359,8 +358,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
-        _this->$field_$ =
-            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
       }
@@ -388,8 +386,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
     if ((from.$has_hasbit$) != 0) {
-      _this->$field_$ =
-          $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -642,8 +639,7 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
     if (from._internal_has_$name$()) {
-      _this->$field_$ =
-          $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -670,8 +666,7 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
   } else {
     p->Emit(R"cc(
       if (oneof_needs_init) {
-        _this->$field_$ =
-            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(from._internal_$name$());
       }

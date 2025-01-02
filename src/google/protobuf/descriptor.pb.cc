@@ -2705,12 +2705,12 @@ FileDescriptorProto::FileDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FileOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
-  _impl_.source_code_info_ = (cached_has_bits & 0x00000010u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceCodeInfo>(
-                              arena, *from._impl_.source_code_info_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000008u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
+  _impl_.source_code_info_ = (cached_has_bits & 0x00000010u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_code_info_)
+                : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
@@ -3268,8 +3268,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FileOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -3277,8 +3276,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
     if (cached_has_bits & 0x00000010u) {
       ABSL_DCHECK(from._impl_.source_code_info_ != nullptr);
       if (_this->_impl_.source_code_info_ == nullptr) {
-        _this->_impl_.source_code_info_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceCodeInfo>(arena, *from._impl_.source_code_info_);
+        _this->_impl_.source_code_info_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_code_info_);
       } else {
         _this->_impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
       }
@@ -3384,9 +3382,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::ExtensionRangeOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, start_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -3628,8 +3626,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::ExtensionRangeOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -3991,9 +3988,9 @@ DescriptorProto::DescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::MessageOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
 }
@@ -4491,8 +4488,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const :
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::MessageOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -4967,9 +4963,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   _impl_.verification_ = from._impl_.verification_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
@@ -5271,8 +5267,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, c
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -5369,9 +5364,9 @@ FieldDescriptorProto::FieldDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000020u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000020u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, number_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -5823,8 +5818,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
     if (cached_has_bits & 0x00000020u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -5929,9 +5923,9 @@ OneofDescriptorProto::OneofDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::OneofOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -6151,8 +6145,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::OneofOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -6501,9 +6494,9 @@ EnumDescriptorProto::EnumDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
 }
@@ -6833,8 +6826,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -6918,9 +6910,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumValueOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -7166,8 +7158,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumValueOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -7255,9 +7246,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::ServiceOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -7521,8 +7512,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, 
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::ServiceOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -7606,9 +7596,9 @@ MethodDescriptorProto::MethodDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::MethodOptions>(
-                              arena, *from._impl_.options_)
-                        : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000008u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, client_streaming_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -7935,8 +7925,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, c
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::MethodOptions>(arena, *from._impl_.options_);
+        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -8040,9 +8029,9 @@ FileOptions::FileOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000400u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000400u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -8761,8 +8750,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     if (cached_has_bits & 0x00000400u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -8894,9 +8882,9 @@ MessageOptions::MessageOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, message_set_wire_format_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -9237,8 +9225,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -9966,12 +9953,12 @@ FieldOptions::FieldOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
-  _impl_.feature_support_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(
-                              arena, *from._impl_.feature_support_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
+  _impl_.feature_support_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, ctype_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -10479,8 +10466,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -10488,8 +10474,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
       if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(arena, *from._impl_.feature_support_);
+        _this->_impl_.feature_support_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
         _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
@@ -10611,9 +10596,9 @@ OneofOptions::OneofOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
@@ -10856,8 +10841,7 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.features_ != nullptr);
     if (_this->_impl_.features_ == nullptr) {
-      _this->_impl_.features_ =
-          ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
     } else {
       _this->_impl_.features_->MergeFrom(*from._impl_.features_);
     }
@@ -10942,9 +10926,9 @@ EnumOptions::EnumOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, allow_alias_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -11253,8 +11237,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -11354,12 +11337,12 @@ EnumValueOptions::EnumValueOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
-  _impl_.feature_support_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(
-                              arena, *from._impl_.feature_support_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
+  _impl_.feature_support_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -11679,8 +11662,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -11688,8 +11670,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
       if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(arena, *from._impl_.feature_support_);
+        _this->_impl_.feature_support_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
         _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
@@ -11786,9 +11767,9 @@ ServiceOptions::ServiceOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   _impl_.deprecated_ = from._impl_.deprecated_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
@@ -12056,8 +12037,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -12151,9 +12131,9 @@ MethodOptions::MethodOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.features_)
-                        : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -12453,8 +12433,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -13691,12 +13670,12 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.overridable_features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.overridable_features_)
-                        : nullptr;
-  _impl_.fixed_features_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.fixed_features_)
-                        : nullptr;
+  _impl_.overridable_features_ = (cached_has_bits & 0x00000001u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.overridable_features_)
+                : nullptr;
+  _impl_.fixed_features_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.fixed_features_)
+                : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -13937,8 +13916,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.overridable_features_ != nullptr);
       if (_this->_impl_.overridable_features_ == nullptr) {
-        _this->_impl_.overridable_features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.overridable_features_);
+        _this->_impl_.overridable_features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.overridable_features_);
       } else {
         _this->_impl_.overridable_features_->MergeFrom(*from._impl_.overridable_features_);
       }
@@ -13946,8 +13924,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.fixed_features_ != nullptr);
       if (_this->_impl_.fixed_features_ == nullptr) {
-        _this->_impl_.fixed_features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.fixed_features_);
+        _this->_impl_.fixed_features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.fixed_features_);
       } else {
         _this->_impl_.fixed_features_->MergeFrom(*from._impl_.fixed_features_);
       }

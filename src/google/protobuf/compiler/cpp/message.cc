@@ -3186,9 +3186,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$) ? $superclass$::CopyConstruct<$submsg$>(
-                                          arena, *from.$field$)
-                                    : nullptr;
+              $field$ = ($has_msg$)
+                            ? $superclass$::CopyConstruct(arena, *from.$field$)
+                            : nullptr;
             )cc");
   };
 

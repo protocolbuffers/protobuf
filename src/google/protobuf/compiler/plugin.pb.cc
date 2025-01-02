@@ -697,9 +697,9 @@ CodeGeneratorRequest::CodeGeneratorRequest(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(
-                              arena, *from._impl_.compiler_version_)
-                        : nullptr;
+  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.compiler_version_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -1028,8 +1028,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, co
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(from._impl_.compiler_version_ != nullptr);
       if (_this->_impl_.compiler_version_ == nullptr) {
-        _this->_impl_.compiler_version_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(arena, *from._impl_.compiler_version_);
+        _this->_impl_.compiler_version_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.compiler_version_);
       } else {
         _this->_impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
       }
@@ -1119,9 +1118,9 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(
-                              arena, *from._impl_.generated_code_info_)
-                        : nullptr;
+  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.generated_code_info_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -1398,8 +1397,7 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(from._impl_.generated_code_info_ != nullptr);
       if (_this->_impl_.generated_code_info_ == nullptr) {
-        _this->_impl_.generated_code_info_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(arena, *from._impl_.generated_code_info_);
+        _this->_impl_.generated_code_info_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.generated_code_info_);
       } else {
         _this->_impl_.generated_code_info_->MergeFrom(*from._impl_.generated_code_info_);
       }
