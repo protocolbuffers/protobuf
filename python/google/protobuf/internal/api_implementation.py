@@ -85,9 +85,10 @@ if _implementation_type == 'cpp':
     _c_module = _message
     del _message
   except ImportError:
-    # TODO: fail back to python
     warnings.warn(
         'Selected implementation cpp is not available.')
+    _implementation_type = 'python'
+    _c_module = None
     pass
 
 if _implementation_type == 'upb':
@@ -100,6 +101,7 @@ if _implementation_type == 'upb':
     warnings.warn('Selected implementation upb is not available. '
                   'Falling back to the python implementation.')
     _implementation_type = 'python'
+    _c_module = None
     pass
 
 # Detect if serialization should be deterministic by default
