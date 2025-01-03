@@ -264,82 +264,82 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::uint8_t* Timestamp::_InternalSerialize(
-            const MessageLite& base, ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) {
-          const Timestamp& this_ = static_cast<const Timestamp&>(base);
+::uint8_t* Timestamp::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+  const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::uint8_t* Timestamp::_InternalSerialize(
-            ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-          const Timestamp& this_ = *this;
+::uint8_t* Timestamp::_InternalSerialize(
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  const Timestamp& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
-          ::uint32_t cached_has_bits = 0;
-          (void)cached_has_bits;
+  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
 
-          // int64 seconds = 1;
-          if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
-            if (this_._internal_seconds() != 0) {
-              target = ::google::protobuf::internal::WireFormatLite::
-                  WriteInt64ToArrayWithField<1>(
-                      stream, this_._internal_seconds(), target);
-            }
-          }
+  // int64 seconds = 1;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (this_._internal_seconds() != 0) {
+      target = ::google::protobuf::internal::WireFormatLite::
+          WriteInt64ToArrayWithField<1>(
+              stream, this_._internal_seconds(), target);
+    }
+  }
 
-          // int32 nanos = 2;
-          if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
-            if (this_._internal_nanos() != 0) {
-              target = ::google::protobuf::internal::WireFormatLite::
-                  WriteInt32ToArrayWithField<2>(
-                      stream, this_._internal_nanos(), target);
-            }
-          }
+  // int32 nanos = 2;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (this_._internal_nanos() != 0) {
+      target = ::google::protobuf::internal::WireFormatLite::
+          WriteInt32ToArrayWithField<2>(
+              stream, this_._internal_nanos(), target);
+    }
+  }
 
-          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
-            target =
-                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-          }
-          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
-          return target;
-        }
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
+  return target;
+}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::size_t Timestamp::ByteSizeLong(const MessageLite& base) {
-          const Timestamp& this_ = static_cast<const Timestamp&>(base);
+::size_t Timestamp::ByteSizeLong(const MessageLite& base) {
+  const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t Timestamp::ByteSizeLong() const {
-          const Timestamp& this_ = *this;
+::size_t Timestamp::ByteSizeLong() const {
+  const Timestamp& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
-          ::size_t total_size = 0;
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
+  ::size_t total_size = 0;
 
-          ::uint32_t cached_has_bits = 0;
-          // Prevent compiler warnings about cached_has_bits being unused
-          (void)cached_has_bits;
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
 
-          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-          cached_has_bits = this_._impl_._has_bits_[0];
-          if (cached_has_bits & 0x00000003u) {
-            // int64 seconds = 1;
-            if (cached_has_bits & 0x00000001u) {
-              if (this_._internal_seconds() != 0) {
-                total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-                    this_._internal_seconds());
-              }
-            }
-            // int32 nanos = 2;
-            if (cached_has_bits & 0x00000002u) {
-              if (this_._internal_nanos() != 0) {
-                total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-                    this_._internal_nanos());
-              }
-            }
-          }
-          return this_.MaybeComputeUnknownFieldsSize(total_size,
-                                                     &this_._impl_._cached_size_);
-        }
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    // int64 seconds = 1;
+    if (cached_has_bits & 0x00000001u) {
+      if (this_._internal_seconds() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+            this_._internal_seconds());
+      }
+    }
+    // int32 nanos = 2;
+    if (cached_has_bits & 0x00000002u) {
+      if (this_._internal_nanos() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_nanos());
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
 
 void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Timestamp*>(&to_msg);
