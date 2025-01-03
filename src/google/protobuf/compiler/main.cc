@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/python/generator.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
+#include "google/protobuf/compiler/ruby/rbs_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
 
 #ifdef DISABLE_PROTOC_CONFIG
@@ -91,6 +92,10 @@ int ProtobufMain(int argc, char* argv[]) {
   ruby::Generator rb_generator;
   cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
+
+  ruby::RBSGenerator rbs_generator;
+  cli.RegisterGenerator("--rbs_out", "--rbs_opt", &rbs_generator,
+                        "Generate RBS type definition.");
 
   // CSharp
   csharp::Generator csharp_generator;
