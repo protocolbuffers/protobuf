@@ -739,11 +739,19 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     enum_value.number = 0
     self.db.Add(file_proto)
 
-    self.assertRaisesRegex(KeyError, 'SubMessage',
-                           self.pool.FindMessageTypeByName,
-                           'collector.ErrorMessage')
-    self.assertRaisesRegex(KeyError, 'SubMessage', self.pool.FindFileByName,
-                           'error_file')
+    # Nonconformance: UPB will raise a TypeError whereas other implementations
+    # will raise KeyError when SubMessage cannot be indexed.
+    error_type = TypeError if api_implementation.Type() == 'upb' else KeyError
+    self.assertRaisesRegex(
+        error_type,
+        'SubMessage',
+        self.pool.FindMessageTypeByName,
+        'collector.ErrorMessage',
+    )
+    self.assertRaisesRegex(
+        error_type, 'SubMessage', self.pool.FindFileByName, 'error_file'
+    )
+
     with self.assertRaises(KeyError) as exc:
       self.pool.FindFileByName('none_file')
     self.assertIn(str(exc.exception), ('\'none_file\'',
@@ -756,35 +764,85 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     # method later will return a descriptor which is not build.
     # TODO: fix pure python to revert the load if file can not be build
     if api_implementation.Type() != 'python':
-      error_msg = ('Invalid proto descriptor for file "error_file":\\n  '
-                   'collector.ErrorMessage.nested_message_field: "SubMessage" '
-                   'is not defined.\\n  collector.ErrorMessage.MyOneof: Oneof '
-                   'must have at least one field.\\n\'')
-      with self.assertRaises(KeyError) as exc:
-        self.pool.FindMessageTypeByName('collector.ErrorMessage')
-      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for '
-                       'message collector.ErrorMessage\\n' + error_msg)
+      if api_implementation.Type() == 'cpp':
+        error_msg = (
+            'Invalid proto descriptor for file "error_file":\\n  '
+            'collector.ErrorMessage.nested_message_field: "SubMessage" '
+            'is not defined.\\n  collector.ErrorMessage.MyOneof: Oneof '
+            "must have at least one field.\\n'"
+        )
+        with self.assertRaises(KeyError) as exc:
+          self.pool.FindMessageTypeByName('collector.ErrorMessage')
+        self.assertEqual(
+            str(exc.exception),
+            "'Couldn\\'t build file for message collector.ErrorMessage\\n"
+            + error_msg,
+        )
 
-      with self.assertRaises(KeyError) as exc:
-        self.pool.FindFieldByName('collector.ErrorMessage.nested_message_field')
-      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for field'
-                       ' collector.ErrorMessage.nested_message_field\\n'
-                       + error_msg)
+        with self.assertRaises(KeyError) as exc:
+          self.pool.FindFieldByName(
+              'collector.ErrorMessage.nested_message_field'
+          )
+        self.assertEqual(
+            str(exc.exception),
+            "'Couldn\\'t build file for field"
+            ' collector.ErrorMessage.nested_message_field\\n'
+            + error_msg,
+        )
 
-      with self.assertRaises(KeyError) as exc:
-        self.pool.FindEnumTypeByName('collector.MyEnum')
-      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for enum'
-                       ' collector.MyEnum\\n' + error_msg)
+        with self.assertRaises(KeyError) as exc:
+          self.pool.FindEnumTypeByName('collector.MyEnum')
+        self.assertEqual(
+            str(exc.exception),
+            "'Couldn\\'t build file for enum collector.MyEnum\\n" + error_msg,
+        )
 
-      with self.assertRaises(KeyError) as exc:
-        self.pool.FindFileContainingSymbol('collector.MyEnumValue')
-      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for symbol'
-                       ' collector.MyEnumValue\\n' + error_msg)
+        with self.assertRaises(KeyError) as exc:
+          self.pool.FindFileContainingSymbol('collector.MyEnumValue')
+        self.assertEqual(
+            str(exc.exception),
+            "'Couldn\\'t build file for symbol collector.MyEnumValue\\n"
+            + error_msg,
+        )
 
-      with self.assertRaises(KeyError) as exc:
-        self.pool.FindOneofByName('collector.ErrorMessage.MyOneof')
-      self.assertEqual(str(exc.exception), '\'Couldn\\\'t build file for oneof'
-                       ' collector.ErrorMessage.MyOneof\\n' + error_msg)
+        with self.assertRaises(KeyError) as exc:
+          self.pool.FindOneofByName('collector.ErrorMessage.MyOneof')
+        self.assertEqual(
+            str(exc.exception),
+            "'Couldn\\'t build file for oneof collector.ErrorMessage.MyOneof\\n"
+            + error_msg,
+        )
+      else:
+        self.assertEqual(api_implementation.Type(), 'upb')
+
+        # Nonconformance: compared with C++, UPB will have less descriptive
+        # error messages, and raise TypeError instead of KeyError.
+        error_msg = (
+            "Couldn't build proto file into descriptor pool: "
+            "couldn't resolve name 'SubMessage'"
+        )
+
+        with self.assertRaises(TypeError) as exc:
+          self.pool.FindMessageTypeByName('collector.ErrorMessage')
+        self.assertEqual(str(exc.exception), error_msg)
+
+        with self.assertRaises(TypeError) as exc:
+          self.pool.FindFieldByName(
+              'collector.ErrorMessage.nested_message_field'
+          )
+        self.assertEqual(str(exc.exception), error_msg)
+
+        with self.assertRaises(TypeError) as exc:
+          self.pool.FindEnumTypeByName('collector.MyEnum')
+        self.assertEqual(str(exc.exception), error_msg)
+
+        with self.assertRaises(TypeError) as exc:
+          self.pool.FindFileContainingSymbol('collector.MyEnumValue')
+        self.assertEqual(str(exc.exception), error_msg)
+
+        with self.assertRaises(TypeError) as exc:
+          self.pool.FindOneofByName('collector.ErrorMessage.MyOneof')
+        self.assertEqual(str(exc.exception), error_msg)
 
 
 class ProtoFile(object):
