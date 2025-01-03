@@ -496,10 +496,9 @@ def internal_objc_proto_library(
 
 def internal_ruby_proto_library(
         name,
-        ruby_library,
+        rb_library,
         srcs = [],
         deps = [],
-        includes = ["."],
         default_runtime = "@com_google_protobuf//ruby:protobuf",
         protoc = "@com_google_protobuf//:protoc",
         testonly = None,
@@ -513,16 +512,15 @@ def internal_ruby_proto_library(
 
     Args:
       name: the name of the ruby_proto_library.
-      ruby_library: the ruby library rules to use.
+      rb_library: the ruby library rules to use.
       srcs: the .proto files to compile.
       deps: a list of dependency labels; must be a internal_ruby_proto_library.
-      includes: a string indicating the include path of the .proto files.
       default_runtime: the RubyProtobuf runtime
       protoc: the label of the protocol compiler to generate the sources.
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
       visibility: the visibility of the generated files.
-      **kwargs: other keyword arguments that are passed to ruby_library.
+      **kwargs: other keyword arguments that are passed to rb_library.
 
     """
 
@@ -533,7 +531,6 @@ def internal_ruby_proto_library(
         srcs = srcs,
         deps = [s + "_genproto" for s in deps],
         langs = ["ruby"],
-        includes = includes,
         protoc = protoc,
         testonly = testonly,
         visibility = visibility,
@@ -543,13 +540,12 @@ def internal_ruby_proto_library(
     deps = []
     if default_runtime:
         deps.append(default_runtime)
-    ruby_library(
+    rb_library(
         name = name,
         srcs = [name + "_genproto"],
         deps = deps,
         testonly = testonly,
         visibility = visibility,
-        includes = includes,
         **kwargs
     )
 
