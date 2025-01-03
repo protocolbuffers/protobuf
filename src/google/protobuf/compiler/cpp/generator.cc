@@ -67,6 +67,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
 
+      {"nullable", "PROTOBUF_NULLABLE"},
+      {"nonnull", "PROTOBUF_NONNULL"},
+
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
       // the extract script will rewrite.  That's why we use "CHK" (for example)
