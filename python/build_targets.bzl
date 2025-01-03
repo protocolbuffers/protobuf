@@ -29,7 +29,9 @@ def build_targets(name):
     py_library(
         name = "protobuf_python",
         data = select({
-            "//conditions:default": [],
+            "//conditions:default": [
+                ":_message",  # Enables UPB
+            ],
             ":use_fast_cpp_protos": [
                 ":google/protobuf/internal/_api_implementation.so",
                 ":google/protobuf/pyext/_message.so",

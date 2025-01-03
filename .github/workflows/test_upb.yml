@@ -264,23 +264,14 @@ jobs:
       - name: Install Protobuf Test Wheel
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: pip install -vvv --no-index --find-links wheels protobuftests
-      - name: Run legacy unit tests
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        # Legacy upb tests use a "test wrapper" and get installed under pb_unit_tests.
-        run: |
-          PB_UNIT_TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
-          for test in $PB_UNIT_TESTS; do
-            python -m unittest -v $test
-          done
       - name: Run unit tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         # Newer upb tests are in the standard google.protobuf.internal path.
         # We will eventually make this into a wildcard rule once all tests
         # have been migrated to be compatible with upb.
         run: |
-          TESTS=(message_test message_factory_test descriptor_test proto_builder_test)
           for test in ${TESTS[@]}; do
-            python -m unittest -v google.protobuf.internal.${test}
+            python -m unittest -v google.protobuf.internal.*
           done
 
   test_pure_python_wheels:
