@@ -65,6 +65,7 @@ cc_library(
     ],
     deps = [
         ":names_internal",
+        "//src/google/protobuf:port",
         "//upb:port",
         "@com_google_absl//absl/strings",
     ],
