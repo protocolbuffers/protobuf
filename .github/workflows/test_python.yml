@@ -67,7 +67,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
-          exclude-targets: -//python/pb_unit_tests/...
 
 
   macos:
@@ -120,4 +119,3 @@ jobs:
             test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=11.0
-          exclude-targets: -//python/pb_unit_tests/...

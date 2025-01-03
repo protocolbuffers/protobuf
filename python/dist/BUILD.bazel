@@ -446,7 +446,6 @@ py_wheel(
         "//:python_common_test_protos",
         "//:python_specific_test_protos",
         "//:python_test_srcs",
-        "//python/pb_unit_tests:test_files",
         "//src/google/protobuf:testdata",
         "@com_google_absl_py//absl/testing:parameterized",
     ],
