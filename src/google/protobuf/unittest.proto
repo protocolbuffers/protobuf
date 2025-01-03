@@ -500,6 +500,13 @@ extend TestAllExtensions {
   TestAllTypes.NestedMessage oneof_nested_message_extension = 112;
   string oneof_string_extension = 113;
   bytes oneof_bytes_extension = 114;
+
+  string optional_utf8_string_extension = 115 [
+    features.utf8_validation = VERIFY
+  ];
+  repeated string repeated_utf8_string_extension = 116 [
+    features.utf8_validation = VERIFY
+  ];
 }
 
 message OptionalGroup_extension {
