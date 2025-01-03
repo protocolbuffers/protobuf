@@ -246,6 +246,11 @@ fn test_repeated_message_setter() {
 }
 
 #[gtest]
+fn test_empty_repeated_message_drop() {
+    let _ = Repeated::<TestAllTypes>::new();
+}
+
+#[gtest]
 fn test_repeated_message_drop() {
     let mut repeated = Repeated::<TestAllTypes>::new();
     repeated.as_mut().push(TestAllTypes::new());
