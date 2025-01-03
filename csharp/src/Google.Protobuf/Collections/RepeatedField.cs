@@ -8,11 +8,13 @@
 #endregion
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
 #if NET5_0_OR_GREATER
 using System.Runtime.CompilerServices;
@@ -116,12 +118,26 @@ namespace Google.Protobuf.Collections
                     {
                         EnsureSize(count + (length / codec.FixedSize));
 
-                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+
+                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
+                        if(BitConverter.IsLittleEndian)
                         {
-                            // Only FieldCodecs with a fixed size can reach here, and they are all known
-                            // types that don't allow the user to specify a custom reader action.
-                            // reader action will never return null.
-                            array[count++] = reader(ref ctx);
+                            GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
+                            span = span.Slice(count * codec.FixedSize);
+                            Debug.Assert(span.Length >= length);
+                            ParsingPrimitives.ReadPackedFieldLittleEndian(ref ctx.buffer, ref ctx.state, length, span);
+                            count += length / codec.FixedSize;
+                            handle.Free();
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                // Only FieldCodecs with a fixed size can reach here, and they are all known
+                                // types that don't allow the user to specify a custom reader action.
+                                // reader action will never return null.
+                                array[count++] = reader(ref ctx);
+                            }
                         }
                     }
                     else
@@ -241,9 +257,22 @@ namespace Google.Protobuf.Collections
                 int size = CalculatePackedDataSize(codec);
                 ctx.WriteTag(tag);
                 ctx.WriteLength(size);
-                for (int i = 0; i < count; i++)
+
+                // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
+                if(BitConverter.IsLittleEndian && codec.FixedSize > 0)
                 {
-                    writer(ref ctx, array[i]);
+                    GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
+                    span = span.Slice(0, Count * codec.FixedSize);
+
+                    WritingPrimitives.WriteRawBytes(ref ctx.buffer, ref ctx.state, span);
+                    handle.Free();
+                }
+                else
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        writer(ref ctx, array[i]);
+                    }
                 }
             }
             else
@@ -677,6 +706,15 @@ namespace Google.Protobuf.Collections
 #endif
 
             count = targetCount;
+        }
+
+        [SecuritySafeCritical]
+        private unsafe GCHandle AsSpanPinnedUnsafe(out Span<byte> span, FieldCodec<T> codec)
+        {
+            Debug.Assert(codec.FixedSize > 0);
+            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            span = new Span<byte>(handle.AddrOfPinnedObject().ToPointer(), array.Length * codec.FixedSize);
+            return handle;
         }
 
         #region Explicit interface implementation for IList and ICollection.
