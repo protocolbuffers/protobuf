@@ -2182,7 +2182,10 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddString(field->number(), field->type(),
+    MutableExtensionSet(message)->AddString(field->number(),
+                                            field->requires_utf8_validation()
+                                                ? FieldDescriptor::TYPE_STRING
+                                                : FieldDescriptor::TYPE_BYTES,
                                             std::move(value), field);
   } else {
     switch (field->cpp_string_type()) {

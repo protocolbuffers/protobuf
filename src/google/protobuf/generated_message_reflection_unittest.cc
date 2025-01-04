@@ -38,6 +38,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
@@ -1805,6 +1806,22 @@ TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
   rhs.mutable_child()->set_optional_int32(-1);
   lhs.GetReflection()->Swap(&lhs, &rhs);
   EXPECT_EQ(lhs.child().optional_int32(), -1);
+}
+
+TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
+  protobuf_unittest::TestChildExtension parsed_msg;
+  google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        optional_extension <
+          [protobuf_unittest.repeated_string_extension]: "foo"
+        >
+      )pb",
+      &parsed_msg);
+  protobuf_unittest::TestChildExtension msg;
+  msg.mutable_optional_extension()->AddExtension(
+      protobuf_unittest::repeated_string_extension, "bar");
+  parsed_msg.mutable_optional_extension()->Swap(
+      msg.mutable_optional_extension());
 }
 
 }  // namespace
