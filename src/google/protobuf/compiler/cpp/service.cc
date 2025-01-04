@@ -50,10 +50,10 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
           const ::$proto_ns$::ServiceDescriptor* GetDescriptor() override;
 
           void CallMethod(const ::$proto_ns$::MethodDescriptor* method,
-                          ::$proto_ns$::RpcController* controller,
+                          ::$proto_ns$::RpcController* $nullable$ controller,
                           const ::$proto_ns$::Message* request,
                           ::$proto_ns$::Message* response,
-                          ::google::protobuf::Closure* done) override;
+                          ::google::protobuf::Closure* $nullable$ done) override;
 
           const ::$proto_ns$::Message& GetRequestPrototype(
               const ::$proto_ns$::MethodDescriptor* method) const override;
@@ -64,8 +64,10 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
 
         class $dllexport_decl $$classname$_Stub final : public $classname$ {
          public:
-          $classname$_Stub(::$proto_ns$::RpcChannel* channel);
-          $classname$_Stub(::$proto_ns$::RpcChannel* channel,
+          //~ It seems like channel should be nonnull, but some tests use
+          //~ nullptr. TODO: clean up and switch to nonnull.
+          $classname$_Stub(::$proto_ns$::RpcChannel* $nullable$ channel);
+          $classname$_Stub(::$proto_ns$::RpcChannel* $nullable$ channel,
                            ::$proto_ns$::Service::ChannelOwnership ownership);
 
           $classname$_Stub(const $classname$_Stub&) = delete;
@@ -73,13 +75,13 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
 
           ~$classname$_Stub() override;
 
-          inline ::$proto_ns$::RpcChannel* channel() { return channel_; }
+          inline ::$proto_ns$::RpcChannel* $nullable$ channel() { return channel_; }
 
           // implements $classname$ ------------------------------------------
           $impls$;
 
          private:
-          ::$proto_ns$::RpcChannel* channel_;
+          ::$proto_ns$::RpcChannel* $nullable$ channel_;
           bool owns_channel_;
         };
       )cc");
@@ -101,10 +103,10 @@ void ServiceGenerator::GenerateMethodSignatures(VirtualOrNot virtual_or_not,
         // No cc, clang-format does not format this string well due to the
         // $ override$ substitution.
         R"(
-          $virtual $void $name$(::$proto_ns$::RpcController* controller,
+          $virtual $void $name$(::$proto_ns$::RpcController* $nullable$ controller,
                                 const $input$* request,
                                 $output$* response,
-                                ::google::protobuf::Closure* done)$ override$;
+                                ::google::protobuf::Closure* $nullable$ done)$ override$;
         )");
   }
 }
@@ -140,11 +142,12 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
 
         $get_response$;
 
-        $classname$_Stub::$classname$_Stub(::$proto_ns$::RpcChannel* channel)
+        $classname$_Stub::$classname$_Stub(
+            ::$proto_ns$::RpcChannel* $nullable$ channel)
             : channel_(channel), owns_channel_(false) {}
 
         $classname$_Stub::$classname$_Stub(
-            ::$proto_ns$::RpcChannel* channel,
+            ::$proto_ns$::RpcChannel* $nullable$ channel,
             ::$proto_ns$::Service::ChannelOwnership ownership)
             : channel_(channel),
               owns_channel_(ownership ==
@@ -169,8 +172,9 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
             {"output", QualifiedClassName(method->output_type(), *options_)},
         },
         R"cc(
-          void $classname$::$name$(::$proto_ns$::RpcController* controller,
-                                   const $input$*, $output$*, ::google::protobuf::Closure* done) {
+          void $classname$::$name$(
+              ::$proto_ns$::RpcController* $nullable$ controller,
+              const $input$*, $output$*, ::google::protobuf::Closure* $nullable$ done) {
             controller->SetFailed("Method $name$() not implemented.");
             done->Run();
           }
@@ -187,9 +191,9 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
       R"cc(
         void $classname$::CallMethod(
             const ::$proto_ns$::MethodDescriptor* method,
-            ::$proto_ns$::RpcController* controller,
+            ::$proto_ns$::RpcController* $nullable$ controller,
             const ::$proto_ns$::Message* request,
-            ::$proto_ns$::Message* response, ::google::protobuf::Closure* done) {
+            ::$proto_ns$::Message* response, ::google::protobuf::Closure* $nullable$ done) {
           ABSL_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$index$]);
           switch (method->index()) {
             $cases$;
@@ -277,9 +281,10 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
             {"index", absl::StrCat(i)},
         },
         R"cc(
-          void $classname$_Stub::$name$(::$proto_ns$::RpcController* controller,
-                                        const $input$* request,
-                                        $output$* response, ::google::protobuf::Closure* done) {
+          void $classname$_Stub::$name$(
+              ::$proto_ns$::RpcController* $nullable$ controller,
+              const $input$* request, $output$* response,
+              ::google::protobuf::Closure* $nullable$ done) {
             channel_->CallMethod(descriptor()->method($index$), controller,
                                  request, response, done);
           }

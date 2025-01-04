@@ -317,7 +317,7 @@ CordOneofFieldGenerator::CordOneofFieldGenerator(
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("::absl::Cord *$name$_;\n");
+  format("::absl::Cord* $nullable$ $name$_;\n");
 }
 
 void CordOneofFieldGenerator::GenerateStaticMembers(
