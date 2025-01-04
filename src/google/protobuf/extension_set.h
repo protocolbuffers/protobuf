@@ -33,6 +33,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
@@ -655,6 +656,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
         const = 0;
+    virtual absl::Cord GetEncoded() const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
                            const LazyMessageExtension& other, Arena* arena,
