@@ -1058,6 +1058,13 @@ class MessageTest(unittest.TestCase):
       m.repeated_string.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_string)
 
+  def testExtendWithNoLen(self, message_module):
+    """ Test extending repeated fields with iterables but no len"""
+    m = message_module.TestAllTypes()
+    self.assertSequenceEqual([], m.repeated_int32)
+    m.repeated_int32.extend(i for i in range(2))
+    self.assertSequenceEqual([0, 1], m.repeated_int32)
+
   def testExtendInt32WithPythonList(self, message_module):
     """Test extending repeated int32 fields with python lists."""
     m = message_module.TestAllTypes()
@@ -1068,6 +1075,8 @@ class MessageTest(unittest.TestCase):
     self.assertSequenceEqual([0, 1, 2], m.repeated_int32)
     m.repeated_int32.extend([3, 4])
     self.assertSequenceEqual([0, 1, 2, 3, 4], m.repeated_int32)
+    with self.assertRaises(TypeError):
+      m.repeated_int32.extend([5, 6, 'hi', 7])
 
   def testExtendFloatWithPythonList(self, message_module):
     """Test extending repeated float fields with python lists."""
