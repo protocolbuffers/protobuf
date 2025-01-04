@@ -488,7 +488,7 @@ PROTOBUF_NOINLINE void Version::Clear() {
   if (cached_has_bits & 0x00000001u) {
     _impl_.suffix_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000000eu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000eu)) {
     ::memset(&_impl_.major_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.patch_) -
         reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
@@ -602,7 +602,7 @@ void Version::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google:
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_suffix(from._internal_suffix());
     }
@@ -866,7 +866,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   _impl_.proto_file_.Clear();
   _impl_.source_file_descriptors_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.parameter_.ClearNonDefaultToEmpty();
     }
@@ -1021,7 +1021,7 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   _this->_internal_mutable_source_file_descriptors()->MergeFrom(
       from._internal_source_file_descriptors());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_parameter(from._internal_parameter());
     }
@@ -1257,7 +1257,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -1384,7 +1384,7 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -1637,7 +1637,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   if (cached_has_bits & 0x00000001u) {
     _impl_.error_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000000eu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000eu)) {
     ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.maximum_edition_) -
         reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
@@ -1773,7 +1773,7 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   _this->_internal_mutable_file()->MergeFrom(
       from._internal_file());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_error(from._internal_error());
     }

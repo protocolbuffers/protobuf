@@ -2967,7 +2967,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   _impl_.public_dependency_.Clear();
   _impl_.weak_dependency_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000001fu)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -3255,7 +3255,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
   _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
   _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -3520,7 +3520,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
     ABSL_DCHECK(_impl_.options_ != nullptr);
     _impl_.options_->Clear();
   }
-  if (cached_has_bits & 0x00000006u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000006u)) {
     ::memset(&_impl_.start_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.end_) -
         reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
@@ -3622,7 +3622,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
@@ -3816,7 +3816,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     ::memset(&_impl_.start_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.end_) -
         reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
@@ -3905,7 +3905,7 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.start_ = from._impl_.start_;
     }
@@ -4226,7 +4226,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   _impl_.reserved_range_.Clear();
   _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -4481,7 +4481,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const :
       from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -4739,7 +4739,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.full_name_.ClearNonDefaultToEmpty();
     }
@@ -4747,7 +4747,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
       _impl_.type_.ClearNonDefaultToEmpty();
     }
   }
-  if (cached_has_bits & 0x0000001cu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000001cu)) {
     ::memset(&_impl_.number_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.repeated_) -
         reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.repeated_));
@@ -4872,7 +4872,7 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000001fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_full_name(from._internal_full_name());
     }
@@ -5125,7 +5125,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
   _impl_.declaration_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
       _impl_.features_->Clear();
@@ -5263,7 +5263,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -5569,7 +5569,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -5590,12 +5590,12 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
       _impl_.options_->Clear();
     }
   }
-  if (cached_has_bits & 0x000000c0u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000c0u)) {
     ::memset(&_impl_.number_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.oneof_index_) -
         reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.oneof_index_));
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000700u)) {
     _impl_.proto3_optional_ = false;
     _impl_.label_ = 1;
     _impl_.type_ = 1;
@@ -5799,7 +5799,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000ffu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -5830,7 +5830,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
       _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
     }
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000700u)) {
     if (cached_has_bits & 0x00000100u) {
       _this->_impl_.proto3_optional_ = from._impl_.proto3_optional_;
     }
@@ -6043,7 +6043,7 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -6138,7 +6138,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -6327,7 +6327,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     ::memset(&_impl_.start_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.end_) -
         reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
@@ -6416,7 +6416,7 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.start_ = from._impl_.start_;
     }
@@ -6664,7 +6664,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   _impl_.reserved_range_.Clear();
   _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -6819,7 +6819,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
       from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -7043,7 +7043,7 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -7151,7 +7151,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -7388,7 +7388,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
 
   _impl_.method_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -7505,7 +7505,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, 
   _this->_internal_mutable_method()->MergeFrom(
       from._internal_method());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -7760,7 +7760,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -7912,7 +7912,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -8331,7 +8331,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   _impl_._extensions_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000ffu)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.java_package_.ClearNonDefaultToEmpty();
     }
@@ -8357,7 +8357,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
       _impl_.php_namespace_.ClearNonDefaultToEmpty();
     }
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000700u)) {
     if (cached_has_bits & 0x00000100u) {
       _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
     }
@@ -8369,12 +8369,12 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
       _impl_.features_->Clear();
     }
   }
-  if (cached_has_bits & 0x0000f800u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000f800u)) {
     ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.java_generic_services_) -
         reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generic_services_));
   }
-  if (cached_has_bits & 0x000f0000u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000f0000u)) {
     ::memset(&_impl_.py_generic_services_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.deprecated_) -
         reinterpret_cast<char*>(&_impl_.py_generic_services_)) + sizeof(_impl_.deprecated_));
@@ -8714,7 +8714,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000ffu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_java_package(from._internal_java_package());
     }
@@ -8740,7 +8740,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
       _this->_internal_set_php_namespace(from._internal_php_namespace());
     }
   }
-  if (cached_has_bits & 0x0000ff00u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000ff00u)) {
     if (cached_has_bits & 0x00000100u) {
       _this->_internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
     }
@@ -8771,7 +8771,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
       _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
     }
   }
-  if (cached_has_bits & 0x000f0000u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000f0000u)) {
     if (cached_has_bits & 0x00010000u) {
       _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
     }
@@ -9062,7 +9062,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
     ABSL_DCHECK(_impl_.features_ != nullptr);
     _impl_.features_->Clear();
   }
-  if (cached_has_bits & 0x0000003eu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003eu)) {
     ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
         reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
@@ -9221,7 +9221,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -9534,7 +9534,7 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_value(from._internal_value());
     }
@@ -9751,7 +9751,7 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
   if (cached_has_bits & 0x00000001u) {
     _impl_.deprecation_warning_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000000eu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000eu)) {
     ::memset(&_impl_.edition_introduced_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.edition_removed_) -
         reinterpret_cast<char*>(&_impl_.edition_introduced_)) + sizeof(_impl_.edition_removed_));
@@ -9865,7 +9865,7 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_deprecation_warning(from._internal_deprecation_warning());
     }
@@ -10190,7 +10190,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   _impl_.edition_defaults_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
       _impl_.features_->Clear();
@@ -10200,12 +10200,12 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
       _impl_.feature_support_->Clear();
     }
   }
-  if (cached_has_bits & 0x000000fcu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000fcu)) {
     ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.deprecated_) -
         reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.deprecated_));
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000700u)) {
     ::memset(&_impl_.weak_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.retention_) -
         reinterpret_cast<char*>(&_impl_.weak_)) + sizeof(_impl_.retention_));
@@ -10462,7 +10462,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x000000ffu)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -10498,7 +10498,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
     }
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000700u)) {
     if (cached_has_bits & 0x00000100u) {
       _this->_impl_.weak_ = from._impl_.weak_;
     }
@@ -11233,7 +11233,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -11512,7 +11512,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
   _impl_._extensions_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
       _impl_.features_->Clear();
@@ -11658,7 +11658,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -12033,7 +12033,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -12302,7 +12302,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
     ABSL_DCHECK(_impl_.features_ != nullptr);
     _impl_.features_->Clear();
   }
-  if (cached_has_bits & 0x00000006u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000006u)) {
     ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.idempotency_level_) -
         reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.idempotency_level_));
@@ -12429,7 +12429,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -12735,7 +12735,7 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name_part(from._internal_name_part());
     }
@@ -12996,7 +12996,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 
   _impl_.name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.identifier_value_.ClearNonDefaultToEmpty();
     }
@@ -13007,7 +13007,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
       _impl_.aggregate_value_.ClearNonDefaultToEmpty();
     }
   }
-  if (cached_has_bits & 0x00000038u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000038u)) {
     ::memset(&_impl_.positive_int_value_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.double_value_) -
         reinterpret_cast<char*>(&_impl_.positive_int_value_)) + sizeof(_impl_.double_value_));
@@ -13166,7 +13166,7 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg, con
   _this->_internal_mutable_name()->MergeFrom(
       from._internal_name());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_identifier_value(from._internal_identifier_value());
     }
@@ -13433,7 +13433,7 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 
   _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     ::memset(&_impl_.field_presence_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.json_format_) -
         reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
@@ -13574,7 +13574,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000003fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.field_presence_ = from._impl_.field_presence_;
     }
@@ -13804,7 +13804,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(_impl_.overridable_features_ != nullptr);
       _impl_.overridable_features_->Clear();
@@ -13912,7 +13912,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000007u)) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.overridable_features_ != nullptr);
       if (_this->_impl_.overridable_features_ == nullptr) {
@@ -14152,7 +14152,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
 
   _impl_.defaults_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     ::memset(&_impl_.minimum_edition_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.maximum_edition_) -
         reinterpret_cast<char*>(&_impl_.minimum_edition_)) + sizeof(_impl_.maximum_edition_));
@@ -14263,7 +14263,7 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg, cons
   _this->_internal_mutable_defaults()->MergeFrom(
       from._internal_defaults());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.minimum_edition_ = from._impl_.minimum_edition_;
     }
@@ -14519,7 +14519,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
   _impl_.span_.Clear();
   _impl_.leading_detached_comments_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.leading_comments_.ClearNonDefaultToEmpty();
     }
@@ -14667,7 +14667,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_internal_mutable_span()->MergeFrom(from._internal_span());
   _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x00000003u)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_leading_comments(from._internal_leading_comments());
     }
@@ -15179,7 +15179,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
   if (cached_has_bits & 0x00000001u) {
     _impl_.source_file_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000000eu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000eu)) {
     ::memset(&_impl_.begin_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.semantic_) -
         reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
@@ -15312,7 +15312,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
 
   _this->_internal_mutable_path()->MergeFrom(from._internal_path());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (ABSL_PREDICT_FALSE(cached_has_bits & 0x0000000fu)) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_source_file(from._internal_source_file());
     }
