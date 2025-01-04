@@ -2182,8 +2182,15 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddString(field->number(), field->type(),
-                                            std::move(value), field);
+    if (field->type() == FieldDescriptor::TYPE_STRING &&
+        !field->requires_utf8_validation()) {
+      MutableExtensionSet(message)->AddString(field->number(),
+                                              FieldDescriptor::TYPE_BYTES,
+                                              std::move(value), field);
+    } else {
+      MutableExtensionSet(message)->AddString(field->number(), field->type(),
+                                              std::move(value), field);
+    }
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
