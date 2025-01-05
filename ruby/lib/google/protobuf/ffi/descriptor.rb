@@ -106,6 +106,15 @@ module Google
         end
       end
 
+      def to_proto
+        @to_proto ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.message_to_proto(self, size_ptr, temporary_arena)
+          Google::Protobuf::DescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+        end
+      end
+
       private
 
       extend Google::Protobuf::Internal::Convert
@@ -160,6 +169,7 @@ module Google
       attach_function :message_options,      :Descriptor_serialized_options,          [Descriptor, :pointer, Internal::Arena], :pointer
       attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [Descriptor], WellKnown
       attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [Descriptor, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
+      attach_function :message_to_proto,     :Descriptor_serialized_to_proto,         [Descriptor, :pointer, Internal::Arena], :pointer
     end
   end
 end

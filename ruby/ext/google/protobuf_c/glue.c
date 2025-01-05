@@ -55,6 +55,15 @@ char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t* size,
   return serialized;
 }
 
+char* Descriptor_serialized_to_proto(const upb_MessageDef* msgdef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_DescriptorProto* proto =
+    upb_MessageDef_ToProto(msgdef, arena);
+  char* serialized =
+    google_protobuf_DescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef,
                                          size_t* size, upb_Arena* arena) {
   const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(oneofdef);

@@ -451,6 +451,24 @@ static VALUE Descriptor_options(VALUE _self) {
   return message_options;
 }
 
+/*
+ * call-seq:
+ *     Descriptor.to_proto => DescriptorProto
+ *
+ * Returns the `DescriptorProto` of this `Descriptor`.
+ */
+static VALUE Descriptor_to_proto(VALUE _self) {
+  Descriptor* self = ruby_to_Descriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_DescriptorProto* proto = upb_MessageDef_ToProto(
+    self->msgdef, arena);
+  size_t size;
+  const char* serialized = google_protobuf_DescriptorProto_serialize(
+    proto, arena, &size);
+  VALUE proto_class = rb_path2class("Google::Protobuf::DescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
 static void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -463,6 +481,7 @@ static void Descriptor_register(VALUE module) {
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
   rb_define_method(klass, "options", Descriptor_options, 0);
+  rb_define_method(klass, "to_proto", Descriptor_to_proto, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
