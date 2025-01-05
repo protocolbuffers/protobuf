@@ -1135,6 +1135,24 @@ static VALUE OneOfDescriptor_options(VALUE _self) {
   return oneof_options;
 }
 
+/*
+ * call-seq:
+ *     OneofDescriptor.to_proto => OneofDescriptorProto
+ *
+ * Returns the `OneofDescriptorProto` of this `OneofDescriptor`.
+ */
+static VALUE OneOfDescriptor_to_proto(VALUE _self) {
+  OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_OneofDescriptorProto* proto = upb_OneofDef_ToProto(
+    self->oneofdef, arena);
+  size_t size;
+  const char* serialized = google_protobuf_OneofDescriptorProto_serialize(
+    proto, arena, &size);
+  VALUE proto_class = rb_path2class("Google::Protobuf::OneofDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
 static void OneofDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
@@ -1142,6 +1160,7 @@ static void OneofDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
   rb_define_method(klass, "options", OneOfDescriptor_options, 0);
+  rb_define_method(klass, "to_proto", OneOfDescriptor_to_proto, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;

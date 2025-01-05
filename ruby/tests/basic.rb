@@ -705,6 +705,13 @@ module BasicTest
       assert_equal "Custom option value", test_top_level_option.get(oneof_descriptor.options)
     end
 
+    def test_oneof_descriptor_to_proto
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofDescriptorProto, oneof_descriptor.to_proto
+    end
+
     def test_nested_extension
       descriptor = TestDeprecatedMessage.descriptor
       oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
