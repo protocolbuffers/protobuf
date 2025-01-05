@@ -69,6 +69,15 @@ char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef,
   return serialized;
 }
 
+char* FieldDescriptor_serialized_to_proto(const upb_FieldDef* fieldef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_FieldDescriptorProto* proto =
+    upb_FieldDef_ToProto(fieldef, arena);
+  char* serialized =
+    google_protobuf_FieldDescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* ServiceDescriptor_serialized_options(const upb_ServiceDef* servicedef,
                                            size_t* size, upb_Arena* arena) {
   const google_protobuf_ServiceOptions* opts =

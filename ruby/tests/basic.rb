@@ -669,6 +669,12 @@ module BasicTest
       assert field_descriptor.options.deprecated
     end
 
+    def test_field_descriptor_to_proto
+      field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
+
+      assert_instance_of Google::Protobuf::FieldDescriptorProto, field_descriptor.to_proto
+    end
+
     def test_descriptor_options
       descriptor = TestDeprecatedMessage.descriptor
 

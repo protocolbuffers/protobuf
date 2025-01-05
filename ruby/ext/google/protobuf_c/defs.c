@@ -979,6 +979,24 @@ static VALUE FieldDescriptor_options(VALUE _self) {
   return field_options;
 }
 
+/*
+ * call-seq:
+ *     FieldDescriptor.to_proto => FieldDescriptorProto
+ *
+ * Returns the `FieldDescriptorProto` of this `FieldDescriptor`.
+ */
+static VALUE FieldDescriptor_to_proto(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_FieldDescriptorProto* proto = upb_FieldDef_ToProto(
+    self->fielddef, arena);
+  size_t size;
+  const char* serialized = google_protobuf_FieldDescriptorProto_serialize(
+    proto, arena, &size);
+  VALUE proto_class = rb_path2class("Google::Protobuf::FieldDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
 static void FieldDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -998,6 +1016,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
   rb_define_method(klass, "options", FieldDescriptor_options, 0);
+  rb_define_method(klass, "to_proto", FieldDescriptor_to_proto, 0);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
 }
