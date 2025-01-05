@@ -38,6 +38,10 @@ class ServiceTest < Test::Unit::TestCase
     assert_equal 8325, extension_field.get(@test_service.options).int_option_value
   end
 
+  def test_service_to_proto
+    assert_instance_of Google::Protobuf::ServiceDescriptorProto, @test_service.to_proto
+  end
+
   def test_method_options
     assert_equal :IDEMPOTENT, @test_service_methods['IdempotentMethod'].options.idempotency_level
     assert_equal :NO_SIDE_EFFECTS, @test_service_methods['PureMethod'].options.idempotency_level

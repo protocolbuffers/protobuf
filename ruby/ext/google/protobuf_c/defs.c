@@ -1461,6 +1461,24 @@ static VALUE ServiceDescriptor_options(VALUE _self) {
   return service_options;
 }
 
+/*
+ * call-seq:
+ *     ServiceDescriptor.to_proto => ServiceDescriptorProto
+ *
+ * Returns the `ServiceDescriptorProto` of this `ServiceDescriptor`.
+ */
+static VALUE ServiceDescriptor_to_proto(VALUE _self) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_ServiceDescriptorProto* proto = upb_ServiceDef_ToProto(
+    self->servicedef, arena);
+  size_t size;
+  const char* serialized = google_protobuf_ServiceDescriptorProto_serialize(
+    proto, arena, &size);
+  VALUE proto_class = rb_path2class("Google::Protobuf::ServiceDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
 static void ServiceDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "ServiceDescriptor", rb_cObject);
   rb_define_alloc_func(klass, ServiceDescriptor_alloc);
@@ -1470,6 +1488,7 @@ static void ServiceDescriptor_register(VALUE module) {
   rb_define_method(klass, "file_descriptor", ServiceDescriptor_file_descriptor,
                    0);
   rb_define_method(klass, "options", ServiceDescriptor_options, 0);
+  rb_define_method(klass, "to_proto", ServiceDescriptor_to_proto, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cServiceDescriptor);
   cServiceDescriptor = klass;

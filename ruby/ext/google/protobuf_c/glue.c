@@ -71,6 +71,13 @@ char* ServiceDescriptor_serialized_options(const upb_ServiceDef* servicedef,
   return serialized;
 }
 
+char* ServiceDescriptor_serialized_to_proto(const upb_ServiceDef* servicedef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_ServiceDescriptorProto* proto = upb_ServiceDef_ToProto(servicedef, arena);
+  char* serialized = google_protobuf_ServiceDescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* MethodDescriptor_serialized_options(const upb_MethodDef* methoddef,
                                           size_t* size, upb_Arena* arena) {
   const google_protobuf_MethodOptions* opts = upb_MethodDef_Options(methoddef);
