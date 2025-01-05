@@ -26,6 +26,13 @@ char* EnumDescriptor_serialized_options(const upb_EnumDef* enumdef,
   return serialized;
 }
 
+char* EnumDescriptor_serialized_to_proto(const upb_EnumDef* enumdef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_EnumDescriptorProto* file_proto = upb_EnumDef_ToProto(enumdef, arena);
+  char* serialized = google_protobuf_EnumDescriptorProto_serialize(file_proto, arena, size);
+  return serialized;
+}
+
 char* FileDescriptor_serialized_options(const upb_FileDef* filedef,
                                         size_t* size, upb_Arena* arena) {
   const google_protobuf_FileOptions* opts = upb_FileDef_Options(filedef);

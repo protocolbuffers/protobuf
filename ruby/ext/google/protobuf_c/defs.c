@@ -1321,6 +1321,27 @@ static VALUE EnumDescriptor_options(VALUE _self) {
   return enum_options;
 }
 
+/*
+ * call-seq:
+ *     EnumDescriptor.to_proto => EnumDescriptorProto
+ *
+ * Returns the `EnumDescriptorProto` of this `EnumDescriptor`.
+ */
+static VALUE EnumDescriptor_to_proto(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_EnumDescriptorProto* proto = upb_EnumDef_ToProto(
+    self->enumdef, arena);
+
+  size_t size;
+  const char* serialized = google_protobuf_EnumDescriptorProto_serialize(
+    proto, arena, &size);
+
+  upb_Arena_Free(arena);
+  VALUE proto_class = rb_path2class("Google::Protobuf::EnumDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
 static void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1333,6 +1354,7 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
   rb_define_method(klass, "is_closed?", EnumDescriptor_is_closed, 0);
   rb_define_method(klass, "options", EnumDescriptor_options, 0);
+  rb_define_method(klass, "to_proto", EnumDescriptor_to_proto, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;

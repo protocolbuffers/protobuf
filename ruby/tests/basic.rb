@@ -683,6 +683,12 @@ module BasicTest
       assert enum_descriptor.options.deprecated
     end
 
+    def test_enum_descriptor_to_proto
+      enum_descriptor = TestDeprecatedEnum.descriptor
+
+      assert_instance_of Google::Protobuf::EnumDescriptorProto, enum_descriptor.to_proto
+    end
+
     def test_oneof_descriptor_options
       descriptor = TestDeprecatedMessage.descriptor
       oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
