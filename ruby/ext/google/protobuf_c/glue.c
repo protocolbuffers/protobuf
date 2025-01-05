@@ -84,3 +84,12 @@ char* MethodDescriptor_serialized_options(const upb_MethodDef* methoddef,
   char* serialized = google_protobuf_MethodOptions_serialize(opts, arena, size);
   return serialized;
 }
+
+char* MethodDescriptor_serialized_to_proto(const upb_MethodDef* methodef,
+                                        size_t* size, upb_Arena* arena) {
+  const google_protobuf_MethodDescriptorProto* proto =
+    upb_MethodDef_ToProto(methodef, arena);
+  char* serialized =
+    google_protobuf_MethodDescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}

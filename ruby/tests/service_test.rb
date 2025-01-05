@@ -23,7 +23,10 @@ class ServiceTest < Test::Unit::TestCase
   end
 
   def test_method_iteration
-    @test_service.each { |method| assert_kind_of Google::Protobuf::MethodDescriptor, method }
+    @test_service.each do |method|
+      assert_kind_of Google::Protobuf::MethodDescriptor, method
+      assert_instance_of Google::Protobuf::MethodDescriptorProto, method.to_proto
+    end
     assert_equal %w(UnaryOne UnaryTwo), @test_service.map { |method| method.name }.first(2)
   end
 

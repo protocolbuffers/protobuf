@@ -1624,6 +1624,24 @@ static VALUE MethodDescriptor_client_streaming(VALUE _self) {
 
 /*
  * call-seq:
+ *     MethodDescriptor.to_proto => MethodDescriptorProto
+ *
+ * Returns the `MethodDescriptorProto` of this `MethodDescriptor`.
+ */
+static VALUE MethodDescriptor_to_proto(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  upb_Arena* arena = upb_Arena_New();
+  google_protobuf_MethodDescriptorProto* proto = upb_MethodDef_ToProto(
+    self->methoddef, arena);
+  size_t size;
+  const char* serialized = google_protobuf_MethodDescriptorProto_serialize(
+    proto, arena, &size);
+  VALUE proto_class = rb_path2class("Google::Protobuf::MethodDescriptorProto");
+  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+}
+
+/*
+ * call-seq:
  *      MethodDescriptor.server_streaming => bool
  *
  * Returns whether or not this is a streaming response method
@@ -1645,6 +1663,7 @@ static void MethodDescriptor_register(VALUE module) {
                    0);
   rb_define_method(klass, "server_streaming", MethodDescriptor_server_streaming,
                    0);
+  rb_define_method(klass, "to_proto", MethodDescriptor_to_proto, 0);
   rb_gc_register_address(&cMethodDescriptor);
   cMethodDescriptor = klass;
 }
