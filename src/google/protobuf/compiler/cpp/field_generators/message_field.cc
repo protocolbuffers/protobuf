@@ -165,14 +165,14 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   p->Emit(R"cc(
     $DEPRECATED$ const $Submsg$& $name$() const;
     $DEPRECATED$ [[nodiscard]] $Submsg$* $nullable$ $release_name$();
-    $DEPRECATED$ $Submsg$* $mutable_name$();
+    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ $Submsg$* $nullable$ $unsafe_arena_release_name$();
 
     private:
     const $Submsg$& _internal_$name$() const;
-    $Submsg$* _internal_mutable_$name$();
+    $Submsg$* $nonnull$ _internal_mutable_$name$();
 
     public:
   )cc");
@@ -259,7 +259,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $field_$ = nullptr;
       return temp;
     }
-    inline $Submsg$* $Msg$::_internal_mutable_$name_internal$() {
+    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       if ($field_$ == nullptr) {
@@ -268,7 +268,8 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
       return $cast_field_$;
     }
-    inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       //~ TODO: add tests to make sure all write accessors are
       //~ able to prepare split message allocation.
       $WeakDescriptorSelfPin$;
@@ -574,7 +575,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $Submsg$* $Msg$::_internal_mutable_$name_internal$() {
+    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $StrongRef$;
       if ($not_has_field$) {
         clear_$oneof_name$();
@@ -586,7 +587,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $Submsg$* _msg = _internal_mutable_$name_internal$();
       $annotate_mutable$;
@@ -737,23 +739,23 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ $Submsg$* $mutable_name$(int index);
-    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $mutable_name$();
+    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
+    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
-    $pb$::RepeatedPtrField<$Submsg$>* $_internal_mutable_name$();
+    $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
   )cc");
   if (is_weak()) {
     p->Emit(R"cc(
       const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() const;
-      $pb$::WeakRepeatedPtrField<$Submsg$>* _internal_mutable_weak_$name$();
+      $pb$::WeakRepeatedPtrField<$Submsg$>* $nonnull$ _internal_mutable_weak_$name$();
     )cc");
   }
   p->Emit(R"cc(
     public:
     $DEPRECATED$ const $Submsg$& $name$(int index) const;
-    $DEPRECATED$ $Submsg$* $add_name$();
+    $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
     $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$() const;
   )cc");
 }
@@ -762,7 +764,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
   p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
           R"cc(
-            inline $Submsg$* $Msg$::mutable_$name$(int index)
+            inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
                 ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $WeakDescriptorSelfPin$;
               $annotate_mutable$;
@@ -773,7 +775,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           )cc");
 
   p->Emit(R"cc(
-    inline $pb$::RepeatedPtrField<$Submsg$>* $Msg$::mutable_$name$()
+    inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_mutable_list$;
@@ -795,7 +797,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             }
           )cc");
   p->Emit(R"cc(
-    inline $Submsg$* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $Submsg$* $nonnull$ $Msg$::add_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
@@ -822,7 +825,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>*
+      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
@@ -840,7 +843,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>*
+      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
@@ -853,7 +856,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $Msg$::_internal_$name_internal$() const {
         return _internal_weak_$name_internal$().weak;
       }
-      inline $pb$::RepeatedPtrField<$Submsg$>*
+      inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable_$name_internal$() {
         return &_internal_mutable_weak_$name_internal$()->weak;
       }

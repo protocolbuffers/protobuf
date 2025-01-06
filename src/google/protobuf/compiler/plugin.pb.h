@@ -106,8 +106,7 @@ inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Fea
 inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX =
     static_cast<CodeGeneratorResponse_Feature>(2);
 inline constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
-PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
-CodeGeneratorResponse_Feature_descriptor();
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse_Feature_descriptor();
 template <typename T>
 const std::string& CodeGeneratorResponse_Feature_Name(T value) {
   static_assert(std::is_same<T, CodeGeneratorResponse_Feature>::value ||
@@ -121,7 +120,8 @@ inline const std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorRespon
                                                  0, 2>(
       static_cast<int>(value));
 }
-inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGeneratorResponse_Feature* value) {
+inline bool CodeGeneratorResponse_Feature_Parse(
+    absl::string_view name, CodeGeneratorResponse_Feature* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
       CodeGeneratorResponse_Feature_descriptor(), name, value);
 }
@@ -138,7 +138,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   ~Version() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Version* msg, std::destroying_delete_t) {
+  void operator delete(Version* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Version));
   }
@@ -169,18 +169,18 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Version& default_instance() {
@@ -189,7 +189,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Version& a, Version& b) { a.Swap(&b); }
-  inline void Swap(Version* other) {
+  inline void Swap(Version* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -197,7 +197,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Version* other) {
+  void UnsafeArenaSwap(Version* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -205,7 +205,8 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Version* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  Version* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -226,29 +227,31 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(Version* other);
+  void InternalSwap(Version* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(
@@ -264,9 +267,10 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       : Version(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(
-      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -288,14 +292,14 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   const std::string& suffix() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_suffix(Arg_&& arg, Args_... args);
-  std::string* mutable_suffix();
+  std::string* PROTOBUF_NONNULL mutable_suffix();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_suffix();
   void set_allocated_suffix(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_suffix() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const std::string& value);
-  std::string* _internal_mutable_suffix();
+  std::string* PROTOBUF_NONNULL _internal_mutable_suffix();
 
   public:
   // optional int32 major = 1;
@@ -378,7 +382,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorResponse_File* msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorResponse_File* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse_File));
   }
@@ -409,18 +413,18 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorResponse_File& default_instance() {
@@ -429,7 +433,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorResponse_File* other) {
+  inline void Swap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -437,7 +441,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CodeGeneratorResponse_File* other) {
+  void UnsafeArenaSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -445,7 +449,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  CodeGeneratorResponse_File* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -466,29 +471,31 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(CodeGeneratorResponse_File* other);
+  void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(
@@ -504,9 +511,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       : CodeGeneratorResponse_File(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(
-      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -528,14 +536,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   const std::string& name() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
+  std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_name() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* _internal_mutable_name();
+  std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional string insertion_point = 2;
@@ -544,14 +552,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   const std::string& insertion_point() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_insertion_point(Arg_&& arg, Args_... args);
-  std::string* mutable_insertion_point();
+  std::string* PROTOBUF_NONNULL mutable_insertion_point();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_insertion_point();
   void set_allocated_insertion_point(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_insertion_point() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const std::string& value);
-  std::string* _internal_mutable_insertion_point();
+  std::string* PROTOBUF_NONNULL _internal_mutable_insertion_point();
 
   public:
   // optional string content = 15;
@@ -560,14 +568,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   const std::string& content() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_content(Arg_&& arg, Args_... args);
-  std::string* mutable_content();
+  std::string* PROTOBUF_NONNULL mutable_content();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_content();
   void set_allocated_content(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_content() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
-  std::string* _internal_mutable_content();
+  std::string* PROTOBUF_NONNULL _internal_mutable_content();
 
   public:
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
@@ -575,14 +583,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   void clear_generated_code_info() ;
   const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE release_generated_code_info();
-  ::google::protobuf::GeneratedCodeInfo* mutable_generated_code_info();
+  ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL mutable_generated_code_info();
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_generated_code_info();
 
   private:
   const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
-  ::google::protobuf::GeneratedCodeInfo* _internal_mutable_generated_code_info();
+  ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL _internal_mutable_generated_code_info();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
@@ -632,7 +640,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   ~CodeGeneratorResponse() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorResponse* msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorResponse* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse));
   }
@@ -663,18 +671,18 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorResponse& default_instance() {
@@ -683,7 +691,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorResponse* other) {
+  inline void Swap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -691,7 +699,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CodeGeneratorResponse* other) {
+  void UnsafeArenaSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -699,7 +707,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  CodeGeneratorResponse* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -720,29 +729,31 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(CodeGeneratorResponse* other);
+  void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(
@@ -758,9 +769,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       : CodeGeneratorResponse(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(
-      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -779,14 +791,15 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   static constexpr Feature Feature_MIN = CodeGeneratorResponse_Feature_Feature_MIN;
   static constexpr Feature Feature_MAX = CodeGeneratorResponse_Feature_Feature_MAX;
   static constexpr int Feature_ARRAYSIZE = CodeGeneratorResponse_Feature_Feature_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor* Feature_descriptor() {
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Feature_descriptor() {
     return CodeGeneratorResponse_Feature_descriptor();
   }
   template <typename T>
   static inline const std::string& Feature_Name(T value) {
     return CodeGeneratorResponse_Feature_Name(value);
   }
-  static inline bool Feature_Parse(absl::string_view name, Feature* value) {
+  static inline bool Feature_Parse(
+      absl::string_view name, Feature* PROTOBUF_NONNULL value) {
     return CodeGeneratorResponse_Feature_Parse(name, value);
   }
 
@@ -805,15 +818,15 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   public:
   void clear_file() ;
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* mutable_file();
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL mutable_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* _internal_mutable_file();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
   public:
   const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL add_file();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& file() const;
   // optional string error = 1;
   bool has_error() const;
@@ -821,14 +834,14 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   const std::string& error() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_error(Arg_&& arg, Args_... args);
-  std::string* mutable_error();
+  std::string* PROTOBUF_NONNULL mutable_error();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_error();
   void set_allocated_error(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_error() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_error(const std::string& value);
-  std::string* _internal_mutable_error();
+  std::string* PROTOBUF_NONNULL _internal_mutable_error();
 
   public:
   // optional uint64 supported_features = 2;
@@ -912,7 +925,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   ~CodeGeneratorRequest() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorRequest* msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorRequest* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorRequest));
   }
@@ -943,18 +956,18 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const CodeGeneratorRequest& default_instance() {
@@ -963,7 +976,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }
-  inline void Swap(CodeGeneratorRequest* other) {
+  inline void Swap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -971,7 +984,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CodeGeneratorRequest* other) {
+  void UnsafeArenaSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -979,7 +992,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  CodeGeneratorRequest* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1005,29 +1019,31 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+          stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(CodeGeneratorRequest* other);
+  void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(
@@ -1043,9 +1059,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       : CodeGeneratorRequest(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(
-      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -1070,18 +1087,18 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   public:
   void clear_file_to_generate() ;
   const std::string& file_to_generate(int index) const;
-  std::string* mutable_file_to_generate(int index);
+  std::string* PROTOBUF_NONNULL mutable_file_to_generate(int index);
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_file_to_generate(int index, Arg_&& value, Args_... args);
-  std::string* add_file_to_generate();
+  std::string* PROTOBUF_NONNULL add_file_to_generate();
   template <typename Arg_ = const std::string&, typename... Args_>
   void add_file_to_generate(Arg_&& value, Args_... args);
   const ::google::protobuf::RepeatedPtrField<std::string>& file_to_generate() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* mutable_file_to_generate();
+  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_file_to_generate();
 
   private:
   const ::google::protobuf::RepeatedPtrField<std::string>& _internal_file_to_generate() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* _internal_mutable_file_to_generate();
+  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_file_to_generate();
 
   public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1091,15 +1108,15 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   public:
   void clear_proto_file() ;
-  ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* mutable_proto_file();
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_proto_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* _internal_mutable_proto_file();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
   public:
   const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
-  ::google::protobuf::FileDescriptorProto* add_proto_file();
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file() const;
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
   int source_file_descriptors_size() const;
@@ -1108,15 +1125,15 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   public:
   void clear_source_file_descriptors() ;
-  ::google::protobuf::FileDescriptorProto* mutable_source_file_descriptors(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* mutable_source_file_descriptors();
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_source_file_descriptors();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* _internal_mutable_source_file_descriptors();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
   public:
   const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
-  ::google::protobuf::FileDescriptorProto* add_source_file_descriptors();
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors() const;
   // optional string parameter = 2;
   bool has_parameter() const;
@@ -1124,14 +1141,14 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   const std::string& parameter() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_parameter(Arg_&& arg, Args_... args);
-  std::string* mutable_parameter();
+  std::string* PROTOBUF_NONNULL mutable_parameter();
   [[nodiscard]] std::string* PROTOBUF_NULLABLE release_parameter();
   void set_allocated_parameter(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_parameter() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const std::string& value);
-  std::string* _internal_mutable_parameter();
+  std::string* PROTOBUF_NONNULL _internal_mutable_parameter();
 
   public:
   // optional .google.protobuf.compiler.Version compiler_version = 3;
@@ -1139,14 +1156,14 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   void clear_compiler_version() ;
   const ::google::protobuf::compiler::Version& compiler_version() const;
   [[nodiscard]] ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE release_compiler_version();
-  ::google::protobuf::compiler::Version* mutable_compiler_version();
+  ::google::protobuf::compiler::Version* PROTOBUF_NONNULL mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value);
   ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE unsafe_arena_release_compiler_version();
 
   private:
   const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
-  ::google::protobuf::compiler::Version* _internal_mutable_compiler_version();
+  ::google::protobuf::compiler::Version* PROTOBUF_NONNULL _internal_mutable_compiler_version();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
@@ -1311,7 +1328,8 @@ PROTOBUF_ALWAYS_INLINE void Version::set_suffix(Arg_&& arg, Args_... args) {
   _impl_.suffix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
-inline std::string* Version::mutable_suffix() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL Version::mutable_suffix()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_suffix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
   return _s;
@@ -1325,7 +1343,7 @@ inline void Version::_internal_set_suffix(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.suffix_.Set(value, GetArena());
 }
-inline std::string* Version::_internal_mutable_suffix() {
+inline std::string* PROTOBUF_NONNULL Version::_internal_mutable_suffix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.suffix_.Mutable( GetArena());
@@ -1372,7 +1390,8 @@ inline void CodeGeneratorRequest::clear_file_to_generate() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_to_generate_.Clear();
 }
-inline std::string* CodeGeneratorRequest::add_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorRequest::add_file_to_generate()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_file_to_generate()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -1383,7 +1402,7 @@ inline const std::string& CodeGeneratorRequest::file_to_generate(int index) cons
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_file_to_generate().Get(index);
 }
-inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index)
+inline std::string* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_file_to_generate(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_mutable_file_to_generate()->Mutable(index);
@@ -1407,7 +1426,7 @@ CodeGeneratorRequest::file_to_generate() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_file_to_generate();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>*
+inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
 CodeGeneratorRequest::mutable_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1418,7 +1437,7 @@ CodeGeneratorRequest::_internal_file_to_generate() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.file_to_generate_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>*
+inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
 CodeGeneratorRequest::_internal_mutable_file_to_generate() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.file_to_generate_;
@@ -1446,7 +1465,8 @@ PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& arg, Args
   _impl_.parameter_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
-inline std::string* CodeGeneratorRequest::mutable_parameter() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_parameter()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_parameter();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return _s;
@@ -1460,7 +1480,7 @@ inline void CodeGeneratorRequest::_internal_set_parameter(const std::string& val
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.parameter_.Set(value, GetArena());
 }
-inline std::string* CodeGeneratorRequest::_internal_mutable_parameter() {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_parameter() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.parameter_.Mutable( GetArena());
@@ -1499,12 +1519,12 @@ inline int CodeGeneratorRequest::_internal_proto_file_size() const {
 inline int CodeGeneratorRequest::proto_file_size() const {
   return _internal_proto_file_size();
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index)
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_mutable_proto_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* CodeGeneratorRequest::mutable_proto_file()
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1515,7 +1535,8 @@ inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::prot
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_proto_file().Get(index);
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_proto_file()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_proto_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
@@ -1531,7 +1552,7 @@ CodeGeneratorRequest::_internal_proto_file() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.proto_file_;
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
 CodeGeneratorRequest::_internal_mutable_proto_file() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.proto_file_;
@@ -1544,12 +1565,12 @@ inline int CodeGeneratorRequest::_internal_source_file_descriptors_size() const 
 inline int CodeGeneratorRequest::source_file_descriptors_size() const {
   return _internal_source_file_descriptors_size();
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_source_file_descriptors(int index)
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_mutable_source_file_descriptors()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* CodeGeneratorRequest::mutable_source_file_descriptors()
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1560,7 +1581,8 @@ inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::sour
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_source_file_descriptors().Get(index);
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_source_file_descriptors() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_source_file_descriptors()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
@@ -1576,7 +1598,7 @@ CodeGeneratorRequest::_internal_source_file_descriptors() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.source_file_descriptors_;
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
 CodeGeneratorRequest::_internal_mutable_source_file_descriptors() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.source_file_descriptors_;
@@ -1644,7 +1666,7 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
   _impl_.compiler_version_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
+inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.compiler_version_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
@@ -1652,7 +1674,8 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mu
   }
   return _impl_.compiler_version_;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_compiler_version()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
@@ -1705,7 +1728,8 @@ PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_name(Arg_&& arg, Arg
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_name()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return _s;
@@ -1719,7 +1743,7 @@ inline void CodeGeneratorResponse_File::_internal_set_name(const std::string& va
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* CodeGeneratorResponse_File::_internal_mutable_name() {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
@@ -1773,7 +1797,8 @@ PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_insertion_point(Arg_
   _impl_.insertion_point_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_insertion_point()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_insertion_point();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return _s;
@@ -1787,7 +1812,7 @@ inline void CodeGeneratorResponse_File::_internal_set_insertion_point(const std:
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.insertion_point_.Set(value, GetArena());
 }
-inline std::string* CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.insertion_point_.Mutable( GetArena());
@@ -1841,7 +1866,8 @@ PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_content(Arg_&& arg, 
   _impl_.content_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_content() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_content()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_content();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return _s;
@@ -1855,7 +1881,7 @@ inline void CodeGeneratorResponse_File::_internal_set_content(const std::string&
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.content_.Set(value, GetArena());
 }
-inline std::string* CodeGeneratorResponse_File::_internal_mutable_content() {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_content() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.content_.Mutable( GetArena());
@@ -1944,7 +1970,7 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
   _impl_.generated_code_info_ = nullptr;
   return temp;
 }
-inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
@@ -1952,7 +1978,8 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_inter
   }
   return _impl_.generated_code_info_;
 }
-inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_generated_code_info()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   _impl_._has_bits_[0] |= 0x00000008u;
   ::google::protobuf::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
@@ -2005,7 +2032,8 @@ PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg, Args_..
   _impl_.error_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
-inline std::string* CodeGeneratorResponse::mutable_error() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_error()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_error();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
   return _s;
@@ -2019,7 +2047,7 @@ inline void CodeGeneratorResponse::_internal_set_error(const std::string& value)
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.error_.Set(value, GetArena());
 }
-inline std::string* CodeGeneratorResponse::_internal_mutable_error() {
+inline std::string* PROTOBUF_NONNULL CodeGeneratorResponse::_internal_mutable_error() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.error_.Mutable( GetArena());
@@ -2146,12 +2174,12 @@ inline void CodeGeneratorResponse::clear_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_.Clear();
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index)
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_mutable_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* CodeGeneratorResponse::mutable_file()
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2162,7 +2190,8 @@ inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGener
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_file().Get(index);
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::add_file()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::compiler::CodeGeneratorResponse_File* _add = _internal_mutable_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
@@ -2178,7 +2207,7 @@ CodeGeneratorResponse::_internal_file() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.file_;
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>*
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
 CodeGeneratorResponse::_internal_mutable_file() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.file_;
@@ -2200,7 +2229,7 @@ namespace protobuf {
 template <>
 struct is_proto_enum<::google::protobuf::compiler::CodeGeneratorResponse_Feature> : std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::compiler::CodeGeneratorResponse_Feature>() {
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::compiler::CodeGeneratorResponse_Feature>() {
   return ::google::protobuf::compiler::CodeGeneratorResponse_Feature_descriptor();
 }
 
