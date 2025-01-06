@@ -3524,6 +3524,40 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
     }
   }
       )");
+  // When the Any is in WKT form (with "@type"), the type_url must be present
+  // and URL shaped, otherwise it should be a parse error (because it can't be
+  // parsed into the Any schema).
+  ExpectParseFailureForJson("AnyWktRepresentationWithEmptyTypeAndValue",
+                            REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "",
+          "value": ""
+        }
+      })");
+  ExpectParseFailureForJson("AnyWktRepresentationWithBadType", REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "not_a_url",
+          "value": ""
+        }
+      })");
+  // When the Any can be parsed as non-WKT form, the type_url could be missing
+  // or invalid, since that can still be parsed into the Any schema.
+  RunValidJsonTest("AnyWithNoType", REQUIRED,
+                   R"({
+        "optionalAny": {}
+      })",
+                   R"(
+        optional_any: {}
+      )");
+  // `null` where an Any exists should just result in the field being unset.
+  RunValidJsonTest("AnyNull", REQUIRED,
+                   R"({
+        "optionalAny": null
+      })",
+                   R"(
+      )");
 }
 
 template <typename MessageType>
