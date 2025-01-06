@@ -59,18 +59,18 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup composer
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v3
+        uses: protocolbuffers/protobuf-ci/composer-setup@v4
         with:
           cache-prefix: php-${{ matrix.version-short }}
           directory: php
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-90d207f4e749b54c8792bbe974dfc70323b6566e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -112,14 +112,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -127,14 +127,14 @@ jobs:
 
       - name: Setup composer
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v3
+        uses: protocolbuffers/protobuf-ci/composer-setup@v4
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: ${{ env.image }}
           platform: linux/386
@@ -152,26 +152,26 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v3
+        uses: protocolbuffers/protobuf-ci/composer-setup@v4
         with:
           cache-prefix: php-8.1
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
@@ -197,7 +197,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -221,14 +221,14 @@ jobs:
 
       - name: Setup composer
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v3
+        uses: protocolbuffers/protobuf-ci/composer-setup@v4
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bash@v3
+        uses: protocolbuffers/protobuf-ci/bash@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -241,7 +241,7 @@ jobs:
 
       - name: Run conformance tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
