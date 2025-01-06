@@ -21,10 +21,6 @@
 #define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
 #define upb_Atomic_Store(addr, val, order) \
   atomic_store_explicit(addr, val, order)
-#define upb_Atomic_Add(addr, val, order) \
-  atomic_fetch_add_explicit(addr, val, order)
-#define upb_Atomic_Sub(addr, val, order) \
-  atomic_fetch_sub_explicit(addr, val, order)
 #define upb_Atomic_Exchange(addr, val, order) \
   atomic_exchange_explicit(addr, val, order)
 #define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
@@ -43,8 +39,6 @@
 #define upb_Atomic_Init(addr, val) (*addr = val)
 #define upb_Atomic_Load(addr, order) (*addr)
 #define upb_Atomic_Store(addr, val, order) (*(addr) = val)
-#define upb_Atomic_Add(addr, val, order) (*(addr) += val)
-#define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
 
 UPB_INLINE void* _upb_NonAtomic_Exchange(void* addr, void* value) {
   void* old;
