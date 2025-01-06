@@ -171,7 +171,11 @@ rust_test(
 rust_test(
     name = "bad_names_cpp_test",
     srcs = ["bad_names_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
     deps = [
+        "//rust:protobuf_cpp_export",
         "//rust/test:bad_names_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",

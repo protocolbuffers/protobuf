@@ -103,7 +103,7 @@ macro_rules! proto_internal {
     // field with array literal, calls out to @array to look for nested messages
     (@msg $msg:ident $ident:ident : [$($elems:tt)*]) => {
         {
-            let _repeated = $crate::__internal::paste!($msg.[<$ident>]());
+            let _repeated = $msg.$ident();
             let elems = proto_internal!(@array $msg _repeated [] $($elems)*);
             $crate::__internal::paste!($msg.[<set_ $ident>](elems.into_iter()));
         }
