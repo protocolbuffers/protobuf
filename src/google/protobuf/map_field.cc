@@ -36,6 +36,11 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
+void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  MapFieldBase::SwapPayload(lhs, rhs);
+  lhs.GetMapRaw().UntypedSwap(rhs.GetMapRaw());
+}
+
 template <typename Map, typename F>
 auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
   switch (map_key.type()) {

@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <string>
 
 #include "absl/base/optimization.h"
@@ -29,6 +28,78 @@ namespace protobuf {
 namespace internal {
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
+
+void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
+  if (other.empty()) return;
+
+  // Do the merging in steps to avoid Key*Value number of instantiations and
+  // reduce code duplication per instantation.
+  NodeBase* nodes = nullptr;
+
+  // First, allocate all the nodes without types.
+  for (size_t i = 0; i < other.num_elements_; ++i) {
+    NodeBase* new_node = AllocNode();
+    new_node->next = nodes;
+    nodes = new_node;
+  }
+
+  // Then, copy the values.
+  VisitValueType([&](auto value_type) {
+    using Value = typename decltype(value_type)::type;
+    NodeBase* out_node = nodes;
+
+    // Get the ClassData once to avoid redundant virtual function calls.
+    const internal::ClassData* class_data =
+        std::is_same_v<MessageLite, Value>
+            ? GetClassData(*other.GetValue<MessageLite>(other.begin().node_))
+            : nullptr;
+
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      Value* out = GetValue<Value>(out_node);
+      out_node = out_node->next;
+      auto& in = *other.GetValue<Value>(it.node_);
+      if constexpr (std::is_same_v<MessageLite, Value>) {
+        class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
+      } else {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
+    }
+  });
+
+  // Finally, copy the keys and insert the nodes.
+  VisitKeyType([&](auto key_type) {
+    using Key = typename decltype(key_type)::type;
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      NodeBase* node = nodes;
+      nodes = nodes->next;
+      const Key& in = *other.GetKey<Key>(it.node_);
+      Key* out = GetKey<Key>(node);
+      if (!internal::InitializeMapKey(out, in, this->arena_)) {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
+
+      static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
+          static_cast<typename KeyMapBase<Key>::KeyNode*>(node));
+    }
+  });
+}
+
+void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
+  if (arena() == other.arena()) {
+    InternalSwap(&other);
+  } else {
+    UntypedMapBase tmp(arena_, type_info_);
+    InternalSwap(&tmp);
+
+    ABSL_DCHECK(empty());
+    UntypedMergeFrom(other);
+
+    other.ClearTable(true, nullptr);
+    other.UntypedMergeFrom(tmp);
+
+    if (arena_ == nullptr) tmp.ClearTable(false, nullptr);
+  }
+}
 
 void UntypedMapBase::DeleteNode(NodeBase* node) {
   const auto destroy = absl::Overload{
