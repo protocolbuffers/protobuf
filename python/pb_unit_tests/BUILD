@@ -11,8 +11,6 @@ package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
-pyproto_test_wrapper(name = "generator_test")
-
 pyproto_test_wrapper(name = "reflection_test")
 
 filegroup(
