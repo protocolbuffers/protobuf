@@ -15,7 +15,6 @@ internal_py_test(
     srcs = ["numpy_test.py"],
     visibility = [
         "//python:__pkg__",
-        "//python/pb_unit_tests:__pkg__",
     ],
     deps = [
         requirement("numpy"),
