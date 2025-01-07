@@ -36,6 +36,11 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
+void MapFieldBase::MergeFromImpl(MapFieldBase& base,
+                                 const MapFieldBase& other) {
+  base.MutableMap()->UntypedMergeFrom(other.GetMap());
+}
+
 void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
   MapFieldBase::SwapPayload(lhs, rhs);
   lhs.GetMapRaw().UntypedSwap(rhs.GetMapRaw());
