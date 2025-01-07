@@ -230,10 +230,14 @@ Error, UINTPTR_MAX is undefined
 #elif defined(__GNUC__)
 // GCC supported atomics as an extension before it supported __has_extension
 #define UPB_USE_C11_ATOMICS
+#elif defined(_MSC_VER)
+#define UPB_USE_MSC_ATOMICS
 #endif
 
 #if defined(UPB_USE_C11_ATOMICS)
 #define UPB_ATOMIC(T) _Atomic(T)
+#elif defined(UPB_USE_MSC_ATOMICS)
+#define UPB_ATOMIC(T) volatile T
 #else
 #define UPB_ATOMIC(T) T
 #endif

@@ -203,7 +203,7 @@ TEST(ArenaTest, MaxBlockSize) {
   upb_Arena_Free(arena);
 }
 
-#ifdef UPB_USE_C11_ATOMICS
+#ifndef UPB_SUPPRESS_MISSING_ATOMICS
 
 TEST(ArenaTest, FuzzFuseFreeRace) {
   Environment env;

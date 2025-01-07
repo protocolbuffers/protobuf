@@ -68,7 +68,7 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
 // This operation is safe to use concurrently from multiple threads.
-size_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
+uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
 // This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
 

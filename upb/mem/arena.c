@@ -65,7 +65,7 @@ typedef struct upb_ArenaInternal {
   upb_MemBlock* blocks;
 
   // Total space allocated in blocks, atomic only for SpaceAllocated
-  UPB_ATOMIC(size_t) space_allocated;
+  UPB_ATOMIC(uintptr_t) space_allocated;
 
   UPB_TSAN_PUBLISHED_MEMBER
 } upb_ArenaInternal;
@@ -233,9 +233,10 @@ static upb_ArenaRoot _upb_Arena_FindRoot(upb_ArenaInternal* ai) {
   return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
 }
 
-size_t upb_Arena_SpaceAllocated(const upb_Arena* arena, size_t* fused_count) {
+uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* arena,
+                                   size_t* fused_count) {
   upb_ArenaInternal* ai = upb_Arena_Internal(arena);
-  size_t memsize = 0;
+  uintptr_t memsize = 0;
   size_t local_fused_count = 0;
   // Our root would get updated by any racing fuses before our target arena
   // became reachable from the root via the linked list; in order to preserve
@@ -249,18 +250,26 @@ size_t upb_Arena_SpaceAllocated(const upb_Arena* arena, size_t* fused_count) {
         _upb_Arena_PreviousFromTagged(previous_or_tail);
     UPB_ASSERT(previous != ai);
     UPB_TSAN_CHECK_PUBLISHED(previous);
+    // Unfortunate macro behavior; prior to C11 when using nonstandard atomics
+    // this returns a void* and can't be used with += without an intermediate
+    // conversion to an integer.
     // Relaxed is safe - no subsequent reads depend this one
-    memsize +=
+    uintptr_t allocated =
         upb_Atomic_Load(&previous->space_allocated, memory_order_relaxed);
+    memsize += allocated;
     previous_or_tail =
         upb_Atomic_Load(&previous->previous_or_tail, memory_order_acquire);
     local_fused_count++;
   }
   while (ai != NULL) {
     UPB_TSAN_CHECK_PUBLISHED(ai);
+    // Unfortunate macro behavior; prior to C11 when using nonstandard atomics
+    // this returns a void* and can't be used with += without an intermediate
+    // conversion to an integer.
     // Relaxed is safe - no subsequent reads depend this one
-    memsize += upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
-
+    uintptr_t allocated =
+        upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+    memsize += allocated;
     ai = upb_Atomic_Load(&ai->next, memory_order_acquire);
     local_fused_count++;
   }
@@ -319,7 +328,8 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   // atomic fetch-add is slower than load/add/store on arm devices compiled
   // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
   // size allocated.
-  size_t old_space_allocated =
+
+  uintptr_t old_space_allocated =
       upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
   upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block_size,
                    memory_order_relaxed);
