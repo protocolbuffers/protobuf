@@ -15,9 +15,12 @@
 static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                   size_t size) {
   UPB_UNUSED(alloc);
-  UPB_UNUSED(oldsize);
   if (size == 0) {
-    free(ptr);
+    if (oldsize != 0) {
+      UPB_FREE_SIZED(ptr, oldsize);
+    } else {
+      free(ptr);
+    }
     return NULL;
   } else {
     return realloc(ptr, size);
