@@ -27,7 +27,9 @@ typedef struct upb_alloc upb_alloc;
  * preserved. If `actual_size` is not null and the allocator supports it, the
  * actual size of the resulting allocation is stored in `actual_size`. If
  * `actual_size` is not null, you must zero out the memory pointed to by
- * `actual_size` before calling. */
+ * `actual_size` before calling. If `size` is 0, indicating `free()` behavior,
+ * and `oldsize` is nonzero, `oldsize` must be the actual size of the allocation
+ * being freed.*/
 typedef void* upb_alloc_func(upb_alloc* alloc, void* ptr, size_t oldsize,
                              size_t size, size_t* actual_size);
 
