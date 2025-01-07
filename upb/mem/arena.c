@@ -166,28 +166,39 @@ void upb_Arena_LogFree(const upb_Arena* arena) {
 }
 #endif  // UPB_TRACING_ENABLED
 
+// If the param a is already the root, provides no memory order of refcount.
+// If it has a parent, then acquire memory order is provided for both the root
+// and the refcount.
 static upb_ArenaRoot _upb_Arena_FindRoot(const upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-  while (_upb_Arena_IsTaggedPointer(poc)) {
+  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_relaxed);
+  if (_upb_Arena_IsTaggedRefcount(poc)) {
+    // Fast, relaxed path - arenas that have never been fused to a parent only
+    // need relaxed memory order, since they're returning themselves and the
+    // refcount.
+    return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
+  }
+  // Slow path needs acquire order; reloading is cheaper than a fence on ARM
+  // (LDA vs DMB ISH). Even though this is a reread, we know it must be a tagged
+  // pointer because if this Arena isn't a root, it can't ever become one.
+  poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+  do {
     upb_ArenaInternal* next = _upb_Arena_PointerFromTagged(poc);
     UPB_TSAN_CHECK_PUBLISHED(next);
     UPB_ASSERT(ai != next);
-    uintptr_t next_poc =
-        upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
+    poc = upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
 
-    if (_upb_Arena_IsTaggedPointer(next_poc)) {
+    if (_upb_Arena_IsTaggedPointer(poc)) {
       // To keep complexity down, we lazily collapse levels of the tree.  This
       // keeps it flat in the final case, but doesn't cost much incrementally.
       //
       // Path splitting keeps time complexity down, see:
       //   https://en.wikipedia.org/wiki/Disjoint-set_data_structure
-      UPB_ASSERT(ai != _upb_Arena_PointerFromTagged(next_poc));
-      upb_Atomic_Store(&ai->parent_or_count, next_poc, memory_order_release);
+      UPB_ASSERT(ai != _upb_Arena_PointerFromTagged(poc));
+      upb_Atomic_Store(&ai->parent_or_count, poc, memory_order_release);
     }
     ai = next;
-    poc = next_poc;
-  }
+  } while (_upb_Arena_IsTaggedPointer(poc));
   return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
 }
 
@@ -382,6 +393,8 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
 
 void upb_Arena_Free(upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  // Cannot be replaced with _upb_Arena_FindRoot, as that provides only a
+  // relaxed read of the refcount if ai is already the root.
   uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
 retry:
   while (_upb_Arena_IsTaggedPointer(poc)) {
@@ -585,7 +598,13 @@ retry:
           &r.root->parent_or_count, &r.tagged_count,
           _upb_Arena_TaggedFromRefcount(
               _upb_Arena_RefCountFromTagged(r.tagged_count) + 1),
-          memory_order_release, memory_order_acquire)) {
+          // Relaxed order is safe on success, incrementing the refcount
+          // need not perform any synchronization with the eventual free of the
+          // arena - that's provided by decrements.
+          memory_order_relaxed,
+          // Relaxed order is safe on failure as r.tagged_count is immediately
+          // overwritten by retrying the find root operation.
+          memory_order_relaxed)) {
     // We incremented it successfully, so we are done.
     return true;
   }
