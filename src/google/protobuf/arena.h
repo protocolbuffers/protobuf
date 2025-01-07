@@ -166,7 +166,7 @@ struct ArenaOptions {
 // This is a thread-safe implementation: multiple threads may allocate from the
 // arena concurrently. Destruction is not thread-safe and the destructing
 // thread must synchronize with users of the arena first.
-class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
+class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(16) Arena final {
  public:
   // Default constructor with sensible default options, tuned for average
   // use-cases.
