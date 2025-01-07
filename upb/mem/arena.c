@@ -220,15 +220,8 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
 }
 
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  UPB_TSAN_CHECK_PUBLISHED(ai);
-  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-  while (_upb_Arena_IsTaggedPointer(poc)) {
-    ai = _upb_Arena_PointerFromTagged(poc);
-    UPB_TSAN_CHECK_PUBLISHED(ai);
-    poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-  }
-  return _upb_Arena_RefCountFromTagged(poc);
+  uintptr_t tagged = _upb_Arena_FindRoot(upb_Arena_Internal(a)).tagged_count;
+  return (uint32_t)_upb_Arena_RefCountFromTagged(tagged);
 }
 
 static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
