@@ -201,8 +201,7 @@ class DynamicMapField final
   friend class MapFieldBase;
 
   const Message* default_entry_;
-
-  static const VTable kVTable;
+  const VTable kVTable;
 
   void AllocateMapValue(MapValueRef* map_val);
 
@@ -219,20 +218,17 @@ class DynamicMapField final
                                        MapValueConstRef* val);
 
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
-
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
 };
 
 DynamicMapField::DynamicMapField(const Message* default_entry)
     : DynamicMapField::TypeDefinedMapFieldBase(&kVTable),
-      default_entry_(default_entry) {}
+      default_entry_(default_entry),
+      kVTable(MakeVTable<DynamicMapField>(default_entry)) {}
 
 DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
     : TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef>(&kVTable, arena),
-      default_entry_(default_entry) {}
-
-constexpr DynamicMapField::VTable DynamicMapField::kVTable =
-    MakeVTable<DynamicMapField>();
+      default_entry_(default_entry),
+      kVTable(MakeVTable<DynamicMapField>(default_entry)) {}
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);
@@ -422,10 +418,6 @@ void DynamicMapField::MergeFromImpl(MapFieldBase& base,
       }
     }
   }
-}
-
-const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
-  return static_cast<const DynamicMapField&>(map).default_entry_;
 }
 
 size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(

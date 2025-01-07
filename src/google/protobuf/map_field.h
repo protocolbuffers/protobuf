@@ -323,10 +323,10 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     void (*swap)(MapFieldBase& lhs, MapFieldBase& rhs);
     size_t (*space_used_excluding_self_nolock)(const MapFieldBase& map);
 
-    const Message* (*get_prototype)(const MapFieldBase& map);
+    const void* prototype_as_void;
   };
   template <typename T>
-  static constexpr VTable MakeVTable() {
+  static constexpr VTable MakeVTable(const void* prototype_as_void) {
     VTable out{};
     out.get_map = &T::GetMapImpl;
     out.lookup_map_value_no_sync = &T::LookupMapValueNoSyncImpl;
@@ -337,7 +337,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     out.merge_from = &T::MergeFromImpl;
     out.swap = &T::SwapImpl;
     out.space_used_excluding_self_nolock = &T::SpaceUsedExcludingSelfNoLockImpl;
-    out.get_prototype = &T::GetPrototypeImpl;
+    out.prototype_as_void = prototype_as_void;
     return out;
   }
 
@@ -404,7 +404,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     return vtable()->space_used_excluding_self_nolock(*this);
   }
 
-  const Message* GetPrototype() const { return vtable()->get_prototype(*this); }
+  const Message* GetPrototype() const {
+    return reinterpret_cast<const Message*>(vtable()->prototype_as_void);
+  }
   void ClearMapNoSync() { return vtable()->clear_map_no_sync(*this); }
 
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
@@ -682,8 +684,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
-
   static const MapFieldBase::VTable kVTable;
 
   friend class google::protobuf::Arena;
@@ -696,7 +696,8 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType_>
 PROTOBUF_CONSTINIT const MapFieldBase::VTable
     MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable =
-        MapField::template MakeVTable<MapField>();
+        MapField::template MakeVTable<MapField>(
+            Derived::raw_internal_default_instance());
 
 template <typename Key, typename T>
 bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {

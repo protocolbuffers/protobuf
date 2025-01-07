@@ -1455,6 +1455,9 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
             return reinterpret_cast<const $classname$*>(
                 &_$classname$_default_instance_);
           }
+          static constexpr const void* raw_internal_default_instance() {
+            return &_$classname$_default_instance_;
+          }
 
           $decl_verify_func$;
 

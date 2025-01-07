@@ -45,17 +45,6 @@ void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
   self.SetMapDirty();
 }
 
-// ----------------------------------------------------------------------
-
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-const Message*
-MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::GetPrototypeImpl(
-    const MapFieldBase&) {
-  return Derived::internal_default_instance();
-}
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
