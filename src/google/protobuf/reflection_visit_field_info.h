@@ -711,6 +711,9 @@ struct RepeatedEntityDynamicFieldInfoBase {
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
     auto& rep =
         *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
+    if (!field->is_extension()) {
+      reflection->SetHasBit(&message, field);
+    }
     return {rep.begin(), rep.end()};
   }
   void Clear() {
@@ -812,6 +815,9 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
     auto& rep =
         *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
+    if (!field->is_extension()) {
+      reflection->SetHasBit(&message, field);
+    }
     return {rep.begin(), rep.end()};
   }
   void Clear() {

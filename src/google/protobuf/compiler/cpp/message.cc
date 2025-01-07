@@ -4293,7 +4293,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       for (const auto* field : fields) {
         const auto& generator = field_generators_.get(field);
 
-        if (field->is_repeated()) {
+        if (field->is_map()) {
           generator.GenerateMergingCode(p);
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are

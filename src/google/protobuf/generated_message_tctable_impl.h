@@ -751,6 +751,14 @@ class PROTOBUF_EXPORT TcParser final {
   static MessageLite* AddMessage(const TcParseTableBase* table,
                                  RepeatedPtrFieldBase& field);
 
+  template <typename T>
+  static inline const T& GetRepeatedFieldAt(const void* x, size_t offset,
+                                            const MessageLite* msg,
+                                            bool is_split) {
+    if (ABSL_PREDICT_TRUE(!is_split)) return RefAt<const T>(x, offset);
+    return *RefAt<const T*>(x, offset);
+  }
+
   template <typename T, bool is_split>
   static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
                                             MessageLite* msg) {
@@ -826,6 +834,10 @@ class PROTOBUF_EXPORT TcParser final {
                                       const TcParseTableBase* table);
 
  private:
+  static bool RepeatedFieldIsEmpty(const MessageLite* msg,
+                                   const TcParseTableBase::FieldEntry& entry,
+                                   const void* base, bool is_split);
+
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);

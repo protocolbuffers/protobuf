@@ -859,6 +859,10 @@ const char* WireFormat::_InternalParseAndMergeField(
       WireTypeForFieldType(field->type())) {
     if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
                                     WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+      if (!field->is_extension()) {
+        reflection->SetHasBit(msg, field);
+      }
+
       switch (field->type()) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                   \
   case FieldDescriptor::TYPE_##TYPE: {                                      \

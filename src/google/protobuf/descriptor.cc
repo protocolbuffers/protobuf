@@ -9810,8 +9810,9 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
-  // Do not generate hasbits for "real-oneof" and weak fields.
-  if (field->real_containing_oneof() || field->options().weak()) {
+  // Do not generate hasbits for "real-oneof", weak, extension, or map fields.
+  if (field->real_containing_oneof() || field->options().weak() ||
+      field->is_extension() || field->is_map()) {
     return HasbitMode::kNoHasbit;
   }
 
@@ -9820,12 +9821,8 @@ HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
     return HasbitMode::kTrueHasbit;
   }
 
-  // Implicit presence fields.
-  if (!field->is_repeated()) {
-    return HasbitMode::kHintHasbit;
-  }
-  // We currently don't implement hasbits for implicit repeated fields.
-  return HasbitMode::kNoHasbit;
+  // Both implicit-presence and repeated fields have hint hasbits.
+  return HasbitMode::kHintHasbit;
 }
 
 bool HasHasbit(const FieldDescriptor* field) {

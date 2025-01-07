@@ -927,6 +927,9 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedField<T>*
   MutableRepeatedField(Message* msg, const FieldDescriptor* d) const {
+    if (!d->is_extension()) {
+      SetHasBit(msg, d);
+    }
     return MutableRepeatedFieldInternal<T>(msg, d);
   }
 
@@ -949,6 +952,9 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedPtrField<T>*
   MutableRepeatedPtrField(Message* msg, const FieldDescriptor* d) const {
+    if (!d->is_extension()) {
+      SetHasBit(msg, d);
+    }
     return MutableRepeatedPtrFieldInternal<T>(msg, d);
   }
 
@@ -1244,9 +1250,10 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   // For "proto3 non-optional" primitive fields, aka implicit-presence fields,
-  // returns true if the field is populated, i.e., nonzero. False otherwise.
-  bool IsSingularFieldNonEmpty(const Message& message,
-                               const FieldDescriptor* field) const;
+  // or repeated fields, returns true if the field is populated, i.e.,
+  // nonzero/nonempty. False otherwise.
+  bool IsFieldNonEmpty(const Message& message,
+                       const FieldDescriptor* field) const;
   // Returns whether the field is present if there are usable hasbits in the
   // field schema. (Note that in some cases hasbits are merely a hint to
   // indicate "possible presence", and another empty-check is required).
@@ -1255,12 +1262,12 @@ class PROTOBUF_EXPORT Reflection final {
                                   const uint32_t* hasbits,
                                   uint32_t hasbit_index) const;
   // Returns true if the field is considered to be present.
-  // Requires the input to be 'singular' i.e. non-extension, non-oneof, non-weak
-  // field.
+  // Requires the input to have a hasbit, i.e. either be 'singular' i.e.
+  // non-extension, non-oneof, non-weak field, or repeated.
   // For explicit presence fields, a field is present iff the hasbit is set.
   // For implicit presence fields, a field is present iff it is nonzero.
-  bool HasFieldSingular(const Message& message,
-                        const FieldDescriptor* field) const;
+  bool HasFieldNonWeak(const Message& message,
+                       const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
   inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
   // Naively swaps the hasbit without checking for field existence.
@@ -1532,6 +1539,9 @@ template <>
 inline RepeatedPtrField<std::string>*
 Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     Message* message, const FieldDescriptor* field) const {
+  if (!field->is_extension()) {
+    SetHasBit(message, field);
+  }
   return static_cast<RepeatedPtrField<std::string>*>(
       MutableRawRepeatedString(message, field, true));
 }
@@ -1549,6 +1559,9 @@ inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
 template <>
 inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field) const {
+  if (!field->is_extension()) {
+    SetHasBit(message, field);
+  }
   return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
       message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
 }
@@ -1564,6 +1577,9 @@ inline const RepeatedPtrField<PB>& Reflection::GetRepeatedPtrFieldInternal(
 template <typename PB>
 inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field) const {
+  if (!field->is_extension()) {
+    SetHasBit(message, field);
+  }
   return static_cast<RepeatedPtrField<PB>*>(
       MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
                               -1, PB::default_instance().GetDescriptor()));
@@ -1671,6 +1687,9 @@ RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
 template <typename T>
 MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
+  if (!field->is_extension()) {
+    SetHasBit(message, field);
+  }
   return MutableRepeatedFieldRef<T>(message, field);
 }
 
