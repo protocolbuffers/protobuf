@@ -7,33 +7,64 @@
 
 #include "google/protobuf/has_bits.h"
 
+#include <cstdint>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/unittest.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace internal {
-namespace {
 
+namespace {
 using ::testing::Eq;
 
-template <int n>
-void TestDefaultInit() {
-  HasBits<n> bits;
-  EXPECT_TRUE(bits.empty());
-  for (int i = 0; i < n; ++i) {
-    EXPECT_THAT(bits[i], Eq(0));
-  }
+bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
+  ABSL_DCHECK_NE(has_bit_index, static_cast<uint32_t>(kNoHasbit));
+  return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
+          static_cast<uint32_t>(1)) != 0;
 }
 
-TEST(HasBits, DefaultInit) {
+}  // namespace
+
+class HasBitsTest : public testing::Test {
+ public:
+  template <int n>
+  void TestDefaultInit() {
+    HasBits<n> bits;
+    EXPECT_TRUE(bits.empty());
+    for (int i = 0; i < n; ++i) {
+      EXPECT_THAT(bits[i], Eq(0));
+    }
+  }
+
+  bool HasBitSet(const Message& msg, const FieldDescriptor* field) {
+    const auto* ref = msg.GetReflection();
+    uint32_t has_bit_idx = ref->Schema().HasBitIndex(field);
+    return IsIndexInHasBitSet(ref->GetHasBits(msg), has_bit_idx);
+  }
+
+  bool HasBitSet(const Message& msg, absl::string_view field_name) {
+    return HasBitSet(msg, msg.GetDescriptor()->FindFieldByName(field_name));
+  }
+};
+
+namespace {
+
+TEST_F(HasBitsTest, DefaultInit) {
   TestDefaultInit<1>();
   TestDefaultInit<2>();
   TestDefaultInit<3>();
   TestDefaultInit<4>();
 }
 
-TEST(HasBits, ValueInit) {
+TEST_F(HasBitsTest, ValueInit) {
   {
     HasBits<4> bits;
     EXPECT_TRUE(bits.empty());
@@ -53,7 +84,7 @@ TEST(HasBits, ValueInit) {
   }
 }
 
-TEST(HasBits, ConstexprValueInit) {
+TEST_F(HasBitsTest, ConstexprValueInit) {
   {
     constexpr HasBits<4> bits;
     EXPECT_TRUE(bits.empty());
@@ -73,7 +104,7 @@ TEST(HasBits, ConstexprValueInit) {
   }
 }
 
-TEST(HasBits, operator_equal) {
+TEST_F(HasBitsTest, operator_equal) {
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({0, 2, 3, 4}));
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 0, 3, 4}));
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 2, 0, 4}));
@@ -81,17 +112,114 @@ TEST(HasBits, operator_equal) {
   EXPECT_TRUE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 2, 3, 4}));
 }
 
-TEST(HasBits, Or) {
+TEST_F(HasBitsTest, Or) {
   HasBits<4> bits1({1, 2, 4, 8});
   HasBits<4> bits2({16, 32, 64, 128});
   bits1.Or(bits2);
   EXPECT_TRUE(bits1 == HasBits<4>({17, 34, 68, 136}));
 }
 
-TEST(HasBits, Copy) {
+TEST_F(HasBitsTest, Copy) {
   HasBits<4> bits1({1, 2, 4, 8});
   HasBits<4> bits2(bits1);
   EXPECT_TRUE(bits1 == bits2);
+}
+
+TEST_F(HasBitsTest, HasBitsUnsetForDefaultRepeatedField) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestAllTypes msg;
+  EXPECT_FALSE(HasBitSet(msg, "repeated_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsSetOnMutable) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  EXPECT_TRUE(HasBitSet(msg, "repeated_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsClearedOnFieldClear) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  msg.clear_repeated_int32();
+  EXPECT_FALSE(HasBitSet(msg, "repeated_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsSetOnMutableWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestAllTypes msg;
+  msg.GetReflection()->GetMutableRepeatedFieldRef<int32_t>(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_int32"));
+  EXPECT_TRUE(HasBitSet(msg, "repeated_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsClearedOnFieldClearWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  msg.GetReflection()->ClearField(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_int32"));
+  EXPECT_FALSE(HasBitSet(msg, "repeated_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsSetOnMutableMap) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestMap msg;
+  msg.mutable_map_int32_int32();
+  EXPECT_TRUE(HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsClearedOnMapFieldClear) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestMap msg;
+  msg.mutable_map_int32_int32();
+  msg.clear_map_int32_int32();
+  EXPECT_FALSE(HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsSetOnMutableMapWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestMap msg;
+  msg.GetReflection()->GetMutableRepeatedFieldRef<Message>(
+      &msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
+  EXPECT_TRUE(HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST_F(HasBitsTest, HasBitsClearedOnMapFieldClearWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  proto2_unittest::TestMap msg;
+  msg.mutable_map_int32_int32();
+  msg.GetReflection()->ClearField(
+      &msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
+  EXPECT_FALSE(HasBitSet(msg, "map_int32_int32"));
 }
 
 }  // namespace
