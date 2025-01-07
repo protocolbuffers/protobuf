@@ -154,7 +154,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Mixin* New(::google::protobuf::Arena* arena = nullptr) const {
+  Mixin* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Mixin>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -195,7 +195,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Mixin* other);
  private:
@@ -205,15 +205,17 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "google.protobuf.Mixin"; }
 
  protected:
-  explicit Mixin(::google::protobuf::Arena* arena);
-  Mixin(::google::protobuf::Arena* arena, const Mixin& from);
-  Mixin(::google::protobuf::Arena* arena, Mixin&& from) noexcept
+  explicit Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Mixin& from);
+  Mixin(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      Mixin&& from) noexcept
       : Mixin(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -233,8 +235,8 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  [[nodiscard]] std::string* release_name();
-  void set_allocated_name(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_name() const;
@@ -248,8 +250,8 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_root(Arg_&& arg, Args_... args);
   std::string* mutable_root();
-  [[nodiscard]] std::string* release_root();
-  void set_allocated_root(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_root();
+  void set_allocated_root(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_root() const;
@@ -275,11 +277,13 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Mixin& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Mixin& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -367,7 +371,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Method* New(::google::protobuf::Arena* arena = nullptr) const {
+  Method* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Method>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -408,7 +412,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Method* other);
  private:
@@ -418,15 +422,17 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "google.protobuf.Method"; }
 
  protected:
-  explicit Method(::google::protobuf::Arena* arena);
-  Method(::google::protobuf::Arena* arena, const Method& from);
-  Method(::google::protobuf::Arena* arena, Method&& from) noexcept
+  explicit Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Method& from);
+  Method(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      Method&& from) noexcept
       : Method(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -468,8 +474,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  [[nodiscard]] std::string* release_name();
-  void set_allocated_name(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_name() const;
@@ -483,8 +489,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_request_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_request_type_url();
-  [[nodiscard]] std::string* release_request_type_url();
-  void set_allocated_request_type_url(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_request_type_url();
+  void set_allocated_request_type_url(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_request_type_url() const;
@@ -498,8 +504,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_response_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_response_type_url();
-  [[nodiscard]] std::string* release_response_type_url();
-  void set_allocated_response_type_url(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_response_type_url();
+  void set_allocated_response_type_url(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_response_type_url() const;
@@ -555,11 +561,13 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Method& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Method& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
@@ -652,7 +660,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Api* New(::google::protobuf::Arena* arena = nullptr) const {
+  Api* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Api>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -693,7 +701,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Api* other);
  private:
@@ -703,15 +711,17 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "google.protobuf.Api"; }
 
  protected:
-  explicit Api(::google::protobuf::Arena* arena);
-  Api(::google::protobuf::Arena* arena, const Api& from);
-  Api(::google::protobuf::Arena* arena, Api&& from) noexcept
+  explicit Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Api& from);
+  Api(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      Api&& from) noexcept
       : Api(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -787,8 +797,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
-  [[nodiscard]] std::string* release_name();
-  void set_allocated_name(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_name() const;
@@ -802,8 +812,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_version(Arg_&& arg, Args_... args);
   std::string* mutable_version();
-  [[nodiscard]] std::string* release_version();
-  void set_allocated_version(std::string* value);
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_version();
+  void set_allocated_version(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_version() const;
@@ -815,11 +825,11 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   bool has_source_context() const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
-  [[nodiscard]] ::google::protobuf::SourceContext* release_source_context();
+  [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();
   ::google::protobuf::SourceContext* mutable_source_context();
-  void set_allocated_source_context(::google::protobuf::SourceContext* value);
-  void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value);
-  ::google::protobuf::SourceContext* unsafe_arena_release_source_context();
+  void set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value);
+  ::google::protobuf::SourceContext* PROTOBUF_NULLABLE unsafe_arena_release_source_context();
 
   private:
   const ::google::protobuf::SourceContext& _internal_source_context() const;
@@ -854,11 +864,13 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Api& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Api& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method > methods_;
@@ -866,7 +878,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin > mixins_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr version_;
-    ::google::protobuf::SourceContext* source_context_;
+    ::google::protobuf::SourceContext* PROTOBUF_NULLABLE source_context_;
     int syntax_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -904,8 +916,7 @@ inline const std::string& Api::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -930,7 +941,7 @@ inline std::string* Api::_internal_mutable_name() {
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* Api::release_name() {
+inline std::string* PROTOBUF_NULLABLE Api::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -943,7 +954,7 @@ inline std::string* Api::release_name() {
   }
   return released;
 }
-inline void Api::set_allocated_name(std::string* value) {
+inline void Api::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -1063,8 +1074,7 @@ inline const std::string& Api::version() const
   return _internal_version();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.version_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1089,7 +1099,7 @@ inline std::string* Api::_internal_mutable_version() {
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.version_.Mutable( GetArena());
 }
-inline std::string* Api::release_version() {
+inline std::string* PROTOBUF_NULLABLE Api::release_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -1102,7 +1112,7 @@ inline std::string* Api::release_version() {
   }
   return released;
 }
-inline void Api::set_allocated_version(std::string* value) {
+inline void Api::set_allocated_version(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -1131,7 +1141,8 @@ inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
   return _internal_source_context();
 }
-inline void Api::unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* value) {
+inline void Api::unsafe_arena_set_allocated_source_context(
+    ::google::protobuf::SourceContext* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
@@ -1144,7 +1155,7 @@ inline void Api::unsafe_arena_set_allocated_source_context(::google::protobuf::S
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
-inline ::google::protobuf::SourceContext* Api::release_source_context() {
+inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::release_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000004u;
@@ -1163,7 +1174,7 @@ inline ::google::protobuf::SourceContext* Api::release_source_context() {
   }
   return released;
 }
-inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_context() {
+inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::unsafe_arena_release_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
 
@@ -1186,7 +1197,7 @@ inline ::google::protobuf::SourceContext* Api::mutable_source_context() ABSL_ATT
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
 }
-inline void Api::set_allocated_source_context(::google::protobuf::SourceContext* value) {
+inline void Api::set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
@@ -1296,8 +1307,7 @@ inline const std::string& Method::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1322,7 +1332,7 @@ inline std::string* Method::_internal_mutable_name() {
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* Method::release_name() {
+inline std::string* PROTOBUF_NULLABLE Method::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -1335,7 +1345,7 @@ inline std::string* Method::release_name() {
   }
   return released;
 }
-inline void Method::set_allocated_name(std::string* value) {
+inline void Method::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -1361,8 +1371,7 @@ inline const std::string& Method::request_type_url() const
   return _internal_request_type_url();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.request_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1387,7 +1396,7 @@ inline std::string* Method::_internal_mutable_request_type_url() {
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.request_type_url_.Mutable( GetArena());
 }
-inline std::string* Method::release_request_type_url() {
+inline std::string* PROTOBUF_NULLABLE Method::release_request_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -1400,7 +1409,7 @@ inline std::string* Method::release_request_type_url() {
   }
   return released;
 }
-inline void Method::set_allocated_request_type_url(std::string* value) {
+inline void Method::set_allocated_request_type_url(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -1450,8 +1459,7 @@ inline const std::string& Method::response_type_url() const
   return _internal_response_type_url();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.response_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1476,7 +1484,7 @@ inline std::string* Method::_internal_mutable_response_type_url() {
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.response_type_url_.Mutable( GetArena());
 }
-inline std::string* Method::release_response_type_url() {
+inline std::string* PROTOBUF_NULLABLE Method::release_response_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -1489,7 +1497,7 @@ inline std::string* Method::release_response_type_url() {
   }
   return released;
 }
-inline void Method::set_allocated_response_type_url(std::string* value) {
+inline void Method::set_allocated_response_type_url(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -1612,8 +1620,7 @@ inline const std::string& Mixin::name() const
   return _internal_name();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1638,7 +1645,7 @@ inline std::string* Mixin::_internal_mutable_name() {
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* Mixin::release_name() {
+inline std::string* PROTOBUF_NULLABLE Mixin::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -1651,7 +1658,7 @@ inline std::string* Mixin::release_name() {
   }
   return released;
 }
-inline void Mixin::set_allocated_name(std::string* value) {
+inline void Mixin::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -1677,8 +1684,7 @@ inline const std::string& Mixin::root() const
   return _internal_root();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.root_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
@@ -1703,7 +1709,7 @@ inline std::string* Mixin::_internal_mutable_root() {
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.root_.Mutable( GetArena());
 }
-inline std::string* Mixin::release_root() {
+inline std::string* PROTOBUF_NULLABLE Mixin::release_root() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -1716,7 +1722,7 @@ inline std::string* Mixin::release_root() {
   }
   return released;
 }
-inline void Mixin::set_allocated_root(std::string* value) {
+inline void Mixin::set_allocated_root(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;

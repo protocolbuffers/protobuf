@@ -54,9 +54,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampDefaultTypeInternal _Timestamp_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -120,7 +120,7 @@ class Timestamp::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_);
 };
 
-Timestamp::Timestamp(::google::protobuf::Arena* arena)
+Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Timestamp_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -130,7 +130,7 @@ Timestamp::Timestamp(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(
-    ::google::protobuf::Arena* arena, const Timestamp& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Timestamp_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -142,10 +142,10 @@ Timestamp::Timestamp(
 }
 PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
+inline void Timestamp::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, seconds_),
@@ -165,8 +165,8 @@ inline void Timestamp::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Timestamp::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Timestamp::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Timestamp(arena);
 }
 constexpr auto Timestamp::InternalNewImpl_() {

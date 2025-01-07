@@ -144,7 +144,7 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Timestamp* New(::google::protobuf::Arena* arena = nullptr) const {
+  Timestamp* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Timestamp>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -185,7 +185,7 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Timestamp* other);
  private:
@@ -195,15 +195,17 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "google.protobuf.Timestamp"; }
 
  protected:
-  explicit Timestamp(::google::protobuf::Arena* arena);
-  Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
-  Timestamp(::google::protobuf::Arena* arena, Timestamp&& from) noexcept
+  explicit Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from);
+  Timestamp(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      Timestamp&& from) noexcept
       : Timestamp(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -255,11 +257,13 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Timestamp& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Timestamp& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::int64_t seconds_;

@@ -62,9 +62,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -138,7 +138,7 @@ class Any::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_);
 };
 
-Any::Any(::google::protobuf::Arena* arena)
+Any::Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Any_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -148,15 +148,16 @@ Any::Any(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::Any& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::Any& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         type_url_(arena, from.type_url_),
         value_(arena, from.value_) {}
 
 Any::Any(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Any& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Any_class_data_.base()) {
@@ -173,12 +174,12 @@ Any::Any(
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         type_url_(arena),
         value_(arena) {}
 
-inline void Any::SharedCtor(::_pb::Arena* arena) {
+inline void Any::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Any::~Any() {
@@ -194,8 +195,8 @@ inline void Any::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Any::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Any::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Any(arena);
 }
 constexpr auto Any::InternalNewImpl_() {

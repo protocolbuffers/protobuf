@@ -197,7 +197,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -426,7 +426,7 @@ void Type::clear_source_context() {
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-Type::Type(::google::protobuf::Arena* arena)
+Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Type_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -436,8 +436,9 @@ Type::Type(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Type)
 }
 PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::Type& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::Type& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         fields_{visibility, arena, from.fields_},
@@ -447,7 +448,7 @@ PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
         edition_(arena, from.edition_) {}
 
 Type::Type(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Type& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Type_class_data_.base()) {
@@ -469,7 +470,7 @@ Type::Type(
 }
 PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         fields_{visibility, arena},
         oneofs_{visibility, arena},
@@ -477,7 +478,7 @@ PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
         name_(arena),
         edition_(arena) {}
 
-inline void Type::SharedCtor(::_pb::Arena* arena) {
+inline void Type::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, source_context_),
@@ -500,8 +501,8 @@ inline void Type::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Type::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Type::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Type(arena);
 }
 constexpr auto Type::InternalNewImpl_() {
@@ -923,7 +924,7 @@ class Field::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(Field, _impl_._has_bits_);
 };
 
-Field::Field(::google::protobuf::Arena* arena)
+Field::Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Field_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -933,8 +934,9 @@ Field::Field(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Field)
 }
 PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::Field& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::Field& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         options_{visibility, arena, from.options_},
@@ -944,7 +946,7 @@ PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
         default_value_(arena, from.default_value_) {}
 
 Field::Field(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Field& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Field_class_data_.base()) {
@@ -968,7 +970,7 @@ Field::Field(
 }
 PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         options_{visibility, arena},
         name_(arena),
@@ -976,7 +978,7 @@ PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
         json_name_(arena),
         default_value_(arena) {}
 
-inline void Field::SharedCtor(::_pb::Arena* arena) {
+inline void Field::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, kind_),
@@ -1000,8 +1002,8 @@ inline void Field::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Field::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Field::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Field(arena);
 }
 constexpr auto Field::InternalNewImpl_() {
@@ -1524,7 +1526,7 @@ void Enum::clear_source_context() {
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-Enum::Enum(::google::protobuf::Arena* arena)
+Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Enum_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1534,8 +1536,9 @@ Enum::Enum(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Enum)
 }
 PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::Enum& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::Enum& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         enumvalue_{visibility, arena, from.enumvalue_},
@@ -1544,7 +1547,7 @@ PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
         edition_(arena, from.edition_) {}
 
 Enum::Enum(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Enum& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Enum_class_data_.base()) {
@@ -1566,14 +1569,14 @@ Enum::Enum(
 }
 PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         enumvalue_{visibility, arena},
         options_{visibility, arena},
         name_(arena),
         edition_(arena) {}
 
-inline void Enum::SharedCtor(::_pb::Arena* arena) {
+inline void Enum::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, source_context_),
@@ -1596,8 +1599,8 @@ inline void Enum::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Enum::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Enum::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Enum(arena);
 }
 constexpr auto Enum::InternalNewImpl_() {
@@ -1989,7 +1992,7 @@ class EnumValue::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._has_bits_);
 };
 
-EnumValue::EnumValue(::google::protobuf::Arena* arena)
+EnumValue::EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValue_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1999,15 +2002,16 @@ EnumValue::EnumValue(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValue)
 }
 PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::EnumValue& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::EnumValue& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         options_{visibility, arena, from.options_},
         name_(arena, from.name_) {}
 
 EnumValue::EnumValue(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValue_class_data_.base()) {
@@ -2025,12 +2029,12 @@ EnumValue::EnumValue(
 }
 PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         options_{visibility, arena},
         name_(arena) {}
 
-inline void EnumValue::SharedCtor(::_pb::Arena* arena) {
+inline void EnumValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.number_ = {};
 }
@@ -2046,8 +2050,8 @@ inline void EnumValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumValue::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumValue::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValue(arena);
 }
 constexpr auto EnumValue::InternalNewImpl_() {
@@ -2333,7 +2337,7 @@ void Option::clear_value() {
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-Option::Option(::google::protobuf::Arena* arena)
+Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Option_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -2343,14 +2347,15 @@ Option::Option(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Option)
 }
 PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::Option& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::Option& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_) {}
 
 Option::Option(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Option& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Option_class_data_.base()) {
@@ -2371,11 +2376,11 @@ Option::Option(
 }
 PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena) {}
 
-inline void Option::SharedCtor(::_pb::Arena* arena) {
+inline void Option::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.value_ = {};
 }
@@ -2392,8 +2397,8 @@ inline void Option::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Option::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Option::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Option(arena);
 }
 constexpr auto Option::InternalNewImpl_() {

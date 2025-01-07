@@ -55,9 +55,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -119,7 +119,7 @@ class SourceContext::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
 };
 
-SourceContext::SourceContext(::google::protobuf::Arena* arena)
+SourceContext::SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -129,14 +129,15 @@ SourceContext::SourceContext(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::SourceContext& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::SourceContext& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_name_(arena, from.file_name_) {}
 
 SourceContext::SourceContext(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceContext& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
@@ -153,11 +154,11 @@ SourceContext::SourceContext(
 }
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         file_name_(arena) {}
 
-inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
+inline void SourceContext::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 SourceContext::~SourceContext() {
@@ -172,8 +173,8 @@ inline void SourceContext::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* SourceContext::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* SourceContext::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) SourceContext(arena);
 }
 constexpr auto SourceContext::InternalNewImpl_() {

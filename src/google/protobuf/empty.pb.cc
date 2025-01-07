@@ -46,9 +46,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -103,7 +103,7 @@ class Empty::_Internal {
  public:
 };
 
-Empty::Empty(::google::protobuf::Arena* arena)
+Empty::Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -112,7 +112,7 @@ Empty::Empty(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
 Empty::Empty(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Empty& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_class_data_.base()) {
@@ -127,8 +127,8 @@ Empty::Empty(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
-inline void* Empty::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* Empty::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Empty(arena);
 }
 constexpr auto Empty::InternalNewImpl_() {

@@ -53,9 +53,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -112,7 +112,7 @@ class FieldMask::_Internal {
  public:
 };
 
-FieldMask::FieldMask(::google::protobuf::Arena* arena)
+FieldMask::FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldMask_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -122,13 +122,14 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldMask& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FieldMask& from_msg)
       : paths_{visibility, arena, from.paths_},
         _cached_size_{0} {}
 
 FieldMask::FieldMask(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldMask& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldMask_class_data_.base()) {
@@ -145,11 +146,11 @@ FieldMask::FieldMask(
 }
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : paths_{visibility, arena},
         _cached_size_{0} {}
 
-inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
+inline void FieldMask::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 FieldMask::~FieldMask() {
@@ -163,8 +164,8 @@ inline void FieldMask::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FieldMask::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FieldMask::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldMask(arena);
 }
 constexpr auto FieldMask::InternalNewImpl_() {

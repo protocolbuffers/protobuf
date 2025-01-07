@@ -144,7 +144,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 
   // implements Message ----------------------------------------------
 
-  Empty* New(::google::protobuf::Arena* arena = nullptr) const {
+  Empty* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
@@ -167,15 +167,17 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
  protected:
-  explicit Empty(::google::protobuf::Arena* arena);
-  Empty(::google::protobuf::Arena* arena, const Empty& from);
-  Empty(::google::protobuf::Arena* arena, Empty&& from) noexcept
+  explicit Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Empty& from);
+  Empty(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      Empty&& from) noexcept
       : Empty(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -203,11 +205,13 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Empty& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Empty& from_msg);
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
