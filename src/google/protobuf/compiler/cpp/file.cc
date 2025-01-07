@@ -1145,7 +1145,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::EnumDescriptor**
+      static constexpr const ::_pb::EnumDescriptor** $nullable$
           $file_level_enum_descriptors$ = nullptr;
     )cc");
   }
@@ -1157,7 +1157,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::ServiceDescriptor**
+      static constexpr const ::_pb::ServiceDescriptor** $nullable$
           $file_level_service_descriptors$ = nullptr;
     )cc");
   }
@@ -1222,8 +1222,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     // MSVC doesn't like empty arrays, so we add a dummy.
     p->Emit(R"cc(
       const ::uint32_t $tablename$::offsets[1] = {};
-      static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
-      static constexpr ::_pb::Message* const* file_default_instances = nullptr;
+      static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
+      static constexpr ::_pb::Message* const* $nullable$
+          file_default_instances = nullptr;
     )cc");
   }
 
@@ -1488,14 +1489,13 @@ class FileGenerator::ForwardDeclarations {
         // in callers by having duplicate definitions of the template.
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
-        p->Emit(R"cc(
-          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
-        )cc");
+        p->Emit(R"(
+          extern template void* Arena::DefaultConstruct<$class$>(Arena* $nullable$);
+        )");
         if (!IsMapEntryMessage(c.second)) {
-          p->Emit(R"cc(
-            extern template void* Arena::CopyConstruct<$class$>(Arena*,
-                                                                const void*);
-          )cc");
+          p->Emit(R"(
+            extern template void* Arena::CopyConstruct<$class$>(Arena* $nullable$, const void*);
+          )");
         }
         // We can't make a constexpr pointer to the global if we have DLL
         // linkage so skip this.

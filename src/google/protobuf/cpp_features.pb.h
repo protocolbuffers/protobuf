@@ -186,7 +186,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  CppFeatures* New(::google::protobuf::Arena* arena = nullptr) const {
+  CppFeatures* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -227,7 +227,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFeatures* other);
  private:
@@ -237,15 +237,17 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
  protected:
-  explicit CppFeatures(::google::protobuf::Arena* arena);
-  CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
-  CppFeatures(::google::protobuf::Arena* arena, CppFeatures&& from) noexcept
+  explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
+  CppFeatures(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+      CppFeatures&& from) noexcept
       : CppFeatures(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  static void* PlacementNew_(
+      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -332,11 +334,13 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const CppFeatures& from_msg);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const CppFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     int string_type_;

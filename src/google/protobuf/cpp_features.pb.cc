@@ -54,7 +54,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[1];
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -143,7 +143,7 @@ class CppFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
 };
 
-CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
+CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -153,7 +153,7 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
 CppFeatures::CppFeatures(
-    ::google::protobuf::Arena* arena, const CppFeatures& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -165,10 +165,10 @@ CppFeatures::CppFeatures(
 }
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
+inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, string_type_),
@@ -188,8 +188,8 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* CppFeatures::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* CppFeatures::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CppFeatures(arena);
 }
 constexpr auto CppFeatures::InternalNewImpl_() {

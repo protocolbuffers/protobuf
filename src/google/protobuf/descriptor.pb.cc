@@ -1233,7 +1233,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[17];
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -2392,7 +2392,7 @@ class FileDescriptorSet::_Internal {
  public:
 };
 
-FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
+FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorSet_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -2402,14 +2402,15 @@ FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FileDescriptorSet& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FileDescriptorSet& from_msg)
       : _extensions_{visibility, arena},
         file_{visibility, arena, from.file_},
         _cached_size_{0} {}
 
 FileDescriptorSet::FileDescriptorSet(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileDescriptorSet& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorSet_class_data_.base()) {
@@ -2427,12 +2428,12 @@ FileDescriptorSet::FileDescriptorSet(
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         file_{visibility, arena},
         _cached_size_{0} {}
 
-inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
+inline void FileDescriptorSet::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 FileDescriptorSet::~FileDescriptorSet() {
@@ -2446,8 +2447,8 @@ inline void FileDescriptorSet::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FileDescriptorSet::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FileDescriptorSet::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileDescriptorSet(arena);
 }
 constexpr auto FileDescriptorSet::InternalNewImpl_() {
@@ -2666,7 +2667,7 @@ class FileDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
 };
 
-FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
+FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -2676,8 +2677,9 @@ FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FileDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FileDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         dependency_{visibility, arena, from.dependency_},
@@ -2692,7 +2694,7 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         syntax_(arena, from.syntax_) {}
 
 FileDescriptorProto::FileDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileDescriptorProto_class_data_.base()) {
@@ -2717,7 +2719,7 @@ FileDescriptorProto::FileDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         dependency_{visibility, arena},
         message_type_{visibility, arena},
@@ -2730,7 +2732,7 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         package_(arena),
         syntax_(arena) {}
 
-inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void FileDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, options_),
@@ -2755,8 +2757,8 @@ inline void FileDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FileDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FileDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileDescriptorProto(arena);
 }
 constexpr auto FileDescriptorProto::InternalNewImpl_() {
@@ -3353,7 +3355,7 @@ class DescriptorProto_ExtensionRange::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
 };
 
-DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena)
+DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3363,13 +3365,14 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobu
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::DescriptorProto_ExtensionRange& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::DescriptorProto_ExtensionRange& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0} {}
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const DescriptorProto_ExtensionRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_class_data_.base()) {
@@ -3397,10 +3400,10 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
+inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, options_),
@@ -3421,8 +3424,8 @@ inline void DescriptorProto_ExtensionRange::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* DescriptorProto_ExtensionRange::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* DescriptorProto_ExtensionRange::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto_ExtensionRange(arena);
 }
 constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
@@ -3683,7 +3686,7 @@ class DescriptorProto_ReservedRange::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
 };
 
-DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena)
+DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3693,7 +3696,7 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
-    ::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3705,10 +3708,10 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
+inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, start_),
@@ -3728,8 +3731,8 @@ inline void DescriptorProto_ReservedRange::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* DescriptorProto_ReservedRange::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* DescriptorProto_ReservedRange::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto_ReservedRange(arena);
 }
 constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
@@ -3950,7 +3953,7 @@ class DescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
 };
 
-DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
+DescriptorProto::DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3960,8 +3963,9 @@ DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::DescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::DescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         field_{visibility, arena, from.field_},
@@ -3975,7 +3979,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         name_(arena, from.name_) {}
 
 DescriptorProto::DescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const DescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, DescriptorProto_class_data_.base()) {
@@ -3996,7 +4000,7 @@ DescriptorProto::DescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         field_{visibility, arena},
         nested_type_{visibility, arena},
@@ -4008,7 +4012,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         reserved_name_{visibility, arena},
         name_(arena) {}
 
-inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void DescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.options_ = {};
 }
@@ -4025,8 +4029,8 @@ inline void DescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* DescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* DescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto(arena);
 }
 constexpr auto DescriptorProto::InternalNewImpl_() {
@@ -4557,7 +4561,7 @@ class ExtensionRangeOptions_Declaration::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
 };
 
-ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena)
+ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -4567,15 +4571,16 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::p
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::ExtensionRangeOptions_Declaration& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::ExtensionRangeOptions_Declaration& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         full_name_(arena, from.full_name_),
         type_(arena, from.type_) {}
 
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ExtensionRangeOptions_Declaration& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_class_data_.base()) {
@@ -4599,12 +4604,12 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         full_name_(arena),
         type_(arena) {}
 
-inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* arena) {
+inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, number_),
@@ -4626,8 +4631,8 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* ExtensionRangeOptions_Declaration::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* ExtensionRangeOptions_Declaration::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ExtensionRangeOptions_Declaration(arena);
 }
 constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
@@ -4930,7 +4935,7 @@ class ExtensionRangeOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
 };
 
-ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
+ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -4940,8 +4945,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::ExtensionRangeOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::ExtensionRangeOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
@@ -4949,7 +4955,7 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 ExtensionRangeOptions::ExtensionRangeOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ExtensionRangeOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ExtensionRangeOptions_class_data_.base()) {
@@ -4972,14 +4978,14 @@ ExtensionRangeOptions::ExtensionRangeOptions(
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         declaration_{visibility, arena},
         uninterpreted_option_{visibility, arena},
         verification_{static_cast< ::google::protobuf::ExtensionRangeOptions_VerificationState >(1)} {}
 
-inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
+inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.features_ = {};
 }
@@ -4995,8 +5001,8 @@ inline void ExtensionRangeOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* ExtensionRangeOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* ExtensionRangeOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ExtensionRangeOptions(arena);
 }
 constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
@@ -5330,7 +5336,7 @@ class FieldDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
 };
 
-FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
+FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -5340,8 +5346,9 @@ FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FieldDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_),
@@ -5351,7 +5358,7 @@ PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
         json_name_(arena, from.json_name_) {}
 
 FieldDescriptorProto::FieldDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldDescriptorProto_class_data_.base()) {
@@ -5379,7 +5386,7 @@ FieldDescriptorProto::FieldDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena),
         extendee_(arena),
@@ -5389,7 +5396,7 @@ PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
         label_{static_cast< ::google::protobuf::FieldDescriptorProto_Label >(1)},
         type_{static_cast< ::google::protobuf::FieldDescriptorProto_Type >(1)} {}
 
-inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, options_),
@@ -5415,8 +5422,8 @@ inline void FieldDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FieldDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FieldDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldDescriptorProto(arena);
 }
 constexpr auto FieldDescriptorProto::InternalNewImpl_() {
@@ -5893,7 +5900,7 @@ class OneofDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
 };
 
-OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
+OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -5903,14 +5910,15 @@ OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::OneofDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::OneofDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_) {}
 
 OneofDescriptorProto::OneofDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const OneofDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofDescriptorProto_class_data_.base()) {
@@ -5931,11 +5939,11 @@ OneofDescriptorProto::OneofDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena) {}
 
-inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.options_ = {};
 }
@@ -5952,8 +5960,8 @@ inline void OneofDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* OneofDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* OneofDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) OneofDescriptorProto(arena);
 }
 constexpr auto OneofDescriptorProto::InternalNewImpl_() {
@@ -6194,7 +6202,7 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
 };
 
-EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena)
+EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6204,7 +6212,7 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
-    ::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6216,10 +6224,10 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* arena) {
+inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, start_),
@@ -6239,8 +6247,8 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedDtor(MessageLite& self)
   this_._impl_.~Impl_();
 }
 
-inline void* EnumDescriptorProto_EnumReservedRange::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumDescriptorProto_EnumReservedRange::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumDescriptorProto_EnumReservedRange(arena);
 }
 constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
@@ -6461,7 +6469,7 @@ class EnumDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
 };
 
-EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
+EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6471,8 +6479,9 @@ EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::EnumDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::EnumDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         value_{visibility, arena, from.value_},
@@ -6481,7 +6490,7 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
         name_(arena, from.name_) {}
 
 EnumDescriptorProto::EnumDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumDescriptorProto_class_data_.base()) {
@@ -6502,14 +6511,14 @@ EnumDescriptorProto::EnumDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         value_{visibility, arena},
         reserved_range_{visibility, arena},
         reserved_name_{visibility, arena},
         name_(arena) {}
 
-inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.options_ = {};
 }
@@ -6526,8 +6535,8 @@ inline void EnumDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumDescriptorProto(arena);
 }
 constexpr auto EnumDescriptorProto::InternalNewImpl_() {
@@ -6880,7 +6889,7 @@ class EnumValueDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
 };
 
-EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena)
+EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6890,14 +6899,15 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* ar
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::EnumValueDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::EnumValueDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_) {}
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValueDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueDescriptorProto_class_data_.base()) {
@@ -6919,11 +6929,11 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena) {}
 
-inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, options_),
@@ -6945,8 +6955,8 @@ inline void EnumValueDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumValueDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumValueDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValueDescriptorProto(arena);
 }
 constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
@@ -7215,7 +7225,7 @@ class ServiceDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
 };
 
-ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
+ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7225,15 +7235,16 @@ ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::ServiceDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::ServiceDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         method_{visibility, arena, from.method_},
         name_(arena, from.name_) {}
 
 ServiceDescriptorProto::ServiceDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ServiceDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceDescriptorProto_class_data_.base()) {
@@ -7254,12 +7265,12 @@ ServiceDescriptorProto::ServiceDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         method_{visibility, arena},
         name_(arena) {}
 
-inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.options_ = {};
 }
@@ -7276,8 +7287,8 @@ inline void ServiceDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* ServiceDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* ServiceDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ServiceDescriptorProto(arena);
 }
 constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
@@ -7564,7 +7575,7 @@ class MethodDescriptorProto::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
 };
 
-MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
+MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodDescriptorProto_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7574,8 +7585,9 @@ MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
 }
 PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::MethodDescriptorProto& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::MethodDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_),
@@ -7583,7 +7595,7 @@ PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
         output_type_(arena, from.output_type_) {}
 
 MethodDescriptorProto::MethodDescriptorProto(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MethodDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodDescriptorProto_class_data_.base()) {
@@ -7611,13 +7623,13 @@ MethodDescriptorProto::MethodDescriptorProto(
 }
 PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena),
         input_type_(arena),
         output_type_(arena) {}
 
-inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
+inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, options_),
@@ -7641,8 +7653,8 @@ inline void MethodDescriptorProto::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* MethodDescriptorProto::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* MethodDescriptorProto::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MethodDescriptorProto(arena);
 }
 constexpr auto MethodDescriptorProto::InternalNewImpl_() {
@@ -7987,7 +7999,7 @@ class FileOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
 };
 
-FileOptions::FileOptions(::google::protobuf::Arena* arena)
+FileOptions::FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7997,8 +8009,9 @@ FileOptions::FileOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
 }
 PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FileOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FileOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
@@ -8015,7 +8028,7 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
         ruby_package_(arena, from.ruby_package_) {}
 
 FileOptions::FileOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FileOptions_class_data_.base()) {
@@ -8044,7 +8057,7 @@ FileOptions::FileOptions(
 }
 PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena},
@@ -8061,7 +8074,7 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
         optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
         cc_enable_arenas_{true} {}
 
-inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
+inline void FileOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -8092,8 +8105,8 @@ inline void FileOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FileOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FileOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileOptions(arena);
 }
 constexpr auto FileOptions::InternalNewImpl_() {
@@ -8850,7 +8863,7 @@ class MessageOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
 };
 
-MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
+MessageOptions::MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MessageOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -8860,15 +8873,16 @@ MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
 }
 PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::MessageOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::MessageOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 MessageOptions::MessageOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MessageOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MessageOptions_class_data_.base()) {
@@ -8897,12 +8911,12 @@ MessageOptions::MessageOptions(
 }
 PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
+inline void MessageOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -8923,8 +8937,8 @@ inline void MessageOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* MessageOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* MessageOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MessageOptions(arena);
 }
 constexpr auto MessageOptions::InternalNewImpl_() {
@@ -9299,7 +9313,7 @@ class FieldOptions_EditionDefault::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
 };
 
-FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena)
+FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9309,14 +9323,15 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Are
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldOptions_EditionDefault& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FieldOptions_EditionDefault& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         value_(arena, from.value_) {}
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions_EditionDefault& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_class_data_.base()) {
@@ -9334,11 +9349,11 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         value_(arena) {}
 
-inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* arena) {
+inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.edition_ = {};
 }
@@ -9354,8 +9369,8 @@ inline void FieldOptions_EditionDefault::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FieldOptions_EditionDefault::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FieldOptions_EditionDefault::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions_EditionDefault(arena);
 }
 constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
@@ -9577,7 +9592,7 @@ class FieldOptions_FeatureSupport::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
 };
 
-FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* arena)
+FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9587,14 +9602,15 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Are
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.FeatureSupport)
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldOptions_FeatureSupport& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FieldOptions_FeatureSupport& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         deprecation_warning_(arena, from.deprecation_warning_) {}
 
 FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions_FeatureSupport& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_class_data_.base()) {
@@ -9618,11 +9634,11 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         deprecation_warning_(arena) {}
 
-inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* arena) {
+inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, edition_introduced_),
@@ -9643,8 +9659,8 @@ inline void FieldOptions_FeatureSupport::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FieldOptions_FeatureSupport::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FieldOptions_FeatureSupport::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions_FeatureSupport(arena);
 }
 constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
@@ -9919,7 +9935,7 @@ class FieldOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
 };
 
-FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
+FieldOptions::FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9929,8 +9945,9 @@ FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FieldOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
@@ -9939,7 +9956,7 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 FieldOptions::FieldOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FieldOptions_class_data_.base()) {
@@ -9971,14 +9988,14 @@ FieldOptions::FieldOptions(
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         targets_{visibility, arena},
         edition_defaults_{visibility, arena},
         uninterpreted_option_{visibility, arena} {}
 
-inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
+inline void FieldOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -10000,8 +10017,8 @@ inline void FieldOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FieldOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FieldOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions(arena);
 }
 constexpr auto FieldOptions::InternalNewImpl_() {
@@ -10564,7 +10581,7 @@ class OneofOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
 };
 
-OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
+OneofOptions::OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -10574,15 +10591,16 @@ OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
 }
 PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::OneofOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::OneofOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 OneofOptions::OneofOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const OneofOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, OneofOptions_class_data_.base()) {
@@ -10604,12 +10622,12 @@ OneofOptions::OneofOptions(
 }
 PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
+inline void OneofOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.features_ = {};
 }
@@ -10625,8 +10643,8 @@ inline void OneofOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* OneofOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* OneofOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) OneofOptions(arena);
 }
 constexpr auto OneofOptions::InternalNewImpl_() {
@@ -10894,7 +10912,7 @@ class EnumOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
 };
 
-EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
+EnumOptions::EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -10904,15 +10922,16 @@ EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
 }
 PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::EnumOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::EnumOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 EnumOptions::EnumOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumOptions_class_data_.base()) {
@@ -10941,12 +10960,12 @@ EnumOptions::EnumOptions(
 }
 PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
+inline void EnumOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -10967,8 +10986,8 @@ inline void EnumOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumOptions(arena);
 }
 constexpr auto EnumOptions::InternalNewImpl_() {
@@ -11305,7 +11324,7 @@ class EnumValueOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
 };
 
-EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
+EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -11315,15 +11334,16 @@ EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
 }
 PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::EnumValueOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::EnumValueOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 EnumValueOptions::EnumValueOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValueOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, EnumValueOptions_class_data_.base()) {
@@ -11355,12 +11375,12 @@ EnumValueOptions::EnumValueOptions(
 }
 PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
+inline void EnumValueOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -11382,8 +11402,8 @@ inline void EnumValueOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumValueOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* EnumValueOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValueOptions(arena);
 }
 constexpr auto EnumValueOptions::InternalNewImpl_() {
@@ -11735,7 +11755,7 @@ class ServiceOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
 };
 
-ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
+ServiceOptions::ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -11745,15 +11765,16 @@ ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
 }
 PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::ServiceOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::ServiceOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 ServiceOptions::ServiceOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ServiceOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, ServiceOptions_class_data_.base()) {
@@ -11776,12 +11797,12 @@ ServiceOptions::ServiceOptions(
 }
 PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
+inline void ServiceOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -11802,8 +11823,8 @@ inline void ServiceOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* ServiceOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* ServiceOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ServiceOptions(arena);
 }
 constexpr auto ServiceOptions::InternalNewImpl_() {
@@ -12099,7 +12120,7 @@ class MethodOptions::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
 };
 
-MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
+MethodOptions::MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodOptions_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -12109,15 +12130,16 @@ MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
 }
 PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::MethodOptions& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::MethodOptions& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena, from.uninterpreted_option_} {}
 
 MethodOptions::MethodOptions(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MethodOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, MethodOptions_class_data_.base()) {
@@ -12146,12 +12168,12 @@ MethodOptions::MethodOptions(
 }
 PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
         uninterpreted_option_{visibility, arena} {}
 
-inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
+inline void MethodOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
@@ -12172,8 +12194,8 @@ inline void MethodOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* MethodOptions::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* MethodOptions::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MethodOptions(arena);
 }
 constexpr auto MethodOptions::InternalNewImpl_() {
@@ -12501,7 +12523,7 @@ class UninterpretedOption_NamePart::_Internal {
   }
 };
 
-UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* arena)
+UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -12511,14 +12533,15 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::A
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::UninterpretedOption_NamePart& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::UninterpretedOption_NamePart& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_part_(arena, from.name_part_) {}
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const UninterpretedOption_NamePart& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_class_data_.base()) {
@@ -12536,11 +12559,11 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_part_(arena) {}
 
-inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
+inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   _impl_.is_extension_ = {};
 }
@@ -12556,8 +12579,8 @@ inline void UninterpretedOption_NamePart::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* UninterpretedOption_NamePart::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* UninterpretedOption_NamePart::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UninterpretedOption_NamePart(arena);
 }
 constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
@@ -12786,7 +12809,7 @@ class UninterpretedOption::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
 };
 
-UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
+UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -12796,8 +12819,9 @@ UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::UninterpretedOption& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::UninterpretedOption& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_{visibility, arena, from.name_},
@@ -12806,7 +12830,7 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
         aggregate_value_(arena, from.aggregate_value_) {}
 
 UninterpretedOption::UninterpretedOption(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const UninterpretedOption& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, UninterpretedOption_class_data_.base()) {
@@ -12830,14 +12854,14 @@ UninterpretedOption::UninterpretedOption(
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_{visibility, arena},
         identifier_value_(arena),
         string_value_(arena),
         aggregate_value_(arena) {}
 
-inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
+inline void UninterpretedOption::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, positive_int_value_),
@@ -12860,8 +12884,8 @@ inline void UninterpretedOption::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* UninterpretedOption::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* UninterpretedOption::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UninterpretedOption(arena);
 }
 constexpr auto UninterpretedOption::InternalNewImpl_() {
@@ -13236,7 +13260,7 @@ class FeatureSet::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
 };
 
-FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
+FeatureSet::FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSet_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13246,14 +13270,15 @@ FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
 }
 PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FeatureSet& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FeatureSet& from_msg)
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0} {}
 
 FeatureSet::FeatureSet(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSet& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSet_class_data_.base()) {
@@ -13278,11 +13303,11 @@ FeatureSet::FeatureSet(
 }
 PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0} {}
 
-inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
+inline void FeatureSet::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, field_presence_),
@@ -13302,8 +13327,8 @@ inline void FeatureSet::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FeatureSet::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FeatureSet::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSet(arena);
 }
 constexpr auto FeatureSet::InternalNewImpl_() {
@@ -13641,7 +13666,7 @@ class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
 };
 
-FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena)
+FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13651,13 +13676,14 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0} {}
 
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSetDefaults_FeatureSetEditionDefault& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base()) {
@@ -13682,10 +13708,10 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena* arena) {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, overridable_features_),
@@ -13707,8 +13733,8 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor(MessageLite&
   this_._impl_.~Impl_();
 }
 
-inline void* FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSetDefaults_FeatureSetEditionDefault(arena);
 }
 constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
@@ -13981,7 +14007,7 @@ class FeatureSetDefaults::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
 };
 
-FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* arena)
+FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13991,14 +14017,15 @@ FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults)
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FeatureSetDefaults& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::FeatureSetDefaults& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         defaults_{visibility, arena, from.defaults_} {}
 
 FeatureSetDefaults::FeatureSetDefaults(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSetDefaults& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, FeatureSetDefaults_class_data_.base()) {
@@ -14022,11 +14049,11 @@ FeatureSetDefaults::FeatureSetDefaults(
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         defaults_{visibility, arena} {}
 
-inline void FeatureSetDefaults::SharedCtor(::_pb::Arena* arena) {
+inline void FeatureSetDefaults::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, minimum_edition_),
@@ -14046,8 +14073,8 @@ inline void FeatureSetDefaults::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FeatureSetDefaults::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* FeatureSetDefaults::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSetDefaults(arena);
 }
 constexpr auto FeatureSetDefaults::InternalNewImpl_() {
@@ -14316,7 +14343,7 @@ class SourceCodeInfo_Location::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
 };
 
-SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena)
+SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_Location_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14326,8 +14353,9 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* aren
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::SourceCodeInfo_Location& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::SourceCodeInfo_Location& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         path_{visibility, arena, from.path_},
@@ -14339,7 +14367,7 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
         trailing_comments_(arena, from.trailing_comments_) {}
 
 SourceCodeInfo_Location::SourceCodeInfo_Location(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceCodeInfo_Location& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_Location_class_data_.base()) {
@@ -14356,7 +14384,7 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         path_{visibility, arena},
         _path_cached_byte_size_{0},
@@ -14366,7 +14394,7 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
         leading_comments_(arena),
         trailing_comments_(arena) {}
 
-inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
+inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 SourceCodeInfo_Location::~SourceCodeInfo_Location() {
@@ -14382,8 +14410,8 @@ inline void SourceCodeInfo_Location::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* SourceCodeInfo_Location::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* SourceCodeInfo_Location::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) SourceCodeInfo_Location(arena);
 }
 constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
@@ -14709,7 +14737,7 @@ class SourceCodeInfo::_Internal {
  public:
 };
 
-SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
+SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14719,14 +14747,15 @@ SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::SourceCodeInfo& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::SourceCodeInfo& from_msg)
       : _extensions_{visibility, arena},
         location_{visibility, arena, from.location_},
         _cached_size_{0} {}
 
 SourceCodeInfo::SourceCodeInfo(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceCodeInfo& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, SourceCodeInfo_class_data_.base()) {
@@ -14744,12 +14773,12 @@ SourceCodeInfo::SourceCodeInfo(
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         location_{visibility, arena},
         _cached_size_{0} {}
 
-inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
+inline void SourceCodeInfo::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 SourceCodeInfo::~SourceCodeInfo() {
@@ -14763,8 +14792,8 @@ inline void SourceCodeInfo::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* SourceCodeInfo::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* SourceCodeInfo::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) SourceCodeInfo(arena);
 }
 constexpr auto SourceCodeInfo::InternalNewImpl_() {
@@ -14981,7 +15010,7 @@ class GeneratedCodeInfo_Annotation::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
 };
 
-GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena)
+GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14991,8 +15020,9 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::A
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::GeneratedCodeInfo_Annotation& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::GeneratedCodeInfo_Annotation& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         path_{visibility, arena, from.path_},
@@ -15000,7 +15030,7 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
         source_file_(arena, from.source_file_) {}
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const GeneratedCodeInfo_Annotation& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_class_data_.base()) {
@@ -15024,13 +15054,13 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         path_{visibility, arena},
         _path_cached_byte_size_{0},
         source_file_(arena) {}
 
-inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
+inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, begin_),
@@ -15051,8 +15081,8 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* GeneratedCodeInfo_Annotation::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* GeneratedCodeInfo_Annotation::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) GeneratedCodeInfo_Annotation(arena);
 }
 constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
@@ -15363,7 +15393,7 @@ class GeneratedCodeInfo::_Internal {
  public:
 };
 
-GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
+GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -15373,13 +15403,14 @@ GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::GeneratedCodeInfo& from_msg)
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    const ::google::protobuf::GeneratedCodeInfo& from_msg)
       : annotation_{visibility, arena, from.annotation_},
         _cached_size_{0} {}
 
 GeneratedCodeInfo::GeneratedCodeInfo(
-    ::google::protobuf::Arena* arena,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const GeneratedCodeInfo& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, GeneratedCodeInfo_class_data_.base()) {
@@ -15396,11 +15427,11 @@ GeneratedCodeInfo::GeneratedCodeInfo(
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : annotation_{visibility, arena},
         _cached_size_{0} {}
 
-inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
+inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
 }
 GeneratedCodeInfo::~GeneratedCodeInfo() {
@@ -15414,8 +15445,8 @@ inline void GeneratedCodeInfo::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* GeneratedCodeInfo::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* GeneratedCodeInfo::PlacementNew_(
+    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) GeneratedCodeInfo(arena);
 }
 constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
