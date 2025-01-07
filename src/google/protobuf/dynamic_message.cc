@@ -200,9 +200,7 @@ class DynamicMapField final
  private:
   friend class MapFieldBase;
 
-  const Message* default_entry_;
-
-  static const VTable kVTable;
+  const VTable kVTable;
 
   void AllocateMapValue(MapValueRef* map_val);
 
@@ -219,20 +217,15 @@ class DynamicMapField final
                                        MapValueConstRef* val);
 
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
-
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
 };
 
 DynamicMapField::DynamicMapField(const Message* default_entry)
     : DynamicMapField::TypeDefinedMapFieldBase(&kVTable),
-      default_entry_(default_entry) {}
+      kVTable(MakeVTable<DynamicMapField>(default_entry)) {}
 
 DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
     : TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef>(&kVTable, arena),
-      default_entry_(default_entry) {}
-
-constexpr DynamicMapField::VTable DynamicMapField::kVTable =
-    MakeVTable<DynamicMapField>();
+      kVTable(MakeVTable<DynamicMapField>(default_entry)) {}
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);
@@ -289,7 +282,7 @@ bool DynamicMapField::LookupMapValueNoSyncImpl(const MapFieldBase& self,
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
-  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
+  const FieldDescriptor* val_des = GetPrototype()->GetDescriptor()->map_value();
   map_val->SetType(val_des->cpp_type());
   // Allocate memory for the MapValueRef, and initialize to
   // default value.
@@ -312,7 +305,7 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
       const Message& message =
-          default_entry_->GetReflection()->GetMessage(*default_entry_, val_des);
+          GetPrototype()->GetReflection()->GetMessage(*GetPrototype(), val_des);
       Message* value = message.New(arena());
       map_val->SetValue(value);
       break;
@@ -347,7 +340,7 @@ void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
   }
 
   // Different arena, so copy objects instead.
-  DynamicMapField tmp(lhs.default_entry_);
+  DynamicMapField tmp(lhs.GetPrototype());
   MergeFromImpl(tmp, lhs);
   lhs.Clear();
   MergeFromImpl(lhs, rhs);
@@ -377,7 +370,7 @@ void DynamicMapField::MergeFromImpl(MapFieldBase& base,
 
     // Copy map value
     const FieldDescriptor* field_descriptor =
-        self.default_entry_->GetDescriptor()->map_value();
+        self.GetPrototype()->GetDescriptor()->map_value();
     switch (field_descriptor->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         map_val->SetInt32Value(other_it->second.GetInt32Value());
@@ -422,10 +415,6 @@ void DynamicMapField::MergeFromImpl(MapFieldBase& base,
       }
     }
   }
-}
-
-const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
-  return static_cast<const DynamicMapField&>(map).default_entry_;
 }
 
 size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(

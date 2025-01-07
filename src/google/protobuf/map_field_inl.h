@@ -30,24 +30,6 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
-namespace internal {
-// ----------------------------------------------------------------------
-
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-const Message*
-MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::GetPrototypeImpl(
-    const MapFieldBase&) {
-  return Derived::internal_default_instance();
-}
-
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 #include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
