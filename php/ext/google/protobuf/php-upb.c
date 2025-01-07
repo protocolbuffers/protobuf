@@ -3067,9 +3067,8 @@ void upb_Arena_LogFree(const upb_Arena* arena) {
 
 // If the param a is already the root, provides no memory order of refcount.
 // If it has a parent, then acquire memory order is provided for both the root
-// and the refcount.
-static upb_ArenaRoot _upb_Arena_FindRoot(const upb_Arena* a) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+// and the refcount. Thread safe.
+static upb_ArenaRoot _upb_Arena_FindRoot(upb_ArenaInternal* ai) {
   uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_relaxed);
   if (_upb_Arena_IsTaggedRefcount(poc)) {
     // Fast, relaxed path - arenas that have never been fused to a parent only
@@ -3102,7 +3101,7 @@ static upb_ArenaRoot _upb_Arena_FindRoot(const upb_Arena* a) {
 }
 
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
-  upb_ArenaInternal* ai = _upb_Arena_FindRoot(arena).root;
+  upb_ArenaInternal* ai = _upb_Arena_FindRoot(upb_Arena_Internal(arena)).root;
   size_t memsize = 0;
   size_t local_fused_count = 0;
 
@@ -3326,6 +3325,7 @@ retry:
   goto retry;
 }
 
+// Thread safe.
 static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
                                         upb_ArenaInternal* child) {
   UPB_TSAN_CHECK_PUBLISHED(parent);
@@ -3363,8 +3363,9 @@ void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
   ai->upb_alloc_cleanup = func;
 }
 
-static upb_ArenaInternal* _upb_Arena_DoFuse(const upb_Arena* a1,
-                                            const upb_Arena* a2,
+// Thread safe.
+static upb_ArenaInternal* _upb_Arena_DoFuse(upb_ArenaInternal** ai1,
+                                            upb_ArenaInternal** ai2,
                                             uintptr_t* ref_delta) {
   // `parent_or_count` has two distinct modes
   // -  parent pointer mode
@@ -3373,10 +3374,13 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(const upb_Arena* a1,
   // In parent pointer mode, it may change what pointer it refers to in the
   // tree, but it will always approach a root.  Any operation that walks the
   // tree to the root may collapse levels of the tree concurrently.
-  upb_ArenaRoot r1 = _upb_Arena_FindRoot(a1);
-  upb_ArenaRoot r2 = _upb_Arena_FindRoot(a2);
+  upb_ArenaRoot r1 = _upb_Arena_FindRoot(*ai1);
+  upb_ArenaRoot r2 = _upb_Arena_FindRoot(*ai2);
 
   if (r1.root == r2.root) return r1.root;  // Already fused.
+
+  *ai1 = r1.root;
+  *ai2 = r2.root;
 
   // Avoid cycles by always fusing into the root with the lower address.
   if ((uintptr_t)r1.root > (uintptr_t)r2.root) {
@@ -3423,6 +3427,7 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(const upb_Arena* a1,
   return r1.root;
 }
 
+// Thread safe.
 static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
                                  uintptr_t ref_delta) {
   if (ref_delta == 0) return true;  // No fixup required.
@@ -3468,7 +3473,7 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   // The number of refs we ultimately need to transfer to the new root.
   uintptr_t ref_delta = 0;
   while (true) {
-    upb_ArenaInternal* new_root = _upb_Arena_DoFuse(a1, a2, &ref_delta);
+    upb_ArenaInternal* new_root = _upb_Arena_DoFuse(&ai1, &ai2, &ref_delta);
     if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
       return true;
     }
@@ -3477,12 +3482,15 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
 
 bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b) {
   if (a == b) return true;  // trivial fuse
+  upb_ArenaInternal* ra = _upb_Arena_FindRoot(upb_Arena_Internal(a)).root;
+  upb_ArenaInternal* rb = upb_Arena_Internal(b);
   while (true) {
-    upb_ArenaRoot ra = _upb_Arena_FindRoot(a);
-    if (ra.root == _upb_Arena_FindRoot(b).root) return true;
-    if (ra.root == _upb_Arena_FindRoot(a).root) return false;
-
+    rb = _upb_Arena_FindRoot(rb).root;
+    if (ra == rb) return true;
+    upb_ArenaInternal* tmp = _upb_Arena_FindRoot(ra).root;
+    if (ra == tmp) return false;
     // a's root changed since we last checked.  Retry.
+    ra = tmp;
   }
 }
 
@@ -3490,9 +3498,10 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (_upb_ArenaInternal_HasInitialBlock(ai)) return false;
   upb_ArenaRoot r;
+  r.root = ai;
 
 retry:
-  r = _upb_Arena_FindRoot(a);
+  r = _upb_Arena_FindRoot(r.root);
   if (upb_Atomic_CompareExchangeWeak(
           &r.root->parent_or_count, &r.tagged_count,
           _upb_Arena_TaggedFromRefcount(
