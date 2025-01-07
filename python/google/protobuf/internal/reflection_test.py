@@ -266,12 +266,6 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto1.HasField('optional_nested_message'))
 
   def testDisconnectingLazyNestedMessage(self, message_module):
-    # This test exercises releasing a nested message that is lazy. This test
-    # only exercises real code in the C++ implementation as Python does not
-    # support lazy parsing, but the current C++ implementation results in
-    # memory corruption and a crash.
-    if api_implementation.Type() != 'python':
-      return
     proto = message_module.TestAllTypes()
     proto.optional_lazy_message.bb = 5
     proto.ClearField('optional_lazy_message')
@@ -1519,11 +1513,6 @@ class Proto2ReflectionTest(unittest.TestCase):
 
   @testing_refleaks.SkipReferenceLeakChecker('MakeDescriptor is not repeatable')
   def testDescriptorProtoSupport(self):
-    # Hand written descriptors/reflection are only supported by the pure-Python
-    # implementation of the API.
-    if api_implementation.Type() != 'python':
-      return
-
     def AddDescriptorField(proto, field_name, field_type):
       AddDescriptorField.field_index += 1
       new_field = proto.field.add()
@@ -1914,22 +1903,13 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(333, ext2[2].bb)
 
   def testCopyFromBadType(self):
-    # The python implementation doesn't raise an exception in this
-    # case. In theory it should.
-    if api_implementation.Type() == 'python':
-      return
     proto1 = unittest_pb2.TestAllTypes()
     proto2 = unittest_pb2.TestAllExtensions()
     self.assertRaises(TypeError, proto1.CopyFrom, proto2)
 
   def testClear(self):
     proto = unittest_pb2.TestAllTypes()
-    # C++ implementation does not support lazy fields right now so leave it
-    # out for now.
-    if api_implementation.Type() == 'python':
-      test_util.SetAllFields(proto)
-    else:
-      test_util.SetAllNonLazyFields(proto)
+    test_util.SetAllFields(proto)
     # Clear the message.
     proto.Clear()
     self.assertEqual(proto.ByteSize(), 0)
@@ -2493,13 +2473,9 @@ class ByteSizeTest(unittest.TestCase):
 
     self.assertEqual(2, len(repeated_nested_message))
     del repeated_nested_message[0:1]
-    # TODO: Fix cpp extension bug when delete repeated message.
-    if api_implementation.Type() == 'python':
-      self.assertEqual(1, len(repeated_nested_message))
+    self.assertEqual(1, len(repeated_nested_message))
     del repeated_nested_message[-1]
-    # TODO: Fix cpp extension bug when delete repeated message.
-    if api_implementation.Type() == 'python':
-      self.assertEqual(0, len(repeated_nested_message))
+    self.assertEqual(0, len(repeated_nested_message))
 
   def testRepeatedGroups(self):
     # 2-byte START_GROUP plus 2-byte END_GROUP.
@@ -2574,12 +2550,11 @@ class ByteSizeTest(unittest.TestCase):
     self.proto.ClearField('optional_foreign_message')
     self.assertEqual(0, self.proto.ByteSize())
 
-    if api_implementation.Type() == 'python':
-      # This is only possible in pure-Python implementation of the API.
-      child = self.proto.optional_foreign_message
-      self.proto.ClearField('optional_foreign_message')
-      child.c = 128
-      self.assertEqual(0, self.proto.ByteSize())
+    # This is only possible in pure-Python implementation of the API.
+    child = self.proto.optional_foreign_message
+    self.proto.ClearField('optional_foreign_message')
+    child.c = 128
+    self.assertEqual(0, self.proto.ByteSize())
 
     # Test within extension.
     extension = more_extensions_pb2.optional_message_extension
@@ -3313,7 +3288,8 @@ class ClassAPITest(unittest.TestCase):
 
   @unittest.skipIf(
       api_implementation.Type() != 'python',
-      'C++ implementation requires a call to MakeDescriptor()')
+      'C++ and upb implementations require a call to MakeDescriptor()',
+  )
   @testing_refleaks.SkipReferenceLeakChecker('MakeClass is not repeatable')
   def testMakeClassWithNestedDescriptor(self):
     leaf_desc = descriptor.Descriptor(
@@ -3407,13 +3383,6 @@ class ClassAPITest(unittest.TestCase):
   # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
-    # TODO: This test fails with cpp implementation in the call
-    # of six.with_metaclass(). The other two callsites of with_metaclass
-    # in this file are both excluded from cpp test, so it might be expected
-    # to fail. Need someone more familiar with the python code to take a
-    # look at this.
-    if api_implementation.Type() != 'python':
-      return
     file_descriptor = descriptor_pb2.FileDescriptorProto()
     file_descriptor.ParseFromString(self._GetSerializedFileDescriptor('A'))
     msg_descriptor = descriptor.MakeDescriptor(
