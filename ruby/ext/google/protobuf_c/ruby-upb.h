@@ -227,10 +227,14 @@ Error, UINTPTR_MAX is undefined
 #elif defined(__GNUC__)
 // GCC supported atomics as an extension before it supported __has_extension
 #define UPB_USE_C11_ATOMICS
+#elif defined(_MSC_VER)
+#define UPB_USE_MSC_ATOMICS
 #endif
 
 #if defined(UPB_USE_C11_ATOMICS)
 #define UPB_ATOMIC(T) _Atomic(T)
+#elif defined(UPB_USE_MSC_ATOMICS)
+#define UPB_ATOMIC(T) volatile T
 #else
 #define UPB_ATOMIC(T) T
 #endif
@@ -775,7 +779,7 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
 // This operation is safe to use concurrently from multiple threads.
-size_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
+uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
 // This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
 
@@ -13788,7 +13792,140 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
   atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
                                         success_order, failure_order)
 
-#else  // !UPB_USE_C11_ATOMICS
+#elif defined(UPB_USE_MSC_ATOMICS)
+#include <intrin.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#define upb_Atomic_Init(addr, val) (*(addr) = val)
+
+#if defined(_WIN64)
+// MSVC, without C11 atomics, does not have any way in pure C to force
+// load-acquire store-release behavior, so we hack it with exchanges.
+#pragma intrinsic(_InterlockedExchange64)
+#define upb_Atomic_Store(addr, val, order) \
+  (void)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
+
+#pragma intrinsic(_InterlockedCompareExchange64)
+static uintptr_t upb_Atomic_LoadMsc(uint64_t volatile *addr) {
+  // Compare exchange with an unlikely value reduces the risk of a spurious
+  // (but harmless) store
+  return _InterlockedCompareExchange64(addr, 0xDEADC0DEBAADF00D,
+                                       0xDEADC0DEBAADF00D);
+}
+// If _Generic is available, use it to avoid emitting a "'uintptr_t' differs in
+// levels of indirection from 'void *'" or -Wint-conversion compiler warning.
+#if __STDC_VERSION__ >= 201112L
+#define upb_Atomic_Load(addr, order)                           \
+  _Generic(addr,                                               \
+      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
+                                 (uint64_t volatile *)(addr)), \
+      default: (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr)))
+
+#define upb_Atomic_Exchange(addr, val, order)                                 \
+  _Generic(addr,                                                              \
+      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange64(                        \
+                                 (uint64_t volatile *)(addr), (uint64_t)val), \
+      default: (void *)_InterlockedExchange64((uint64_t volatile *)addr,      \
+                                              (uint64_t)val))
+#else
+// Compare exchange with an unlikely value reduces the risk of a spurious
+// (but harmless) store
+#define upb_Atomic_Load(addr, order) \
+  (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr))
+
+#define upb_Atomic_Exchange(addr, val, order) \
+  (void *)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
+#endif
+
+#pragma intrinsic(_InterlockedCompareExchange64)
+static bool upb_Atomic_CompareExchangeMscP(uint64_t volatile *addr,
+                                           uint64_t *expected,
+                                           uint64_t desired) {
+  uint64_t expect_val = *expected;
+  uint64_t actual_val =
+      _InterlockedCompareExchange64(addr, desired, expect_val);
+  if (expect_val != actual_val) {
+    *expected = actual_val;
+    return false;
+  }
+  return true;
+}
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,            \
+                                 (uint64_t *)expected, (uint64_t)desired)
+
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,                    \
+                                 (uint64_t *)expected, (uint64_t)desired)
+
+#else  // 32 bit pointers
+#pragma intrinsic(_InterlockedExchange)
+#define upb_Atomic_Store(addr, val, order) \
+  (void)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
+
+#pragma intrinsic(_InterlockedCompareExchange)
+static uintptr_t upb_Atomic_LoadMsc(uint32_t volatile *addr) {
+  // Compare exchange with an unlikely value reduces the risk of a spurious
+  // (but harmless) store
+  return _InterlockedCompareExchange(addr, 0xDEADC0DE, 0xDEADC0DE);
+}
+// If _Generic is available, use it to avoid emitting 'uintptr_t' differs in
+// levels of indirection from 'void *'
+#if __STDC_VERSION__ >= 201112L
+#define upb_Atomic_Load(addr, order)                           \
+  _Generic(addr,                                               \
+      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
+                                 (uint32_t volatile *)(addr)), \
+      default: (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr)))
+
+#define upb_Atomic_Exchange(addr, val, order)                                 \
+  _Generic(addr,                                                              \
+      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange(                          \
+                                 (uint32_t volatile *)(addr), (uint32_t)val), \
+      default: (void *)_InterlockedExchange64((uint32_t volatile *)addr,      \
+                                              (uint32_t)val))
+#else
+#define upb_Atomic_Load(addr, order) \
+  (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr))
+
+#define upb_Atomic_Exchange(addr, val, order) \
+  (void *)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
+#endif
+
+#pragma intrinsic(_InterlockedCompareExchange)
+static bool upb_Atomic_CompareExchangeMscP(uint32_t volatile *addr,
+                                           uint32_t *expected,
+                                           uint32_t desired) {
+  uint32_t expect_val = *expected;
+  uint32_t actual_val = _InterlockedCompareExchange(addr, desired, expect_val);
+  if (expect_val != actual_val) {
+    *expected = actual_val;
+    return false;
+  }
+  return true;
+}
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,            \
+                                 (uint32_t *)expected, (uint32_t)desired)
+
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,                    \
+                                 (uint32_t *)expected, (uint32_t)desired)
+#endif
+
+#else  // No atomics
+
+#if !defined(UPB_SUPPRESS_MISSING_ATOMICS)
+// NOLINTNEXTLINE
+#error Your compiler does not support atomic instructions, which UPB uses. If you do not use UPB on multiple threads, you can suppress this error by defining UPB_SUPPRESS_MISSING_ATOMICS.
+#endif
 
 #include <string.h>
 
@@ -15642,6 +15779,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_IS_GOOGLE3
 #undef UPB_ATOMIC
 #undef UPB_USE_C11_ATOMICS
+#undef UPB_USE_MSC_ATOMICS
 #undef UPB_PRIVATE
 #undef UPB_ONLYBITS
 #undef UPB_LINKARR_DECLARE
