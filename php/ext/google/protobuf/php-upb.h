@@ -547,7 +547,8 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
  * to be freed.  However the Arena does allow users to register cleanup
  * functions that will run when the arena is destroyed.
  *
- * A upb_Arena is *not* thread-safe.
+ * A upb_Arena is *not* thread-safe, although some functions related to its
+ * managing its lifetime are, and are documented as such.
  *
  * You could write a thread-safe arena allocator that satisfies the
  * upb_alloc interface, but it would not be as efficient for the
@@ -773,6 +774,7 @@ void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
 // This operation is safe to use concurrently from multiple threads.
 size_t upb_Arena_SpaceAllocated(upb_Arena* a, size_t* fused_count);
+// This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a);
 
 UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
@@ -791,6 +793,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 //
 // This API is meant for experimentation only. It will likely be removed in
 // the future.
+// This operation is safe to use concurrently from multiple threads.
 void upb_Arena_SetMaxBlockSize(size_t max);
 
 // Shrinks the last alloc from arena.
