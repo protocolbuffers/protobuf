@@ -454,7 +454,9 @@ public class RubyMessage extends RubyObject {
         fieldDescriptor = descriptor.findFieldByName(methodName);
 
         if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
-          return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
+          return (fields.containsKey(fieldDescriptor) || builder.hasField(fieldDescriptor))
+              ? runtime.getTrue()
+              : runtime.getFalse();
         }
 
       } else if (methodName.endsWith(AS_VALUE_SUFFIX)) {
@@ -952,7 +954,7 @@ public class RubyMessage extends RubyObject {
     if (!fieldDescriptor.hasPresence()) {
       throw context.runtime.newArgumentError("does not track presence");
     }
-    return fields.containsKey(fieldDescriptor)
+    return (fields.containsKey(fieldDescriptor) || builder.hasField(fieldDescriptor))
         ? context.runtime.getTrue()
         : context.runtime.getFalse();
   }
