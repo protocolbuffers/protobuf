@@ -423,6 +423,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
       _internal_mutable_$name_internal$()->Add(value);
+      $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -440,6 +441,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
+      $set_hasbit$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;

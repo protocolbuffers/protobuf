@@ -3113,9 +3113,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
@@ -3174,9 +3174,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }}));
 
 // NOTE: with C++20 we can use designated initializers to ensure
@@ -3295,9 +3295,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }}));
 
 

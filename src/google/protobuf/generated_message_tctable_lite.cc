@@ -183,6 +183,14 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
         }
         break;
 
+      case fl::kFkPackedVarint: {
+        // Repeated fields can have any value when the has bit is on.
+        if (has_bit) break;
+        ABSL_CHECK(RefAt<const void*>(base, entry.offset) != nullptr)
+            << print_error();
+        break;
+      }
+
       default:
         // All other types are not `optional`.
         Unreachable();
@@ -611,6 +619,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
@@ -716,6 +725,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
   const auto tag = UnalignedLoad<TagType>(ptr);
   do {
@@ -752,6 +762,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   ptr += sizeof(TagType);
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   // Since ctx->ReadPackedFixed does not use TailCall<> or Return<>, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
@@ -1052,6 +1063,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
@@ -1118,6 +1130,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   ptr += sizeof(TagType);
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
@@ -1261,6 +1274,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
@@ -1315,6 +1329,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
   }
   const auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
@@ -1408,6 +1423,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
   auto expected_tag = UnalignedLoad<TagType>(ptr);
   const uint8_t max = data.aux_idx();
@@ -1450,6 +1466,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
 
   // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
   // pending hasbits now:
@@ -1687,6 +1705,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   auto& field = RefAt<FieldType>(msg, data.offset());
 
@@ -1931,6 +1950,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
     PROTOBUF_MUSTTAIL return MpPackedFixed<is_split>(PROTOBUF_TC_PARAM_PASS);
   }
 
+  SetHas(entry, msg);
+
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   const uint16_t type_card = entry.type_card;
   const uint16_t rep = type_card & field_layout::kRepMask;
@@ -1988,6 +2009,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
   if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
     PROTOBUF_MUSTTAIL return MpRepeatedFixed<is_split>(PROTOBUF_TC_PARAM_PASS);
   }
+
+  SetHas(entry, msg);
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   int size = ReadSize(&ptr);
@@ -2137,6 +2160,9 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
   if (decoded_wiretype != WireFormatLite::WIRETYPE_VARINT) {
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
+
+  SetHas(entry, msg);
+
   // For split we avoid the duplicate code and have the impl reload the value.
   // Less code bloat for uncommon paths.
   const uint16_t xform_val = (type_card & field_layout::kTvMask);
@@ -2185,6 +2211,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
 template <bool is_split, typename FieldType, uint16_t xform_val_in>
 const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
+  SetHas(entry, msg);
   // For is_split we ignore the incoming xform_val and read it from entry to
   // reduce duplication for the uncommon paths.
   const uint16_t xform_val =
@@ -2410,6 +2437,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
 
+  SetHas(entry, msg);
+
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
   void* const base = MaybeGetSplitBase(msg, is_split, table);
@@ -2578,6 +2607,8 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
           base, entry.offset, msg);
   const TcParseTableBase* inner_table =
       GetTableFromAux(type_card, *table->field_aux(&entry));
+
+  SetHas(entry, msg);
 
   const char* ptr2 = ptr;
   uint32_t next_tag;

@@ -708,6 +708,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           _internal_mutable_$name_internal$()->Add()->assign(value);
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
         }
@@ -715,6 +716,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           _internal_mutable_$name_internal$()->Add(std::move(value));
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
         }
@@ -723,6 +725,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $DCHK$(value != nullptr);
           $TsanDetectConcurrentMutation$;
           _internal_mutable_$name_internal$()->Add()->assign(value);
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add_char:$pkg.Msg.field$)
         }
@@ -731,6 +734,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $TsanDetectConcurrentMutation$;
           _internal_mutable_$name_internal$()->Add()->assign(value.data(),
                                                              value.size());
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
         }
@@ -744,6 +748,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         inline $pb$::RepeatedPtrField<std::string>* $nonnull$
         $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
+          $set_hasbit$;
           $annotate_mutable_list$;
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $TsanDetectConcurrentMutation$;

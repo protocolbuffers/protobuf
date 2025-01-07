@@ -482,11 +482,13 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
   )cc");
+  // TODO: Make this $annotate_has$?
   p->Emit(R"cc(
     inline void $Msg$::add_$name$($Type$ value) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       _internal_mutable_$name_internal$()->Add(value);
+      $set_hasbit$;
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -504,6 +506,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     inline $pb$::RepeatedField<$Type$>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
+      $set_hasbit$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
