@@ -399,7 +399,7 @@ const uint64_t kWyhashSalt[5] = {
 };
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
-  return Wyhash(p, n, seed, kWyhashSalt);
+  return ~Wyhash(p, n, seed, kWyhashSalt);
 }
 
 static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
