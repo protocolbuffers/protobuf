@@ -775,7 +775,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Clear for $Msg$ {
           fn clear(&mut self) {
-            self.as_mut().clear()
+            self.as_mut().clear();
           }
         }
 
@@ -912,7 +912,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Clear for $Msg$Mut<'_> {
           fn clear(&mut self) {
-            $MsgMut::clear$
+            $MsgMut::clear$;
           }
         }
 
