@@ -16233,7 +16233,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 }
 
 bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
-                                 int depth) {
+                                 const upb_DefPool* ext_pool, int depth) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
@@ -16244,7 +16244,7 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 
   _upb_Message_DiscardUnknown_shallow(msg);
 
-  while (upb_Message_Next(msg, m, NULL /*ext_pool*/, &f, &val, &iter)) {
+  while (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) {
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     if (!subm) continue;
     if (upb_FieldDef_IsMap(f)) {
@@ -16258,7 +16258,7 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
       upb_MessageValue map_key, map_val;
       while (upb_Map_Next(map, &map_key, &map_val, &iter)) {
         if (!_upb_Message_DiscardUnknown((upb_Message*)map_val.msg_val, val_m,
-                                         depth)) {
+                                         ext_pool, depth)) {
           ret = false;
         }
       }
@@ -16268,13 +16268,13 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
       for (i = 0; i < n; i++) {
         upb_MessageValue elem = upb_Array_Get(arr, i);
         if (!_upb_Message_DiscardUnknown((upb_Message*)elem.msg_val, subm,
-                                         depth)) {
+                                         ext_pool, depth)) {
           ret = false;
         }
       }
     } else {
       if (!_upb_Message_DiscardUnknown((upb_Message*)val.msg_val, subm,
-                                       depth)) {
+                                       ext_pool, depth)) {
         ret = false;
       }
     }
@@ -16284,8 +16284,8 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 }
 
 bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
-                                int maxdepth) {
-  return _upb_Message_DiscardUnknown(msg, m, maxdepth);
+                                const upb_DefPool* ext_pool, int maxdepth) {
+  return _upb_Message_DiscardUnknown(msg, m, ext_pool, maxdepth);
 }
 
 
