@@ -109,7 +109,7 @@ def _generate_rust_gencode(
 
     entry_point_rs_output = actions.declare_file(
         "{}.generated.{}.rs".format(ctx.label.name, "u" if is_upb else "c"),
-        sibling = proto_info.direct_sources[0],
+        sibling = proto_info.direct_sources[0] if len(proto_info.direct_sources) > 0 else None,
     )
 
     if is_upb:
