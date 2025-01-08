@@ -79,6 +79,7 @@ jobs:
             set -ex
             COMPOSER_HOME=/workspace/composer-cache
             BAZEL_FLAGS=${{ env.BAZEL_FLAGS }}
+            ./regenerate_stale_files.sh ${{ env.BAZEL_FLAGS }}
             pushd /workspace/php
             composer update
             ${{ matrix.command }}
