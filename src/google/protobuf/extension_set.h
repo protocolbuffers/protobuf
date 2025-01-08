@@ -669,6 +669,7 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
 
+
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
   };
