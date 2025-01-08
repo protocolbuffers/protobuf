@@ -2503,7 +2503,8 @@ const ::google::protobuf::internal::ClassData* FileDescriptorSet::GetClassData()
   ::google::protobuf::internal::PrefetchToLocalCache(FileDescriptorSet_class_data_.tc_table);
   return FileDescriptorSet_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
+constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2>
+FileDescriptorSet::_table_ = {
   {
     0,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._extensions_),
@@ -2530,12 +2531,13 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
     // repeated .google.protobuf.FileDescriptorProto file = 1;
     {PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_.file_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2834,7 +2836,8 @@ const ::google::protobuf::internal::ClassData* FileDescriptorProto::GetClassData
   ::google::protobuf::internal::PrefetchToLocalCache(FileDescriptorProto_class_data_.tc_table);
   return FileDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2>
+FileDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -2936,15 +2939,17 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     // optional .google.protobuf.Edition edition = 14;
     {PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.edition_), _Internal::kHasBitsOffset + 5, 6,
     (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::ServiceDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FileOptions>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo>()},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::ServiceDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FileOptions>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo>()},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+  }},
+  {{
     "\43\4\7\12\0\0\0\0\0\0\0\0\6\0\0\0"
     "google.protobuf.FileDescriptorProto"
     "name"
@@ -2953,7 +2958,6 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     "syntax"
   }},
 };
-
 PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -3465,7 +3469,8 @@ const ::google::protobuf::internal::ClassData* DescriptorProto_ExtensionRange::G
   ::google::protobuf::internal::PrefetchToLocalCache(DescriptorProto_ExtensionRange_class_data_.tc_table);
   return DescriptorProto_ExtensionRange_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2>
+DescriptorProto_ExtensionRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_),
     0, // no _extensions_
@@ -3505,12 +3510,13 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
     {PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_.options_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ExtensionRange)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -3772,7 +3778,8 @@ const ::google::protobuf::internal::ClassData* DescriptorProto_ReservedRange::Ge
   ::google::protobuf::internal::PrefetchToLocalCache(DescriptorProto_ReservedRange_class_data_.tc_table);
   return DescriptorProto_ReservedRange_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+DescriptorProto_ReservedRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_),
     0, // no _extensions_
@@ -3810,7 +3817,6 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ReservedRange)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -4110,7 +4116,8 @@ const ::google::protobuf::internal::ClassData* DescriptorProto::GetClassData() c
   ::google::protobuf::internal::PrefetchToLocalCache(DescriptorProto_class_data_.tc_table);
   return DescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2>
+DescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -4197,23 +4204,24 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
     // repeated string reserved_name = 10;
     {PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.reserved_name_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ExtensionRange>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::MessageOptions>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::OneofDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ReservedRange>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ExtensionRange>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::MessageOptions>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::OneofDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ReservedRange>()},
+  }},
+  {{
     "\37\4\0\0\0\0\0\0\0\0\15\0\0\0\0\0"
     "google.protobuf.DescriptorProto"
     "name"
     "reserved_name"
   }},
 };
-
 PROTOBUF_NOINLINE void DescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -4672,7 +4680,8 @@ const ::google::protobuf::internal::ClassData* ExtensionRangeOptions_Declaration
   ::google::protobuf::internal::PrefetchToLocalCache(ExtensionRangeOptions_Declaration_class_data_.tc_table);
   return ExtensionRangeOptions_Declaration_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2>
+ExtensionRangeOptions_Declaration::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_),
     0, // no _extensions_
@@ -4735,7 +4744,6 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
     "type"
   }},
 };
-
 PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -5061,7 +5069,8 @@ const ::google::protobuf::internal::ClassData* ExtensionRangeOptions::GetClassDa
   ::google::protobuf::internal::PrefetchToLocalCache(ExtensionRangeOptions_class_data_.tc_table);
   return ExtensionRangeOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12>
+ExtensionRangeOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._extensions_),
@@ -5111,15 +5120,16 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-    {0, 2},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+      {0, 2},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -5463,7 +5473,8 @@ const ::google::protobuf::internal::ClassData* FieldDescriptorProto::GetClassDat
   ::google::protobuf::internal::PrefetchToLocalCache(FieldDescriptorProto_class_data_.tc_table);
   return FieldDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2>
+FieldDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -5553,11 +5564,13 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     // optional bool proto3_optional = 17;
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.proto3_optional_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions>()},
-    {1, 3},
-    {1, 18},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions>()},
+      {1, 3},
+      {1, 18},
+  }},
+  {{
     "\44\4\10\0\0\0\11\15\0\0\11\0\0\0\0\0"
     "google.protobuf.FieldDescriptorProto"
     "name"
@@ -5567,7 +5580,6 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     "json_name"
   }},
 };
-
 PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -6001,7 +6013,8 @@ const ::google::protobuf::internal::ClassData* OneofDescriptorProto::GetClassDat
   ::google::protobuf::internal::PrefetchToLocalCache(OneofDescriptorProto_class_data_.tc_table);
   return OneofDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2>
+OneofDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -6034,15 +6047,16 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
     // optional .google.protobuf.OneofOptions options = 2;
     {PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::OneofOptions>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::OneofOptions>()},
+  }},
+  {{
     "\44\4\0\0\0\0\0\0"
     "google.protobuf.OneofDescriptorProto"
     "name"
   }},
 };
-
 PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -6288,7 +6302,8 @@ const ::google::protobuf::internal::ClassData* EnumDescriptorProto_EnumReservedR
   ::google::protobuf::internal::PrefetchToLocalCache(EnumDescriptorProto_EnumReservedRange_class_data_.tc_table);
   return EnumDescriptorProto_EnumReservedRange_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRange::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+EnumDescriptorProto_EnumReservedRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_),
     0, // no _extensions_
@@ -6326,7 +6341,6 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -6596,7 +6610,8 @@ const ::google::protobuf::internal::ClassData* EnumDescriptorProto::GetClassData
   ::google::protobuf::internal::PrefetchToLocalCache(EnumDescriptorProto_class_data_.tc_table);
   return EnumDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2>
+EnumDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -6650,18 +6665,19 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
     // repeated string reserved_name = 5;
     {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.reserved_name_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumValueDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumOptions>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto_EnumReservedRange>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumValueDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumOptions>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto_EnumReservedRange>()},
+  }},
+  {{
     "\43\4\0\0\0\15\0\0"
     "google.protobuf.EnumDescriptorProto"
     "name"
     "reserved_name"
   }},
 };
-
 PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -6996,7 +7012,8 @@ const ::google::protobuf::internal::ClassData* EnumValueDescriptorProto::GetClas
   ::google::protobuf::internal::PrefetchToLocalCache(EnumValueDescriptorProto_class_data_.tc_table);
   return EnumValueDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2>
+EnumValueDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -7036,15 +7053,16 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
     // optional .google.protobuf.EnumValueOptions options = 3;
     {PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumValueOptions>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumValueOptions>()},
+  }},
+  {{
     "\50\4\0\0\0\0\0\0"
     "google.protobuf.EnumValueDescriptorProto"
     "name"
   }},
 };
-
 PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -7340,7 +7358,8 @@ const ::google::protobuf::internal::ClassData* ServiceDescriptorProto::GetClassD
   ::google::protobuf::internal::PrefetchToLocalCache(ServiceDescriptorProto_class_data_.tc_table);
   return ServiceDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2>
+ServiceDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -7380,16 +7399,17 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
     // optional .google.protobuf.ServiceOptions options = 3;
     {PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 1, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::MethodDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::ServiceOptions>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::MethodDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::ServiceOptions>()},
+  }},
+  {{
     "\46\4\0\0\0\0\0\0"
     "google.protobuf.ServiceDescriptorProto"
     "name"
   }},
 };
-
 PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -7694,7 +7714,8 @@ const ::google::protobuf::internal::ClassData* MethodDescriptorProto::GetClassDa
   ::google::protobuf::internal::PrefetchToLocalCache(MethodDescriptorProto_class_data_.tc_table);
   return MethodDescriptorProto_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2>
+MethodDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_),
     0, // no _extensions_
@@ -7753,9 +7774,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
     // optional bool server_streaming = 6 [default = false];
     {PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_.server_streaming_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::MethodOptions>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::MethodOptions>()},
+  }},
+  {{
     "\45\4\12\13\0\0\0\0"
     "google.protobuf.MethodDescriptorProto"
     "name"
@@ -7763,7 +7786,6 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
     "output_type"
   }},
 };
-
 PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -8161,7 +8183,8 @@ const ::google::protobuf::internal::ClassData* FileOptions::GetClassData() const
   ::google::protobuf::internal::PrefetchToLocalCache(FileOptions_class_data_.tc_table);
   return FileOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12>
+FileOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._extensions_),
@@ -8314,11 +8337,13 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-    {1, 3},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+      {1, 3},
+  }},
+  {{
     "\33\14\24\0\0\12\0\0\0\0\0\0\0\21\20\14\20\15\26\14\0\0\0\0"
     "google.protobuf.FileOptions"
     "java_package"
@@ -8333,7 +8358,6 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     "ruby_package"
   }},
 };
-
 PROTOBUF_NOINLINE void FileOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -8993,7 +9017,8 @@ const ::google::protobuf::internal::ClassData* MessageOptions::GetClassData() co
   ::google::protobuf::internal::PrefetchToLocalCache(MessageOptions_class_data_.tc_table);
   return MessageOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7>
+MessageOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._extensions_),
@@ -9055,13 +9080,14 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void MessageOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MessageOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -9410,7 +9436,8 @@ const ::google::protobuf::internal::ClassData* FieldOptions_EditionDefault::GetC
   ::google::protobuf::internal::PrefetchToLocalCache(FieldOptions_EditionDefault_class_data_.tc_table);
   return FieldOptions_EditionDefault_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2>
+FieldOptions_EditionDefault::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_),
     0, // no _extensions_
@@ -9443,15 +9470,16 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_tab
     // optional .google.protobuf.Edition edition = 3;
     {PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_.edition_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-  }}, {{
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
+  }},
+  {{
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+  }},
+  {{
     "\53\5\0\0\0\0\0\0"
     "google.protobuf.FieldOptions.EditionDefault"
     "value"
   }},
 };
-
 PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.EditionDefault)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -9700,7 +9728,8 @@ const ::google::protobuf::internal::ClassData* FieldOptions_FeatureSupport::GetC
   ::google::protobuf::internal::PrefetchToLocalCache(FieldOptions_FeatureSupport_class_data_.tc_table);
   return FieldOptions_FeatureSupport_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2> FieldOptions_FeatureSupport::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2>
+FieldOptions_FeatureSupport::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_),
     0, // no _extensions_
@@ -9745,17 +9774,18 @@ constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2> FieldOptions_FeatureSupport::_tab
     // optional .google.protobuf.Edition edition_removed = 4;
     {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_), _Internal::kHasBitsOffset + 3, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-  }}, {{
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
+  }},
+  {{
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+  }},
+  {{
     "\53\0\0\23\0\0\0\0"
     "google.protobuf.FieldOptions.FeatureSupport"
     "deprecation_warning"
   }},
 };
-
 PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.FeatureSupport)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -10081,7 +10111,8 @@ const ::google::protobuf::internal::ClassData* FieldOptions::GetClassData() cons
   ::google::protobuf::internal::PrefetchToLocalCache(FieldOptions_class_data_.tc_table);
   return FieldOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7>
+FieldOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._extensions_),
@@ -10182,19 +10213,20 @@ constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), -1, 3,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-    {0, 3},
-    {0, 3},
-    {0, 3},
-    {0, 10},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+      {0, 3},
+      {0, 3},
+      {0, 3},
+      {0, 10},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void FieldOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -10699,7 +10731,8 @@ const ::google::protobuf::internal::ClassData* OneofOptions::GetClassData() cons
   ::google::protobuf::internal::PrefetchToLocalCache(OneofOptions_class_data_.tc_table);
   return OneofOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7>
+OneofOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._extensions_),
@@ -10736,13 +10769,14 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void OneofOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -11042,7 +11076,8 @@ const ::google::protobuf::internal::ClassData* EnumOptions::GetClassData() const
   ::google::protobuf::internal::PrefetchToLocalCache(EnumOptions_class_data_.tc_table);
   return EnumOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7>
+EnumOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._extensions_),
@@ -11096,13 +11131,14 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void EnumOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -11458,7 +11494,8 @@ const ::google::protobuf::internal::ClassData* EnumValueOptions::GetClassData() 
   ::google::protobuf::internal::PrefetchToLocalCache(EnumValueOptions_class_data_.tc_table);
   return EnumValueOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 3, 0, 7> EnumValueOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 3, 0, 7>
+EnumValueOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._extensions_),
@@ -11514,14 +11551,15 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 0, 7> EnumValueOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.uninterpreted_option_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -11879,7 +11917,8 @@ const ::google::protobuf::internal::ClassData* ServiceOptions::GetClassData() co
   ::google::protobuf::internal::PrefetchToLocalCache(ServiceOptions_class_data_.tc_table);
   return ServiceOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12>
+ServiceOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._extensions_),
@@ -11922,13 +11961,14 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void ServiceOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12250,7 +12290,8 @@ const ::google::protobuf::internal::ClassData* MethodOptions::GetClassData() con
   ::google::protobuf::internal::PrefetchToLocalCache(MethodOptions_class_data_.tc_table);
   return MethodOptions_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12>
+MethodOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._extensions_),
@@ -12302,14 +12343,15 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-    {0, 3},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+      {0, 3},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void MethodOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12620,7 +12662,8 @@ const ::google::protobuf::internal::ClassData* UninterpretedOption_NamePart::Get
   ::google::protobuf::internal::PrefetchToLocalCache(UninterpretedOption_NamePart_class_data_.tc_table);
   return UninterpretedOption_NamePart_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2>
+UninterpretedOption_NamePart::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_),
     0, // no _extensions_
@@ -12661,7 +12704,6 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
     "name_part"
   }},
 };
-
 PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12937,7 +12979,8 @@ const ::google::protobuf::internal::ClassData* UninterpretedOption::GetClassData
   ::google::protobuf::internal::PrefetchToLocalCache(UninterpretedOption_class_data_.tc_table);
   return UninterpretedOption_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2>
+UninterpretedOption::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_),
     0, // no _extensions_
@@ -13001,16 +13044,17 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
     // optional string aggregate_value = 8;
     {PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.aggregate_value_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption_NamePart>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption_NamePart>()},
+  }},
+  {{
     "\43\0\20\0\0\0\0\17"
     "google.protobuf.UninterpretedOption"
     "identifier_value"
     "aggregate_value"
   }},
 };
-
 PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -13379,7 +13423,8 @@ const ::google::protobuf::internal::ClassData* FeatureSet::GetClassData() const 
   ::google::protobuf::internal::PrefetchToLocalCache(FeatureSet_class_data_.tc_table);
   return FeatureSet_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2>
+FeatureSet::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._extensions_),
@@ -13438,17 +13483,18 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_), _Internal::kHasBitsOffset + 5, 5,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-  }}, {{
-    {0, 4},
-    {0, 3},
-    {0, 3},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
-    {0, 3},
-    {0, 3},
-  }}, {{
+  }},
+  {{
+      {0, 4},
+      {0, 3},
+      {0, 3},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
+      {0, 3},
+      {0, 3},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void FeatureSet::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSet)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -13774,7 +13820,8 @@ const ::google::protobuf::internal::ClassData* FeatureSetDefaults_FeatureSetEdit
   ::google::protobuf::internal::PrefetchToLocalCache(FeatureSetDefaults_FeatureSetEditionDefault_class_data_.tc_table);
   return FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 3, 3, 0, 2> FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
+constexpr ::_pbi::TcParseTable<2, 3, 3, 0, 2>
+FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_),
     0, // no _extensions_
@@ -13814,14 +13861,15 @@ constexpr ::_pbi::TcParseTable<2, 3, 3, 0, 2> FeatureSetDefaults_FeatureSetEditi
     // optional .google.protobuf.FeatureSet fixed_features = 5;
     {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_), _Internal::kHasBitsOffset + 1, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14126,7 +14174,8 @@ const ::google::protobuf::internal::ClassData* FeatureSetDefaults::GetClassData(
   ::google::protobuf::internal::PrefetchToLocalCache(FeatureSetDefaults_class_data_.tc_table);
   return FeatureSetDefaults_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2>
+FeatureSetDefaults::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_),
     0, // no _extensions_
@@ -14162,14 +14211,15 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
     // optional .google.protobuf.Edition maximum_edition = 5;
     {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 1, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>()},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>()},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14471,7 +14521,8 @@ const ::google::protobuf::internal::ClassData* SourceCodeInfo_Location::GetClass
   ::google::protobuf::internal::PrefetchToLocalCache(SourceCodeInfo_Location_class_data_.tc_table);
   return SourceCodeInfo_Location_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2>
+SourceCodeInfo_Location::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_),
     0, // no _extensions_
@@ -14535,7 +14586,6 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
     "leading_detached_comments"
   }},
 };
-
 PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo.Location)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14848,7 +14898,8 @@ const ::google::protobuf::internal::ClassData* SourceCodeInfo::GetClassData() co
   ::google::protobuf::internal::PrefetchToLocalCache(SourceCodeInfo_class_data_.tc_table);
   return SourceCodeInfo_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
+constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2>
+SourceCodeInfo::_table_ = {
   {
     0,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._extensions_),
@@ -14875,12 +14926,13 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
     // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
     {PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_.location_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo_Location>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo_Location>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15134,7 +15186,8 @@ const ::google::protobuf::internal::ClassData* GeneratedCodeInfo_Annotation::Get
   ::google::protobuf::internal::PrefetchToLocalCache(GeneratedCodeInfo_Annotation_class_data_.tc_table);
   return GeneratedCodeInfo_Annotation_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2>
+GeneratedCodeInfo_Annotation::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_),
     0, // no _extensions_
@@ -15188,15 +15241,16 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
     // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
     {PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.semantic_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-  }}, {{
-    {0, 3},
-  }}, {{
+  }},
+  {{
+      {0, 3},
+  }},
+  {{
     "\54\0\13\0\0\0\0\0"
     "google.protobuf.GeneratedCodeInfo.Annotation"
     "source_file"
   }},
 };
-
 PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15498,7 +15552,8 @@ const ::google::protobuf::internal::ClassData* GeneratedCodeInfo::GetClassData()
   ::google::protobuf::internal::PrefetchToLocalCache(GeneratedCodeInfo_class_data_.tc_table);
   return GeneratedCodeInfo_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
+constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2>
+GeneratedCodeInfo::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -15525,12 +15580,13 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
     // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
     {PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_.annotation_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo_Annotation>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo_Annotation>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo)
   ::google::protobuf::internal::TSanWrite(&_impl_);

@@ -236,7 +236,8 @@ const ::google::protobuf::internal::ClassData* JavaFeatures::GetClassData() cons
   return JavaFeatures_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 0, 2> JavaFeatures::_table_ = {
+const ::_pbi::TcParseTable<2, 3, 1, 0, 2>
+JavaFeatures::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_),
     0, // no _extensions_
@@ -276,12 +277,13 @@ const ::_pbi::TcParseTable<2, 3, 1, 0, 2> JavaFeatures::_table_ = {
     // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }}, {{
-    {0, 3},
-  }}, {{
+  }},
+  {{
+      {0, 3},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);

@@ -424,7 +424,8 @@ const ::google::protobuf::internal::ClassData* Version::GetClassData() const {
   return Version_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
+const ::_pbi::TcParseTable<2, 4, 0, 47, 2>
+Version::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_),
     0, // no _extensions_
@@ -477,7 +478,6 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     "suffix"
   }},
 };
-
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -793,7 +793,8 @@ const ::google::protobuf::internal::ClassData* CodeGeneratorRequest::GetClassDat
   return CodeGeneratorRequest_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
+const ::_pbi::TcParseTable<3, 5, 3, 79, 2>
+CodeGeneratorRequest::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),
     0, // no _extensions_
@@ -845,18 +846,19 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
+  }},
+  {{
     "\55\20\11\0\0\0\0\0"
     "google.protobuf.compiler.CodeGeneratorRequest"
     "file_to_generate"
     "parameter"
   }},
 };
-
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1196,7 +1198,8 @@ const ::google::protobuf::internal::ClassData* CodeGeneratorResponse_File::GetCl
   return CodeGeneratorResponse_File_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ = {
+const ::_pbi::TcParseTable<2, 4, 1, 86, 2>
+CodeGeneratorResponse_File::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_),
     0, // no _extensions_
@@ -1241,9 +1244,11 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo>()},
+  }},
+  {{
     "\63\4\17\7\0\0\0\0"
     "google.protobuf.compiler.CodeGeneratorResponse.File"
     "name"
@@ -1251,7 +1256,6 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     "content"
   }},
 };
-
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1566,7 +1570,8 @@ const ::google::protobuf::internal::ClassData* CodeGeneratorResponse::GetClassDa
   return CodeGeneratorResponse_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
+const ::_pbi::TcParseTable<3, 5, 1, 60, 2>
+CodeGeneratorResponse::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_),
     0, // no _extensions_
@@ -1620,15 +1625,16 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
+  }},
+  {{
     "\56\5\0\0\0\0\0\0"
     "google.protobuf.compiler.CodeGeneratorResponse"
     "error"
   }},
 };
-
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
   ::google::protobuf::internal::TSanWrite(&_impl_);

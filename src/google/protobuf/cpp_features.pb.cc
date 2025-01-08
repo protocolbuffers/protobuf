@@ -230,7 +230,8 @@ const ::google::protobuf::internal::ClassData* CppFeatures::GetClassData() const
   return CppFeatures_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 0, 2> CppFeatures::_table_ = {
+const ::_pbi::TcParseTable<2, 3, 1, 0, 2>
+CppFeatures::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
     0, // no _extensions_
@@ -270,12 +271,13 @@ const ::_pbi::TcParseTable<2, 3, 1, 0, 2> CppFeatures::_table_ = {
     // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }}, {{
-    {0, 4},
-  }}, {{
+  }},
+  {{
+      {0, 4},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
