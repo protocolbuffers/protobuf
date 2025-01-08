@@ -8168,14 +8168,12 @@ void DescriptorBuilder::ValidateFieldFeatures(
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence fields can't specify defaults.");
     }
-    if (field->enum_type() != nullptr &&
-        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+    if (field->enum_type() != nullptr && field->enum_type()->is_closed()) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence enum fields must always be open.");
     }
   }
-  if (field->is_extension() &&
-      field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+  if (field->is_extension() && field->is_required()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Extensions can't be required.");
   }
