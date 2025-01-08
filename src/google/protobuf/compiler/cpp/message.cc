@@ -1383,6 +1383,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
+
     if (field->is_repeated()) {
       p->Emit(R"cc(
         inline int $classname$::_internal_$name_internal$_size() const {
@@ -1405,6 +1406,48 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     }
     // Generate type-specific accessors.
     field_generators_.get(field).GenerateInlineAccessorDefinitions(p);
+
+    if (!field->is_repeated()) {
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_INT32:
+        case FieldDescriptor::CPPTYPE_INT64:
+        case FieldDescriptor::CPPTYPE_UINT32:
+        case FieldDescriptor::CPPTYPE_UINT64:
+        case FieldDescriptor::CPPTYPE_DOUBLE:
+        case FieldDescriptor::CPPTYPE_FLOAT:
+        case FieldDescriptor::CPPTYPE_BOOL:
+        case FieldDescriptor::CPPTYPE_ENUM:
+          p->Emit(  //
+              {{"field_type", field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM
+                                  ? QualifiedClassName(field->enum_type())
+                                  : PrimitiveTypeName(field->cpp_type())},
+               {
+                   "has", "nullptr"
+                   // [&]() {
+                   //   if (field->has_presence()) {
+                   //     p->Emit(R"cc(&$classname$::has_$name_internal$)cc");
+                   //   } else {
+                   //     p->Emit(R"cc(nullptr)cc");
+                   //   }
+                   // }
+               }},
+              R"cc(
+                struct $classname$_$name_internal$_Descriptor
+                    : ::google::protobuf::internal::NumericFieldDescriptor<
+                          $classname$, $field_type$,
+                          &$classname$::$name_internal$,
+                          &$classname$::set_$name_internal$,
+                          &$classname$::clear_$name_internal$, $has$> {
+                  static constexpr absl::string_view name = "$name_internal$";
+                  static constexpr int number = $number$;
+                };
+              )cc");
+          break;
+        case FieldDescriptor::CPPTYPE_STRING:
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+          break;
+      }
+    }
 
     p->Emit("\n");
   }

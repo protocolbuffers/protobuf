@@ -391,6 +391,21 @@ constexpr absl::optional<uintptr_t> EncodePlacementArenaOffsets(
   return arena_bits;
 }
 
+template <typename message_type, typename field_type,
+          field_type (message_type::*get)() const,
+          void (message_type::*set)(field_type value),
+          void (message_type::*clear)(), bool (message_type::*has)() const>
+struct NumericFieldDescriptor {
+  static field_type Get(const message_type& msg) { return (msg.*get)(); }
+  static void Set(message_type& msg, field_type value) { (msg.*set)(value); }
+  static void Clear(message_type& msg) { (msg.*clear)(); }
+  static constexpr bool has_presence = has != nullptr;
+  template <bool hp = has_presence>
+  static std::enable_if_t<hp, bool> Has(const message_type& msg) {
+    return (msg.*has)();
+  }
+};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
