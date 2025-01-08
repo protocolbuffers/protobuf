@@ -563,7 +563,8 @@ const ::google::protobuf::internal::ClassData* Type::GetClassData() const {
   return Type_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
+const ::_pbi::TcParseTable<3, 7, 3, 46, 2>
+Type::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_),
     0, // no _extensions_
@@ -627,11 +628,13 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     // string edition = 7;
     {PROTOBUF_FIELD_OFFSET(Type, _impl_.edition_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Field>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Field>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
+  }},
+  {{
     "\24\4\0\6\0\0\0\7"
     "google.protobuf.Type"
     "name"
@@ -639,7 +642,6 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     "edition"
   }},
 };
-
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1056,7 +1058,8 @@ const ::google::protobuf::internal::ClassData* Field::GetClassData() const {
   return Field_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
+const ::_pbi::TcParseTable<4, 10, 1, 72, 2>
+Field::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Field, _impl_._has_bits_),
     0, // no _extensions_
@@ -1143,9 +1146,11 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     // string default_value = 11;
     {PROTOBUF_FIELD_OFFSET(Field, _impl_.default_value_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+  }},
+  {{
     "\25\0\0\0\4\10\0\0\0\11\15\0\0\0\0\0"
     "google.protobuf.Field"
     "name"
@@ -1154,7 +1159,6 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     "default_value"
   }},
 };
-
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1657,7 +1661,8 @@ const ::google::protobuf::internal::ClassData* Enum::GetClassData() const {
   return Enum_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
+const ::_pbi::TcParseTable<3, 6, 3, 40, 2>
+Enum::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_),
     0, // no _extensions_
@@ -1716,18 +1721,19 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
     // string edition = 6;
     {PROTOBUF_FIELD_OFFSET(Enum, _impl_.edition_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::EnumValue>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::EnumValue>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
+  }},
+  {{
     "\24\4\0\0\0\0\7\0"
     "google.protobuf.Enum"
     "name"
     "edition"
   }},
 };
-
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2104,7 +2110,8 @@ const ::google::protobuf::internal::ClassData* EnumValue::GetClassData() const {
   return EnumValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
+const ::_pbi::TcParseTable<2, 3, 1, 38, 2>
+EnumValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -2144,15 +2151,16 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
     // repeated .google.protobuf.Option options = 3;
     {PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.options_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+  }},
+  {{
     "\31\4\0\0\0\0\0\0"
     "google.protobuf.EnumValue"
     "name"
   }},
 };
-
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2439,7 +2447,8 @@ const ::google::protobuf::internal::ClassData* Option::GetClassData() const {
   return Option_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 1, 35, 2>
+Option::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_),
     0, // no _extensions_
@@ -2472,15 +2481,16 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
     // .google.protobuf.Any value = 2;
     {PROTOBUF_FIELD_OFFSET(Option, _impl_.value_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Any>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Any>()},
+  }},
+  {{
     "\26\4\0\0\0\0\0\0"
     "google.protobuf.Option"
     "name"
   }},
 };
-
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   ::google::protobuf::internal::TSanWrite(&_impl_);

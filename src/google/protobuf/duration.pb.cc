@@ -207,7 +207,8 @@ const ::google::protobuf::internal::ClassData* Duration::GetClassData() const {
   return Duration_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+Duration::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_),
     0, // no _extensions_
@@ -245,7 +246,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
   ::google::protobuf::internal::TSanWrite(&_impl_);

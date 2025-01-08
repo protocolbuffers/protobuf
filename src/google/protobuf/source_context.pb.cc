@@ -215,7 +215,8 @@ const ::google::protobuf::internal::ClassData* SourceContext::GetClassData() con
   return SourceContext_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 47, 2>
+SourceContext::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_),
     0, // no _extensions_
@@ -250,7 +251,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
     "file_name"
   }},
 };
-
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   ::google::protobuf::internal::TSanWrite(&_impl_);

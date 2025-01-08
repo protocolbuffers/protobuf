@@ -218,7 +218,8 @@ const ::google::protobuf::internal::ClassData* FieldMask::GetClassData() const {
   return FieldMask_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 39, 2>
+FieldMask::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -253,7 +254,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
     "paths"
   }},
 };
-
 PROTOBUF_NOINLINE void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
   ::google::protobuf::internal::TSanWrite(&_impl_);

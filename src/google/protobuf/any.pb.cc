@@ -237,7 +237,8 @@ const ::google::protobuf::internal::ClassData* Any::GetClassData() const {
   return Any_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 36, 2>
+Any::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_),
     0, // no _extensions_
@@ -278,7 +279,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
     "type_url"
   }},
 };
-
 PROTOBUF_NOINLINE void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
   ::google::protobuf::internal::TSanWrite(&_impl_);

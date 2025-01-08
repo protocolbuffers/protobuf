@@ -505,7 +505,8 @@ const ::google::protobuf::internal::ClassData* DoubleValue::GetClassData() const
   return DoubleValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+DoubleValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -537,7 +538,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -738,7 +738,8 @@ const ::google::protobuf::internal::ClassData* FloatValue::GetClassData() const 
   return FloatValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+FloatValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -770,7 +771,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void FloatValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -971,7 +971,8 @@ const ::google::protobuf::internal::ClassData* Int64Value::GetClassData() const 
   return Int64Value_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+Int64Value::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_),
     0, // no _extensions_
@@ -1003,7 +1004,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void Int64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1205,7 +1205,8 @@ const ::google::protobuf::internal::ClassData* UInt64Value::GetClassData() const
   return UInt64Value_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+UInt64Value::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_),
     0, // no _extensions_
@@ -1237,7 +1238,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1439,7 +1439,8 @@ const ::google::protobuf::internal::ClassData* Int32Value::GetClassData() const 
   return Int32Value_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+Int32Value::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_),
     0, // no _extensions_
@@ -1471,7 +1472,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void Int32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1673,7 +1673,8 @@ const ::google::protobuf::internal::ClassData* UInt32Value::GetClassData() const
   return UInt32Value_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+UInt32Value::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_),
     0, // no _extensions_
@@ -1705,7 +1706,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1907,7 +1907,8 @@ const ::google::protobuf::internal::ClassData* BoolValue::GetClassData() const {
   return BoolValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+BoolValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -1939,7 +1940,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void BoolValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2154,7 +2154,8 @@ const ::google::protobuf::internal::ClassData* StringValue::GetClassData() const
   return StringValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 41, 2>
+StringValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -2189,7 +2190,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
     "value"
   }},
 };
-
 PROTOBUF_NOINLINE void StringValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2415,7 +2415,8 @@ const ::google::protobuf::internal::ClassData* BytesValue::GetClassData() const 
   return BytesValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2>
+BytesValue::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_),
     0, // no _extensions_
@@ -2447,7 +2448,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void BytesValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);

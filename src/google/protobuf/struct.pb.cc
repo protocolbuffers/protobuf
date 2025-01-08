@@ -291,7 +291,8 @@ const ::google::protobuf::internal::ClassData* Struct_FieldsEntry_DoNotUse::GetC
   return Struct_FieldsEntry_DoNotUse_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 1, 46, 2> Struct_FieldsEntry_DoNotUse::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 1, 46, 2>
+Struct_FieldsEntry_DoNotUse::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
     0, // no _extensions_
@@ -324,15 +325,16 @@ const ::_pbi::TcParseTable<1, 2, 1, 46, 2> Struct_FieldsEntry_DoNotUse::_table_ 
     // .google.protobuf.Value value = 2;
     {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+  }},
+  {{
     "\42\3\0\0\0\0\0\0"
     "google.protobuf.Struct.FieldsEntry"
     "key"
   }},
 };
-
 // ===================================================================
 
 class Struct::_Internal {
@@ -449,7 +451,8 @@ const ::google::protobuf::internal::ClassData* Struct::GetClassData() const {
   return Struct_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 2, 37, 2>
+Struct::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -474,19 +477,19 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
     // map<string, .google.protobuf.Value> fields = 1;
     {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
-  }}, {{
-    {::_pbi::TcParser::GetMapAuxInfo<
-        decltype(Struct()._impl_.fields_)>(
-        1, 0, 0, 9,
-        11)},
-    {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetMapAuxInfo<
+          decltype(Struct()._impl_.fields_)>(
+          1, 0, 0, 9, 11)},
+      {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+  }},
+  {{
     "\26\6\0\0\0\0\0\0"
     "google.protobuf.Struct"
     "fields"
   }},
 };
-
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -808,7 +811,8 @@ const ::google::protobuf::internal::ClassData* Value::GetClassData() const {
   return Value_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
+const ::_pbi::TcParseTable<0, 6, 2, 42, 2>
+Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -848,16 +852,17 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     // .google.protobuf.ListValue list_value = 6;
     {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.list_value_), _Internal::kOneofCaseOffset + 0, 1,
     (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Struct>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::ListValue>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Struct>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::ListValue>()},
+  }},
+  {{
     "\25\0\0\14\0\0\0\0"
     "google.protobuf.Value"
     "string_value"
   }},
 };
-
 PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1183,7 +1188,8 @@ const ::google::protobuf::internal::ClassData* ListValue::GetClassData() const {
   return ListValue_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 1, 0, 2>
+ListValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -1210,12 +1216,13 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
     // repeated .google.protobuf.Value values = 1;
     {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+  }},
+  {{
   }},
 };
-
 PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);

@@ -408,7 +408,8 @@ const ::google::protobuf::internal::ClassData* Api::GetClassData() const {
   return Api_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
+const ::_pbi::TcParseTable<3, 7, 4, 39, 2>
+Api::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_),
     0, // no _extensions_
@@ -472,19 +473,20 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     // .google.protobuf.Syntax syntax = 7;
     {PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Method>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::Mixin>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Method>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
+      {::_pbi::TcParser::GetTable<::google::protobuf::Mixin>()},
+  }},
+  {{
     "\23\4\0\0\7\0\0\0"
     "google.protobuf.Api"
     "name"
     "version"
   }},
 };
-
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -904,7 +906,8 @@ const ::google::protobuf::internal::ClassData* Method::GetClassData() const {
   return Method_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
+const ::_pbi::TcParseTable<3, 7, 1, 68, 2>
+Method::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Method, _impl_._has_bits_),
     0, // no _extensions_
@@ -968,9 +971,11 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     // .google.protobuf.Syntax syntax = 7;
     {PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
-  }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
-  }}, {{
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+  }},
+  {{
     "\26\4\20\0\21\0\0\0"
     "google.protobuf.Method"
     "name"
@@ -978,7 +983,6 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     "response_type_url"
   }},
 };
-
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1368,7 +1372,8 @@ const ::google::protobuf::internal::ClassData* Mixin::GetClassData() const {
   return Mixin_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 38, 2>
+Mixin::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Mixin, _impl_._has_bits_),
     0, // no _extensions_
@@ -1410,7 +1415,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
     "root"
   }},
 };
-
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   ::google::protobuf::internal::TSanWrite(&_impl_);

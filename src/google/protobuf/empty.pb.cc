@@ -169,7 +169,8 @@ const ::google::protobuf::internal::ClassData* Empty::GetClassData() const {
   return Empty_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
+const ::_pbi::TcParseTable<0, 0, 0, 0, 2>
+Empty::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
@@ -190,12 +191,10 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
-  }},
-  // no field_entries, or aux_entries
+  }}, // no field_entries, or aux_entries
   {{
   }},
 };
-
 
 
 

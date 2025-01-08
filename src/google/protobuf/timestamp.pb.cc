@@ -207,7 +207,8 @@ const ::google::protobuf::internal::ClassData* Timestamp::GetClassData() const {
   return Timestamp_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+Timestamp::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_),
     0, // no _extensions_
@@ -245,7 +246,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
   ::google::protobuf::internal::TSanWrite(&_impl_);
