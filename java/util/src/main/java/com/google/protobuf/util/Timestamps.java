@@ -346,6 +346,7 @@ public final class Timestamps {
    */
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
   @J2ObjCIncompatible
+  @SuppressWarnings("nullness")
   public static Timestamp now() {
     if (INSTANT_NOW != null) {
       try {
