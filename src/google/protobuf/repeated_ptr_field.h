@@ -240,6 +240,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // allocated Rep.
     return tagged_rep_or_elem_ != nullptr;
   }
+
+  // Pre-condition: NeedsDestroy() returns true.
   void DestroyProtos();
 
  public:
@@ -1559,7 +1561,9 @@ class RustRepeatedMessageHelper {
   static RepeatedPtrFieldBase* New() { return new RepeatedPtrFieldBase; }
 
   static void Delete(RepeatedPtrFieldBase* field) {
-    field->DestroyProtos();
+    if (field->NeedsDestroy()) {
+      field->DestroyProtos();
+    }
     delete field;
   }
 
