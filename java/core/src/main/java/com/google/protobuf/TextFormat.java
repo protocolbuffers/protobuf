@@ -2051,6 +2051,13 @@ public final class TextFormat {
         }
         name = nameBuilder.toString();
 
+        System.err.println("MMP name: " + name);
+
+        for (ExtensionRegistry.ExtensionInfo e :
+            extensionRegistry.getAllImmutableExtensionsByExtendedType("proto2.bridge.MessageSet")) {
+          System.err.println("MMP extension: " + e.descriptor.getFullName());
+        }
+
         extension = target.findExtensionByName(extensionRegistry, name);
 
         if (extension == null) {
