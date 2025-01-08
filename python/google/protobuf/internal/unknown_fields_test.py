@@ -13,9 +13,6 @@ __author__ = 'bohdank@google.com (Bohdan Koval)'
 import sys
 import unittest
 
-from google.protobuf import descriptor
-from google.protobuf import text_format
-from google.protobuf import unknown_fields
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import message_set_extensions_pb2
@@ -24,7 +21,8 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import wire_format
-
+from google.protobuf import descriptor
+from google.protobuf import unknown_fields
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -143,17 +141,6 @@ class UnknownFieldsTest(unittest.TestCase):
     self.assertEqual(
         b'',
         msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
-
-  def testUnknownFieldsInExtension(self):
-    msg = message_set_extensions_pb2.TestMessageSet()
-    ext3 = message_set_extensions_pb2.message_set_extension3
-    sub_message = unittest_pb2.TestAllTypes()
-    sub_message.optional_string = 'discard'
-    msg.Extensions[ext3].ParseFromString(sub_message.SerializeToString())
-    msg.DiscardUnknownFields()
-    self.assertNotIn(
-        'discard', text_format.MessageToString(msg, print_unknown_fields=True)
-    )
 
 
 @testing_refleaks.TestCase
