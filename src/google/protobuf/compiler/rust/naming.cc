@@ -44,10 +44,10 @@ std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
 
 std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {
   size_t last_slash = file.name().find_last_of('/');
-  std::string dir = last_slash == std::string::npos
-                        ? ""
-                        : file.name().substr(0, last_slash + 1);
-  return absl::StrCat(dir, ctx.opts().generated_entry_point_rs_file_name);
+  return absl::StrCat(last_slash == std::string::npos
+                          ? ""
+                          : file.name().substr(0, last_slash + 1),
+                      ctx.opts().generated_entry_point_rs_file_name);
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
