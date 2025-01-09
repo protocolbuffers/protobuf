@@ -77,7 +77,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   inline Empty() : Empty(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Empty* msg, std::destroying_delete_t) {
+  void operator delete(Empty* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Empty));
   }
@@ -108,18 +108,18 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Empty& default_instance() {
@@ -128,7 +128,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Empty& a, Empty& b) { a.Swap(&b); }
-  inline void Swap(Empty* other) {
+  inline void Swap(Empty* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -136,7 +136,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Empty* other) {
+  void UnsafeArenaSwap(Empty* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -144,7 +144,8 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 
   // implements Message ----------------------------------------------
 
-  Empty* New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  Empty* PROTOBUF_NONNULL
+  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
@@ -175,9 +176,10 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       : Empty(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(
-      const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:

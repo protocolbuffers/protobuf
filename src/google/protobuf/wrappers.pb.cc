@@ -257,9 +257,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -368,7 +368,7 @@ static const ::_pbi::MigrationSchema
         {70, 79, -1, sizeof(::google::protobuf::StringValue)},
         {80, 89, -1, sizeof(::google::protobuf::BytesValue)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_DoubleValue_default_instance_._instance,
     &::google::protobuf::_FloatValue_default_instance_._instance,
     &::google::protobuf::_Int64Value_default_instance_._instance,
@@ -463,8 +463,9 @@ inline void DoubleValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* DoubleValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL DoubleValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DoubleValue(arena);
 }
 constexpr auto DoubleValue::InternalNewImpl_() {
@@ -499,7 +500,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         DoubleValue_class_data_ =
             DoubleValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* DoubleValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL DoubleValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DoubleValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(DoubleValue_class_data_.tc_table);
   return DoubleValue_class_data_.base();
@@ -551,14 +552,14 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* DoubleValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL DoubleValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const DoubleValue& this_ = static_cast<const DoubleValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* DoubleValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL DoubleValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const DoubleValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
@@ -636,7 +637,7 @@ void DoubleValue::CopyFrom(const DoubleValue& from) {
 }
 
 
-void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
+void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -696,8 +697,9 @@ inline void FloatValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* FloatValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL FloatValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FloatValue(arena);
 }
 constexpr auto FloatValue::InternalNewImpl_() {
@@ -732,7 +734,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         FloatValue_class_data_ =
             FloatValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* FloatValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FloatValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FloatValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(FloatValue_class_data_.tc_table);
   return FloatValue_class_data_.base();
@@ -784,14 +786,14 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* FloatValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL FloatValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FloatValue& this_ = static_cast<const FloatValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* FloatValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL FloatValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const FloatValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
@@ -869,7 +871,7 @@ void FloatValue::CopyFrom(const FloatValue& from) {
 }
 
 
-void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
+void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -929,8 +931,9 @@ inline void Int64Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Int64Value::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Int64Value::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Int64Value(arena);
 }
 constexpr auto Int64Value::InternalNewImpl_() {
@@ -965,7 +968,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Int64Value_class_data_ =
             Int64Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Int64Value::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Int64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int64Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Int64Value_class_data_.tc_table);
   return Int64Value_class_data_.base();
@@ -1017,14 +1020,14 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Int64Value::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Int64Value::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Int64Value& this_ = static_cast<const Int64Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Int64Value::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Int64Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Int64Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
@@ -1103,7 +1106,7 @@ void Int64Value::CopyFrom(const Int64Value& from) {
 }
 
 
-void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
+void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -1163,8 +1166,9 @@ inline void UInt64Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* UInt64Value::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL UInt64Value::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UInt64Value(arena);
 }
 constexpr auto UInt64Value::InternalNewImpl_() {
@@ -1199,7 +1203,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         UInt64Value_class_data_ =
             UInt64Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* UInt64Value::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UInt64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt64Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(UInt64Value_class_data_.tc_table);
   return UInt64Value_class_data_.base();
@@ -1251,14 +1255,14 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* UInt64Value::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL UInt64Value::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const UInt64Value& this_ = static_cast<const UInt64Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* UInt64Value::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL UInt64Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const UInt64Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
@@ -1337,7 +1341,7 @@ void UInt64Value::CopyFrom(const UInt64Value& from) {
 }
 
 
-void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
+void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -1397,8 +1401,9 @@ inline void Int32Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Int32Value::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Int32Value::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Int32Value(arena);
 }
 constexpr auto Int32Value::InternalNewImpl_() {
@@ -1433,7 +1438,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Int32Value_class_data_ =
             Int32Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Int32Value::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Int32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int32Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Int32Value_class_data_.tc_table);
   return Int32Value_class_data_.base();
@@ -1485,14 +1490,14 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Int32Value::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Int32Value::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Int32Value& this_ = static_cast<const Int32Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Int32Value::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Int32Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Int32Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
@@ -1571,7 +1576,7 @@ void Int32Value::CopyFrom(const Int32Value& from) {
 }
 
 
-void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
+void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -1631,8 +1636,9 @@ inline void UInt32Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* UInt32Value::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL UInt32Value::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UInt32Value(arena);
 }
 constexpr auto UInt32Value::InternalNewImpl_() {
@@ -1667,7 +1673,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         UInt32Value_class_data_ =
             UInt32Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* UInt32Value::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UInt32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt32Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(UInt32Value_class_data_.tc_table);
   return UInt32Value_class_data_.base();
@@ -1719,14 +1725,14 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* UInt32Value::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL UInt32Value::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const UInt32Value& this_ = static_cast<const UInt32Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* UInt32Value::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL UInt32Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const UInt32Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
@@ -1805,7 +1811,7 @@ void UInt32Value::CopyFrom(const UInt32Value& from) {
 }
 
 
-void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
+void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -1865,8 +1871,9 @@ inline void BoolValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* BoolValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL BoolValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) BoolValue(arena);
 }
 constexpr auto BoolValue::InternalNewImpl_() {
@@ -1901,7 +1908,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         BoolValue_class_data_ =
             BoolValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* BoolValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL BoolValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BoolValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(BoolValue_class_data_.tc_table);
   return BoolValue_class_data_.base();
@@ -1953,14 +1960,14 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* BoolValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL BoolValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const BoolValue& this_ = static_cast<const BoolValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* BoolValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL BoolValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const BoolValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
@@ -2038,7 +2045,7 @@ void BoolValue::CopyFrom(const BoolValue& from) {
 }
 
 
-void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
+void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -2112,8 +2119,9 @@ inline void StringValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* StringValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL StringValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) StringValue(arena);
 }
 constexpr auto StringValue::InternalNewImpl_() {
@@ -2148,7 +2156,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         StringValue_class_data_ =
             StringValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* StringValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL StringValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&StringValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(StringValue_class_data_.tc_table);
   return StringValue_class_data_.base();
@@ -2206,14 +2214,14 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* StringValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL StringValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const StringValue& this_ = static_cast<const StringValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* StringValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL StringValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const StringValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
@@ -2297,7 +2305,7 @@ void StringValue::CopyFrom(const StringValue& from) {
 }
 
 
-void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
+void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -2373,8 +2381,9 @@ inline void BytesValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* BytesValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL BytesValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) BytesValue(arena);
 }
 constexpr auto BytesValue::InternalNewImpl_() {
@@ -2409,7 +2418,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         BytesValue_class_data_ =
             BytesValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* BytesValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL BytesValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BytesValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(BytesValue_class_data_.tc_table);
   return BytesValue_class_data_.base();
@@ -2464,14 +2473,14 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* BytesValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL BytesValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const BytesValue& this_ = static_cast<const BytesValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* BytesValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL BytesValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const BytesValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
@@ -2553,7 +2562,7 @@ void BytesValue::CopyFrom(const BytesValue& from) {
 }
 
 
-void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
+void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());

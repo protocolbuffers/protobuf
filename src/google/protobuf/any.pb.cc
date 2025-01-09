@@ -62,9 +62,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -87,7 +87,7 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::google::protobuf::Any)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Any_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -126,8 +126,9 @@ bool Any::GetAnyFieldDescriptors(
     const ::google::protobuf::FieldDescriptor** value_field) {
   return ::_pbi::GetAnyFieldDescriptors(message, type_url_field, value_field);
 }
-bool Any::ParseAnyTypeUrl(::absl::string_view type_url,
-                                  std::string* full_type_name) {
+bool Any::ParseAnyTypeUrl(
+    ::absl::string_view type_url,
+    std::string* PROTOBUF_NONNULL full_type_name) {
   return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);
 }
 class Any::_Internal {
@@ -195,8 +196,9 @@ inline void Any::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Any::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Any::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Any(arena);
 }
 constexpr auto Any::InternalNewImpl_() {
@@ -231,7 +233,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Any_class_data_ =
             Any::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Any::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Any::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Any_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Any_class_data_.tc_table);
   return Any_class_data_.base();
@@ -300,14 +302,14 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Any::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Any::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Any& this_ = static_cast<const Any&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Any::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Any::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Any& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
@@ -418,7 +420,7 @@ void Any::CopyFrom(const Any& from) {
 }
 
 
-void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
+void Any::InternalSwap(Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());

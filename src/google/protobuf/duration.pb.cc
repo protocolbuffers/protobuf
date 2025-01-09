@@ -54,9 +54,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DurationDefaultTypeInternal _Duration_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fduration_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -79,7 +79,7 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::google::protobuf::Duration)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Duration_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -165,8 +165,9 @@ inline void Duration::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Duration::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Duration::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Duration(arena);
 }
 constexpr auto Duration::InternalNewImpl_() {
@@ -201,7 +202,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Duration_class_data_ =
             Duration::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Duration::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Duration_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Duration_class_data_.tc_table);
   return Duration_class_data_.base();
@@ -264,14 +265,14 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Duration::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Duration::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Duration& this_ = static_cast<const Duration&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Duration::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Duration::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Duration& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
@@ -374,7 +375,7 @@ void Duration::CopyFrom(const Duration& from) {
 }
 
 
-void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT other) {
+void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

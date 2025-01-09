@@ -130,9 +130,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -201,7 +201,7 @@ static const ::_pbi::MigrationSchema
         {22, 37, -1, sizeof(::google::protobuf::Method)},
         {44, 54, -1, sizeof(::google::protobuf::Mixin)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Api_default_instance_._instance,
     &::google::protobuf::_Method_default_instance_._instance,
     &::google::protobuf::_Mixin_default_instance_._instance,
@@ -228,8 +228,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTR
     "otobuf/types/known/apipb\242\002\003GPB\252\002\036Google."
     "Protobuf.WellKnownTypesb\006proto3"
 };
-static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fapi_2eproto_deps[2] =
-    {
+static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
+    descriptor_table_google_2fprotobuf_2fapi_2eproto_deps[2] = {
         &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
         &::descriptor_table_google_2fprotobuf_2ftype_2eproto,
 };
@@ -346,8 +346,9 @@ inline void Api::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Api::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Api::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Api(arena);
 }
 constexpr auto Api::InternalNewImpl_() {
@@ -402,7 +403,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Api_class_data_ =
             Api::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Api::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Api::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Api_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Api_class_data_.tc_table);
   return Api_class_data_.base();
@@ -516,14 +517,14 @@ PROTOBUF_NOINLINE void Api::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Api::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Api& this_ = static_cast<const Api&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Api::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Api& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Api)
@@ -741,7 +742,7 @@ void Api::CopyFrom(const Api& from) {
 }
 
 
-void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
+void Api::InternalSwap(Api* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -852,8 +853,9 @@ inline void Method::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Method::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Method::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Method(arena);
 }
 constexpr auto Method::InternalNewImpl_() {
@@ -900,7 +902,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Method_class_data_ =
             Method::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Method::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Method::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Method_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Method_class_data_.tc_table);
   return Method_class_data_.base();
@@ -1013,14 +1015,14 @@ PROTOBUF_NOINLINE void Method::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Method::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Method& this_ = static_cast<const Method&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Method::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Method& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Method)
@@ -1242,7 +1244,7 @@ void Method::CopyFrom(const Method& from) {
 }
 
 
-void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
+void Method::InternalSwap(Method* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -1330,8 +1332,9 @@ inline void Mixin::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Mixin::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Mixin::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Mixin(arena);
 }
 constexpr auto Mixin::InternalNewImpl_() {
@@ -1366,7 +1369,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Mixin_class_data_ =
             Mixin::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Mixin::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Mixin::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Mixin_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Mixin_class_data_.tc_table);
   return Mixin_class_data_.base();
@@ -1436,14 +1439,14 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Mixin::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Mixin& this_ = static_cast<const Mixin&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Mixin::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Mixin& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Mixin)
@@ -1556,7 +1559,7 @@ void Mixin::CopyFrom(const Mixin& from) {
 }
 
 
-void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
+void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());

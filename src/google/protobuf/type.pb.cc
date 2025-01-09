@@ -196,8 +196,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDefaultTypeInternal _Enum_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
+    file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -308,7 +309,7 @@ static const ::_pbi::MigrationSchema
         {70, 81, -1, sizeof(::google::protobuf::EnumValue)},
         {84, 94, -1, sizeof(::google::protobuf::Option)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Type_default_instance_._instance,
     &::google::protobuf::_Field_default_instance_._instance,
     &::google::protobuf::_Enum_default_instance_._instance,
@@ -360,8 +361,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATT
     "\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb"
     "\006proto3"
 };
-static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2ftype_2eproto_deps[2] =
-    {
+static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
+    descriptor_table_google_2fprotobuf_2ftype_2eproto_deps[2] = {
         &::descriptor_table_google_2fprotobuf_2fany_2eproto,
         &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
 };
@@ -384,7 +385,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
 };
 namespace google {
 namespace protobuf {
-const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[0];
 }
@@ -393,7 +394,7 @@ PROTOBUF_CONSTINIT const uint32_t Field_Kind_internal_data_[] = {
 bool Field_Kind_IsValid(int value) {
   return 0 <= value && value <= 18;
 }
-const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
@@ -402,7 +403,7 @@ PROTOBUF_CONSTINIT const uint32_t Field_Cardinality_internal_data_[] = {
 bool Field_Cardinality_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
-const ::google::protobuf::EnumDescriptor* Syntax_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
 }
@@ -501,8 +502,9 @@ inline void Type::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Type::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Type::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Type(arena);
 }
 constexpr auto Type::InternalNewImpl_() {
@@ -557,7 +559,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Type_class_data_ =
             Type::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Type::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Type::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Type_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Type_class_data_.tc_table);
   return Type_class_data_.base();
@@ -671,14 +673,14 @@ PROTOBUF_NOINLINE void Type::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Type::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Type::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Type& this_ = static_cast<const Type&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Type::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Type::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Type& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
@@ -894,7 +896,7 @@ void Type::CopyFrom(const Type& from) {
 }
 
 
-void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
+void Type::InternalSwap(Type* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -1004,8 +1006,9 @@ inline void Field::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Field::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Field::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Field(arena);
 }
 constexpr auto Field::InternalNewImpl_() {
@@ -1052,7 +1055,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Field_class_data_ =
             Field::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Field::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Field::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Field_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Field_class_data_.tc_table);
   return Field_class_data_.base();
@@ -1193,14 +1196,14 @@ PROTOBUF_NOINLINE void Field::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Field::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Field::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Field& this_ = static_cast<const Field&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Field::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Field::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Field& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
@@ -1493,7 +1496,7 @@ void Field::CopyFrom(const Field& from) {
 }
 
 
-void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
+void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -1603,8 +1606,9 @@ inline void Enum::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Enum::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Enum::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Enum(arena);
 }
 constexpr auto Enum::InternalNewImpl_() {
@@ -1655,7 +1659,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Enum_class_data_ =
             Enum::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Enum::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Enum::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Enum_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Enum_class_data_.tc_table);
   return Enum_class_data_.base();
@@ -1762,14 +1766,14 @@ PROTOBUF_NOINLINE void Enum::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Enum::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Enum::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Enum& this_ = static_cast<const Enum&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Enum::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Enum::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Enum& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
@@ -1967,7 +1971,7 @@ void Enum::CopyFrom(const Enum& from) {
 }
 
 
-void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
+void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -2056,8 +2060,9 @@ inline void EnumValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* EnumValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL EnumValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValue(arena);
 }
 constexpr auto EnumValue::InternalNewImpl_() {
@@ -2104,7 +2109,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         EnumValue_class_data_ =
             EnumValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* EnumValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(EnumValue_class_data_.tc_table);
   return EnumValue_class_data_.base();
@@ -2179,14 +2184,14 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* EnumValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL EnumValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumValue& this_ = static_cast<const EnumValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* EnumValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL EnumValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const EnumValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
@@ -2316,7 +2321,7 @@ void EnumValue::CopyFrom(const EnumValue& from) {
 }
 
 
-void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
+void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -2405,8 +2410,9 @@ inline void Option::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Option::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Option::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Option(arena);
 }
 constexpr auto Option::InternalNewImpl_() {
@@ -2441,7 +2447,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Option_class_data_ =
             Option::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Option::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Option::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Option_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Option_class_data_.tc_table);
   return Option_class_data_.base();
@@ -2513,14 +2519,14 @@ PROTOBUF_NOINLINE void Option::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Option::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Option::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Option& this_ = static_cast<const Option&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Option::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Option::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Option& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
@@ -2629,7 +2635,7 @@ void Option::CopyFrom(const Option& from) {
 }
 
 
-void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
+void Option::InternalSwap(Option* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());

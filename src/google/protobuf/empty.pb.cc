@@ -46,9 +46,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -67,7 +67,7 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, -1, -1, sizeof(::google::protobuf::Empty)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Empty_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -127,8 +127,9 @@ Empty::Empty(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
-inline void* Empty::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Empty::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Empty(arena);
 }
 constexpr auto Empty::InternalNewImpl_() {
@@ -163,7 +164,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Empty_class_data_ =
             Empty::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Empty::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Empty::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Empty_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Empty_class_data_.tc_table);
   return Empty_class_data_.base();

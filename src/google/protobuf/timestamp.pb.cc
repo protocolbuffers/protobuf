@@ -54,9 +54,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampDefaultTypeInternal _Timestamp_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -79,7 +79,7 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::google::protobuf::Timestamp)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Timestamp_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -165,8 +165,9 @@ inline void Timestamp::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Timestamp::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Timestamp::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Timestamp(arena);
 }
 constexpr auto Timestamp::InternalNewImpl_() {
@@ -201,7 +202,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Timestamp_class_data_ =
             Timestamp::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Timestamp::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Timestamp::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Timestamp_class_data_.tc_table);
   return Timestamp_class_data_.base();
@@ -264,14 +265,14 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Timestamp::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Timestamp::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Timestamp::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Timestamp::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Timestamp& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
@@ -374,7 +375,7 @@ void Timestamp::CopyFrom(const Timestamp& from) {
 }
 
 
-void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
+void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

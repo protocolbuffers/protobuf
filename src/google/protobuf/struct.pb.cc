@@ -122,8 +122,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueDefaultTypeInternal _Value_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[1];
-static constexpr const ::_pb::ServiceDescriptor** PROTOBUF_NULLABLE
+static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
+    file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[1];
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -182,7 +183,7 @@ static const ::_pbi::MigrationSchema
         {21, -1, -1, sizeof(::google::protobuf::Value)},
         {36, -1, -1, sizeof(::google::protobuf::ListValue)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
     &::google::protobuf::_Struct_default_instance_._instance,
     &::google::protobuf::_Value_default_instance_._instance,
@@ -226,7 +227,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
 };
 namespace google {
 namespace protobuf {
-const ::google::protobuf::EnumDescriptor* NullValue_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[0];
 }
@@ -247,8 +248,9 @@ Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType() {}
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
     : SuperType(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
-inline void* Struct_FieldsEntry_DoNotUse::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Struct_FieldsEntry_DoNotUse::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Struct_FieldsEntry_DoNotUse(arena);
 }
 constexpr auto Struct_FieldsEntry_DoNotUse::InternalNewImpl_() {
@@ -285,7 +287,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Struct_FieldsEntry_DoNotUse_class_data_ =
             Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Struct_FieldsEntry_DoNotUse::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct_FieldsEntry_DoNotUse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_FieldsEntry_DoNotUse_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Struct_FieldsEntry_DoNotUse_class_data_.tc_table);
   return Struct_FieldsEntry_DoNotUse_class_data_.base();
@@ -393,8 +395,9 @@ inline void Struct::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Struct::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Struct::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Struct(arena);
 }
 constexpr auto Struct::InternalNewImpl_() {
@@ -445,7 +448,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Struct_class_data_ =
             Struct::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Struct::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Struct_class_data_.tc_table);
   return Struct_class_data_.base();
@@ -502,14 +505,14 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Struct::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Struct& this_ = static_cast<const Struct&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Struct::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Struct& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
@@ -603,7 +606,7 @@ void Struct::CopyFrom(const Struct& from) {
 }
 
 
-void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
+void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
@@ -769,8 +772,9 @@ void Value::clear_kind() {
 }
 
 
-inline void* Value::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL Value::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Value(arena);
 }
 constexpr auto Value::InternalNewImpl_() {
@@ -805,7 +809,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Value_class_data_ =
             Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Value::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Value_class_data_.tc_table);
   return Value_class_data_.base();
@@ -875,14 +879,14 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* Value::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Value& this_ = static_cast<const Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* Value::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
@@ -1066,7 +1070,7 @@ void Value::CopyFrom(const Value& from) {
 }
 
 
-void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
+void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_.kind_, other->_impl_.kind_);
@@ -1134,8 +1138,9 @@ inline void ListValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* ListValue::PlacementNew_(
-    const void*, void* mem, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* PROTOBUF_NONNULL ListValue::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ListValue(arena);
 }
 constexpr auto ListValue::InternalNewImpl_() {
@@ -1182,7 +1187,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         ListValue_class_data_ =
             ListValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* ListValue::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ListValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ListValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(ListValue_class_data_.tc_table);
   return ListValue_class_data_.base();
@@ -1235,14 +1240,14 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* ListValue::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) {
+::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* ListValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const ListValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
@@ -1318,7 +1323,7 @@ void ListValue::CopyFrom(const ListValue& from) {
 }
 
 
-void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
+void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.values_.InternalSwap(&other->_impl_.values_);
