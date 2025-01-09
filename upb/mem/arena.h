@@ -38,9 +38,11 @@ typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
 extern "C" {
 #endif
 
-// Creates an arena from the given initial block (if any -- n may be 0).
+// Creates an arena from the given initial block (if any -- mem may be NULL).
 // Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
-// is a fixed-size arena and cannot grow.
+// is a fixed-size arena and cannot grow. If an initial block is specified, |n|
+// is its length; if there is no initial block, |n| is a hint of the size that
+// should be allocated for the first block of the arena.
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
