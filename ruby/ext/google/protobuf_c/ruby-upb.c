@@ -3221,7 +3221,7 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
 
   // We may need to exceed the max block size if the user requested a large
   // allocation.
-  size_t block_size = UPB_MAX(size, clamped_size) + kUpb_MemblockReserve;
+  size_t block_size = UPB_MAX(kUpb_MemblockReserve + size, clamped_size);
 
   upb_MemBlock* block =
       upb_malloc(_upb_ArenaInternal_BlockAlloc(ai), block_size);
