@@ -301,34 +301,73 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   // optional int32 major = 1;
   bool has_major() const;
   void clear_major() ;
-  ::int32_t major() const;
-  void set_major(::int32_t value);
+  ::int32_t major() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.major)
+    return _internal_major();
+  }
+  void set_major(::int32_t value) {
+    _internal_set_major(value);
+    _impl_._has_bits_[0] |= 0x00000002u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
+  }
 
   private:
-  ::int32_t _internal_major() const;
-  void _internal_set_major(::int32_t value);
+  ::int32_t _internal_major() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.major_;
+  }
+  void _internal_set_major(::int32_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.major_ = value;
+  }
 
   public:
   // optional int32 minor = 2;
   bool has_minor() const;
   void clear_minor() ;
-  ::int32_t minor() const;
-  void set_minor(::int32_t value);
+  ::int32_t minor() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.minor)
+    return _internal_minor();
+  }
+  void set_minor(::int32_t value) {
+    _internal_set_minor(value);
+    _impl_._has_bits_[0] |= 0x00000004u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
+  }
 
   private:
-  ::int32_t _internal_minor() const;
-  void _internal_set_minor(::int32_t value);
+  ::int32_t _internal_minor() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.minor_;
+  }
+  void _internal_set_minor(::int32_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.minor_ = value;
+  }
 
   public:
   // optional int32 patch = 3;
   bool has_patch() const;
   void clear_patch() ;
-  ::int32_t patch() const;
-  void set_patch(::int32_t value);
+  ::int32_t patch() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.patch)
+    return _internal_patch();
+  }
+  void set_patch(::int32_t value) {
+    _internal_set_patch(value);
+    _impl_._has_bits_[0] |= 0x00000008u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
+  }
 
   private:
-  ::int32_t _internal_patch() const;
-  void _internal_set_patch(::int32_t value);
+  ::int32_t _internal_patch() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.patch_;
+  }
+  void _internal_set_patch(::int32_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.patch_ = value;
+  }
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
@@ -834,34 +873,73 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   // optional uint64 supported_features = 2;
   bool has_supported_features() const;
   void clear_supported_features() ;
-  ::uint64_t supported_features() const;
-  void set_supported_features(::uint64_t value);
+  ::uint64_t supported_features() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
+    return _internal_supported_features();
+  }
+  void set_supported_features(::uint64_t value) {
+    _internal_set_supported_features(value);
+    _impl_._has_bits_[0] |= 0x00000002u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
+  }
 
   private:
-  ::uint64_t _internal_supported_features() const;
-  void _internal_set_supported_features(::uint64_t value);
+  ::uint64_t _internal_supported_features() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.supported_features_;
+  }
+  void _internal_set_supported_features(::uint64_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.supported_features_ = value;
+  }
 
   public:
   // optional int32 minimum_edition = 3;
   bool has_minimum_edition() const;
   void clear_minimum_edition() ;
-  ::int32_t minimum_edition() const;
-  void set_minimum_edition(::int32_t value);
+  ::int32_t minimum_edition() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
+    return _internal_minimum_edition();
+  }
+  void set_minimum_edition(::int32_t value) {
+    _internal_set_minimum_edition(value);
+    _impl_._has_bits_[0] |= 0x00000004u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
+  }
 
   private:
-  ::int32_t _internal_minimum_edition() const;
-  void _internal_set_minimum_edition(::int32_t value);
+  ::int32_t _internal_minimum_edition() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.minimum_edition_;
+  }
+  void _internal_set_minimum_edition(::int32_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.minimum_edition_ = value;
+  }
 
   public:
   // optional int32 maximum_edition = 4;
   bool has_maximum_edition() const;
   void clear_maximum_edition() ;
-  ::int32_t maximum_edition() const;
-  void set_maximum_edition(::int32_t value);
+  ::int32_t maximum_edition() const {
+    // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
+    return _internal_maximum_edition();
+  }
+  void set_maximum_edition(::int32_t value) {
+    _internal_set_maximum_edition(value);
+    _impl_._has_bits_[0] |= 0x00000008u;
+    // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
+  }
 
   private:
-  ::int32_t _internal_maximum_edition() const;
-  void _internal_set_maximum_edition(::int32_t value);
+  ::int32_t _internal_maximum_edition() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.maximum_edition_;
+  }
+  void _internal_set_maximum_edition(::int32_t value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.maximum_edition_ = value;
+  }
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
@@ -1215,23 +1293,6 @@ inline void Version::clear_major() {
   _impl_.major_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline ::int32_t Version::major() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.major)
-  return _internal_major();
-}
-inline void Version::set_major(::int32_t value) {
-  _internal_set_major(value);
-  _impl_._has_bits_[0] |= 0x00000002u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
-}
-inline ::int32_t Version::_internal_major() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.major_;
-}
-inline void Version::_internal_set_major(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.major_ = value;
-}
 
 // optional int32 minor = 2;
 inline bool Version::has_minor() const {
@@ -1243,23 +1304,6 @@ inline void Version::clear_minor() {
   _impl_.minor_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline ::int32_t Version::minor() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.minor)
-  return _internal_minor();
-}
-inline void Version::set_minor(::int32_t value) {
-  _internal_set_minor(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
-}
-inline ::int32_t Version::_internal_minor() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.minor_;
-}
-inline void Version::_internal_set_minor(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.minor_ = value;
-}
 
 // optional int32 patch = 3;
 inline bool Version::has_patch() const {
@@ -1270,23 +1314,6 @@ inline void Version::clear_patch() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.patch_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
-}
-inline ::int32_t Version::patch() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.patch)
-  return _internal_patch();
-}
-inline void Version::set_patch(::int32_t value) {
-  _internal_set_patch(value);
-  _impl_._has_bits_[0] |= 0x00000008u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
-}
-inline ::int32_t Version::_internal_patch() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.patch_;
-}
-inline void Version::_internal_set_patch(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.patch_ = value;
 }
 
 // optional string suffix = 4;
@@ -2061,23 +2088,6 @@ inline void CodeGeneratorResponse::clear_supported_features() {
   _impl_.supported_features_ = ::uint64_t{0u};
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline ::uint64_t CodeGeneratorResponse::supported_features() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
-  return _internal_supported_features();
-}
-inline void CodeGeneratorResponse::set_supported_features(::uint64_t value) {
-  _internal_set_supported_features(value);
-  _impl_._has_bits_[0] |= 0x00000002u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
-}
-inline ::uint64_t CodeGeneratorResponse::_internal_supported_features() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.supported_features_;
-}
-inline void CodeGeneratorResponse::_internal_set_supported_features(::uint64_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.supported_features_ = value;
-}
 
 // optional int32 minimum_edition = 3;
 inline bool CodeGeneratorResponse::has_minimum_edition() const {
@@ -2089,23 +2099,6 @@ inline void CodeGeneratorResponse::clear_minimum_edition() {
   _impl_.minimum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline ::int32_t CodeGeneratorResponse::minimum_edition() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
-  return _internal_minimum_edition();
-}
-inline void CodeGeneratorResponse::set_minimum_edition(::int32_t value) {
-  _internal_set_minimum_edition(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
-}
-inline ::int32_t CodeGeneratorResponse::_internal_minimum_edition() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.minimum_edition_;
-}
-inline void CodeGeneratorResponse::_internal_set_minimum_edition(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.minimum_edition_ = value;
-}
 
 // optional int32 maximum_edition = 4;
 inline bool CodeGeneratorResponse::has_maximum_edition() const {
@@ -2116,23 +2109,6 @@ inline void CodeGeneratorResponse::clear_maximum_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.maximum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
-}
-inline ::int32_t CodeGeneratorResponse::maximum_edition() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
-  return _internal_maximum_edition();
-}
-inline void CodeGeneratorResponse::set_maximum_edition(::int32_t value) {
-  _internal_set_maximum_edition(value);
-  _impl_._has_bits_[0] |= 0x00000008u;
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
-}
-inline ::int32_t CodeGeneratorResponse::_internal_maximum_edition() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.maximum_edition_;
-}
-inline void CodeGeneratorResponse::_internal_set_maximum_edition(::int32_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.maximum_edition_ = value;
 }
 
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;

@@ -297,23 +297,49 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
-  bool legacy_closed_enum() const;
-  void set_legacy_closed_enum(bool value);
+  bool legacy_closed_enum() const {
+    // @@protoc_insertion_point(field_get:pb.CppFeatures.legacy_closed_enum)
+    return _internal_legacy_closed_enum();
+  }
+  void set_legacy_closed_enum(bool value) {
+    _internal_set_legacy_closed_enum(value);
+    _impl_._has_bits_[0] |= 0x00000002u;
+    // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
+  }
 
   private:
-  bool _internal_legacy_closed_enum() const;
-  void _internal_set_legacy_closed_enum(bool value);
+  bool _internal_legacy_closed_enum() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.legacy_closed_enum_;
+  }
+  void _internal_set_legacy_closed_enum(bool value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.legacy_closed_enum_ = value;
+  }
 
   public:
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_enum_name_uses_string_view() const;
   void clear_enum_name_uses_string_view() ;
-  bool enum_name_uses_string_view() const;
-  void set_enum_name_uses_string_view(bool value);
+  bool enum_name_uses_string_view() const {
+    // @@protoc_insertion_point(field_get:pb.CppFeatures.enum_name_uses_string_view)
+    return _internal_enum_name_uses_string_view();
+  }
+  void set_enum_name_uses_string_view(bool value) {
+    _internal_set_enum_name_uses_string_view(value);
+    _impl_._has_bits_[0] |= 0x00000004u;
+    // @@protoc_insertion_point(field_set:pb.CppFeatures.enum_name_uses_string_view)
+  }
 
   private:
-  bool _internal_enum_name_uses_string_view() const;
-  void _internal_set_enum_name_uses_string_view(bool value);
+  bool _internal_enum_name_uses_string_view() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.enum_name_uses_string_view_;
+  }
+  void _internal_set_enum_name_uses_string_view(bool value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.enum_name_uses_string_view_ = value;
+  }
 
   public:
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
@@ -386,23 +412,6 @@ inline void CppFeatures::clear_legacy_closed_enum() {
   _impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline bool CppFeatures::legacy_closed_enum() const {
-  // @@protoc_insertion_point(field_get:pb.CppFeatures.legacy_closed_enum)
-  return _internal_legacy_closed_enum();
-}
-inline void CppFeatures::set_legacy_closed_enum(bool value) {
-  _internal_set_legacy_closed_enum(value);
-  _impl_._has_bits_[0] |= 0x00000002u;
-  // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
-}
-inline bool CppFeatures::_internal_legacy_closed_enum() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.legacy_closed_enum_;
-}
-inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.legacy_closed_enum_ = value;
-}
 
 // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_string_type() const {
@@ -442,23 +451,6 @@ inline void CppFeatures::clear_enum_name_uses_string_view() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_name_uses_string_view_ = false;
   _impl_._has_bits_[0] &= ~0x00000004u;
-}
-inline bool CppFeatures::enum_name_uses_string_view() const {
-  // @@protoc_insertion_point(field_get:pb.CppFeatures.enum_name_uses_string_view)
-  return _internal_enum_name_uses_string_view();
-}
-inline void CppFeatures::set_enum_name_uses_string_view(bool value) {
-  _internal_set_enum_name_uses_string_view(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
-  // @@protoc_insertion_point(field_set:pb.CppFeatures.enum_name_uses_string_view)
-}
-inline bool CppFeatures::_internal_enum_name_uses_string_view() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.enum_name_uses_string_view_;
-}
-inline void CppFeatures::_internal_set_enum_name_uses_string_view(bool value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.enum_name_uses_string_view_ = value;
 }
 
 #ifdef __GNUC__

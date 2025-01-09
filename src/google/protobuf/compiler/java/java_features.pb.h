@@ -295,23 +295,49 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
-  bool legacy_closed_enum() const;
-  void set_legacy_closed_enum(bool value);
+  bool legacy_closed_enum() const {
+    // @@protoc_insertion_point(field_get:pb.JavaFeatures.legacy_closed_enum)
+    return _internal_legacy_closed_enum();
+  }
+  void set_legacy_closed_enum(bool value) {
+    _internal_set_legacy_closed_enum(value);
+    _impl_._has_bits_[0] |= 0x00000002u;
+    // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
+  }
 
   private:
-  bool _internal_legacy_closed_enum() const;
-  void _internal_set_legacy_closed_enum(bool value);
+  bool _internal_legacy_closed_enum() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.legacy_closed_enum_;
+  }
+  void _internal_set_legacy_closed_enum(bool value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.legacy_closed_enum_ = value;
+  }
 
   public:
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_use_old_outer_classname_default() const;
   void clear_use_old_outer_classname_default() ;
-  bool use_old_outer_classname_default() const;
-  void set_use_old_outer_classname_default(bool value);
+  bool use_old_outer_classname_default() const {
+    // @@protoc_insertion_point(field_get:pb.JavaFeatures.use_old_outer_classname_default)
+    return _internal_use_old_outer_classname_default();
+  }
+  void set_use_old_outer_classname_default(bool value) {
+    _internal_set_use_old_outer_classname_default(value);
+    _impl_._has_bits_[0] |= 0x00000004u;
+    // @@protoc_insertion_point(field_set:pb.JavaFeatures.use_old_outer_classname_default)
+  }
 
   private:
-  bool _internal_use_old_outer_classname_default() const;
-  void _internal_set_use_old_outer_classname_default(bool value);
+  bool _internal_use_old_outer_classname_default() const {
+    ::google::protobuf::internal::TSanRead(&_impl_);
+    return _impl_.use_old_outer_classname_default_;
+  }
+  void _internal_set_use_old_outer_classname_default(bool value) {
+    ::google::protobuf::internal::TSanWrite(&_impl_);
+    _impl_.use_old_outer_classname_default_ = value;
+  }
 
   public:
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
@@ -384,23 +410,6 @@ inline void JavaFeatures::clear_legacy_closed_enum() {
   _impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline bool JavaFeatures::legacy_closed_enum() const {
-  // @@protoc_insertion_point(field_get:pb.JavaFeatures.legacy_closed_enum)
-  return _internal_legacy_closed_enum();
-}
-inline void JavaFeatures::set_legacy_closed_enum(bool value) {
-  _internal_set_legacy_closed_enum(value);
-  _impl_._has_bits_[0] |= 0x00000002u;
-  // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
-}
-inline bool JavaFeatures::_internal_legacy_closed_enum() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.legacy_closed_enum_;
-}
-inline void JavaFeatures::_internal_set_legacy_closed_enum(bool value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.legacy_closed_enum_ = value;
-}
 
 // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_utf8_validation() const {
@@ -440,23 +449,6 @@ inline void JavaFeatures::clear_use_old_outer_classname_default() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.use_old_outer_classname_default_ = false;
   _impl_._has_bits_[0] &= ~0x00000004u;
-}
-inline bool JavaFeatures::use_old_outer_classname_default() const {
-  // @@protoc_insertion_point(field_get:pb.JavaFeatures.use_old_outer_classname_default)
-  return _internal_use_old_outer_classname_default();
-}
-inline void JavaFeatures::set_use_old_outer_classname_default(bool value) {
-  _internal_set_use_old_outer_classname_default(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
-  // @@protoc_insertion_point(field_set:pb.JavaFeatures.use_old_outer_classname_default)
-}
-inline bool JavaFeatures::_internal_use_old_outer_classname_default() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.use_old_outer_classname_default_;
-}
-inline void JavaFeatures::_internal_set_use_old_outer_classname_default(bool value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.use_old_outer_classname_default_ = value;
 }
 
 #ifdef __GNUC__
