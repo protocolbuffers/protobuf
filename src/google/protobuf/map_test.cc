@@ -31,7 +31,6 @@
 #include "google/protobuf/unittest_import.pb.h"
 
 
-#define BRIDGE_UNITTEST ::google::protobuf::bridge_unittest
 #define UNITTEST ::protobuf_unittest
 #define UNITTEST_IMPORT ::protobuf_unittest_import
 #define UNITTEST_PACKAGE_NAME "protobuf_unittest"
@@ -70,7 +69,6 @@ using ::testing::Ge;
 using ::testing::Le;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
-
 
 TEST(MapTest, CopyConstructIntegers) {
   auto token = internal::InternalVisibilityForTesting{};
