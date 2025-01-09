@@ -1141,23 +1141,26 @@ GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file,
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!enum_generators_.empty()) {
     p->Emit({{"len", enum_generators_.size()}}, R"cc(
-      static const ::_pb::EnumDescriptor* $file_level_enum_descriptors$[$len$];
+      //~ Default initialized to null, but set to non-null values before use.
+      static const ::_pb::EnumDescriptor* $nonnull$
+          $file_level_enum_descriptors$[$len$];
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::EnumDescriptor** $nullable$
+      static constexpr const ::_pb::EnumDescriptor *$nonnull$ *$nullable$
           $file_level_enum_descriptors$ = nullptr;
     )cc");
   }
 
   if (HasGenericServices(file_, options_) && file_->service_count() > 0) {
     p->Emit({{"len", file_->service_count()}}, R"cc(
-      static const ::_pb::ServiceDescriptor*
+      //~ Default initialized to null, but set to non-null values before use.
+      static const ::_pb::ServiceDescriptor* $nonnull$
           $file_level_service_descriptors$[$len$];
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::ServiceDescriptor** $nullable$
+      static constexpr const ::_pb::ServiceDescriptor *$nonnull$ *$nullable$
           $file_level_service_descriptors$ = nullptr;
     )cc");
   }
@@ -1196,25 +1199,26 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                   $schemas$,
           };
         )cc");
+    constexpr absl::string_view file_default_instances_code = R"cc(
+      static const ::_pb::Message* $nonnull$ const file_default_instances[] = {
+          $defaults$,
+      };
+    )cc";
     if (!UsingImplicitWeakDescriptor(file_, options_)) {
-      p->Emit({{"defaults",
-                [&] {
-                  for (auto& gen : message_generators_) {
-                    p->Emit(
-                        {
-                            {"ns", Namespace(gen->descriptor(), options_)},
-                            {"class", ClassName(gen->descriptor())},
-                        },
-                        R"cc(
-                          &$ns$::_$class$_default_instance_._instance,
-                        )cc");
-                  }
-                }}},
-              R"cc(
-                static const ::_pb::Message* const file_default_instances[] = {
-                    $defaults$,
-                };
-              )cc");
+      std::vector<Sub> subs = {
+          {"defaults", [&] {
+             for (auto& gen : message_generators_) {
+               p->Emit(
+                   {
+                       {"ns", Namespace(gen->descriptor(), options_)},
+                       {"class", ClassName(gen->descriptor())},
+                   },
+                   R"cc(
+                     &$ns$::_$class$_default_instance_._instance,
+                   )cc");
+             }
+           }}};
+      p->Emit(subs, file_default_instances_code);
     }
   } else {
     // Ee still need these symbols to exist.
@@ -1223,7 +1227,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     p->Emit(R"cc(
       const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
-      static constexpr ::_pb::Message* const* $nullable$
+      static constexpr ::_pb::Message* $nonnull$ const* $nullable$
           file_default_instances = nullptr;
     )cc");
   }
@@ -1315,8 +1319,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          static const ::_pbi::DescriptorTable* const $desc_table$_deps[$len$] =
-              {
+          static const ::_pbi::DescriptorTable* $nonnull$ const
+              $desc_table$_deps[$len$] = {
                   $deps$,
           };
         )cc");
@@ -1490,11 +1494,11 @@ class FileGenerator::ForwardDeclarations {
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
         p->Emit(R"(
-          extern template void* Arena::DefaultConstruct<$class$>(Arena* $nullable$);
+          extern template void* $nonnull$ Arena::DefaultConstruct<$class$>(Arena* $nullable$);
         )");
         if (!IsMapEntryMessage(c.second)) {
           p->Emit(R"(
-            extern template void* Arena::CopyConstruct<$class$>(Arena* $nullable$, const void*);
+            extern template void* $nonnull$ Arena::CopyConstruct<$class$>(Arena* $nullable$, const void* $nonnull$);
           )");
         }
         // We can't make a constexpr pointer to the global if we have DLL
