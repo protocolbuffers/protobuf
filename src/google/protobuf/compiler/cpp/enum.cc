@@ -108,6 +108,16 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   size_t total_values = static_cast<size_t>(enum_->value_count());
   should_cache_ = has_reflection_ &&
                   (values_range < 16u || values_range < total_values * 2u);
+
+  sorted_unique_values_.reserve(enum_->value_count());
+  for (int i = 0; i < enum_->value_count(); ++i) {
+    sorted_unique_values_.push_back(enum_->value(i)->number());
+  }
+  // Sort and deduplicate
+  absl::c_sort(sorted_unique_values_);
+  sorted_unique_values_.erase(
+      std::unique(sorted_unique_values_.begin(), sorted_unique_values_.end()),
+      sorted_unique_values_.end());
 }
 
 void EnumGenerator::GenerateDefinition(io::Printer* p) {
@@ -171,13 +181,16 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
           $open_enum_sentinels$,
         };
 
-        $dllexport_decl $bool $Msg_Enum$_IsValid(int value);
         $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
         inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ =
             static_cast<$Msg_Enum$>($kMin$);
         inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ =
             static_cast<$Msg_Enum$>($kMax$);
       )cc");
+
+  // Generate the inline `_IsValid` function choosing the best implementation
+  // for the values.
+  GenerateIsValid(p);
 
   if (generate_array_size_) {
     p->Emit({Sub("Msg_Enum_Enum_ARRAYSIZE",
@@ -350,6 +363,48 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   )cc");
 }
 
+void EnumGenerator::GenerateIsValid(io::Printer* p) const {
+  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  // For simple enums we skip the generic ValidateEnum call and use better
+  // codegen. It matches the speed of the previous switch-based codegen.
+  // For more complex enums we use the new algorithm with the encoded data.
+
+  if (sorted_unique_values_.front() +
+          static_cast<int64_t>(sorted_unique_values_.size()) - 1 ==
+      sorted_unique_values_.back()) {
+    // They are sequential. Do a simple range check.
+    p->Emit({{"min", sorted_unique_values_.front()},
+             {"max", sorted_unique_values_.back()}},
+            R"cc(
+              inline bool $Msg_Enum$_IsValid(int value) {
+                return $min$ <= value && value <= $max$;
+              }
+            )cc");
+  } else if (sorted_unique_values_.front() >= 0 &&
+             sorted_unique_values_.back() < 64) {
+    // Not sequential, but they fit in a 64-bit bitmap.
+    uint64_t bitmap = 0;
+    for (int n : sorted_unique_values_) {
+      bitmap |= uint64_t{1} << n;
+    }
+    p->Emit({{"bitmap", bitmap}, {"max", sorted_unique_values_.back()}},
+            R"cc(
+              inline bool $Msg_Enum$_IsValid(int value) {
+                return 0 <= value && value <= $max$ && (($bitmap$u >> value) & 1) != 0;
+              }
+            )cc");
+  } else {
+    // More complex struct. Use enum data structure for lookup.
+    p->Emit(
+        R"cc(
+          inline bool $Msg_Enum$_IsValid(int value) {
+            return $pbi$::ValidateEnum(value, $Msg_Enum$_internal_data_);
+          }
+        )cc");
+  }
+}
+
 void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
@@ -362,27 +417,13 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
     )cc");
   }
 
-  // Multiple values may have the same number. Sort and dedup.
-  std::vector<int> numbers;
-  numbers.reserve(enum_->value_count());
-  for (int i = 0; i < enum_->value_count(); ++i) {
-    numbers.push_back(enum_->value(i)->number());
-  }
-  // Sort and deduplicate `numbers`.
-  absl::c_sort(numbers);
-  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
-
-  // We now generate the XXX_IsValid functions, as well as their encoded enum
-  // data.
-  // For simple enums we skip the generic ValidateEnum call and use better
-  // codegen. It matches the speed of the previous switch-based codegen.
-  // For more complex enums we use the new algorithm with the encoded data.
   // Always generate the data array, even on the simple cases because someone
   // might be using it for TDP entries. If it is not used in the end, the linker
   // will drop it.
   p->Emit({{"encoded",
             [&] {
-              for (uint32_t n : google::protobuf::internal::GenerateEnumData(numbers)) {
+              for (uint32_t n :
+                   google::protobuf::internal::GenerateEnumData(sorted_unique_values_)) {
                 p->Emit({{"n", n}}, "$n$u, ");
               }
             }}},
@@ -390,37 +431,6 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             PROTOBUF_CONSTINIT const uint32_t $Msg_Enum$_internal_data_[] = {
                 $encoded$};
           )cc");
-
-  if (numbers.front() + static_cast<int64_t>(numbers.size()) - 1 ==
-      numbers.back()) {
-    // They are sequential. Do a simple range check.
-    p->Emit({{"min", numbers.front()}, {"max", numbers.back()}},
-            R"cc(
-              bool $Msg_Enum$_IsValid(int value) {
-                return $min$ <= value && value <= $max$;
-              }
-            )cc");
-  } else if (numbers.front() >= 0 && numbers.back() < 64) {
-    // Not sequential, but they fit in a 64-bit bitmap.
-    uint64_t bitmap = 0;
-    for (int n : numbers) {
-      bitmap |= uint64_t{1} << n;
-    }
-    p->Emit({{"bitmap", bitmap}, {"max", numbers.back()}},
-            R"cc(
-              bool $Msg_Enum$_IsValid(int value) {
-                return 0 <= value && value <= $max$ && (($bitmap$u >> value) & 1) != 0;
-              }
-            )cc");
-  } else {
-    // More complex struct. Use enum data structure for lookup.
-    p->Emit(
-        R"cc(
-          bool $Msg_Enum$_IsValid(int value) {
-            return ::_pbi::ValidateEnum(value, $Msg_Enum$_internal_data_);
-          }
-        )cc");
-  }
 
   if (!has_reflection_) {
     // In lite mode (where descriptors are unavailable), we generate separate

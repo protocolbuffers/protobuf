@@ -57,55 +57,38 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
 namespace google {
 namespace protobuf {
 enum Edition : int;
-PROTOBUF_EXPORT bool Edition_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
 enum ExtensionRangeOptions_VerificationState : int;
-PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
 enum FeatureSet_EnumType : int;
-PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
 enum FeatureSet_FieldPresence : int;
-PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
 enum FeatureSet_JsonFormat : int;
-PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
 enum FeatureSet_MessageEncoding : int;
-PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
 enum FeatureSet_RepeatedFieldEncoding : int;
-PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
 enum FeatureSet_Utf8Validation : int;
-PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
 enum FieldDescriptorProto_Label : int;
-PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
 enum FieldDescriptorProto_Type : int;
-PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
 enum FieldOptions_CType : int;
-PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
 enum FieldOptions_JSType : int;
-PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
 enum FieldOptions_OptionRetention : int;
-PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
 enum FieldOptions_OptionTargetType : int;
-PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
 enum FileOptions_OptimizeMode : int;
-PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
 enum GeneratedCodeInfo_Annotation_Semantic : int;
-PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
 enum MethodOptions_IdempotencyLevel : int;
-PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoDefaultTypeInternal;
@@ -305,12 +288,14 @@ enum ExtensionRangeOptions_VerificationState : int {
   ExtensionRangeOptions_VerificationState_UNVERIFIED = 1,
 };
 
-PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
 inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN =
     static_cast<ExtensionRangeOptions_VerificationState>(0);
 inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX =
     static_cast<ExtensionRangeOptions_VerificationState>(1);
+inline bool ExtensionRangeOptions_VerificationState_IsValid(int value) {
+  return 0 <= value && value <= 1;
+}
 inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL ExtensionRangeOptions_VerificationState_descriptor();
 template <typename T>
@@ -352,12 +337,14 @@ enum FieldDescriptorProto_Type : int {
   FieldDescriptorProto_Type_TYPE_SINT64 = 18,
 };
 
-PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
 inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN =
     static_cast<FieldDescriptorProto_Type>(1);
 inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX =
     static_cast<FieldDescriptorProto_Type>(18);
+inline bool FieldDescriptorProto_Type_IsValid(int value) {
+  return 1 <= value && value <= 18;
+}
 inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Type_descriptor();
 template <typename T>
@@ -384,12 +371,14 @@ enum FieldDescriptorProto_Label : int {
   FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
 };
 
-PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
 inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN =
     static_cast<FieldDescriptorProto_Label>(1);
 inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX =
     static_cast<FieldDescriptorProto_Label>(3);
+inline bool FieldDescriptorProto_Label_IsValid(int value) {
+  return 1 <= value && value <= 3;
+}
 inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Label_descriptor();
 template <typename T>
@@ -416,12 +405,14 @@ enum FileOptions_OptimizeMode : int {
   FileOptions_OptimizeMode_LITE_RUNTIME = 3,
 };
 
-PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
 inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN =
     static_cast<FileOptions_OptimizeMode>(1);
 inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX =
     static_cast<FileOptions_OptimizeMode>(3);
+inline bool FileOptions_OptimizeMode_IsValid(int value) {
+  return 1 <= value && value <= 3;
+}
 inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FileOptions_OptimizeMode_descriptor();
 template <typename T>
@@ -448,12 +439,14 @@ enum FieldOptions_CType : int {
   FieldOptions_CType_STRING_PIECE = 2,
 };
 
-PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
 inline constexpr FieldOptions_CType FieldOptions_CType_CType_MIN =
     static_cast<FieldOptions_CType>(0);
 inline constexpr FieldOptions_CType FieldOptions_CType_CType_MAX =
     static_cast<FieldOptions_CType>(2);
+inline bool FieldOptions_CType_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_CType_descriptor();
 template <typename T>
@@ -480,12 +473,14 @@ enum FieldOptions_JSType : int {
   FieldOptions_JSType_JS_NUMBER = 2,
 };
 
-PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
 inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN =
     static_cast<FieldOptions_JSType>(0);
 inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX =
     static_cast<FieldOptions_JSType>(2);
+inline bool FieldOptions_JSType_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_JSType_descriptor();
 template <typename T>
@@ -512,12 +507,14 @@ enum FieldOptions_OptionRetention : int {
   FieldOptions_OptionRetention_RETENTION_SOURCE = 2,
 };
 
-PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
 inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN =
     static_cast<FieldOptions_OptionRetention>(0);
 inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX =
     static_cast<FieldOptions_OptionRetention>(2);
+inline bool FieldOptions_OptionRetention_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionRetention_descriptor();
 template <typename T>
@@ -551,12 +548,14 @@ enum FieldOptions_OptionTargetType : int {
   FieldOptions_OptionTargetType_TARGET_TYPE_METHOD = 9,
 };
 
-PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
 inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN =
     static_cast<FieldOptions_OptionTargetType>(0);
 inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX =
     static_cast<FieldOptions_OptionTargetType>(9);
+inline bool FieldOptions_OptionTargetType_IsValid(int value) {
+  return 0 <= value && value <= 9;
+}
 inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionTargetType_descriptor();
 template <typename T>
@@ -583,12 +582,14 @@ enum MethodOptions_IdempotencyLevel : int {
   MethodOptions_IdempotencyLevel_IDEMPOTENT = 2,
 };
 
-PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
 inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN =
     static_cast<MethodOptions_IdempotencyLevel>(0);
 inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX =
     static_cast<MethodOptions_IdempotencyLevel>(2);
+inline bool MethodOptions_IdempotencyLevel_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_IdempotencyLevel_descriptor();
 template <typename T>
@@ -616,12 +617,14 @@ enum FeatureSet_FieldPresence : int {
   FeatureSet_FieldPresence_LEGACY_REQUIRED = 3,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
 inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MIN =
     static_cast<FeatureSet_FieldPresence>(0);
 inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MAX =
     static_cast<FeatureSet_FieldPresence>(3);
+inline bool FeatureSet_FieldPresence_IsValid(int value) {
+  return 0 <= value && value <= 3;
+}
 inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor();
 template <typename T>
@@ -648,12 +651,14 @@ enum FeatureSet_EnumType : int {
   FeatureSet_EnumType_CLOSED = 2,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
 inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN =
     static_cast<FeatureSet_EnumType>(0);
 inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX =
     static_cast<FeatureSet_EnumType>(2);
+inline bool FeatureSet_EnumType_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor();
 template <typename T>
@@ -680,12 +685,14 @@ enum FeatureSet_RepeatedFieldEncoding : int {
   FeatureSet_RepeatedFieldEncoding_EXPANDED = 2,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
 inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MIN =
     static_cast<FeatureSet_RepeatedFieldEncoding>(0);
 inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MAX =
     static_cast<FeatureSet_RepeatedFieldEncoding>(2);
+inline bool FeatureSet_RepeatedFieldEncoding_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor();
 template <typename T>
@@ -712,12 +719,14 @@ enum FeatureSet_Utf8Validation : int {
   FeatureSet_Utf8Validation_NONE = 3,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
 inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN =
     static_cast<FeatureSet_Utf8Validation>(0);
 inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX =
     static_cast<FeatureSet_Utf8Validation>(3);
+inline bool FeatureSet_Utf8Validation_IsValid(int value) {
+  return 0 <= value && value <= 3 && ((13u >> value) & 1) != 0;
+}
 inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor();
 template <typename T>
@@ -744,12 +753,14 @@ enum FeatureSet_MessageEncoding : int {
   FeatureSet_MessageEncoding_DELIMITED = 2,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
 inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MIN =
     static_cast<FeatureSet_MessageEncoding>(0);
 inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MAX =
     static_cast<FeatureSet_MessageEncoding>(2);
+inline bool FeatureSet_MessageEncoding_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor();
 template <typename T>
@@ -776,12 +787,14 @@ enum FeatureSet_JsonFormat : int {
   FeatureSet_JsonFormat_LEGACY_BEST_EFFORT = 2,
 };
 
-PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
 inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MIN =
     static_cast<FeatureSet_JsonFormat>(0);
 inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MAX =
     static_cast<FeatureSet_JsonFormat>(2);
+inline bool FeatureSet_JsonFormat_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor();
 template <typename T>
@@ -808,12 +821,14 @@ enum GeneratedCodeInfo_Annotation_Semantic : int {
   GeneratedCodeInfo_Annotation_Semantic_ALIAS = 2,
 };
 
-PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
 inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MIN =
     static_cast<GeneratedCodeInfo_Annotation_Semantic>(0);
 inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MAX =
     static_cast<GeneratedCodeInfo_Annotation_Semantic>(2);
+inline bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor();
 template <typename T>
@@ -849,12 +864,14 @@ enum Edition : int {
   EDITION_MAX = 2147483647,
 };
 
-PROTOBUF_EXPORT bool Edition_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
 inline constexpr Edition Edition_MIN =
     static_cast<Edition>(0);
 inline constexpr Edition Edition_MAX =
     static_cast<Edition>(2147483647);
+inline bool Edition_IsValid(int value) {
+  return ::google::protobuf::internal::ValidateEnum(value, Edition_internal_data_);
+}
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor();
 template <typename T>
 const std::string& Edition_Name(T value) {
@@ -13281,8 +13298,10 @@ inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition() cons
 }
 inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14541,8 +14560,10 @@ inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRang
 }
 inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::ExtensionRangeOptions_VerificationState_IsValid(value));
-  _impl_.verification_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_));
+                                          _impl_.verification_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14671,8 +14692,10 @@ inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::_int
 }
 inline void FieldDescriptorProto::_internal_set_label(::google::protobuf::FieldDescriptorProto_Label value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FieldDescriptorProto_Label_IsValid(value));
-  _impl_.label_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldDescriptorProto_Label_internal_data_));
+                                          _impl_.label_ = value;
 }
 
 // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
@@ -14700,8 +14723,10 @@ inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::_inte
 }
 inline void FieldDescriptorProto::_internal_set_type(::google::protobuf::FieldDescriptorProto_Type value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FieldDescriptorProto_Type_IsValid(value));
-  _impl_.type_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldDescriptorProto_Type_internal_data_));
+                                          _impl_.type_ = value;
 }
 
 // optional string type_name = 6;
@@ -16736,8 +16761,10 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optim
 }
 inline void FileOptions::_internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
-  _impl_.optimize_for_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FileOptions_OptimizeMode_internal_data_));
+                                          _impl_.optimize_for_ = value;
 }
 
 // optional string go_package = 11;
@@ -17901,8 +17928,10 @@ inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_editio
 }
 inline void FieldOptions_EditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_ = value;
 }
 
 // optional string value = 2;
@@ -18003,8 +18032,10 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_editio
 }
 inline void FieldOptions_FeatureSupport::_internal_set_edition_introduced(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_introduced_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_introduced_ = value;
 }
 
 // optional .google.protobuf.Edition edition_deprecated = 2;
@@ -18032,8 +18063,10 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_editio
 }
 inline void FieldOptions_FeatureSupport::_internal_set_edition_deprecated(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_deprecated_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_deprecated_ = value;
 }
 
 // optional string deprecation_warning = 3;
@@ -18130,8 +18163,10 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_editio
 }
 inline void FieldOptions_FeatureSupport::_internal_set_edition_removed(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_removed_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_removed_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -18163,8 +18198,10 @@ inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() co
 }
 inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_CType value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FieldOptions_CType_IsValid(value));
-  _impl_.ctype_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldOptions_CType_internal_data_));
+                                          _impl_.ctype_ = value;
 }
 
 // optional bool packed = 2;
@@ -18220,8 +18257,10 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() 
 }
 inline void FieldOptions::_internal_set_jstype(::google::protobuf::FieldOptions_JSType value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FieldOptions_JSType_IsValid(value));
-  _impl_.jstype_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldOptions_JSType_internal_data_));
+                                          _impl_.jstype_ = value;
 }
 
 // optional bool lazy = 5 [default = false];
@@ -18389,8 +18428,10 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_
 }
 inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FieldOptions_OptionRetention_IsValid(value));
-  _impl_.retention_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldOptions_OptionRetention_internal_data_));
+                                          _impl_.retention_ = value;
 }
 
 // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
@@ -18409,13 +18450,17 @@ inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::targets(i
   return static_cast<::google::protobuf::FieldOptions_OptionTargetType>(_internal_targets().Get(index));
 }
 inline void FieldOptions::set_targets(int index, ::google::protobuf::FieldOptions_OptionTargetType value) {
-  assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  _internal_mutable_targets()->Set(index, value);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldOptions_OptionTargetType_internal_data_));
+                                          _internal_mutable_targets()->Set(index, value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.targets)
 }
 inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTargetType value) {
-  assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FieldOptions_OptionTargetType_internal_data_));
+                                          ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_targets()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
@@ -19668,8 +19713,10 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_intern
 }
 inline void MethodOptions::_internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::MethodOptions_IdempotencyLevel_IsValid(value));
-  _impl_.idempotency_level_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_));
+                                          _impl_.idempotency_level_ = value;
 }
 
 // optional .google.protobuf.FeatureSet features = 35;
@@ -20295,8 +20342,10 @@ inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_
 }
 inline void FeatureSet::_internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_FieldPresence_IsValid(value));
-  _impl_.field_presence_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_FieldPresence_internal_data_));
+                                          _impl_.field_presence_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20324,8 +20373,10 @@ inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type()
 }
 inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_EnumType_IsValid(value));
-  _impl_.enum_type_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_EnumType_internal_data_));
+                                          _impl_.enum_type_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20353,8 +20404,10 @@ inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_interna
 }
 inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_RepeatedFieldEncoding_IsValid(value));
-  _impl_.repeated_field_encoding_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_));
+                                          _impl_.repeated_field_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20382,8 +20435,10 @@ inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::_internal_utf8_
 }
 inline void FeatureSet::_internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_Utf8Validation_IsValid(value));
-  _impl_.utf8_validation_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_));
+                                          _impl_.utf8_validation_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20411,8 +20466,10 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_mess
 }
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
-  _impl_.message_encoding_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_MessageEncoding_internal_data_));
+                                          _impl_.message_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20440,8 +20497,10 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_form
 }
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
-  _impl_.json_format_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_JsonFormat_internal_data_));
+                                          _impl_.json_format_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -20473,8 +20532,10 @@ inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.edition_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.edition_ = value;
 }
 
 // optional .google.protobuf.FeatureSet overridable_features = 4;
@@ -20752,8 +20813,10 @@ inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition
 }
 inline void FeatureSetDefaults::_internal_set_minimum_edition(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.minimum_edition_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.minimum_edition_ = value;
 }
 
 // optional .google.protobuf.Edition maximum_edition = 5;
@@ -20781,8 +20844,10 @@ inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition
 }
 inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf::Edition value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::Edition_IsValid(value));
-  _impl_.maximum_edition_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::Edition_internal_data_));
+                                          _impl_.maximum_edition_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21337,8 +21402,10 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeIn
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_IsValid(value));
-  _impl_.semantic_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_internal_data_));
+                                          _impl_.semantic_ = value;
 }
 
 // -------------------------------------------------------------------

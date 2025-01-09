@@ -65,7 +65,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 enum CodeGeneratorResponse_Feature : int;
-PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestDefaultTypeInternal;
@@ -99,12 +98,14 @@ enum CodeGeneratorResponse_Feature : int {
   CodeGeneratorResponse_Feature_FEATURE_SUPPORTS_EDITIONS = 2,
 };
 
-PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN =
     static_cast<CodeGeneratorResponse_Feature>(0);
 inline constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX =
     static_cast<CodeGeneratorResponse_Feature>(2);
+inline bool CodeGeneratorResponse_Feature_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse_Feature_descriptor();
 template <typename T>

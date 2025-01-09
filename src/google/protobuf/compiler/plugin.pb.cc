@@ -303,9 +303,6 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse
 }
 PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[] = {
     196608u, 0u, };
-bool CodeGeneratorResponse_Feature_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 // ===================================================================
 
 class Version::_Internal {

@@ -57,7 +57,6 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
 }  // extern "C"
 namespace pb {
 enum CppFeatures_StringType : int;
-PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesDefaultTypeInternal;
@@ -80,12 +79,14 @@ enum CppFeatures_StringType : int {
   CppFeatures_StringType_STRING = 3,
 };
 
-PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN =
     static_cast<CppFeatures_StringType>(0);
 inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX =
     static_cast<CppFeatures_StringType>(3);
+inline bool CppFeatures_StringType_IsValid(int value) {
+  return 0 <= value && value <= 3;
+}
 inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
 template <typename T>
@@ -434,8 +435,10 @@ inline ::pb::CppFeatures_StringType CppFeatures::_internal_string_type() const {
 }
 inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::pb::CppFeatures_StringType_IsValid(value));
-  _impl_.string_type_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::pb::CppFeatures_StringType_internal_data_));
+                                          _impl_.string_type_ = value;
 }
 
 // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {

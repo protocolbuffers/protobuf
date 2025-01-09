@@ -1425,7 +1425,6 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      // TODO: Remove _IsValid forward declaration.
       p->Emit(
           {
               Sub("enum", e.first).AnnotatedAs(e.second),
@@ -1434,7 +1433,6 @@ class FileGenerator::ForwardDeclarations {
           },
           R"cc(
             enum $DEPRECATED $$enum$ : int;
-            $dllexport_decl $bool $enum$_IsValid(int value);
             $dllexport_decl $extern const uint32_t $enum$_internal_data_[];
           )cc");
     }

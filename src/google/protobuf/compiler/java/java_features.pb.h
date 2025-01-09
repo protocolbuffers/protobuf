@@ -57,7 +57,6 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
 }  // extern "C"
 namespace pb {
 enum JavaFeatures_Utf8Validation : int;
-PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
 struct JavaFeaturesDefaultTypeInternal;
@@ -79,12 +78,14 @@ enum JavaFeatures_Utf8Validation : int {
   JavaFeatures_Utf8Validation_VERIFY = 2,
 };
 
-PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MIN =
     static_cast<JavaFeatures_Utf8Validation>(0);
 inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MAX =
     static_cast<JavaFeatures_Utf8Validation>(2);
+inline bool JavaFeatures_Utf8Validation_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor();
 template <typename T>
@@ -432,8 +433,10 @@ inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation
 }
 inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  assert(::pb::JavaFeatures_Utf8Validation_IsValid(value));
-  _impl_.utf8_validation_ = value;
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::pb::JavaFeatures_Utf8Validation_internal_data_));
+                                          _impl_.utf8_validation_ = value;
 }
 
 // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {

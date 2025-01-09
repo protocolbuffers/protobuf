@@ -2240,153 +2240,102 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL ExtensionRangeOptions
 }
 PROTOBUF_CONSTINIT const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[] = {
     131072u, 0u, };
-bool ExtensionRangeOptions_VerificationState_IsValid(int value) {
-  return 0 <= value && value <= 1;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Type_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[1];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldDescriptorProto_Type_internal_data_[] = {
     1179649u, 0u, };
-bool FieldDescriptorProto_Type_IsValid(int value) {
-  return 1 <= value && value <= 18;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Label_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[2];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldDescriptorProto_Label_internal_data_[] = {
     196609u, 0u, };
-bool FieldDescriptorProto_Label_IsValid(int value) {
-  return 1 <= value && value <= 3;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FileOptions_OptimizeMode_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[3];
 }
 PROTOBUF_CONSTINIT const uint32_t FileOptions_OptimizeMode_internal_data_[] = {
     196609u, 0u, };
-bool FileOptions_OptimizeMode_IsValid(int value) {
-  return 1 <= value && value <= 3;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_CType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[4];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldOptions_CType_internal_data_[] = {
     196608u, 0u, };
-bool FieldOptions_CType_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_JSType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldOptions_JSType_internal_data_[] = {
     196608u, 0u, };
-bool FieldOptions_JSType_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionRetention_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldOptions_OptionRetention_internal_data_[] = {
     196608u, 0u, };
-bool FieldOptions_OptionRetention_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionTargetType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[7];
 }
 PROTOBUF_CONSTINIT const uint32_t FieldOptions_OptionTargetType_internal_data_[] = {
     655360u, 0u, };
-bool FieldOptions_OptionTargetType_IsValid(int value) {
-  return 0 <= value && value <= 9;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_IdempotencyLevel_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[8];
 }
 PROTOBUF_CONSTINIT const uint32_t MethodOptions_IdempotencyLevel_internal_data_[] = {
     196608u, 0u, };
-bool MethodOptions_IdempotencyLevel_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[9];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_FieldPresence_internal_data_[] = {
     262144u, 0u, };
-bool FeatureSet_FieldPresence_IsValid(int value) {
-  return 0 <= value && value <= 3;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[10];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_EnumType_internal_data_[] = {
     196608u, 0u, };
-bool FeatureSet_EnumType_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[11];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[] = {
     196608u, 0u, };
-bool FeatureSet_RepeatedFieldEncoding_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_Utf8Validation_internal_data_[] = {
     65536u, 32u, 6u, };
-bool FeatureSet_Utf8Validation_IsValid(int value) {
-  return 0 <= value && value <= 3 && ((13u >> value) & 1) != 0;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_MessageEncoding_internal_data_[] = {
     196608u, 0u, };
-bool FeatureSet_MessageEncoding_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_JsonFormat_internal_data_[] = {
     196608u, 0u, };
-bool FeatureSet_JsonFormat_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
 }
 PROTOBUF_CONSTINIT const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[] = {
     196608u, 0u, };
-bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
     196608u, 589824u, 99997u, 1000u, 99999u, 998u, 1001u, 99998u, 2147483647u, 900u, 999u, };
-bool Edition_IsValid(int value) {
-  return ::_pbi::ValidateEnum(value, Edition_internal_data_);
-}
 // ===================================================================
 
 class FileDescriptorSet::_Internal {

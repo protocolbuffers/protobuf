@@ -137,9 +137,6 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Vali
 }
 PROTOBUF_CONSTINIT const uint32_t JavaFeatures_Utf8Validation_internal_data_[] = {
     196608u, 0u, };
-bool JavaFeatures_Utf8Validation_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 // ===================================================================
 
 class JavaFeatures::_Internal {

@@ -41,9 +41,13 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   return {
       {"Enum", enum_name},
       {"kDefault", Int32ToString(default_value->number())},
-      Sub("assert_valid",
-          is_open ? ""
-                  : absl::Substitute("assert($0_IsValid(value));", enum_name))
+      Sub("assert_valid", is_open ? ""
+                                  : absl::Substitute(
+                                        R"cc(
+                                          assert(::$0::internal::ValidateEnum(
+                                              value, $1_internal_data_));
+                                        )cc",
+                                        ProtobufNamespace(opts), enum_name))
           .WithSuffix(";"),
 
       {"cached_size_name", MakeVarintCachedSizeName(field)},
