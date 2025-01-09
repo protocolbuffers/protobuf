@@ -59,13 +59,10 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
 namespace google {
 namespace protobuf {
 enum Field_Cardinality : int;
-PROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Field_Cardinality_internal_data_[];
 enum Field_Kind : int;
-PROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Field_Kind_internal_data_[];
 enum Syntax : int;
-PROTOBUF_EXPORT bool Syntax_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
 struct EnumDefaultTypeInternal;
@@ -127,12 +124,14 @@ enum Field_Kind : int {
       std::numeric_limits<::int32_t>::max(),
 };
 
-PROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Field_Kind_internal_data_[];
 inline constexpr Field_Kind Field_Kind_Kind_MIN =
     static_cast<Field_Kind>(0);
 inline constexpr Field_Kind Field_Kind_Kind_MAX =
     static_cast<Field_Kind>(18);
+inline bool Field_Kind_IsValid(int value) {
+  return 0 <= value && value <= 18;
+}
 inline constexpr int Field_Kind_Kind_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor();
 template <typename T>
@@ -164,12 +163,14 @@ enum Field_Cardinality : int {
       std::numeric_limits<::int32_t>::max(),
 };
 
-PROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Field_Cardinality_internal_data_[];
 inline constexpr Field_Cardinality Field_Cardinality_Cardinality_MIN =
     static_cast<Field_Cardinality>(0);
 inline constexpr Field_Cardinality Field_Cardinality_Cardinality_MAX =
     static_cast<Field_Cardinality>(3);
+inline bool Field_Cardinality_IsValid(int value) {
+  return 0 <= value && value <= 3;
+}
 inline constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor();
 template <typename T>
@@ -200,12 +201,14 @@ enum Syntax : int {
       std::numeric_limits<::int32_t>::max(),
 };
 
-PROTOBUF_EXPORT bool Syntax_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 inline constexpr Syntax Syntax_MIN =
     static_cast<Syntax>(0);
 inline constexpr Syntax Syntax_MAX =
     static_cast<Syntax>(2);
+inline bool Syntax_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
 inline constexpr int Syntax_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor();
 template <typename T>

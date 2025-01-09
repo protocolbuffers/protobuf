@@ -61,7 +61,6 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
 namespace google {
 namespace protobuf {
 enum NullValue : int;
-PROTOBUF_EXPORT bool NullValue_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueDefaultTypeInternal;
@@ -95,12 +94,14 @@ enum NullValue : int {
       std::numeric_limits<::int32_t>::max(),
 };
 
-PROTOBUF_EXPORT bool NullValue_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 inline constexpr NullValue NullValue_MIN =
     static_cast<NullValue>(0);
 inline constexpr NullValue NullValue_MAX =
     static_cast<NullValue>(0);
+inline bool NullValue_IsValid(int value) {
+  return 0 <= value && value <= 0;
+}
 inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor();
 template <typename T>

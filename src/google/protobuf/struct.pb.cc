@@ -233,9 +233,6 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor(
 }
 PROTOBUF_CONSTINIT const uint32_t NullValue_internal_data_[] = {
     65536u, 0u, };
-bool NullValue_IsValid(int value) {
-  return 0 <= value && value <= 0;
-}
 // ===================================================================
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

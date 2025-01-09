@@ -391,27 +391,18 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor
 }
 PROTOBUF_CONSTINIT const uint32_t Field_Kind_internal_data_[] = {
     1245184u, 0u, };
-bool Field_Kind_IsValid(int value) {
-  return 0 <= value && value <= 18;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
 PROTOBUF_CONSTINIT const uint32_t Field_Cardinality_internal_data_[] = {
     262144u, 0u, };
-bool Field_Cardinality_IsValid(int value) {
-  return 0 <= value && value <= 3;
-}
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
 }
 PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
     196608u, 0u, };
-bool Syntax_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 // ===================================================================
 
 class Type::_Internal {
