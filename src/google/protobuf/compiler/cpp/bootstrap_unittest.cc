@@ -122,11 +122,11 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   absl::flat_hash_map<absl::string_view, std::string> vpath_map;
   absl::flat_hash_map<absl::string_view, std::string> rpath_map;
   rpath_map["google/protobuf/test_messages_proto2"] =
-      "net/proto2/z_generated_example/test_messages_proto2";
+      "net/proto2/z_generated_example/generated/test_messages_proto2";
   rpath_map["google/protobuf/test_messages_proto3"] =
-      "net/proto2/z_generated_example/test_messages_proto3";
+      "net/proto2/z_generated_example/generated/test_messages_proto3";
   rpath_map["net/proto2/internal/proto2_weak"] =
-      "net/proto2/z_generated_example/proto2_weak";
+      "net/proto2/z_generated_example/generated/proto2_weak";
 
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestUtil::TestSourceDir());
