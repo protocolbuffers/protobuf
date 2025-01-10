@@ -14,6 +14,10 @@ import static com.google.common.truth.Truth.assertThat;
 @RunWith(JUnit4.class)
 public class IterableByteBufferInputStreamTest {
 
+    /**
+     * Tests that empty buffers are skipped when provided as input when constructing an
+     * {@link IterableByteBufferInputStream}.
+     */
     @Test
     public void testEmptyBuffers() throws Exception {
         byte[] expected = {1, 2, 3, 4};
