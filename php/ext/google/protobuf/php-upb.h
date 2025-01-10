@@ -752,9 +752,14 @@ typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
 extern "C" {
 #endif
 
-// Creates an arena from the given initial block (if any -- n may be 0).
-// Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
-// is a fixed-size arena and cannot grow.
+// Creates an arena from the given initial block (if any -- mem may be NULL). If
+// an initial block is specified, the arena's lifetime cannot be extended by
+// |upb_Arena_IncRefFor| or |upb_Arena_Fuse|. Additional blocks will be
+// allocated from |alloc|. If |alloc| is NULL, this is a fixed-size arena and
+// cannot grow. If an initial block is specified, |n| is its length; if there is
+// no initial block, |n| is a hint of the size that should be allocated for the
+// first block of the arena, such that `upb_Arena_Malloc(hint)` will not require
+// another call to |alloc|.
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
@@ -788,6 +793,10 @@ uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
 
 UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
+}
+
+UPB_API_INLINE upb_Arena* upb_Arena_NewSized(size_t size_hint) {
+  return upb_Arena_Init(NULL, size_hint, &upb_alloc_global);
 }
 
 UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
