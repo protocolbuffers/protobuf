@@ -11,6 +11,53 @@ CMake Installation
 To compile or install protobuf from source using CMake, see
 [cmake/README.md](../cmake/README.md).
 
+C++ Protobuf using the Bazel Central Registry - Unix
+----------------------------------------------------
+
+The C++ Protocol Buffer runtime is available on the [Bazel Central Registry](https://registry.bazel.build/modules/protobuf). If your project uses Bazel, you can simply add `@protobuf//:protobuf` as a dependency. Here's an example setup:
+
+ * main.cpp
+     * ```c
+       #include "<messages>.pb.h"
+       int main() {
+           GOOGLE_PROTOBUF_VERIFY_VERSION;
+           return 0;
+       }
+       ```
+ * \<messages\>.pb.cc/.h
+     * Generated using `protoc`, downloaded from [Github Releases](https://github.com/protocolbuffers/protobuf/releases).
+     * Check the runtime version of the compiler using `protoc --version`. It'll return something like "libprotoc 29.2".
+ * MODULE.bazel
+     * ```
+       bazel_dep(name = "protobuf", version = "29.2")
+       ```
+     * Note that the version matches `protoc`'s version
+ * BUILD
+     * ```
+       cc_library(
+           name = "<messages>",
+           srcs = ["<messages>.pb.cc"],
+           hdrs = ["<messages>.pb.h"],
+           deps = [
+               "@protobuf//:protobuf",
+           ],
+       )
+       cc_binary(
+           name = "main",
+           srcs = ["main.cpp"],
+           deps = [
+               ":<messages>",
+           ],
+       )
+       ```
+ * WORKSPACE
+     * ```
+       workspace(name = "example")
+       ```
+
+Then build it using `bazel build :main` and run the binary using `./bazel-bin/main`
+
+
 C++ Protobuf - Unix
 -----------------------
 
