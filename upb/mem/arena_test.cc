@@ -127,6 +127,118 @@ TEST(ArenaTest, SizeHint) {
   EXPECT_EQ(sizes.size(), 0);
 }
 
+class OverheadTest {
+ public:
+  OverheadTest(const OverheadTest&) = delete;
+  OverheadTest& operator=(const OverheadTest&) = delete;
+
+  explicit OverheadTest(size_t first = 0, size_t max_block_size = 0) {
+    if (max_block_size) {
+      upb_Arena_SetMaxBlockSize(max_block_size);
+    }
+    alloc_.alloc.func = size_checking_allocfunc;
+    alloc_.delegate_alloc = &upb_alloc_global;
+    alloc_.sizes = &sizes_;
+    arena_ = upb_Arena_Init(nullptr, first, &alloc_.alloc);
+    arena_alloced_ = 0;
+    arena_alloc_count_ = 0;
+  }
+
+  void Alloc(size_t size) {
+    upb_Arena_Malloc(arena_, size);
+    arena_alloced_ += size;
+    arena_alloc_count_++;
+  }
+
+  uintptr_t SpaceAllocated() {
+    return upb_Arena_SpaceAllocated(arena_, nullptr);
+  }
+
+  double WastePct() {
+    uintptr_t backing_alloced = upb_Arena_SpaceAllocated(arena_, nullptr);
+    double waste = backing_alloced - arena_alloced_;
+    return waste / backing_alloced;
+  }
+
+  double AmortizedAlloc() {
+    return ((double)sizes_.size()) / arena_alloc_count_;
+  }
+
+  ~OverheadTest() {
+    upb_Arena_Free(arena_);
+    upb_Arena_SetMaxBlockSize(32 << 10);
+  }
+  upb_Arena* arena_;
+
+ protected:
+  absl::flat_hash_map<void*, size_t> sizes_;
+  SizeTracker alloc_;
+  uintptr_t arena_alloced_;
+  uintptr_t arena_alloc_count_;
+};
+
+TEST(OverheadTest, SingleMassiveBlockThenLittle) {
+  OverheadTest test;
+  // Little blocks
+  for (int i = 0; i < 4; i++) {
+    test.Alloc(32);
+  }
+  // Big block!
+  test.Alloc(16000);
+  for (int i = 0; i < 50; i++) {
+    test.Alloc(64);
+  }
+  if (!UPB_ASAN) {
+    EXPECT_NEAR(test.WastePct(), 0.6, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 0.05, 0.025);
+  }
+}
+
+TEST(OverheadTest, Overhead_AlternatingSmallLargeBlocks) {
+  OverheadTest test(512, 4096);
+  for (int i = 0; i < 100; i++) {
+    test.Alloc(5000);
+    test.Alloc(64);
+  }
+  if (!UPB_ASAN) {
+    EXPECT_NEAR(test.WastePct(), 0.45, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 1, 0.025);
+  }
+}
+
+TEST(OverheadTest, PartialMaxBlocks) {
+  OverheadTest test(512, 4096);
+  for (int i = 0; i < 10; i++) {
+    test.Alloc(2096 + i);
+  }
+  if (!UPB_ASAN) {
+    EXPECT_NEAR(test.WastePct(), 0.47, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 1.1, 0.25);
+  }
+}
+
+TEST(OverheadTest, SmallBlocksLargerThanInitial) {
+  OverheadTest test(256);
+  size_t initial_block_size = upb_Arena_SpaceAllocated(test.arena_, nullptr);
+  for (int i = 0; i < 10; i++) {
+    test.Alloc(initial_block_size * 2 + 1);
+  }
+  if (!UPB_ASAN) {
+    EXPECT_NEAR(test.WastePct(), 0.37, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 0.5, 0.025);
+  }
+}
+
+TEST(OverheadTest, DefaultMaxBlockSize) {
+  OverheadTest test;
+  // Perform 600 1k allocations (600k total) and ensure that the amount of
+  // memory allocated does not exceed 700k.
+  for (int i = 0; i < 600; ++i) {
+    test.Alloc(1024);
+  }
+  EXPECT_LE(test.SpaceAllocated(), 700 * 1024);
+}
+
 TEST(ArenaTest, ArenaFuse) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
