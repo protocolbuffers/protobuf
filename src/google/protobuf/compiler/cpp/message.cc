@@ -549,30 +549,30 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  p->Emit(
-      {{"cond",
-        [&] {
-          int first_word = hasword_masks.front().word;
-          for (const auto& m : hasword_masks) {
-            uint32_t mask = m.mask;
-            int this_word = m.word;
-            if (this_word != first_word) {
-              p->Emit(R"cc(
-                ||
-              )cc");
-            }
-            auto v = p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
-            if (this_word == cached_has_word_index) {
-              p->Emit("(cached_has_bits & $mask$) != 0");
-            } else {
-              p->Emit({{"from", from}, {"word", this_word}},
-                      "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
-            }
-          }
-        }}},
-      R"cc(
-        if (ABSL_PREDICT_FALSE($cond$)) {
-      )cc");
+  p->Emit({{"cond",
+            [&] {
+              int first_word = hasword_masks.front().word;
+              for (const auto& m : hasword_masks) {
+                uint32_t mask = m.mask;
+                int this_word = m.word;
+                if (this_word != first_word) {
+                  p->Emit(R"cc(
+                    ||
+                  )cc");
+                }
+                auto v =
+                    p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
+                if (this_word == cached_has_word_index) {
+                  p->Emit("(cached_has_bits & $mask$) != 0");
+                } else {
+                  p->Emit({{"from", from}, {"word", this_word}},
+                          "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
+                }
+              }
+            }}},
+          R"cc(
+            if (ABSL_PREDICT_FALSE($cond$)) {
+          )cc");
   p->Indent();
   return true;
 }
@@ -4085,6 +4085,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     }
   };
 
+  const auto emit_v2_data = [&] {
+  };
+
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     const auto pin_weak_descriptor = [&] {
       if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
@@ -4113,9 +4116,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"custom_vtable_methods", custom_vtable_methods},
-            {"v2_msg_table",
-             [&] {
-             }},
+            {"v2_data", emit_v2_data},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -4145,7 +4146,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                     PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                     false,
-                    $v2_msg_table$,
+                    $v2_data$,
                 },
                 &$classname$::kDescriptorMethods,
                 &$desc_table$,
@@ -4172,9 +4173,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
-            {"v2_msg_table",
-             [&] {
-             }},
+            {"v2_data", emit_v2_data},
         },
         R"cc(
           constexpr auto $classname$::InternalGenerateClassData_() {
@@ -4192,7 +4191,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                     PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                     true,
-                    $v2_msg_table$,
+                    $v2_data$,
                 },
                 "$full_name$",
             };
