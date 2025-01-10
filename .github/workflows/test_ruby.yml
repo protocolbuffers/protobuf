@@ -30,8 +30,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: '7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82' }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true, image: '7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82' }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: '7.1.2-ruby-3.0.2-90d207f4e749b54c8792bbe974dfc70323b6566e' }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true, image: '7.1.2-ruby-3.0.2-90d207f4e749b54c8792bbe974dfc70323b6566e' }
           - { name: Ruby 3.1, ruby: ruby-3.1.0, continuous-only: true }
           - { name: Ruby 3.2, ruby: ruby-3.2.0, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, continuous-only: true }
@@ -179,8 +179,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby.
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: '7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82'}
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, image: '7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82'}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: '7.1.2-ruby-3.0.2-90d207f4e749b54c8792bbe974dfc70323b6566e'}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, image: '7.1.2-ruby-3.0.2-90d207f4e749b54c8792bbe974dfc70323b6566e'}
           - { name: Ruby 3.1, ruby: ruby-3.1.0}
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
           - { name: Ruby 3.3, ruby: ruby-3.2.0}
