@@ -704,12 +704,63 @@ absl::Status ParseArray(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
   });
 }
 
+// Parses one map entry for 'map_field' of type map<*, enum> in 'parent_msg'
+// with already consumed 'key'.
+// The implementation is careful not to invoke Traits::NewMsg (which emits a new
+// message) if the enum value is unknown but we can recover from it.
+// This is tested by ParseMapWithEnumValuesProto{2,3}WithUnknownFields tests in
+// kReflective codec mode.
+template <typename Traits>
+absl::Status ParseMapOfEnumsEntry(JsonLexer& lex, Field<Traits> map_field,
+                                  Msg<Traits>& parent_msg,
+                                  LocationWith<MaybeOwnedString>& key) {
+  // Parse the enum value from string, advancing the lexer.
+  absl::optional<int32_t> enum_value;
+  RETURN_IF_ERROR(Traits::WithFieldType(
+      map_field, [&lex, &enum_value](const Desc<Traits>& map_entry_desc) {
+        ASSIGN_OR_RETURN(
+            enum_value,
+            ParseEnum<Traits>(lex, Traits::ValueField(map_entry_desc)));
+        return absl::OkStatus();
+      }));
+
+  if (enum_value.has_value()) {
+    return Traits::NewMsg(
+        map_field, parent_msg,
+        [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
+          RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
+          Traits::SetEnum(Traits::ValueField(type), entry, *enum_value);
+          return absl::OkStatus();
+        });
+  } else {
+    // If we don't have enum value here, it means that it was OK to ignore it
+    // due to ignore_unknown_fields flag, otherwise ParseEnum call would fail
+    // above with "unknown enum value: " invalid argument error.
+    ABSL_DCHECK(lex.options().ignore_unknown_fields);
+    return absl::OkStatus();
+  }
+}
+
 // Parses one map entry for 'map_field' in 'parent_msg' with already consumed
 // 'key'.
 template <typename Traits>
 absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
                            Msg<Traits>& parent_msg,
                            LocationWith<MaybeOwnedString>& key) {
+  bool is_map_of_enums = false;
+  RETURN_IF_ERROR(Traits::WithFieldType(
+      map_field, [&is_map_of_enums](const Desc<Traits>& desc) {
+        is_map_of_enums = Traits::FieldType(Traits::ValueField(desc)) ==
+                          FieldDescriptor::TYPE_ENUM;
+        return absl::OkStatus();
+      }));
+
+  // Special case for map<*, enum> due to handling of unknown enum values.
+  // See comments above ParseMapOfEnumsEntry for details.
+  if (is_map_of_enums) {
+    return ParseMapOfEnumsEntry<Traits>(lex, map_field, parent_msg, key);
+  }
+
   return Traits::NewMsg(
       map_field, parent_msg,
       [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
