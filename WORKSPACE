@@ -152,6 +152,7 @@ load("@system_ruby//:bundle.bzl", "ruby_bundle")
 ruby_bundle(
     name = "protobuf_bundle",
     srcs = ["//ruby:google-protobuf.gemspec"],
+    bundler_version = "2.4.22",
     gemfile = "//ruby:Gemfile",
 )
 
