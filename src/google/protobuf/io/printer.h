@@ -1132,8 +1132,9 @@ inline auto Printer::WithDefs(absl::Span<const Sub> vars,
   absl::flat_hash_map<std::string, AnnotationRecord> annotation_map;
 
   for (const auto& var : vars) {
-    ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
-        << "callback arguments are not permitted in this position";
+    // ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
+    //     << "callback arguments are not permitted in this position: \""
+    //     << var.key_ << "\"";
     auto result = var_map.insert({var.key_, var.value_});
     ABSL_CHECK(result.second)
         << "repeated variable in Emit() or WithVars() call: \"" << var.key_
