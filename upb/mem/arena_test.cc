@@ -110,6 +110,23 @@ TEST(ArenaTest, SizedFree) {
   EXPECT_EQ(sizes.size(), 0);
 }
 
+TEST(ArenaTest, SizeHint) {
+  absl::flat_hash_map<void*, size_t> sizes;
+  SizeTracker alloc;
+  alloc.alloc.func = size_checking_allocfunc;
+  alloc.delegate_alloc = &upb_alloc_global;
+  alloc.sizes = &sizes;
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 2459, &alloc.alloc);
+  EXPECT_EQ(sizes.size(), 1);
+  EXPECT_NE(upb_Arena_Malloc(arena, 2459), nullptr);
+  EXPECT_EQ(sizes.size(), 1);
+  EXPECT_NE(upb_Arena_Malloc(arena, 500), nullptr);
+  EXPECT_EQ(sizes.size(), 2);
+  upb_Arena_Free(arena);
+  EXPECT_EQ(sizes.size(), 0);
+}
+
 TEST(ArenaTest, ArenaFuse) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();

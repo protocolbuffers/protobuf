@@ -343,14 +343,16 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   return upb_Arena_Malloc(a, size - UPB_ASAN_GUARD_SIZE);
 }
 
-static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc) {
+static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   const size_t first_block_overhead =
       sizeof(upb_ArenaState) + kUpb_MemblockReserve;
   upb_ArenaState* a;
 
   // We need to malloc the initial block.
   char* mem;
-  size_t block_size = first_block_overhead + 256;
+  size_t block_size =
+      first_block_overhead +
+      UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) + UPB_ASAN_GUARD_SIZE);
   if (!alloc || !(mem = upb_malloc(alloc, block_size))) {
     return NULL;
   }
@@ -377,26 +379,25 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   UPB_ASSERT(sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState));
   upb_ArenaState* a;
 
-  if (n) {
+  if (mem) {
     /* Align initial pointer up so that we return properly-aligned pointers. */
     void* aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, UPB_MALLOC_ALIGN);
     size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
     n = delta <= n ? n - delta : 0;
     mem = aligned;
+    /* Round block size down to alignof(*a) since we will allocate the arena
+     * itself at the end. */
+    n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_ArenaState));
+  } else {
+    n = UPB_ALIGN_UP(n, UPB_ALIGN_OF(upb_ArenaState));
   }
 
-  /* Round block size down to alignof(*a) since we will allocate the arena
-   * itself at the end. */
-  n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_ArenaState));
-
-  if (UPB_UNLIKELY(n < sizeof(upb_ArenaState))) {
+  if (UPB_UNLIKELY(n < sizeof(upb_ArenaState) || !mem)) {
+    upb_Arena* ret = _upb_Arena_InitSlow(alloc, mem ? 0 : n);
 #ifdef UPB_TRACING_ENABLED
-    upb_Arena* ret = _upb_Arena_InitSlow(alloc);
     upb_Arena_LogInit(ret, n);
-    return ret;
-#else
-    return _upb_Arena_InitSlow(alloc);
 #endif
+    return ret;
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), upb_ArenaState);
