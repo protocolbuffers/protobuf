@@ -170,6 +170,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 
+#if __STDC_VERSION__ >= 202311L
+#define UPB_FREE_SIZED(ptr, size) free_sized(ptr, size)
+#else
+#define UPB_FREE_SIZED(ptr, size) free(ptr)
+#endif
+
 #define UPB_UNUSED(var) (void)var
 
 // UPB_ASSUME(): in release mode, we tell the compiler to assume this is true.
