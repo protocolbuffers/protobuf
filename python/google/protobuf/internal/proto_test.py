@@ -77,6 +77,27 @@ class ProtoTest(unittest.TestCase):
         str(context.exception),
     )
 
+  def test_byte_size(self, message_module):
+    msg = message_module.TestAllTypes()
+    self.assertEqual(0, proto.byte_size(msg))
+    msg.optional_int32 = 123
+    self.assertEqual(2, proto.byte_size(msg))
+
+  def test_clear_message(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.oneof_uint32 = 11
+    msg.repeated_nested_message.add(bb=1)
+    proto.clear_message(msg)
+    self.assertIsNone(msg.WhichOneof('oneof_field'))
+    self.assertEqual(0, len(msg.repeated_nested_message))
+
+  def test_clear_field(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.optional_int32 = 123
+    self.assertEqual(123, msg.optional_int32)
+    proto.clear_field(msg, 'optional_int32')
+    self.assertEqual(0, msg.optional_int32)
+
 
 class SelfFieldTest(unittest.TestCase):
 

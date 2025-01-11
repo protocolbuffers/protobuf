@@ -8,7 +8,7 @@
 """Contains the Nextgen Pythonic protobuf APIs."""
 
 import io
-from typing import Type, TypeVar
+from typing import Text, Type, TypeVar
 
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
@@ -114,3 +114,40 @@ def parse_length_prefixed(
         '{2}.'.format(size, parsed_size, message.DESCRIPTOR.name)
     )
   return message
+
+
+def byte_size(message: Message) -> int:
+  """Returns the serialized size of this message.
+
+  Args:
+    message: A proto message.
+
+  Returns:
+    int: The number of bytes required to serialize this message.
+  """
+  return message.ByteSize()
+
+
+def clear_message(message: Message) -> None:
+  """Clears all data that was set in the message.
+
+  Args:
+    message: The proto message to be cleared.
+  """
+  message.Clear()
+
+
+def clear_field(message: Message, field_name: Text) -> None:
+  """Clears the contents of a given field.
+
+  Inside a oneof group, clears the field set. If the name neither refers to a
+  defined field or oneof group, :exc:`ValueError` is raised.
+
+  Args:
+    message: The proto message.
+    field_name (str): The name of the field to be cleared.
+
+  Raises:
+    ValueError: if the `field_name` is not a member of this message.
+  """
+  message.ClearField(field_name)
