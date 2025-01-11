@@ -184,7 +184,6 @@ ruby/tests/utf8_pb.rb
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
 ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
-ruby/Gemfile.lock
 
 # IntelliJ CLion Config files and build output
 cmake/.idea
