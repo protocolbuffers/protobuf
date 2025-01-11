@@ -11,7 +11,8 @@ GEM
   specs:
     bigdecimal (3.1.8)
     bigdecimal (3.1.8-java)
-    ffi (1.17.0)
+    ffi (1.17.1)
+    ffi (1.17.1-java)
     ffi-compiler (1.3.2)
       ffi (>= 1.15.5)
       rake
