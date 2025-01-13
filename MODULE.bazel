@@ -25,6 +25,7 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "0.28.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
+bazel_dep(name = "rules_ruby", version = "0.16.0")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.3.1")
 bazel_dep(name = "bazel_features", version = "1.17.0", repo_name = "proto_bazel_features")
@@ -32,6 +33,22 @@ bazel_dep(
     name = "rules_shell",
     version = "0.2.0",
 )
+
+# Ruby
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
+ruby.toolchain(
+    name = "ruby",
+    version = "system",
+)
+use_repo(ruby, "ruby")
+
+ruby.bundle_fetch(
+    name = "protobuf_bundle",
+    gemfile = "//:Gemfile",
+    gemfile_lock = "//:Gemfile.lock",
+)
+use_repo(ruby, "bundle", "ruby_toolchains")
+register_toolchains("@ruby_toolchains//:all")
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
