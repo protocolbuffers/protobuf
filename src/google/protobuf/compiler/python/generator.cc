@@ -562,8 +562,8 @@ void Generator::PrintResolvedFeatures() const {
 void Generator::PrintFileDescriptor() const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["name"] = file_->name();
-  m["package"] = file_->package();
+  m["name"] = std::string(file_->name());
+  m["package"] = std::string(file_->package());
   m["syntax"] = GetLegacySyntaxName(GetEdition(*file_));
   m["edition"] = Edition_Name(GetEdition(*file_));
   m["options"] = OptionsValue(proto_.options().SerializeAsString());
@@ -645,8 +645,8 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor,
   std::string module_level_descriptor_name =
       ModuleLevelDescriptorName(enum_descriptor);
   m["descriptor_name"] = module_level_descriptor_name;
-  m["name"] = enum_descriptor.name();
-  m["full_name"] = enum_descriptor.full_name();
+  m["name"] = std::string(enum_descriptor.name());
+  m["full_name"] = std::string(enum_descriptor.full_name());
   m["file"] = kDescriptorKey;
   const char enum_descriptor_template[] =
       "$descriptor_name$ = _descriptor.EnumDescriptor(\n"
@@ -720,7 +720,7 @@ void Generator::PrintServiceDescriptor(
     const ServiceDescriptor& descriptor) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["service_name"] = ModuleLevelServiceDescriptorName(descriptor);
-  m["name"] = descriptor.name();
+  m["name"] = std::string(descriptor.name());
   m["file"] = kDescriptorKey;
   printer_->Print(m, "$service_name$ = $file$.services_by_name['$name$']\n");
 }
@@ -770,8 +770,8 @@ void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
 void Generator::PrintDescriptor(const Descriptor& message_descriptor,
                                 const DescriptorProto& proto) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
-  m["name"] = message_descriptor.name();
-  m["full_name"] = message_descriptor.full_name();
+  m["name"] = std::string(message_descriptor.name());
+  m["full_name"] = std::string(message_descriptor.full_name());
   m["file"] = kDescriptorKey;
 
   PrintNestedDescriptors(message_descriptor, proto);
@@ -836,8 +836,8 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor,
   for (int i = 0; i < message_descriptor.oneof_decl_count(); ++i) {
     const OneofDescriptor* desc = message_descriptor.oneof_decl(i);
     m.clear();
-    m["name"] = desc->name();
-    m["full_name"] = desc->full_name();
+    m["name"] = std::string(desc->name());
+    m["full_name"] = std::string(desc->full_name());
     m["index"] = absl::StrCat(desc->index());
     options_string =
         OptionsValue(proto.oneof_decl(i).options().SerializeAsString());
@@ -980,9 +980,9 @@ void Generator::FixForeignFieldsInDescriptor(
     absl::flat_hash_map<absl::string_view, std::string> m;
     const OneofDescriptor* oneof = descriptor.oneof_decl(i);
     m["descriptor_name"] = ModuleLevelDescriptorName(descriptor);
-    m["oneof_name"] = oneof->name();
+    m["oneof_name"] = std::string(oneof->name());
     for (int j = 0; j < oneof->field_count(); ++j) {
-      m["field_name"] = oneof->field(j)->name();
+      m["field_name"] = std::string(oneof->field(j)->name());
       printer_->Print(
           m,
           "$descriptor_name$.oneofs_by_name['$oneof_name$'].fields.append(\n"
@@ -998,7 +998,7 @@ void Generator::FixForeignFieldsInDescriptor(
 void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["message_name"] = descriptor.name();
+  m["message_name"] = std::string(descriptor.name());
   m["message_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
   const char file_descriptor_template[] =
       "$descriptor_name$.message_types_by_name['$message_name$'] = "
@@ -1010,7 +1010,7 @@ void Generator::AddServiceToFileDescriptor(
     const ServiceDescriptor& descriptor) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["service_name"] = descriptor.name();
+  m["service_name"] = std::string(descriptor.name());
   m["service_descriptor_name"] = ModuleLevelServiceDescriptorName(descriptor);
   const char file_descriptor_template[] =
       "$descriptor_name$.services_by_name['$service_name$'] = "
@@ -1022,7 +1022,7 @@ void Generator::AddEnumToFileDescriptor(
     const EnumDescriptor& descriptor) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["enum_name"] = descriptor.name();
+  m["enum_name"] = std::string(descriptor.name());
   m["enum_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
   const char file_descriptor_template[] =
       "$descriptor_name$.enum_types_by_name['$enum_name$'] = "
@@ -1034,7 +1034,7 @@ void Generator::AddExtensionToFileDescriptor(
     const FieldDescriptor& descriptor) const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
-  m["field_name"] = descriptor.name();
+  m["field_name"] = std::string(descriptor.name());
   m["resolved_name"] = ResolveKeyword(descriptor.name());
   const char file_descriptor_template[] =
       "$descriptor_name$.extensions_by_name['$field_name$'] = "
@@ -1143,7 +1143,7 @@ void Generator::PrintEnumValueDescriptor(
   std::string options_string;
   proto.options().SerializeToString(&options_string);
   absl::flat_hash_map<absl::string_view, std::string> m;
-  m["name"] = descriptor.name();
+  m["name"] = std::string(descriptor.name());
   m["index"] = absl::StrCat(descriptor.index());
   m["number"] = absl::StrCat(descriptor.number());
   m["options"] = OptionsValue(options_string);
@@ -1161,8 +1161,8 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
   std::string options_string;
   proto.options().SerializeToString(&options_string);
   absl::flat_hash_map<absl::string_view, std::string> m;
-  m["name"] = field.name();
-  m["full_name"] = field.full_name();
+  m["name"] = std::string(field.name());
+  m["full_name"] = std::string(field.full_name());
   m["index"] = absl::StrCat(field.index());
   m["number"] = absl::StrCat(field.number());
   m["type"] = absl::StrCat(field.type());
@@ -1456,7 +1456,7 @@ void Generator::FixOptionsForField(const FieldDescriptor& field,
   if (field.is_extension()) {
     if (field.extension_scope() == nullptr) {
       // Top level extensions.
-      field_name = field.name();
+      field_name = std::string(field.name());
     } else {
       field_name = FieldReferencingExpression(field.extension_scope(), field,
                                               "extensions_by_name");

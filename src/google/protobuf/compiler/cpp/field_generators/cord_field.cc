@@ -39,7 +39,7 @@ void SetCordVariables(
       "\"", absl::CEscape(descriptor->default_value_string()), "\"");
   (*variables)["default_length"] =
       absl::StrCat(descriptor->default_value_string().length());
-  (*variables)["full_name"] = descriptor->full_name();
+  (*variables)["full_name"] = std::string(descriptor->full_name());
   // For one of Cords
   (*variables)["default_variable_name"] = MakeDefaultName(descriptor);
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);

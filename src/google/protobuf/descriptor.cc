@@ -3050,7 +3050,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!containing_type()->is_unqualified_placeholder_) {
       proto->set_extendee(".");
     }
-    proto->mutable_extendee()->append(containing_type()->full_name());
+    absl::StrAppend(proto->mutable_extendee(), containing_type()->full_name());
   }
 
   if (cpp_type() == CPPTYPE_MESSAGE) {
@@ -3063,12 +3063,12 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!message_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(message_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), message_type()->full_name());
   } else if (cpp_type() == CPPTYPE_ENUM) {
     if (!enum_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(enum_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), enum_type()->full_name());
   }
 
   if (has_default_value()) {
@@ -3152,12 +3152,12 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   if (!input_type()->is_unqualified_placeholder_) {
     proto->set_input_type(".");
   }
-  proto->mutable_input_type()->append(input_type()->full_name());
+  absl::StrAppend(proto->mutable_input_type(), input_type()->full_name());
 
   if (!output_type()->is_unqualified_placeholder_) {
     proto->set_output_type(".");
   }
-  proto->mutable_output_type()->append(output_type()->full_name());
+  absl::StrAppend(proto->mutable_output_type(), output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
     *proto->mutable_options() = options();
@@ -3223,7 +3223,7 @@ bool RetrieveOptionsAssumingRightPool(
       if (field->is_extension()) {
         name = absl::StrCat("(.", field->full_name(), ")");
       } else {
-        name = field->name();
+        name = std::string(field->name());
       }
       option_entries->push_back(absl::StrCat(name, " = ", fieldval));
     }
@@ -7170,9 +7170,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
     // scope.  Let's print an additional error to explain this.
     std::string outer_scope;
     if (parent->containing_type() == nullptr) {
-      outer_scope = file_->package();
+      outer_scope = std::string(file_->package());
     } else {
-      outer_scope = parent->containing_type()->full_name();
+      outer_scope = std::string(parent->containing_type()->full_name());
     }
 
     if (outer_scope.empty()) {

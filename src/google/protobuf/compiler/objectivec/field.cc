@@ -41,9 +41,9 @@ void SetCommonFieldVariables(
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
   if (internal::cpp::IsGroupLike(*descriptor)) {
-    raw_field_name = descriptor->message_type()->name();
+    raw_field_name = std::string(descriptor->message_type()->name());
   } else {
-    raw_field_name = descriptor->name();
+    raw_field_name = std::string(descriptor->name());
   }
   // The logic here has to match -[GGPBFieldDescriptor textFormatName].
   const std::string un_camel_case_name(
