@@ -175,6 +175,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
              "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
   }
   p->Print("\n");
+  p->Print(absl::StrCat("// New message - ", file_->name(), "\n"));
   p->Emit({{"cb", cb}, {"guard", guard}}, R"(
     #ifndef $guard$
     #define $guard$
