@@ -226,6 +226,7 @@ static NumToEntryTable MakeNumToEntryTable(
       start_new_block = false;
     }
 
+    ABSL_DCHECK(block != nullptr);
     auto skip_entry_num = (fnum - block->first_fnum) / 16;
     auto skip_entry_index = (fnum - block->first_fnum) % 16;
     while (skip_entry_num >= block->entries.size())
