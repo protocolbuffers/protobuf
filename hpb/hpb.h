@@ -136,7 +136,7 @@ absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
                                             int options = 0) {
   return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
                                     ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), options);
+                                    arena.ptr(), 0);
 }
 
 }  // namespace hpb
