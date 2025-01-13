@@ -36,7 +36,7 @@ using internal::TailCallTableInfo;
 using internal::cpp::Utf8CheckMode;
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
-    const Descriptor* descriptor, const Options& options) {
+    const Descriptor* descriptor) {
   std::vector<const FieldDescriptor*> ordered_fields;
   for (auto field : FieldRange(descriptor)) {
     ordered_fields.push_back(field);
@@ -62,7 +62,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       options_(options),
       variables_(vars),
       inlined_string_indices_(inlined_string_indices),
-      ordered_fields_(GetOrderedFields(descriptor_, options_)),
+      ordered_fields_(GetOrderedFields(descriptor_)),
       num_hasbits_(max_has_bit_index),
       index_in_file_messages_(index_in_file_messages) {
   std::vector<TailCallTableInfo::FieldOptions> fields;
