@@ -18,15 +18,17 @@ class RepeatedFieldTest < Test::Unit::TestCase
   def test_acts_like_an_array
     m = TestMessage.new
     arr_methods = ([].methods - TestMessage.new.repeated_string.methods)
-    # jRuby additions to the Array class that we can ignore
+    # JRuby additions to the Array class that we ignore
     arr_methods -= [ :indices, :iter_for_each, :iter_for_each_index,
       :iter_for_each_with_index, :dimensions, :copy_data, :copy_data_simple,
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods -= [:filter!]
-    # ruby 2.7 methods we can ignore
+    # ruby 2.7 methods we ignore
     arr_methods -= [:deconstruct, :resolve_feature_path]
-    # ruby 3.1 methods we can ignore
+    # ruby 3.1 methods we ignore
     arr_methods -= [:intersect?]
+    # ruby 3.4 methods we ignore
+    arr_methods -= [:fetch_values]
     arr_methods.each do |method_name|
       assert_respond_to m.repeated_string, method_name
     end
