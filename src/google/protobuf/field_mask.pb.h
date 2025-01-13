@@ -50,8 +50,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto {
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
-    descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto;
 }  // extern "C"
 namespace google {
 namespace protobuf {
@@ -84,8 +83,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldMask(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FieldMask(::google::protobuf::internal::ConstantInitialized);
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
   inline FieldMask(FieldMask&& from) noexcept
@@ -144,8 +142,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  FieldMask* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  FieldMask* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<FieldMask>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -154,9 +151,8 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   void MergeFrom(const FieldMask& from) { FieldMask::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -167,23 +163,21 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
   static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const {
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const final;
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -193,16 +187,14 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   void InternalSwap(FieldMask* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldMask"; }
 
  protected:
   explicit FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldMask& from);
   FieldMask(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-      FieldMask&& from) noexcept
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldMask&& from) noexcept
       : FieldMask(arena) {
     *this = ::std::move(from);
   }
@@ -248,9 +240,9 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 0,
-      39, 2>
+  static const ::google::protobuf::internal::TcParseTable<0, 1,
+                                   0, 39,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -260,8 +252,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -337,8 +328,8 @@ inline void FieldMask::add_paths(Arg_&& value, Args_... args) {
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
-FieldMask::paths() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<std::string>& FieldMask::paths() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldMask.paths)
   return _internal_paths();
 }

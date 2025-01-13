@@ -266,7 +266,7 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL Duration::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Duration& this_ = static_cast<const Duration&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -282,8 +282,8 @@ PROTOBUF_NOINLINE void Duration::Clear() {
   // int64 seconds = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (this_._internal_seconds() != 0) {
-      target = ::google::protobuf::internal::WireFormatLite::
-          WriteInt64ToArrayWithField<1>(
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
               stream, this_._internal_seconds(), target);
     }
   }
@@ -291,8 +291,8 @@ PROTOBUF_NOINLINE void Duration::Clear() {
   // int32 nanos = 2;
   if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (this_._internal_nanos() != 0) {
-      target = ::google::protobuf::internal::WireFormatLite::
-          WriteInt32ToArrayWithField<2>(
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
               stream, this_._internal_nanos(), target);
     }
   }

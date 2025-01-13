@@ -51,8 +51,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fempty_2eproto {
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
-    descriptor_table_google_2fprotobuf_2fempty_2eproto;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto;
 }  // extern "C"
 namespace google {
 namespace protobuf {
@@ -84,8 +83,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Empty(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Empty(::google::protobuf::internal::ConstantInitialized);
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
   inline Empty(Empty&& from) noexcept
@@ -144,8 +142,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 
   // implements Message ----------------------------------------------
 
-  Empty* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  Empty* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
@@ -163,16 +160,14 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   }
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
  protected:
   explicit Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Empty& from);
   Empty(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-      Empty&& from) noexcept
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Empty&& from) noexcept
       : Empty(arena) {
     *this = ::std::move(from);
   }
@@ -193,9 +188,9 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      0, 0, 0,
-      0, 2>
+  static const ::google::protobuf::internal::TcParseTable<0, 0,
+                                   0, 0,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -205,8 +200,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

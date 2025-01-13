@@ -268,7 +268,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FieldMask::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldMask& this_ = static_cast<const FieldMask&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
