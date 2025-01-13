@@ -11,7 +11,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -26,6 +25,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -172,21 +172,7 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    $DEPRECATED$ $Type$ $name$() const;
-    $DEPRECATED$ void $set_name$($Type$ value);
-
-    private:
-    $Type$ $_internal_name$() const;
-    void $_internal_set_name$($Type$ value);
-
-    public:
-  )cc");
-}
-
-void SingularPrimitive::GenerateInlineAccessorDefinitions(
-    io::Printer* p) const {
-  p->Emit(R"cc(
-    inline $Type$ $Msg$::$name$() const {
+    $DEPRECATED$ $Type$ $name$() const {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
@@ -196,7 +182,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
 
   if (is_oneof()) {
     p->Emit(R"cc(
-      inline void $Msg$::set_$name$($Type$ value) {
+      $DEPRECATED$ void set_$name$($Type$ value) {
         $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         if ($not_has_field$) {
@@ -207,16 +193,17 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name_internal$() const {
-        if ($has_field$) {
-          return $field_$;
-        }
-        return $kDefault$;
+
+      private:
+      $Type$ _internal_$name_internal$() const {
+        return $has_field$ ? $field_$ : $kDefault$;
       }
+
+      public:
     )cc");
   } else {
     p->Emit(R"cc(
-      inline void $Msg$::set_$name$($Type$ value) {
+      $DEPRECATED$ void set_$name$($Type$ value) {
         $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         _internal_set_$name_internal$(value);
@@ -224,16 +211,25 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name_internal$() const {
+
+      private:
+      $Type$ _internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline void $Msg$::_internal_set_$name_internal$($Type$ value) {
+      void _internal_set_$name_internal$($Type$ value) {
         $TsanDetectConcurrentMutation$;
         $field_$ = value;
       }
+
+      public:
     )cc");
   }
+}
+
+void SingularPrimitive::GenerateInlineAccessorDefinitions(
+    io::Printer* p) const {
+  // Nothing to do, all accessors are defined when declared.
 }
 
 void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
