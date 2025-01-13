@@ -289,6 +289,7 @@ class DescriptorTest(unittest.TestCase):
     service_options = service_descriptor.GetOptions()
     service_opt1 = unittest_custom_options_pb2.service_opt1
     self.assertEqual(-9876543210, service_options.Extensions[service_opt1])
+    self.assertTrue(method_descriptor.has_options)
     method_options = method_descriptor.GetOptions()
     method_opt1 = unittest_custom_options_pb2.method_opt1
     self.assertEqual(unittest_custom_options_pb2.METHODOPT1_VAL2,
@@ -792,6 +793,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertIs(service_descriptor.file, unittest_pb2.DESCRIPTOR)
     self.assertEqual(service_descriptor.index, 0)
     self.CheckDescriptorMapping(service_descriptor.methods_by_name)
+    self.assertFalse(service_descriptor.has_options)
 
   def testOneofDescriptor(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
