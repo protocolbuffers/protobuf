@@ -128,6 +128,7 @@ except ImportError:
 # that differences between APIs will be maintained.
 # Please don't use this function if possible.
 def Type():
+  warnings.warn('DEBUG_PYTHON_IMPLEMENTATION: ' + _implementation_type)
   return _implementation_type
 
 
