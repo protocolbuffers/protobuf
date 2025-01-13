@@ -172,6 +172,8 @@
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+#undef UPB_PRIVATE_FUNC
+// #pragma clang diagnostic error "-Wuser-defined-warnings"
 #endif
 
 // Pop the warning(push) from port_def.inc
