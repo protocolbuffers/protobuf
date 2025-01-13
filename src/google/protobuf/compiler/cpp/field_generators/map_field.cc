@@ -46,7 +46,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   }
 
   return {
-      {"Map", absl::Substitute("::google::protobuf::Map<$0, $1>", key_type, val_type)},
+      {"Map", absl::Substitute("::$2::Map<$0, $1>", key_type, val_type,
+                               ProtobufNamespace(opts))},
       {"Entry", ClassName(field->message_type(), false)},
       {"Key", PrimitiveTypeName(opts, key->cpp_type())},
       {"Val", val_type},

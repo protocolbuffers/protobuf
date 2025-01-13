@@ -116,9 +116,8 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
           R"cc(
             inline $constant_qualifier $constexpr int $constant_name$ =
                 $number$;
-            $id_qualifier$ ::$proto_ns$::internal::ExtensionIdentifier<
-                $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
-                $packed$>
+            $id_qualifier$ $pbi$::ExtensionIdentifier<
+                $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>
                 $name$;
           )cc");
 }

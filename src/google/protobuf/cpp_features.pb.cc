@@ -296,7 +296,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL CppFeatures::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE

@@ -52,8 +52,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
-    descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 }  // extern "C"
 namespace pb {
 enum CppFeatures_StringType : int;
@@ -98,14 +97,13 @@ const std::string& CppFeatures_StringType_Name(T value) {
 }
 template <>
 inline const std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor,
-                                                 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 inline bool CppFeatures_StringType_Parse(
     absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
-  return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(
-      CppFeatures_StringType_descriptor(), name, value);
+  return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(CppFeatures_StringType_descriptor(), name,
+                                           value);
 }
 
 // ===================================================================
@@ -127,8 +125,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR CppFeatures(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
   inline CppFeatures(CppFeatures&& from) noexcept
@@ -187,8 +184,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  CppFeatures* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  CppFeatures* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -197,9 +193,8 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   void MergeFrom(const CppFeatures& from) { CppFeatures::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -210,23 +205,21 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
   static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const {
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const final;
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -236,16 +229,14 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   void InternalSwap(CppFeatures* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
  protected:
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
   CppFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-      CppFeatures&& from) noexcept
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
       : CppFeatures(arena) {
     *this = ::std::move(from);
   }
@@ -326,9 +317,9 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
-      0, 2>
+  static const ::google::protobuf::internal::TcParseTable<2, 3,
+                                   1, 0,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -338,8 +329,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -367,8 +357,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 inline constexpr int kCppFieldNumber =
     1000;
 PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11,
-    false>
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
     cpp;
 
 // ===================================================================

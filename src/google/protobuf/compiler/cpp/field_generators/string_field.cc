@@ -902,14 +902,14 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
         }
-        inline const ::$proto_ns$::RepeatedPtrField<std::string>&
-        $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline const $pb$::RepeatedPtrField<std::string>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
           return _internal_$name_internal$();
         }
-        inline ::$proto_ns$::RepeatedPtrField<std::string>* $nonnull$
+        inline $pb$::RepeatedPtrField<std::string>* $nonnull$
         $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_mutable_list$;
@@ -938,12 +938,12 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      inline const ::$proto_ns$::RepeatedPtrField<std::string>&
+      inline const $pb$::RepeatedPtrField<std::string>&
       $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline ::$proto_ns$::RepeatedPtrField<std::string>* $nonnull$
+      inline $pb$::RepeatedPtrField<std::string>* $nonnull$
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;

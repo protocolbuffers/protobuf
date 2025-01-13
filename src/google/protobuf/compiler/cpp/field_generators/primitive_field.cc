@@ -246,8 +246,8 @@ void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     // template parameter that handles the EnsureSpace and the writing
     // of the tag+value to the array
     p->Emit(R"cc(
-      target = ::$proto_ns$::internal::WireFormatLite::
-          Write$declared_type$ToArrayWithField<$number$>(
+      target =
+          $pbi$::WireFormatLite::Write$declared_type$ToArrayWithField<$number$>(
               stream, this_._internal_$name$(), target);
     )cc");
   } else {

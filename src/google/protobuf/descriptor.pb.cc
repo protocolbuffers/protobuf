@@ -2503,7 +2503,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FileDescriptorSet::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FileDescriptorSet& this_ = static_cast<const FileDescriptorSet&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -2951,7 +2951,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FileDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FileDescriptorProto& this_ = static_cast<const FileDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3493,7 +3493,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const DescriptorProto_ExtensionRange& this_ = static_cast<const DescriptorProto_ExtensionRange&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3509,15 +3509,15 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<1>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
             stream, this_._internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
             stream, this_._internal_end(), target);
   }
 
@@ -3790,7 +3790,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL DescriptorProto_ReservedRange::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const DescriptorProto_ReservedRange& this_ = static_cast<const DescriptorProto_ReservedRange&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -3806,15 +3806,15 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<1>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
             stream, this_._internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
             stream, this_._internal_end(), target);
   }
 
@@ -4208,7 +4208,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL DescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const DescriptorProto& this_ = static_cast<const DescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -4727,7 +4727,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ExtensionRangeOptions_Declaration& this_ = static_cast<const ExtensionRangeOptions_Declaration&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -4743,8 +4743,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional int32 number = 1;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<1>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
             stream, this_._internal_number(), target);
   }
 
@@ -5111,7 +5111,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL ExtensionRangeOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ExtensionRangeOptions& this_ = static_cast<const ExtensionRangeOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -5583,7 +5583,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FieldDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldDescriptorProto& this_ = static_cast<const FieldDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -5615,8 +5615,8 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional int32 number = 3;
   if (cached_has_bits & 0x00000040u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<3>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_number(), target);
   }
 
@@ -5659,8 +5659,8 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional int32 oneof_index = 9;
   if (cached_has_bits & 0x00000080u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<9>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<9>(
             stream, this_._internal_oneof_index(), target);
   }
 
@@ -6039,7 +6039,7 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL OneofDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const OneofDescriptorProto& this_ = static_cast<const OneofDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6320,7 +6320,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumDescriptorProto_EnumReservedRange& this_ = static_cast<const EnumDescriptorProto_EnumReservedRange&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -6336,15 +6336,15 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional int32 start = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<1>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
             stream, this_._internal_start(), target);
   }
 
   // optional int32 end = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
             stream, this_._internal_end(), target);
   }
 
@@ -6665,7 +6665,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL EnumDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumDescriptorProto& this_ = static_cast<const EnumDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7049,7 +7049,7 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL EnumValueDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumValueDescriptorProto& this_ = static_cast<const EnumValueDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7073,8 +7073,8 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
 
   // optional int32 number = 2;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
             stream, this_._internal_number(), target);
   }
 
@@ -7397,7 +7397,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL ServiceDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ServiceDescriptorProto& this_ = static_cast<const ServiceDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -7782,7 +7782,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL MethodDescriptorProto::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const MethodDescriptorProto& this_ = static_cast<const MethodDescriptorProto&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -8389,7 +8389,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FileOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FileOptions& this_ = static_cast<const FileOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9079,7 +9079,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL MessageOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const MessageOptions& this_ = static_cast<const MessageOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9465,7 +9465,7 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FieldOptions_EditionDefault::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldOptions_EditionDefault& this_ = static_cast<const FieldOptions_EditionDefault&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -9776,7 +9776,7 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldOptions_FeatureSupport& this_ = static_cast<const FieldOptions_FeatureSupport&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -10234,7 +10234,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FieldOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldOptions& this_ = static_cast<const FieldOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -10767,7 +10767,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL OneofOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const OneofOptions& this_ = static_cast<const OneofOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -11133,7 +11133,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL EnumOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumOptions& this_ = static_cast<const EnumOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -11561,7 +11561,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL EnumValueOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumValueOptions& this_ = static_cast<const EnumValueOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -11963,7 +11963,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL ServiceOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ServiceOptions& this_ = static_cast<const ServiceOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -12351,7 +12351,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL MethodOptions::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const MethodOptions& this_ = static_cast<const MethodOptions&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -12697,7 +12697,7 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL UninterpretedOption_NamePart::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const UninterpretedOption_NamePart& this_ = static_cast<const UninterpretedOption_NamePart&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13062,7 +13062,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL UninterpretedOption::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const UninterpretedOption& this_ = static_cast<const UninterpretedOption&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13104,8 +13104,8 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 
   // optional int64 negative_int_value = 5;
   if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt64ToArrayWithField<5>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<5>(
             stream, this_._internal_negative_int_value(), target);
   }
 
@@ -13492,7 +13492,7 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FeatureSet::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FeatureSet& this_ = static_cast<const FeatureSet&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -13873,7 +13873,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14219,7 +14219,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL FeatureSetDefaults::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FeatureSetDefaults& this_ = static_cast<const FeatureSetDefaults&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14591,7 +14591,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL SourceCodeInfo_Location::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const SourceCodeInfo_Location& this_ = static_cast<const SourceCodeInfo_Location&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -14928,7 +14928,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL SourceCodeInfo::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const SourceCodeInfo& this_ = static_cast<const SourceCodeInfo&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -15256,7 +15256,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const GeneratedCodeInfo_Annotation& this_ = static_cast<const GeneratedCodeInfo_Annotation&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -15289,15 +15289,15 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
 
   // optional int32 begin = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<3>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_begin(), target);
   }
 
   // optional int32 end = 4;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<4>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
             stream, this_._internal_end(), target);
   }
 
@@ -15583,7 +15583,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL GeneratedCodeInfo::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const GeneratedCodeInfo& this_ = static_cast<const GeneratedCodeInfo&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE

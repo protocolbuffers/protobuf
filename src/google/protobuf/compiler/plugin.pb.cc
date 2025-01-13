@@ -499,7 +499,7 @@ PROTOBUF_NOINLINE void Version::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL Version::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Version& this_ = static_cast<const Version&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -515,22 +515,22 @@ PROTOBUF_NOINLINE void Version::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional int32 major = 1;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<1>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
             stream, this_._internal_major(), target);
   }
 
   // optional int32 minor = 2;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
             stream, this_._internal_minor(), target);
   }
 
   // optional int32 patch = 3;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<3>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_patch(), target);
   }
 
@@ -885,7 +885,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL CodeGeneratorRequest::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorRequest& this_ = static_cast<const CodeGeneratorRequest&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1286,7 +1286,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse_File::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorResponse_File& this_ = static_cast<const CodeGeneratorResponse_File&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1660,7 +1660,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 ::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse::_InternalSerialize(
-    const MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorResponse& this_ = static_cast<const CodeGeneratorResponse&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1691,15 +1691,15 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 
   // optional int32 minimum_edition = 3;
   if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<3>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_minimum_edition(), target);
   }
 
   // optional int32 maximum_edition = 4;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<4>(
+    target =
+        ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
             stream, this_._internal_maximum_edition(), target);
   }
 

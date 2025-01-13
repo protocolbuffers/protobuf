@@ -162,11 +162,11 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
           {"field_lookup_size", field_num_to_entry_table.size16()},
       },
       R"cc(
-        friend class ::$proto_ns$::internal::TcParser;
+        friend class $pbi$::TcParser;
         $SECTION$
-        static const ::$proto_ns$::internal::TcParseTable<
-            $table_size_log2$, $num_field_entries$, $num_field_aux$,
-            $name_table_size$, $field_lookup_size$>
+        static const $pbi$::TcParseTable<$table_size_log2$, $num_field_entries$,
+                                         $num_field_aux$, $name_table_size$,
+                                         $field_lookup_size$>
             _table_;
       )cc");
 }

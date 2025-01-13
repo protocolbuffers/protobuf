@@ -1236,8 +1236,7 @@ inline auto GetEmitRepeatedFieldMutableSub(const Options& options,
             break;
           case BoundsCheckMode::kAbort:
             if (use_stringpiecefield) {
-              p->Emit(
-                  "::google::protobuf::internal::CheckedMutableOrAbort(&$field$, index)");
+              p->Emit("$pbi$::CheckedMutableOrAbort(&$field$, index)");
             } else {
               p->Emit(R"cc(
                 $pbi$::CheckedMutableOrAbort(

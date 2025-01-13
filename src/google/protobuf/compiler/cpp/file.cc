@@ -548,9 +548,9 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   // required by the standard.
   p->Emit(R"cc(
     PROTOBUF_PRAGMA_INIT_SEG
-    namespace _pb = ::$proto_ns$;
-    namespace _pbi = ::$proto_ns$::internal;
-    namespace _fl = ::$proto_ns$::internal::field_layout;
+    namespace _pb = $pb$;
+    namespace _pbi = $pbi$;
+    namespace _fl = $pbi$::field_layout;
   )cc");
 }
 
@@ -1775,8 +1775,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
     // just use the symbol to force-link the C++ generated code when necessary.
     p->Emit(R"cc(
       extern "C" {
-      $dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable
-          $desc_table$;
+      $dllexport_decl $extern const $pbi$::DescriptorTable $desc_table$;
       }  // extern "C"
     )cc");
   }

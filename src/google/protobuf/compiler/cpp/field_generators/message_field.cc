@@ -46,7 +46,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       QualifiedDefaultInstanceName(field->message_type(), opts);
   std::string default_ptr =
       QualifiedDefaultInstancePtr(field->message_type(), opts);
-  absl::string_view base = "::google::protobuf::MessageLite";
+  std::string base =
+      absl::StrCat("::", ProtobufNamespace(opts), "::", "MessageLite");
 
   return {
       {"Submsg", qualified_type},

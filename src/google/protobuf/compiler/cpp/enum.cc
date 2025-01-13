@@ -204,7 +204,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit(R"(
-      $dllexport_decl $const ::$proto_ns$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor();
+      $dllexport_decl $const $pb$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor();
     )");
   } else {
     p->Emit(R"cc(
@@ -243,8 +243,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       p->Emit(R"cc(
         template <>
         inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
-          return ::$proto_ns$::internal::NameOfDenseEnum<$Msg_Enum$_descriptor,
-                                                         $kMin$, $kMax$>(
+          return $pbi$::NameOfDenseEnum<$Msg_Enum$_descriptor, $kMin$, $kMax$>(
               static_cast<int>(value));
         }
       )cc");
@@ -254,7 +253,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       template <typename T>
       $return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
-        return ::$proto_ns$::internal::NameOfEnum($Msg_Enum$_descriptor(), value);
+        return $pbi$::NameOfEnum($Msg_Enum$_descriptor(), value);
       }
     )cc");
   }
@@ -264,8 +263,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       inline bool $Msg_Enum$_Parse(
           //~
           absl::string_view name, $Msg_Enum$* $nonnull$ value) {
-        return ::$proto_ns$::internal::ParseNamedEnum<$Msg_Enum$>(
-            $Msg_Enum$_descriptor(), name, value);
+        return $pbi$::ParseNamedEnum<$Msg_Enum$>($Msg_Enum$_descriptor(), name,
+                                                 value);
       }
     )cc");
   } else {
@@ -344,7 +343,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   if (has_reflection_) {
     p->Emit(R"(
-      static inline const ::$proto_ns$::EnumDescriptor* $nonnull$ $Enum$_descriptor() {
+      static inline const $pb$::EnumDescriptor* $nonnull$ $Enum$_descriptor() {
         return $Msg_Enum$_descriptor();
       }
     )");
@@ -410,8 +409,8 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
 
   if (has_reflection_) {
     p->Emit({{"idx", idx}}, R"cc(
-      const ::$proto_ns$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor() {
-        ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);
+      const $pb$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor() {
+        $pbi$::AssignDescriptors(&$desc_table$);
         return $file_level_enum_descriptors$[$idx$];
       }
     )cc");
@@ -527,16 +526,15 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
              }},
         },
         R"cc(
-          static ::$proto_ns$::internal::ExplicitlyConstructed<std::string>
+          static $pbi$::ExplicitlyConstructed<std::string>
               $Msg_Enum$_strings[$num_unique$] = {};
 
           static const char $Msg_Enum$_names[] = {
               $names$,
           };
 
-          static const ::$proto_ns$::internal::EnumEntry $Msg_Enum$_entries[] =
-              {
-                  $entries$,
+          static const $pbi$::EnumEntry $Msg_Enum$_entries[] = {
+              $entries$,
           };
 
           static const int $Msg_Enum$_entries_by_number[] = {
@@ -544,22 +542,20 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
           };
 
           $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
-            static const bool kDummy =
-                ::$proto_ns$::internal::InitializeEnumStrings(
-                    $Msg_Enum$_entries, $Msg_Enum$_entries_by_number,
-                    $num_unique$, $Msg_Enum$_strings);
+            static const bool kDummy = $pbi$::InitializeEnumStrings(
+                $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
+                $Msg_Enum$_strings);
             (void)kDummy;
 
-            int idx = ::$proto_ns$::internal::LookUpEnumName(
-                $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
-                value);
-            return idx == -1 ? ::$proto_ns$::internal::GetEmptyString()
-                             : $Msg_Enum$_strings[idx].get();
+            int idx = $pbi$::LookUpEnumName($Msg_Enum$_entries,
+                                            $Msg_Enum$_entries_by_number,
+                                            $num_unique$, value);
+            return idx == -1 ? $pbi$::GetEmptyString() : $Msg_Enum$_strings[idx].get();
           }
 
           bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* $nonnull$ value) {
             int int_value;
-            bool success = ::$proto_ns$::internal::LookUpEnumValue(
+            bool success = $pbi$::LookUpEnumValue(
                 $Msg_Enum$_entries, $num_declared$, name, &int_value);
             if (success) {
               *value = static_cast<$Msg_Enum$>(int_value);

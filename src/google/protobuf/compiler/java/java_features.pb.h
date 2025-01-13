@@ -52,8 +52,7 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffe
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
-    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
+PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 }  // extern "C"
 namespace pb {
 enum JavaFeatures_Utf8Validation : int;
@@ -97,14 +96,13 @@ const std::string& JavaFeatures_Utf8Validation_Name(T value) {
 }
 template <>
 inline const std::string& JavaFeatures_Utf8Validation_Name(JavaFeatures_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor,
-                                                 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool JavaFeatures_Utf8Validation_Parse(
     absl::string_view name, JavaFeatures_Utf8Validation* PROTOBUF_NONNULL value) {
-  return ::google::protobuf::internal::ParseNamedEnum<JavaFeatures_Utf8Validation>(
-      JavaFeatures_Utf8Validation_descriptor(), name, value);
+  return ::google::protobuf::internal::ParseNamedEnum<JavaFeatures_Utf8Validation>(JavaFeatures_Utf8Validation_descriptor(), name,
+                                           value);
 }
 
 // ===================================================================
@@ -126,8 +124,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR JavaFeatures(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR JavaFeatures(::google::protobuf::internal::ConstantInitialized);
 
   inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
   inline JavaFeatures(JavaFeatures&& from) noexcept
@@ -186,8 +183,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  JavaFeatures* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  JavaFeatures* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<JavaFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -196,9 +192,8 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   void MergeFrom(const JavaFeatures& from) { JavaFeatures::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -209,23 +204,21 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
   static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const {
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
   ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-          stream) const final;
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -235,16 +228,14 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
  protected:
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
   JavaFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-      JavaFeatures&& from) noexcept
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
       : JavaFeatures(arena) {
     *this = ::std::move(from);
   }
@@ -324,9 +315,9 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
-      0, 2>
+  static const ::google::protobuf::internal::TcParseTable<2, 3,
+                                   1, 0,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -336,8 +327,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -365,8 +355,7 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 inline constexpr int kJavaFieldNumber =
     1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11,
-    false>
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
     java;
 
 // ===================================================================
