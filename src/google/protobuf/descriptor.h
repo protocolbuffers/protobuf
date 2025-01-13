@@ -886,7 +886,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   CppType cpp_type() const;  // C++ type of this field.
   // Name of the C++ type.
   internal::DescriptorTypenameStringView cpp_type_name() const;
-  Label label() const;  // optional/required/repeated
 
 #ifndef SWIG
   CppStringType cpp_string_type() const;  // The C++ string type of this field.
