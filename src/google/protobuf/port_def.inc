@@ -775,6 +775,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma clang diagnostic ignored "-Wextra-semi"
 // Ensure we don't regress nullability annotations (related: b/383569842)
 #pragma clang diagnostic error "-Wnullability-completeness"
+#define UPB_PRIVATE_FUNC \
+  __attribute__((diagnose_if(1, "Protobuf internal", "warning")))
+#pragma clang diagnostic ignored "-Wuser-defined-warnings"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
