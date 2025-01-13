@@ -16,7 +16,8 @@ _PROTO_BAZEL_FEATURES = """bazel_features = struct(
   ),
   globals = struct(
     PackageSpecificationInfo = {PackageSpecificationInfo},
-    ProtoInfo = getattr(getattr(native, 'legacy_globals', None), 'ProtoInfo', {ProtoInfo})
+    ProtoInfo = getattr(getattr(native, 'legacy_globals', None), 'ProtoInfo', {ProtoInfo}),
+    cc_proto_aspect = getattr(getattr(native, 'legacy_globals', None), 'cc_proto_aspect', {cc_proto_aspect}),
   ),
 )
 """
@@ -35,6 +36,7 @@ def _proto_bazel_features_impl(rctx):
 
     protobuf_on_allowlist = major_version_int > 7
     ProtoInfo = "ProtoInfo" if major_version_int < 8 else "None"
+    cc_proto_aspect = "cc_proto_aspect" if major_version_int < 8 else "None"
 
     rctx.file("BUILD.bazel", """
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
@@ -50,6 +52,7 @@ exports_files(["features.bzl"])
         PackageSpecificationInfo = "PackageSpecificationInfo" if PackageSpecificationInfo else "None",
         protobuf_on_allowlist = repr(protobuf_on_allowlist),
         ProtoInfo = ProtoInfo,
+        cc_proto_aspect = cc_proto_aspect,
     ))
 
 proto_bazel_features = repository_rule(
