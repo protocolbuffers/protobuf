@@ -186,11 +186,11 @@ http_archive(
 load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
-    name = "pip_deps",
+    name = "protobuf_pip_deps",
     requirements = "//python:requirements.txt",
 )
 
-load("@pip_deps//:requirements.bzl", "install_deps")
+load("@protobuf_pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 

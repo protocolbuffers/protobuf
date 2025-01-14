@@ -62,14 +62,14 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 
 [
     pip.parse(
-        hub_name = "pip_deps",
+        hub_name = "protobuf_pip_deps",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
-use_repo(pip, "pip_deps")
+use_repo(pip, "protobuf_pip_deps")
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
