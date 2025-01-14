@@ -192,11 +192,11 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.compiler_version_),
-        ~0u,
         0,
-        ~0u,
-        ~0u,
+        3,
         1,
+        2,
+        4,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -226,11 +226,11 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.minimum_edition_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.maximum_edition_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_),
-        0,
         1,
         2,
         3,
-        ~0u,
+        4,
+        0,
 };
 
 static const ::_pbi::MigrationSchema
@@ -659,10 +659,12 @@ class CodeGeneratorRequest::_Internal {
 void CodeGeneratorRequest::clear_proto_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto_file_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.source_file_descriptors_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -698,7 +700,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u)
+  _impl_.compiler_version_ = (cached_has_bits & 0x00000010u)
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.compiler_version_)
                 : nullptr;
 
@@ -815,36 +817,36 @@ CodeGeneratorRequest::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // repeated string file_to_generate = 1;
     {::_pbi::TcParser::FastSR1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_)}},
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_)}},
     // optional string parameter = 2;
     {::_pbi::TcParser::FastSS1,
-     {18, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_)}},
+     {18, 3, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_)}},
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     {::_pbi::TcParser::FastMtS1,
-     {26, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_)}},
+     {26, 4, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
     {::_pbi::TcParser::FastMtR1,
-     {122, 63, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_)}},
+     {122, 1, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_)}},
   }}, {{
     65535, 65535
   }}, {{
     // repeated string file_to_generate = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), -1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
     // optional string parameter = 2;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 0, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.compiler.Version compiler_version = 3;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), -1, 1,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), _Internal::kHasBitsOffset + 1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), _Internal::kHasBitsOffset + 2, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
@@ -866,15 +868,23 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_to_generate_.Clear();
-  _impl_.proto_file_.Clear();
-  _impl_.source_file_descriptors_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.parameter_.ClearNonDefaultToEmpty();
+      _impl_.file_to_generate_.Clear();
     }
     if (cached_has_bits & 0x00000002u) {
+      _impl_.proto_file_.Clear();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.source_file_descriptors_.Clear();
+    }
+  }
+  if (cached_has_bits & 0x00000018u) {
+    if (cached_has_bits & 0x00000008u) {
+      _impl_.parameter_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000010u) {
       ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
       _impl_.compiler_version_->Clear();
     }
@@ -899,16 +909,18 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   (void)cached_has_bits;
 
   // repeated string file_to_generate = 1;
-  for (int i = 0, n = this_._internal_file_to_generate_size(); i < n; ++i) {
-    const auto& s = this_._internal_file_to_generate().Get(i);
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
-                                "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
-    target = stream->WriteString(1, s, target);
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    for (int i = 0, n = this_._internal_file_to_generate_size(); i < n; ++i) {
+      const auto& s = this_._internal_file_to_generate().Get(i);
+      ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                  "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
+      target = stream->WriteString(1, s, target);
+    }
   }
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string parameter = 2;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000008u) {
     const std::string& _s = this_._internal_parameter();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorRequest.parameter");
@@ -916,32 +928,36 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   }
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         3, *this_._impl_.compiler_version_, this_._impl_.compiler_version_->GetCachedSize(), target,
         stream);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this_._internal_proto_file_size());
-       i < n; i++) {
-    const auto& repfield = this_._internal_proto_file().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            15, repfield, repfield.GetCachedSize(),
-            target, stream);
+  if (cached_has_bits & 0x00000002u) {
+    for (unsigned i = 0, n = static_cast<unsigned>(
+                             this_._internal_proto_file_size());
+         i < n; i++) {
+      const auto& repfield = this_._internal_proto_file().Get(i);
+      target =
+          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+              15, repfield, repfield.GetCachedSize(),
+              target, stream);
+    }
   }
 
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this_._internal_source_file_descriptors_size());
-       i < n; i++) {
-    const auto& repfield = this_._internal_source_file_descriptors().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            17, repfield, repfield.GetCachedSize(),
-            target, stream);
+  if (cached_has_bits & 0x00000004u) {
+    for (unsigned i = 0, n = static_cast<unsigned>(
+                             this_._internal_source_file_descriptors_size());
+         i < n; i++) {
+      const auto& repfield = this_._internal_source_file_descriptors().Get(i);
+      target =
+          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+              17, repfield, repfield.GetCachedSize(),
+              target, stream);
+    }
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -968,9 +984,10 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   (void)cached_has_bits;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-   {
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
     // repeated string file_to_generate = 1;
-    {
+    if (cached_has_bits & 0x00000001u) {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_file_to_generate().size());
       for (int i = 0, n = this_._internal_file_to_generate().size(); i < n; ++i) {
@@ -979,29 +996,28 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
       }
     }
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    {
+    if (cached_has_bits & 0x00000002u) {
       total_size += 1UL * this_._internal_proto_file_size();
       for (const auto& msg : this_._internal_proto_file()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
       }
     }
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-    {
+    if (cached_has_bits & 0x00000004u) {
       total_size += 2UL * this_._internal_source_file_descriptors_size();
       for (const auto& msg : this_._internal_source_file_descriptors()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
       }
     }
   }
-  cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x00000018u) {
     // optional string parameter = 2;
-    if (cached_has_bits & 0x00000001u) {
+    if (cached_has_bits & 0x00000008u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_parameter());
     }
     // optional .google.protobuf.compiler.Version compiler_version = 3;
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000010u) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.compiler_version_);
     }
@@ -1019,17 +1035,17 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
-  _this->_internal_mutable_proto_file()->MergeFrom(
-      from._internal_proto_file());
-  _this->_internal_mutable_source_file_descriptors()->MergeFrom(
-      from._internal_source_file_descriptors());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x0000001fu) {
+    _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
+    _this->_internal_mutable_proto_file()->MergeFrom(
+        from._internal_proto_file());
+    _this->_internal_mutable_source_file_descriptors()->MergeFrom(
+        from._internal_source_file_descriptors());
+    if (cached_has_bits & 0x00000008u) {
       _this->_internal_set_parameter(from._internal_parameter());
     }
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000010u) {
       ABSL_DCHECK(from._impl_.compiler_version_ != nullptr);
       if (_this->_impl_.compiler_version_ == nullptr) {
         _this->_impl_.compiler_version_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.compiler_version_);
@@ -1594,38 +1610,38 @@ CodeGeneratorResponse::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // optional string error = 1;
     {::_pbi::TcParser::FastSS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_)}},
+     {10, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_)}},
     // optional uint64 supported_features = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CodeGeneratorResponse, _impl_.supported_features_), 1>(),
-     {16, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CodeGeneratorResponse, _impl_.supported_features_), 2>(),
+     {16, 2, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)}},
     // optional int32 minimum_edition = 3;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CodeGeneratorResponse, _impl_.minimum_edition_), 2>(),
-     {24, 2, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CodeGeneratorResponse, _impl_.minimum_edition_), 3>(),
+     {24, 3, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_)}},
     // optional int32 maximum_edition = 4;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CodeGeneratorResponse, _impl_.maximum_edition_), 3>(),
-     {32, 3, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CodeGeneratorResponse, _impl_.maximum_edition_), 4>(),
+     {32, 4, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
     {::_pbi::TcParser::FastMtR1,
-     {122, 63, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_)}},
+     {122, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_)}},
   }}, {{
     65535, 65535
   }}, {{
     // optional string error = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_), _Internal::kHasBitsOffset + 0, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional uint64 supported_features = 2;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_), _Internal::kHasBitsOffset + 1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
     // optional int32 minimum_edition = 3;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_), _Internal::kHasBitsOffset + 2, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional int32 maximum_edition = 4;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 3, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), -1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
@@ -1644,12 +1660,14 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
+    _impl_.file_.Clear();
+  }
+  if (cached_has_bits & 0x00000002u) {
     _impl_.error_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x0000000eu) {
+  if (cached_has_bits & 0x0000001cu) {
     ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.maximum_edition_) -
         reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
@@ -1675,7 +1693,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string error = 1;
-  if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x00000002u) {
     const std::string& _s = this_._internal_error();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorResponse.error");
@@ -1683,35 +1701,37 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   }
 
   // optional uint64 supported_features = 2;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
         2, this_._internal_supported_features(), target);
   }
 
   // optional int32 minimum_edition = 3;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_minimum_edition(), target);
   }
 
   // optional int32 maximum_edition = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
             stream, this_._internal_maximum_edition(), target);
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this_._internal_file_size());
-       i < n; i++) {
-    const auto& repfield = this_._internal_file().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            15, repfield, repfield.GetCachedSize(),
-            target, stream);
+  if (cached_has_bits & 0x00000001u) {
+    for (unsigned i = 0, n = static_cast<unsigned>(
+                             this_._internal_file_size());
+         i < n; i++) {
+      const auto& repfield = this_._internal_file().Get(i);
+      target =
+          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+              15, repfield, repfield.GetCachedSize(),
+              target, stream);
+    }
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -1740,32 +1760,32 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
    {
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    {
+    cached_has_bits = this_._impl_._has_bits_[0];
+    if (cached_has_bits & 0x00000001u) {
       total_size += 1UL * this_._internal_file_size();
       for (const auto& msg : this_._internal_file()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
       }
     }
   }
-  cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (cached_has_bits & 0x0000001eu) {
     // optional string error = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if (cached_has_bits & 0x00000002u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_error());
     }
     // optional uint64 supported_features = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000004u) {
       total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
           this_._internal_supported_features());
     }
     // optional int32 minimum_edition = 3;
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000008u) {
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
           this_._internal_minimum_edition());
     }
     // optional int32 maximum_edition = 4;
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000010u) {
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
           this_._internal_maximum_edition());
     }
@@ -1782,20 +1802,20 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(
-      from._internal_file());
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    if (cached_has_bits & 0x00000001u) {
+  if (cached_has_bits & 0x0000001fu) {
+    _this->_internal_mutable_file()->MergeFrom(
+        from._internal_file());
+    if (cached_has_bits & 0x00000002u) {
       _this->_internal_set_error(from._internal_error());
     }
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000004u) {
       _this->_impl_.supported_features_ = from._impl_.supported_features_;
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000008u) {
       _this->_impl_.minimum_edition_ = from._impl_.minimum_edition_;
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000010u) {
       _this->_impl_.maximum_edition_ = from._impl_.maximum_edition_;
     }
   }
