@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Encapsulates information about the original source file from which a
@@ -72,7 +72,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<\Google\Protobuf\Internal\SourceCodeInfo\Location>|\Google\Protobuf\Internal\RepeatedField $location
+     *     @type \Google\Protobuf\Internal\SourceCodeInfo\Location[] $location
      *           A Location identifies a piece of source code in a .proto file which
      *           corresponds to a particular definition.  This information is intended
      *           to be useful to IDEs, code indexers, documentation generators, and similar
@@ -165,7 +165,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      *   be recorded in the future.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\SourceCodeInfo\Location>
      */
     public function getLocation()
     {
@@ -216,7 +216,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      *   be recorded in the future.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
-     * @param array<\Google\Protobuf\Internal\SourceCodeInfo\Location>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\SourceCodeInfo\Location[] $var
      * @return $this
      */
     public function setLocation($var)

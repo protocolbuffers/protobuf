@@ -6,8 +6,8 @@
 namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * `ListValue` is a wrapper around a repeated field of values.
@@ -30,7 +30,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<\Google\Protobuf\Value>|\Google\Protobuf\Internal\RepeatedField $values
+     *     @type \Google\Protobuf\Value[] $values
      *           Repeated field of dynamically typed values.
      * }
      */
@@ -43,7 +43,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * Repeated field of dynamically typed values.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Value values = 1;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Value>
      */
     public function getValues()
     {
@@ -54,7 +54,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * Repeated field of dynamically typed values.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Value values = 1;</code>
-     * @param array<\Google\Protobuf\Value>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Value[] $var
      * @return $this
      */
     public function setValues($var)
