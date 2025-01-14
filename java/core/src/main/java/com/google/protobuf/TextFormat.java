@@ -461,35 +461,28 @@ public final class TextFormat {
     /** An adapter class that can take a {@link MapEntry} and returns its key and entry. */
     private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
-
-      @SuppressWarnings({"rawtypes"})
-      private MapEntry mapEntry;
-
-      private final FieldDescriptor.JavaType fieldType;
+      private Message messageEntry;
+      private FieldDescriptor keyField;
 
       MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
-        if (entry instanceof MapEntry) {
-          this.mapEntry = (MapEntry) entry;
+        if (entry instanceof Message) {
+          this.messageEntry = (Message) entry;
         } else {
           this.entry = entry;
         }
-        this.fieldType = extractFieldType(fieldDescriptor);
-      }
-
-      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+        this.keyField = fieldDescriptor.getMessageType().findFieldByName("key");
       }
 
       Object getKey() {
-        if (mapEntry != null) {
-          return mapEntry.getKey();
+        if (messageEntry != null) {
+          return messageEntry.getField(keyField);
         }
         return null;
       }
 
       Object getEntry() {
-        if (mapEntry != null) {
-          return mapEntry;
+        if (messageEntry != null) {
+          return messageEntry;
         }
         return entry;
       }
@@ -500,7 +493,7 @@ public final class TextFormat {
           logger.info("Invalid key for map field.");
           return -1;
         }
-        switch (fieldType) {
+        switch (keyField.getJavaType()) {
           case BOOLEAN:
             return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
           case LONG:
