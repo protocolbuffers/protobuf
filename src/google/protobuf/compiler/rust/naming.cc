@@ -333,10 +333,6 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
   return RsSafeName(name);
 }
 
-std::string DeprecatedOneofViewEnumRsName(const OneofDescriptor& oneof) {
-  return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
-}
-
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
   return SnakeToUpperCamelCase(oneof.name()) + "Oneof";
 }

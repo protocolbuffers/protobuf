@@ -124,7 +124,6 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
 void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
-          {"deprecated_view_enum_name", DeprecatedOneofViewEnumRsName(oneof)},
           {"view_enum_name", OneofViewEnumRsName(oneof)},
           {"view_fields",
            [&] {
@@ -157,9 +156,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
 
         not_set(std::marker::PhantomData<&'msg ()>) = 0
       }
-
-      #[deprecated(note="Use $view_enum_name$ instead (will be imminently moved)")]
-      pub use $view_enum_name$ as $deprecated_view_enum_name$;
       )rs");
 
   // Note: This enum is used as the Thunk return type for getting which case is

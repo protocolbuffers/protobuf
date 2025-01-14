@@ -63,10 +63,6 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
-// The old names for these types, which we intend to imminently burn down
-// to avoid collisions.
-std::string DeprecatedOneofViewEnumRsName(const OneofDescriptor& oneof);
-
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
 
