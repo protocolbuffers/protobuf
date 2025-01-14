@@ -1647,9 +1647,9 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of the service, not including its containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // The fully-qualified name of the service, scope delimited by periods.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // Index of this service within the file's services array.
   int index() const;
 
@@ -1751,9 +1751,9 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 #endif
 
   // Name of this method, not including containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // The fully-qualified name of the method, scope delimited by periods.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // Index within the service's Descriptor.
   int index() const;
 
@@ -2608,12 +2608,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   }
 
 // Name and full name are stored in a single array to save space.
-#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                       \
-  inline internal::DescriptorStringView CLASS::name() const {      \
-    return all_names_[0];                                          \
-  }                                                                \
-  inline internal::DescriptorStringView CLASS::full_name() const { \
-    return all_names_[1];                                          \
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                            \
+  inline auto CLASS::name() const -> decltype(this->name()) {           \
+    return all_names_[0];                                               \
+  }                                                                     \
+  inline auto CLASS::full_name() const -> decltype(this->full_name()) { \
+    return all_names_[1];                                               \
   }
 
 // Arrays take an index parameter, obviously.
