@@ -321,6 +321,7 @@ class Descriptor
             ->optional('utf8_validation', \Google\Protobuf\Internal\GPBType::ENUM, 4, 'google.protobuf.internal.FeatureSet.Utf8Validation')
             ->optional('message_encoding', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.FeatureSet.MessageEncoding')
             ->optional('json_format', \Google\Protobuf\Internal\GPBType::ENUM, 6, 'google.protobuf.internal.FeatureSet.JsonFormat')
+            ->optional('enforce_naming_style', \Google\Protobuf\Internal\GPBType::ENUM, 7, 'google.protobuf.internal.FeatureSet.EnforceNamingStyle')
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FeatureSet.FieldPresence', \Google\Protobuf\Internal\FieldPresence::class)
@@ -358,6 +359,12 @@ class Descriptor
             ->value("JSON_FORMAT_UNKNOWN", 0)
             ->value("ALLOW", 1)
             ->value("LEGACY_BEST_EFFORT", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.EnforceNamingStyle', \Google\Protobuf\Internal\EnforceNamingStyle::class)
+            ->value("ENFORCE_NAMING_STYLE_UNKNOWN", 0)
+            ->value("STYLE2024", 1)
+            ->value("STYLE_LEGACY", 2)
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FeatureSetDefaults', \Google\Protobuf\Internal\FeatureSetDefaults::class)
