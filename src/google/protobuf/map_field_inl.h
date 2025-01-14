@@ -33,18 +33,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-// ------------------------TypeDefinedMapFieldBase---------------
-template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
-                                                    const MapFieldBase& other) {
-  auto& self = static_cast<TypeDefinedMapFieldBase&>(base);
-  self.SyncMapWithRepeatedField();
-  const auto& other_field = static_cast<const TypeDefinedMapFieldBase&>(other);
-  other_field.SyncMapWithRepeatedField();
-  internal::MapMergeFrom(self.map_, other_field.map_);
-  self.SetMapDirty();
-}
-
 // ----------------------------------------------------------------------
 
 template <typename Derived, typename Key, typename T,

@@ -514,6 +514,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
                                                MapValueRef* val);
   static bool DeleteMapValueImpl(MapFieldBase& self, const MapKey& map_key);
   static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
+  static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
 
  private:
   friend class ContendedMapCleanTest;
@@ -629,6 +630,13 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
     return &map_;
   }
 
+  // This overload is called from codegen, so we use templates for speed.
+  // If there is no codegen (eg optimize_for=CODE_SIZE), then only the
+  // reflection based one above will be used.
+  void MergeFrom(const TypeDefinedMapFieldBase& other) {
+    internal::MapMergeFrom(*MutableMap(), other.GetMap());
+  }
+
   static constexpr size_t InternalGetArenaOffsetAlt(
       internal::InternalVisibility access) {
     return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
@@ -639,8 +647,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   friend struct MapFieldTestPeer;
 
   using Iter = typename Map<Key, T>::const_iterator;
-
-  static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

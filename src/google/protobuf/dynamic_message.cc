@@ -348,11 +348,11 @@ void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
 
   // Different arena, so copy objects instead.
   DynamicMapField tmp(lhs.default_entry_);
-  tmp.MergeFrom(lhs);
+  MergeFromImpl(tmp, lhs);
   lhs.Clear();
-  lhs.MergeFrom(rhs);
+  MergeFromImpl(lhs, rhs);
   rhs.Clear();
-  rhs.MergeFrom(tmp);
+  MergeFromImpl(rhs, tmp);
 
   MapFieldBase::SwapPayload(lhs, rhs);
 }
