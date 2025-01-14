@@ -1652,7 +1652,7 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::proto
   ::google::protobuf::Arena* message_arena = GetArena();
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
-    delete _impl_.compiler_version_;
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
   }
 
   if (value != nullptr) {
@@ -1960,7 +1960,7 @@ inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(::goog
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::Message*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }

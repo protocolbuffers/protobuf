@@ -920,6 +920,15 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  // As above, but for fields that use base class type. Eg foreign weak fields.
+  static MessageLite* CopyConstruct(Arena* arena, const MessageLite& from);
+
+  PROTOBUF_ALWAYS_INLINE static Message* CopyConstruct(Arena* arena,
+                                                       const Message& from) {
+    return reinterpret_cast<Message*>(
+        CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
+  }
+
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
