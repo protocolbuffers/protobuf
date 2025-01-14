@@ -9711,8 +9711,7 @@ const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
   return default_value_enum_;
 }
 
-internal::DescriptorStringView FieldDescriptor::PrintableNameForExtension()
-    const {
+absl::string_view FieldDescriptor::PrintableNameForExtension() const {
   const bool is_message_set_extension =
       is_extension() &&
       containing_type()->options().message_set_wire_format() &&
