@@ -14,6 +14,9 @@
   "require-dev": {
     "phpunit/phpunit": ">=5.0.0 <8.5.27"
   },
+  "suggest": {
+    "ext-bcmath": "Need to support JSON deserialization"
+  },
   "autoload": {
     "psr-4": {
       "Google\\Protobuf\\": "src/Google/Protobuf",
