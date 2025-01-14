@@ -375,6 +375,39 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+::size_t CppFeatures::ByteSizeV2MessageImpl(const MessageLite& base) {
+  const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
+  // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
+    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 9;
+    }
+    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 6;
+    }
+    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 6;
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT_ENABLE_CODEGEN
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
 void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CppFeatures*>(&to_msg);
   auto& from = static_cast<const CppFeatures&>(from_msg);

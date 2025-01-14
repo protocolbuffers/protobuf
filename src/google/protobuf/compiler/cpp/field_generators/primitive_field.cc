@@ -10,6 +10,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -162,6 +163,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
 
  private:
   const Options* opts_;
@@ -286,6 +288,31 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
+static constexpr int kCppTypeToSize[] = {
+    -1,                //
+    sizeof(int32_t),   // CPPTYPE_INT32
+    sizeof(int64_t),   // CPPTYPE_INT64
+    sizeof(uint32_t),  // CPPTYPE_UINT32
+    sizeof(uint64_t),  // CPPTYPE_UINT64
+    sizeof(double),    // CPPTYPE_DOUBLE
+    sizeof(float),     // CPPTYPE_FLOAT
+    sizeof(bool),      // CPPTYPE_BOOL
+    sizeof(int),       // CPPTYPE_ENUM
+    -1,                // CPPTYPE_STRING
+    -1,                // CPPTYPE_MESSAGE
+};
+
+void SingularPrimitive::GenerateByteSizeV2(io::Printer* p) const {
+  int field_size = kCppTypeToSize[field_->cpp_type()];
+  ABSL_CHECK_NE(field_size, -1);
+
+  // |tag|1B| |field_number|4B| |payload...|
+  p->Emit({{"size", kV2SingularFieldTagSize + static_cast<size_t>(field_size)}},
+          R"cc(
+            total_size += $size$;
+          )cc");
+}
+
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
@@ -402,6 +429,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
 
  private:
   bool HasCachedSize() const {
@@ -642,6 +670,18 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
         std::size_t tag_size = $tag_size$;
         total_size += tag_size + data_size;
       )cc");
+}
+
+void RepeatedPrimitive::GenerateByteSizeV2(io::Printer* p) const {
+  int field_size = kCppTypeToSize[field_->cpp_type()];
+  ABSL_CHECK_NE(field_size, -1);
+
+  // |tag|1B| |field_number|4B| |count|4B| |length|4B| |payload|...
+  p->Emit({{"tag_size", kV2RepeatedFieldTagSize}, {"field_size", field_size}},
+          R"cc(
+            total_size += ::_pbi::WireFormatLite::RepeatedNumericByteSizeV2(
+                $tag_size$, this_._internal_$name$());
+          )cc");
 }
 }  // namespace
 

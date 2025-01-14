@@ -35,12 +35,14 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
+
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
