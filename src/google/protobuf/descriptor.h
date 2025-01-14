@@ -514,12 +514,10 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     const ExtensionRangeOptions& options() const { return *options_; }
 
     // Returns the name of the containing type.
-    internal::DescriptorStringView name() const {
-      return containing_type_->name();
-    }
+    absl::string_view name() const { return containing_type_->name(); }
 
     // Returns the full name of the containing type.
-    internal::DescriptorStringView full_name() const {
+    absl::string_view full_name() const {
       return containing_type_->full_name();
     }
 
@@ -638,7 +636,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  internal::DescriptorStringView reserved_name(int index) const;
+  absl::string_view reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -727,6 +725,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   ExtensionRange* extension_ranges_;
   FieldDescriptor* extensions_;
   ReservedRange* reserved_ranges_;
+  // TODO: Replace std::string payload with a more efficient one.
   const std::string** reserved_names_;
 
   int oneof_decl_count_;
@@ -853,9 +852,9 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Name of this field within the message.
   internal::DescriptorStringView name() const;
   // Fully-qualified name of the field.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // JSON name of this field.
-  internal::DescriptorStringView json_name() const;
+  absl::string_view json_name() const;
 
   const FileDescriptor* file() const;  // File in which this field was defined.
   bool is_extension() const;           // Is this an extension field?
@@ -980,7 +979,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   const EnumValueDescriptor* default_value_enum() const;
   // Get the field default value if cpp_type() == CPPTYPE_STRING.  If no
   // explicit default was defined, the default is the empty string.
-  internal::DescriptorStringView default_value_string() const;
+  absl::string_view default_value_string() const;
 
   // The Descriptor for the message of which this is a field.  For extensions,
   // this is the extended type.  Never nullptr.
@@ -1058,7 +1057,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // its printable name) can be accomplished with
   //     message->file()->pool()->FindExtensionByPrintableName(message, name)
   // where the extension extends "message".
-  internal::DescriptorStringView PrintableNameForExtension() const;
+  absl::string_view PrintableNameForExtension() const;
 
   // Source Location ---------------------------------------------------
 
@@ -1224,9 +1223,9 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 #endif
 
   // Name of this oneof.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // Fully-qualified name of the oneof.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // Index of this oneof within the message's oneof array.
   int index() const;
@@ -1331,7 +1330,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of this enum type in the containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
 
   // The fully-qualified name of the enum type, scope delimited by periods.
   internal::DescriptorStringView full_name() const;
@@ -1431,7 +1430,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  internal::DescriptorStringView reserved_name(int index) const;
+  absl::string_view reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -1509,6 +1508,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   int reserved_range_count_;
   int reserved_name_count_;
   EnumDescriptor::ReservedRange* reserved_ranges_;
+  // TODO: Replace std::string payload with a more efficient one.
   const std::string** reserved_names_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
@@ -1553,7 +1553,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // "google.protobuf.FieldDescriptorProto.TYPE_INT32", NOT
   // "google.protobuf.FieldDescriptorProto.Type.TYPE_INT32".  This is to conform
   // with C++ scoping rules for enums.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // The .proto file in which this value was defined.  Never nullptr.
   const FileDescriptor* file() const;
@@ -2602,18 +2602,18 @@ class PROTOBUF_EXPORT DescriptorPool {
   inline TYPE CLASS::FIELD() const { return FIELD##_; }
 
 // Strings fields are stored as pointers but returned as const references.
-#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD)          \
-  inline internal::DescriptorStringView CLASS::FIELD() const { \
-    return *FIELD##_;                                          \
+#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD)           \
+  inline auto CLASS::FIELD() const -> decltype(this->FIELD()) { \
+    return *FIELD##_;                                           \
   }
 
 // Name and full name are stored in a single array to save space.
-#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                       \
-  inline internal::DescriptorStringView CLASS::name() const {      \
-    return all_names_[0];                                          \
-  }                                                                \
-  inline internal::DescriptorStringView CLASS::full_name() const { \
-    return all_names_[1];                                          \
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                            \
+  inline auto CLASS::name() const -> decltype(this->name()) {           \
+    return all_names_[0];                                               \
+  }                                                                     \
+  inline auto CLASS::full_name() const -> decltype(this->full_name()) { \
+    return all_names_[1];                                               \
   }
 
 // Arrays take an index parameter, obviously.
@@ -2763,8 +2763,7 @@ inline bool Descriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline internal::DescriptorStringView Descriptor::reserved_name(
-    int index) const {
+inline absl::string_view Descriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
@@ -2783,8 +2782,7 @@ inline bool EnumDescriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline internal::DescriptorStringView EnumDescriptor::reserved_name(
-    int index) const {
+inline absl::string_view EnumDescriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
@@ -2796,7 +2794,7 @@ inline internal::DescriptorStringView FieldDescriptor::camelcase_name() const {
   return all_names_[camelcase_name_index_];
 }
 
-inline internal::DescriptorStringView FieldDescriptor::json_name() const {
+inline absl::string_view FieldDescriptor::json_name() const {
   return all_names_[json_name_index_];
 }
 
