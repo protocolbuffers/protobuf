@@ -7881,6 +7881,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7893,6 +7894,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7905,6 +7907,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7982,6 +7985,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -7994,6 +7998,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8174,6 +8179,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8257,6 +8263,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE2024
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -8290,6 +8297,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8318,6 +8326,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8686,6 +8695,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8719,6 +8729,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8800,6 +8811,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8911,6 +8923,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9385,6 +9398,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9500,6 +9514,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9599,6 +9614,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9707,6 +9723,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9800,6 +9817,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9870,6 +9888,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10967,6 +10986,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11687,6 +11707,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
+        enforce_naming_style: STYLE_LEGACY
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -11709,6 +11730,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
               )pb"));
 }
 

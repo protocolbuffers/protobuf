@@ -59,6 +59,8 @@ enum Edition : int;
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
 enum ExtensionRangeOptions_VerificationState : int;
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
+enum FeatureSet_EnforceNamingStyle : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[];
 enum FeatureSet_EnumType : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
 enum FeatureSet_FieldPresence : int;
@@ -227,6 +229,9 @@ internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
 template <>
 internal::EnumTraitsT<::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::ExtensionRangeOptions_VerificationState>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnforceNamingStyle>;
 template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_EnumType_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnumType>;
@@ -797,6 +802,39 @@ inline const std::string& FeatureSet_JsonFormat_Name(FeatureSet_JsonFormat value
 inline bool FeatureSet_JsonFormat_Parse(
     absl::string_view name, FeatureSet_JsonFormat* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_JsonFormat>(FeatureSet_JsonFormat_descriptor(), name,
+                                           value);
+}
+enum FeatureSet_EnforceNamingStyle : int {
+  FeatureSet_EnforceNamingStyle_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
+  FeatureSet_EnforceNamingStyle_STYLE2024 = 1,
+  FeatureSet_EnforceNamingStyle_STYLE_LEGACY = 2,
+};
+
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[];
+inline constexpr FeatureSet_EnforceNamingStyle FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MIN =
+    static_cast<FeatureSet_EnforceNamingStyle>(0);
+inline constexpr FeatureSet_EnforceNamingStyle FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MAX =
+    static_cast<FeatureSet_EnforceNamingStyle>(2);
+inline bool FeatureSet_EnforceNamingStyle_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE = 2 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnforceNamingStyle_descriptor();
+template <typename T>
+const std::string& FeatureSet_EnforceNamingStyle_Name(T value) {
+  static_assert(std::is_same<T, FeatureSet_EnforceNamingStyle>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to EnforceNamingStyle_Name().");
+  return FeatureSet_EnforceNamingStyle_Name(static_cast<FeatureSet_EnforceNamingStyle>(value));
+}
+template <>
+inline const std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 2>(
+      static_cast<int>(value));
+}
+inline bool FeatureSet_EnforceNamingStyle_Parse(
+    absl::string_view name, FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_EnforceNamingStyle>(FeatureSet_EnforceNamingStyle_descriptor(), name,
                                            value);
 }
 enum GeneratedCodeInfo_Annotation_Semantic : int {
@@ -2366,6 +2404,27 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       absl::string_view name, JsonFormat* PROTOBUF_NONNULL value) {
     return FeatureSet_JsonFormat_Parse(name, value);
   }
+  using EnforceNamingStyle = FeatureSet_EnforceNamingStyle;
+  static constexpr EnforceNamingStyle ENFORCE_NAMING_STYLE_UNKNOWN = FeatureSet_EnforceNamingStyle_ENFORCE_NAMING_STYLE_UNKNOWN;
+  static constexpr EnforceNamingStyle STYLE2024 = FeatureSet_EnforceNamingStyle_STYLE2024;
+  static constexpr EnforceNamingStyle STYLE_LEGACY = FeatureSet_EnforceNamingStyle_STYLE_LEGACY;
+  static inline bool EnforceNamingStyle_IsValid(int value) {
+    return FeatureSet_EnforceNamingStyle_IsValid(value);
+  }
+  static constexpr EnforceNamingStyle EnforceNamingStyle_MIN = FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MIN;
+  static constexpr EnforceNamingStyle EnforceNamingStyle_MAX = FeatureSet_EnforceNamingStyle_EnforceNamingStyle_MAX;
+  static constexpr int EnforceNamingStyle_ARRAYSIZE = FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL EnforceNamingStyle_descriptor() {
+    return FeatureSet_EnforceNamingStyle_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& EnforceNamingStyle_Name(T value) {
+    return FeatureSet_EnforceNamingStyle_Name(value);
+  }
+  static inline bool EnforceNamingStyle_Parse(
+      absl::string_view name, EnforceNamingStyle* PROTOBUF_NONNULL value) {
+    return FeatureSet_EnforceNamingStyle_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
   enum : int {
@@ -2375,6 +2434,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     kUtf8ValidationFieldNumber = 4,
     kMessageEncodingFieldNumber = 5,
     kJsonFormatFieldNumber = 6,
+    kEnforceNamingStyleFieldNumber = 7,
   };
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_field_presence() const;
@@ -2440,6 +2500,17 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   private:
   ::google::protobuf::FeatureSet_JsonFormat _internal_json_format() const;
   void _internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value);
+
+  public:
+  // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
+  bool has_enforce_naming_style() const;
+  void clear_enforce_naming_style() ;
+  ::google::protobuf::FeatureSet_EnforceNamingStyle enforce_naming_style() const;
+  void set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
+
+  private:
+  ::google::protobuf::FeatureSet_EnforceNamingStyle _internal_enforce_naming_style() const;
+  void _internal_set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -2623,8 +2694,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 6,
-                                   6, 0,
+  static const ::google::protobuf::internal::TcParseTable<3, 7,
+                                   7, 0,
                                    2>
       _table_;
 
@@ -2652,6 +2723,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     int utf8_validation_;
     int message_encoding_;
     int json_format_;
+    int enforce_naming_style_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -20222,6 +20294,37 @@ inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet
                                           _impl_.json_format_ = value;
 }
 
+// optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
+inline bool FeatureSet::has_enforce_naming_style() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  return value;
+}
+inline void FeatureSet::clear_enforce_naming_style() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.enforce_naming_style_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000040u;
+}
+inline ::google::protobuf::FeatureSet_EnforceNamingStyle FeatureSet::enforce_naming_style() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.enforce_naming_style)
+  return _internal_enforce_naming_style();
+}
+inline void FeatureSet::set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value) {
+  _internal_set_enforce_naming_style(value);
+  _impl_._has_bits_[0] |= 0x00000040u;
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.enforce_naming_style)
+}
+inline ::google::protobuf::FeatureSet_EnforceNamingStyle FeatureSet::_internal_enforce_naming_style() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::FeatureSet_EnforceNamingStyle>(_impl_.enforce_naming_style_);
+}
+inline void FeatureSet::_internal_set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_));
+                                          _impl_.enforce_naming_style_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // FeatureSetDefaults_FeatureSetEditionDefault
@@ -21282,6 +21385,12 @@ struct is_proto_enum<::google::protobuf::FeatureSet_JsonFormat> : std::true_type
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_JsonFormat>() {
   return ::google::protobuf::FeatureSet_JsonFormat_descriptor();
+}
+template <>
+struct is_proto_enum<::google::protobuf::FeatureSet_EnforceNamingStyle> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_EnforceNamingStyle>() {
+  return ::google::protobuf::FeatureSet_EnforceNamingStyle_descriptor();
 }
 template <>
 struct is_proto_enum<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic> : std::true_type {};

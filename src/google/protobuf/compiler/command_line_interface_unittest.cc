@@ -2011,6 +2011,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2023,6 +2024,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2035,7 +2037,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features {}
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
                 }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2023
@@ -2063,6 +2065,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2075,6 +2078,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2086,6 +2090,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                  }
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                }
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
                   }
                   fixed_features {}
                 }
@@ -2116,6 +2133,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2128,6 +2146,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2139,6 +2158,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                  }
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                }
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
                   }
                   fixed_features {}
                 }
