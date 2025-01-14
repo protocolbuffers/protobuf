@@ -97,7 +97,7 @@ def _rust_proto_library_impl(ctx):
     dep_variant_info = rust_proto_info.dep_variant_infos[0]
     crate_info = dep_variant_info.crate_info
 
-    # Change the crate name from the hame of the proto_library to the name of the rust_proto_library.
+    # Change the crate name from the name of the proto_library to the name of the rust_proto_library.
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the
     # rust_proto_library (although the name of rust_proto_libraries is consistently ending with
@@ -109,7 +109,12 @@ def _rust_proto_library_impl(ctx):
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     fields = {field: getattr(crate_info, field) for field in dir(crate_info)}
     pkg, name = _user_visible_label(ctx).rsplit(":")
-    label = struct(**{"name": name, "pkg": pkg})
+
+    # Construct a label and compute the crate name.
+    # Package and workspace root are only relevant when 1P crate renaming is enabled.
+    # The current implementation of crate renaming supports only monorepos which
+    # means that it will only rename wen label.workspace_root is empty.
+    label = struct(**{"name": name, "package": pkg, "workspace_root": ""})
     fields["name"] = label_to_crate_name(ctx, label, toolchain)
 
     # These two fields present on the dir(crate_info) but break on some versions of Bazel when
