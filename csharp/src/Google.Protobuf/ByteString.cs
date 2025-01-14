@@ -296,19 +296,21 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a CodedInputStream from this ByteString's data.
         /// </summary>
-        public CodedInputStream CreateCodedInput()
+        public CodedInputStream CreateCodedInput() => CreateCodedInput(CodedInputStream.DefaultSizeLimit, CodedInputStream.DefaultRecursionLimit);
+
+        internal CodedInputStream CreateCodedInput(int sizeLimit, int recursionLimit)
         {
             // We trust CodedInputStream not to reveal the provided byte array or modify it
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) && segment.Count == bytes.Length)
             {
                 // Fast path. ByteString was created with a complete array.
-                return new CodedInputStream(segment.Array, segment.Offset, segment.Count);
+                return new CodedInputStream(segment.Array, segment.Offset, segment.Count, sizeLimit, recursionLimit);
             }
             else
             {
                 // Slow path. BytesString is not an array, or is a slice of an array.
                 // Convert memory and pass result to WriteRawBytes.
-                return new CodedInputStream(bytes.ToArray());
+                return new CodedInputStream(bytes.ToArray(), 0, bytes.Length, sizeLimit, recursionLimit);
             }
         }
 
