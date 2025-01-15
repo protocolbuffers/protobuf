@@ -28,16 +28,17 @@ bootstrap_cc_library(
     bootstrap_deps = [
         "//upb_generator:common",
         "//upb_generator:file_layout",
-        "//upb_generator:plugin",
-        "//upb_generator:plugin_upb_proto",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:reflection",
+        "//upb_generator:plugin",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler:plugin",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -49,7 +50,9 @@ bootstrap_cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
     ],
 )
 
@@ -115,13 +118,19 @@ bootstrap_cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler:plugin",
         "//upb:base",
+        "//upb:mem",
         "//upb:port",
         "//upb_generator/common:names",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
     ],
 )
 

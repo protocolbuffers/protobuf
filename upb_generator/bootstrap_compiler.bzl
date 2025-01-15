@@ -21,6 +21,7 @@ _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_p
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
+    "//src/google/protobuf/compiler:__pkg__",
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
