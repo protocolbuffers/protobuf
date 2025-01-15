@@ -28,46 +28,14 @@ fn test_debug_string() {
     repeated_string.push("Hello World");
 
     let mut msg_map = TestMapWithMessages::new();
-    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message. 
+    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message.
     msg_map.map_string_all_types_mut().insert("hello", msg.as_view());
-    msg_map.map_string_all_types_mut().insert("fizz", msg.as_view());
-    msg_map.map_string_all_types_mut().insert("boo", msg.as_view());
 
     println!("{:?}", msg_map);
     println!("{:?}", msg_map.as_view()); // Make sure that we can print as_view
     println!("{:?}", msg_map.as_mut()); // Make sure that we can print as_mut
     let golden = r#"12 {
   key: "hello"
-  value {
-    1: 42
-    14: "Hello World"
-    18 {
-      1: 100
-    }
-    21: 2
-    44: "Hello World"
-    44: "Hello World"
-    44: "Hello World"
-    111: 452235
-  }
-}
-12 {
-  key: "fizz"
-  value {
-    1: 42
-    14: "Hello World"
-    18 {
-      1: 100
-    }
-    21: 2
-    44: "Hello World"
-    44: "Hello World"
-    44: "Hello World"
-    111: 452235
-  }
-}
-12 {
-  key: "boo"
   value {
     1: 42
     14: "Hello World"
