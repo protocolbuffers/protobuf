@@ -101,22 +101,9 @@ ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
 }
 
 template <typename T>
-absl::StatusOr<T> Parse(absl::string_view bytes) {
-  T message;
-  auto* arena = hpb::interop::upb::GetArena(&message);
-  upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::interop::upb::GetMiniTable(&message),
-                 /* extreg= */ nullptr, /* options= */ 0, arena);
-  if (status == kUpb_DecodeStatus_Ok) {
-    return message;
-  }
-  return MessageDecodeError(status);
-}
-
-template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry) {
+                        const ::hpb::ExtensionRegistry& extension_registry =
+                            hpb::ExtensionRegistry::generated_registry()) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
