@@ -118,6 +118,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
@@ -419,6 +420,14 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
   )cc");
 }
 
+void SingularMessage::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |length|4B| |payload...|
+  p->Emit({{"tag_size", kV2SingularLengthPrefixedFieldTagSize}},
+          R"cc(
+            total_size += $tag_size$ + this_.$field_$->ByteSizeV2Message();
+          )cc");
+}
+
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
@@ -713,6 +722,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizeV2(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
 
@@ -995,6 +1005,15 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
           total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
         }
       )cc");
+}
+
+void RepeatedMessage::GenerateByteSizeV2(io::Printer* p) const {
+  // |tag|1B| |field_number|4B| |count|4B| |length|4B| |payload|...
+  p->Emit({{"tag_size", kV2RepeatedFieldTagSize}, {"length", kV2LengthSize}},
+          R"cc(
+            total_size += ::_pbi::WireFormatLite::RepeatedMessageByteSizeV2(
+                $tag_size$, this_._internal$_weak$_$name$());
+          )cc");
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

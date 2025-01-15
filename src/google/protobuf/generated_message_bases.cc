@@ -48,6 +48,7 @@ size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);
 }
 
+
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(const MessageLite& msg,
                                               ::uint8_t* target,
                                               io::EpsCopyOutputStream* stream) {
