@@ -647,9 +647,9 @@ class PROTOBUF_EXPORT Reflection final {
   // Returns a view into the contents of a string field. "scratch" is used to
   // flatten bytes if it is non-contiguous. The lifetime of absl::string_view is
   // either tied to "message" (contiguous) or "scratch" (otherwise).
-  absl::string_view GetStringView(
-      const Message& message, const FieldDescriptor* field,
-      ScratchSpace& scratch ABSL_ATTRIBUTE_LIFETIME_BOUND) const;
+  absl::string_view GetStringView(const Message& message,
+                                  const FieldDescriptor* field,
+                                  ScratchSpace& scratch) const;
 
 
   // Singular field mutators -----------------------------------------
