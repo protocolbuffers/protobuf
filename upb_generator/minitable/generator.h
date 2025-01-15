@@ -5,10 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "google/protobuf/compiler/code_generator.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/plugin.h"
 
 namespace upb {
 namespace generator {
@@ -24,7 +24,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 void WriteMiniTableMultipleSources(const DefPoolPair& pools,
                                    upb::FileDefPtr file,
                                    const MiniTableOptions& options,
-                                   Plugin* plugin);
+                                   google::protobuf::compiler::GeneratorContext* context);
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
                           const MiniTableOptions& options, Output& output);
 

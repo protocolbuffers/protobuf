@@ -104,7 +104,6 @@ cc_test(
     ],
     deps = [
         ":defaults_test_embedded",
-        "//:protobuf",
         "//java/core:java_features_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:cpp_features_cc_proto",
@@ -310,7 +309,7 @@ cc_test(
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_editions_cc_proto",
         ":test_messages_proto3_editions_cc_proto",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:test_textproto",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

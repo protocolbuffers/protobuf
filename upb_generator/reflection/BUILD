@@ -44,7 +44,10 @@ cc_library(
     deps = [
         ":names",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:plugin",
         "//upb:mem",
+        "//upb:port",
         "//upb:reflection",
         "//upb/util:def_to_proto",
         "//upb_generator:common",
