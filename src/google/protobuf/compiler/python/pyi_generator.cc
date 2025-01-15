@@ -380,8 +380,19 @@ std::string PyiGenerator::GetFieldType(
   return "";
 }
 
-void PyiGenerator::PrintMessage(
-    const Descriptor& message_descriptor, bool is_nested) const {
+std::string PyiGenerator::ExtraInitTypes(
+    const absl::string_view type_name) const {
+  if (type_name == "_timestamp_pb2.Timestamp") {
+    return "datetime.datetime, ";
+  } else if (type_name == "_timestamp_pb2.Duration") {
+    return "datetime.timedelta, ";
+  } else {
+    return "";
+  }
+}
+
+void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
+                                bool is_nested) const {
   if (!is_nested) {
     printer_->Print("\n");
   }
@@ -512,9 +523,11 @@ void PyiGenerator::PrintMessage(
         printer_->Print("_Iterable[");
       }
       if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        printer_->Print(
-            "_Union[$type_name$, _Mapping]", "type_name",
-            GetFieldType(*field_des, message_descriptor));
+        const auto& type_name = GetFieldType(*field_des, message_descriptor);
+        const auto& extra_init_types = ExtraInitTypes(type_name);
+        printer_->Print("_Union[$extra_init_types$$type_name$, _Mapping]",
+                        "extra_init_types", extra_init_types, "type_name",
+                        type_name);
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
           printer_->Print("_Union[$type_name$, str]", "type_name",
