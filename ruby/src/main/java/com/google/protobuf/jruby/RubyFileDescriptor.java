@@ -100,6 +100,28 @@ public class RubyFileDescriptor extends RubyObject {
         true);
   }
 
+  /*
+   * call-seq:
+   *     FileDescriptor.to_proto => FileDescriptorProto
+   *
+   * Returns the `FileDescriptorProto` of this `FileDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor fileDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FileDescriptorProto"));
+    RubyClass msgClass = (RubyClass) fileDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            fileDescriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   private static RubyClass cFileDescriptor;
 
   private FileDescriptor fileDescriptor;

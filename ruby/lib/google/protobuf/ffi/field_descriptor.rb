@@ -225,6 +225,15 @@ module Google
         end
       end
 
+      def to_proto
+        @to_proto ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.field_to_proto(self, size_ptr, temporary_arena)
+          Google::Protobuf::FieldDescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+        end
+      end
+
       private
 
       def initialize(field_def, descriptor_pool)
@@ -325,6 +334,7 @@ module Google
       attach_function :get_number,                 :upb_FieldDef_Number,                [FieldDescriptor], :uint32_t
       attach_function :get_type,                   :upb_FieldDef_Type,                  [FieldDescriptor], FieldType
       attach_function :file_def_by_raw_field_def,  :upb_FieldDef_File,                  [:pointer], :FileDef
+      attach_function :field_to_proto,             :FieldDescriptor_serialized_to_proto,[FieldDescriptor, :pointer, Internal::Arena], :pointer
     end
   end
 end
