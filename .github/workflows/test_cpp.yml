@@ -93,7 +93,11 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          bazel: >-
+            test --copt="-Wno-error=attributes"
+            //pkg/... //src/... @com_google_protobuf_examples//...
+            //third_party/utf8_range/...
+            //conformance:conformance_framework_tests
 
   linux-release:
     strategy:

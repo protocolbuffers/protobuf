@@ -27,18 +27,24 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        type: [ Pure, C++]
+        type: [Pure, C++]
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
           - type: Pure
-            targets: //python/... //python:python_version_test
-            flags: --define=use_fast_cpp_protos=false
+            targets: //python/... //python:python_version_test //python:python_api_test
+            flags: >-
+              --define=use_fast_cpp_protos=false
+              --test_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+              --test_env=PROTOCOL_BUFFERS_EXPECTED_PYTHON_BACKEND=python
           - type: C++
-            targets: //python/... //python:python_version_test
-            flags: --define=use_fast_cpp_protos=true
+            targets: //python/... //python:python_version_test //python:python_api_test
+            flags: >-
+              --define=use_fast_cpp_protos=true
+              --test_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+              --test_env=PROTOCOL_BUFFERS_EXPECTED_PYTHON_BACKEND=cpp
           - type: C++
             version: aarch64
-            targets: //python/... //python:aarch64_test
+            targets: //python/... //python:aarch64_test //python:python_api_test
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8
@@ -77,10 +83,16 @@ jobs:
         version: [ "3.12", "3.13" ]
         include:
           - type: Pure
-            targets: //python/... //python:python_version_test
+            targets: //python/... //python:python_version_test //python:python_api_test
+            flags: >-
+              --test_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+              --test_env=PROTOCOL_BUFFERS_EXPECTED_PYTHON_BACKEND=python
           - type: C++
-            targets: //python/... //python:python_version_test
-            flags: --define=use_fast_cpp_protos=true
+            targets: //python/... //python:python_version_test //python:python_api_test
+            flags: >-
+              --define=use_fast_cpp_protos=true
+              --test_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+              --test_env=PROTOCOL_BUFFERS_EXPECTED_PYTHON_BACKEND=cpp
           - version: "3.13"
             continuous-only: true
 
