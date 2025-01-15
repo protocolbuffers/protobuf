@@ -162,6 +162,26 @@ ruby_test(
     ],
 )
 
+ruby_test(
+    name = "service_test",
+    srcs = ["service_test.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
+    name = "memory_test",
+    srcs = ["memory_test.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([
