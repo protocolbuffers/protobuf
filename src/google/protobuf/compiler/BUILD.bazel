@@ -251,6 +251,7 @@ cc_binary(
     name = "protoc",
     srcs = ["main.cc"],
     copts = COPTS,
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = [":protoc_lib"],
 )
