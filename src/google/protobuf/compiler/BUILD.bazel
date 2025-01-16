@@ -14,7 +14,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
 
 proto_library(
@@ -205,9 +205,6 @@ cc_library(
 
 cc_library(
     name = "protoc_lib",
-    srcs = [
-        "main.cc",
-    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -250,12 +247,28 @@ cc_binary(
     ],
 )
 
-# Note: this is an alias for now. In the future, this rule will become the
-# cc_binary for protoc, and //:protoc will become an alias.
-alias(
+cc_binary(
     name = "protoc",
-    actual = "//:protoc",
+    src = ["main.cc"],
+    copts = COPTS,
     visibility = ["//visibility:public"],
+    deps = [":protoc_lib"],
+)
+
+cc_binary(
+    name = "protoc_static",
+    src = ["main.cc"],
+    copts = COPTS,
+    features = select({
+        # This isn't possible on mac because there is no static library for lcrt0.o
+        "@platforms//os:osx": [],
+        "//build_defs:config_osx": [],
+        # When cross-compiling we need to statically link all C++ libraries.
+        "//conditions:default": ["fully_static_link"],
+    }),
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
 # Test that the protoc binary is built for the correct architecture.
