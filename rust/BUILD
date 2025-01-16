@@ -2,7 +2,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_proc_macro", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//rust:dist.bzl", "pkg_cross_compiled_binaries")
 
@@ -91,6 +91,7 @@ rust_library(
     crate_root = "shared.rs",
     proc_macro_deps = [
         "@crate_index//:paste",
+        ":protobuf_proc_macro",
     ],
     rustc_flags = [
         "--cfg=upb_kernel",
@@ -137,6 +138,7 @@ rust_library(
     crate_root = "shared.rs",
     proc_macro_deps = [
         "@crate_index//:paste",
+        ":protobuf_proc_macro",
     ],
     rustc_flags = [
         "--cfg=cpp_kernel",
@@ -212,6 +214,16 @@ rust_library(
     deps = [
         ":protobuf_upb",
         "@crate_index//:googletest",
+    ],
+)
+
+rust_proc_macro(
+    name = "protobuf_proc_macro",
+    srcs = ["proto_proc_macro.rs"],
+    deps = [
+        "@crate_index//:proc_macro2",
+        "@crate_index//:quote",
+        "@crate_index//:syn",
     ],
 )
 

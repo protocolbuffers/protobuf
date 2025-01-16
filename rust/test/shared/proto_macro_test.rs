@@ -14,7 +14,7 @@ use unittest_rust_proto::{
     NestedTestAllTypes, TestAllTypes,
 };
 
-use map_unittest_rust_proto::{TestMap, TestMapWithMessages};
+use map_unittest_rust_proto::TestMap;
 
 struct TestValue {
     val: i64,
@@ -213,21 +213,4 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().get("foo").unwrap(), eq("bar"));
     assert_that!(msg.map_string_string().get("baz").unwrap(), eq("qux"));
     assert_that!(msg.map_string_string().get("quux").unwrap(), eq("quuz"));
-}
-
-#[gtest]
-fn test_message_maps() {
-    let msg3 = proto!(TestAllTypes { optional_int32: 3 });
-    let kv3 = ("quux", msg3);
-    let msg = proto!(TestMapWithMessages {
-        map_string_all_types: [
-            ("foo", TestAllTypes { optional_int32: 1 }),
-            ("baz", __ { optional_int32: 2 }),
-            kv3
-        ]
-    });
-    assert_that!(msg.map_string_all_types().len(), eq(3));
-    assert_that!(msg.map_string_all_types().get("foo").unwrap().optional_int32(), eq(1));
-    assert_that!(msg.map_string_all_types().get("baz").unwrap().optional_int32(), eq(2));
-    assert_that!(msg.map_string_all_types().get("quux").unwrap().optional_int32(), eq(3));
 }

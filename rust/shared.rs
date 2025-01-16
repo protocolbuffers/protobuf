@@ -14,6 +14,8 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
+pub use protobuf_proc_macro::proto;
+
 pub use crate::codegen_traits::{
     create::Parse,
     interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
@@ -59,7 +61,6 @@ mod r#enum;
 mod map;
 mod optional;
 mod primitive;
-mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
