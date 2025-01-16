@@ -249,7 +249,7 @@ cc_binary(
 
 cc_binary(
     name = "protoc",
-    src = ["main.cc"],
+    srcs = ["main.cc"],
     copts = COPTS,
     visibility = ["//visibility:public"],
     deps = [":protoc_lib"],
@@ -257,7 +257,7 @@ cc_binary(
 
 cc_binary(
     name = "protoc_static",
-    src = ["main.cc"],
+    srcs = ["main.cc"],
     copts = COPTS,
     features = select({
         # This isn't possible on mac because there is no static library for lcrt0.o
