@@ -3093,6 +3093,27 @@ void BinaryAndJsonConformanceSuiteImpl<
       })",
       "repeated_timestamp: {seconds: -62135596800}"
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
+  RunValidJsonTest("TimestampEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000Z"})",
+                   "optional_timestamp: {seconds: 0}");
+  RunValidJsonTest("TimestampNanoAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000000001Z"})",
+                   "optional_timestamp: {seconds: 0 nanos: 1}");
+  RunValidJsonTest("TimestampNanoBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:59.999999999Z"})",
+                   "optional_timestamp: {seconds: -1 nanos: 999999999}");
+  RunValidJsonTest("TimestampLittleAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:01.000000001Z"})",
+                   "optional_timestamp: {seconds: 1 nanos: 1}");
+  RunValidJsonTest("TimestampLittleBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:58.999999999Z"})",
+                   "optional_timestamp: {seconds: -2 nanos: 999999999}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsAfterEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:10.500Z"})",
+                   "optional_timestamp: {seconds: 10 nanos: 500000000}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:49.500Z"})",
+                   "optional_timestamp: {seconds: -11 nanos: 500000000}");
   RunValidJsonTest("TimestampLeap", REQUIRED,
                    R"({"optionalTimestamp": "1993-02-10T00:00:00.000Z"})",
                    "optional_timestamp: {seconds: 729302400}");
