@@ -640,3 +640,28 @@ message TestAllRequiredTypesProto2 {
     ];
   }
 }
+
+message TestLargeOneof {
+  message A1 {
+  }
+
+  message A2 {
+  }
+
+  message A3 {
+  }
+
+  message A4 {
+  }
+
+  message A5 {
+  }
+
+  oneof large_oneof {
+    A1 a1 = 1;
+    A2 a2 = 2;
+    A3 a3 = 3;
+    A4 a4 = 4;
+    A5 a5 = 5;
+  }
+}
