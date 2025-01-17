@@ -478,9 +478,6 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
         }},
        {"field_lookup_table",
         [&] {
-          // A bookkeeping variable used as a crude heuristic to generating
-          // 'readable' output code.
-          int line_entries = 0;
           for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
             p->Emit(
                 {
@@ -491,26 +488,14 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
                 "$lower$, $upper$, $size$,\n");
 
             for (SkipEntry16 se16 : entry_block.entries) {
-              if (line_entries == 0) {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        "$skipmap$, $offset$,");
-                ++line_entries;
-              } else if (line_entries < 5) {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        " $skipmap$, $offset$,");
-                ++line_entries;
-              } else {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        "$skipmap$, $offset$,\n");
-                line_entries = 0;
-              }
+              p->Emit({{"skipmap", se16.skipmap},
+                       {"offset", se16.field_entry_offset}},
+                      R"cc(
+                        $skipmap$, $offset$,
+                      )cc");
             }
           }
 
-          if (line_entries) p->Emit("\n");
           // The last entry of the skipmap are all 1's.
           p->Emit("65535, 65535\n");
         }},

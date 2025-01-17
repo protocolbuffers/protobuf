@@ -5069,8 +5069,9 @@ ExtensionRangeOptions::_table_ = {
      {16058, 63, 2, PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_)}},
   }}, {{
     50, 0, 1,
-    65534, 2,999, 0, 1,
-     65534, 3,
+    65534, 2,
+    999, 0, 1,
+    65534, 3,
     65535, 65535
   }}, {{
     // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
@@ -8233,8 +8234,9 @@ FileOptions::_table_ = {
      {504, 19, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)}},
   }}, {{
     36, 0, 1,
-    48324, 12,999, 0, 1,
-     65534, 20,
+    48324, 12,
+    999, 0, 1,
+    65534, 20,
     65535, 65535
   }}, {{
     // optional string java_package = 1;
@@ -11830,8 +11832,9 @@ ServiceOptions::_table_ = {
      {16058, 63, 1, PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.uninterpreted_option_)}},
   }}, {{
     33, 0, 1,
-    65532, 0,999, 0, 1,
-     65534, 2,
+    65532, 0,
+    999, 0, 1,
+    65534, 2,
     65535, 65535
   }}, {{
     // optional bool deprecated = 33 [default = false];
@@ -12207,8 +12210,9 @@ MethodOptions::_table_ = {
      {16058, 63, 1, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_)}},
   }}, {{
     33, 0, 1,
-    65528, 0,999, 0, 1,
-     65534, 3,
+    65528, 0,
+    999, 0, 1,
+    65534, 3,
     65535, 65535
   }}, {{
     // optional bool deprecated = 33 [default = false];
