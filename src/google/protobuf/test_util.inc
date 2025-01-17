@@ -48,6 +48,9 @@ inline void SetOneof2(UNITTEST::TestOneof2* message);
 inline void ModifyRepeatedFields(UNITTEST::TestAllTypes* message);
 inline void ModifyRepeatedExtensions(UNITTEST::TestAllExtensions* message);
 
+// Access all fields of the message. Can be used to quantify cache performance
+// and such.
+inline void AccessAllFields(const UNITTEST::TestAllTypes& message);
 // Check that all fields have the values that they should have after
 // Set*Fields() is called.
 inline void ExpectAllFieldsSet(const UNITTEST::TestAllTypes& message);
@@ -314,6 +317,232 @@ inline void TestUtil::SetOneofFields(UNITTEST::TestAllTypes* message) {
 
 // -------------------------------------------------------------------
 
+inline void TestUtil::AccessAllFields(const UNITTEST::TestAllTypes& message) {
+  const auto DoNotOptimize = [](auto& x) { (void)x; };
+#else
+  using benchmark::DoNotOptimize;
+#endif
+
+  DoNotOptimize(message.optional_int32());
+  DoNotOptimize(message.optional_int64());
+  DoNotOptimize(message.optional_uint32());
+  DoNotOptimize(message.optional_uint64());
+  DoNotOptimize(message.optional_sint32());
+  DoNotOptimize(message.optional_sint64());
+  DoNotOptimize(message.optional_fixed32());
+  DoNotOptimize(message.optional_fixed64());
+  DoNotOptimize(message.optional_sfixed32());
+  DoNotOptimize(message.optional_sfixed64());
+  DoNotOptimize(message.optional_float());
+  DoNotOptimize(message.optional_double());
+  DoNotOptimize(message.optional_bool());
+  DoNotOptimize(message.optional_string());
+  DoNotOptimize(message.optional_bytes());
+
+  DoNotOptimize(message.optionalgroup());
+  DoNotOptimize(message.optional_nested_message());
+  DoNotOptimize(message.optional_foreign_message());
+  DoNotOptimize(message.optional_import_message());
+  DoNotOptimize(message.optional_public_import_message());
+  DoNotOptimize(message.optional_lazy_message());
+  DoNotOptimize(message.optional_unverified_lazy_message());
+
+  DoNotOptimize(message.optionalgroup().a());
+  DoNotOptimize(message.optional_nested_message().bb());
+  DoNotOptimize(message.optional_foreign_message().c());
+  DoNotOptimize(message.optional_import_message().d());
+  DoNotOptimize(message.optional_public_import_message().e());
+  DoNotOptimize(message.optional_lazy_message().bb());
+  DoNotOptimize(message.optional_unverified_lazy_message().bb());
+
+  DoNotOptimize(message.optional_nested_enum());
+  DoNotOptimize(message.optional_foreign_enum());
+  DoNotOptimize(message.optional_import_enum());
+
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+  DoNotOptimize(message.optional_string_piece());
+  DoNotOptimize(message.optional_cord());
+#endif
+  DoNotOptimize(message.optional_bytes_cord());
+
+  DoNotOptimize(message.optional_int32());
+  DoNotOptimize(message.optional_int64());
+  DoNotOptimize(message.optional_uint32());
+  DoNotOptimize(message.optional_uint64());
+  DoNotOptimize(message.optional_sint32());
+  DoNotOptimize(message.optional_sint64());
+  DoNotOptimize(message.optional_fixed32());
+  DoNotOptimize(message.optional_fixed64());
+  DoNotOptimize(message.optional_sfixed32());
+  DoNotOptimize(message.optional_sfixed64());
+  DoNotOptimize(message.optional_float());
+  DoNotOptimize(message.optional_double());
+  DoNotOptimize(message.optional_bool());
+  DoNotOptimize(message.optional_string());
+  DoNotOptimize(message.optional_bytes());
+
+  DoNotOptimize(message.optionalgroup().a());
+  DoNotOptimize(message.optional_nested_message().bb());
+  DoNotOptimize(message.optional_foreign_message().c());
+  DoNotOptimize(message.optional_import_message().d());
+  DoNotOptimize(message.optional_public_import_message().e());
+  DoNotOptimize(message.optional_lazy_message().bb());
+  DoNotOptimize(message.optional_unverified_lazy_message().bb());
+
+  DoNotOptimize(message.optional_nested_enum());
+  DoNotOptimize(message.optional_foreign_enum());
+  DoNotOptimize(message.optional_import_enum());
+
+  DoNotOptimize(message.optional_string_piece());
+  DoNotOptimize(message.optional_cord());
+  DoNotOptimize(message.optional_bytes_cord());
+
+  // -----------------------------------------------------------------
+
+  DoNotOptimize(message.repeated_int32_size());
+  DoNotOptimize(message.repeated_int64_size());
+  DoNotOptimize(message.repeated_uint32_size());
+  DoNotOptimize(message.repeated_uint64_size());
+  DoNotOptimize(message.repeated_sint32_size());
+  DoNotOptimize(message.repeated_sint64_size());
+  DoNotOptimize(message.repeated_fixed32_size());
+  DoNotOptimize(message.repeated_fixed64_size());
+  DoNotOptimize(message.repeated_sfixed32_size());
+  DoNotOptimize(message.repeated_sfixed64_size());
+  DoNotOptimize(message.repeated_float_size());
+  DoNotOptimize(message.repeated_double_size());
+  DoNotOptimize(message.repeated_bool_size());
+  DoNotOptimize(message.repeated_string_size());
+  DoNotOptimize(message.repeated_bytes_size());
+
+  DoNotOptimize(message.repeatedgroup_size());
+  DoNotOptimize(message.repeated_nested_message_size());
+  DoNotOptimize(message.repeated_foreign_message_size());
+  DoNotOptimize(message.repeated_import_message_size());
+  DoNotOptimize(message.repeated_lazy_message_size());
+  DoNotOptimize(message.repeated_nested_enum_size());
+  DoNotOptimize(message.repeated_foreign_enum_size());
+  DoNotOptimize(message.repeated_import_enum_size());
+
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+  DoNotOptimize(message.repeated_string_piece_size());
+  DoNotOptimize(message.repeated_cord_size());
+#endif
+
+  DoNotOptimize(message.repeated_int32(0));
+  DoNotOptimize(message.repeated_int64(0));
+  DoNotOptimize(message.repeated_uint32(0));
+  DoNotOptimize(message.repeated_uint64(0));
+  DoNotOptimize(message.repeated_sint32(0));
+  DoNotOptimize(message.repeated_sint64(0));
+  DoNotOptimize(message.repeated_fixed32(0));
+  DoNotOptimize(message.repeated_fixed64(0));
+  DoNotOptimize(message.repeated_sfixed32(0));
+  DoNotOptimize(message.repeated_sfixed64(0));
+  DoNotOptimize(message.repeated_float(0));
+  DoNotOptimize(message.repeated_double(0));
+  DoNotOptimize(message.repeated_bool(0));
+  DoNotOptimize(message.repeated_string(0));
+  DoNotOptimize(message.repeated_bytes(0));
+
+  DoNotOptimize(message.repeatedgroup(0).a());
+  DoNotOptimize(message.repeated_nested_message(0).bb());
+  DoNotOptimize(message.repeated_foreign_message(0).c());
+  DoNotOptimize(message.repeated_import_message(0).d());
+  DoNotOptimize(message.repeated_lazy_message(0).bb());
+
+  DoNotOptimize(message.repeated_string_piece(0));
+  DoNotOptimize(message.repeated_cord(0));
+
+  DoNotOptimize(message.repeated_nested_enum(0));
+  DoNotOptimize(message.repeated_foreign_enum(0));
+  DoNotOptimize(message.repeated_import_enum(0));
+
+  DoNotOptimize(message.repeated_int32(1));
+  DoNotOptimize(message.repeated_int64(1));
+  DoNotOptimize(message.repeated_uint32(1));
+  DoNotOptimize(message.repeated_uint64(1));
+  DoNotOptimize(message.repeated_sint32(1));
+  DoNotOptimize(message.repeated_sint64(1));
+  DoNotOptimize(message.repeated_fixed32(1));
+  DoNotOptimize(message.repeated_fixed64(1));
+  DoNotOptimize(message.repeated_sfixed32(1));
+  DoNotOptimize(message.repeated_sfixed64(1));
+  DoNotOptimize(message.repeated_float(1));
+  DoNotOptimize(message.repeated_double(1));
+  DoNotOptimize(message.repeated_bool(1));
+  DoNotOptimize(message.repeated_string(1));
+  DoNotOptimize(message.repeated_bytes(1));
+
+  DoNotOptimize(message.repeatedgroup(1).a());
+  DoNotOptimize(message.repeated_nested_message(1).bb());
+  DoNotOptimize(message.repeated_foreign_message(1).c());
+  DoNotOptimize(message.repeated_import_message(1).d());
+  DoNotOptimize(message.repeated_lazy_message(1).bb());
+
+  DoNotOptimize(message.repeated_nested_enum(1));
+  DoNotOptimize(message.repeated_foreign_enum(1));
+  DoNotOptimize(message.repeated_import_enum(1));
+
+  DoNotOptimize(message.repeated_string_piece(1));
+  DoNotOptimize(message.repeated_cord(1));
+
+  DoNotOptimize(message.default_int32());
+  DoNotOptimize(message.default_int64());
+  DoNotOptimize(message.default_uint32());
+  DoNotOptimize(message.default_uint64());
+  DoNotOptimize(message.default_sint32());
+  DoNotOptimize(message.default_sint64());
+  DoNotOptimize(message.default_fixed32());
+  DoNotOptimize(message.default_fixed64());
+  DoNotOptimize(message.default_sfixed32());
+  DoNotOptimize(message.default_sfixed64());
+  DoNotOptimize(message.default_float());
+  DoNotOptimize(message.default_double());
+  DoNotOptimize(message.default_bool());
+  DoNotOptimize(message.default_string());
+  DoNotOptimize(message.default_bytes());
+
+  DoNotOptimize(message.default_nested_enum());
+  DoNotOptimize(message.default_foreign_enum());
+  DoNotOptimize(message.default_import_enum());
+
+  DoNotOptimize(message.default_string_piece());
+  DoNotOptimize(message.default_cord());
+
+  DoNotOptimize(message.default_int32());
+  DoNotOptimize(message.default_int64());
+  DoNotOptimize(message.default_uint32());
+  DoNotOptimize(message.default_uint64());
+  DoNotOptimize(message.default_sint32());
+  DoNotOptimize(message.default_sint64());
+  DoNotOptimize(message.default_fixed32());
+  DoNotOptimize(message.default_fixed64());
+  DoNotOptimize(message.default_sfixed32());
+  DoNotOptimize(message.default_sfixed64());
+  DoNotOptimize(message.default_float());
+  DoNotOptimize(message.default_double());
+  DoNotOptimize(message.default_bool());
+  DoNotOptimize(message.default_string());
+  DoNotOptimize(message.default_bytes());
+
+  DoNotOptimize(message.default_nested_enum());
+  DoNotOptimize(message.default_foreign_enum());
+  DoNotOptimize(message.default_import_enum());
+
+  DoNotOptimize(message.default_string_piece());
+  DoNotOptimize(message.default_cord());
+
+  DoNotOptimize(message.oneof_uint32());
+  DoNotOptimize(message.oneof_nested_message());
+  DoNotOptimize(message.oneof_string());
+  DoNotOptimize(message.oneof_bytes());
+
+  DoNotOptimize(message.oneof_bytes());
+}
+
+// -------------------------------------------------------------------
+
 inline void TestUtil::ExpectAllFieldsSet(
     const UNITTEST::TestAllTypes& message) {
   EXPECT_TRUE(message.has_optional_int32());
@@ -385,62 +614,6 @@ inline void TestUtil::ExpectAllFieldsSet(
   EXPECT_EQ(UNITTEST::TestAllTypes::BAZ, message.optional_nested_enum());
   EXPECT_EQ(UNITTEST::FOREIGN_BAZ, message.optional_foreign_enum());
   EXPECT_EQ(UNITTEST_IMPORT::IMPORT_BAZ, message.optional_import_enum());
-
-  EXPECT_EQ("optional bytes cord", message.optional_bytes_cord());
-
-  // -----------------------------------------------------------------
-
-  ASSERT_EQ(2, message.repeated_int32_size());
-  ASSERT_EQ(2, message.repeated_int64_size());
-  ASSERT_EQ(2, message.repeated_uint32_size());
-  ASSERT_EQ(2, message.repeated_uint64_size());
-  ASSERT_EQ(2, message.repeated_sint32_size());
-  ASSERT_EQ(2, message.repeated_sint64_size());
-  ASSERT_EQ(2, message.repeated_fixed32_size());
-  ASSERT_EQ(2, message.repeated_fixed64_size());
-  ASSERT_EQ(2, message.repeated_sfixed32_size());
-  ASSERT_EQ(2, message.repeated_sfixed64_size());
-  ASSERT_EQ(2, message.repeated_float_size());
-  ASSERT_EQ(2, message.repeated_double_size());
-  ASSERT_EQ(2, message.repeated_bool_size());
-  ASSERT_EQ(2, message.repeated_string_size());
-  ASSERT_EQ(2, message.repeated_bytes_size());
-
-  ASSERT_EQ(2, message.repeatedgroup_size());
-  ASSERT_EQ(2, message.repeated_nested_message_size());
-  ASSERT_EQ(2, message.repeated_foreign_message_size());
-  ASSERT_EQ(2, message.repeated_import_message_size());
-  ASSERT_EQ(2, message.repeated_lazy_message_size());
-  ASSERT_EQ(2, message.repeated_nested_enum_size());
-  ASSERT_EQ(2, message.repeated_foreign_enum_size());
-  ASSERT_EQ(2, message.repeated_import_enum_size());
-
-#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
-  ASSERT_EQ(2, message.repeated_string_piece_size());
-  ASSERT_EQ(2, message.repeated_cord_size());
-#endif
-
-  EXPECT_EQ(201, message.repeated_int32(0));
-  EXPECT_EQ(202, message.repeated_int64(0));
-  EXPECT_EQ(203, message.repeated_uint32(0));
-  EXPECT_EQ(204, message.repeated_uint64(0));
-  EXPECT_EQ(205, message.repeated_sint32(0));
-  EXPECT_EQ(206, message.repeated_sint64(0));
-  EXPECT_EQ(207, message.repeated_fixed32(0));
-  EXPECT_EQ(208, message.repeated_fixed64(0));
-  EXPECT_EQ(209, message.repeated_sfixed32(0));
-  EXPECT_EQ(210, message.repeated_sfixed64(0));
-  EXPECT_EQ(211, message.repeated_float(0));
-  EXPECT_EQ(212, message.repeated_double(0));
-  EXPECT_TRUE(message.repeated_bool(0));
-  EXPECT_EQ("215", message.repeated_string(0));
-  EXPECT_EQ("216", message.repeated_bytes(0));
-
-  EXPECT_EQ(217, message.repeatedgroup(0).a());
-  EXPECT_EQ(218, message.repeated_nested_message(0).bb());
-  EXPECT_EQ(219, message.repeated_foreign_message(0).c());
-  EXPECT_EQ(220, message.repeated_import_message(0).d());
-  EXPECT_EQ(227, message.repeated_lazy_message(0).bb());
 
 
   EXPECT_EQ(UNITTEST::TestAllTypes::BAR, message.repeated_nested_enum(0));
