@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::{self, Debug};
 use std::iter;
 use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
@@ -12,13 +13,12 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
-use std::fmt::{self, Debug};
 
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
+    __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
-    __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
 /// Views the elements in a `repeated` field of `T`.
@@ -379,7 +379,10 @@ impl<T> Proxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
+    type View<'msg>
+        = RepeatedView<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> SealedInternal for Repeated<T> where T: ProxiedInRepeated {}
@@ -399,7 +402,10 @@ impl<T> MutProxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
+    type Mut<'msg>
+        = RepeatedMut<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> AsMut for Repeated<T>

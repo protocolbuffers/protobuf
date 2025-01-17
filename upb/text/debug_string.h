@@ -27,7 +27,7 @@ extern "C" {
  * encode.h. |mt| should correspond to the |msg|'s minitable.
  *
  * Output is placed in the given buffer, and always NULL-terminated.  The output
- * size (excluding NULL) iss returned.  This means that a return value >= |size|
+ * size (excluding NULL) is returned.  This means that a return value >= |size|
  * implies that the output was truncated.  (These are the same semantics as
  * snprintf()). */
 UPB_API size_t upb_DebugString(const upb_Message* msg, const upb_MiniTable* mt,

@@ -452,6 +452,18 @@ TEST(MapFieldTest, ConstInit) {
   EXPECT_EQ(field.size(), 0);
 }
 
+TEST(MapFieldTest, MutableMapDoesNotAllocatePayload) {
+  struct MaybePayload : MapFieldBase {
+    // Use a derived type to get access to the protected method.
+    // We steal the function pointer here to use below to inspect the instance.
+    static constexpr auto getter() { return &MaybePayload::maybe_payload; }
+  };
+  MyMapField field;
+  EXPECT_FALSE((field.*MaybePayload::getter())());
+  field.MutableMap();
+  EXPECT_FALSE((field.*MaybePayload::getter())());
+}
+
 
 }  // namespace internal
 }  // namespace protobuf

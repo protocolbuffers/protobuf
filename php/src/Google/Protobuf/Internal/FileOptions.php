@@ -173,6 +173,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     protected $ruby_package = null;
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
      */
@@ -274,6 +277,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           determining the ruby package.
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here.
      *           See the documentation for the "Options" section above.
@@ -1060,6 +1066,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
      * @return \Google\Protobuf\Internal\FeatureSet|null
@@ -1081,6 +1090,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
      * @param \Google\Protobuf\Internal\FeatureSet $var

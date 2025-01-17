@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 enum {
-  /* If set, strings will alias the input buffer instead of copying into the
-   * arena. */
+  /* If set, strings and unknown fields will alias the input buffer instead of
+   * copying into the arena. */
   kUpb_DecodeOption_AliasString = 1,
 
   /* If set, the parse will return failure if any message is missing any
@@ -102,6 +102,8 @@ UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
 UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
+
+uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {

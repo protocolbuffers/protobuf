@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/descriptor.h"
@@ -85,7 +86,7 @@ class ReflectionVisit final {
 };
 
 inline bool ShouldVisit(FieldMask mask, FieldDescriptor::CppType cpptype) {
-  if (PROTOBUF_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
+  if (ABSL_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
   return (static_cast<uint32_t>(mask) & (1 << cpptype)) != 0;
 }
 
@@ -140,7 +141,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
 #define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)                 \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
-    if (PROTOBUF_PREDICT_TRUE(!field->is_map())) {                             \
+    if (ABSL_PREDICT_TRUE(!field->is_map())) {                                 \
       /* Handle repeated fields. */                                            \
       const auto& rep = reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>( \
           message, field);                                                     \
@@ -249,7 +250,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
     } else {
       auto index = has_bits_indices[i];
       bool check_hasbits = has_bits && index != static_cast<uint32_t>(-1);
-      if (PROTOBUF_PREDICT_TRUE(check_hasbits)) {
+      if (ABSL_PREDICT_TRUE(check_hasbits)) {
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {
         // Skip if it has default values.

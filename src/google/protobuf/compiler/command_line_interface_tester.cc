@@ -80,7 +80,7 @@ void CommandLineInterfaceTester::RunProtocWithArgs(
 
   return_code_ = cli_.Run(static_cast<int>(args.size()), argv.data());
 
-  error_text_ = GetCapturedTestStderr();
+  captured_stderr_ = GetCapturedTestStderr();
 #if !defined(__CYGWIN__)
   captured_stdout_ = GetCapturedTestStdout();
 #endif
@@ -116,33 +116,42 @@ void CommandLineInterfaceTester::CreateTempDir(absl::string_view name) {
 
 void CommandLineInterfaceTester::ExpectNoErrors() {
   EXPECT_EQ(0, return_code_);
-  EXPECT_EQ("", error_text_);
+
+  // Note: since warnings and errors are both simply printed to stderr, we
+  // can't holistically distinguish them here; in practice we don't have
+  // multiline warnings so just counting any line with 'warning:' in it
+  // is sufficient to separate warnings and errors in practice.
+  for (const auto& line :
+       absl::StrSplit(captured_stderr_, '\n', absl::SkipEmpty())) {
+    EXPECT_THAT(line, HasSubstr("warning:"));
+  }
 }
 
 void CommandLineInterfaceTester::ExpectErrorText(
     absl::string_view expected_text) {
   EXPECT_NE(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(absl::StrReplaceAll(
-                               expected_text, {{"$tmpdir", temp_directory_}})));
+  EXPECT_THAT(captured_stderr_,
+              HasSubstr(absl::StrReplaceAll(expected_text,
+                                            {{"$tmpdir", temp_directory_}})));
 }
 
 void CommandLineInterfaceTester::ExpectErrorSubstring(
     absl::string_view expected_substring) {
   EXPECT_NE(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 void CommandLineInterfaceTester::ExpectWarningSubstring(
     absl::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 bool CommandLineInterfaceTester::HasAlternateErrorSubstring(
     const std::string& expected_substring) {
   EXPECT_NE(0, return_code_);
-  return error_text_.find(expected_substring) != std::string::npos;
+  return captured_stderr_.find(expected_substring) != std::string::npos;
 }
 #endif  // _WIN32 && !__CYGWIN__
 
@@ -162,7 +171,7 @@ void CommandLineInterfaceTester::
     ExpectCapturedStderrSubstringWithZeroReturnCode(
         absl::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,

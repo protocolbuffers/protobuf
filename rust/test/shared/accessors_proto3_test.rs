@@ -173,7 +173,7 @@ fn test_foreign_enum_accessors() {
 
 #[gtest]
 fn test_oneof_accessors() {
-    use test_all_types::OneofField::*;
+    use test_all_types::OneofFieldOneof::*;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
@@ -202,7 +202,7 @@ fn test_oneof_accessors() {
 
 #[gtest]
 fn test_oneof_accessors_view_long_lifetime() {
-    use test_all_types::OneofField::*;
+    use test_all_types::OneofFieldOneof::*;
 
     let mut msg = TestAllTypes::new();
     msg.set_oneof_uint32(7);
@@ -219,18 +219,18 @@ fn test_oneof_accessors_view_long_lifetime() {
 #[gtest]
 fn test_oneof_enum_accessors() {
     use unittest_proto3_rust_proto::{
-        test_oneof2::{Foo, FooCase, NestedEnum},
+        test_oneof2::{FooCase, FooOneof, NestedEnum},
         TestOneof2,
     };
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
-    assert_that!(msg.foo(), matches_pattern!(Foo::not_set(_)));
+    assert_that!(msg.foo(), matches_pattern!(FooOneof::not_set(_)));
     assert_that!(msg.foo_case(), matches_pattern!(FooCase::not_set));
 
     msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
-    assert_that!(msg.foo(), matches_pattern!(Foo::FooEnum(eq(NestedEnum::Bar))));
+    assert_that!(msg.foo(), matches_pattern!(FooOneof::FooEnum(eq(NestedEnum::Bar))));
     assert_that!(msg.foo_case(), matches_pattern!(FooCase::FooEnum));
 }
 

@@ -34,8 +34,10 @@ Pod::Spec.new do |s|
   s.user_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1' }
   s.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1' }
 
-  s.ios.deployment_target = '10.0'
-  s.osx.deployment_target = '10.13'
+  s.ios.deployment_target = '15.0'
+  s.osx.deployment_target = '11.0'
+  # The following are best-effort / community supported, and are not covered by
+  # our official support policies: https://protobuf.dev/support/version-support/
   s.tvos.deployment_target = '12.0'
   s.watchos.deployment_target = '6.0'
   s.visionos.deployment_target = '1.0'

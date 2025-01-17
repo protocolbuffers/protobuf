@@ -16,8 +16,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* msg;  // Owning ref to our parent pessage.
+  // clang-format on
 } PyUpb_ExtensionDict;
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
@@ -168,8 +170,10 @@ static PyType_Spec PyUpb_ExtensionDict_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* msg;
+  // clang-format on
   size_t iter;
 } PyUpb_ExtensionIterator;
 

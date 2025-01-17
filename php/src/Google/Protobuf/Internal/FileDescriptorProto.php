@@ -84,12 +84,18 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * The syntax of the proto file.
      * The supported values are "proto2", "proto3", and "editions".
      * If `edition` is present, this value must be "editions".
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      */
     protected $syntax = null;
     /**
      * The edition of the proto file.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
      */
@@ -127,8 +133,14 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *           The syntax of the proto file.
      *           The supported values are "proto2", "proto3", and "editions".
      *           If `edition` is present, this value must be "editions".
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type int $edition
      *           The edition of the proto file.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      * }
      */
     public function __construct($data = NULL) {
@@ -458,6 +470,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * The syntax of the proto file.
      * The supported values are "proto2", "proto3", and "editions".
      * If `edition` is present, this value must be "editions".
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      * @return string
@@ -481,6 +496,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * The syntax of the proto file.
      * The supported values are "proto2", "proto3", and "editions".
      * If `edition` is present, this value must be "editions".
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      * @param string $var
@@ -496,6 +514,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * The edition of the proto file.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
      * @return int
@@ -517,6 +538,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * The edition of the proto file.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
      * @param int $var

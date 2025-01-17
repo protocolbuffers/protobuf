@@ -63,7 +63,6 @@ void SetEnumVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
-    (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
         absl::StrCat(GenerateSetBit(messageBitIndex), ";");
@@ -162,7 +161,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public boolean "
                    "${$has$capitalized_name$$}$() {\n"
-                   "  return $get_has_field_bit_message$;\n"
+                   "  return $is_field_present_message$;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -278,19 +277,21 @@ void ImmutableEnumFieldGenerator::GenerateBuilderClearCode(
 void ImmutableEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
-    printer->Print(variables_,
-                   "if (other.has$capitalized_name$()) {\n"
-                   "  set$capitalized_name$(other.get$capitalized_name$());\n"
-                   "}\n");
-  } else if (SupportUnknownEnumValue(descriptor_)) {
+    printer->Print(variables_, "if (other.has$capitalized_name$()) {\n");
+  } else {
+    printer->Print(variables_, "if (other.$name$_ != $default_number$) {\n");
+  }
+  printer->Indent();
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
-        "if (other.$name$_ != $default_number$) {\n"
-        "  set$capitalized_name$Value(other.get$capitalized_name$Value());\n"
-        "}\n");
+        "set$capitalized_name$Value(other.get$capitalized_name$Value());\n");
   } else {
-    ABSL_LOG(FATAL) << "Can't reach here.";
+    printer->Print(variables_,
+                   "set$capitalized_name$(other.get$capitalized_name$());\n");
   }
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuildingCode(

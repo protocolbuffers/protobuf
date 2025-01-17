@@ -11,14 +11,17 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/extension.h"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())
@@ -103,20 +106,32 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
-  ::upb::Arena arena;
-  TestConcurrentExtensionAccess({{}, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry registry(arena);
+  TestConcurrentExtensionAccess(registry);
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
-  ::upb::Arena arena;
-  TestConcurrentExtensionAccess({{&theme}, arena});
-  TestConcurrentExtensionAccess({{&ThemeExtension::theme_extension}, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry r1(arena);
+  r1.AddExtension(theme);
+  TestConcurrentExtensionAccess(r1);
+  hpb::ExtensionRegistry r2(arena);
+  r2.AddExtension(ThemeExtension::theme_extension);
+  TestConcurrentExtensionAccess(r2);
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
-  ::upb::Arena arena;
-  TestConcurrentExtensionAccess(
-      {{&theme, &ThemeExtension::theme_extension}, arena});
+  upb::Arena arena;
+  hpb::ExtensionRegistry registry(arena);
+  registry.AddExtension(theme);
+  registry.AddExtension(ThemeExtension::theme_extension);
+  TestConcurrentExtensionAccess(registry);
+}
+
+TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceGlobalInstance) {
+  upb::Arena arena;
+  TestConcurrentExtensionAccess(hpb::ExtensionRegistry::generated_registry());
 }
 
 }  // namespace

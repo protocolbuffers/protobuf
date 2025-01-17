@@ -18,6 +18,7 @@
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
+#include "upb/message/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -80,8 +81,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const struct upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
-                             size_t count, _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
+                             _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */

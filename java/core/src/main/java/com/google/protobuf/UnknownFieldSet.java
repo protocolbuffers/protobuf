@@ -66,7 +66,8 @@ public final class UnknownFieldSet implements MessageLite {
       new UnknownFieldSet(new TreeMap<Integer, Field>());
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(
+          Object other) {
     if (this == other) {
       return true;
     }
@@ -530,6 +531,7 @@ public final class UnknownFieldSet implements MessageLite {
           getFieldBuilder(number).addGroup(subBuilder.build());
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
+          input.checkValidEndTag();
           return false;
         case WireFormat.WIRETYPE_FIXED32:
           getFieldBuilder(number).addFixed32(input.readFixed32());
@@ -739,7 +741,8 @@ public final class UnknownFieldSet implements MessageLite {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(
+            Object other) {
       if (this == other) {
         return true;
       }

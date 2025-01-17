@@ -23,7 +23,8 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel/private:native_bzl",
+        "//bazel/private:proto_info_bzl",
+        "@proto_bazel_features//:features",
     ],
 )
 

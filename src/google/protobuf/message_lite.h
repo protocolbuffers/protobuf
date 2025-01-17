@@ -178,7 +178,7 @@ class PROTOBUF_EXPORT CachedSize {
   // NOLINTNEXTLINE(google-explicit-constructor)
   constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
 
-#if PROTOBUF_BUILTIN_ATOMIC
+#ifdef PROTOBUF_BUILTIN_ATOMIC
   constexpr CachedSize(const CachedSize& other) = default;
 
   Scalar Get() const noexcept {
@@ -195,6 +195,11 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+
+  void SetNoDefaultInstance(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -218,12 +223,17 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+
+  void SetNoDefaultInstance(Scalar desired) const noexcept {
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif
 
  private:
-#if PROTOBUF_BUILTIN_ATOMIC
+#ifdef PROTOBUF_BUILTIN_ATOMIC
   mutable Scalar atom_;
 #else
   mutable std::atomic<Scalar> atom_;
@@ -232,9 +242,7 @@ class PROTOBUF_EXPORT CachedSize {
 
 auto GetClassData(const MessageLite& msg);
 
-// TODO: Upgrade to `auto` parameters when we drop C++14 support.
-template <typename T, const T* kDefault, typename ClassData,
-          const ClassData* kClassData>
+template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
   static constexpr const auto* class_data() { return kClassData->base(); }
@@ -252,7 +260,12 @@ struct FallbackMessageTraits {
   static constexpr auto StrongPointer() { return &T::default_instance; }
 };
 
-// Traits for message T.
+template <const uint32_t* kValidationData>
+struct EnumTraitsT {
+  static constexpr const uint32_t* validation_data() { return kValidationData; }
+};
+
+// Traits for messages and enums.
 // We use a class scope variable template, which can be specialized with a
 // different type in a non-defining declaration.
 // We need non-defining declarations because we might have duplicates of the
@@ -264,6 +277,14 @@ struct MessageTraitsImpl {
 };
 template <typename T>
 using MessageTraits = decltype(MessageTraitsImpl::value<T>);
+
+struct EnumTraitsImpl {
+  struct Undefined;
+  template <typename T>
+  static Undefined value;
+};
+template <typename T>
+using EnumTraits = decltype(EnumTraitsImpl::value<T>);
 
 class SwapFieldHelper;
 
@@ -631,16 +652,20 @@ class PROTOBUF_EXPORT MessageLite {
   // missing required fields.
   ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromBoundedZeroCopyStream(
       io::ZeroCopyInputStream* input, int size);
-  // Parses a protocol buffer contained in a string. Returns true on success.
-  // This function takes a string in the (non-human-readable) binary wire
-  // format, matching the encoding output by MessageLite::SerializeToString().
-  // If you'd like to convert a human-readable string into a protocol buffer
-  // object, see google::protobuf::TextFormat::ParseFromString().
+  // Parses a protocol buffer contained in a string or Cord. Returns true on
+  // success. This function takes a string in the (non-human-readable) binary
+  // wire format, matching the encoding output by
+  // MessageLite::SerializeToString(). If you'd like to convert a human-readable
+  // string into a protocol buffer object, see
+  // google::protobuf::TextFormat::ParseFromString().
   ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromString(absl::string_view data);
+  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromString(const absl::Cord& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
   ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
       absl::string_view data);
+  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
+      const absl::Cord& data);
   // Parse a protocol buffer contained in an array of bytes.
   ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing
@@ -671,6 +696,12 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Merge a protocol buffer contained in a string.
   bool MergeFromString(absl::string_view data);
+  bool MergeFromString(const absl::Cord& data);
+
+  // Like MergeFromString(), but accepts messages that are missing required
+  // fields.
+  bool MergePartialFromString(absl::string_view data);
+  bool MergePartialFromString(const absl::Cord& data);
 
 
   // Serialization ---------------------------------------------------
@@ -691,8 +722,12 @@ class PROTOBUF_EXPORT MessageLite {
   // Serialize the message and store it in the given string.  All required
   // fields must be set.
   bool SerializeToString(std::string* output) const;
+  // Serialize the message and store it in the given Cord.  All required
+  // fields must be set.
+  bool SerializeToString(absl::Cord* output) const;
   // Like SerializeToString(), but allows missing required fields.
   bool SerializePartialToString(std::string* output) const;
+  bool SerializePartialToString(absl::Cord* output) const;
   // Serialize the message and store it in the given byte array.  All required
   // fields must be set.
   bool SerializeToArray(void* data, int size) const;
@@ -723,26 +758,45 @@ class PROTOBUF_EXPORT MessageLite {
   // Like SerializeToString(), but appends to the data to the string's
   // existing contents.  All required fields must be set.
   bool AppendToString(std::string* output) const;
+  bool AppendToString(absl::Cord* output) const;
   // Like AppendToString(), but allows missing required fields.
   bool AppendPartialToString(std::string* output) const;
+  bool AppendPartialToString(absl::Cord* output) const;
 
   // Reads a protocol buffer from a Cord and merges it into this message.
-  bool MergeFromCord(const absl::Cord& cord);
+  PROTOBUF_DEPRECATE_AND_INLINE() bool MergeFromCord(const absl::Cord& data) {
+    return MergeFromString(data);
+  }
   // Like MergeFromCord(), but accepts messages that are missing
   // required fields.
-  bool MergePartialFromCord(const absl::Cord& cord);
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  bool MergePartialFromCord(const absl::Cord& data) {
+    return MergePartialFromString(data);
+  }
   // Parse a protocol buffer contained in a Cord.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromCord(const absl::Cord& cord);
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromCord(const absl::Cord& data) {
+    return ParseFromString(data);
+  }
   // Like ParseFromCord(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromCord(
-      const absl::Cord& cord);
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  ABSL_ATTRIBUTE_REINITIALIZES
+  bool ParsePartialFromCord(const absl::Cord& data) {
+    return ParsePartialFromString(data);
+  }
 
   // Serialize the message and store it in the given Cord.  All required
   // fields must be set.
-  bool SerializeToCord(absl::Cord* output) const;
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  bool SerializeToCord(absl::Cord* output) const {
+    return SerializeToString(output);
+  }
   // Like SerializeToCord(), but allows missing required fields.
-  bool SerializePartialToCord(absl::Cord* output) const;
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  bool SerializePartialToCord(absl::Cord* output) const {
+    return SerializePartialToString(output);
+  }
 
   // Make a Cord encoding the message. Is equivalent to calling
   // SerializeToCord() on a Cord and using that.  Returns an empty
@@ -753,9 +807,14 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Like SerializeToCord(), but appends to the data to the Cord's existing
   // contents.  All required fields must be set.
-  bool AppendToCord(absl::Cord* output) const;
+  PROTOBUF_DEPRECATE_AND_INLINE() bool AppendToCord(absl::Cord* output) const {
+    return AppendToString(output);
+  }
   // Like AppendToCord(), but allows missing required fields.
-  bool AppendPartialToCord(absl::Cord* output) const;
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  bool AppendPartialToCord(absl::Cord* output) const {
+    return AppendPartialToString(output);
+  }
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSizeLong() on all embedded messages.
@@ -1177,13 +1236,8 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
-inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
-  ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
-      << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
-}
-
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
+PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
@@ -1284,7 +1338,7 @@ PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
 }
 
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::New(
+PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, Arena* arena) const {
   return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
@@ -1309,7 +1363,7 @@ std::string Utf8Format(const MessageLite& message_lite);
 //
 // `DynamicCastMessage` is similar to `dynamic_cast`, returns `nullptr` when the
 // input is not an instance of `T`. The overloads that take a reference will
-// terminate on mismatch.
+// throw std::bad_cast on mismatch, or terminate if compiled without exceptions.
 //
 // `DownCastMessage` is a lightweight function for downcasting base
 // `MessageLite` pointer to derived type, where it only does type checking if
@@ -1343,6 +1397,11 @@ template <typename T>
 const T& DynamicCastMessage(const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
   if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
+    // If exceptions are enabled, throw.
+    // Otherwise, log a fatal error.
+#if defined(ABSL_HAVE_EXCEPTIONS)
+    throw std::bad_cast();
+#endif
     // Move the logging into an out-of-line function to reduce bloat in the
     // caller.
     internal::FailDynamicCast(from, T::default_instance());

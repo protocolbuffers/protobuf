@@ -235,43 +235,6 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
               std::string::npos);
 }
 
-TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message abc {}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Message name should be in UpperCamelCase. Found: abc.") !=
-              std::string::npos);
-}
-
-TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message A {"
-      "  optional string SongName = 1;"
-      "}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Field name should be lowercase. Found: SongName") !=
-              std::string::npos);
-}
-
-TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message A {"
-      "  optional string song_name_1 = 1;"
-      "}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Number should not come right after an underscore. Found: "
-                  "song_name_1.") != std::string::npos);
-}
-
 TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
   std::string input("edition=\"a\000;", 12);
   input += std::string(100000, '{');

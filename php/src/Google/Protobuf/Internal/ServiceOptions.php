@@ -18,6 +18,9 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
      */
@@ -46,6 +49,9 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      *
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type bool $deprecated
      *           Is this service deprecated?
      *           Depending on the target platform, this can emit Deprecated annotations
@@ -62,6 +68,9 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
      * @return \Google\Protobuf\Internal\FeatureSet|null
@@ -83,6 +92,9 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
      * @param \Google\Protobuf\Internal\FeatureSet $var

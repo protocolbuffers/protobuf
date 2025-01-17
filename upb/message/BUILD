@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -56,7 +57,6 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
-        "internal/compare_unknown.c",
         "internal/extension.c",
         "internal/message.c",
         "value.h",
@@ -64,7 +64,6 @@ cc_library(
     hdrs = [
         "internal/accessors.h",
         "internal/array.h",
-        "internal/compare_unknown.h",
         "internal/extension.h",
         "internal/map.h",
         "internal/map_sorter.h",
@@ -76,11 +75,9 @@ cc_library(
     deps = [
         ":types",
         "//upb:base",
-        "//upb:eps_copy_input_stream",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
-        "//upb:wire_reader",
         "//upb/base:internal",
         "//upb/hash",
         "//upb/mini_table:internal",
@@ -109,9 +106,11 @@ cc_library(
     name = "compare",
     srcs = [
         "compare.c",
+        "internal/compare_unknown.c",
     ],
     hdrs = [
         "compare.h",
+        "internal/compare_unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -120,8 +119,11 @@ cc_library(
         ":iterator",
         ":message",
         "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire_reader",
         "//upb/mini_table:internal",
     ],
 )
@@ -252,7 +254,7 @@ cc_test(
     srcs = ["accessors_test.cc"],
     deps = [
         ":message",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_descriptor",
@@ -287,10 +289,16 @@ cc_test(
     name = "compare_unknown_test",
     srcs = ["internal/compare_unknown_test.cc"],
     deps = [
+        ":compare",
         ":internal",
+        ":message",
+        "//upb:base",
+        "//upb:mem",
         "//upb:port",
+        "//upb:wire",
         "//upb:wire_reader",
         "//upb/base:internal",
+        "//upb/test:test_messages_proto2_upb_proto",
         "@com_google_absl//absl/types:variant",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -304,7 +312,7 @@ cc_test(
         ":copy",
         ":internal",
         ":message",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -339,7 +347,7 @@ cc_test(
         ":internal",
         ":message",
         ":promote",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_descriptor",
@@ -368,13 +376,18 @@ cc_test(
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
         "//upb:base",
+        "//upb:eps_copy_input_stream",
         "//upb:json",
         "//upb:mem",
+        "//upb:message_compare",
         "//upb:mini_table",
         "//upb:reflection",
         "//upb:wire",
+        "//upb:wire_reader",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/text:debug",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

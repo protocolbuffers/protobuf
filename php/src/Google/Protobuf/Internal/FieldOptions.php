@@ -123,6 +123,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     private $edition_defaults;
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 21;</code>
      */
@@ -210,6 +213,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *     @type array<\Google\Protobuf\Internal\FieldOptions\EditionDefault>|\Google\Protobuf\Internal\RepeatedField $edition_defaults
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type \Google\Protobuf\Internal\FieldOptions\FeatureSupport $feature_support
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
@@ -676,6 +682,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 21;</code>
      * @return \Google\Protobuf\Internal\FeatureSet|null
@@ -697,6 +706,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 21;</code>
      * @param \Google\Protobuf\Internal\FeatureSet $var

@@ -19,6 +19,8 @@ import protobuf_unittest.UnittestProto.Int32Message;
 import protobuf_unittest.UnittestProto.Int64Message;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestRecursiveMessage;
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -28,12 +30,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /** Unit test for {@link CodedInputStream}. */
-@RunWith(JUnit4.class)
+@RunWith(TestParameterInjector.class)
 public class CodedInputStreamTest {
 
   private static final int DEFAULT_BLOCK_SIZE = 4096;
@@ -43,7 +45,6 @@ public class CodedInputStreamTest {
   private static final byte[] NESTING_SGROUP = generateSGroupTags();
 
   private static final byte[] NESTING_SGROUP_WITH_INITIAL_BYTES = generateSGroupTagsForMapField();
-
 
   private enum InputType {
     ARRAY {
@@ -1406,6 +1407,41 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
+    int size = 127;
+    assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);
+    ByteBuffer input = ByteBuffer.allocateDirect(1 + size);
+    input.put(0, (byte) size);
+
+    Supplier<ByteString> embeddedBytes =
+        () -> {
+          try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
+            inputStream.enableAliasing(true);
+            return inputStream.readBytes();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        };
+
+    assertThat(embeddedBytes.get().size()).isEqualTo(size);
+
+    // Concurrent reader should have no impact.
+    int iterations = 100000;
+    new Thread(
+            () -> {
+              for (int i = 0; i < iterations; i++) {
+                ByteString unused = embeddedBytes.get();
+              }
+            })
+        .start();
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(embeddedBytes.get().size()).isEqualTo(size);
+    }
+  }
+
+  @Test
   public void testIterableByteBufferInputStreamReadBytesWithAlias() throws Exception {
     ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
     CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
@@ -1486,6 +1522,38 @@ public class CodedInputStreamTest {
         // Expected
       }
     }
+  }
+
+  @Test
+  public void testSkipInvalidEndGroup(@TestParameter InputType inputType) throws Exception {
+    byte[] data = new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_END_GROUP)};
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[1]);
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> input2.skipField(input2.readTag(), output));
+  }
+
+  @Test
+  public void testSkipInvalidEndGroup_nested(@TestParameter InputType inputType) throws Exception {
+    ByteString.Output output = ByteString.newOutput();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+    codedOutput.writeTag(2, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.flush();
+    byte[] data = output.toByteString().toByteArray();
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> input2.skipField(input2.readTag(), codedOutput));
   }
 
   @Test

@@ -21,16 +21,14 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
             (
                 "//python/dist:osx_x86_64",
                 "//python/dist:osx_aarch64",
-            ): ["-undefined", "dynamic_lookup"],
+            ): ["-Wl,-undefined,dynamic_lookup"],
             "//python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
         }),
         linkshared = True,
         linkstatic = True,
         deps = deps + select({
-            "//python:limited_api_3.8": ["@python-3.8.0//:python_headers"],
-            "//python:full_api_3.8_win32": ["@nuget_python_i686_3.8.0//:python_full_api"],
-            "//python:full_api_3.8_win64": ["@nuget_python_x86-64_3.8.0//:python_full_api"],
+            "//python:limited_api_3.9": ["@python-3.9.0//:python_headers"],
             "//python:full_api_3.9_win32": ["@nuget_python_i686_3.9.0//:python_full_api"],
             "//python:full_api_3.9_win64": ["@nuget_python_x86-64_3.9.0//:python_full_api"],
             "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],

@@ -47,7 +47,7 @@ _cross_compiled_binary = rule(
     },
 )
 
-def pkg_cross_compiled_binaries(name, cpus, targets, prefix, tags):
+def pkg_cross_compiled_binaries(name, cpus, targets, prefix, tags, visibility = None):
     """Creates a pkg_filegroup that contains the cross compiled binaries for each cpu.
 
     This rule is used to create a pkg_filegroup that contains the cross compiled binaries for each
@@ -60,6 +60,7 @@ def pkg_cross_compiled_binaries(name, cpus, targets, prefix, tags):
       targets: The targets to cross compile.
       prefix: The prefix to add to the pkg_filegroup.
       tags: The tags to add to the pkg_filegroup.
+      visibility: The visibility of the pkg_filegroup.
     """
 
     filegroups = []
@@ -94,5 +95,6 @@ def pkg_cross_compiled_binaries(name, cpus, targets, prefix, tags):
         srcs = filegroups,
         prefix = prefix,
         tags = tags,
+        visibility = visibility,
     )
     return

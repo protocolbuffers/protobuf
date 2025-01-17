@@ -321,6 +321,15 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"int32Value": 1.0}', message)
     self.assertEqual(message.int32_value, 1)
 
+  def testIntegersRepresentedAsFloatStrings(self):
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"int32Value": "-2.147483648e9"}', message)
+    self.assertEqual(message.int32_value, -2147483648)
+    json_format.Parse('{"int32Value": "1e5"}', message)
+    self.assertEqual(message.int32_value, 100000)
+    json_format.Parse('{"int32Value": "1.0"}', message)
+    self.assertEqual(message.int32_value, 1)
+
   def testMapFields(self):
     message = json_format_proto3_pb2.TestNestedMap()
     self.assertEqual(
@@ -597,8 +606,8 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestStruct()
     self.CheckParseBack(message, parsed_message)
     # check for regression; this used to raise
-    parsed_message.value['empty_struct']
-    parsed_message.value['empty_list']
+    _ = parsed_message.value['empty_struct']
+    _ = parsed_message.value['empty_list']
 
   def testValueMessage(self):
     message = json_format_proto3_pb2.TestValue()
@@ -1168,6 +1177,16 @@ class JsonFormatTest(JsonFormatBase):
         "Couldn't parse integer: 1.5 at TestMessage.int32Value.",
     )
     self.CheckError(
+        '{"int32Value": "1.5"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse non-integer string: "1.5" at TestMessage.int32Value.',
+    )
+    self.CheckError(
+        '{"int32Value": "foo"}',
+        'Failed to parse int32Value field: invalid literal for int\(\) with'
+        " base 10: 'foo'.",
+    )
+    self.CheckError(
         '{"int32Value": 012345}',
         (r'Failed to load JSON: Expecting \'?,\'? delimiter: ' r'line 1.'),
     )
@@ -1529,6 +1548,30 @@ class JsonFormatTest(JsonFormatBase):
     message = json_format_proto3_pb2.TestMessage()
     json_format.ParseDict(js_dict, message)
     self.assertEqual(expected, message.int32_value)
+
+  def testParseDictAcceptsPairValueTuples(self):
+    expected = [1, 2, 3]
+    js_dict = {'repeatedInt32Value': (1, 2, 3)}
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.ParseDict(js_dict, message)
+    self.assertEqual(expected, message.repeated_int32_value)
+
+  def testParseDictAcceptsRepeatedValueTuples(self):
+    expected = json_format_proto3_pb2.TestListValue(
+        repeated_value=[
+            struct_pb2.ListValue(
+                values=[
+                    struct_pb2.Value(number_value=4),
+                    struct_pb2.Value(number_value=5),
+                ]
+            ),
+            struct_pb2.ListValue(values=[struct_pb2.Value(number_value=6)]),
+        ]
+    )
+    js_dict = {'repeated_value': ((4, 5), (6,))}
+    message = json_format_proto3_pb2.TestListValue()
+    json_format.ParseDict(js_dict, message)
+    self.assertEqual(expected, message)
 
   def testParseDictAnyDescriptorPoolMissingType(self):
     # Confirm that ParseDict does not raise ParseError with default pool

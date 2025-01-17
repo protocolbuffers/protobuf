@@ -67,7 +67,8 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }

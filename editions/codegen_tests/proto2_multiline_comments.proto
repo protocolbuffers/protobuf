@@ -1,3 +1,7 @@
+//
+// Extra empty file comments.
+//
+
 syntax = "proto2";
 
 package protobuf_editions_test.proto2;
@@ -29,5 +33,15 @@ message Message3 {
   /**
    * Exactly one trait must be set. Extension # is vendor_id + 1.
    */
+  optional string field = 1;
+}
+
+//
+// Extra empty message comments.
+//
+message Message4 {
+  //
+  // Extra empty field comments.
+  //
   optional string field = 1;
 }

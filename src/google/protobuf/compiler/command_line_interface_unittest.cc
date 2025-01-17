@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
@@ -84,7 +85,7 @@ using google::protobuf::io::win32::write;
 
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
-#if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+#if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
 
 namespace {
@@ -1633,7 +1634,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
 
   ExpectErrorSubstring(
       "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2023");
+      "supported edition 2024");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
@@ -1927,6 +1928,70 @@ TEST_F(CommandLineInterfaceTest, PluginErrorAndNoEditionsSupport) {
       "--plug_out: foo.proto: Saw message type MockCodeGenerator_Error.");
 }
 
+TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition 2024, which is later than the protoc "
+      "maximum supported edition 2023.");
+}
+
+TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionAllowlisted) {
+  constexpr absl::string_view path = "google/protobuf";
+  CreateTempFile(absl::StrCat(path, "/foo.proto"),
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run(
+      absl::Substitute("protocol_compiler --proto_path=$$tmpdir "
+                       "--test_out=$$tmpdir $0/foo.proto",
+                       path));
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AfterProtocMaximumEditionExperimentalEditions) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       AfterMaximumKnownEditionErrorExperimentalEditions) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "99997_TEST_ONLY";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
+      "supported edition 2024\n");
+}
+
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
@@ -1947,6 +2012,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -1959,6 +2025,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -1971,7 +2038,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features {}
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
                 }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2023
@@ -1999,6 +2066,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2011,6 +2079,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2022,6 +2091,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                  }
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                }
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
                   }
                   fixed_features {}
                 }
@@ -2052,6 +2134,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2064,6 +2147,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -2075,6 +2159,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                  }
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                }
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
                   }
                   fixed_features {}
                 }
@@ -3926,6 +4023,20 @@ TEST_F(CommandLineInterfaceTest,
       "extendee message foo.Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, WarningForReservedNameNotIdentifier) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      reserved "not ident";
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+  ExpectWarningSubstring(
+      "Reserved name \"not ident\" is not a valid identifier.");
+}
+
 TEST_F(CommandLineInterfaceTest,
        ExtensionDeclarationVerificationDeclarationUndeclaredError) {
   CreateTempFile("foo.proto", R"schema(
@@ -4140,6 +4251,19 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     captured_stdout_ = GetCapturedTestStdout();
     captured_stderr_ = GetCapturedTestStderr();
 
+    // Note: since warnings and errors are both simply printed to stderr, we
+    // can't holistically distinguish them here; in practice we don't have
+    // multiline warnings so just counting any line with 'warning:' in it
+    // is sufficient to separate warnings and errors in practice.
+    for (const auto& line :
+         absl::StrSplit(StripCR(captured_stderr_), '\n', absl::SkipEmpty())) {
+      if (absl::StrContains(line, "warning:")) {
+        captured_warnings_.push_back(std::string(line));
+      } else {
+        captured_errors_.push_back(std::string(line));
+      }
+    }
+
     return result == 0;
   }
 
@@ -4159,6 +4283,30 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
         File::GetContents(filename, &expected_output, true));
 
     ExpectStdoutMatchesText(expected_output);
+  }
+
+  void ExpectNoErrors() { EXPECT_THAT(captured_errors_, testing::IsEmpty()); }
+
+  void ExpectNoWarnings() {
+    EXPECT_THAT(captured_warnings_, testing::IsEmpty());
+  }
+
+  void ExpectError(absl::string_view expected_text) {
+    EXPECT_THAT(captured_errors_, testing::Contains(expected_text));
+  }
+
+  void ExpectErrorSubstring(absl::string_view expected_substring) {
+    EXPECT_THAT(captured_errors_,
+                testing::Contains(testing::HasSubstr(expected_substring)));
+  }
+
+  void ExpectWarning(absl::string_view expected_text) {
+    EXPECT_THAT(captured_warnings_, testing::Contains(expected_text));
+  }
+
+  void ExpectWarningSubstring(absl::string_view expected_substring) {
+    EXPECT_THAT(captured_warnings_,
+                testing::Contains(testing::HasSubstr(expected_substring)));
   }
 
   void ExpectStdoutMatchesText(const std::string& expected_text) {
@@ -4199,6 +4347,9 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   int duped_stdin_;
   std::string captured_stdout_;
   std::string captured_stderr_;
+  std::vector<std::string> captured_warnings_;
+  std::vector<std::string> captured_errors_;
+
   std::string unittest_proto_descriptor_set_filename_;
 };
 
@@ -4222,7 +4373,7 @@ TEST_P(EncodeDecodeTest, Encode) {
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
   ExpectStdoutMatchesBinaryFile(golden_path);
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
@@ -4235,7 +4386,7 @@ TEST_P(EncodeDecodeTest, Decode) {
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, Partial) {
@@ -4244,8 +4395,7 @@ TEST_P(EncodeDecodeTest, Partial) {
       Run("google/protobuf/unittest.proto"
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText(
-      "warning:  Input message is missing required fields:  a, b, c\n");
+  ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }
 
 TEST_P(EncodeDecodeTest, DecodeRaw) {
@@ -4260,7 +4410,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   ExpectStdoutMatchesText(
       "1: 123\n"
       "14: \"foo\"\n");
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, UnknownType) {
@@ -4268,7 +4418,7 @@ TEST_P(EncodeDecodeTest, UnknownType) {
       Run("google/protobuf/unittest.proto"
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText("Type not defined: NoSuchType\n");
+  ExpectError("Type not defined: NoSuchType");
 }
 
 TEST_P(EncodeDecodeTest, ProtoParseError) {
@@ -4276,8 +4426,9 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
       Run("net/proto2/internal/no_such_file.proto "
           "--encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrContainsText(
-      "net/proto2/internal/no_such_file.proto: No such file or directory\n");
+  ExpectErrorSubstring(
+      "net/proto2/internal/no_such_file.proto: "
+      "No such file or directory");
 }
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
@@ -4293,7 +4444,7 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
   ExpectStdoutMatchesBinaryFile(golden_path);
-  ExpectStderrMatchesText("");
+  ExpectNoErrors();
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
@@ -4303,8 +4454,7 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   EXPECT_FALSE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
-  ExpectStderrMatchesText(
-      "Can only use --deterministic_output with --encode.\n");
+  ExpectError("Can only use --deterministic_output with --encode.");
 }
 
 INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,

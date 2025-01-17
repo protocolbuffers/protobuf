@@ -29,6 +29,8 @@ message TestAllTypes {
   int32 optional_int32 = 1;
   string optional_string = 2;
   bytes optional_bytes = 3;
+  float optional_float = 8;
+  double optional_double = 9;
   NestedEnum optional_nested_enum = 4;
   NestedMessage optional_nested_message = 5;
   protobuf_unittest.TestRequired optional_proto2_message = 6;

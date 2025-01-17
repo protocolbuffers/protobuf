@@ -7,12 +7,15 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/escaping.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -22,6 +25,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
+#include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -35,8 +39,11 @@
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/message.h"
 #include "upb/test/fuzz_util.h"
+#include "upb/text/debug_string.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/types.h"
 
 void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
@@ -110,6 +117,98 @@ TEST(MessageTest, Extensions) {
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
       upb_test_mutable_optional_msg_ext(ext_msg4, arena.ptr()), 456);
   VerifyMessage(ext_msg4);
+}
+
+TEST(MessageTest, ExtensionsDeterministic) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+
+  EXPECT_FALSE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  // EXPECT_FALSE(upb_test_TestExtensions_Nested_has_optional_int32_ext(ext_msg));
+  EXPECT_FALSE(upb_test_has_optional_msg_ext(ext_msg));
+
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  std::string json = R"json(
+  {
+      "[upb_test.TestExtensions.optional_int32_ext]": 123,
+      "[upb_test.TestExtensions.Nested.repeated_int32_ext]": [],
+      "[upb_test.optional_msg_ext]": {"optional_int32": 456}
+  }
+  )json";
+  upb::Status status;
+  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(ext_msg),
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  VerifyMessage(ext_msg);
+
+  size_t size;
+  char* serialized =
+      upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_GE(size, 0);
+
+  size_t deterministic_size;
+  char* deterministic_serialized = upb_test_TestExtensions_serialize_ex(
+      ext_msg, kUpb_EncodeOption_Deterministic, arena.ptr(),
+      &deterministic_size);
+  ASSERT_TRUE(deterministic_serialized != nullptr);
+  ASSERT_EQ(deterministic_size, size);
+}
+
+TEST(MessageTest, ExtensionsEmpty) {
+  upb::Arena arena;
+
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  for (int options : {0, int{kUpb_EncodeOption_Deterministic}}) {
+    std::string json_with_empty = R"json(
+  {
+      "[upb_test.TestExtensions.optional_int32_ext]": 123,
+      "[upb_test.TestExtensions.Nested.repeated_int32_ext]": []
+  }
+  )json";
+    upb::Status status_empty;
+    upb_test_TestExtensions* ext_msg_with_empty =
+        upb_test_TestExtensions_new(arena.ptr());
+    EXPECT_TRUE(upb_JsonDecode(json_with_empty.data(), json_with_empty.size(),
+                               UPB_UPCAST(ext_msg_with_empty), m.ptr(),
+                               defpool.ptr(), 0, arena.ptr(),
+                               status_empty.ptr()))
+        << status_empty.error_message();
+
+    std::string json = R"json(
+  {
+      "[upb_test.TestExtensions.optional_int32_ext]": 123
+  }
+  )json";
+    upb::Status status;
+    upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+    EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(ext_msg),
+                               m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                               status.ptr()))
+        << status.error_message();
+
+    size_t size_with_empty;
+    char* serialized = upb_test_TestExtensions_serialize_ex(
+        ext_msg_with_empty, options, arena.ptr(), &size_with_empty);
+    ASSERT_TRUE(serialized != nullptr);
+    ASSERT_GE(size_with_empty, 0);
+
+    size_t size;
+    serialized = upb_test_TestExtensions_serialize_ex(ext_msg, options,
+                                                      arena.ptr(), &size);
+    ASSERT_TRUE(serialized != nullptr);
+    // Presence or absence of an empty extension should not affect the
+    // serialized output.
+    ASSERT_EQ(size_with_empty, size);
+  }
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
@@ -501,6 +600,7 @@ TEST(MessageTest, MapField) {
   // parse into second instance
   upb_test_TestMapFieldExtra* test_msg_extra2 =
       upb_test_TestMapFieldExtra_parse(serialized, size, arena.ptr());
+  ASSERT_NE(nullptr, test_msg_extra2);
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }

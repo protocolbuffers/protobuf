@@ -42,6 +42,7 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
                      type_checkers.Int64ValueChecker())
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
+_FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
@@ -430,7 +431,7 @@ class _Printer(object):
       return False
     packed_message = _BuildMessageFromTypeName(message.TypeName(),
                                                self.descriptor_pool)
-    if packed_message:
+    if packed_message is not None:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
       self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
@@ -1165,7 +1166,9 @@ class _Parser(object):
           else:
             # For field that doesn't represent presence, try best effort to
             # check multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
+            duplicate_error = not decoder.IsDefaultScalarValue(
+                getattr(message, field.name)
+            )
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
@@ -1789,6 +1792,8 @@ def ParseFloat(text):
   Raises:
     ValueError: If a floating point number couldn't be parsed.
   """
+  if _FLOAT_OCTAL_PREFIX.match(text):
+    raise ValueError('Invalid octal float: %s' % text)
   try:
     # Assume Python compatible syntax.
     return float(text)
@@ -1804,7 +1809,7 @@ def ParseFloat(text):
     else:
       # assume '1.0f' format
       try:
-        return float(text.rstrip('f'))
+        return float(text.rstrip('fF'))
       except ValueError:
         raise ValueError("Couldn't parse float: %s" % text)
 

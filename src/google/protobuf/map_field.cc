@@ -11,7 +11,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
+#include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
@@ -29,29 +31,114 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
-  switch (value.type()) {
-    case FieldDescriptor::CPPTYPE_STRING:
-      return VariantKey(value.GetStringValue());
-    case FieldDescriptor::CPPTYPE_INT64:
-      return VariantKey(value.GetInt64Value());
-    case FieldDescriptor::CPPTYPE_INT32:
-      return VariantKey(value.GetInt32Value());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return VariantKey(value.GetUInt64Value());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return VariantKey(value.GetUInt32Value());
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return VariantKey(static_cast<uint64_t>(value.GetBoolValue()));
-    default:
-      Unreachable();
-      return VariantKey(uint64_t{});
-  }
-}
-
 MapFieldBase::~MapFieldBase() {
   ABSL_DCHECK_EQ(arena(), nullptr);
   delete maybe_payload();
+}
+
+void MapFieldBase::MergeFromImpl(MapFieldBase& base,
+                                 const MapFieldBase& other) {
+  base.MutableMap()->UntypedMergeFrom(other.GetMap());
+}
+
+void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  MapFieldBase::SwapPayload(lhs, rhs);
+  lhs.GetMapRaw().UntypedSwap(rhs.GetMapRaw());
+}
+
+template <typename Map, typename F>
+auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
+  switch (map_key.type()) {
+#define HANDLE_TYPE(CPPTYPE, Type, KeyBaseType)                               \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                  \
+    using KMB = KeyMapBase<KeyBaseType>;                                      \
+    return f(                                                                 \
+        static_cast<                                                          \
+            std::conditional_t<std::is_const_v<Map>, const KMB&, KMB&>>(map), \
+        TransparentSupport<KeyBaseType>::ToView(map_key.Get##Type##Value())); \
+  }
+    HANDLE_TYPE(INT32, Int32, uint32_t);
+    HANDLE_TYPE(UINT32, UInt32, uint32_t);
+    HANDLE_TYPE(INT64, Int64, uint64_t);
+    HANDLE_TYPE(UINT64, UInt64, uint64_t);
+    HANDLE_TYPE(BOOL, Bool, bool);
+    HANDLE_TYPE(STRING, String, std::string);
+#undef HANDLE_TYPE
+    default:
+      Unreachable();
+  }
+}
+
+bool MapFieldBase::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& self,
+                                                    const MapKey& map_key,
+                                                    MapValueRef* val) {
+  if (LookupMapValueNoSyncImpl(self, map_key,
+                               static_cast<MapValueConstRef*>(val))) {
+    return false;
+  }
+
+  auto& map = self.GetMapRaw();
+
+  NodeBase* node = map.AllocNode();
+  map.VisitValue(node, [&](auto* v) { self.InitializeKeyValue(v); });
+  val->SetValue(map.GetVoidValue(node));
+
+  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
+    self.InitializeKeyValue(map.GetKey(node), key);
+    map.InsertOrReplaceNode(
+        static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
+    return true;
+  });
+}
+
+bool MapFieldBase::DeleteMapValueImpl(MapFieldBase& self,
+                                      const MapKey& map_key) {
+  return VisitMapKey(
+      map_key, *self.MutableMap(),
+      [](auto& map, const auto& key) { return map.EraseImpl(key); });
+}
+
+void MapFieldBase::ClearMapNoSyncImpl(MapFieldBase& self) {
+  self.GetMapRaw().ClearTable(true, nullptr);
+}
+
+void MapFieldBase::SetMapIteratorValueImpl(MapIterator* map_iter) {
+  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
+
+  const UntypedMapBase& map = *map_iter->iter_.m_;
+  NodeBase* node = map_iter->iter_.node_;
+  auto& key = map_iter->key_;
+  map.VisitKey(node,
+               absl::Overload{
+                   [&](const std::string* v) { key.val_.string_value = *v; },
+                   [&](const auto* v) {
+                     // Memcpy the scalar into the union.
+                     memcpy(static_cast<void*>(&key.val_), v, sizeof(*v));
+                   },
+               });
+  map_iter->value_.SetValue(map.GetVoidValue(node));
+}
+
+bool MapFieldBase::LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                            const MapKey& map_key,
+                                            MapValueConstRef* val) {
+  auto& map = self.GetMapRaw();
+  if (map.empty()) return false;
+
+  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
+    auto res = map.FindHelper(key);
+    if (res.node == nullptr) {
+      return false;
+    }
+    if (val != nullptr) {
+      val->SetValue(map.GetVoidValue(res.node));
+    }
+    return true;
+  });
+}
+
+size_t MapFieldBase::SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map) {
+  return map.GetMapRaw().SpaceUsedExcludingSelfLong();
 }
 
 const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
@@ -130,9 +217,9 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
   return *ToPayload(p);
 }
 
-void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
   if (lhs.arena() == rhs.arena()) {
-    lhs.InternalSwap(&rhs);
+    SwapRelaxed(lhs.payload_, rhs.payload_);
     return;
   }
   auto* p1 = lhs.maybe_payload();
@@ -145,23 +232,24 @@ void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
   SwapRelaxed(p1->state, p2->state);
 }
 
-void MapFieldBase::UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
-  ABSL_DCHECK_EQ(lhs.arena(), rhs.arena());
-  lhs.InternalSwap(&rhs);
-}
-
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
-  SwapRelaxed(payload_, other->payload_);
+  GetMapRaw().InternalSwap(&other->GetMapRaw());
+  SwapPayload(*this, *other);
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   size_t size = 0;
   if (auto* p = maybe_payload()) {
-    {
-      absl::MutexLock lock(&p->mutex);
-      size = SpaceUsedExcludingSelfNoLock();
-    }
+    absl::MutexLock lock(&p->mutex);
+    // Measure the map under the lock, because there could be some repeated
+    // field data that might be sync'd back into the map.
+    size = SpaceUsedExcludingSelfNoLock();
+    size += p->repeated_field.SpaceUsedExcludingSelfLong();
+    ConstAccess();
+  } else {
+    // Only measure the map without the repeated field, because it is not there.
+    size = SpaceUsedExcludingSelfNoLock();
     ConstAccess();
   }
   return size;
@@ -177,13 +265,6 @@ bool MapFieldBase::IsMapValid() const {
 bool MapFieldBase::IsRepeatedFieldValid() const {
   ConstAccess();
   return state() != STATE_MODIFIED_MAP;
-}
-
-void MapFieldBase::SetMapDirty() {
-  MutableAccess();
-  // These are called by (non-const) mutator functions. So by our API it's the
-  // callers responsibility to have these calls properly ordered.
-  payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SetRepeatedDirty() {

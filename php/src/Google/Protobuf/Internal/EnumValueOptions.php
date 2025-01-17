@@ -27,6 +27,9 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
     protected $deprecated = null;
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
      */
@@ -65,6 +68,9 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      *           this is a formalization for deprecating enum values.
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type bool $debug_redact
      *           Indicate that fields annotated with this enum value should not be printed
      *           out when using debug formats, e.g. when the field contains sensitive
@@ -124,6 +130,9 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
      * @return \Google\Protobuf\Internal\FeatureSet|null
@@ -145,6 +154,9 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
      * @param \Google\Protobuf\Internal\FeatureSet $var

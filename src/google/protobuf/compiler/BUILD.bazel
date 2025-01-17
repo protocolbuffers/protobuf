@@ -113,6 +113,15 @@ cc_library(
 )
 
 cc_library(
+    name = "plugin",
+    hdrs = ["plugin.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [":code_generator"],
+)
+
+cc_library(
     name = "code_generator_lite",
     srcs = ["code_generator_lite.cc"],
     hdrs = ["code_generator_lite.h"],
@@ -660,6 +669,7 @@ filegroup(
     name = "test_proto_srcs",
     srcs = [
         "//src/google/protobuf/compiler/cpp:test_proto_srcs",
+        "//src/google/protobuf/compiler/java:test_proto_srcs",
     ],
     visibility = ["//pkg:__pkg__"],
 )

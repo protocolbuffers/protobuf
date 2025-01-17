@@ -20,9 +20,12 @@
 #include <cstdlib>
 #include <deque>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <thread>  // NOLINT
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -42,6 +45,7 @@
 #include "absl/log/scoped_mock_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -77,7 +81,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
 using ::google::protobuf::internal::cpp::GetUtf8CheckMode;
+using ::google::protobuf::internal::cpp::HasbitMode;
+using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::AnyOf;
@@ -2630,7 +2637,7 @@ class MiscTest : public testing::Test {
     }
   }
 
-  const char* GetTypeNameForFieldType(FieldDescriptor::Type type) {
+  absl::string_view GetTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->type_name() : "";
   }
@@ -2641,7 +2648,7 @@ class MiscTest : public testing::Test {
                             : static_cast<FieldDescriptor::CppType>(0);
   }
 
-  const char* GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
+  absl::string_view GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->cpp_type_name() : "";
   }
@@ -2666,24 +2673,40 @@ TEST_F(MiscTest, TypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", GetTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", GetTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", GetTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("group", GetTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", GetTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", GetTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", GetTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", GetTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", GetTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"),
+            GetTypeNameForFieldType(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"),
+            GetTypeNameForFieldType(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetTypeNameForFieldType(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetTypeNameForFieldType(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetTypeNameForFieldType(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("fixed64"),
+            GetTypeNameForFieldType(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("fixed32"),
+            GetTypeNameForFieldType(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"), GetTypeNameForFieldType(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"),
+            GetTypeNameForFieldType(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("group"),
+            GetTypeNameForFieldType(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"),
+            GetTypeNameForFieldType(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("bytes"),
+            GetTypeNameForFieldType(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetTypeNameForFieldType(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"), GetTypeNameForFieldType(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("sfixed32"),
+            GetTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("sfixed64"),
+            GetTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("sint32"),
+            GetTypeNameForFieldType(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("sint64"),
+            GetTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticTypeNames) {
@@ -2691,24 +2714,24 @@ TEST_F(MiscTest, StaticTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", FD::TypeName(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::TypeName(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", FD::TypeName(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", FD::TypeName(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", FD::TypeName(FD::TYPE_INT32));
-  EXPECT_STREQ("fixed64", FD::TypeName(FD::TYPE_FIXED64));
-  EXPECT_STREQ("fixed32", FD::TypeName(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", FD::TypeName(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", FD::TypeName(FD::TYPE_STRING));
-  EXPECT_STREQ("group", FD::TypeName(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", FD::TypeName(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("bytes", FD::TypeName(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", FD::TypeName(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", FD::TypeName(FD::TYPE_ENUM));
-  EXPECT_STREQ("sfixed32", FD::TypeName(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("sfixed64", FD::TypeName(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("sint32", FD::TypeName(FD::TYPE_SINT32));
-  EXPECT_STREQ("sint64", FD::TypeName(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"), FD::TypeName(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"), FD::TypeName(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"), FD::TypeName(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"), FD::TypeName(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"), FD::TypeName(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("fixed64"), FD::TypeName(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("fixed32"), FD::TypeName(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"), FD::TypeName(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"), FD::TypeName(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("group"), FD::TypeName(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"), FD::TypeName(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("bytes"), FD::TypeName(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"), FD::TypeName(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"), FD::TypeName(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("sfixed32"), FD::TypeName(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("sfixed64"), FD::TypeName(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("sint32"), FD::TypeName(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("sint64"), FD::TypeName(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, CppTypes) {
@@ -2741,24 +2764,42 @@ TEST_F(MiscTest, CppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("double", GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_STREQ("float", GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_STREQ("bool", GetCppTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_STREQ("enum", GetCppTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_EQ(absl::string_view("double"),
+            GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"),
+            GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetCppTypeNameForFieldType(FD::TYPE_UINT64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_INT32));
+  EXPECT_EQ(absl::string_view("uint64"),
+            GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
+  EXPECT_EQ(absl::string_view("bool"),
+            GetCppTypeNameForFieldType(FD::TYPE_BOOL));
+  EXPECT_EQ(absl::string_view("string"),
+            GetCppTypeNameForFieldType(FD::TYPE_STRING));
+  EXPECT_EQ(absl::string_view("message"),
+            GetCppTypeNameForFieldType(FD::TYPE_GROUP));
+  EXPECT_EQ(absl::string_view("message"),
+            GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("string"),
+            GetCppTypeNameForFieldType(FD::TYPE_BYTES));
+  EXPECT_EQ(absl::string_view("uint32"),
+            GetCppTypeNameForFieldType(FD::TYPE_UINT32));
+  EXPECT_EQ(absl::string_view("enum"),
+            GetCppTypeNameForFieldType(FD::TYPE_ENUM));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_EQ(absl::string_view("int32"),
+            GetCppTypeNameForFieldType(FD::TYPE_SINT32));
+  EXPECT_EQ(absl::string_view("int64"),
+            GetCppTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticCppTypeNames) {
@@ -2766,16 +2807,16 @@ TEST_F(MiscTest, StaticCppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("int32", FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_STREQ("int64", FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_STREQ("uint32", FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_STREQ("uint64", FD::CppTypeName(FD::CPPTYPE_UINT64));
-  EXPECT_STREQ("double", FD::CppTypeName(FD::CPPTYPE_DOUBLE));
-  EXPECT_STREQ("float", FD::CppTypeName(FD::CPPTYPE_FLOAT));
-  EXPECT_STREQ("bool", FD::CppTypeName(FD::CPPTYPE_BOOL));
-  EXPECT_STREQ("enum", FD::CppTypeName(FD::CPPTYPE_ENUM));
-  EXPECT_STREQ("string", FD::CppTypeName(FD::CPPTYPE_STRING));
-  EXPECT_STREQ("message", FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+  EXPECT_EQ(absl::string_view("int32"), FD::CppTypeName(FD::CPPTYPE_INT32));
+  EXPECT_EQ(absl::string_view("int64"), FD::CppTypeName(FD::CPPTYPE_INT64));
+  EXPECT_EQ(absl::string_view("uint32"), FD::CppTypeName(FD::CPPTYPE_UINT32));
+  EXPECT_EQ(absl::string_view("uint64"), FD::CppTypeName(FD::CPPTYPE_UINT64));
+  EXPECT_EQ(absl::string_view("double"), FD::CppTypeName(FD::CPPTYPE_DOUBLE));
+  EXPECT_EQ(absl::string_view("float"), FD::CppTypeName(FD::CPPTYPE_FLOAT));
+  EXPECT_EQ(absl::string_view("bool"), FD::CppTypeName(FD::CPPTYPE_BOOL));
+  EXPECT_EQ(absl::string_view("enum"), FD::CppTypeName(FD::CPPTYPE_ENUM));
+  EXPECT_EQ(absl::string_view("string"), FD::CppTypeName(FD::CPPTYPE_STRING));
+  EXPECT_EQ(absl::string_view("message"), FD::CppTypeName(FD::CPPTYPE_MESSAGE));
 }
 
 TEST_F(MiscTest, MessageType) {
@@ -2990,9 +3031,275 @@ TEST_F(MiscTest, FieldOptions) {
 
   // "bar" had options set.
   EXPECT_NE(&FieldOptions::default_instance(), options);
-  EXPECT_TRUE(bar->options().has_ctype());
-  EXPECT_EQ(FieldOptions::CORD, bar->options().ctype());
+  EXPECT_EQ(bar->cpp_string_type(), FieldDescriptor::CppStringType::kCord);
 }
+
+// ===================================================================
+
+struct HasHasbitTestParam {
+  struct ExpectedOutput {
+    HasbitMode expected_hasbitmode;
+    bool expected_has_presence;
+    bool expected_has_hasbit;
+  };
+
+  std::string input_foo_proto;
+  ExpectedOutput expected_output;
+};
+
+class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
+ protected:
+  void SetUp() override {
+    ASSERT_TRUE(
+        TextFormat::ParseFromString(GetParam().input_foo_proto, &foo_proto_));
+    foo_ = pool_.BuildFile(foo_proto_);
+  }
+
+  const FieldDescriptor* GetField() { return foo_->message_type(0)->field(0); }
+
+  DescriptorPool pool_;
+  FileDescriptorProto foo_proto_;
+  const FileDescriptor* foo_;
+};
+
+TEST_P(HasHasbitTest, TestHasHasbitExplicitPresence) {
+  EXPECT_EQ(GetField()->has_presence(),
+            GetParam().expected_output.expected_has_presence);
+  EXPECT_EQ(GetFieldHasbitMode(GetField()),
+            GetParam().expected_output.expected_hasbitmode);
+  EXPECT_EQ(HasHasbit(GetField()),
+            GetParam().expected_output.expected_has_hasbit);
+}
+
+// NOTE: with C++20 we can use designated initializers to ensure
+// that struct members match commented names, but as we are still working with
+// C++17 in the foreseeable future, we won't be able to refactor this for a
+// while...
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+INSTANTIATE_TEST_SUITE_P(
+    HasHasbitLegacySyntaxTests, HasHasbitTest,
+    testing::Values(
+        // Test case: proto2 singular fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto2'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_INT64
+                                    label: LABEL_OPTIONAL
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                               /*expected_has_presence=*/true,
+                               /*expected_has_hasbit=*/true,
+                           }},
+        // Test case: proto2 repeated fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto2'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }},
+        // Test case: proto3 singular fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto3'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_INT64
+                                    label: LABEL_OPTIONAL
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/true,
+                           }},
+        // Test case: proto3 optional fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto3'
+                 message_type {
+                   name: 'Foo'
+                   field {
+                     name: 'int_field'
+                     number: 1
+                     type: TYPE_INT32
+                     label: LABEL_OPTIONAL
+                     oneof_index: 0
+                     proto3_optional: true
+                   }
+                   oneof_decl { name: '_int_field' }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: proto3 repeated fields
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'proto3'
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }}));
+
+// NOTE: with C++20 we can use designated initializers to ensure
+// that struct members match commented names, but as we are still working with
+// C++17 in the foreseeable future, we won't be able to refactor this for a
+// while...
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+INSTANTIATE_TEST_SUITE_P(
+    HasHasbitEditionsTests, HasHasbitTest,
+    testing::Values(
+        // Test case: explicit-presence, singular fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_INT64
+                     options { features { field_presence: EXPLICIT } }
+                   }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: implicit-presence, singular fields
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_INT64
+                     options { features { field_presence: IMPLICIT } }
+                   }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: oneof fields.
+        // Note that oneof fields can't specify field presence.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     oneof_index: 0
+                   }
+                   oneof_decl { name: "onebar" }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/false,
+            }},
+        // Test case: message fields.
+        // Note that message fields cannot specify implicit presence.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_MESSAGE
+                     type_name: "Bar"
+                   }
+                 }
+                 message_type {
+                   name: 'Bar'
+                   field { name: 'int_field' number: 1 type: TYPE_INT32 }
+                 }
+            )pb",
+            /*expected_output=*/{
+                /*expected_hasbitmode=*/HasbitMode::kTrueHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/true,
+            }},
+        // Test case: repeated fields.
+        // Note that repeated fields can't specify presence.
+        HasHasbitTestParam{R"pb(name: 'foo.proto'
+                                package: 'foo'
+                                syntax: 'editions'
+                                edition: EDITION_2023
+                                message_type {
+                                  name: 'FooMessage'
+                                  field {
+                                    name: 'f'
+                                    number: 1
+                                    type: TYPE_STRING
+                                    label: LABEL_REPEATED
+                                  }
+                                }
+                           )pb",
+                           /*expected_output=*/{
+                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_has_presence=*/false,
+                               /*expected_has_hasbit=*/false,
+                           }}));
+
 
 // ===================================================================
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
@@ -3364,7 +3671,7 @@ TEST(CustomOptions, OptionLocations) {
 
   // See that the regular options went through unscathed.
   EXPECT_TRUE(message->options().has_message_set_wire_format());
-  EXPECT_EQ(FieldOptions::CORD, field->options().ctype());
+  EXPECT_EQ(field->cpp_string_type(), FieldDescriptor::CppStringType::kString);
 }
 
 TEST(CustomOptions, OptionTypes) {
@@ -4027,7 +4334,7 @@ class ValidationErrorTest : public testing::Test {
   void SetUp() override {
     // Enable extension declaration enforcement since most test cases want to
     // exercise the full validation.
-    pool_.EnforceExtensionDeclarations(true);
+    pool_.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
@@ -7574,6 +7881,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7586,6 +7894,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7598,6 +7907,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 utf8_validation: NONE
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -7675,6 +7985,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -7687,6 +7998,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -7867,6 +8179,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -7950,6 +8263,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE2024
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -7983,6 +8297,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8011,6 +8326,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8379,6 +8695,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8412,6 +8729,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8493,6 +8811,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8604,6 +8923,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9078,6 +9398,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9193,6 +9514,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9292,6 +9614,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9400,6 +9723,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9493,6 +9817,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9563,6 +9888,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9844,6 +10170,19 @@ TEST_F(FeaturesTest, FieldCppStringType) {
               }
             }
           } $0
+          extension_range { start: 100 end: 200 }
+        }
+        extension {
+          name: "cord_ext"
+          number: 100
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          options {
+            features {
+              [pb.cpp] { string_type: CORD }
+            }
+          }
+          extendee: "Foo"
         }
       )pb",
       ""
@@ -9854,12 +10193,15 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   const FieldDescriptor* str = message->field(1);
   const FieldDescriptor* cord = message->field(2);
   const FieldDescriptor* cord_bytes = message->field(3);
+  const FieldDescriptor* cord_ext = file->extension(0);
 
   EXPECT_EQ(view->cpp_string_type(), FieldDescriptor::CppStringType::kView);
   EXPECT_EQ(str->cpp_string_type(), FieldDescriptor::CppStringType::kString);
   EXPECT_EQ(cord_bytes->cpp_string_type(),
             FieldDescriptor::CppStringType::kCord);
   EXPECT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(cord_ext->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
 
 }
 
@@ -9972,7 +10314,7 @@ TEST_F(FeaturesTest, NoCtypeFromEdition2024) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: ctype option is not allowed under edition "
+      "foo.proto: Foo.bar: TYPE: ctype option is not allowed under edition "
       "2024 and beyond. Use the feature string_type = VIEW|CORD|STRING|... "
       "instead.\n");
 }
@@ -10644,6 +10986,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11364,6 +11707,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
+        enforce_naming_style: STYLE_LEGACY
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -11386,7 +11730,85 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
               )pb"));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForCppDefault) {
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
+  EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::cpp));  // The default.
+}
+
+TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
+  auto test_default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(test_default_spec);
+  ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(test_default_spec).value()));
+
+  EXPECT_TRUE(pool_.ResolvesFeaturesFor(pb::test));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
+  EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::cpp));
+}
+
+class DescriptorPoolMemoizationTest : public ::testing::Test {
+ protected:
+  template <typename Func>
+  auto MemoizeProjection(const DescriptorPool* pool,
+                         const FieldDescriptor* field, Func func) {
+    return pool->MemoizeProjection(field, func);
+  };
+};
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
+  static int counter = 0;
+  auto name_lambda = [](const FieldDescriptor* field) {
+    counter++;
+    return field->full_name();
+  };
+  protobuf_unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+
+  auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+  auto dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+
+  ASSERT_EQ(counter, 1);
+  ASSERT_EQ(name, "protobuf_unittest.TestAllTypes.optional_int32");
+  ASSERT_EQ(dupe_name, "protobuf_unittest.TestAllTypes.optional_int32");
+
+  auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+      descriptor->file()->pool(), descriptor->field(1), name_lambda);
+
+  ASSERT_EQ(counter, 2);
+  ASSERT_NE(other_name, "protobuf_unittest.TestAllTypes.optional_int32");
+}
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
+  auto name_lambda = [](const FieldDescriptor* field) {
+    return field->full_name();
+  };
+  protobuf_unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+  std::vector<std::thread> threads;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    threads.emplace_back([this, name_lambda, descriptor, i]() {
+      auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+          descriptor->file()->pool(), descriptor->field(i), name_lambda);
+      auto first_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+          descriptor->file()->pool(), descriptor->field(0), name_lambda);
+      ASSERT_THAT(name, HasSubstr("protobuf_unittest.TestAllTypes"));
+      if (i != 0) {
+        ASSERT_NE(name, "protobuf_unittest.TestAllTypes.optional_int32");
+      }
+      ASSERT_EQ(first_name, "protobuf_unittest.TestAllTypes.optional_int32");
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
 }
 
 
@@ -11446,7 +11868,7 @@ TEST_F(ValidationErrorTest, ExtensionDeclarationsMismatchFullNameAllowed) {
   // Make sure that extension declaration names and types are not validated
   // outside of protoc. This is important for allowing extensions to be renamed
   // safely.
-  pool_.EnforceExtensionDeclarations(false);
+  pool_.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kNoEnforcement);
   BuildFile(
       R"pb(
         name: "foo.proto"
@@ -11632,7 +12054,7 @@ TEST_P(ExtensionDeclarationsTest, DotPrefixTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11665,7 +12087,7 @@ TEST_P(ExtensionDeclarationsTest, EnumTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11702,7 +12124,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchEnumType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11738,7 +12160,7 @@ TEST_P(ExtensionDeclarationsTest, DotPrefixFullNameCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11767,7 +12189,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingMessage) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11797,7 +12219,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingNonMessage) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11832,7 +12254,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchMessageType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11862,7 +12284,7 @@ TEST_P(ExtensionDeclarationsTest, NonMessageTypeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -11891,7 +12313,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchNonMessageType) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11926,7 +12348,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingRepeated) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11966,7 +12388,7 @@ TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingOptional) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -11998,7 +12420,7 @@ TEST_P(ExtensionDeclarationsTest, TypeDoesNotLookLikeIdentifier) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   MockErrorCollector error_collector;
   EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
             nullptr);
@@ -12044,7 +12466,7 @@ TEST_P(ExtensionDeclarationsTest, MultipleDeclarationsInARangeCompile) {
   ASSERT_OK(file_proto);
 
   DescriptorPool pool;
-  pool.EnforceExtensionDeclarations(true);
+  pool.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
   EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
 }
 
@@ -13831,6 +14253,28 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
 }
 
 // ===================================================================
+
+// This is effectively a static_assert ensuring that the generated
+// descriptor_table variable is marked extern "C". The compiler will give us an
+// error if the generated declaration does not match this one. We need this
+// variable to be extern "C" so that we can refer to it from Rust.
+//
+// If this causes a linker error, it is likely because the name mangling
+// changed. That can be fixed by updating to the new name from the generated
+// code for unittest.proto.
+
+#define DESCRIPTOR_TABLE_NAME \
+  descriptor_table_google_2fprotobuf_2funittest_2eproto
+
+extern "C" {
+extern const ::google::protobuf::internal::DescriptorTable DESCRIPTOR_TABLE_NAME;
+}
+
+TEST(DescriptorTableExternLinkageTest, DescriptorTableExternLinkageTest) {
+  // The goal of this assertion is just to verify that the descriptor_table
+  // variable declaration above still refers to a real thing.
+  EXPECT_TRUE(absl::EndsWith(DESCRIPTOR_TABLE_NAME.filename, "unittest.proto"));
+}
 
 
 }  // namespace descriptor_unittest

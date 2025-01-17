@@ -12,8 +12,10 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
+#include "upb/base/string_view.h"
 #include "upb/message/compare.h"
 #include "upb/message/copy.h"
+#include "upb/message/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
@@ -177,8 +179,10 @@ err:
 // The parent may also be non-present, in which case a mutation will trigger a
 // chain reaction.
 typedef struct PyUpb_Message {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   uintptr_t def;  // Tagged, low bit 1 == upb_FieldDef*, else upb_MessageDef*
   union {
     // when def is msgdef, the data for this msg.
@@ -575,9 +579,7 @@ static bool PyUpb_Message_IsEmpty(const upb_Message* msg,
   upb_MessageValue val;
   if (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) return false;
 
-  size_t len;
-  (void)upb_Message_GetUnknown(msg, &len);
-  return len == 0;
+  return !upb_Message_HasUnknown(msg);
 }
 
 static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
@@ -1482,7 +1484,8 @@ static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
                                                     PyObject* arg) {
   PyUpb_Message_EnsureReified(self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
-  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, 64);
+  const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
+  upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
   Py_RETURN_NONE;
 }
 

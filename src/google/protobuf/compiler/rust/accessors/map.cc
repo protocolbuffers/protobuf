@@ -129,12 +129,47 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           if (accessor_case == AccessorCase::VIEW) {
             return;
           }
-          ctx.Emit({}, R"rs(
-                pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
-                  // TODO: b/355493062 - Fix this extra copy.
-                  self.$field$_mut().copy_from(src.into_proxied($pbi$::Private).as_view());
-                }
-              )rs");
+          if (ctx.is_upb()) {
+            ctx.Emit({}, R"rs(
+                  pub fn set_$raw_field_name$(
+                      &mut self,
+                      src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
+                    let minitable_field = unsafe {
+                      $pbr$::upb_MiniTable_GetFieldByIndex(
+                        <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                        $upb_mt_field_index$
+                      )
+                    };
+                    let mut val = src.into_proxied($pbi$::Private);
+                    let val_as_mut = val.as_mut();
+                    let mut inner = val_as_mut.inner($pbi$::Private);
+
+                    self.arena().fuse(inner.arena());
+                    unsafe {
+                        let value_ptr: *const *const $std$::ffi::c_void =
+                            &(inner.as_raw().as_ptr() as *const $std$::ffi::c_void);
+                        $pbr$::upb_Message_SetBaseField(self.raw_msg(),
+                          minitable_field,
+                          value_ptr as *const $std$::ffi::c_void);
+                    }
+                  }
+                )rs");
+          } else {
+            ctx.Emit({{"move_setter_thunk", ThunkName(ctx, field, "set")}},
+                     R"rs(
+                  pub fn set_$raw_field_name$(
+                      &mut self,
+                      src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
+                    let val = $std$::mem::ManuallyDrop::new(
+                        src.into_proxied($pbi$::Private));
+                    unsafe {
+                      $move_setter_thunk$(
+                          self.raw_msg(),
+                          val.as_raw($pbi$::Private));
+                    }
+                  }
+                )rs");
+          }
         }}},
       R"rs(
     $getter$
@@ -150,6 +185,7 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
       {
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"move_setter_thunk", ThunkName(ctx, field, "set")},
           {"getter",
            [&] {
              if (ctx.is_upb()) {
@@ -163,6 +199,9 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
                ctx.Emit({}, R"rs(
                 fn $getter_thunk$(msg: $pbr$::RawMessage) -> $pbr$::RawMap;
                 fn $getter_mut_thunk$(msg: $pbr$::RawMessage,) -> $pbr$::RawMap;
+                fn $move_setter_thunk$(
+                    raw_msg: $pbr$::RawMessage,
+                    value: $pbr$::RawMap);
               )rs");
              }
            }},
@@ -175,23 +214,30 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
 void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
   ABSL_CHECK(ctx.is_cpp());
 
-  ctx.Emit({{"field", cpp::FieldName(&field)},
-            {"Key", MapElementTypeName(*field.message_type()->map_key())},
-            {"Value", MapElementTypeName(*field.message_type()->map_value())},
-            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"getter_thunk", ThunkName(ctx, field, "get")},
-            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
-            {"impls",
-             [&] {
-               ctx.Emit(
-                   R"cc(
-                     const void* $getter_thunk$(const $QualifiedMsg$* msg) {
-                       return &msg->$field$();
-                     }
-                     void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
-                   )cc");
-             }}},
-           "$impls$");
+  ctx.Emit(
+      {{"field", cpp::FieldName(&field)},
+       {"Key", MapElementTypeName(*field.message_type()->map_key())},
+       {"Value", MapElementTypeName(*field.message_type()->map_value())},
+       {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+       {"getter_thunk", ThunkName(ctx, field, "get")},
+       {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+       {"move_setter_thunk", ThunkName(ctx, field, "set")},
+       {"impls",
+        [&] {
+          ctx.Emit(
+              R"cc(
+                const void* $getter_thunk$(const $QualifiedMsg$* msg) {
+                  return &msg->$field$();
+                }
+                void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
+                void $move_setter_thunk$($QualifiedMsg$* msg,
+                                         google::protobuf::Map<$Key$, $Value$>* value) {
+                  *msg->mutable_$field$() = std::move(*value);
+                  delete value;
+                }
+              )cc");
+        }}},
+      "$impls$");
 }
 
 }  // namespace rust

@@ -93,9 +93,13 @@ class FieldDefPtr {
   // whatever message this field belongs to.  Guaranteed to be less than
   // f->containing_type()->field_count().  May only be accessed once the def has
   // been finalized.
+  // The index ordering here is *dependent* on the order of the fields in the
+  // .proto file.
   uint32_t index() const { return upb_FieldDef_Index(ptr_); }
 
-  // Index into msgdef->layout->fields or file->exts
+  // Index into msgdef->layout->fields or file->exts.
+  // This is the index that the MiniTable uses, and is independent of the order
+  // of the fields in the .proto file.
   uint32_t layout_index() const { return upb_FieldDef_LayoutIndex(ptr_); }
 
   // The MessageDef to which this field belongs (for extensions, the extended

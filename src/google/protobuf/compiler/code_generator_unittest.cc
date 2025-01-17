@@ -72,8 +72,8 @@ class TestGenerator : public CodeGenerator {
 
  private:
   uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
-  Edition minimum_edition_ = MinimumAllowedEdition();
-  Edition maximum_edition_ = MaximumAllowedEdition();
+  Edition minimum_edition_ = ProtocMinimumEdition();
+  Edition maximum_edition_ = ProtocMaximumEdition();
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 };
@@ -280,6 +280,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -292,6 +293,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
                   }
                 }
                 defaults {
@@ -304,10 +306,23 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
+                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                }
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                  }
                   fixed_features {}
                 }
-                minimum_edition: EDITION_99997_TEST_ONLY
-                maximum_edition: EDITION_99999_TEST_ONLY
+                minimum_edition: EDITION_PROTO2
+                maximum_edition: EDITION_2024
               )pb")));
 }
 
@@ -320,13 +335,13 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
   auto result = generator.BuildFeatureSetDefaults();
 
   ASSERT_TRUE(result.ok()) << result.status().message();
-  EXPECT_EQ(result->minimum_edition(), MinimumAllowedEdition());
-  EXPECT_EQ(result->maximum_edition(), MaximumAllowedEdition());
+  EXPECT_EQ(result->minimum_edition(), ProtocMinimumEdition());
+  EXPECT_EQ(result->maximum_edition(), MaximumKnownEdition());
 }
 
 TEST_F(CodeGeneratorTest, SupportedEditionRangeIsDense) {
-  for (int i = static_cast<int>(MinimumAllowedEdition());
-       i <= static_cast<int>(MaximumAllowedEdition()); ++i) {
+  for (int i = static_cast<int>(ProtocMinimumEdition());
+       i <= static_cast<int>(ProtocMaximumEdition()); ++i) {
     EXPECT_TRUE(Edition_IsValid(i));
   }
 }

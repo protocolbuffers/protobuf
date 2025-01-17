@@ -176,19 +176,7 @@ static void _upb_TextEncode_Msg(txtenc* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & UPB_TXTENC_SKIPUNKNOWN) == 0) {
-    size_t size;
-    const char* ptr = upb_Message_GetUnknown(msg, &size);
-    if (size != 0) {
-      char* start = e->ptr;
-      upb_EpsCopyInputStream stream;
-      upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
-      if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, ptr, &stream, -1)) {
-        /* Unknown failed to parse, back up and don't print it at all. */
-        e->ptr = start;
-      }
-    }
-  }
+  UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(e, msg);
 }
 
 size_t upb_TextEncode(const upb_Message* msg, const upb_MessageDef* m,

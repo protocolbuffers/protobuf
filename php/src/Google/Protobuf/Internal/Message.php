@@ -1255,6 +1255,18 @@ class Message
                         $tmp_value,
                         $value_field,
                         $ignore_unknown);
+
+                    // Mapped unknown enum string values should be silently
+                    // ignored if ignore_unknown is set.
+                    if ($value_field->getType() == GPBType::ENUM &&
+                        is_string($tmp_value) &&
+                        is_null(
+                          $value_field->getEnumType()->getValueByName($tmp_value)
+                        ) &&
+                        $ignore_unknown) {
+                        continue;
+                    }
+
                     self::kvUpdateHelper($field, $proto_key, $proto_value);
                 }
             } else if ($field->isRepeated()) {
@@ -1270,6 +1282,16 @@ class Message
                         $tmp,
                         $field,
                         $ignore_unknown);
+
+                    // Repeated unknown enum string values should be silently
+                    // ignored if ignore_unknown is set.
+                    if ($field->getType() == GPBType::ENUM &&
+                        is_string($tmp) &&
+                        is_null($field->getEnumType()->getValueByName($tmp)) &&
+                        $ignore_unknown) {
+                        continue;
+                    }
+
                     self::appendHelper($field, $proto_value);
                 }
             } else {

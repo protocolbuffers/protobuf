@@ -22,7 +22,7 @@ from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
@@ -236,13 +236,6 @@ class DescriptorTest(unittest.TestCase):
   def testContainingServiceFixups(self):
     self.assertEqual(self.my_service, self.my_method.containing_service)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'GetDebugString is only available with the cpp implementation',
-  )
-  def testGetDebugString(self):
-    self.assertEqual(self.my_file.GetDebugString(), TEST_FILE_DESCRIPTOR_DEBUG)
-
   def testGetOptions(self):
     self.assertEqual(self.my_enum.GetOptions(),
                      descriptor_pb2.EnumOptions())
@@ -296,6 +289,7 @@ class DescriptorTest(unittest.TestCase):
     service_options = service_descriptor.GetOptions()
     service_opt1 = unittest_custom_options_pb2.service_opt1
     self.assertEqual(-9876543210, service_options.Extensions[service_opt1])
+    self.assertTrue(method_descriptor.has_options)
     method_options = method_descriptor.GetOptions()
     method_opt1 = unittest_custom_options_pb2.method_opt1
     self.assertEqual(unittest_custom_options_pb2.METHODOPT1_VAL2,
@@ -550,7 +544,8 @@ class DescriptorTest(unittest.TestCase):
 
   @unittest.skipIf(
       api_implementation.Type() == 'python',
-      'Immutability of descriptors is only enforced in v2 implementation')
+      'Immutability of descriptors is only enforced in c++ and upb backends',
+  )
   def testImmutableCppDescriptor(self):
     file_descriptor = unittest_pb2.DESCRIPTOR
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -575,8 +570,19 @@ class DescriptorTest(unittest.TestCase):
       enum_descriptor.has_options = False
     with self.assertRaises(AttributeError) as e:
       message_descriptor.has_options = True
-    self.assertEqual('attribute is not writable: has_options',
-                     str(e.exception))
+
+    if api_implementation.Type() == 'cpp':
+      self.assertEqual(
+          'attribute is not writable: has_options', str(e.exception)
+      )
+    else:
+      self.assertEqual(api_implementation.Type(), 'upb')
+      self.assertEqual(
+          "attribute 'has_options' of "
+          "'google._upb._message.Descriptor' "
+          'objects is not writable',
+          str(e.exception),
+      )
 
   def testDefault(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -787,6 +793,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertIs(service_descriptor.file, unittest_pb2.DESCRIPTOR)
     self.assertEqual(service_descriptor.index, 0)
     self.CheckDescriptorMapping(service_descriptor.methods_by_name)
+    self.assertFalse(service_descriptor.has_options)
 
   def testOneofDescriptor(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -1226,9 +1233,9 @@ class MakeDescriptorTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class FeaturesTest(_parameterized.TestCase):
+class FeaturesTest(parameterized.TestCase):
 
-  @_parameterized.named_parameters([
+  @parameterized.named_parameters([
       ('File', lambda: descriptor_pb2.DESCRIPTOR),
       ('Message', lambda: descriptor_pb2.FeatureSet.DESCRIPTOR),
       (

@@ -58,6 +58,7 @@ DESCRIPTOR_GENERATED_FILES = [
     "src/Google/Protobuf/Internal/ExtensionRangeOptions/VerificationState.php",
     "src/Google/Protobuf/Internal/FeatureSet.php",
     "src/Google/Protobuf/Internal/FeatureSet/EnumType.php",
+    "src/Google/Protobuf/Internal/FeatureSet/EnforceNamingStyle.php",
     "src/Google/Protobuf/Internal/FeatureSet/FieldPresence.php",
     "src/Google/Protobuf/Internal/FeatureSet/JsonFormat.php",
     "src/Google/Protobuf/Internal/FeatureSet/MessageEncoding.php",

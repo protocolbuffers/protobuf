@@ -48,11 +48,6 @@ TEST(Cpp, Iteration) {
   EXPECT_EQ(oneof_count, md.oneof_count());
 }
 
-TEST(Cpp, InlinedArena2) {
-  upb::InlinedArena<64> arena;
-  upb_Arena_Malloc(arena.ptr(), sizeof(int));
-}
-
 TEST(Cpp, Default) {
   upb::DefPool defpool;
   upb::Arena arena;

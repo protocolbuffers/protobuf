@@ -13,7 +13,6 @@
 
 #include "google/protobuf/compiler/parser.h"
 
-#include <float.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -23,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/casts.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -39,8 +37,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/wire_format.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -104,57 +100,6 @@ std::string MapEntryName(absl::string_view field_name) {
   }
   result.append(kSuffix);
   return result;
-}
-
-bool IsUppercase(char c) { return c >= 'A' && c <= 'Z'; }
-
-bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
-
-bool IsNumber(char c) { return c >= '0' && c <= '9'; }
-
-bool IsUpperCamelCase(absl::string_view name) {
-  if (name.empty()) {
-    return true;
-  }
-  // Name must start with an upper case character.
-  if (!IsUppercase(name[0])) {
-    return false;
-  }
-  // Must not contains underscore.
-  for (const char c : name) {
-    if (c == '_') {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsUpperUnderscore(absl::string_view name) {
-  for (const char c : name) {
-    if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsLowerUnderscore(absl::string_view name) {
-  for (const char c : name) {
-    if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsNumberFollowUnderscore(absl::string_view name) {
-  for (int i = 1; i < name.length(); i++) {
-    const char c = name[i];
-    if (IsNumber(c) && name[i - 1] == '_') {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // anonymous namespace
@@ -626,22 +571,6 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     return false;
   }
 
-  // Enforce that enum constants must be UPPER_CASE except in case of
-  // enum_alias.
-  if (!allow_alias) {
-    for (const auto& enum_value : proto->value()) {
-      if (!IsUpperUnderscore(enum_value.name())) {
-        RecordWarning([&] {
-          return absl::StrCat(
-              "Enum constant should be in UPPER_CASE. Found: ",
-              enum_value.name(),
-              ". See "
-              "https://developers.google.com/protocol-buffers/docs/style");
-        });
-      }
-    }
-  }
-
   return true;
 }
 
@@ -866,14 +795,6 @@ bool Parser::ParseMessageDefinition(
     location.RecordLegacyLocation(message,
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
-    if (!IsUpperCamelCase(message->name())) {
-      RecordWarning([=] {
-        return absl::StrCat(
-            "Message name should be in UpperCamelCase. Found: ",
-            message->name(),
-            ". See https://developers.google.com/protocol-buffers/docs/style");
-      });
-    }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
 
@@ -1101,22 +1022,6 @@ bool Parser::ParseMessageFieldNoLabel(
                               FieldDescriptorProto::kNameFieldNumber);
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
-
-    if (!IsLowerUnderscore(field->name())) {
-      RecordWarning([=] {
-        return absl::StrCat(
-            "Field name should be lowercase. Found: ", field->name(),
-            ". See: https://developers.google.com/protocol-buffers/docs/style");
-      });
-    }
-    if (IsNumberFollowUnderscore(field->name())) {
-      RecordWarning([=] {
-        return absl::StrCat(
-            "Number should not come right after an underscore. Found: ",
-            field->name(),
-            ". See: https://developers.google.com/protocol-buffers/docs/style");
-      });
-    }
   }
   DO(Consume("=", "Missing field number."));
 
@@ -1861,6 +1766,11 @@ bool Parser::ParseReservedName(std::string* name, ErrorMaker error_message) {
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
+    // Before Edition 2023, it was possible to reserve any string literal. This
+    // doesn't really make sense if the string literal wasn't a valid
+    // identifier, so warn about it here.
+    // Note that this warning is also load-bearing for tests that intend to
+    // verify warnings work as expected today.
     RecordWarning(line, col, [=] {
       return absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
                              *name);

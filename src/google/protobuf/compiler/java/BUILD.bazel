@@ -35,6 +35,7 @@ cc_library(
     hdrs = [
         "context.h",
         "doc_comment.h",
+        "generator.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
@@ -48,6 +49,7 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":java_features_bootstrap",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
@@ -127,6 +129,7 @@ cc_library(
     deps = [
         ":generator_common",
         ":helpers",
+        ":internal_helpers",
         ":java_features_bootstrap",
         ":names",
         "//src/google/protobuf",
@@ -193,6 +196,20 @@ cc_library(
 )
 
 cc_test(
+    name = "generator_unittest",
+    srcs = ["generator_unittest.cc"],
+    deps = [
+        ":java",
+        ":java_features_bootstrap",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "doc_comment_unittest",
     srcs = ["doc_comment_unittest.cc"],
     data = [
@@ -226,6 +243,30 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "name_resolver_test",
+    size = "small",
+    srcs = ["name_resolver_test.cc"],
+    deps = [
+        ":helpers",
+        ":java",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Distribution packaging
 ################################################################################
@@ -246,5 +287,11 @@ filegroup(
         ],
         allow_empty = True,
     ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = glob(["*.proto"]),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

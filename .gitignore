@@ -176,10 +176,14 @@ ruby/tests/multi_level_nesting_test_pb.rb
 ruby/tests/service_test_pb.rb
 ruby/tests/test_import_proto2_pb.rb
 ruby/tests/test_ruby_package_proto2_pb.rb
+ruby/tests/basic_test_features_pb.rb
+ruby/tests/generated_code_editions_pb.rb
+ruby/tests/repeated_field_test_pb.rb
+ruby/tests/stress_pb.rb
+ruby/tests/utf8_pb.rb
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
 ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
-ruby/Gemfile.lock
 
 # IntelliJ CLion Config files and build output
 cmake/.idea

@@ -109,7 +109,7 @@ def _rule_impl(ctx):
     if runtime:
         proguard_provider_specs = runtime[ProguardSpecInfo]
     else:
-        proguard_provider_specs = ProguardSpecInfo(specs = depset())
+        proguard_provider_specs = ProguardSpecInfo(depset())
 
     java_info = java_info_merge_for_protos([dep[JavaInfo] for dep in ctx.attr.deps], merge_java_outputs = False)
 
@@ -176,3 +176,6 @@ rules to generate Java code for.
     provides = [JavaInfo],
     toolchains = toolchains.use_toolchain(_JAVA_LITE_PROTO_TOOLCHAIN),
 )
+
+# public re-export, note that we can't rename the original symbol because that changes the aspect id
+java_lite_proto_aspect = _java_lite_proto_aspect

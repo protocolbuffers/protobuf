@@ -58,7 +58,7 @@ class PROTOBUF_EXPORT LazyString {
   const std::string& get() const {
     // This check generates less code than a call-once invocation.
     auto* res = inited_.load(std::memory_order_acquire);
-    if (PROTOBUF_PREDICT_FALSE(res == nullptr)) return Init();
+    if (ABSL_PREDICT_FALSE(res == nullptr)) return Init();
     return *res;
   }
 
@@ -344,7 +344,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Own()'d by any arena. If the field is not set, this returns nullptr. The
   // caller retains ownership. Clears this field back to the default state.
   // Used to implement release_<field>() methods on generated classes.
-  PROTOBUF_NODISCARD std::string* Release();
+  [[nodiscard]] std::string* Release();
 
   // Takes a std::string that is heap-allocated, and takes ownership. The
   // std::string's destructor is registered with the arena. Used to implement
@@ -372,9 +372,9 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  inline PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
-                                                         ArenaStringPtr* lhs,
-                                                         Arena* arena);
+  PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
+                                                  ArenaStringPtr* lhs,
+                                                  Arena* arena);
 
   // Internal setter used only at parse time to directly set a donated string
   // value.
@@ -405,8 +405,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   // Swaps tagged pointer without debug hardening. This is to allow python
   // protobuf to maintain pointer stability even in DEBUG builds.
-  inline PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(
-      ArenaStringPtr* rhs, ArenaStringPtr* lhs) {
+  PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(ArenaStringPtr* rhs,
+                                                       ArenaStringPtr* lhs) {
     std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
   }
 
@@ -494,8 +494,9 @@ inline void ArenaStringPtr::SetBytes(const void* p, size_t n, Arena* arena) {
   Set(absl::string_view{static_cast<const char*>(p), n}, arena);
 }
 
-inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(
-    ArenaStringPtr* rhs, ArenaStringPtr* lhs, Arena* arena) {
+PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(ArenaStringPtr* rhs,
+                                                         ArenaStringPtr* lhs,
+                                                         Arena* arena) {
   // Silence unused variable warnings in release buildls.
   (void)arena;
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);

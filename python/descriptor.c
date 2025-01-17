@@ -23,8 +23,10 @@
 // This representation is used by all concrete descriptors.
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* pool;          // We own a ref.
+  // clang-format on
   const void* def;         // Type depends on the class. Kept alive by "pool".
   PyObject* options;       // NULL if not present or not cached.
   PyObject* features;      // NULL if not present or not cached.
@@ -1525,6 +1527,12 @@ static PyObject* PyUpb_MethodDescriptor_GetServerStreaming(PyObject* self,
   return PyBool_FromLong(upb_MethodDef_ServerStreaming(m) ? 1 : 0);
 }
 
+static PyObject* PyUpb_MethodDescriptor_GetHasOptions(PyObject* _self,
+                                                      void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  return PyBool_FromLong(upb_MethodDef_HasOptions(self->def));
+}
+
 static PyObject* PyUpb_MethodDescriptor_GetOptions(PyObject* _self,
                                                    PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1563,6 +1571,8 @@ static PyGetSetDef PyUpb_MethodDescriptor_Getters[] = {
      "Client streaming", NULL},
     {"server_streaming", PyUpb_MethodDescriptor_GetServerStreaming, NULL,
      "Server streaming", NULL},
+    {"has_options", PyUpb_MethodDescriptor_GetHasOptions, NULL, "Has Options"},
+
     {NULL}};
 
 static PyMethodDef PyUpb_MethodDescriptor_Methods[] = {
@@ -1752,6 +1762,12 @@ static PyObject* PyUpb_ServiceDescriptor_GetMethodsByName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
+static PyObject* PyUpb_ServiceDescriptor_GetHasOptions(PyObject* _self,
+                                                       void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  return PyBool_FromLong(upb_ServiceDef_HasOptions(self->def));
+}
+
 static PyObject* PyUpb_ServiceDescriptor_GetOptions(PyObject* _self,
                                                     PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1797,6 +1813,7 @@ static PyGetSetDef PyUpb_ServiceDescriptor_Getters[] = {
     {"methods", PyUpb_ServiceDescriptor_GetMethods, NULL, "Methods", NULL},
     {"methods_by_name", PyUpb_ServiceDescriptor_GetMethodsByName, NULL,
      "Methods by name", NULL},
+    {"has_options", PyUpb_ServiceDescriptor_GetHasOptions, NULL, "Has Options"},
     {NULL}};
 
 static PyMethodDef PyUpb_ServiceDescriptor_Methods[] = {

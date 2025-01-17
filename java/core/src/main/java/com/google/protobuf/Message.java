@@ -41,7 +41,8 @@ public interface Message extends MessageLite, MessageOrBuilder {
    * @return {@code true} if the specified object is equal to this message
    */
   @Override
-  boolean equals(Object other);
+  boolean equals(
+          Object other);
 
   /**
    * Returns the hash code value for this message. The hash code of a message should mix the

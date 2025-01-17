@@ -81,20 +81,22 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   // Write model.upb.fwd.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output_stream(
       context->Open(ForwardingHeaderFilename(file)));
-  auto fwd_ctx = Context(output_stream.get(), Options{.backend = Backend::UPB});
+  Context fwd_ctx =
+      Context(file, output_stream.get(), Options{.backend = Backend::UPB});
   WriteForwardingHeader(file, fwd_ctx);
 
   // Write model.upb.proto.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
-  Context hdr_ctx(header_output_stream.get(), Options{.backend = Backend::UPB});
+  Context hdr_ctx(file, header_output_stream.get(),
+                  Options{.backend = Backend::UPB});
   WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
   // Write model.upb.proto.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   auto cc_ctx =
-      Context(cc_output_stream.get(), Options{.backend = Backend::UPB});
+      Context(file, cc_output_stream.get(), Options{.backend = Backend::UPB});
   WriteSource(file, cc_ctx, fasttable_enabled, strip_nonfunctional_codegen);
   return true;
 }
@@ -163,25 +165,24 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
   }
 
   WriteHeaderMessageForwardDecls(file, ctx, strip_feature_includes);
-  WriteStartNamespace(file, ctx);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
-  // Write Class and Enums.
-  WriteEnumDeclarations(this_file_enums, ctx);
-  ctx.Emit("\n");
+  WrapNamespace(file, ctx, [&]() {
+    // Write Class and Enums.
+    WriteEnumDeclarations(this_file_enums, ctx);
+    ctx.Emit("\n");
 
-  for (auto message : this_file_messages) {
-    WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
-                                  ctx);
-  }
-  ctx.Emit("\n");
+    for (auto message : this_file_messages) {
+      WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
+                                    ctx);
+    }
+    ctx.Emit("\n");
 
-  WriteExtensionIdentifiersHeader(this_file_exts, ctx);
-  ctx.Emit("\n");
-
-  WriteEndNamespace(file, ctx);
+    WriteExtensionIdentifiersHeader(this_file_exts, ctx);
+    ctx.Emit("\n");
+  });
 
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
@@ -213,12 +214,12 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
   }
   ctx.EmitLegacy("#include \"upb/port/def.inc\"\n");
 
-  WriteStartNamespace(file, ctx);
-  WriteMessageImplementations(file, ctx);
-  const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
-      SortedExtensions(file);
-  WriteExtensionIdentifiers(this_file_exts, ctx);
-  WriteEndNamespace(file, ctx);
+  WrapNamespace(file, ctx, [&]() {
+    WriteMessageImplementations(file, ctx);
+    const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
+        SortedExtensions(file);
+    WriteExtensionIdentifiers(this_file_exts, ctx);
+  });
 
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
 }
@@ -238,23 +239,21 @@ void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Context& ctx) {
-  WriteStartNamespace(file, ctx);
-
-  // Forward-declare types defined in this file.
-  for (auto message : file_messages) {
-    ctx.EmitLegacy(
-        R"cc(
-          class $0;
-          namespace internal {
-          class $0Access;
-          class $0Proxy;
-          class $0CProxy;
-          }  // namespace internal
-        )cc",
-        ClassName(message));
-  }
+  WrapNamespace(file, ctx, [&]() {
+    // Forward-declare types defined in this file.
+    for (auto message : file_messages) {
+      ctx.Emit({{"class_name", ClassName(message)}},
+               R"cc(
+                 class $class_name$;
+                 namespace internal {
+                 class $class_name$Access;
+                 class $class_name$Proxy;
+                 class $class_name$CProxy;
+                 }  // namespace internal
+               )cc");
+    }
+  });
   ctx.Emit("\n");
-  WriteEndNamespace(file, ctx);
 }
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.

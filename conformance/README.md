@@ -70,7 +70,7 @@ C#:
 
 Objective-C (Mac only):
 
-    $ `bazel test //objectivec:conformance_test --macos_minimum_os=10.9
+    $ `bazel test //objectivec:conformance_test --macos_minimum_os=11.0`
 
 Ruby:
 

@@ -11,6 +11,7 @@ package(
 
 cc_library(
     name = "file",
+    testonly = 1,
     srcs = ["file.cc"],
     hdrs = ["file.h"],
     copts = COPTS,

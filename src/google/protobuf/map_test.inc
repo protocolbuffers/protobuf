@@ -15,6 +15,7 @@
 #endif  // _WIN32
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <random>
 #include <sstream>
@@ -49,6 +50,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -86,6 +88,11 @@ struct MoveTestKey {
 
   MoveTestKey(MoveTestKey&& other) noexcept
       : data(other.data), copies(other.copies) {}
+
+  template <typename H>
+  friend auto AbslHashValue(H state, const MoveTestKey& m) {
+    return H::combine(std::move(state), m.data);
+  }
 
   friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
     return lhs.data == rhs.data;
@@ -177,13 +184,7 @@ struct MapTestPeer {
     using Node = typename T::Node;
     auto* node = static_cast<Node*>(map.AllocNode(sizeof(Node)));
     ::new (static_cast<void*>(&node->kv)) typename T::value_type{key, value};
-    node = static_cast<Node*>(GetKeyMapBase(map).InsertOrReplaceNode(node));
-    if (node) {
-      node->~Node();
-      GetKeyMapBase(map).DeallocNode(node, sizeof(Node));
-      return false;
-    }
-    return true;
+    return GetKeyMapBase(map).InsertOrReplaceNode(node);
   }
 
   template <typename T>
@@ -201,21 +202,23 @@ struct MapTestPeer {
     map.Resize(num_buckets);
   }
 
-  template <typename T>
-  static bool HasTreeBuckets(T& map) {
-    for (size_t i = 0; i < map.num_buckets_; ++i) {
-      if (TableEntryIsTree(map.table_[i])) return true;
-    }
-    return false;
-  }
-
-  static int CalculateHiCutoff(int num_buckets) {
+  static size_t CalculateHiCutoff(size_t num_buckets) {
     return Map<int, int>::CalculateHiCutoff(num_buckets);
   }
+
+  static size_t CalculateCapacityForSize(size_t size) {
+    return Map<int, int>::CalculateCapacityForSize(size);
+  }
+
+  template <typename Map>
+  static auto GetTypeInfo() {
+    return Map::GetTypeInfo();
+  }
+
+  static constexpr size_t kMinTableSize = UntypedMapBase::kMinTableSize;
 };
 
 namespace {
-using internal::DownCast;
 
 // Map API Test =====================================================
 
@@ -322,26 +325,8 @@ namespace protobuf {
 namespace internal {
 
 template <>
-struct RealKeyToVariantKey<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
-template <>
 struct TransparentSupport<MoveTestKey> {
   using hash = absl::Hash<MoveTestKey>;
-
-  static bool Equals(const MoveTestKey& a, const MoveTestKey& b) {
-    return a == b;
-  }
 
   template <typename K>
   using key_arg = MoveTestKey;
@@ -512,49 +497,6 @@ TEST_F(MapImplTest, IteratorBasic) {
 static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
-
-// Finds inputs that will fall in the first few buckets for this particular map
-// (with the random seed it has) and this particular size.
-static std::vector<int> FindBadInputs(Map<int, int>& map, int num_inputs) {
-  // Make sure the seed and the size is set so that BucketNumber works.
-  while (map.size() < num_inputs) map[map.size()];
-  map.clear();
-
-  std::vector<int> out;
-
-  for (int i = 0; out.size() < num_inputs; ++i) {
-    if (MapTestPeer::BucketNumber(map, i) < 3) {
-      out.push_back(i);
-    }
-  }
-
-  // Reset the table to get it to grow from scratch again.
-  // The capacity will be lost, but we will get it again on insertion.
-  // It will also keep the seed.
-  map.clear();
-  MapTestPeer::Resize(map, 8);
-
-  return out;
-}
-
-TEST_F(MapImplTest, TreePathWorksAsExpected) {
-  const std::vector<int> s = FindBadInputs(map_, 1000);
-
-  for (int i : s) {
-    map_[i] = 0;
-  }
-  // Make sure we are testing what we think we are testing.
-  ASSERT_TRUE(MapTestPeer::HasTreeBuckets(map_));
-  for (int i : s) {
-    ASSERT_NE(map_.find(i), map_.end()) << i;
-  }
-  for (int i : s) {
-    ASSERT_EQ(1, map_.erase(i)) << i;
-  }
-  EXPECT_FALSE(MapTestPeer::HasTreeBuckets(map_));
-  EXPECT_TRUE(map_.empty());
-}
-
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
@@ -1307,6 +1249,91 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
   }
 }
 
+TEST_F(MapImplTest, DeleteMapValues) {
+  auto* descriptor = UNITTEST::TestMap::descriptor();
+
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> dyn_message(factory.GetPrototype(descriptor)->New());
+  std::unique_ptr<Message> gen_message = std::make_unique<TestMap>();
+  Arena arena;
+
+  for (auto* message : {gen_message.get(), dyn_message.get(),
+                        gen_message->New(&arena), dyn_message->New(&arena)}) {
+    MapReflectionTester reflection_tester(descriptor);
+    reflection_tester.SetMapFieldsViaMapReflection(message);
+
+    // Each maps has two elements. Let's remove the smallest one first, so that
+    // we can test the result. Then remove the rest and test again.
+
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      auto* field = descriptor->field(i);
+      if (!field->is_map()) continue;
+
+      MapIterator it = reflection_tester.MapBegin(message, field->name());
+      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      // It's unordered, so search for it.
+      if (it == end) continue;
+      auto next = it;
+      ++next;
+      ASSERT_NE(next, end);
+      if (next.GetKey() < it.GetKey()) {
+        it = next;
+      }
+
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 2);
+      reflection_tester.DeleteMapValueViaMapReflection(
+          message, field->name(), it.GetKey());
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 1);
+    }
+
+    EXPECT_THAT(*message, EqualsProto(R"pb(
+      map_int32_int32 { key: 1 value: 1 }
+      map_int64_int64 { key: 1 value: 1 }
+      map_uint32_uint32 { key: 1 value: 1 }
+      map_uint64_uint64 { key: 1 value: 1 }
+      map_sint32_sint32 { key: 1 value: 1 }
+      map_sint64_sint64 { key: 1 value: 1 }
+      map_fixed32_fixed32 { key: 1 value: 1 }
+      map_fixed64_fixed64 { key: 1 value: 1 }
+      map_sfixed32_sfixed32 { key: 1 value: 1 }
+      map_sfixed64_sfixed64 { key: 1 value: 1 }
+      map_int32_float { key: 1 value: 1 }
+      map_int32_double { key: 1 value: 1 }
+      map_bool_bool { key: true value: true }
+      map_string_string {
+        key: "This is another very long string that goes in the heap"
+        value: "This is another very long string that goes in the heap"
+      }
+      map_int32_bytes {
+        key: 1
+        value: "This is another very long string that goes in the heap"
+      }
+      map_int32_enum { key: 1 value: MAP_ENUM_BAZ }
+      map_int32_foreign_message {
+        key: 1
+        value { c: 1 }
+      }
+    )pb"));
+
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      auto* field = descriptor->field(i);
+      if (!field->is_map()) continue;
+
+      MapIterator it = reflection_tester.MapBegin(message, field->name());
+      MapIterator end = reflection_tester.MapEnd(message, field->name());
+
+      while (it != end) {
+        auto next = it;
+        ++next;
+        reflection_tester.DeleteMapValueViaMapReflection(
+            message, field->name(), it.GetKey());
+        it = next;
+      }
+      EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 0);
+    }
+  }
+}
+
 TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
@@ -1315,6 +1342,167 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
   it2 = it1;
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
+}
+
+class MapTestWithParams
+    : public testing::TestWithParam<std::tuple<bool, bool, bool>> {};
+
+INSTANTIATE_TEST_SUITE_P(MapTestWithParamsSuite, MapTestWithParams,
+                         testing::Combine(testing::Bool(), testing::Bool(),
+                                          testing::Bool()));
+
+TEST_P(MapTestWithParams, SwapMapsFieldsViaReflection) {
+  auto* descriptor = UNITTEST::TestMap::descriptor();
+  auto [use_dynamic, lhs_arena, rhs_arena] = GetParam();
+
+  DynamicMessageFactory factory;
+  std::unique_ptr<const Message> dyn_message(
+      factory.GetPrototype(descriptor)->New());
+  TestMap gen_message;
+  Arena arena;
+
+  std::vector<const FieldDescriptor*> fields;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    fields.push_back(descriptor->field(i));
+  }
+
+  const auto make = [&, use_dynamic = use_dynamic](bool in_arena) {
+    auto* prototype = use_dynamic ? dyn_message.get() : &gen_message;
+    return in_arena ? prototype->New(&arena)
+                    : Arena::Create<std::unique_ptr<Message>>(&arena,
+                                                              prototype->New())
+                          ->get();
+  };
+
+  auto* lhs = make(lhs_arena);
+  auto* rhs = make(rhs_arena);
+  MapReflectionTester reflection_tester(descriptor);
+  reflection_tester.SetMapFieldsViaMapReflection(lhs);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(lhs);
+  reflection_tester.ExpectClearViaReflectionIterator(rhs);
+
+  lhs->GetReflection()->SwapFields(lhs, rhs, fields);
+
+  reflection_tester.ExpectClearViaReflectionIterator(lhs);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(rhs);
+
+  if (lhs_arena == rhs_arena) {
+    // If they are the same arena, we can try the unsafe swap.
+    lhs->GetReflection()->UnsafeArenaSwapFields(lhs, rhs, fields);
+    reflection_tester.ExpectClearViaReflectionIterator(rhs);
+    reflection_tester.ExpectMapFieldsSetViaReflectionIterator(lhs);
+  }
+}
+
+class MapTestCodegenOrDynamic : public testing::TestWithParam<bool> {};
+
+INSTANTIATE_TEST_SUITE_P(MapTestCodegenOrDynamicSuite, MapTestCodegenOrDynamic,
+                         testing::Bool());
+
+TEST_F(MapImplTest, CopyConstructMapSyncsRepeatedFieldRep) {
+  TestMap msg;
+
+  const auto* reflection = msg.GetReflection();
+  const auto* field = msg.GetDescriptor()->FindFieldByName("map_int32_int32");
+
+  {
+    auto* sub = reflection->AddMessage(&msg, field);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 10);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 100);
+  }
+
+  TestMap copy = msg;
+  EXPECT_THAT(msg,
+              EqualsProto(R"pb(map_int32_int32 { key: 10 value: 100 })pb"));
+  EXPECT_THAT(copy,
+              EqualsProto(R"pb(map_int32_int32 { key: 10 value: 100 })pb"));
+}
+
+TEST_F(MapImplTest, CopyAssignMapSyncsRepeatedFieldRep) {
+  TestMap msg;
+
+  const auto* reflection = msg.GetReflection();
+  const auto* field = msg.GetDescriptor()->FindFieldByName("map_int32_int32");
+
+  {
+    auto* sub = reflection->AddMessage(&msg, field);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 10);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 100);
+  }
+
+  TestMap dst;
+  dst = msg;
+  EXPECT_THAT(msg,
+              EqualsProto(R"pb(map_int32_int32 { key: 10 value: 100 })pb"));
+  EXPECT_THAT(dst,
+              EqualsProto(R"pb(map_int32_int32 { key: 10 value: 100 })pb"));
+}
+
+TEST_F(MapImplTest, MergeMapSyncsRepeatedFieldRep) {
+  TestMap msg;
+
+  const auto* reflection = msg.GetReflection();
+  const auto* field = msg.GetDescriptor()->FindFieldByName("map_int32_int32");
+
+  {
+    auto* sub = reflection->AddMessage(&msg, field);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 10);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 100);
+  }
+
+  TestMap dst;
+  {
+    auto* sub = reflection->AddMessage(&dst, field);
+    // A duplicate key
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 10);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 200);
+    sub = reflection->AddMessage(&dst, field);
+    // A unique key
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 11);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 17);
+  }
+  dst.MergeFrom(msg);
+  EXPECT_THAT(msg,
+              EqualsProto(R"pb(map_int32_int32 { key: 10 value: 100 })pb"));
+  EXPECT_THAT(dst, EqualsProto(R"pb(
+                map_int32_int32 { key: 10 value: 100 }
+                map_int32_int32 { key: 11 value: 17 }
+              )pb"));
+}
+
+TEST_P(MapTestCodegenOrDynamic, LookupMapValueSyncsRepeatedFieldRep) {
+  auto* descriptor = UNITTEST::TestMap::descriptor();
+  bool use_dynamic = GetParam();
+
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> dyn_message(
+      factory.GetPrototype(descriptor)->New());
+  TestMap gen_message;
+  Message* msg = use_dynamic ? dyn_message.get() : &gen_message;
+
+  const auto* reflection = msg->GetReflection();
+  const auto* field = msg->GetDescriptor()->FindFieldByName("map_int32_int32");
+
+  MapKey map_key;
+  map_key.SetInt32Value(10);
+  auto res =
+      MapReflectionTester::LookupMapValue(*reflection, *msg, *field, map_key);
+  // Check that we don't have it yet.
+  ASSERT_FALSE(res.has_value());
+
+  {
+    auto* sub = reflection->AddMessage(msg, field);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_key(), 10);
+    sub->GetReflection()->SetInt32(sub, sub->GetDescriptor()->map_value(), 100);
+  }
+
+
+  res = MapReflectionTester::LookupMapValue(*reflection, *msg, *field, map_key);
+  // If this fails, LookupMapValue might have failed to sync from the repeated
+  // field.
+  ASSERT_TRUE(res.has_value());
+  EXPECT_EQ(res->GetInt32Value(), 100);
 }
 
 TEST_F(MapImplTest, SpaceUsed) {
@@ -1365,9 +1553,9 @@ TEST_F(MapImplTest, SpaceUsed) {
 bool MapOrderingIsRandom(int a, int b) {
   bool saw_a_first = false;
   bool saw_b_first = false;
-  std::vector<Map<int32_t, int32_t>> v(50);
-  for (int i = 0; i < 50; ++i) {
-    Map<int32_t, int32_t>& m = v[i];
+  std::vector<Map<int32_t, int32_t>> v;
+  while (v.size() < 100) {
+    Map<int32_t, int32_t>& m = v.emplace_back();
     m[a] = 0;
     m[b] = 0;
     int32_t first_element = m.begin()->first;

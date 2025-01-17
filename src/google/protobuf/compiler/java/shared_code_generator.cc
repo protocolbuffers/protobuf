@@ -88,7 +88,7 @@ void SharedCodeGenerator::Generate(
         "  /* This variable is to be called by generated code only. It "
         "returns\n"
         "  * an incomplete descriptor for internal use only. */\n"
-        "  public static com.google.protobuf.Descriptors.FileDescriptor\n"
+        "  public static final com.google.protobuf.Descriptors.FileDescriptor\n"
         "      descriptor;\n",
         "classname", classname);
     printer->Annotate("classname", file_->name());

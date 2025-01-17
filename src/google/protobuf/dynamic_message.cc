@@ -53,6 +53,7 @@
 #include "absl/base/attributes.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/types/variant.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arenastring.h"
@@ -63,7 +64,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/map_field_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -104,8 +105,6 @@ class DynamicMapKey {
 
   google::protobuf::MapKey ToMapKey() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  VariantKey ToVariantKey() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-
   bool IsString() const {
     return absl::holds_alternative<std::string>(variant_);
   }
@@ -124,43 +123,11 @@ class DynamicMapKey {
   Variant variant_;
 };
 
-// The other overloads for SetMapKey are located in map_field_inl.h
-inline void SetMapKey(MapKey* map_key, const DynamicMapKey& value) {
-  *map_key = value.ToMapKey();
-}
-
 template <>
 struct is_internal_map_key_type<DynamicMapKey> : std::true_type {};
 
 template <>
-struct RealKeyToVariantKey<DynamicMapKey> : public RealKeyToVariantKey<MapKey> {
-  // Bring in for heterogeneous lookups.
-  using RealKeyToVariantKey<MapKey>::operator();
-
-  VariantKey operator()(const DynamicMapKey& value) const {
-    return value.ToVariantKey();
-  }
-};
-
-template <>
-struct RealKeyToVariantKeyAlternative<DynamicMapKey>
-    : public RealKeyToVariantKeyAlternative<MapKey> {
-  using RealKeyToVariantKeyAlternative<MapKey>::operator();
-
-  VariantKey operator()(const DynamicMapKey& value) const {
-    return RealKeyToVariantKey<DynamicMapKey>{}(value);
-  }
-};
-
-template <>
 struct TransparentSupport<DynamicMapKey> {
-  using hash = absl::Hash<DynamicMapKey>;
-
-  template <typename T, typename U>
-  static bool Equals(T&& t, U&& u) {
-    return ToView(t) == ToView(u);
-  }
-
   template <typename K>
   using key_arg = K;
 
@@ -221,10 +188,6 @@ google::protobuf::MapKey DynamicMapKey::ToMapKey() const {
   return result;
 }
 
-VariantKey DynamicMapKey::ToVariantKey() const {
-  return absl::visit([](const auto& alt) { return VariantKey(alt); }, variant_);
-}
-
 class DynamicMapField final
     : public TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef> {
  public:
@@ -244,15 +207,16 @@ class DynamicMapField final
   void AllocateMapValue(MapValueRef* map_val);
 
   static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
+  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
   static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
                                                const MapKey& map_key,
                                                MapValueRef* val);
   static void ClearMapNoSyncImpl(MapFieldBase& base);
-
-  static void UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
-    static_cast<DynamicMapField&>(lhs).Swap(
-        static_cast<DynamicMapField*>(&rhs));
-  }
+  static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
+  static void SetMapIteratorValueImpl(MapIterator* map_iter);
+  static bool LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                       const MapKey& map_key,
+                                       MapValueConstRef* val);
 
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
 
@@ -289,6 +253,39 @@ void DynamicMapField::ClearMapNoSyncImpl(MapFieldBase& base) {
   }
 
   self.map_.clear();
+}
+
+bool DynamicMapField::DeleteMapValueImpl(MapFieldBase& base,
+                                         const MapKey& map_key) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  auto it = self.map_.find(map_key);
+  if (it == self.map_.end()) return false;
+  if (self.arena() == nullptr) {
+    it->second.DeleteData();
+  }
+  self.map_.EraseDynamic(it);
+  return true;
+}
+
+void DynamicMapField::SetMapIteratorValueImpl(MapIterator* map_iter) {
+  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
+  auto iter = typename decltype(map_)::const_iterator(map_iter->iter_);
+  map_iter->key_ = iter->first.ToMapKey();
+  map_iter->value_.CopyFrom(iter->second);
+}
+
+bool DynamicMapField::LookupMapValueNoSyncImpl(const MapFieldBase& self,
+                                               const MapKey& map_key,
+                                               MapValueConstRef* val) {
+  const auto& map = static_cast<const DynamicMapField&>(self).map_;
+  auto iter = map.find(map_key);
+  if (map.end() == iter) {
+    return false;
+  }
+  if (val != nullptr) {
+    val->CopyFrom(iter->second);
+  }
+  return true;
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
@@ -338,6 +335,26 @@ bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
   // [] may reorder the map and iterators.
   val->CopyFrom(iter->second);
   return false;
+}
+
+void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
+  auto& lhs = static_cast<DynamicMapField&>(lhs_base);
+  auto& rhs = static_cast<DynamicMapField&>(rhs_base);
+
+  if (lhs.arena() == rhs.arena()) {
+    TypeDefinedMapFieldBase::SwapImpl(lhs, rhs);
+    return;
+  }
+
+  // Different arena, so copy objects instead.
+  DynamicMapField tmp(lhs.default_entry_);
+  MergeFromImpl(tmp, lhs);
+  lhs.Clear();
+  MergeFromImpl(lhs, rhs);
+  rhs.Clear();
+  MergeFromImpl(rhs, tmp);
+
+  MapFieldBase::SwapPayload(lhs, rhs);
 }
 
 void DynamicMapField::MergeFromImpl(MapFieldBase& base,
@@ -464,6 +481,11 @@ using internal::DynamicMapField;
 namespace {
 
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
+
+bool IsMapEntryField(const FieldDescriptor* field) {
+  return (field->containing_type() != nullptr &&
+          field->containing_type()->options().map_entry());
+}
 
 
 inline bool InRealOneof(const FieldDescriptor* field) {
@@ -1086,7 +1108,43 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   type_info->has_bits_offset = -1;
   int max_hasbit = 0;
   for (int i = 0; i < type->field_count(); i++) {
-    if (internal::cpp::HasHasbit(type->field(i))) {
+    const FieldDescriptor* field = type->field(i);
+
+    // If a field has hasbits, it could be either an explicit-presence or
+    // implicit-presence field. Explicit presence fields will have "true
+    // hasbits" where hasbit is set iff field is present. Implicit presence
+    // fields will have "hint hasbits" where
+    // - if hasbit is unset, field is not present.
+    // - if hasbit is set, field is present if it is also nonempty.
+    if (internal::cpp::HasHasbit(field)) {
+      // TODO: b/112602698 - during Python textproto serialization, MapEntry
+      // messages may be generated from DynamicMessage on the fly. C++
+      // implementations of MapEntry messages always have hasbits, but
+      // has_presence return values might be different depending on how field
+      // presence is set. For MapEntrys, has_presence returns true for
+      // explicit-presence (proto2) messages and returns false for
+      // implicit-presence (proto3) messages.
+      //
+      // In the case of implicit presence, there is a potential inconsistency in
+      // code behavior between C++ and Python:
+      // - If C++ implementation is linked, hasbits are always generated for
+      //   MapEntry messages, and MapEntry messages will behave like explicit
+      //   presence.
+      // - If C++ implementation is not linked, Python defaults to the
+      //   DynamicMessage implementation for MapEntrys which traditionally does
+      //   not assume the presence of hasbits, so the default Python behavior
+      //   for MapEntry messages (by default C++ implementations are not linked)
+      //   will fall back to the DynamicMessage implementation and behave like
+      //   implicit presence.
+      // This is an inconsistency and this if-condition preserves it.
+      //
+      // Longer term, we want to get rid of this additional if-check of
+      // IsMapEntryField. It might take one or more breaking changes and more
+      // consensus gathering & clarification though.
+      if (!field->has_presence() && IsMapEntryField(field)) {
+        continue;
+      }
+
       if (type_info->has_bits_offset == -1) {
         // At least one field in the message requires a hasbit, so allocate
         // hasbits.

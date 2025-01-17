@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
@@ -265,6 +266,17 @@ public class UnknownFieldSetTest {
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("-2 is not a valid field number.");
     }
+  }
+
+  @Test
+  public void testMergeFieldFromInvalidEndGroup() {
+    byte[] data = new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_END_GROUP)};
+    CodedInputStream input = CodedInputStream.newInstance(data);
+
+    UnknownFieldSet.Builder instance = UnknownFieldSet.newBuilder();
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> instance.mergeFieldFrom(input.readTag(), input));
   }
 
   @Test

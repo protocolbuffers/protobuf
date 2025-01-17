@@ -32,7 +32,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_proto3_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -45,8 +45,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb",
         "//rust/test:map_unittest_upb_rust_proto",
-        "//src/google/protobuf:edition_unittest_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )

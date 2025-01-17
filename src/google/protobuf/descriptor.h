@@ -31,18 +31,20 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <any>
 #include <atomic>
 #include <cstdint>
 #include <iterator>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/container/btree_map.h"
+#include "absl/base/optimization.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
@@ -51,7 +53,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
@@ -129,12 +130,14 @@ namespace compiler {
 class CodeGenerator;
 class CommandLineInterface;
 namespace cpp {
+class CppGenerator;
 // Defined in helpers.h
 class Formatter;
 }  // namespace cpp
 }  // namespace compiler
 
 namespace descriptor_unittest {
+class DescriptorPoolMemoizationTest;
 class DescriptorTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
@@ -199,6 +202,12 @@ namespace internal {
 typedef absl::string_view DescriptorStringView;
 #else
 typedef const std::string& DescriptorStringView;
+#endif
+
+#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME)
+typedef absl::string_view DescriptorTypenameStringView;
+#else
+typedef const char* DescriptorTypenameStringView;
 #endif
 
 class FlatAllocator;
@@ -409,7 +418,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // The number of fields in this message type.
   int field_count() const;
   // Gets a field by index, where 0 <= index < field_count().
-  // These are returned in the order they were defined in the .proto file.
+  // These are returned in the order they were defined in the .proto file, not
+  // the field number order. (Use `FindFieldByNumber()` for
+  // tag number -> value lookup).
   const FieldDescriptor* field(int index) const;
 
   // Looks up a field by declared tag number.  Returns nullptr if no such field
@@ -869,11 +880,13 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // when parsing formats which prefer to use camel-case naming style.
   internal::DescriptorStringView camelcase_name() const;
 
-  Type type() const;                  // Declared type of this field.
-  const char* type_name() const;      // Name of the declared type.
-  CppType cpp_type() const;           // C++ type of this field.
-  const char* cpp_type_name() const;  // Name of the C++ type.
-  Label label() const;                // optional/required/repeated
+  Type type() const;  // Declared type of this field.
+  // Name of the declared type.
+  internal::DescriptorTypenameStringView type_name() const;
+  CppType cpp_type() const;  // C++ type of this field.
+  // Name of the C++ type.
+  internal::DescriptorTypenameStringView cpp_type_name() const;
+  Label label() const;  // optional/required/repeated
 
 #ifndef SWIG
   CppStringType cpp_string_type() const;  // The C++ string type of this field.
@@ -1024,10 +1037,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   static CppType TypeToCppType(Type type);
 
   // Helper method to get the name of a Type.
-  static const char* TypeName(Type type);
+  static internal::DescriptorTypenameStringView TypeName(Type type);
 
   // Helper method to get the name of a CppType.
-  static const char* CppTypeName(CppType cpp_type);
+  static internal::DescriptorTypenameStringView CppTypeName(CppType cpp_type);
 
   // Return true iff [packed = true] is valid for fields of this type.
   static inline bool IsTypePackable(Type field_type);
@@ -1065,6 +1078,14 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class FieldDescriptorLegacy;
   friend const std::string& internal::DefaultValueStringAsString(
       const FieldDescriptor* field);
+
+  // Returns the original ctype specified in the .proto file.  This should not
+  // be relied on, as it no longer uniquely determines behavior.  The
+  // cpp_string_type() method should be used instead, which takes feature
+  // settings into account.  Needed by CppGenerator for validation only.
+  friend class compiler::cpp::CppGenerator;
+  int legacy_proto_ctype() const { return legacy_proto_ctype_; }
+  bool has_legacy_proto_ctype() const;
 
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
@@ -1129,6 +1150,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Located here for bitpacking.
   bool in_real_oneof_ : 1;
 
+  // Actually an optional `CType`, but stored as uint8_t to save space.  This
+  // contains the original ctype option specified in the .proto file.
+  uint8_t legacy_proto_ctype_ : 2;
+
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
@@ -1186,7 +1211,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
@@ -1321,7 +1346,8 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // than zero.
   int value_count() const;
   // Gets a value by index, where 0 <= index < value_count().
-  // These are returned in the order they were defined in the .proto file.
+  // These are returned in the order they were defined in the .proto file, not
+  // the enum value order. (Use `FindValueByNumber()` for enum -> value lookup).
   const EnumValueDescriptor* value(int index) const;
 
   // Looks up a value by name.  Returns nullptr if no such value exists.
@@ -2040,6 +2066,18 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 168);
 
+#ifndef SWIG
+enum class ExtDeclEnforcementLevel : uint8_t {
+  // No enforcement.
+  kNoEnforcement = 0,
+  // All extensions excluding descriptor.proto extensions
+  // (go/extension-declarations#descriptor-proto)
+  kCustomExtensions = 1,
+  // All extensions including descriptor.proto extensions.
+  kAllExtensions = 2,
+};
+#endif  // !SWIG
+
 // ===================================================================
 
 // Used to construct descriptors.
@@ -2261,12 +2299,33 @@ class PROTOBUF_EXPORT DescriptorPool {
   // be enforced while building proto files.
   absl::Status SetFeatureSetDefaults(FeatureSetDefaults spec);
 
+  // Returns true if the descriptor pool resolves features for the given
+  // extension.
+  template <typename TypeTraitsT, uint8_t field_type, bool is_packed>
+  bool ResolvesFeaturesFor(
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) const {
+    return ResolvesFeaturesForImpl(extension.number());
+  }
+
   // Toggles enforcement of extension declarations.
   // This enforcement is disabled by default because it requires full
   // descriptors with source-retention options, which are generally not
   // available at runtime.
-  void EnforceExtensionDeclarations(bool enforce) {
+  void EnforceExtensionDeclarations(google::protobuf::ExtDeclEnforcementLevel enforce) {
     enforce_extension_declarations_ = enforce;
+  }
+
+  bool EnforceDescriptorExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+           ExtDeclEnforcementLevel::kAllExtensions;
+  }
+
+  bool EnforceCustomExtensionDeclarations() const {
+    return enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kAllExtensions ||
+           enforce_extension_declarations_ ==
+               ExtDeclEnforcementLevel::kCustomExtensions;
   }
 
 #ifndef SWIG
@@ -2398,9 +2457,34 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class FileDescriptor;
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
+  friend class google::protobuf::descriptor_unittest::DescriptorPoolMemoizationTest;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
   friend class ::google::protobuf::compiler::CommandLineInterface;
-
+  friend class TextFormat;
+  // Memoize a projection of a field.  This is used to cache the results of
+  // calling a function on a field, used for expensive descriptor calculations.
+  template <typename Func>
+  auto MemoizeProjection(const FieldDescriptor* field, Func func) const {
+    using ResultT = decltype(func(field));
+    ABSL_DCHECK(field->file()->pool() == this);
+    static_assert(std::is_empty_v<Func>);
+    // This static bool is unique per-Func, so its address can be used as a key.
+    static bool type_key;
+    auto key = std::pair<const void*, const void*>(field, &type_key);
+    {
+      absl::ReaderMutexLock lock(&field_memo_table_mutex_);
+      auto it = field_memo_table_.find(key);
+      if (it != field_memo_table_.end()) {
+        return std::any_cast<ResultT>(it->second);
+      }
+    }
+    ResultT result = func(field);
+    {
+      absl::MutexLock lock(&field_memo_table_mutex_);
+      field_memo_table_[key] = result;
+    }
+    return result;
+  }
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
   // definition of such types is already known.)
@@ -2459,6 +2543,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
                                      PlaceholderType placeholder_type) const;
 
+  mutable absl::Mutex field_memo_table_mutex_;
+  mutable absl::flat_hash_map<std::pair<const void*, const void*>, std::any>
+      field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_);
+
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
   absl::Mutex* mutex_;
@@ -2483,7 +2571,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  bool enforce_extension_declarations_;
+  ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   mutable bool build_started_ = false;
@@ -2500,6 +2588,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool IsReadyForCheckingDescriptorExtDecl(
       absl::string_view message_name) const;
 
+
+  bool ResolvesFeaturesForImpl(int extension_number) const;
+
+  const FeatureSetDefaults& GetFeatureSetDefaults() const;
 };
 
 
@@ -2826,7 +2918,8 @@ inline int MethodDescriptor::index() const {
   return static_cast<int>(this - service_->methods_);
 }
 
-inline const char* FieldDescriptor::type_name() const {
+inline internal::DescriptorTypenameStringView FieldDescriptor::type_name()
+    const {
   return kTypeToName[type()];
 }
 
@@ -2834,7 +2927,8 @@ inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
   return kTypeToCppTypeMap[type()];
 }
 
-inline const char* FieldDescriptor::cpp_type_name() const {
+inline internal::DescriptorTypenameStringView FieldDescriptor::cpp_type_name()
+    const {
   return kCppTypeToName[kTypeToCppTypeMap[type()]];
 }
 
@@ -2842,11 +2936,13 @@ inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
   return kTypeToCppTypeMap[type];
 }
 
-inline const char* FieldDescriptor::TypeName(Type type) {
+inline internal::DescriptorTypenameStringView FieldDescriptor::TypeName(
+    Type type) {
   return kTypeToName[type];
 }
 
-inline const char* FieldDescriptor::CppTypeName(CppType cpp_type) {
+inline internal::DescriptorTypenameStringView FieldDescriptor::CppTypeName(
+    CppType cpp_type) {
   return kCppTypeToName[cpp_type];
 }
 
@@ -2946,9 +3042,33 @@ constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
     const FieldDescriptor* field);
 
-PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
-
 #ifndef SWIG
+enum class HasbitMode : uint8_t {
+  // Hasbits do not exist for the field.
+  kNoHasbit,
+  // Hasbits exist and indicate field presence.
+  // Hasbit is set if and only if field is present.
+  kTrueHasbit,
+  // Hasbits exist and "hint at" field presence.
+  // When hasbit is set, field is 'probably' present, but field accessors must
+  // still check for field presence (i.e. false positives are possible).
+  // When hasbit is unset, field is guaranteed to be not present.
+  kHintHasbit,
+};
+
+// Returns the "hasbit mode" of the field. Depending on the implementation, a
+// field can:
+//   - have no hasbits in its internal object (kNoHasbit);
+//   - have hasbits where hasbit == 1 indicates field presence and hasbit == 0
+//     indicates an unset field (kTrueHasbit);
+//   - have hasbits where hasbit == 1 indicates "field is possibly modified" and
+//     hasbit == 0 indicates "field is definitely missing" (kHintHasbit).
+PROTOBUF_EXPORT HasbitMode GetFieldHasbitMode(const FieldDescriptor* field);
+
+// Returns true if there are hasbits for the field.
+// Note that this does not correlate with "hazzer"s, i.e., whether has_foo APIs
+// are emitted.
+PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
 enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
@@ -3009,6 +3129,14 @@ auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
   return {};
 }
 #endif  // !SWIG
+
+// Whether the given string field should have the accessors be privatized due
+// to it being an unsupported type. If this returns true, cpp_string_type()
+// returns kString for the storage, the C++ Generator will not generate
+// public accessors for the type, but the field will sill be accessible via
+// reflection.
+PROTOBUF_EXPORT bool IsStringFieldWithPrivatizedAccessors(
+    const FieldDescriptor& field);
 
 }  // namespace cpp
 }  // namespace internal

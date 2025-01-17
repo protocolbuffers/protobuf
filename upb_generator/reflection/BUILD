@@ -44,7 +44,10 @@ cc_library(
     deps = [
         ":names",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:plugin",
         "//upb:mem",
+        "//upb:port",
         "//upb:reflection",
         "//upb/util:def_to_proto",
         "//upb_generator:common",
@@ -52,7 +55,11 @@ cc_library(
         "//upb_generator:plugin",
         "//upb_generator/common:names",
         "//upb_generator/minitable:names",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
         "@com_google_absl//absl/strings:string_view",
     ],
 )

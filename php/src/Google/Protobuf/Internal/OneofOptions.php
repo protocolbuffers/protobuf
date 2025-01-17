@@ -18,6 +18,9 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
 {
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 1;</code>
      */
@@ -37,6 +40,9 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
      *
      *     @type \Google\Protobuf\Internal\FeatureSet $features
      *           Any features defined in the specific edition.
+     *           WARNING: This field should only be used by protobuf plugins or special
+     *           cases like the proto compiler. Other uses are discouraged and
+     *           developers should rely on the protoreflect APIs for their client language.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -48,6 +54,9 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 1;</code>
      * @return \Google\Protobuf\Internal\FeatureSet|null
@@ -69,6 +78,9 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Any features defined in the specific edition.
+     * WARNING: This field should only be used by protobuf plugins or special
+     * cases like the proto compiler. Other uses are discouraged and
+     * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 1;</code>
      * @param \Google\Protobuf\Internal\FeatureSet $var

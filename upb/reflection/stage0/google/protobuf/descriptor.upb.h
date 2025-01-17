@@ -53,6 +53,7 @@ extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init(void);
 extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init(void);
 extern const upb_MiniTableEnum* google__protobuf__Edition_enum_init(void);
 extern const upb_MiniTableEnum* google__protobuf__ExtensionRangeOptions__VerificationState_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__FeatureSet__EnforceNamingStyle_enum_init(void);
 extern const upb_MiniTableEnum* google__protobuf__FeatureSet__EnumType_enum_init(void);
 extern const upb_MiniTableEnum* google__protobuf__FeatureSet__FieldPresence_enum_init(void);
 extern const upb_MiniTableEnum* google__protobuf__FeatureSet__JsonFormat_enum_init(void);
@@ -122,6 +123,12 @@ typedef enum {
   google_protobuf_ExtensionRangeOptions_DECLARATION = 0,
   google_protobuf_ExtensionRangeOptions_UNVERIFIED = 1
 } google_protobuf_ExtensionRangeOptions_VerificationState;
+
+typedef enum {
+  google_protobuf_FeatureSet_ENFORCE_NAMING_STYLE_UNKNOWN = 0,
+  google_protobuf_FeatureSet_STYLE2024 = 1,
+  google_protobuf_FeatureSet_STYLE_LEGACY = 2
+} google_protobuf_FeatureSet_EnforceNamingStyle;
 
 typedef enum {
   google_protobuf_FeatureSet_ENUM_TYPE_UNKNOWN = 0,
@@ -5820,6 +5827,22 @@ UPB_INLINE bool google_protobuf_FeatureSet_has_json_format(const google_protobuf
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 6);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
+UPB_INLINE void google_protobuf_FeatureSet_clear_enforce_naming_style(google_protobuf_FeatureSet* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 7);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE int32_t google_protobuf_FeatureSet_enforce_naming_style(const google_protobuf_FeatureSet* msg) {
+  int32_t default_val = 0;
+  int32_t ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 7);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_FeatureSet_has_enforce_naming_style(const google_protobuf_FeatureSet* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 7);
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
 
 UPB_INLINE void google_protobuf_FeatureSet_set_field_presence(google_protobuf_FeatureSet *msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 1);
@@ -5843,6 +5866,10 @@ UPB_INLINE void google_protobuf_FeatureSet_set_message_encoding(google_protobuf_
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_json_format(google_protobuf_FeatureSet *msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 6);
+  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_FeatureSet_set_enforce_naming_style(google_protobuf_FeatureSet *msg, int32_t value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FeatureSet_msg_init(), 7);
   upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
 }
 

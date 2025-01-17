@@ -362,7 +362,8 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       if (!upb_FieldDef_HasPresence(f)) {
         rb_raise(rb_eRuntimeError, "Field does not have presence.");
       }
-      return upb_Message_HasFieldByDef(Message_Get(_self, NULL), f);
+      return upb_Message_HasFieldByDef(Message_Get(_self, NULL), f) ? Qtrue
+                                                                    : Qfalse;
     case METHOD_WRAPPER_GETTER: {
       Message* self = ruby_to_Message(_self);
       if (upb_Message_HasFieldByDef(self->msg, f)) {
@@ -1038,11 +1039,18 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 
   upb_Status_Clear(&status);
   const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
-  if (!upb_JsonDecode(RSTRING_PTR(data), RSTRING_LEN(data),
-                      (upb_Message*)msg->msg, msg->msgdef, pool, options,
-                      Arena_get(msg->arena), &status)) {
-    rb_raise(cParseError, "Error occurred during parsing: %s",
-             upb_Status_ErrorMessage(&status));
+
+  int result = upb_JsonDecodeDetectingNonconformance(
+      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
+      msg->msgdef, pool, options, Arena_get(msg->arena), &status);
+
+  switch (result) {
+    case kUpb_JsonDecodeResult_Ok:
+      break;
+    case kUpb_JsonDecodeResult_Error:
+      rb_raise(cParseError, "Error occurred during parsing: %s",
+               upb_Status_ErrorMessage(&status));
+      break;
   }
 
   return msg_rb;

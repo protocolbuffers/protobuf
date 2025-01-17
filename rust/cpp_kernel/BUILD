@@ -15,7 +15,6 @@ cc_library(
     hdrs = [
         "compare.h",
         "debug.h",
-        "map.h",
         "rust_alloc_for_cpp_api.h",
         "serialized_data.h",
         "strings.h",
@@ -29,6 +28,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
+        "@com_google_absl//absl/functional:overload",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings:string_view",

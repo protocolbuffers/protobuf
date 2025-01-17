@@ -38,10 +38,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define RETURN_IF_ERROR(expr)                                  \
-  do {                                                         \
-    const absl::Status _status = (expr);                       \
-    if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status; \
+#define RETURN_IF_ERROR(expr)                              \
+  do {                                                     \
+    const absl::Status _status = (expr);                   \
+    if (ABSL_PREDICT_FALSE(!_status.ok())) return _status; \
   } while (0)
 
 namespace google {
@@ -351,6 +351,8 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
   CHECK_ENUM_FEATURE(utf8_validation, Utf8Validation, UTF8_VALIDATION)
   CHECK_ENUM_FEATURE(message_encoding, MessageEncoding, MESSAGE_ENCODING)
   CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
+  CHECK_ENUM_FEATURE(enforce_naming_style, EnforceNamingStyle,
+                     ENFORCE_NAMING_STYLE)
 
 #undef CHECK_ENUM_FEATURE
 

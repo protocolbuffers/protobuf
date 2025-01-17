@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -48,6 +49,9 @@ struct Options {
   std::string mapping_file_path;
   bool strip_nonfunctional_codegen = false;
 
+  // The name to use for the generated entry point rs file.
+  std::string generated_entry_point_rs_file_name = "generated.rs";
+
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
 
@@ -83,10 +87,11 @@ class Context {
  public:
   Context(const Options* opts,
           const RustGeneratorContext* rust_generator_context,
-          io::Printer* printer)
+          io::Printer* printer, std::vector<std::string> modules)
       : opts_(opts),
         rust_generator_context_(rust_generator_context),
-        printer_(printer) {}
+        printer_(printer),
+        modules_(std::move(modules)) {}
 
   Context(const Context&) = delete;
   Context& operator=(const Context&) = delete;
@@ -105,7 +110,7 @@ class Context {
   io::Printer& printer() const { return *printer_; }
 
   Context WithPrinter(io::Printer* printer) const {
-    return Context(opts_, rust_generator_context_, printer);
+    return Context(opts_, rust_generator_context_, printer, modules_);
   }
 
   // Forwards to Emit(), which will likely be called all the time.
@@ -127,19 +132,43 @@ class Context {
     auto it =
         rust_generator_context_->import_path_to_crate_name_.find(import_path);
     if (it == rust_generator_context_->import_path_to_crate_name_.end()) {
-      ABSL_LOG(FATAL)
+      ABSL_LOG(ERROR)
           << "Path " << import_path
-          << " not found in crate mapping. Crate mapping has "
+          << " not found in crate mapping. Crate mapping contains "
           << rust_generator_context_->import_path_to_crate_name_.size()
-          << " entries";
+          << " entries:";
+      for (const auto& entry :
+           rust_generator_context_->import_path_to_crate_name_) {
+        ABSL_LOG(ERROR) << "  " << entry.first << " : " << entry.second << "\n";
+      }
+      ABSL_LOG(FATAL) << "Cannot continue with missing crate mapping.";
     }
     return it->second;
   }
+
+  // Opening and closing modules should always be done with PushModule() and
+  // PopModule(). Knowing what module we are in is important, because it allows
+  // us to unambiguously reference other identifiers in the same crate. We
+  // cannot just use crate::, because when we are building with Cargo, the
+  // generated code does not necessarily live in the crate root.
+  void PushModule(absl::string_view name) {
+    Emit({{"mod_name", name}}, "pub mod $mod_name$ {");
+    modules_.emplace_back(name);
+  }
+
+  void PopModule() {
+    Emit({{"mod_name", modules_.back()}}, "}  // pub mod $mod_name$");
+    modules_.pop_back();
+  }
+
+  // Returns the current depth of module nesting.
+  size_t GetModuleDepth() const { return modules_.size(); }
 
  private:
   const Options* opts_;
   const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
+  std::vector<std::string> modules_;
 };
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);

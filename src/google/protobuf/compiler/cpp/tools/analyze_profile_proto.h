@@ -26,6 +26,9 @@ struct AnalyzeProfileProtoOptions {
   // true to include presence and usage info instead of only optimization info
   bool print_analysis = false;
 
+  // true to include presence probability info
+  bool print_analysis_all = false;
+
   // Descriptor pool to use. Must not be null.
   const DescriptorPool* pool = nullptr;
 

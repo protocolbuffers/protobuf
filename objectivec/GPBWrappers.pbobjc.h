@@ -48,6 +48,9 @@ typedef GPB_ENUM(GPBDoubleValue_FieldNumber) {
  * Wrapper message for `double`.
  *
  * The JSON representation for `DoubleValue` is JSON number.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBDoubleValue : GPBMessage
 
@@ -66,6 +69,9 @@ typedef GPB_ENUM(GPBFloatValue_FieldNumber) {
  * Wrapper message for `float`.
  *
  * The JSON representation for `FloatValue` is JSON number.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBFloatValue : GPBMessage
 
@@ -84,6 +90,9 @@ typedef GPB_ENUM(GPBInt64Value_FieldNumber) {
  * Wrapper message for `int64`.
  *
  * The JSON representation for `Int64Value` is JSON string.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBInt64Value : GPBMessage
 
@@ -102,6 +111,9 @@ typedef GPB_ENUM(GPBUInt64Value_FieldNumber) {
  * Wrapper message for `uint64`.
  *
  * The JSON representation for `UInt64Value` is JSON string.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBUInt64Value : GPBMessage
 
@@ -120,6 +132,9 @@ typedef GPB_ENUM(GPBInt32Value_FieldNumber) {
  * Wrapper message for `int32`.
  *
  * The JSON representation for `Int32Value` is JSON number.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBInt32Value : GPBMessage
 
@@ -138,6 +153,9 @@ typedef GPB_ENUM(GPBUInt32Value_FieldNumber) {
  * Wrapper message for `uint32`.
  *
  * The JSON representation for `UInt32Value` is JSON number.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBUInt32Value : GPBMessage
 
@@ -156,6 +174,9 @@ typedef GPB_ENUM(GPBBoolValue_FieldNumber) {
  * Wrapper message for `bool`.
  *
  * The JSON representation for `BoolValue` is JSON `true` and `false`.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBBoolValue : GPBMessage
 
@@ -174,6 +195,9 @@ typedef GPB_ENUM(GPBStringValue_FieldNumber) {
  * Wrapper message for `string`.
  *
  * The JSON representation for `StringValue` is JSON string.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBStringValue : GPBMessage
 
@@ -192,6 +216,9 @@ typedef GPB_ENUM(GPBBytesValue_FieldNumber) {
  * Wrapper message for `bytes`.
  *
  * The JSON representation for `BytesValue` is JSON string.
+ *
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  **/
 GPB_FINAL @interface GPBBytesValue : GPBMessage
 

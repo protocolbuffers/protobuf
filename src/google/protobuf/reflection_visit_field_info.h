@@ -709,11 +709,12 @@ struct RepeatedEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedField<FieldT>(&message, field);
+    auto& rep =
+        *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedField<FieldT>(&message, field)->Clear();
+    reflection->MutableRepeatedFieldInternal<FieldT>(&message, field)->Clear();
   }
 
   const Reflection* reflection;
@@ -809,11 +810,13 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedPtrField<FieldT>(&message, field);
+    auto& rep =
+        *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedPtrField<FieldT>(&message, field)->Clear();
+    reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field)
+        ->Clear();
   }
 
   const Reflection* reflection;
@@ -1137,6 +1140,13 @@ struct RepeatedGroupDynamicExtensionInfo
 // users from a similar dispatch without creating KeyInfo or ValueInfo per type.
 template <FieldDescriptor::CppType cpp_type, typename T>
 inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if encased in a switch statement. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/qo51cKe7b
+  // This is fixed in GCC 10.1+.
+  (void)type;   // Suppress -Wunused-but-set-parameter
+  (void)value;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (cpp_type == FieldDescriptor::CPPTYPE_INT32) {
     static_assert(std::is_same_v<T, int32_t>, "type mismatch");
     switch (type) {

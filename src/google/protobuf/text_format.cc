@@ -480,7 +480,7 @@ class TextFormat::Parser::ParserImpl {
   // Consumes the specified message with the given starting delimiter.
   // This method checks to see that the end delimiter at the conclusion of
   // the consumption matches the starting delimiter passed in here.
-  bool ConsumeMessage(Message* message, const std::string delimiter) {
+  bool ConsumeMessage(Message* message, const std::string& delimiter) {
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(ConsumeField(message));
     }
@@ -3021,20 +3021,13 @@ void TextFormat::Printer::PrintUnknownFields(
   }
 }
 
-namespace internal {
-
-// Check if the field is sensitive and should be redacted.
-bool ShouldRedactField(const FieldDescriptor* field) {
-  if (field->options().debug_redact()) return true;
-  return false;
-}
-
-}  // namespace internal
-
 bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
-  if (internal::ShouldRedactField(field)) {
+  RedactionState redaction_state = field->options().debug_redact()
+                                       ? RedactionState{true, false}
+                                       : RedactionState{false, false};
+  if (redaction_state.redact) {
     if (redact_debug_string_) {
       IncrementRedactedFieldCounter();
       if (insert_value_separator) {

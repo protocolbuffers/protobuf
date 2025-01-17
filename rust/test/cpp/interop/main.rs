@@ -8,7 +8,7 @@
 use googletest::prelude::*;
 use protobuf_cpp::prelude::*;
 
-use protobuf_cpp::__runtime::PtrAndLen;
+use protobuf_cpp::__internal::runtime::PtrAndLen;
 use protobuf_cpp::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use std::ffi::c_void;
 
@@ -31,7 +31,9 @@ extern "C" {
     fn TakeOwnershipAndGetOptionalInt64(msg: *mut c_void) -> i64;
     fn DeserializeInteropTestMessage(data: *const u8, len: usize) -> *mut c_void;
     fn MutateInteropTestMessage(msg: *mut c_void);
-    fn SerializeInteropTestMessage(msg: *const c_void) -> protobuf_cpp::__runtime::SerializedData;
+    fn SerializeInteropTestMessage(
+        msg: *const c_void,
+    ) -> protobuf_cpp::__internal::runtime::SerializedData;
     fn DeleteInteropTestMessage(msg: *mut c_void);
 
     fn NewWithExtension() -> *mut c_void;

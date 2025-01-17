@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.16)
 project (utf8_range C CXX)
 
 # option() honor variables
@@ -18,6 +18,15 @@ add_library (utf8_range
 ##
 # A heavier-weight C++ wrapper that supports Abseil.
 add_library (utf8_validity utf8_validity.cc utf8_range.c)
+
+set_target_properties(utf8_range PROPERTIES
+  VERSION ${protobuf_VERSION}
+  OUTPUT_NAME ${LIB_PREFIX}utf8_range
+)
+set_target_properties(utf8_validity PROPERTIES
+  VERSION ${protobuf_VERSION}
+  OUTPUT_NAME ${LIB_PREFIX}utf8_validity
+)
 
 # Load Abseil dependency.
 if (NOT TARGET absl::strings)

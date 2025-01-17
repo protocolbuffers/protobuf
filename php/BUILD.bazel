@@ -27,19 +27,10 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/CodedOutputStream.php",
     "src/Google/Protobuf/Internal/Descriptor.php",
     "src/Google/Protobuf/Internal/DescriptorPool.php",
-    "src/Google/Protobuf/Internal/EnumDescriptorProto_EnumReservedRange.php",
-    "src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php",
-    "src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php",
     "src/Google/Protobuf/Internal/EnumBuilderContext.php",
     "src/Google/Protobuf/Internal/EnumDescriptor.php",
     "src/Google/Protobuf/Internal/FieldDescriptor.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto_Type.php",
-    "src/Google/Protobuf/Internal/FieldOptions_CType.php",
-    "src/Google/Protobuf/Internal/FieldOptions_JSType.php",
     "src/Google/Protobuf/Internal/FileDescriptor.php",
-    "src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php",
-    "src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php",
     "src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php",
     "src/Google/Protobuf/Internal/GPBDecodeException.php",
     "src/Google/Protobuf/Internal/GPBJsonWire.php",
@@ -54,15 +45,12 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/MapFieldIter.php",
     "src/Google/Protobuf/Internal/Message.php",
     "src/Google/Protobuf/Internal/MessageBuilderContext.php",
-    "src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php",
     "src/Google/Protobuf/Internal/OneofDescriptor.php",
     "src/Google/Protobuf/Internal/OneofField.php",
     "src/Google/Protobuf/Internal/RawInputStream.php",
     "src/Google/Protobuf/Internal/RepeatedField.php",
     "src/Google/Protobuf/Internal/RepeatedFieldIter.php",
-    "src/Google/Protobuf/Internal/SourceCodeInfo_Location.php",
     "src/Google/Protobuf/Internal/TimestampBase.php",
-    "src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php",
     "src/Google/Protobuf/OneofDescriptor.php",
 ]
 
@@ -108,10 +96,10 @@ genrule(
     ],
     outs = ["protobuf.so"],
     cmd = """
-        rm php/ext/google/protobuf/wkt.inc php/ext/google/protobuf/php-upb.h php/ext/google/protobuf/php-upb.c
-        cp $(location generated/ext/google/protobuf/wkt.inc) php/ext/google/protobuf
-        cp $(location generated/ext/google/protobuf/php-upb.h) php/ext/google/protobuf
-        cp $(location generated/ext/google/protobuf/php-upb.c) php/ext/google/protobuf
+        mkdir -p php/ext/google/protobuf
+        cp -f $(location generated/ext/google/protobuf/wkt.inc) php/ext/google/protobuf
+        cp -f $(location generated/ext/google/protobuf/php-upb.h) php/ext/google/protobuf
+        cp -f $(location generated/ext/google/protobuf/php-upb.c) php/ext/google/protobuf
         ./$(execpath :build_extension) $@
         cp php/ext/google/protobuf/modules/protobuf.so $(OUTS)
     """,
@@ -242,13 +230,18 @@ pkg_files(
 
 pkg_files(
     name = "php_ext_source_files",
-    srcs = glob([
-        "ext/google/protobuf/*.h",
-        "ext/google/protobuf/*.c",
-    ]) + [
+    srcs = glob(
+        [
+            "ext/google/protobuf/*.h",
+            "ext/google/protobuf/*.c",
+        ],
+        exclude = [
+            "*/php-upb.*",
+            "*/wkt.inc",
+        ],
+    ) + [
         "ext/google/protobuf/config.m4",
         "ext/google/protobuf/config.w32",
-        "ext/google/protobuf/wkt.inc",
         "//:LICENSE",
     ],
 )
@@ -262,9 +255,20 @@ pkg_files(
     prefix = "third_party/utf8_range",
 )
 
+pkg_files(
+    name = "generated_files",
+    srcs = [
+        "ext/google/protobuf/php-upb.c",
+        "ext/google/protobuf/php-upb.h",
+        "ext/google/protobuf/wkt.inc",
+    ],
+    prefix = "third_party/utf8_range",
+)
+
 pkg_filegroup(
     name = "pecl_release_files",
     srcs = [
+        ":generated_files",
         ":php_ext_source_files",
         ":utf8_range_files",
     ],

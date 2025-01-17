@@ -17,12 +17,12 @@ from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 
 
-@_parameterized.named_parameters(
+@parameterized.named_parameters(
     ('_proto2', unittest_pb2),
     ('_proto3', unittest_proto3_arena_pb2),
 )
@@ -77,6 +77,27 @@ class ProtoTest(unittest.TestCase):
         str(context.exception),
     )
 
+  def test_byte_size(self, message_module):
+    msg = message_module.TestAllTypes()
+    self.assertEqual(0, proto.byte_size(msg))
+    msg.optional_int32 = 123
+    self.assertEqual(2, proto.byte_size(msg))
+
+  def test_clear_message(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.oneof_uint32 = 11
+    msg.repeated_nested_message.add(bb=1)
+    proto.clear_message(msg)
+    self.assertIsNone(msg.WhichOneof('oneof_field'))
+    self.assertEqual(0, len(msg.repeated_nested_message))
+
+  def test_clear_field(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.optional_int32 = 123
+    self.assertEqual(123, msg.optional_int32)
+    proto.clear_field(msg, 'optional_int32')
+    self.assertEqual(0, msg.optional_int32)
+
 
 class SelfFieldTest(unittest.TestCase):
 
@@ -98,7 +119,7 @@ _EXPECTED_PROTO3 = b'\x04r\x02hi\x06\x08\x01r\x02hi\x06\x08\x02r\x02hi'
 _EXPECTED_PROTO2 = b'\x06\x08\x00r\x02hi\x06\x08\x01r\x02hi\x06\x08\x02r\x02hi'
 
 
-@_parameterized.named_parameters(
+@parameterized.named_parameters(
     ('_proto2', unittest_pb2, _EXPECTED_PROTO2),
     ('_proto3', unittest_proto3_arena_pb2, _EXPECTED_PROTO3),
 )

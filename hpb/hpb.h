@@ -8,9 +8,9 @@
 #ifndef PROTOBUF_HPB_HPB_H_
 #define PROTOBUF_HPB_HPB_H_
 
-#include <cstdint>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
@@ -21,7 +21,6 @@
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
-#include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 
 #ifdef HPB_BACKEND_UPB
@@ -43,6 +42,17 @@ typename T::Proxy CreateMessage(hpb::Arena& arena) {
 }
 
 template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
+  return hpb::internal::PrivateAccess::Proxy<T>(
+      hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
+                               T::minitable(), arena.ptr()),
+      arena.ptr());
+}
+
+// Deprecated; do not use. There is one extant caller which we plan to migrate.
+// Tracking deletion TODO: b/385138477
+template <typename T>
+[[deprecated("Use CloneMessage(Ptr<T>, hpb::Arena&) instead.")]]
 typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
   return ::hpb::internal::PrivateAccess::Proxy<T>(
       ::hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
@@ -66,24 +76,19 @@ void DeepCopy(Ptr<const T> source_message, T* target_message) {
 }
 
 template <typename T>
-void DeepCopy(const T* source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(Ptr(source_message), target_message);
-}
-
-template <typename T>
 void DeepCopy(const T* source_message, T* target_message) {
   static_assert(!std::is_const_v<T>);
   DeepCopy(Ptr(source_message), Ptr(target_message));
 }
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
+void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
   backend::ClearMessage(message);
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
+ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
+                                absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message));
@@ -96,44 +101,7 @@ ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(
-    Ptr<T> message, absl::string_view bytes,
-    const ::hpb::ExtensionRegistry& extension_registry) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = hpb::interop::upb::GetArena(message);
-  return upb_Decode(bytes.data(), bytes.size(),
-                    hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message),
-                    /* extreg= */
-                    ::hpb::internal::GetUpbExtensions(extension_registry),
-                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(
-    T* message, absl::string_view bytes,
-    const ::hpb::ExtensionRegistry& extension_registry) {
-  static_assert(!std::is_const_v<T>);
-  return Parse(Ptr(message, bytes, extension_registry));
-}
-
-template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = hpb::interop::upb::GetArena(message);
-  return upb_Decode(bytes.data(), bytes.size(),
-                    hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message),
-                    /* extreg= */ nullptr, /* options= */ 0,
-                    arena) == kUpb_DecodeStatus_Ok;
-}
-
-template <typename T>
-absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
+absl::StatusOr<T> Parse(absl::string_view bytes) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
@@ -148,8 +116,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry,
-                        int options = 0) {
+                        const ::hpb::ExtensionRegistry& extension_registry) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
@@ -164,19 +131,11 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(const T* message, hpb::Arena& arena,
-                                            int options = 0) {
+absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
+                                            hpb::Arena& arena) {
   return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
                                     ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), options);
-}
-
-template <typename T>
-absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, hpb::Arena& arena,
-                                            int options = 0) {
-  return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
-                                    ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), options);
+                                    arena.ptr(), 0);
 }
 
 }  // namespace hpb

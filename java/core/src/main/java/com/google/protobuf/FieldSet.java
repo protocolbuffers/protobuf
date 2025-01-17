@@ -127,7 +127,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }
@@ -266,6 +267,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       return ((LazyField) o).getValue();
     }
     return o;
+  }
+
+  /** Returns true if the field is a lazy field and it is corrupted. */
+  boolean lazyFieldCorrupted(final T descriptor) {
+    Object o = fields.get(descriptor);
+    return o instanceof LazyField && ((LazyField) o).isCorrupted();
   }
 
   /**

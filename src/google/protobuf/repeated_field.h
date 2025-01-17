@@ -560,8 +560,8 @@ class RepeatedField final
       // We need to manually unpoison the SOO buffer because in reflection for
       // split repeated fields, we poison the whole SOO buffer even when we
       // don't actually use the whole SOO buffer (e.g. for RepeatedField<bool>).
-      PROTOBUF_UNPOISON_MEMORY_REGION(soo_rep_.short_rep.data,
-                                      sizeof(soo_rep_.short_rep.data));
+      internal::UnpoisonMemoryRegion(soo_rep_.short_rep.data,
+                                     sizeof(soo_rep_.short_rep.data));
     }
   }
 
@@ -1148,7 +1148,7 @@ inline int CalculateReserveSize(int capacity, int new_size) {
   }
   constexpr int kMaxSizeBeforeClamp =
       (std::numeric_limits<int>::max() - kHeapRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
+  if (ABSL_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
   constexpr int kSooCapacityElements = SooCapacityElements(sizeof(T));

@@ -20,3 +20,9 @@ message MsgWithFieldsWithImportedTypes {
     imported_types.ImportedEnum imported_enum_oneof = 4;
   }
 }
+
+// This will produce a module called imported_types_proto. Let's verify that we
+// can do this without conflicting with the crate of the same name.
+message ImportedTypesProto {
+  message Nested {}
+}
