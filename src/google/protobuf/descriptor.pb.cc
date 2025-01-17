@@ -4818,7 +4818,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  total_size += ::absl::popcount(0x00000018u & cached_has_bits) * 2;
+  if (cached_has_bits & 0x00000007u) {
     // optional string full_name = 2;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -4833,14 +4834,6 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
     if (cached_has_bits & 0x00000004u) {
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
           this_._internal_number());
-    }
-    // optional bool reserved = 5;
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 2;
-    }
-    // optional bool repeated = 6;
-    if (cached_has_bits & 0x00000010u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -5719,6 +5712,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += static_cast<bool>(0x00000100u & cached_has_bits) * 3;
   if (cached_has_bits & 0x000000ffu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -5761,11 +5755,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
           this_._internal_oneof_index());
     }
   }
-  if (cached_has_bits & 0x00000700u) {
-    // optional bool proto3_optional = 17;
-    if (cached_has_bits & 0x00000100u) {
-      total_size += 3;
-    }
+  if (cached_has_bits & 0x00000600u) {
     // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
     if (cached_has_bits & 0x00000200u) {
       total_size += 1 +
@@ -7881,7 +7871,8 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  total_size += ::absl::popcount(0x00000030u & cached_has_bits) * 2;
+  if (cached_has_bits & 0x0000000fu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -7901,14 +7892,6 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
     if (cached_has_bits & 0x00000008u) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
-    }
-    // optional bool client_streaming = 5 [default = false];
-    if (cached_has_bits & 0x00000010u) {
-      total_size += 2;
-    }
-    // optional bool server_streaming = 6 [default = false];
-    if (cached_has_bits & 0x00000020u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -8617,6 +8600,8 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += ::absl::popcount(0x000bf000u & cached_has_bits) * 3;
+  total_size += static_cast<bool>(0x00000800u & cached_has_bits) * 2;
   if (cached_has_bits & 0x000000ffu) {
     // optional string java_package = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -8659,7 +8644,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
                                       this_._internal_php_namespace());
     }
   }
-  if (cached_has_bits & 0x0000ff00u) {
+  if (cached_has_bits & 0x00000700u) {
     // optional string php_metadata_namespace = 44;
     if (cached_has_bits & 0x00000100u) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -8675,44 +8660,12 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
       total_size += 2 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
-    // optional bool java_multiple_files = 10 [default = false];
-    if (cached_has_bits & 0x00000800u) {
-      total_size += 2;
-    }
-    // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-    if (cached_has_bits & 0x00001000u) {
-      total_size += 3;
-    }
-    // optional bool java_string_check_utf8 = 27 [default = false];
-    if (cached_has_bits & 0x00002000u) {
-      total_size += 3;
-    }
-    // optional bool cc_generic_services = 16 [default = false];
-    if (cached_has_bits & 0x00004000u) {
-      total_size += 3;
-    }
-    // optional bool java_generic_services = 17 [default = false];
-    if (cached_has_bits & 0x00008000u) {
-      total_size += 3;
-    }
   }
-  if (cached_has_bits & 0x000f0000u) {
-    // optional bool py_generic_services = 18 [default = false];
-    if (cached_has_bits & 0x00010000u) {
-      total_size += 3;
-    }
-    // optional bool deprecated = 23 [default = false];
-    if (cached_has_bits & 0x00020000u) {
-      total_size += 3;
-    }
+   {
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
     if (cached_has_bits & 0x00040000u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_optimize_for());
-    }
-    // optional bool cc_enable_arenas = 31 [default = true];
-    if (cached_has_bits & 0x00080000u) {
-      total_size += 3;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -9199,31 +9152,12 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  total_size += ::absl::popcount(0x0000003eu & cached_has_bits) * 2;
+   {
     // optional .google.protobuf.FeatureSet features = 12;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
-    }
-    // optional bool message_set_wire_format = 1 [default = false];
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 2;
-    }
-    // optional bool no_standard_descriptor_accessor = 2 [default = false];
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 2;
-    }
-    // optional bool deprecated = 3 [default = false];
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 2;
-    }
-    // optional bool map_entry = 7;
-    if (cached_has_bits & 0x00000010u) {
-      total_size += 2;
-    }
-    // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
-    if (cached_has_bits & 0x00000020u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -10423,7 +10357,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  total_size += static_cast<bool>(0x00000200u & cached_has_bits) * 3;
+  total_size += ::absl::popcount(0x000001f0u & cached_has_bits) * 2;
+  if (cached_has_bits & 0x0000000fu) {
     // optional .google.protobuf.FeatureSet features = 21;
     if (cached_has_bits & 0x00000001u) {
       total_size += 2 +
@@ -10444,32 +10380,8 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_jstype());
     }
-    // optional bool packed = 2;
-    if (cached_has_bits & 0x00000010u) {
-      total_size += 2;
-    }
-    // optional bool lazy = 5 [default = false];
-    if (cached_has_bits & 0x00000020u) {
-      total_size += 2;
-    }
-    // optional bool unverified_lazy = 15 [default = false];
-    if (cached_has_bits & 0x00000040u) {
-      total_size += 2;
-    }
-    // optional bool deprecated = 3 [default = false];
-    if (cached_has_bits & 0x00000080u) {
-      total_size += 2;
-    }
   }
-  if (cached_has_bits & 0x00000700u) {
-    // optional bool weak = 10 [default = false];
-    if (cached_has_bits & 0x00000100u) {
-      total_size += 2;
-    }
-    // optional bool debug_redact = 16 [default = false];
-    if (cached_has_bits & 0x00000200u) {
-      total_size += 3;
-    }
+   {
     // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
     if (cached_has_bits & 0x00000400u) {
       total_size += 2 +
@@ -11239,23 +11151,12 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  total_size += ::absl::popcount(0x0000000eu & cached_has_bits) * 2;
+   {
     // optional .google.protobuf.FeatureSet features = 7;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
-    }
-    // optional bool allow_alias = 2;
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 2;
-    }
-    // optional bool deprecated = 3 [default = false];
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 2;
-    }
-    // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -11667,7 +11568,8 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  total_size += ::absl::popcount(0x0000000cu & cached_has_bits) * 2;
+  if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 2;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
@@ -11677,14 +11579,6 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
     if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.feature_support_);
-    }
-    // optional bool deprecated = 1 [default = false];
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 2;
-    }
-    // optional bool debug_redact = 3 [default = false];
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -12055,15 +11949,12 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  total_size += static_cast<bool>(0x00000002u & cached_has_bits) * 3;
+   {
     // optional .google.protobuf.FeatureSet features = 34;
     if (cached_has_bits & 0x00000001u) {
       total_size += 2 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
-    }
-    // optional bool deprecated = 33 [default = false];
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 3;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -12450,15 +12341,12 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  total_size += static_cast<bool>(0x00000002u & cached_has_bits) * 3;
+  if (cached_has_bits & 0x00000005u) {
     // optional .google.protobuf.FeatureSet features = 35;
     if (cached_has_bits & 0x00000001u) {
       total_size += 2 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
-    }
-    // optional bool deprecated = 33 [default = false];
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 3;
     }
     // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
     if (cached_has_bits & 0x00000004u) {
@@ -12766,15 +12654,12 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  total_size += static_cast<bool>(0x00000002u & cached_has_bits) * 2;
+   {
     // required string name_part = 1;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_name_part());
-    }
-    // required bool is_extension = 2;
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -13179,7 +13064,8 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
+  total_size += static_cast<bool>(0x00000020u & cached_has_bits) * 9;
+  if (cached_has_bits & 0x0000001fu) {
     // optional string identifier_value = 3;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -13204,10 +13090,6 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
     if (cached_has_bits & 0x00000010u) {
       total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
           this_._internal_negative_int_value());
-    }
-    // optional double double_value = 6;
-    if (cached_has_bits & 0x00000020u) {
-      total_size += 9;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

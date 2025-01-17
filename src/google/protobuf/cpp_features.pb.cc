@@ -356,19 +356,12 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  total_size += ::absl::popcount(0x00000006u & cached_has_bits) * 2;
+   {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
-    }
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 2;
-    }
-    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 2;
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

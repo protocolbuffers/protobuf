@@ -19,10 +19,12 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/any_invocable.h"
@@ -5010,6 +5012,34 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   return masks;
 }
 
+static std::optional<int> FixedSize(const FieldDescriptor* field) {
+  if (field->is_repeated() || field->real_containing_oneof() ||
+      !field->has_presence()) {
+    return std::nullopt;
+  }
+
+  const size_t tag_size = WireFormat::TagSize(field->number(), field->type());
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_FIXED32:
+      return tag_size + WireFormatLite::kFixed32Size;
+    case FieldDescriptor::TYPE_FIXED64:
+      return tag_size + WireFormatLite::kFixed64Size;
+    case FieldDescriptor::TYPE_SFIXED32:
+      return tag_size + WireFormatLite::kSFixed32Size;
+    case FieldDescriptor::TYPE_SFIXED64:
+      return tag_size + WireFormatLite::kSFixed64Size;
+    case FieldDescriptor::TYPE_FLOAT:
+      return tag_size + WireFormatLite::kFloatSize;
+    case FieldDescriptor::TYPE_DOUBLE:
+      return tag_size + WireFormatLite::kDoubleSize;
+    case FieldDescriptor::TYPE_BOOL:
+      return tag_size + WireFormatLite::kBoolSize;
+    default:
+      return std::nullopt;
+  }
+}
+
 void MessageGenerator::GenerateByteSize(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
@@ -5039,13 +5069,44 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     return;
   }
 
-  std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_, options_,
-      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
+  std::vector<const FieldDescriptor*> fixed;
+  std::vector<const FieldDescriptor*> rest;
+  for (auto* f : optimized_order_) {
+    if (FixedSize(f).has_value()) {
+      fixed.push_back(f);
+    } else {
+      rest.push_back(f);
+    }
+  }
+
+  // Sort the fixed fields to ensure maximum grouping.
+  // The layout of the fields is irrelevant because we are not going to read
+  // them. We only look at the hasbits.
+  const auto fixed_tuple = [&](auto* f) {
+    return std::make_tuple(HasWordIndex(f), FixedSize(f));
+  };
+  absl::c_sort(
+      fixed, [&](auto* a, auto* b) { return fixed_tuple(a) < fixed_tuple(b); });
+  std::vector<FieldChunk> fixed_chunks =
+      CollectFields(fixed, options_, [&](const auto* a, const auto* b) {
+        return fixed_tuple(a) == fixed_tuple(b);
+      });
+
+  std::vector<FieldChunk> chunks =
+      CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
+
+  // Interleave the fixed chunks in the right place to be able to reuse
+  // cached_has_bits if available. Otherwise, add them to the end.
+  for (auto& chunk : fixed_chunks) {
+    auto it = std::find_if(chunks.begin(), chunks.end(), [&](auto& c) {
+      return HasWordIndex(c.fields[0]) == HasWordIndex(chunk.fields[0]);
+    });
+    chunks.insert(it, std::move(chunk));
+  }
 
   p->Emit(
       {{"handle_extension_set",
@@ -5086,6 +5147,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           auto it = chunks.begin();
           auto end = chunks.end();
           int cached_has_word_index = -1;
+          const auto update_cached_has_bits = [&](auto& fields) {
+            if (cached_has_word_index == HasWordIndex(fields.front())) return;
+
+            cached_has_word_index = HasWordIndex(fields.front());
+            p->Emit({{"index", cached_has_word_index}},
+                    R"cc(
+                      cached_has_bits = this_.$has_bits$[$index$];
+                    )cc");
+          };
 
           while (it != end) {
             auto next =
@@ -5096,6 +5166,25 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
             while (it != next) {
               const auto& fields = it->fields;
+
+              // If the chunk is a fixed size singular chunk, use a branchless
+              // approach for it.
+              if (std::optional<int> fsize = FixedSize(fields[0])) {
+                update_cached_has_bits(fields);
+                uint32_t mask = GenChunkMask(fields, has_bit_indices_);
+                p->Emit({{"mask", absl::StrFormat("0x%08xu", mask)},
+                         {"popcount", absl::has_single_bit(mask)
+                                          ? "static_cast<bool>"
+                                          : "::absl::popcount"},
+                         {"fsize", *fsize}},
+                        R"cc(
+                          //~
+                          total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
+                        )cc");
+                ++it;
+                continue;
+              }
+
               const bool check_has_byte =
                   fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
                   !IsLikelyPresent(fields.back(), options_);
@@ -5112,14 +5201,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                    {"may_update_cached_has_word_index",
                     [&] {
                       if (!check_has_byte) return;
-                      if (cached_has_word_index == HasWordIndex(fields.front()))
-                        return;
-
-                      cached_has_word_index = HasWordIndex(fields.front());
-                      p->Emit({{"index", cached_has_word_index}},
-                              R"cc(
-                                cached_has_bits = this_.$has_bits$[$index$];
-                              )cc");
+                      update_cached_has_bits(fields);
                     }},
                    {"check_if_chunk_present",
                     [&] {
