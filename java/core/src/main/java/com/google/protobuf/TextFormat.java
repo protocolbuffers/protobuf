@@ -13,18 +13,20 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
+import java.lang.StackWalker.StackFrame;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Provide text parsing and formatting support for proto2 instances. The implementation largely
