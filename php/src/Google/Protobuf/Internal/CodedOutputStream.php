@@ -14,7 +14,7 @@ class CodedOutputStream
     /* @see ext/php-upb.h */
     const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0;
     const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1;
-    const JSON_ENCODE_PRESERVE_PROTO_FILENAMES = 1 << 2;
+    const JSON_ENCODE_PRESERVE_PROTO_FILENAMES = 1 << 2; //@todo should be JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES
 
     private $buffer;
     private $buffer_size;

@@ -3,6 +3,7 @@
 require_once('test_base.php');
 require_once('test_util.php');
 
+use Google\Protobuf\Options;
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\EmptyAnySerialization;
@@ -1620,17 +1621,68 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals('', $m->getA());
     }
 
-    public function testJsonStringWithIntegerEnums()
+    /**
+     * @dataProvider serializeToJsonStringOptionsProvider
+     */
+    public function testSerializeToJsonStringWithOptions(int $flags, string $expected)
     {
         $m = new TestMessage();
 
         $m->setOneofEnum(TestEnum::ONE);
-        $data = $m->serializeToJsonString(false, true);
-        $expected = '{"oneofEnum":1}';
+        $data = $m->serializeToJsonString($flags);
         $this->assertSame($expected, $data);
+
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
         $this->assertSame("oneof_enum", $n->getMyOneof());
         $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+    }
+
+    public static function serializeToJsonStringOptionsProvider(): array
+    {
+        return [
+            'default' => [
+                Options::JSON_ENCODE_EMIT_DEFAULTS,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'as int' => [
+                Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS,
+                '{"oneofEnum":1}',
+            ],
+            'preserve' => [
+                Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES,
+                '{"oneof_enum":"ONE"}',
+            ],
+            'as int + preserve' => [
+                Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS | Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES,
+                '{"oneof_enum":1}',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider preserveProtoFilenamesProvider
+     * Backwards Compatibility test for boolean preserveProtoFilenames parameter to serializeToJsonString
+     */
+    public function testJsonStringBCPreserveProto(bool $value, $expected)
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString($value);
+        $this->assertSame($expected, $data);
+    }
+
+    public static function preserveProtoFilenamesProvider(): array
+    {
+        return [
+            [true, '{"oneof_enum":"ONE"}'],
+            [false, '{"oneofEnum":"ONE"}'],
+        ];
+    }
+
+    public function testExtensionLoaded()
+    {
+        $this->assertTrue(extension_loaded('protobuf'), 'protobuf extension is loaded');
     }
 }

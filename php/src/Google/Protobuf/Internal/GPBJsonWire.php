@@ -19,7 +19,7 @@ class GPBJsonWire
     {
         if ($has_field_name) {
             $output->writeRaw("\"", 1);
-            $field_name = GPBJsonWire::formatFieldName($field);
+            $field_name = GPBJsonWire::formatFieldName($field, $output->getOptions());
             $output->writeRaw($field_name, strlen($field_name));
             $output->writeRaw("\":", 2);
         }
@@ -225,8 +225,11 @@ class GPBJsonWire
         return true;
     }
 
-    private static function formatFieldName($field)
+    private static function formatFieldName($field, $options)
     {
+        if ($options & CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES) {
+            return $field->getName();
+        }
         return $field->getJsonName();
     }
 

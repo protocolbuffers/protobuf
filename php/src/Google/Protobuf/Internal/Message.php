@@ -22,6 +22,7 @@ use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\MapEntry;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\ListValue;
+use Google\Protobuf\Options;
 use Google\Protobuf\Value;
 use Google\Protobuf\Struct;
 use Google\Protobuf\NullValue;
@@ -1570,17 +1571,21 @@ class Message
      * Serialize the message to json string.
      * @return string Serialized json protobuf data.
      */
-    public function serializeToJsonString($preserveProtoFieldnames = false, $formatEnumsAsIntegers = false)
+    public function serializeToJsonString($flags = 0)
     {
-        $options = 0;
-        if ($preserveProtoFieldnames) {
+        // BC compatibility which allows param bool = "preserve proto field names"
+        if ($flags === true) {
+            $flags = Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES;
+        }
+        $options = CodedOutputStream::JSON_ENCODE_EMIT_DEFAULTS;
+        if ($flags & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
             $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES;
         }
-        if ($formatEnumsAsIntegers) {
+        if ($flags & Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
             $options |= CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS;
         }
         $output = new CodedOutputStream($this->jsonByteSize($options), $options);
-        $this->serializeToJsonStream($output, $preserveProtoFieldnames, $formatEnumsAsIntegers);
+        $this->serializeToJsonStream($output);
         return $output->getData();
     }
 
@@ -1873,7 +1878,11 @@ class Message
             if ($count !== 0) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
-                    $size += strlen($field->getJsonName());  // size for field name
+                    if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                        $size += strlen($field->getName());
+                    } else {
+                        $size += strlen($field->getJsonName());
+                    } // size for field name
                 }
                 $size += 2;  // size for "{}".
                 $size += $count - 1;                     // size for commas
@@ -1909,7 +1918,11 @@ class Message
             if ($count !== 0) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
-                    $size += strlen($field->getJsonName());  // size for field name
+                    if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                        $size += strlen($field->getName());
+                    } else {
+                        $size += strlen($field->getJsonName());
+                    } // size for field name
                 }
                 $size += 2;  // size for "[]".
                 $size += $count - 1;                     // size for commas
@@ -1921,7 +1934,11 @@ class Message
         } elseif ($this->existField($field) || GPBUtil::hasJsonValue($this)) {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $size += 3;                              // size for "\"\":".
-                $size += strlen($field->getJsonName());  // size for field name
+                if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                    $size += strlen($field->getName());
+                } else {
+                    $size += strlen($field->getJsonName());
+                } // size for field name
             }
             $getter = $field->getGetter();
             $value = $this->$getter();
