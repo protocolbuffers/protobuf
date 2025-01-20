@@ -11,7 +11,7 @@ namespace Google\Protobuf;
 
 class Options
 {
-    const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0;
-    const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1;
-    const JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES = 1 << 2;
+    const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0; // 1
+    const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1; // 2
+    const JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES = 1 << 2; // 4
 }

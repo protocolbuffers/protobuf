@@ -1577,7 +1577,7 @@ class Message
         if ($flags === true) {
             $flags = Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES;
         }
-        $options = CodedOutputStream::JSON_ENCODE_EMIT_DEFAULTS;
+        $options = 0;
         if ($flags & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
             $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES;
         }

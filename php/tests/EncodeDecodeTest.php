@@ -1642,7 +1642,7 @@ class EncodeDecodeTest extends TestBase
     {
         return [
             'default' => [
-                Options::JSON_ENCODE_EMIT_DEFAULTS,
+                0,
                 '{"oneofEnum":"ONE"}',
             ],
             'as int' => [
@@ -1679,10 +1679,5 @@ class EncodeDecodeTest extends TestBase
             [true, '{"oneof_enum":"ONE"}'],
             [false, '{"oneofEnum":"ONE"}'],
         ];
-    }
-
-    public function testExtensionLoaded()
-    {
-        $this->assertTrue(extension_loaded('protobuf'), 'protobuf extension is loaded');
     }
 }

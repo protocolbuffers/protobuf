@@ -20,6 +20,7 @@
 #include "convert.h"
 #include "def.h"
 #include "map.h"
+#include "options.h"
 #include "php-upb.h"
 #include "protobuf.h"
 
@@ -754,21 +755,25 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool preserve_proto_fieldnames = false;
-  zend_bool format_enums_as_integers = false;
+  zval *flags = NULL;
   upb_Status status;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|bb",
-                            &preserve_proto_fieldnames,
-                            &format_enums_as_integers) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z",
+                            &flags) == FAILURE) {
     return;
   }
 
-  if (preserve_proto_fieldnames) {
+  if (flags == NULL || Z_TYPE_P(flags) == IS_FALSE) {
+    // do nothing
+  } else if (Z_TYPE_P(flags) == IS_TRUE) {
     options |= upb_JsonEncode_UseProtoNames;
-  }
-  if (format_enums_as_integers) {
-    options |= upb_JsonEncode_FormatEnumsAsIntegers;
+  } else if (Z_TYPE_P(flags) == IS_LONG) {
+    if (Z_LVAL_P(flags) & JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+      options |= upb_JsonEncode_FormatEnumsAsIntegers;
+    }
+    if (Z_LVAL_P(flags) & JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+      options |= upb_JsonEncode_UseProtoNames;
+    }
   }
 
   upb_Status_Clear(&status);
@@ -1079,17 +1084,12 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_write, 0, 0, 2)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_serializeWithArg, 0, 0, 0)
-  ZEND_ARG_INFO(0, preserve_proto_fieldnames)
-  ZEND_ARG_INFO(0, format_enums_as_integers)
-ZEND_END_ARG_INFO()
-
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, clear,                 arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, discardUnknownFields,  arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString,     arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString,       arginfo_mergeFrom, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToJsonString, arginfo_serializeWithArg, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToJsonString, arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromJsonString,   arginfo_mergeFromWithArg, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readWrapperValue,      arginfo_read,      ZEND_ACC_PROTECTED)
