@@ -1451,7 +1451,7 @@ public abstract class GeneratedMessageLite<
           throw new ClassNotFoundException();
         }
       }
-      return messageClass
+      return messageClass;
     }
   }
 
