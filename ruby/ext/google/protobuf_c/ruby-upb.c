@@ -370,6 +370,14 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_TSAN_CHECK_PUBLISHED(ptr) \
   UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
 #define UPB_TSAN_PUBLISH 1
+#define UPB_TSAN_CHECK_READ(member) asm volatile("" ::"r"(*(char *)&(member)))
+#define UPB_TSAN_CHECK_WRITE(member)                                   \
+  do {                                                                 \
+    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
+    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
+    asm volatile("" : "+r"(write_upb_tsan_detect_race));               \
+    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
+  } while (false)
 #else
 #define UPB_TSAN_PUBLISHED_MEMBER
 #define UPB_TSAN_INIT_PUBLISHED(ptr)
@@ -377,6 +385,12 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
   do {                                \
   } while (false && (ptr))
 #define UPB_TSAN_PUBLISH 0
+#define UPB_TSAN_CHECK_READ(member) \
+  do {                              \
+  } while (false && (member))
+#define UPB_TSAN_CHECK_WRITE(member) \
+  do {                               \
+  } while (false && (member))
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
@@ -3437,6 +3451,7 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
 }
 
 void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
+  UPB_TSAN_CHECK_READ(a->UPB_ONLYBITS(ptr));
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   UPB_ASSERT(ai->upb_alloc_cleanup == NULL);
   ai->upb_alloc_cleanup = func;
@@ -3604,6 +3619,7 @@ void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner) {
 }
 
 upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a) {
+  UPB_TSAN_CHECK_READ(a->UPB_ONLYBITS(ptr));
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   return _upb_ArenaInternal_BlockAlloc(ai);
 }
@@ -17038,6 +17054,8 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_TSAN_INIT_PUBLISHED
 #undef UPB_TSAN_CHECK_PUBLISHED
 #undef UPB_TSAN_PUBLISH
+#undef UPB_TSAN_CHECK_READ
+#undef UPB_TSAN_CHECK_WRITE
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN

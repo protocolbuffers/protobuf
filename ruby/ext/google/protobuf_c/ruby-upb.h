@@ -371,6 +371,14 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_TSAN_CHECK_PUBLISHED(ptr) \
   UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
 #define UPB_TSAN_PUBLISH 1
+#define UPB_TSAN_CHECK_READ(member) asm volatile("" ::"r"(*(char *)&(member)))
+#define UPB_TSAN_CHECK_WRITE(member)                                   \
+  do {                                                                 \
+    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
+    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
+    asm volatile("" : "+r"(write_upb_tsan_detect_race));               \
+    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
+  } while (false)
 #else
 #define UPB_TSAN_PUBLISHED_MEMBER
 #define UPB_TSAN_INIT_PUBLISHED(ptr)
@@ -378,6 +386,12 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
   do {                                \
   } while (false && (ptr))
 #define UPB_TSAN_PUBLISH 0
+#define UPB_TSAN_CHECK_READ(member) \
+  do {                              \
+  } while (false && (member))
+#define UPB_TSAN_CHECK_WRITE(member) \
+  do {                               \
+  } while (false && (member))
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
@@ -681,6 +695,7 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
 }
 
 UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
 
   size = UPB_ALIGN_MALLOC(size);
@@ -702,6 +717,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
 
 UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
                                        size_t oldsize, size_t size) {
+  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   bool is_most_recent_alloc =
@@ -728,6 +744,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
+  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   // Must be the last alloc.
@@ -15813,6 +15830,8 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_TSAN_INIT_PUBLISHED
 #undef UPB_TSAN_CHECK_PUBLISHED
 #undef UPB_TSAN_PUBLISH
+#undef UPB_TSAN_CHECK_READ
+#undef UPB_TSAN_CHECK_WRITE
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
