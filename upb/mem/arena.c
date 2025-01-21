@@ -534,6 +534,7 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
 }
 
 void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
+  UPB_TSAN_CHECK_READ(a->UPB_ONLYBITS(ptr));
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   UPB_ASSERT(ai->upb_alloc_cleanup == NULL);
   ai->upb_alloc_cleanup = func;
@@ -701,6 +702,7 @@ void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner) {
 }
 
 upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a) {
+  UPB_TSAN_CHECK_READ(a->UPB_ONLYBITS(ptr));
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   return _upb_ArenaInternal_BlockAlloc(ai);
 }
