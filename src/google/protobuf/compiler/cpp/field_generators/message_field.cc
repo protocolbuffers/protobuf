@@ -783,7 +783,7 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
-  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
+  p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p, field_)},
           R"cc(
             inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
                 ABSL_ATTRIBUTE_LIFETIME_BOUND {

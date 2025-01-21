@@ -858,7 +858,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                p->Emit(", $pbi$::BytesTag{}");
              }
            }},
-          GetEmitRepeatedFieldMutableSub(*opts_, p),
+          GetEmitRepeatedFieldMutableSub(*opts_, p, field_),
       },
       R"cc(
         inline std::string* $nonnull$ $Msg$::add_$name$()

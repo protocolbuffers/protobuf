@@ -669,7 +669,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
   p->Emit(
       {
           {GetEmitRepeatedFieldGetterSub(*opts_, p)},
-          {GetEmitRepeatedFieldMutableSub(*opts_, p)},
+          {GetEmitRepeatedFieldMutableSub(*opts_, p, field_)},
       },
       R"cc(
         inline absl::string_view $Msg$::$name$(int index) const
