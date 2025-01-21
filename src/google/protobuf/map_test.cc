@@ -48,19 +48,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-struct AlignedAsDefault {
-  int x;
-};
-struct alignas(8) AlignedAs8 {
-  int x;
-};
-
-template <>
-struct is_internal_map_value_type<AlignedAsDefault> : std::true_type {};
-template <>
-struct is_internal_map_value_type<AlignedAs8> : std::true_type {};
-
 namespace {
 
 using ::testing::AllOf;
@@ -370,7 +357,6 @@ TEST(MapTest, StaticTypeKindWorks) {
   EXPECT_EQ(UMB::TypeKind::kString, UMB::StaticTypeKind<std::string>());
   EXPECT_EQ(UMB::TypeKind::kMessage,
             UMB::StaticTypeKind<protobuf_unittest::TestAllTypes>());
-  EXPECT_EQ(UMB::TypeKind::kUnknown, UMB::StaticTypeKind<void**>());
 }
 
 template <typename LHS, typename RHS>
@@ -452,23 +438,6 @@ TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
             nullptr);
   EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cend()).node_, nullptr);
 }
-
-template <typename Aligned, bool on_arena = false>
-void MapTest_Aligned() {
-  Arena arena;
-  constexpr size_t align_mask = alignof(Aligned) - 1;
-  Map<int, Aligned> map(on_arena ? &arena : nullptr);
-  map.insert({1, Aligned{}});
-  auto it = map.find(1);
-  ASSERT_NE(it, map.end());
-  ASSERT_EQ(reinterpret_cast<intptr_t>(&it->second) & align_mask, 0);
-  map.clear();
-}
-
-TEST(MapTest, Aligned) { MapTest_Aligned<AlignedAsDefault>(); }
-TEST(MapTest, AlignedOnArena) { MapTest_Aligned<AlignedAsDefault, true>(); }
-TEST(MapTest, Aligned8) { MapTest_Aligned<AlignedAs8>(); }
-TEST(MapTest, Aligned8OnArena) { MapTest_Aligned<AlignedAs8, true>(); }
 
 
 

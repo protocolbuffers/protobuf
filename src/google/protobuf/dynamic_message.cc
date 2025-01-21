@@ -87,112 +87,13 @@ using internal::ArenaStringPtr;
 
 namespace internal {
 
-// Used by DynamicMapField for it's key type.
-//
-// This is a lite wrapper around `absl::variant`. We do not use the variant
-// directly to prevent accidental hashing or equality of the implicitly provided
-// operators.
-class DynamicMapKey {
+class DynamicMapField final : public MapFieldBase {
  public:
-  DynamicMapKey() = default;
-  DynamicMapKey(const DynamicMapKey&) = default;
-  DynamicMapKey(DynamicMapKey&&) = default;
-  DynamicMapKey& operator=(const DynamicMapKey&) = default;
-  DynamicMapKey& operator=(DynamicMapKey&&) = default;
-
-  explicit DynamicMapKey(google::protobuf::MapKey map_key)
-      : variant_(FromMapKey(map_key)) {}
-
-  google::protobuf::MapKey ToMapKey() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-
-  bool IsString() const {
-    return absl::holds_alternative<std::string>(variant_);
-  }
-
-  friend void swap(DynamicMapKey& lhs, DynamicMapKey& rhs) noexcept {
-    using std::swap;
-    swap(lhs.variant_, rhs.variant_);
-  }
-
- private:
-  using Variant =
-      absl::variant<bool, int32_t, int64_t, uint32_t, uint64_t, std::string>;
-
-  static Variant FromMapKey(google::protobuf::MapKey map_key);
-
-  Variant variant_;
-};
-
-template <>
-struct is_internal_map_key_type<DynamicMapKey> : std::true_type {};
-
-template <>
-struct TransparentSupport<DynamicMapKey> {
-  template <typename K>
-  using key_arg = K;
-
-  using ViewType = google::protobuf::MapKey;
-
-  static ViewType ToView(ViewType v) { return v; }
-
-  static ViewType ToView(const DynamicMapKey& v ABSL_ATTRIBUTE_LIFETIME_BOUND) {
-    return v.ToMapKey();
-  }
-};
-
-DynamicMapKey::Variant DynamicMapKey::FromMapKey(google::protobuf::MapKey map_key) {
-  switch (map_key.type()) {
-    case FieldDescriptor::CPPTYPE_STRING:
-      return DynamicMapKey::Variant(absl::in_place_type<std::string>,
-                                    map_key.GetStringValue());
-    case FieldDescriptor::CPPTYPE_INT64:
-      return DynamicMapKey::Variant(map_key.GetInt64Value());
-    case FieldDescriptor::CPPTYPE_INT32:
-      return DynamicMapKey::Variant(map_key.GetInt32Value());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return DynamicMapKey::Variant(map_key.GetUInt64Value());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return DynamicMapKey::Variant(map_key.GetUInt32Value());
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return DynamicMapKey::Variant(map_key.GetBoolValue());
-    default:
-      internal::Unreachable();
-  }
-}
-
-namespace {
-
-struct DynamicMapKeyToMapKey {
-  google::protobuf::MapKey* map_key;
-
-  void operator()(bool value) const { map_key->SetBoolValue(value); }
-
-  void operator()(int32_t value) const { map_key->SetInt32Value(value); }
-
-  void operator()(int64_t value) const { map_key->SetInt64Value(value); }
-
-  void operator()(uint32_t value) const { map_key->SetUInt32Value(value); }
-
-  void operator()(uint64_t value) const { map_key->SetUInt64Value(value); }
-
-  void operator()(const std::string& value) const {
-    map_key->SetStringValue(value);
-  }
-};
-
-}  // namespace
-
-google::protobuf::MapKey DynamicMapKey::ToMapKey() const {
-  google::protobuf::MapKey result;
-  absl::visit(DynamicMapKeyToMapKey{&result}, variant_);
-  return result;
-}
-
-class DynamicMapField final
-    : public TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef> {
- public:
-  explicit DynamicMapField(const Message* default_entry);
-  DynamicMapField(const Message* default_entry, Arena* arena);
+  // We pass the prototype for the entry and the mapped type (if message) to
+  // allow the caller to use the appropriate lookup function. During prototype
+  // building we need to use a different one.
+  DynamicMapField(const Message* default_entry,
+                  const Message* mapped_default_entry_if_message, Arena* arena);
   DynamicMapField(const DynamicMapField&) = delete;
   DynamicMapField& operator=(const DynamicMapField&) = delete;
   ~DynamicMapField();
@@ -200,35 +101,61 @@ class DynamicMapField final
  private:
   friend class MapFieldBase;
 
+  // Must be first for GetMapRaw to work.
+  UntypedMapBase map_;
+
   const Message* default_entry_;
 
   static const VTable kVTable;
 
-  void AllocateMapValue(MapValueRef* map_val);
-
-  static void MergeFromImpl(MapFieldBase& base, const MapFieldBase& other);
-  static void SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs);
-  static bool InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
-                                               const MapKey& map_key,
-                                               MapValueRef* val);
-  static void ClearMapNoSyncImpl(MapFieldBase& base);
-  static bool DeleteMapValueImpl(MapFieldBase& map, const MapKey& map_key);
-  static void SetMapIteratorValueImpl(MapIterator* map_iter);
-  static bool LookupMapValueNoSyncImpl(const MapFieldBase& self,
-                                       const MapKey& map_key,
-                                       MapValueConstRef* val);
-
-  static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
-
   static const Message* GetPrototypeImpl(const MapFieldBase& map);
 };
 
-DynamicMapField::DynamicMapField(const Message* default_entry)
-    : DynamicMapField::TypeDefinedMapFieldBase(&kVTable),
-      default_entry_(default_entry) {}
+static UntypedMapBase::TypeKind CppTypeToTypeKind(
+    FieldDescriptor::CppType type) {
+  using TK = UntypedMapBase::TypeKind;
+  switch (type) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return TK::kBool;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return TK::kU64;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return TK::kU64;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return TK::kFloat;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return TK::kDouble;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return TK::kString;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return TK::kMessage;
+    default:
+      Unreachable();
+  }
+}
 
-DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
-    : TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef>(&kVTable, arena),
+static auto DefaultEntryToTypeInfo(
+    const Message* default_entry,
+    const Message* mapped_default_entry_if_message) {
+  auto* desc = default_entry->GetDescriptor();
+  return UntypedMapBase::GetTypeInfoDynamic(
+      CppTypeToTypeKind(desc->map_key()->cpp_type()),
+      CppTypeToTypeKind(desc->map_value()->cpp_type()),
+      mapped_default_entry_if_message);
+}
+
+DynamicMapField::DynamicMapField(const Message* default_entry,
+                                 const Message* mapped_default_entry_if_message,
+                                 Arena* arena)
+    : MapFieldBase(&kVTable, arena),
+      map_(arena, DefaultEntryToTypeInfo(default_entry,
+                                         mapped_default_entry_if_message)),
       default_entry_(default_entry) {}
 
 constexpr DynamicMapField::VTable DynamicMapField::kVTable =
@@ -236,242 +163,11 @@ constexpr DynamicMapField::VTable DynamicMapField::kVTable =
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);
-  // DynamicMapField owns map values. Need to delete them before clearing the
-  // map.
-  for (auto& kv : map_) {
-    kv.second.DeleteData();
-  }
-  map_.clear();
-}
-
-void DynamicMapField::ClearMapNoSyncImpl(MapFieldBase& base) {
-  auto& self = static_cast<DynamicMapField&>(base);
-  if (self.arena() == nullptr) {
-    for (auto& elem : self.map_) {
-      elem.second.DeleteData();
-    }
-  }
-
-  self.map_.clear();
-}
-
-bool DynamicMapField::DeleteMapValueImpl(MapFieldBase& base,
-                                         const MapKey& map_key) {
-  auto& self = static_cast<DynamicMapField&>(base);
-  auto it = self.map_.find(map_key);
-  if (it == self.map_.end()) return false;
-  if (self.arena() == nullptr) {
-    it->second.DeleteData();
-  }
-  self.map_.EraseDynamic(it);
-  return true;
-}
-
-void DynamicMapField::SetMapIteratorValueImpl(MapIterator* map_iter) {
-  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
-  auto iter = typename decltype(map_)::const_iterator(map_iter->iter_);
-  map_iter->key_ = iter->first.ToMapKey();
-  map_iter->value_.CopyFrom(iter->second);
-}
-
-bool DynamicMapField::LookupMapValueNoSyncImpl(const MapFieldBase& self,
-                                               const MapKey& map_key,
-                                               MapValueConstRef* val) {
-  const auto& map = static_cast<const DynamicMapField&>(self).map_;
-  auto iter = map.find(map_key);
-  if (map.end() == iter) {
-    return false;
-  }
-  if (val != nullptr) {
-    val->CopyFrom(iter->second);
-  }
-  return true;
-}
-
-void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
-  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
-  map_val->SetType(val_des->cpp_type());
-  // Allocate memory for the MapValueRef, and initialize to
-  // default value.
-  switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)              \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {    \
-    auto* value = Arena::Create<TYPE>(arena()); \
-    map_val->SetValue(value);                   \
-    break;                                      \
-  }
-    HANDLE_TYPE(INT32, int32_t);
-    HANDLE_TYPE(INT64, int64_t);
-    HANDLE_TYPE(UINT32, uint32_t);
-    HANDLE_TYPE(UINT64, uint64_t);
-    HANDLE_TYPE(DOUBLE, double);
-    HANDLE_TYPE(FLOAT, float);
-    HANDLE_TYPE(BOOL, bool);
-    HANDLE_TYPE(STRING, std::string);
-    HANDLE_TYPE(ENUM, int32_t);
-#undef HANDLE_TYPE
-    case FieldDescriptor::CPPTYPE_MESSAGE: {
-      const Message& message =
-          default_entry_->GetReflection()->GetMessage(*default_entry_, val_des);
-      Message* value = message.New(arena());
-      map_val->SetValue(value);
-      break;
-    }
-  }
-}
-
-bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
-                                                       const MapKey& map_key,
-                                                       MapValueRef* val) {
-  auto& self = static_cast<DynamicMapField&>(base);
-  auto iter = self.map_.find(map_key);
-  if (iter == self.map_.end()) {
-    MapValueRef& map_val = self.map_[map_key];
-    self.AllocateMapValue(&map_val);
-    val->CopyFrom(map_val);
-    return true;
-  }
-  // map_key is already in the map. Make sure (*map)[map_key] is not called.
-  // [] may reorder the map and iterators.
-  val->CopyFrom(iter->second);
-  return false;
-}
-
-void DynamicMapField::SwapImpl(MapFieldBase& lhs_base, MapFieldBase& rhs_base) {
-  auto& lhs = static_cast<DynamicMapField&>(lhs_base);
-  auto& rhs = static_cast<DynamicMapField&>(rhs_base);
-
-  if (lhs.arena() == rhs.arena()) {
-    TypeDefinedMapFieldBase::SwapImpl(lhs, rhs);
-    return;
-  }
-
-  // Different arena, so copy objects instead.
-  DynamicMapField tmp(lhs.default_entry_);
-  MergeFromImpl(tmp, lhs);
-  lhs.Clear();
-  MergeFromImpl(lhs, rhs);
-  rhs.Clear();
-  MergeFromImpl(rhs, tmp);
-
-  MapFieldBase::SwapPayload(lhs, rhs);
-}
-
-void DynamicMapField::MergeFromImpl(MapFieldBase& base,
-                                    const MapFieldBase& other) {
-  auto& self = static_cast<DynamicMapField&>(base);
-  ABSL_DCHECK(self.IsMapValid() && other.IsMapValid());
-  Map<DynamicMapKey, MapValueRef>* map = self.MutableMap();
-  const DynamicMapField& other_field =
-      reinterpret_cast<const DynamicMapField&>(other);
-  for (auto other_it = other_field.map_.begin();
-       other_it != other_field.map_.end(); ++other_it) {
-    auto iter = map->find(other_it->first);
-    MapValueRef* map_val;
-    if (iter == map->end()) {
-      map_val = &self.map_[other_it->first];
-      self.AllocateMapValue(map_val);
-    } else {
-      map_val = &iter->second;
-    }
-
-    // Copy map value
-    const FieldDescriptor* field_descriptor =
-        self.default_entry_->GetDescriptor()->map_value();
-    switch (field_descriptor->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_INT32: {
-        map_val->SetInt32Value(other_it->second.GetInt32Value());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_INT64: {
-        map_val->SetInt64Value(other_it->second.GetInt64Value());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_UINT32: {
-        map_val->SetUInt32Value(other_it->second.GetUInt32Value());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_UINT64: {
-        map_val->SetUInt64Value(other_it->second.GetUInt64Value());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_FLOAT: {
-        map_val->SetFloatValue(other_it->second.GetFloatValue());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_DOUBLE: {
-        map_val->SetDoubleValue(other_it->second.GetDoubleValue());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_BOOL: {
-        map_val->SetBoolValue(other_it->second.GetBoolValue());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_STRING: {
-        map_val->SetStringValue(other_it->second.GetStringValue());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_ENUM: {
-        map_val->SetEnumValue(other_it->second.GetEnumValue());
-        break;
-      }
-      case FieldDescriptor::CPPTYPE_MESSAGE: {
-        map_val->MutableMessageValue()->CopyFrom(
-            other_it->second.GetMessageValue());
-        break;
-      }
-    }
-  }
+  map_.ClearTable(false);
 }
 
 const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
   return static_cast<const DynamicMapField&>(map).default_entry_;
-}
-
-size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(
-    const MapFieldBase& map) {
-  auto& self = static_cast<const DynamicMapField&>(map);
-  size_t size = 0;
-  if (auto* p = self.maybe_payload()) {
-    size += p->repeated_field.SpaceUsedExcludingSelfLong();
-  }
-  size_t map_size = self.map_.size();
-  if (map_size) {
-    auto it = self.map_.begin();
-    size += sizeof(it->first) * map_size;
-    size += sizeof(it->second) * map_size;
-    // If key is string, add the allocated space.
-    if (it->first.IsString()) {
-      size += sizeof(std::string) * map_size;
-    }
-    // Add the allocated space in MapValueRef.
-    switch (it->second.type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)           \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: { \
-    size += sizeof(TYPE) * map_size;         \
-    break;                                   \
-  }
-      HANDLE_TYPE(INT32, int32_t);
-      HANDLE_TYPE(INT64, int64_t);
-      HANDLE_TYPE(UINT32, uint32_t);
-      HANDLE_TYPE(UINT64, uint64_t);
-      HANDLE_TYPE(DOUBLE, double);
-      HANDLE_TYPE(FLOAT, float);
-      HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(STRING, std::string);
-      HANDLE_TYPE(ENUM, int32_t);
-#undef HANDLE_TYPE
-      case FieldDescriptor::CPPTYPE_MESSAGE: {
-        while (it != self.map_.end()) {
-          const Message& message = it->second.GetMessageValue();
-          size += message.GetReflection()->SpaceUsedLong(message);
-          ++it;
-        }
-        break;
-      }
-    }
-  }
-  return size;
 }
 
 }  // namespace internal
@@ -847,30 +543,22 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           new (field_ptr) Message*(nullptr);
         } else {
           if (IsMapFieldInApi(field)) {
+            const auto* sub =
+                field->message_type()->map_value()->message_type();
             // We need to lock in most cases to avoid data racing. Only not lock
             // when the constructor is called inside GetPrototype(), in which
             // case we have already locked the factory.
-            if (lock_factory) {
-              if (arena != nullptr) {
-                new (field_ptr) DynamicMapField(
-                    type_info_->factory->GetPrototype(field->message_type()),
-                    arena);
-              } else {
-                new (field_ptr) DynamicMapField(
-                    type_info_->factory->GetPrototype(field->message_type()));
-              }
-            } else {
-              if (arena != nullptr) {
-                new (field_ptr)
-                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
-                                        field->message_type()),
-                                    arena);
-              } else {
-                new (field_ptr)
-                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
-                        field->message_type()));
-              }
-            }
+            new (field_ptr) DynamicMapField(
+                lock_factory
+                    ? type_info_->factory->GetPrototype(field->message_type())
+                    : type_info_->factory->GetPrototypeNoLock(
+                          field->message_type()),
+                sub != nullptr
+                    ? lock_factory
+                          ? type_info_->factory->GetPrototype(sub)
+                          : type_info_->factory->GetPrototypeNoLock(sub)
+                    : nullptr,
+                arena);
           } else {
             new (field_ptr) RepeatedPtrField<Message>(arena);
           }

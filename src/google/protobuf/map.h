@@ -86,8 +86,6 @@ struct MapBenchmarkPeer;
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase;
 
-class DynamicMapField;
-
 class GeneratedMessageReflection;
 
 // The largest valid serialization for a message is INT_MAX, so we can't have
@@ -278,7 +276,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kDouble,   // double
     kString,   // std::string
     kMessage,  // Derived from MessageLite
-    kUnknown,  // For DynamicMapField for now
   };
   // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
 
@@ -303,7 +300,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     } else if constexpr (std::is_base_of_v<MessageLite, T>) {
       return TypeKind::kMessage;
     } else {
-      return TypeKind::kUnknown;
+      static_assert(false && sizeof(T));
     }
   }
 
@@ -352,9 +349,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return reinterpret_cast<T*>(GetVoidValue(node));
   }
 
-  void ClearTable(bool reset, void (*destroy)(NodeBase*)) {
+  void ClearTable(bool reset) {
     if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
-    ClearTableImpl(reset, destroy);
+    ClearTableImpl(reset);
   }
 
   // Space used for the table and nodes.
@@ -429,7 +426,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     map_index_t bucket;
   };
 
-  void ClearTableImpl(bool reset, void (*destroy)(NodeBase*));
+  void ClearTableImpl(bool reset);
 
   // Returns whether we should insert after the head of the list. For
   // non-optimized builds, we randomly decide whether to insert right at the
@@ -482,21 +479,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void DeleteNode(NodeBase* node);
 
-  template <typename Node>
-  static void DestroyNode(NodeBase* node) {
-    static_cast<Node*>(node)->~Node();
-  }
-
-  template <typename Node>
-  static constexpr auto GetDestroyNode() {
-    return internal::UntypedMapBase::StaticTypeKind<
-               typename Node::key_type>() == TypeKind::kUnknown ||
-                   internal::UntypedMapBase::StaticTypeKind<
-                       typename Node::mapped_type>() == TypeKind::kUnknown
-               ? DestroyNode<Node>
-               : nullptr;
-  }
-
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
@@ -520,7 +502,6 @@ auto UntypedMapBase::VisitKeyType(F f) const {
     case TypeKind::kFloat:
     case TypeKind::kDouble:
     case TypeKind::kMessage:
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -544,7 +525,6 @@ auto UntypedMapBase::VisitValueType(F f) const {
     case TypeKind::kMessage:
       return f(std::enable_if<true, MessageLite>{});
 
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -1042,7 +1022,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     StaticValidityCheck();
 
     this->AssertLoadFactor();
-    this->ClearTable(false, this->template GetDestroyNode<Node>());
+    this->ClearTable(false);
   }
 
  private:
@@ -1386,9 +1366,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  void clear() {
-    this->ClearTable(true, this->template GetDestroyNode<Node>());
-  }
+  void clear() { this->ClearTable(true); }
 
   // Assign
   Map& operator=(const Map& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1528,15 +1506,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                           true);
   }
 
-  // For DynamicMapField, which needs a special destructor.
-  void EraseDynamic(iterator it) {
-    this->EraseImpl(it.bucket_index_,
-                    static_cast<typename Map::KeyNode*>(it.node_), false);
-    if (this->arena() == nullptr) {
-      delete static_cast<Node*>(it.node_);
-    }
-  }
-
   using Base::arena;
 
   friend class Arena;
@@ -1546,7 +1515,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using DestructorSkippable_ = void;
   template <typename K, typename V>
   friend class internal::MapFieldLite;
-  friend class internal::DynamicMapField;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;

@@ -33,8 +33,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-// ----------------------------------------------------------------------
-
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
@@ -43,7 +41,6 @@ MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::GetPrototypeImpl(
     const MapFieldBase&) {
   return Derived::internal_default_instance();
 }
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
