@@ -102,15 +102,6 @@ typedef NS_ENUM(uint8_t, GPBDataType) {
   GPBDataTypeEnum,
 };
 
-enum {
-  /**
-   * A count of the number of types in GPBDataType. Separated out from the
-   * GPBDataType enum to avoid warnings regarding not handling GPBDataType_Count
-   * in switch statements.
-   **/
-  GPBDataType_Count = GPBDataTypeEnum + 1
-};
-
 /** An extension range. */
 typedef struct GPBExtensionRange {
   /** Inclusive. */
