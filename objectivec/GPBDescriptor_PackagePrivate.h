@@ -216,8 +216,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   const char *name_;
   NSArray *fields_;
 }
-// name must be long lived.
-- (instancetype)initWithName:(const char *)name fields:(NSArray *)fields;
 @end
 
 @interface GPBFieldDescriptor () {

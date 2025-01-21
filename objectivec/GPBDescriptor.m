@@ -21,6 +21,11 @@
 - (instancetype)initWithPackage:(NSString *)package;
 @end
 
+@interface GPBOneofDescriptor ()
+// name must be long lived.
+- (instancetype)initWithName:(const char *)name fields:(NSArray *)fields;
+@end
+
 @interface GPBDescriptor ()
 - (instancetype)initWithClass:(Class)messageClass
                   messageName:(NSString *)messageName
