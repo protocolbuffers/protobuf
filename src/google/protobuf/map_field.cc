@@ -36,14 +36,17 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
-void MapFieldBase::MergeFromImpl(MapFieldBase& base,
-                                 const MapFieldBase& other) {
-  base.MutableMap()->UntypedMergeFrom(other.GetMap());
+void MapFieldBase::MergeFrom(const MapFieldBase& other) {
+  MutableMap()->UntypedMergeFrom(other.GetMap());
 }
 
-void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
-  MapFieldBase::SwapPayload(lhs, rhs);
-  lhs.GetMapRaw().UntypedSwap(rhs.GetMapRaw());
+void MapFieldBase::Swap(MapFieldBase* other) {
+  if (arena() == other->arena()) {
+    InternalSwap(other);
+    return;
+  }
+  MapFieldBase::SwapPayload(*this, *other);
+  GetMapRaw().UntypedSwap(other->GetMapRaw());
 }
 
 template <typename Map, typename F>
@@ -69,40 +72,35 @@ auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
   }
 }
 
-bool MapFieldBase::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& self,
-                                                    const MapKey& map_key,
-                                                    MapValueRef* val) {
-  if (LookupMapValueNoSyncImpl(self, map_key,
-                               static_cast<MapValueConstRef*>(val))) {
+bool MapFieldBase::InsertOrLookupMapValueNoSync(const MapKey& map_key,
+                                                MapValueRef* val) {
+  if (LookupMapValueNoSync(map_key, static_cast<MapValueConstRef*>(val))) {
     return false;
   }
 
-  auto& map = self.GetMapRaw();
+  auto& map = GetMapRaw();
 
   NodeBase* node = map.AllocNode();
-  map.VisitValue(node, [&](auto* v) { self.InitializeKeyValue(v); });
+  map.VisitValue(node, [&](auto* v) { InitializeKeyValue(v); });
   val->SetValue(map.GetVoidValue(node));
 
   return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
-    self.InitializeKeyValue(map.GetKey(node), key);
+    InitializeKeyValue(map.GetKey(node), key);
     map.InsertOrReplaceNode(
         static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
     return true;
   });
 }
 
-bool MapFieldBase::DeleteMapValueImpl(MapFieldBase& self,
-                                      const MapKey& map_key) {
-  return VisitMapKey(
-      map_key, *self.MutableMap(),
-      [](auto& map, const auto& key) { return map.EraseImpl(key); });
+bool MapFieldBase::DeleteMapValue(const MapKey& map_key) {
+  return VisitMapKey(map_key, *MutableMap(), [](auto& map, const auto& key) {
+    return map.EraseImpl(key);
+  });
 }
 
-void MapFieldBase::ClearMapNoSyncImpl(MapFieldBase& self) {
-  self.GetMapRaw().ClearTable(true, nullptr);
-}
+void MapFieldBase::ClearMapNoSync() { GetMapRaw().ClearTable(true); }
 
-void MapFieldBase::SetMapIteratorValueImpl(MapIterator* map_iter) {
+void MapFieldBase::SetMapIteratorValue(MapIterator* map_iter) const {
   if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
 
   const UntypedMapBase& map = *map_iter->iter_.m_;
@@ -119,10 +117,9 @@ void MapFieldBase::SetMapIteratorValueImpl(MapIterator* map_iter) {
   map_iter->value_.SetValue(map.GetVoidValue(node));
 }
 
-bool MapFieldBase::LookupMapValueNoSyncImpl(const MapFieldBase& self,
-                                            const MapKey& map_key,
-                                            MapValueConstRef* val) {
-  auto& map = self.GetMapRaw();
+bool MapFieldBase::LookupMapValueNoSync(const MapKey& map_key,
+                                        MapValueConstRef* val) const {
+  auto& map = GetMapRaw();
   if (map.empty()) return false;
 
   return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
@@ -135,10 +132,6 @@ bool MapFieldBase::LookupMapValueNoSyncImpl(const MapFieldBase& self,
     }
     return true;
   });
-}
-
-size_t MapFieldBase::SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map) {
-  return map.GetMapRaw().SpaceUsedExcludingSelfLong();
 }
 
 const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
@@ -244,12 +237,12 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
     absl::MutexLock lock(&p->mutex);
     // Measure the map under the lock, because there could be some repeated
     // field data that might be sync'd back into the map.
-    size = SpaceUsedExcludingSelfNoLock();
+    size = GetMapRaw().SpaceUsedExcludingSelfLong();
     size += p->repeated_field.SpaceUsedExcludingSelfLong();
     ConstAccess();
   } else {
     // Only measure the map without the repeated field, because it is not there.
-    size = SpaceUsedExcludingSelfNoLock();
+    size = GetMapRaw().SpaceUsedExcludingSelfLong();
     ConstAccess();
   }
   return size;

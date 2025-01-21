@@ -3521,6 +3521,7 @@ void Reflection::PopulateTcParseFieldAux(
         ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kMapAuxInfo:
+        // TODO: Fix this now that dynamic uses normal map ABIs.
         // Default constructed info, which causes MpMap to call the fallback.
         // DynamicMessage uses DynamicMapField, which uses variant keys and
         // values. TcParser does not support them yet, so mark the field as
