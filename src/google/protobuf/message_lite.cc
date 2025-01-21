@@ -50,6 +50,13 @@
 namespace google {
 namespace protobuf {
 
+MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
+  auto* data = from.GetClassData();
+  auto* res = data->New(arena);
+  data->merge_to_from(*res, from);
+  return res;
+}
+
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   _class_data_->destroy_message(*this);
