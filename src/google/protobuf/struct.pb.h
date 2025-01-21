@@ -1165,7 +1165,7 @@ inline ::google::protobuf::Struct* PROTOBUF_NONNULL Value::_internal_mutable_str
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ =
+    _impl_.kind_.struct_value_ = 
         ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Struct>(GetArena());
   }
   return _impl_.kind_.struct_value_;
@@ -1246,7 +1246,7 @@ inline ::google::protobuf::ListValue* PROTOBUF_NONNULL Value::_internal_mutable_
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ =
+    _impl_.kind_.list_value_ = 
         ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ListValue>(GetArena());
   }
   return _impl_.kind_.list_value_;
