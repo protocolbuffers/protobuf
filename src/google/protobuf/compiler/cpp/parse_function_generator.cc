@@ -209,7 +209,7 @@ static NumToEntryTable MakeNumToEntryTable(
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's more than 31
+      // then we just extend the current block by one. If it's greater than 31
       // more, we have to add empty skip entries in order to continue using the
       // existing block.  Obviously it's just 32 more, it doesn't make sense to
       // start a whole new block, since new blocks mean having to write out
