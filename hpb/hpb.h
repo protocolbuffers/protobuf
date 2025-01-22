@@ -105,7 +105,7 @@ ABSL_MUST_USE_RESULT bool Parse(
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
                         const ::hpb::ExtensionRegistry& extension_registry =
-                            hpb::ExtensionRegistry::EmptyRegistry()) {
+                            hpb::ExtensionRegistry::generated_registry()) {
   T message;
   auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
