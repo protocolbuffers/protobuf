@@ -271,7 +271,6 @@ void WriteModelPublicDeclaration(
         friend struct ::hpb::internal::PrivateAccess;
         friend Proxy;
         friend CProxy;
-        friend absl::StatusOr<$2>(::hpb::Parse<$2>(absl::string_view bytes));
         friend absl::StatusOr<$2>(::hpb::Parse<$2>(
             absl::string_view bytes,
             const ::hpb::ExtensionRegistry& extension_registry));
