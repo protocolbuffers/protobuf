@@ -59,6 +59,9 @@ def _get_strip_import_prefix(ctx):
     return strip_import_prefix.removesuffix("/")
 
 def _proto_library_impl(ctx):
+    if len(ctx.files.srcs) == 0 and len(ctx.attr.deps) == 0:
+        fail("proto_library rule must have at least one of srcs or deps")
+
     # Verifies attributes.
     _check_srcs_package(ctx.label.package, ctx.attr.srcs)
     srcs = ctx.files.srcs
