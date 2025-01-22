@@ -82,6 +82,16 @@ $PROTOC -Isrc -I. -Ijava/core/src/main/resources/ \
     src/google/protobuf/unittest_proto3_optional.proto \
     src/google/protobuf/unittest_retention.proto
 
+# We can safely ignore the unused import warning as the
+# purpose of the test is to work with the dependencies
+$PROTOC -Isrc -I. -Icsharp/protos \
+    --experimental_allow_proto3_optional \
+    --experimental_editions \
+    --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos/UnittestDeepDependencies \
+    --csharp_opt=file_extension=.pb.cs \
+	$(find "csharp/protos/unittest_deep_dependencies" -type f -name "*.proto" | sort) \
+	2>&1 | grep -v "warning: Import .* is unused."
+
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     --csharp_opt=file_extension=.pb.cs \
