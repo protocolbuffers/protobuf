@@ -1976,6 +1976,58 @@ public class TextFormatTest {
     }
   }
 
+  @Test
+  public void testMapDynamicMessage() throws Exception {
+    TestMap message =
+        TestMap.newBuilder()
+            .putInt32ToStringField(30, "cherry")
+            .putInt32ToStringField(10, "apple")
+            .putInt32ToStringField(20, "banana")
+            .build();
+    DynamicMessage dynamic =
+        DynamicMessage.parseFrom(
+            TestMap.getDescriptor(), message.toByteString(), ExtensionRegistry.getEmptyRegistry());
+    assertThat(TextFormat.printer().printToString(dynamic))
+        .isEqualTo(TextFormat.printer().printToString(message));
+  }
+
+  @Test
+  public void testMapKeyAdapterComparison() throws Exception {
+    FieldDescriptor int32ToStringField =
+        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_STRING_FIELD_FIELD_NUMBER);
+    TestMap map =
+        TestMap.newBuilder()
+            .putInt32ToStringField(10, "apple")
+            .putInt32ToStringField(20, "banana")
+            .build();
+    TextFormat.Printer.MapEntryAdapter nullEntry =
+        new TextFormat.Printer.MapEntryAdapter(null, int32ToStringField);
+    TextFormat.Printer.MapEntryAdapter entry1 =
+        new TextFormat.Printer.MapEntryAdapter(
+            map.getRepeatedField(int32ToStringField, 0), int32ToStringField);
+    TextFormat.Printer.MapEntryAdapter entry2 =
+        new TextFormat.Printer.MapEntryAdapter(
+            map.getRepeatedField(int32ToStringField, 1), int32ToStringField);
+    assertThat(nullEntry).isEquivalentAccordingToCompareTo(nullEntry);
+    assertThat(entry1).isEquivalentAccordingToCompareTo(entry1);
+    assertThat(entry2).isEquivalentAccordingToCompareTo(entry2);
+    assertThat(nullEntry).isLessThan(entry1);
+    assertThat(entry1).isGreaterThan(nullEntry);
+    assertThat(nullEntry).isLessThan(entry2);
+    assertThat(entry2).isGreaterThan(nullEntry);
+    assertThat(entry1).isLessThan(entry2);
+    assertThat(entry2).isGreaterThan(entry1);
+  }
+
+  @Test
+  public void testMapKeyAdapterComparisonInvalidType() throws Exception {
+    TextFormat.Printer.MapEntryAdapter invalidEntry =
+        new TextFormat.Printer.MapEntryAdapter(
+            TestOneof2.NestedMessage.getDefaultInstance(),
+            TestOneof2.getDescriptor().findFieldByNumber(TestOneof2.FOO_MESSAGE_FIELD_NUMBER));
+    assertThat(invalidEntry).isEquivalentAccordingToCompareTo(invalidEntry);
+  }
+
   // =======================================================================
   // test location information
 

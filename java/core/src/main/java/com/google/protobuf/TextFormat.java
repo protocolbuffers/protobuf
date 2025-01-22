@@ -459,68 +459,57 @@ public final class TextFormat {
     }
 
     /** An adapter class that can take a {@link MapEntry} and returns its key and entry. */
-    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+    static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
-
-      @SuppressWarnings({"rawtypes"})
-      private MapEntry mapEntry;
-
-      private final FieldDescriptor.JavaType fieldType;
+      private Message messageEntry;
+      private final FieldDescriptor keyField;
 
       MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
-        if (entry instanceof MapEntry) {
-          this.mapEntry = (MapEntry) entry;
+        if (entry instanceof Message) {
+          this.messageEntry = (Message) entry;
         } else {
           this.entry = entry;
         }
-        this.fieldType = extractFieldType(fieldDescriptor);
-      }
-
-      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+        this.keyField = fieldDescriptor.getMessageType().findFieldByName("key");
       }
 
       Object getKey() {
-        if (mapEntry != null) {
-          return mapEntry.getKey();
+        if (messageEntry != null && keyField != null) {
+          return messageEntry.getField(keyField);
         }
         return null;
       }
 
       Object getEntry() {
-        if (mapEntry != null) {
-          return mapEntry;
+        if (messageEntry != null) {
+          return messageEntry;
         }
         return entry;
       }
 
       @Override
       public int compareTo(MapEntryAdapter b) {
-        if (getKey() == null || b.getKey() == null) {
-          logger.info("Invalid key for map field.");
+        Object aKey = getKey();
+        Object bKey = b.getKey();
+        if (aKey == null && bKey == null) {
+          return 0;
+        } else if (aKey == null) {
           return -1;
-        }
-        switch (fieldType) {
-          case BOOLEAN:
-            return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
-          case LONG:
-            return ((Long) getKey()).compareTo((Long) b.getKey());
-          case INT:
-            return ((Integer) getKey()).compareTo((Integer) b.getKey());
-          case STRING:
-            String aString = (String) getKey();
-            String bString = (String) b.getKey();
-            if (aString == null && bString == null) {
+        } else if (bKey == null) {
+          return 1;
+        } else {
+          switch (keyField.getJavaType()) {
+            case BOOLEAN:
+              return ((Boolean) aKey).compareTo((Boolean) bKey);
+            case LONG:
+              return ((Long) aKey).compareTo((Long) bKey);
+            case INT:
+              return ((Integer) aKey).compareTo((Integer) bKey);
+            case STRING:
+              return ((String) aKey).compareTo((String) bKey);
+            default:
               return 0;
-            } else if (aString == null && bString != null) {
-              return -1;
-            } else if (aString != null && bString == null) {
-              return 1;
-            } else {
-              return aString.compareTo(bString);
-            }
-          default:
-            return 0;
+          }
         }
       }
     }
