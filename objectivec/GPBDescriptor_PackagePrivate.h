@@ -77,6 +77,9 @@ typedef struct GPBFileDescription {
   GPBFileSyntax syntax;
 } GPBFileDescription;
 
+// Fetches an EnumDescriptor.
+typedef GPBEnumDescriptor *(*GPBEnumDescriptorFunc)(void);
+
 // Describes a single field in a protobuf as it is represented as an ivar.
 typedef struct GPBMessageFieldDescription {
   // Name of ivar.

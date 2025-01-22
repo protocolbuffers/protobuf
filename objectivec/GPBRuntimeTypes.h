@@ -18,11 +18,6 @@
 typedef BOOL (*GPBEnumValidationFunc)(int32_t);
 
 /**
- * Fetches an EnumDescriptor.
- * */
-typedef GPBEnumDescriptor *(*GPBEnumDescriptorFunc)(void);
-
-/**
  * Magic value used at runtime to indicate an enum value that wasn't know at
  * compile time.
  * */
