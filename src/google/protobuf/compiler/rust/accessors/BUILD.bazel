@@ -11,7 +11,7 @@ cc_library(
         "accessor_case.cc",
         "accessors.cc",
         "default_value.cc",
-        "map.cc",
+        "map_1234567890_1234567890.cc",
         "repeated_field.cc",
         "singular_cord.cc",
         "singular_message.cc",
