@@ -1107,7 +1107,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /**
      * For compatibility with older gencode.
      *
-     * <p> TODO Remove this in the next breaking release.
+     * <p>TODO Remove this in the next breaking release.
      *
      * @deprecated Use {@link newExtensionSerializer()} instead.
      */
@@ -2399,8 +2399,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass,
           final String containingOneofCamelCaseName) {
-        isOneofField =
-            descriptor.getRealContainingOneof() != null;
+        isOneofField = descriptor.getRealContainingOneof() != null;
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
