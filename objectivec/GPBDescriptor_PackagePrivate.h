@@ -129,9 +129,13 @@ typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
 typedef struct GPBExtensionDescription {
   GPBGenericValue defaultValue;
   const char *singletonName;
+  // Historically this had more than one entry, but the union name is referenced in the generated
+  // code so it can't be removed without breaking compatibility.
   union {
     Class clazz;
   } extendedClass;
+  // Historically this had more than one entry, but the union name is referenced in the generated
+  // code so it can't be removed without breaking compatibility.
   union {
     Class clazz;
   } messageOrGroupClass;
