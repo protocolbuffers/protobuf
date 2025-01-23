@@ -513,6 +513,26 @@ class TextFormat::Parser::ParserImpl {
     int start_line = tokenizer_.current().line;
     int start_column = tokenizer_.current().column;
 
+    auto skip_parsing = [&](bool result) {
+      // For historical reasons, fields may optionally be separated by commas or
+      // semicolons.
+      TryConsume(";") || TryConsume(",");
+
+      // If a parse info tree exists, add the location for the parsed
+      // field.
+      if (parse_info_tree_ != nullptr) {
+        int end_line = tokenizer_.previous().line;
+        int end_column = tokenizer_.previous().end_column;
+
+        RecordLocation(
+            parse_info_tree_, field,
+            ParseLocationRange(ParseLocation(start_line, start_column),
+                               ParseLocation(end_line, end_column)));
+      }
+
+      return result;
+    };
+
     const FieldDescriptor* any_type_url_field;
     const FieldDescriptor* any_value_field;
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
@@ -553,7 +573,7 @@ class TextFormat::Parser::ParserImpl {
                             std::move(prefix_and_full_type_name));
       reflection->SetString(message, any_value_field,
                             std::move(serialized_value));
-      return true;
+      return skip_parsing(true);
     }
     if (TryConsume("[")) {
       // Extension.
@@ -649,10 +669,10 @@ class TextFormat::Parser::ParserImpl {
       if (TryConsumeBeforeWhitespace(":")) {
         TryConsumeWhitespace();
         if (!LookingAt("{") && !LookingAt("<")) {
-          return SkipFieldValue();
+          return skip_parsing(SkipFieldValue());
         }
       }
-      return SkipFieldMessage();
+      return skip_parsing(SkipFieldMessage());
     }
 
     if (field->options().deprecated()) {
@@ -700,7 +720,7 @@ class TextFormat::Parser::ParserImpl {
             finder_ ? finder_->FindExtensionFactory(field) : nullptr;
         reflection->MutableMessage(message, field, factory)
             ->ParseFromString(tmp);
-        goto label_skip_parsing;
+        return skip_parsing(true);
       }
     } else {
       // ':' is required here.
@@ -730,23 +750,8 @@ class TextFormat::Parser::ParserImpl {
     } else {
       DO(ConsumeFieldValue(message, reflection, field));
     }
-  label_skip_parsing:
-    // For historical reasons, fields may optionally be separated by commas or
-    // semicolons.
-    TryConsume(";") || TryConsume(",");
 
-    // If a parse info tree exists, add the location for the parsed
-    // field.
-    if (parse_info_tree_ != nullptr) {
-      int end_line = tokenizer_.previous().line;
-      int end_column = tokenizer_.previous().end_column;
-
-      RecordLocation(parse_info_tree_, field,
-                     ParseLocationRange(ParseLocation(start_line, start_column),
-                                        ParseLocation(end_line, end_column)));
-    }
-
-    return true;
+    return skip_parsing(true);
   }
 
   // Skips the next field including the field's name and value.

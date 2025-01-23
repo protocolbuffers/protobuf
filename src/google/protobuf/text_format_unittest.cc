@@ -1331,6 +1331,32 @@ TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
 }
 
+TEST_F(TextFormatTest, ParseWithTrailingComma) {
+  EXPECT_TRUE(TextFormat::ParseFromString("optional_int32: 456 ,\n", &proto_));
+  EXPECT_TRUE(TextFormat::ParseFromString(
+      "optional_foreign_enum: FOREIGN_FOO ,", &proto_));
+  EXPECT_TRUE(
+      TextFormat::ParseFromString("repeated_string: [ \"foo\" ] ,", &proto_));
+  EXPECT_TRUE(TextFormat::ParseFromString(
+      "repeated_nested_message: [ { bb: 1 , } ]", &proto_));
+}
+
+TEST_F(TextFormatTest, ParseUnknownWithTrailingComma) {
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+  parser.AllowUnknownExtension(true);
+
+  EXPECT_TRUE(parser.ParseFromString("unknown_int: 456 ,\n", &proto_));
+  EXPECT_TRUE(parser.ParseFromString("unknown_enum: FOREIGN_FOO ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_repeated: [ \"foo\" ] ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_message: { bb: 1 , } ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_message: { bb: 1 , } ,", &proto_));
+  EXPECT_TRUE(parser.ParseFromString("[foo.unknown_extension]: 1 ,", &proto_));
+}
+
 TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
   std::string parse_string =
       "repeated_int32: []\n"
