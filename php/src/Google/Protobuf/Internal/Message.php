@@ -1579,7 +1579,7 @@ class Message
         }
         $options = 0;
         if ($flags & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
-            $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES;
+            $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES;
         }
         if ($flags & Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
             $options |= CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS;

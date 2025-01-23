@@ -227,7 +227,7 @@ class GPBJsonWire
 
     private static function formatFieldName($field, $options)
     {
-        if ($options & CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FILENAMES) {
+        if ($options & CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES) {
             return $field->getName();
         }
         return $field->getJsonName();
