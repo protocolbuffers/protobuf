@@ -156,6 +156,7 @@ struct ReflectionSchema {
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32_t HasBitIndex(const FieldDescriptor* field) const {
+    ABSL_DCHECK(!field->is_extension());
     if (has_bits_offset_ == -1) return static_cast<uint32_t>(-1);
     ABSL_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
