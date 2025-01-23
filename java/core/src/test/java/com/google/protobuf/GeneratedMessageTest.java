@@ -1999,4 +1999,57 @@ public class GeneratedMessageTest {
     assertThat(builder.getRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, 0))
         .isEqualTo(NestedMessage.newBuilder().setBb(100).build());
   }
+  
+  @Test
+  public void generatedMessage_makeExtensionsImmutableShouldThrow() {
+    GeneratedMessageV3 msg =
+        new GeneratedMessageV3() {
+          @Override
+          protected FieldAccessorTable internalGetFieldAccessorTable() {
+            return null;
+          }
+
+          @Override
+          protected Message.Builder newBuilderForType(BuilderParent parent) {
+            return null;
+          }
+
+          @Override
+          public Message.Builder newBuilderForType() {
+            return null;
+          }
+
+          @Override
+          public Message.Builder toBuilder() {
+            return null;
+          }
+
+          @Override
+          public Message getDefaultInstanceForType() {
+            return null;
+          }
+        };
+    try {
+      msg.makeExtensionsImmutable();
+      assertWithMessage("Expected UnsupportedOperationException").fail();
+    } catch (UnsupportedOperationException e) {
+      // Expected
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
+    }
+  }
+
+  @Test
+  public void extendableMessage_makeExtensionsImmutableShouldThrow() {
+    GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
+        TestAllExtensions.getDefaultInstance();
+    try {
+      msg.makeExtensionsImmutable();
+      assertWithMessage("Expected UnsupportedOperationException").fail();
+    } catch (UnsupportedOperationException e) {
+      // Expected
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
+    }
+  }
 }

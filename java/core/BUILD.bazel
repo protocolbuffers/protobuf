@@ -368,6 +368,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/GeneratedMessagePre22WarningDisabledTest.java",
         ],
     ),
     data = ["//src/google/protobuf:testdata"],
@@ -471,6 +472,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java",
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
+    "src/test/java/com/google/protobuf/GeneratedMessagePre22WarningDisabledTest.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
@@ -521,6 +523,25 @@ junit_tests(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
         "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+
+java_test(
+    name = "GeneratedMessagePre22WarningDisabledTest",
+    size = "small",
+    srcs = [
+        "src/test/java/com/google/protobuf/GeneratedMessagePre22WarningDisabledTest.java",
+    ],
+    jvm_flags = ["-Dcom.google.protobuf.use_unsafe_pre22_gencode"],
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
     ],
 )
 
