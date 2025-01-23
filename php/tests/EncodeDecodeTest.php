@@ -1661,10 +1661,10 @@ class EncodeDecodeTest extends TestBase
     }
 
     /**
-     * @dataProvider preserveProtoFilenamesProvider
-     * Backwards Compatibility test for boolean preserveProtoFilenames parameter to serializeToJsonString
+     * @dataProvider preserveProtoFieldNamesProvider
+     * Backwards Compatibility test for boolean parameter to serializeToJsonString
      */
-    public function testJsonStringBCPreserveProto(bool $value, $expected)
+    public function testJsonStringBCPreserveProtoFieldNames(bool $value, $expected)
     {
         $m = new TestMessage();
 
@@ -1673,7 +1673,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame($expected, $data);
     }
 
-    public static function preserveProtoFilenamesProvider(): array
+    public static function preserveProtoFieldNamesProvider(): array
     {
         return [
             [true, '{"oneof_enum":"ONE"}'],
