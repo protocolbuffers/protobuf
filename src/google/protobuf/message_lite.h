@@ -941,6 +941,25 @@ class PROTOBUF_EXPORT MessageLite {
     return tc_table;
   }
 
+  // TODO: b/393403510 - For now, we return a void* to avoid taking a dependency
+  // to the V2 parse table header. This will require an additional
+  // reinterpret_cast in the V2 parse loop. When we start feeling confident in
+  // the V2 implementation, we can work on making this function return the
+  // proper type (should be internal::v2::ParseTableBase*).
+  const void* GetV2ParseTable() const {
+    auto* data = GetClassData();
+    ABSL_DCHECK_NE(data, nullptr);
+
+    auto* table = data->v2_parse_table;
+    // TODO: b/393403284 - The V1 implementation has a descriptor method that
+    // can get the parse table for dynamic messages:
+    // http://google3/third_party/protobuf/message_lite.h;l=490;rcl=718025165
+    //
+    // Eventually, we should also support that for V2 parse.
+    ABSL_DCHECK_NE(table, nullptr);
+    return table;
+  }
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
       : _class_data_(data) {}
