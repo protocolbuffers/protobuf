@@ -79,7 +79,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "4.25.6")
+set(protobuf_VERSION_STRING "4.25.7")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
