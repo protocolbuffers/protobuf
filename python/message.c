@@ -318,9 +318,14 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
 static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src) {
   if (!src || !dst) return false;
 
-  PyObject* ok = PyObject_CallMethod(dst, "CopyFrom", "O", src);
-  if (!ok) return false;
-  Py_DECREF(ok);
+  if (PyDict_Check(src)) {
+    bool ok = PyUpb_Message_InitAttributes(dst, NULL, src) >= 0;
+    if (!ok) return false;
+  } else {
+    PyObject* ok = PyObject_CallMethod(dst, "CopyFrom", "O", src);
+    if (!ok) return false;
+    Py_DECREF(ok);
+  }
 
   return true;
 }

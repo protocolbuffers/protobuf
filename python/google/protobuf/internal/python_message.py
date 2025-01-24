@@ -523,7 +523,11 @@ def _AddInitMethod(message_descriptor, cls):
           if _IsMapField(field):
             if _IsMessageMapField(field):
               for key in field_value:
-                field_copy[key].MergeFrom(field_value[key])
+                item_value = field_value[key]
+                if isinstance(item_value, dict):
+                  field_copy[key].__init__(**item_value)
+                else:
+                  field_copy[key].MergeFrom(item_value)
             else:
               field_copy.update(field_value)
           else:
