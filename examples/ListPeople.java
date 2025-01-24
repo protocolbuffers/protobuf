@@ -12,7 +12,7 @@ class ListPeople {
     for (Person person: addressBook.getPeopleList()) {
       System.out.println("Person ID: " + person.getId());
       System.out.println("  Name: " + person.getName());
-      if (!person.getEmail().isEmpty()) {
+      if (person.hasEmail()) {
         System.out.println("  E-mail address: " + person.getEmail());
       }
 
