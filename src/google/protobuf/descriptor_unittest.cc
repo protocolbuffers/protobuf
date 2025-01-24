@@ -3045,6 +3045,7 @@ struct HasHasbitTestParam {
 
   std::string input_foo_proto;
   ExpectedOutput expected_output;
+  bool is_extension = false;
 };
 
 class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
@@ -3055,7 +3056,13 @@ class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
     foo_ = pool_.BuildFile(foo_proto_);
   }
 
-  const FieldDescriptor* GetField() { return foo_->message_type(0)->field(0); }
+  const FieldDescriptor* GetField() {
+    if (GetParam().is_extension) {
+      return foo_->message_type(0)->extension(0);
+    } else {
+      return foo_->message_type(0)->field(0);
+    }
+  }
 
   DescriptorPool pool_;
   FileDescriptorProto foo_proto_;
@@ -3177,7 +3184,35 @@ INSTANTIATE_TEST_SUITE_P(
                                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
                                /*expected_has_presence=*/false,
                                /*expected_has_hasbit=*/false,
-                           }}));
+                           }},
+        // Test case: proto2 extension fields.
+        // Note that extension fields don't have hasbits.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto2'
+                 message_type {
+                   name: "FooMessage"
+                   extension {
+                     name: "foo"
+                     number: 1
+                     label: LABEL_OPTIONAL
+                     type: TYPE_INT32
+                     extendee: "FooMessage2"
+                   }
+                 }
+                 message_type {
+                   name: "FooMessage2"
+                   extension_range { start: 1 end: 2 }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/false,
+            },
+            /*is_extension=*/true}));
 
 // NOTE: with C++20 we can use designated initializers to ensure
 // that struct members match commented names, but as we are still working with
@@ -3298,7 +3333,36 @@ INSTANTIATE_TEST_SUITE_P(
                                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
                                /*expected_has_presence=*/false,
                                /*expected_has_hasbit=*/false,
-                           }}));
+                           }},
+        // Test case: extension fields.
+        // Note that extension fields don't have hasbits.
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: "FooMessage"
+                   extension {
+                     name: "foo"
+                     number: 1
+                     label: LABEL_OPTIONAL
+                     type: TYPE_INT32
+                     extendee: "FooMessage2"
+                   }
+                 }
+                 message_type {
+                   name: "FooMessage2"
+                   extension_range { start: 1 end: 2 }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/true,
+                /*expected_has_hasbit=*/false,
+            },
+            /*is_extension=*/true}));
 
 
 // ===================================================================

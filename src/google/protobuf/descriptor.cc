@@ -9810,8 +9810,9 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
-  // Do not generate hasbits for "real-oneof" and weak fields.
-  if (field->real_containing_oneof() || field->options().weak()) {
+  // Do not generate hasbits for "real-oneof", weak, or extension fields.
+  if (field->real_containing_oneof() || field->options().weak() ||
+      field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
 
