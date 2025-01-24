@@ -19,11 +19,11 @@ fi
 AUTH="Authorization: token $GITHUB_TOKEN"
 
 # Fetch all protoc release assets
-curl -LJ --output protoc-$TAG-osx-x86_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-24.3-osx-x86_64.zip
-curl -LJ --output protoc-$TAG-osx-aarch_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-24.3-osx-aarch_64.zip
-curl -LJ --output protoc-$TAG-linux-aarch_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-24.3-linux-aarch_64.zip
-curl -LJ --output protoc-$TAG-linux-x86_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-24.3-linux-x86_64.zip
-curl -LJ --output protoc-$TAG-win64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-24.3-win64.zip
+curl -LJ --output protoc-$TAG-osx-x86_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-$TAG-osx-x86_64.zip
+curl -LJ --output protoc-$TAG-osx-aarch_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-$TAG-osx-aarch_64.zip
+curl -LJ --output protoc-$TAG-linux-aarch_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-$TAG-linux-aarch_64.zip
+curl -LJ --output protoc-$TAG-linux-x86_64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-$TAG-linux-x86_64.zip
+curl -LJ --output protoc-$TAG-win64.zip -H 'Accept: application/octet-stream' https://github.com/$GITHUB_REPOSITORY/releases/download/v$TAG/protoc-$TAG-win64.zip
 
 # Unzip all assets
 mkdir protoc-$TAG.artifactbundle
