@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -426,6 +427,15 @@ bool IsWKTWithObjCCategory(const Descriptor* descriptor) {
     return true;
   }
   return false;
+}
+
+void SubstitutionMap::Set(io::Printer::Sub&& sub) {
+  if (auto [it, inserted] = subs_map_.try_emplace(sub.key(), subs_.size());
+      !inserted) {
+    subs_[it->second] = std::move(sub);
+  } else {
+    subs_.emplace_back(std::move(sub));
+  }
 }
 
 }  // namespace objectivec

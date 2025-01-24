@@ -37,6 +37,7 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
@@ -290,10 +291,10 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
-  auto vars = printer->WithVars({{"classname", class_name_}});
+  auto vars = printer->WithVars(
+      {Sub("classname", class_name_).AnnotatedAs(descriptor_)});
   printer->Emit(
-      {io::Printer::Sub("deprecated_attribute", deprecated_attribute_)
-           .WithSuffix(";"),
+      {Sub("deprecated_attribute", deprecated_attribute_).WithSuffix(";"),
        {"message_comments",
         [&] {
           EmitCommentsString(printer, generation_options_, descriptor_,
@@ -302,8 +303,12 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
        {"message_fieldnum_enum",
         [&] {
           if (descriptor_->field_count() == 0) return;
-          printer->Emit(R"objc(
-            typedef GPB_ENUM($classname$_FieldNumber) {
+          printer->Emit({Sub("field_number_enum_name",
+                             absl::StrCat(printer->LookupVar("classname"),
+                                          "_FieldNumber"))
+                             .AnnotatedAs(descriptor_)},
+                        R"objc(
+            typedef GPB_ENUM($field_number_enum_name$) {
               $message_fieldnum_enum_values$,
             };
           )objc");

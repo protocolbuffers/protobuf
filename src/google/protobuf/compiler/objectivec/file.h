@@ -63,7 +63,7 @@ class FileGenerator {
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
 
-  void GenerateHeader(io::Printer* p) const;
+  void GenerateHeader(io::Printer* p, absl::string_view info_path) const;
   void GenerateSource(io::Printer* p) const;
 
   int NumEnums() const { return enum_generators_.size(); }

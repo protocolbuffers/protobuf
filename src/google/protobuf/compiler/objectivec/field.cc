@@ -33,6 +33,7 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              SubstitutionMap& variables) {
@@ -49,14 +50,18 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
   const std::string& classname = ClassName(descriptor->containing_type());
-  variables.Set("classname", classname);
-  variables.Set("name", camel_case_name);
+  variables.Set(Sub("classname", classname).AnnotatedAs(descriptor));
+  variables.Set(Sub("name", camel_case_name).AnnotatedAs(descriptor));
 
   const std::string& capitalized_name = FieldNameCapitalized(descriptor);
-  variables.Set("capitalized_name", capitalized_name);
+  variables.Set(
+      Sub("hazzer_name", "has" + capitalized_name).AnnotatedAs(descriptor));
+  variables.Set(
+      Sub("capitalized_name", capitalized_name).AnnotatedAs(descriptor));
   variables.Set("raw_field_name", raw_field_name);
-  variables.Set("field_number_name",
-                absl::StrCat(classname, "_FieldNumber_", capitalized_name));
+  variables.Set(Sub("field_number_name",
+                    absl::StrCat(classname, "_FieldNumber_", capitalized_name))
+                    .AnnotatedAs(descriptor));
   variables.Set("field_number", absl::StrCat(descriptor->number()));
   variables.Set(
       "property_type",
@@ -310,7 +315,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
                 )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
-      @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
+      @property(nonatomic, readwrite) BOOL $hazzer_name$$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
@@ -320,7 +325,7 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
     io::Printer* printer) const {
   auto vars = variables_.Install(printer);
   if (WantsHasProperty()) {
-    printer->Emit("@dynamic has$capitalized_name$, $name$;\n");
+    printer->Emit("@dynamic $hazzer_name$, $name$;\n");
   } else {
     printer->Emit("@dynamic $name$;\n");
   }
@@ -369,7 +374,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
         /** Test to see if @c $name$ has been set. */
-        @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
+        @property(nonatomic, readwrite) BOOL $hazzer_name$$ deprecated_attribute$;
     )objc");
   }
   if (IsInitName(variable("name"))) {

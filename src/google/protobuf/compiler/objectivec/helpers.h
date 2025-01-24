@@ -185,6 +185,11 @@ class SubstitutionMap {
   // All arguments are forwarded to `io::Printer::Sub`.
   template <typename... Args>
   void Set(std::string key, Args&&... args);
+  // Same as above, but takes a `io::Printer::Sub` directly.
+  //
+  // This is necessary to use advanced features of `io::Printer::Sub` like
+  // annotations.
+  void Set(io::Printer::Sub&& sub);
 
  private:
   std::vector<io::Printer::Sub> subs_;
