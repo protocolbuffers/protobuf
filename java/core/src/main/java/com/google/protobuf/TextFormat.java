@@ -38,8 +38,6 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
-  private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
-
   private static final String REDACTED_MARKER = "[REDACTED]";
 
   /**
@@ -997,15 +995,6 @@ public final class TextFormat {
     private int previousLine = 0;
     private int previousColumn = 0;
 
-    /**
-     * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
-     * current token. This value is moved to {@link containsSilentMarkerAfterPrevToken} every time
-     * the next token is parsed.
-     */
-    private boolean containsSilentMarkerAfterCurrentToken = false;
-
-    private boolean containsSilentMarkerAfterPrevToken = false;
-
     /** Construct a tokenizer that parses tokens from the given text. */
     private Tokenizer(final CharSequence text) {
       this.text = text;
@@ -1027,14 +1016,6 @@ public final class TextFormat {
 
     int getColumn() {
       return column;
-    }
-
-    boolean getContainsSilentMarkerAfterCurrentToken() {
-      return containsSilentMarkerAfterCurrentToken;
-    }
-
-    boolean getContainsSilentMarkerAfterPrevToken() {
-      return containsSilentMarkerAfterPrevToken;
     }
 
     /** Are we at the end of the input? */
@@ -1725,19 +1706,6 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
-
-    /**
-     * A valid silent marker appears between a field name and its value. If there is a ":" in
-     * between, the silent marker will only appear after the colon. This is called after a field
-     * name is parsed, and before the ":" if it exists. If the current token is ":", then
-     * containsSilentMarkerAfterCurrentToken indicates if there is a valid silent marker. Otherwise,
-     * the current token is part of the field value, so the silent marker is indicated by
-     * containsSilentMarkerAfterPrevToken.
-     */
-    private void detectSilentMarker(
-        Tokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
-    }
-
     /**
      * Determines if repeated values for non-repeated fields and oneofs are permitted. For example,
      * given required/optional field "foo" and a oneof containing "baz" and "moo":
@@ -2110,14 +2078,12 @@ public final class TextFormat {
 
       // Skips unknown fields.
       if (field == null) {
-        detectSilentMarker(tokenizer, type, name);
         guessFieldTypeAndSkip(tokenizer, type, recursionLimit);
         return;
       }
 
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
@@ -2143,7 +2109,6 @@ public final class TextFormat {
               recursionLimit);
         }
       } else {
-        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.consume(":"); // required
         consumeFieldValues(
             tokenizer,
@@ -2167,27 +2132,26 @@ public final class TextFormat {
       }
     }
 
-    private String consumeFullTypeName(Tokenizer tokenizer) throws ParseException {
+    private void consumeFullTypeName(Tokenizer tokenizer) throws ParseException {
       // If there is not a leading `[`, this is just a type name.
       if (!tokenizer.tryConsume("[")) {
-        return tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
+        return;
       }
 
       // Otherwise, this is an extension or google.protobuf.Any type URL: we consume proto path
       // elements until we've addressed the type.
-      String name = tokenizer.consumeIdentifier();
+      tokenizer.consumeIdentifier();
       while (tokenizer.tryConsume(".")) {
-        name += "." + tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
       }
       if (tokenizer.tryConsume("/")) {
-        name += "/" + tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
         while (tokenizer.tryConsume(".")) {
-          name += "." + tokenizer.consumeIdentifier();
+          tokenizer.consumeIdentifier();
         }
       }
       tokenizer.consume("]");
-
-      return name;
     }
 
     /**
@@ -2433,7 +2397,6 @@ public final class TextFormat {
           throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
         }
       }
-      detectSilentMarker(tokenizer, anyDescriptor, typeUrlBuilder.toString());
       tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
@@ -2478,8 +2441,7 @@ public final class TextFormat {
     /** Skips the next field including the field's name and value. */
     private void skipField(Tokenizer tokenizer, Descriptor type, int recursionLimit)
         throws ParseException {
-      String name = consumeFullTypeName(tokenizer);
-      detectSilentMarker(tokenizer, type, name);
+      consumeFullTypeName(tokenizer);
       guessFieldTypeAndSkip(tokenizer, type, recursionLimit);
 
       // For historical reasons, fields may optionally be separated by commas or
