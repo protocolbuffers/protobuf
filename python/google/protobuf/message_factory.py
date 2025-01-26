@@ -56,6 +56,8 @@ def GetMessageClassesForFiles(files, pool):
   This will find and resolve dependencies, failing if the descriptor
   pool cannot satisfy them.
 
+  This will also recursively find any nested definitions.
+
   Args:
     files: The file names to extract messages from.
     pool: The descriptor pool to find the files including the dependent files.
@@ -68,6 +70,13 @@ def GetMessageClassesForFiles(files, pool):
     file_desc = pool.FindFileByName(file_name)
     for desc in file_desc.message_types_by_name.values():
       result[desc.full_name] = GetMessageClass(desc)
+
+      # Recursively load protos for nested definitions.
+      nested_descriptions = list(desc.nested_types_by_name.values())
+      while nested_descriptions:
+        nested_desc = nested_descriptions.pop()
+        result[nested_desc.full_name] = GetMessageClass(nested_desc)
+        nested_descriptions.extend(nested_desc.nested_types_by_name.values())
 
     # While the extension FieldDescriptors are created by the descriptor pool,
     # the python classes created in the factory need them to be registered

@@ -294,6 +294,29 @@ class MessageFactoryTest(unittest.TestCase):
     self.assertEqual(234, m.Extensions[ext1].setting)
     self.assertEqual(345, m.Extensions[ext2].setting)
 
+  def testNestedDefinition(self):
+    f = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/meta_class.proto',
+        package='google.protobuf.python.internal')
+    msg_proto = f.message_type.add(name='Empty')
+    msg_proto.nested_type.add(name='Nested')
+    msg_proto.field.add(name='nested_field',
+                        number=1,
+                        label=descriptor.FieldDescriptor.LABEL_REPEATED,
+                        type=descriptor.FieldDescriptor.TYPE_MESSAGE,
+                        type_name='Nested')
+
+    msg_proto.nested_type[0].nested_type.add(name='DoublyNested')
+    msg_proto.nested_type[0].field.add(name='doubly_nested_field',
+                                       number=2,
+                                       label=descriptor.FieldDescriptor.LABEL_REPEATED,
+                                       type=descriptor.FieldDescriptor.TYPE_MESSAGE,
+                                       type_name='DoublyNested')
+
+    messages = message_factory.GetMessages([f])
+    self.assertIn('google.protobuf.python.internal.Empty.Nested', messages)
+    self.assertIn('google.protobuf.python.internal.Empty.Nested.DoublyNested', messages)
+
   def testDescriptorKeepConcreteClass(self):
     def loadFile():
       f= descriptor_pb2.FileDescriptorProto(
@@ -310,6 +333,8 @@ class MessageFactoryTest(unittest.TestCase):
 
     messages = loadFile()
     for des, meta_class in messages.items():
+      if des == "google.protobuf.python.internal.Empty.Nested":
+        continue
       message = meta_class()
       nested_des = message.DESCRIPTOR.nested_types_by_name['Nested']
       nested_msg = nested_des._concrete_class()
