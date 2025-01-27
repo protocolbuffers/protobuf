@@ -95,7 +95,6 @@ def _rule_impl(ctx):
     Returns:
       ([JavaInfo, DefaultInfo, OutputGroupInfo, ProguardSpecInfo])
     """
-
     proto_toolchain_info = toolchains.find_toolchain(
         ctx,
         "_aspect_proto_toolchain_for_javalite",
