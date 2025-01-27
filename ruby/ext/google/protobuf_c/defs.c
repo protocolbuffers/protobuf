@@ -466,8 +466,10 @@ static VALUE Descriptor_to_proto(VALUE _self) {
   const char* serialized = google_protobuf_DescriptorProto_serialize(
     proto, arena, &size);
   VALUE proto_class = rb_path2class("Google::Protobuf::DescriptorProto");
+  VALUE proto_rb = Message_decode_bytes(
+    size, serialized, 0, proto_class, false);
   upb_Arena_Free(arena);
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  return proto_rb;
 }
 
 static void Descriptor_register(VALUE module) {
@@ -594,10 +596,12 @@ static VALUE FileDescriptor_to_proto(VALUE _self) {
   const char* serialized = google_protobuf_FileDescriptorProto_serialize(
     file_proto, arena, &size);
 
-  upb_Arena_Free(arena);
   VALUE file_proto_class = rb_path2class(
     "Google::Protobuf::FileDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, file_proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(
+    size, serialized, 0, file_proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 static void FileDescriptor_register(VALUE module) {
@@ -1013,9 +1017,11 @@ static VALUE FieldDescriptor_to_proto(VALUE _self) {
   size_t size;
   const char* serialized = google_protobuf_FieldDescriptorProto_serialize(
     proto, arena, &size);
-  upb_Arena_Free(arena);
   VALUE proto_class = rb_path2class("Google::Protobuf::FieldDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(
+    size, serialized, 0, proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 static void FieldDescriptor_register(VALUE module) {
@@ -1170,9 +1176,11 @@ static VALUE OneOfDescriptor_to_proto(VALUE _self) {
   size_t size;
   const char* serialized = google_protobuf_OneofDescriptorProto_serialize(
     proto, arena, &size);
-  upb_Arena_Free(arena);
   VALUE proto_class = rb_path2class("Google::Protobuf::OneofDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(
+    size, serialized, 0, proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 static void OneofDescriptor_register(VALUE module) {
@@ -1397,9 +1405,10 @@ static VALUE EnumDescriptor_to_proto(VALUE _self) {
   const char* serialized = google_protobuf_EnumDescriptorProto_serialize(
     proto, arena, &size);
 
-  upb_Arena_Free(arena);
   VALUE proto_class = rb_path2class("Google::Protobuf::EnumDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(size, serialized, 0, proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 static void EnumDescriptor_register(VALUE module) {
@@ -1557,9 +1566,11 @@ static VALUE ServiceDescriptor_to_proto(VALUE _self) {
   size_t size;
   const char* serialized = google_protobuf_ServiceDescriptorProto_serialize(
     proto, arena, &size);
-  upb_Arena_Free(arena);
   VALUE proto_class = rb_path2class("Google::Protobuf::ServiceDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(
+    size, serialized, 0, proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 static void ServiceDescriptor_register(VALUE module) {
@@ -1719,9 +1730,10 @@ static VALUE MethodDescriptor_to_proto(VALUE _self) {
   size_t size;
   const char* serialized = google_protobuf_MethodDescriptorProto_serialize(
     proto, arena, &size);
-  upb_Arena_Free(arena);
   VALUE proto_class = rb_path2class("Google::Protobuf::MethodDescriptorProto");
-  return Message_decode_bytes(size, serialized, 0, proto_class, false);
+  VALUE proto_rb = Message_decode_bytes(size, serialized, 0, proto_class, false);
+  upb_Arena_Free(arena);
+  return proto_rb;
 }
 
 /*
