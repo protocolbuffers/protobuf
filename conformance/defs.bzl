@@ -11,6 +11,7 @@ def conformance_test(
         failure_list = None,
         text_format_failure_list = None,
         maximum_edition = None,
+        tags = None,
         **kwargs):
     """Conformance test runner.
 
@@ -20,6 +21,7 @@ def conformance_test(
       failure_list: a text file with known failures, one per line.
       text_format_failure_list: a text file with known failures (one per line)
           for the text format conformance suite.
+      tags: tags to apply to the test.
       **kwargs: common arguments to pass to sh_test.
     """
     args = ["--testee %s" % _strip_bazel(testee)]
@@ -32,6 +34,9 @@ def conformance_test(
         failure_lists = failure_lists + [text_format_failure_list]
     if maximum_edition:
         args = args + ["--maximum_edition %s" % maximum_edition]
+    if tags is None:
+        tags = []
+    tags = tags + ["conformance"]
 
     sh_test(
         name = name,
@@ -43,7 +48,7 @@ def conformance_test(
         deps = [
             "@bazel_tools//tools/bash/runfiles",
         ],
-        tags = ["conformance"],
+        tags = tags,
         **kwargs
     )
 

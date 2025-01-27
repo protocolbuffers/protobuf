@@ -31,7 +31,7 @@ jobs:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg, continuous-only: true }
           - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core, continuous-only: true }
+          - { name: MSAN, flags: --config=docker-msan --test_tag_filters=-nomsan, runner: ubuntu-22-4core, continuous-only: true }
           - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core, continuous-only: true }
           - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core, continuous-only: true,}
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
