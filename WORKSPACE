@@ -20,9 +20,13 @@ load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
 
-load("//:protobuf_extra_deps.bzl", "protobuf_extra_deps")
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
 
-protobuf_extra_deps()
+rules_java_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
 
 load("@bazel_features//:deps.bzl", "bazel_features_deps")
 
@@ -31,10 +35,6 @@ bazel_features_deps()
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
-
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-
-pip_install_dependencies()
 
 # Bazel platform rules.
 http_archive(
@@ -101,12 +101,6 @@ apple_rules_dependencies()
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 
 apple_support_dependencies()
-
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
-
-rules_java_dependencies()
-
-rules_java_toolchains()
 
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 

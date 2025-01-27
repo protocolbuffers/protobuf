@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '7.1.2' ]
+        bazelversion: [ '7.1.2', '8.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
     runs-on: ${{ matrix.runner }}-latest
@@ -58,4 +58,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples
           version: ${{ matrix.bazelversion }}
-          bash: cd examples && bazel build //... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
+          bash: cd examples && bazel build //... $BAZEL_FLAGS --subcommands --verbose_failures --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
