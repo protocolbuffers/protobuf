@@ -14,10 +14,17 @@
 #include <limits.h>
 #include <math.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ostream>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/testing/googletest.h"
@@ -191,7 +198,10 @@ SimpleTokenCase kSimpleTokenCases[] = {
     {"0X1234567", Tokenizer::TYPE_INTEGER},
     {"0x89abcdef", Tokenizer::TYPE_INTEGER},
     {"0x89ABCDEF", Tokenizer::TYPE_INTEGER},
+    {"0x89AB_CDEF", Tokenizer::TYPE_INTEGER},
     {"01234567", Tokenizer::TYPE_INTEGER},
+    {"0_123_4567", Tokenizer::TYPE_INTEGER},
+    {"0123_4567", Tokenizer::TYPE_INTEGER},
 
     // Test floats.
     {"123.45", Tokenizer::TYPE_FLOAT},
@@ -871,6 +881,15 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(01234567, ParseInteger("01234567"));
   EXPECT_EQ(0X123, ParseInteger("0X123"));
 
+  // Test that digit group separators are supported and ignored.
+  EXPECT_EQ(123456789, ParseInteger("123_456_789"));
+  EXPECT_EQ(123456789, ParseInteger("1_23_456_7_8_9"));
+  EXPECT_EQ(012345, ParseInteger("0_12345"));
+  EXPECT_EQ(012345, ParseInteger("01_2345"));
+  EXPECT_EQ(012345, ParseInteger("0_012345"));
+  EXPECT_EQ(2500000000, ParseInteger("2_500_000_000"));
+  EXPECT_EQ(0xB30A0000, ParseInteger("0xB30A_0000"));
+
   // Test invalid integers that may still be tokenized as integers.
   EXPECT_EQ(0, ParseInteger("0x"));
 
@@ -882,6 +901,10 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_FALSE(Tokenizer::ParseInteger("08", kuint64max, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("0xg", kuint64max, &i));
   EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("1_", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("_", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("_1", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("_1_", kuint64max, &i));
 
   // Test overflows.
   EXPECT_TRUE(Tokenizer::ParseInteger("0", 0, &i));
@@ -1130,6 +1153,7 @@ ErrorCase kErrorCases[] = {
 
     // Integer errors.
     {"123foo", true, "0:3: Need space between number and identifier.\n"},
+    {"123_ foo", true, "0:4: group separator must be followed by digits\n"},
 
     // Hex/octal errors.
     {"0x foo", true, "0:2: \"0x\" must be followed by hex digits.\n"},
@@ -1138,6 +1162,7 @@ ErrorCase kErrorCases[] = {
     {"0x123z foo", true, "0:5: Need space between number and identifier.\n"},
     {"0x123.4 foo", true, "0:5: Hex and octal numbers must be integers.\n"},
     {"0123.4 foo", true, "0:4: Hex and octal numbers must be integers.\n"},
+    {"0x1_ foo", true, "0:4: \"0x\" must be followed by hex digits.\n"},
 
     // Float errors.
     {"1e foo", true, "0:2: \"e\" must be followed by exponent.\n"},
@@ -1150,6 +1175,8 @@ ErrorCase kErrorCases[] = {
      "0:1: Need space between identifier and decimal point.\n"},
     // allow_f_after_float not enabled, so this should be an error.
     {"1.0f foo", true, "0:3: Need space between number and identifier.\n"},
+    {"1_234.5 foo", true,
+     "0:5: Floating point numbers may not have digit group separators.\n"},
 
     // Block comment errors.
     {"/*", false,

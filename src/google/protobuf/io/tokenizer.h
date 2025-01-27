@@ -287,6 +287,7 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Options.
   bool allow_f_after_float_;
+  bool allow_digit_group_separator_;
   CommentStyle comment_style_;
   bool require_space_after_number_;
   bool allow_multiline_strings_;

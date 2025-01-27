@@ -77,6 +77,10 @@ inline bool IsOctNumber(const std::string& str) {
           (str[1] >= '0' && str[1] < '8'));
 }
 
+inline bool ContainsDigitSeparator(absl::string_view str) {
+  return absl::StrContains(str, '_');
+}
+
 // The number of fields that are redacted in AbslStringify.
 std::atomic<int64_t> num_redacted_field{0};
 
@@ -1244,6 +1248,11 @@ class TextFormat::Parser::ParserImpl {
       *value = static_cast<double>(uint64_value);
     } else {
       // Uint64 overflow, attempt to parse as a double instead.
+      if (ContainsDigitSeparator(text)) {
+        ReportError(
+            "Floating point numbers cannot contain digit group separators.");
+        return false;
+      }
       *value = io::Tokenizer::ParseFloat(text);
     }
 

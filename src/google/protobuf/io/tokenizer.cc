@@ -67,6 +67,11 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -105,12 +110,14 @@ CHARACTER_CLASS(Whitespace, c == ' ' || c == '\n' || c == '\t' || c == '\r' ||
 CHARACTER_CLASS(WhitespaceNoNewline,
                 c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f');
 
-CHARACTER_CLASS(Unprintable, c<' ' && c> '\0');
+CHARACTER_CLASS(Unprintable, c < ' ' && c > '\0');
 
 CHARACTER_CLASS(Digit, '0' <= c && c <= '9');
 CHARACTER_CLASS(OctalDigit, '0' <= c && c <= '7');
 CHARACTER_CLASS(HexDigit, ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
                               ('A' <= c && c <= 'F'));
+
+CHARACTER_CLASS(DigitGroupSeparator, c == '_');
 
 CHARACTER_CLASS(Letter,
                 ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c == '_'));
@@ -205,6 +212,7 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
       record_target_(nullptr),
       record_start_(-1),
       allow_f_after_float_(false),
+      allow_digit_group_separator_(true),
       comment_style_(CPP_COMMENT_STYLE),
       require_space_after_number_(true),
       allow_multiline_strings_(false) {
@@ -442,15 +450,30 @@ void Tokenizer::ConsumeString(char delimiter) {
 
 Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
                                               bool started_with_dot) {
-  bool is_float = false;
+  bool is_float = started_with_dot;
+  bool has_digit_group_separator = false;
+  bool allow_digit_group_separator = allow_digit_group_separator_ && !is_float;
 
   if (started_with_zero && (TryConsume('x') || TryConsume('X'))) {
     // A hex number (started with "0x").
     ConsumeOneOrMore<HexDigit>("\"0x\" must be followed by hex digits.");
+    while (allow_digit_group_separator &&
+           TryConsumeOne<DigitGroupSeparator>()) {
+      has_digit_group_separator = true;
+      ConsumeOneOrMore<HexDigit>("\"0x\" must be followed by hex digits.");
+    }
 
-  } else if (started_with_zero && LookingAt<Digit>()) {
+  } else if (started_with_zero &&
+             (LookingAt<Digit>() || (allow_digit_group_separator &&
+                                     LookingAt<DigitGroupSeparator>()))) {
     // An octal number (had a leading zero).
     ConsumeZeroOrMore<OctalDigit>();
+    while (allow_digit_group_separator &&
+           TryConsumeOne<DigitGroupSeparator>()) {
+      has_digit_group_separator = true;
+      ConsumeOneOrMore<OctalDigit>(
+          "Numbers starting with leading zero must be in octal.");
+    }
     if (LookingAt<Digit>()) {
       AddError("Numbers starting with leading zero must be in octal.");
       ConsumeZeroOrMore<Digit>();
@@ -459,19 +482,23 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   } else {
     // A decimal number.
     if (started_with_dot) {
-      is_float = true;
       ConsumeZeroOrMore<Digit>();
     } else {
       ConsumeZeroOrMore<Digit>();
-
-      if (TryConsume('.')) {
+      while (allow_digit_group_separator &&
+             TryConsumeOne<DigitGroupSeparator>()) {
+        has_digit_group_separator = true;
+        ConsumeOneOrMore<Digit>("group separator must be followed by digits");
+      }
+      if (!has_digit_group_separator && TryConsume('.')) {
         is_float = true;
         ConsumeZeroOrMore<Digit>();
       }
     }
 
-    if (TryConsume('e') || TryConsume('E')) {
+    if (!has_digit_group_separator && (TryConsume('e') || TryConsume('E'))) {
       is_float = true;
+      allow_digit_group_separator = false;
       TryConsume('-') || TryConsume('+');
       ConsumeOneOrMore<Digit>("\"e\" must be followed by exponent.");
     }
@@ -487,6 +514,8 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
     if (is_float) {
       AddError(
           "Already saw decimal point or exponent; can't have another one.");
+    } else if (has_digit_group_separator) {
+      AddError("Floating point numbers may not have digit group separators.");
     } else {
       AddError("Hex and octal numbers must be integers.");
     }
@@ -970,12 +999,24 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
       base = 8;
       overflow_if_mul_base = (kuint64max / 8) + 1;
     }
+  } else if (DigitGroupSeparator::InClass(ptr[0])) {
+    // Integers can't start with a digit group separator.
+    return false;
   }
 
+  bool have_separator = false;
+  bool trailing_separator = false;
   uint64_t result = 0;
   // For all the leading '0's, and also the first non-zero character, we
   // don't need to multiply.
   while (*ptr != '\0') {
+    trailing_separator = false;
+    if (DigitGroupSeparator::InClass(*ptr)) {
+      // Skip digit group separators.
+      trailing_separator = true;
+      ++ptr;
+      continue;
+    }
     int digit = DigitValue(*ptr++);
     if (digit >= base) {
       // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
@@ -988,6 +1029,13 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
     }
   }
   for (; *ptr != '\0'; ptr++) {
+    trailing_separator = false;
+    if (DigitGroupSeparator::InClass(*ptr)) {
+      // Skip digit group separators.
+      trailing_separator = true;
+      have_separator = true;
+      continue;
+    }
     int digit = DigitValue(*ptr);
     if (digit < 0 || digit >= base) {
       // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
@@ -1007,6 +1055,9 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
   }
   if (result > max_value) return false;
 
+  if (trailing_separator) {
+    return false;
+  }
   *output = result;
   return true;
 }
