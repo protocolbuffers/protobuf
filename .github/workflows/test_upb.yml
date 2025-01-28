@@ -49,7 +49,7 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.1.2' }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.1.2' }}-2c05f44c25a209933743ddf0296ef0c1e583d2c3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}

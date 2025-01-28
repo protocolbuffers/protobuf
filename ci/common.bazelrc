@@ -5,11 +5,12 @@ build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
 
-build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
+build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-pointer
+# TODO ASAN hits ODR violations with shared linkage due to
+# cc_proto_library cyclic dependency.
+build:san-common --dynamic_mode=off
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-# ASAN hits ODR violations with shared linkage due to rules_proto.
-build:asan --dynamic_mode=off
 
 build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
 build:msan --copt=-fsanitize-memory-track-origins

@@ -37,7 +37,6 @@ pkg_filegroup(
 
 conformance_test(
     name = "conformance_test",
-    timeout = "long",  # TODO Fix this or disable in MSAN builds.
     failure_list = "//conformance:failure_list_cpp.txt",
     maximum_edition = "2023",
     testee = "//conformance:conformance_cpp",
