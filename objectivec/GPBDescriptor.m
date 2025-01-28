@@ -100,11 +100,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   // Compute the unknown flags by this version of the runtime and then check the passed in flags
   // (from the generated code) to detect when sources from a newer version are being used with an
   // older runtime.
-  GPBDescriptorInitializationFlags unknownFlags =
-      ~(GPBDescriptorInitializationFlag_FieldsWithDefault |
-        GPBDescriptorInitializationFlag_WireFormat | GPBDescriptorInitializationFlag_UsesClassRefs |
-        GPBDescriptorInitializationFlag_Proto3OptionalKnown |
-        GPBDescriptorInitializationFlag_ClosedEnumSupportKnown);
+  GPBDescriptorInitializationFlags unknownFlags = (GPBDescriptorInitializationFlags)(~(
+      GPBDescriptorInitializationFlag_FieldsWithDefault |
+      GPBDescriptorInitializationFlag_WireFormat | GPBDescriptorInitializationFlag_UsesClassRefs |
+      GPBDescriptorInitializationFlag_Proto3OptionalKnown |
+      GPBDescriptorInitializationFlag_ClosedEnumSupportKnown));
   if ((flags & unknownFlags) != 0) {
     GPBRuntimeMatchFailure();
   }
@@ -144,10 +144,10 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   }
   // No real value in checking all the fields individually, just check the combined flags at the
   // end.
-  GPBFieldFlags unknownFieldFlags =
-      ~(GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
-        GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero | GPBFieldTextFormatNameCustom |
-        GPBFieldHasEnumDescriptor | GPBFieldMapKeyMask | GPBFieldClosedEnum);
+  GPBFieldFlags unknownFieldFlags = (GPBFieldFlags)(~(
+      GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
+      GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero | GPBFieldTextFormatNameCustom |
+      GPBFieldHasEnumDescriptor | GPBFieldMapKeyMask | GPBFieldClosedEnum));
   if ((mergedFieldFlags & unknownFieldFlags) != 0) {
     GPBRuntimeMatchFailure();
   }
@@ -203,7 +203,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       firstHasIndex:(int32_t)firstHasIndex {
   NSCAssert(firstHasIndex < 0, @"Should always be <0");
   NSMutableArray *oneofs = [[NSMutableArray alloc] initWithCapacity:count];
-  for (uint32_t i = 0, hasIndex = firstHasIndex; i < count; ++i, --hasIndex) {
+  int32_t hasIndex = firstHasIndex;
+  for (uint32_t i = 0; i < count; ++i, --hasIndex) {
     const char *name = oneofNames[i];
     NSArray *fieldsForOneof = NewFieldsArrayForHasIndex(hasIndex, fields_);
     NSCAssert(fieldsForOneof.count > 0, @"No fields for this oneof? (%s:%d)", name, hasIndex);
@@ -231,7 +232,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count {
   extensionRanges_ = ranges;
-  extensionRangesCount_ = count;
+  extensionRangesCount_ = (uint32_t)count;
 }
 
 - (void)setupContainingMessageClass:(Class)messageClass {
@@ -632,7 +633,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       return nil;
     }
     const uint8_t *extraTextFormatInfo = [extraInfoValue pointerValue];
-    return GPBDecodeTextFormatName(extraTextFormatInfo, GPBFieldNumber(self), self.name);
+    return GPBDecodeTextFormatName(extraTextFormatInfo, (int32_t)GPBFieldNumber(self), self.name);
   }
 
   // The logic here has to match SetCommonFieldVariables() from
@@ -714,7 +715,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   // (from the generated code) to detect when sources from a newer version are being used with an
   // older runtime.
   GPBEnumDescriptorInitializationFlags unknownFlags =
-      ~(GPBEnumDescriptorInitializationFlag_IsClosed);
+      (GPBEnumDescriptorInitializationFlags)(~(GPBEnumDescriptorInitializationFlag_IsClosed));
   if ((flags & unknownFlags) != 0) {
     GPBRuntimeMatchFailure();
   }
@@ -927,8 +928,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code) to detect when sources from a newer version are
   // being used with an older runtime.
-  GPBExtensionOptions unknownOptions =
-      ~(GPBExtensionRepeated | GPBExtensionPacked | GPBExtensionSetWireFormat);
+  GPBExtensionOptions unknownOptions = (GPBExtensionOptions)(~(
+      GPBExtensionRepeated | GPBExtensionPacked | GPBExtensionSetWireFormat));
   if ((desc->options & unknownOptions) != 0) {
     GPBRuntimeMatchFailure();
   }
@@ -996,7 +997,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (uint32_t)fieldNumber {
-  return description_->fieldNumber;
+  return (uint32_t)(description_->fieldNumber);
 }
 
 - (GPBDataType)dataType {
