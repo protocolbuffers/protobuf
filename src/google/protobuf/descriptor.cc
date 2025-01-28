@@ -7206,8 +7206,34 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
       AllocateNameStrings(file_->package(), proto.name(), alloc);
   result->file_ = file_;
   ValidateSymbolName(proto.name(), result->full_name(), proto);
+  result->method_count_ = proto.method_size();
+  result->methods_ = alloc.AllocateArray<
+      typename std::remove_pointer<decltype(result->methods_)>::type>(
+      proto.method_size());
+  std::vector<int> first_methods;
+  std::vector<int> last_methods;
 
-  BUILD_ARRAY(proto, result, method, BuildMethod, result);
+  auto is_streaming = [](const MethodDescriptorProto& method) -> bool {
+    return method.client_streaming() ||
+           (method.server_streaming() &&
+            (!method.options().has_legacy_result_type()));
+  };
+  for (int i = 0; i < proto.method_size(); i++) {
+    if (is_streaming(proto.method(i))) {
+      last_methods.push_back(i);
+    } else {
+      first_methods.push_back(i);
+    }
+  }
+  int list_index = 0;
+  for (int i : first_methods) {
+    BuildMethod(proto.method(i), result, result->methods_ + (list_index++),
+                alloc);
+  }
+  for (int i : last_methods) {
+    BuildMethod(proto.method(i), result, result->methods_ + (list_index++),
+                alloc);
+  }
 
   // Copy options.
   AllocateOptions(proto, result, ServiceDescriptorProto::kOptionsFieldNumber,
