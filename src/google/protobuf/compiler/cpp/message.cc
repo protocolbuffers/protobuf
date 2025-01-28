@@ -1223,7 +1223,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                   )cc");
                 }
                 field_generators_.get(field).GenerateClearingCode(p);
-                if (HasHasbit(field)) {
+                if (HasHasbit(field) && !field->has_mutable_accessors()) {
                   auto v = p->WithVars(HasBitVars(field));
                   p->Emit(R"cc(
                     $has_bits$[$has_array_index$] &= ~$has_mask$;

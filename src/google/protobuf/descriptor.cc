@@ -3965,6 +3965,11 @@ bool FieldDescriptor::has_presence() const {
          features().field_presence() != FeatureSet::IMPLICIT;
 }
 
+bool FieldDescriptor::has_mutable_accessors() const {
+  return is_repeated() || cpp_type() == CPPTYPE_MESSAGE ||
+         cpp_type() == CPPTYPE_STRING;
+}
+
 bool FieldDescriptor::is_required() const {
   return features().field_presence() == FeatureSet::LEGACY_REQUIRED;
 }

@@ -1441,7 +1441,9 @@ void Reflection::ClearField(Message* message,
       return;
     }
     if (HasFieldSingular(*message, field)) {
-      ClearHasBit(message, field);
+      if (!field->has_mutable_accessors()) {
+        ClearHasBit(message, field);
+      }
 
       // We need to set the field back to its default value.
       switch (field->cpp_type()) {

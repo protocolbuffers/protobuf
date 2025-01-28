@@ -914,6 +914,15 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Reflection::HasField() is semantically meaningful.
   bool has_presence() const;
 
+  // Returns true if this field has mutable accessors.
+  //
+  // This is true for the following field types:
+  // - Repeated fields.
+  // - Message fields.
+  // - Map fields.
+  // - String fields.
+  bool has_mutable_accessors() const;
+
   // Returns true if this TYPE_STRING-typed field requires UTF-8 validation on
   // parse.
   bool requires_utf8_validation() const;

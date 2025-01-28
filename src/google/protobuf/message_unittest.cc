@@ -14,6 +14,7 @@
 #include <cstring>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
