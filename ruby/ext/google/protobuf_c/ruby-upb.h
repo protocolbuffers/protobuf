@@ -65,10 +65,8 @@ Error, UINTPTR_MAX is undefined
 // overall - in that case, it can overlap with the trailing padding of the rest
 // of the struct, and a naive sizeof(base) + sizeof(flex) * count calculation
 // will not take into account that overlap, and allocate more than is required.
-#define UPB_SIZEOF_FLEX(type, member, count)                                \
-  (UPB_MAX(sizeof(type),                                                    \
-           (offsetof(type, member) + (count) * (offsetof(type, member[1]) - \
-                                                offsetof(type, member[0])))))
+#define UPB_SIZEOF_FLEX(type, member, count) \
+  UPB_MAX(sizeof(type), offsetof(type, member[count]))
 
 #define UPB_MAPTYPE_STRING 0
 
