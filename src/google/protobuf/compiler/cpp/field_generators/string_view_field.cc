@@ -346,7 +346,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
-      $field_$.ClearToEmpty();
+      $field_$.ClearToEmpty(GetArena());
     )cc");
     return;
   }
@@ -392,7 +392,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear",
             HasHasbit(field_) ? "ClearNonDefaultToEmpty" : "ClearToEmpty"}},
           R"cc(
-            $field_$.$Clear$();
+            $field_$.$Clear$(GetArena());
           )cc");
 }
 

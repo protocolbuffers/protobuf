@@ -1552,6 +1552,9 @@ TEST(ArenaTest, CopyValuesWithinOneof) {
   if (!internal::DebugHardenClearOneofMessageOnArena()) {
     GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
   }
+  if (internal::DebugHardenReallocateOnClear()) {
+    GTEST_SKIP() << "Skipped because clear_xxx reallocates strings.";
+  }
 
   Arena arena;
   auto* message = Arena::Create<unittest::TestOneof>(&arena);

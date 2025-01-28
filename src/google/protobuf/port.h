@@ -301,6 +301,16 @@ constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }
 
+// Force reallocation of singular string and message fields when clearing, so
+// non-optimized builds have harder-to-rely-on address stability.
+constexpr bool DebugHardenReallocateOnClear() {
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
 // detect if a range of memory is not valid when we expect it to be. The
 // volatile keyword is necessary here to prevent the compiler from optimizing

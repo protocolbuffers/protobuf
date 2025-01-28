@@ -240,17 +240,21 @@ void ArenaStringPtr::Destroy() {
   delete tagged_ptr_.GetIfAllocated();
 }
 
-void ArenaStringPtr::ClearToEmpty() {
+void ArenaStringPtr::ClearToEmpty(::google::protobuf::Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {
     // Already set to default -- do nothing.
   } else {
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+    DebugHardenedRefreshString(arena);
+#else  // !ABSL_HAVE_ADDRESS_SANITIZER
     // Unconditionally mask away the tag.
     //
     // UpdateArenaString uses assign when capacity is larger than the new
     // value, which is trivially true in the donated string case.
     // const_cast<std::string*>(PtrValue<std::string>())->clear();
     tagged_ptr_.Get()->clear();
+#endif
   }
 }
 
@@ -261,7 +265,11 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
   if (IsDefault()) {
     // Already set to default -- do nothing.
   } else {
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+    DebugHardenedRefreshString(arena);
+#else  // !ABSL_HAVE_ADDRESS_SANITIZER
     UnsafeMutablePointer()->assign(default_value.get());
+#endif
   }
 }
 

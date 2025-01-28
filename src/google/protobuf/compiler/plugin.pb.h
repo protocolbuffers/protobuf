@@ -1280,7 +1280,7 @@ inline bool Version::has_suffix() const {
 }
 inline void Version::clear_suffix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.suffix_.ClearToEmpty();
+  _impl_.suffix_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Version::suffix() const
@@ -1417,7 +1417,7 @@ inline bool CodeGeneratorRequest::has_parameter() const {
 }
 inline void CodeGeneratorRequest::clear_parameter() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.parameter_.ClearToEmpty();
+  _impl_.parameter_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& CodeGeneratorRequest::parameter() const
@@ -1680,7 +1680,7 @@ inline bool CodeGeneratorResponse_File::has_name() const {
 }
 inline void CodeGeneratorResponse_File::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& CodeGeneratorResponse_File::name() const
@@ -1749,7 +1749,7 @@ inline bool CodeGeneratorResponse_File::has_insertion_point() const {
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.insertion_point_.ClearToEmpty();
+  _impl_.insertion_point_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& CodeGeneratorResponse_File::insertion_point() const
@@ -1818,7 +1818,7 @@ inline bool CodeGeneratorResponse_File::has_content() const {
 }
 inline void CodeGeneratorResponse_File::clear_content() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.content_.ClearToEmpty();
+  _impl_.content_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& CodeGeneratorResponse_File::content() const
@@ -1984,7 +1984,7 @@ inline bool CodeGeneratorResponse::has_error() const {
 }
 inline void CodeGeneratorResponse::clear_error() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.error_.ClearToEmpty();
+  _impl_.error_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& CodeGeneratorResponse::error() const

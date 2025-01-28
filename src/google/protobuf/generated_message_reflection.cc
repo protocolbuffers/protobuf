@@ -1479,7 +1479,8 @@ void Reflection::ClearField(Message* message,
               if (IsInlined(field)) {
                 // Currently, string with default value can't be inlined. So we
                 // don't have to handle default value here.
-                MutableRaw<InlinedStringField>(message, field)->ClearToEmpty();
+                MutableRaw<InlinedStringField>(message, field)
+                    ->ClearToEmpty(message->GetArena());
               } else {
                 auto* str = MutableRaw<ArenaStringPtr>(message, field);
                 str->Destroy();

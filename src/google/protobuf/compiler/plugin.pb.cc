@@ -486,7 +486,7 @@ PROTOBUF_NOINLINE void Version::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.suffix_.ClearNonDefaultToEmpty();
+    _impl_.suffix_.ClearNonDefaultToEmpty(GetArena());
   }
   if (cached_has_bits & 0x0000000eu) {
     ::memset(&_impl_.major_, 0, static_cast<::size_t>(
@@ -872,7 +872,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.parameter_.ClearNonDefaultToEmpty();
+      _impl_.parameter_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
@@ -1267,13 +1267,13 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.insertion_point_.ClearNonDefaultToEmpty();
+      _impl_.insertion_point_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.content_.ClearNonDefaultToEmpty();
+      _impl_.content_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(_impl_.generated_code_info_ != nullptr);
@@ -1647,7 +1647,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   _impl_.file_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.error_.ClearNonDefaultToEmpty();
+    _impl_.error_.ClearNonDefaultToEmpty(GetArena());
   }
   if (cached_has_bits & 0x0000000eu) {
     ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(

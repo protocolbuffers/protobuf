@@ -330,8 +330,10 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Clears content, but keeps allocated std::string, to avoid the overhead of
   // heap operations. After this returns, the content (as seen by the user) will
   // always be the empty std::string.
-  PROTOBUF_NDEBUG_INLINE void ClearToEmpty() { ClearNonDefaultToEmpty(); }
-  PROTOBUF_NDEBUG_INLINE void ClearNonDefaultToEmpty() {
+  PROTOBUF_NDEBUG_INLINE void ClearToEmpty(::google::protobuf::Arena* arena) {
+    ClearNonDefaultToEmpty(arena);
+  }
+  PROTOBUF_NDEBUG_INLINE void ClearNonDefaultToEmpty(::google::protobuf::Arena*) {
     get_mutable()->clear();
   }
 

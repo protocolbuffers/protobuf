@@ -358,11 +358,11 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // heap operations. After this returns, the content (as seen by the user) will
   // always be the empty std::string. Assumes that |default_value| is an empty
   // std::string.
-  void ClearToEmpty();
+  void ClearToEmpty(::google::protobuf::Arena* arena);
 
   // Clears content, assuming that the current value is not the empty
   // string default.
-  void ClearNonDefaultToEmpty();
+  void ClearNonDefaultToEmpty(::google::protobuf::Arena* arena);
 
   // Clears content, but keeps allocated std::string if arena != nullptr, to
   // avoid the overhead of heap operations. After this returns, the content
@@ -398,6 +398,23 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
       return tagged_ptr_.SetMutableArena(s);
     }
   }
+
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  template <typename... Args>
+  inline std::string* DebugHardenedRefreshString(Arena* arena, Args&&... args) {
+    auto* old_str = tagged_ptr_.GetIfAllocated();
+    std::string* result;
+    if (arena == nullptr) {
+      auto* s = new std::string(std::forward<Args>(args)...);
+      result = tagged_ptr_.SetAllocated(s);
+    } else {
+      auto* s = Arena::Create<std::string>(arena, std::forward<Args>(args)...);
+      result = tagged_ptr_.SetMutableArena(s);
+    }
+    delete old_str;
+    return result;
+  }
+#endif  // ABSL_HAVE_ADDRESS_SANITIZER
 
   TaggedStringPtr tagged_ptr_;
 
@@ -518,10 +535,14 @@ PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(ArenaStringPtr* rhs,
   }
 }
 
-inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
+inline void ArenaStringPtr::ClearNonDefaultToEmpty(::google::protobuf::Arena* arena) {
   // Unconditionally mask away the tag.
   ABSL_DCHECK(!tagged_ptr_.IsDefault());
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  DebugHardenedRefreshString(arena);
+#else  // !ABSL_HAVE_ADDRESS_SANITIZER
   tagged_ptr_.Get()->clear();
+#endif
 }
 
 inline std::string* ArenaStringPtr::UnsafeMutablePointer() {

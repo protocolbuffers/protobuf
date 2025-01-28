@@ -2942,13 +2942,13 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.package_.ClearNonDefaultToEmpty();
+      _impl_.package_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.syntax_.ClearNonDefaultToEmpty();
+      _impl_.syntax_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -4210,7 +4210,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -4725,10 +4725,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.full_name_.ClearNonDefaultToEmpty();
+      _impl_.full_name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.type_.ClearNonDefaultToEmpty();
+      _impl_.type_.ClearNonDefaultToEmpty(GetArena());
     }
   }
   if (cached_has_bits & 0x0000001cu) {
@@ -5557,19 +5557,19 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.extendee_.ClearNonDefaultToEmpty();
+      _impl_.extendee_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.type_name_.ClearNonDefaultToEmpty();
+      _impl_.type_name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000008u) {
-      _impl_.default_value_.ClearNonDefaultToEmpty();
+      _impl_.default_value_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000010u) {
-      _impl_.json_name_.ClearNonDefaultToEmpty();
+      _impl_.json_name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000020u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -6032,7 +6032,7 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -6658,7 +6658,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -7041,7 +7041,7 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -7390,7 +7390,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -7766,13 +7766,13 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.input_type_.ClearNonDefaultToEmpty();
+      _impl_.input_type_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.output_type_.ClearNonDefaultToEmpty();
+      _impl_.output_type_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000008u) {
       ABSL_DCHECK(_impl_.options_ != nullptr);
@@ -8335,36 +8335,36 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.java_package_.ClearNonDefaultToEmpty();
+      _impl_.java_package_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.java_outer_classname_.ClearNonDefaultToEmpty();
+      _impl_.java_outer_classname_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.go_package_.ClearNonDefaultToEmpty();
+      _impl_.go_package_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000008u) {
-      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty();
+      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000010u) {
-      _impl_.csharp_namespace_.ClearNonDefaultToEmpty();
+      _impl_.csharp_namespace_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000020u) {
-      _impl_.swift_prefix_.ClearNonDefaultToEmpty();
+      _impl_.swift_prefix_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000040u) {
-      _impl_.php_class_prefix_.ClearNonDefaultToEmpty();
+      _impl_.php_class_prefix_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000080u) {
-      _impl_.php_namespace_.ClearNonDefaultToEmpty();
+      _impl_.php_namespace_.ClearNonDefaultToEmpty(GetArena());
     }
   }
   if (cached_has_bits & 0x00000700u) {
     if (cached_has_bits & 0x00000100u) {
-      _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
+      _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000200u) {
-      _impl_.ruby_package_.ClearNonDefaultToEmpty();
+      _impl_.ruby_package_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000400u) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -9407,7 +9407,7 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.value_.ClearNonDefaultToEmpty();
+    _impl_.value_.ClearNonDefaultToEmpty(GetArena());
   }
   _impl_.edition_ = 0;
   _impl_._has_bits_.Clear();
@@ -9714,7 +9714,7 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.deprecation_warning_.ClearNonDefaultToEmpty();
+    _impl_.deprecation_warning_.ClearNonDefaultToEmpty(GetArena());
   }
   if (cached_has_bits & 0x0000000eu) {
     ::memset(&_impl_.edition_introduced_, 0, static_cast<::size_t>(
@@ -12595,7 +12595,7 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.name_part_.ClearNonDefaultToEmpty();
+    _impl_.name_part_.ClearNonDefaultToEmpty(GetArena());
   }
   _impl_.is_extension_ = false;
   _impl_._has_bits_.Clear();
@@ -12946,13 +12946,13 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.identifier_value_.ClearNonDefaultToEmpty();
+      _impl_.identifier_value_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.string_value_.ClearNonDefaultToEmpty();
+      _impl_.string_value_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.aggregate_value_.ClearNonDefaultToEmpty();
+      _impl_.aggregate_value_.ClearNonDefaultToEmpty(GetArena());
     }
   }
   if (cached_has_bits & 0x00000038u) {
@@ -14501,10 +14501,10 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.leading_comments_.ClearNonDefaultToEmpty();
+      _impl_.leading_comments_.ClearNonDefaultToEmpty(GetArena());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.trailing_comments_.ClearNonDefaultToEmpty();
+      _impl_.trailing_comments_.ClearNonDefaultToEmpty(GetArena());
     }
   }
   _impl_._has_bits_.Clear();
@@ -15165,7 +15165,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
   _impl_.path_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.source_file_.ClearNonDefaultToEmpty();
+    _impl_.source_file_.ClearNonDefaultToEmpty(GetArena());
   }
   if (cached_has_bits & 0x0000000eu) {
     ::memset(&_impl_.begin_, 0, static_cast<::size_t>(

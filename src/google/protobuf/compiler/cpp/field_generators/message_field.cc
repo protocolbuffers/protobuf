@@ -303,10 +303,25 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  p->Emit(
+      R"cc(
+        if ($field_$ != nullptr) {
+          $field_$->Clear();
+          auto* arena = GetArena();
+          auto* new_field = $field_$->New(arena);
+          if (arena == nullptr) {
+            delete $field_$;
+          }
+          $field_$ = new_field;
+        }
+      )cc");
+#else  // !ABSL_HAVE_ADDRESS_SANITIZER
   p->Emit(
       R"cc(
         if ($field_$ != nullptr) $field_$->Clear();
       )cc");
+#endif
 }
 
 void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
@@ -316,6 +331,17 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
         $DCHK$($field_$ != nullptr);
         $field_$->Clear();
       )cc");
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  p->Emit(
+      R"cc(
+        auto* arena = GetArena();
+        auto* new_field = $field_$->New(arena);
+        if (arena == nullptr) {
+          delete $field_$;
+        }
+        $field_$ = new_field;
+      )cc");
+#endif
 }
 
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {

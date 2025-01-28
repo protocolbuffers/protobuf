@@ -12312,7 +12312,7 @@ inline bool FileDescriptorProto::has_name() const {
 }
 inline void FileDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FileDescriptorProto::name() const
@@ -12381,7 +12381,7 @@ inline bool FileDescriptorProto::has_package() const {
 }
 inline void FileDescriptorProto::clear_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.package_.ClearToEmpty();
+  _impl_.package_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FileDescriptorProto::package() const
@@ -13002,7 +13002,7 @@ inline bool FileDescriptorProto::has_syntax() const {
 }
 inline void FileDescriptorProto::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.syntax_.ClearToEmpty();
+  _impl_.syntax_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FileDescriptorProto::syntax() const
@@ -13324,7 +13324,7 @@ inline bool DescriptorProto::has_name() const {
 }
 inline void DescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& DescriptorProto::name() const
@@ -13937,7 +13937,7 @@ inline bool ExtensionRangeOptions_Declaration::has_full_name() const {
 }
 inline void ExtensionRangeOptions_Declaration::clear_full_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.full_name_.ClearToEmpty();
+  _impl_.full_name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& ExtensionRangeOptions_Declaration::full_name() const
@@ -14006,7 +14006,7 @@ inline bool ExtensionRangeOptions_Declaration::has_type() const {
 }
 inline void ExtensionRangeOptions_Declaration::clear_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_.ClearToEmpty();
+  _impl_.type_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& ExtensionRangeOptions_Declaration::type() const
@@ -14368,7 +14368,7 @@ inline bool FieldDescriptorProto::has_name() const {
 }
 inline void FieldDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FieldDescriptorProto::name() const
@@ -14527,7 +14527,7 @@ inline bool FieldDescriptorProto::has_type_name() const {
 }
 inline void FieldDescriptorProto::clear_type_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_name_.ClearToEmpty();
+  _impl_.type_name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FieldDescriptorProto::type_name() const
@@ -14596,7 +14596,7 @@ inline bool FieldDescriptorProto::has_extendee() const {
 }
 inline void FieldDescriptorProto::clear_extendee() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.extendee_.ClearToEmpty();
+  _impl_.extendee_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FieldDescriptorProto::extendee() const
@@ -14665,7 +14665,7 @@ inline bool FieldDescriptorProto::has_default_value() const {
 }
 inline void FieldDescriptorProto::clear_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.default_value_.ClearToEmpty();
+  _impl_.default_value_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline const std::string& FieldDescriptorProto::default_value() const
@@ -14762,7 +14762,7 @@ inline bool FieldDescriptorProto::has_json_name() const {
 }
 inline void FieldDescriptorProto::clear_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.json_name_.ClearToEmpty();
+  _impl_.json_name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline const std::string& FieldDescriptorProto::json_name() const
@@ -14961,7 +14961,7 @@ inline bool OneofDescriptorProto::has_name() const {
 }
 inline void OneofDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& OneofDescriptorProto::name() const
@@ -15192,7 +15192,7 @@ inline bool EnumDescriptorProto::has_name() const {
 }
 inline void EnumDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& EnumDescriptorProto::name() const
@@ -15527,7 +15527,7 @@ inline bool EnumValueDescriptorProto::has_name() const {
 }
 inline void EnumValueDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& EnumValueDescriptorProto::name() const
@@ -15726,7 +15726,7 @@ inline bool ServiceDescriptorProto::has_name() const {
 }
 inline void ServiceDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& ServiceDescriptorProto::name() const
@@ -15947,7 +15947,7 @@ inline bool MethodDescriptorProto::has_name() const {
 }
 inline void MethodDescriptorProto::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& MethodDescriptorProto::name() const
@@ -16016,7 +16016,7 @@ inline bool MethodDescriptorProto::has_input_type() const {
 }
 inline void MethodDescriptorProto::clear_input_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.input_type_.ClearToEmpty();
+  _impl_.input_type_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& MethodDescriptorProto::input_type() const
@@ -16085,7 +16085,7 @@ inline bool MethodDescriptorProto::has_output_type() const {
 }
 inline void MethodDescriptorProto::clear_output_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.output_type_.ClearToEmpty();
+  _impl_.output_type_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& MethodDescriptorProto::output_type() const
@@ -16312,7 +16312,7 @@ inline bool FileOptions::has_java_package() const {
 }
 inline void FileOptions::clear_java_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.java_package_.ClearToEmpty();
+  _impl_.java_package_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FileOptions::java_package() const
@@ -16381,7 +16381,7 @@ inline bool FileOptions::has_java_outer_classname() const {
 }
 inline void FileOptions::clear_java_outer_classname() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.java_outer_classname_.ClearToEmpty();
+  _impl_.java_outer_classname_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FileOptions::java_outer_classname() const
@@ -16565,7 +16565,7 @@ inline bool FileOptions::has_go_package() const {
 }
 inline void FileOptions::clear_go_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.go_package_.ClearToEmpty();
+  _impl_.go_package_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FileOptions::go_package() const
@@ -16774,7 +16774,7 @@ inline bool FileOptions::has_objc_class_prefix() const {
 }
 inline void FileOptions::clear_objc_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.objc_class_prefix_.ClearToEmpty();
+  _impl_.objc_class_prefix_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline const std::string& FileOptions::objc_class_prefix() const
@@ -16843,7 +16843,7 @@ inline bool FileOptions::has_csharp_namespace() const {
 }
 inline void FileOptions::clear_csharp_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.csharp_namespace_.ClearToEmpty();
+  _impl_.csharp_namespace_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline const std::string& FileOptions::csharp_namespace() const
@@ -16912,7 +16912,7 @@ inline bool FileOptions::has_swift_prefix() const {
 }
 inline void FileOptions::clear_swift_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.swift_prefix_.ClearToEmpty();
+  _impl_.swift_prefix_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline const std::string& FileOptions::swift_prefix() const
@@ -16981,7 +16981,7 @@ inline bool FileOptions::has_php_class_prefix() const {
 }
 inline void FileOptions::clear_php_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.php_class_prefix_.ClearToEmpty();
+  _impl_.php_class_prefix_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
 inline const std::string& FileOptions::php_class_prefix() const
@@ -17050,7 +17050,7 @@ inline bool FileOptions::has_php_namespace() const {
 }
 inline void FileOptions::clear_php_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.php_namespace_.ClearToEmpty();
+  _impl_.php_namespace_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000080u;
 }
 inline const std::string& FileOptions::php_namespace() const
@@ -17119,7 +17119,7 @@ inline bool FileOptions::has_php_metadata_namespace() const {
 }
 inline void FileOptions::clear_php_metadata_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.php_metadata_namespace_.ClearToEmpty();
+  _impl_.php_metadata_namespace_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
 inline const std::string& FileOptions::php_metadata_namespace() const
@@ -17188,7 +17188,7 @@ inline bool FileOptions::has_ruby_package() const {
 }
 inline void FileOptions::clear_ruby_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.ruby_package_.ClearToEmpty();
+  _impl_.ruby_package_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
 inline const std::string& FileOptions::ruby_package() const
@@ -17732,7 +17732,7 @@ inline bool FieldOptions_EditionDefault::has_value() const {
 }
 inline void FieldOptions_EditionDefault::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FieldOptions_EditionDefault::value() const
@@ -17867,7 +17867,7 @@ inline bool FieldOptions_FeatureSupport::has_deprecation_warning() const {
 }
 inline void FieldOptions_FeatureSupport::clear_deprecation_warning() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.deprecation_warning_.ClearToEmpty();
+  _impl_.deprecation_warning_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FieldOptions_FeatureSupport::deprecation_warning() const
@@ -19669,7 +19669,7 @@ inline bool UninterpretedOption_NamePart::has_name_part() const {
 }
 inline void UninterpretedOption_NamePart::clear_name_part() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_part_.ClearToEmpty();
+  _impl_.name_part_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& UninterpretedOption_NamePart::name_part() const
@@ -19820,7 +19820,7 @@ inline bool UninterpretedOption::has_identifier_value() const {
 }
 inline void UninterpretedOption::clear_identifier_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.identifier_value_.ClearToEmpty();
+  _impl_.identifier_value_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& UninterpretedOption::identifier_value() const
@@ -19973,7 +19973,7 @@ inline bool UninterpretedOption::has_string_value() const {
 }
 inline void UninterpretedOption::clear_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.string_value_.ClearToEmpty();
+  _impl_.string_value_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& UninterpretedOption::string_value() const
@@ -20042,7 +20042,7 @@ inline bool UninterpretedOption::has_aggregate_value() const {
 }
 inline void UninterpretedOption::clear_aggregate_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.aggregate_value_.ClearToEmpty();
+  _impl_.aggregate_value_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& UninterpretedOption::aggregate_value() const
@@ -20775,7 +20775,7 @@ inline bool SourceCodeInfo_Location::has_leading_comments() const {
 }
 inline void SourceCodeInfo_Location::clear_leading_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.leading_comments_.ClearToEmpty();
+  _impl_.leading_comments_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& SourceCodeInfo_Location::leading_comments() const
@@ -20844,7 +20844,7 @@ inline bool SourceCodeInfo_Location::has_trailing_comments() const {
 }
 inline void SourceCodeInfo_Location::clear_trailing_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.trailing_comments_.ClearToEmpty();
+  _impl_.trailing_comments_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& SourceCodeInfo_Location::trailing_comments() const
@@ -21081,7 +21081,7 @@ inline bool GeneratedCodeInfo_Annotation::has_source_file() const {
 }
 inline void GeneratedCodeInfo_Annotation::clear_source_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.source_file_.ClearToEmpty();
+  _impl_.source_file_.ClearToEmpty(GetArena());
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& GeneratedCodeInfo_Annotation::source_file() const
