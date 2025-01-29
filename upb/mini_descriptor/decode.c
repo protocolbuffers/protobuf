@@ -483,22 +483,22 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
   return ptr;
 }
 
+// Used to ensure that a minitable and its fields are contiguous in memory
+typedef struct upb_MiniTableWithFields {
+  upb_MiniTable table;
+  upb_MiniTableField fields[];
+} upb_MiniTableWithFields;
+
 static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                                        size_t len) {
-  // Buffer length is an upper bound on the number of fields. We will return
-  // what we don't use.
-  d->fields = upb_Arena_Malloc(d->arena, sizeof(*d->fields) * len);
-  upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
-
   upb_SubCounts sub_counts = {0, 0};
-  d->table->UPB_PRIVATE(field_count) = 0;
-  d->table->UPB_PRIVATE(fields) = d->fields;
   upb_MtDecoder_Parse(d, data, len, d->fields, sizeof(*d->fields),
                       &d->table->UPB_PRIVATE(field_count), &sub_counts);
 
-  upb_Arena_ShrinkLast(d->arena, d->fields, sizeof(*d->fields) * len,
-                       sizeof(*d->fields) * d->table->UPB_PRIVATE(field_count));
-  d->table->UPB_PRIVATE(fields) = d->fields;
+  upb_Arena_ShrinkLast(d->arena, d->table,
+                       UPB_SIZEOF_FLEX(upb_MiniTableWithFields, fields, len),
+                       UPB_SIZEOF_FLEX(upb_MiniTableWithFields, fields,
+                                       d->table->UPB_PRIVATE(field_count)));
   upb_MtDecoder_AllocateSubs(d, sub_counts);
 }
 
@@ -683,26 +683,25 @@ static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
                            len);
   }
 
-  upb_MiniTable* ret = d->table;
-  ret->UPB_PRIVATE(size) = kUpb_Reserved_Hasbytes;
-  ret->UPB_PRIVATE(field_count) = 0;
-  ret->UPB_PRIVATE(ext) = kUpb_ExtMode_IsMessageSet;
-  ret->UPB_PRIVATE(dense_below) = 0;
-  ret->UPB_PRIVATE(table_mask) = -1;
-  ret->UPB_PRIVATE(required_count) = 0;
+  d->table->UPB_PRIVATE(ext) = kUpb_ExtMode_IsMessageSet;
 }
 
 static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
     upb_MtDecoder* decoder, const char* data, size_t len, void** buf,
     size_t* buf_size) {
-  upb_MdDecoder_CheckOutOfMemory(&decoder->base, decoder->table);
+  // Buffer length is an upper bound on the number of fields. We will return
+  // what we don't use.
+  upb_MiniTableWithFields* alloc = upb_Arena_Malloc(
+      decoder->arena,
+      UPB_SIZEOF_FLEX(upb_MiniTableWithFields, fields, len ? len - 1 : 0));
+  upb_MdDecoder_CheckOutOfMemory(&decoder->base, alloc);
 
-  decoder->table->UPB_PRIVATE(size) = kUpb_Reserved_Hasbytes;
-  decoder->table->UPB_PRIVATE(field_count) = 0;
-  decoder->table->UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable;
-  decoder->table->UPB_PRIVATE(dense_below) = 0;
-  decoder->table->UPB_PRIVATE(table_mask) = -1;
-  decoder->table->UPB_PRIVATE(required_count) = 0;
+  alloc->table = (upb_MiniTable){
+      .UPB_PRIVATE(size) = kUpb_Reserved_Hasbytes,
+      .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
+      .UPB_PRIVATE(table_mask) = -1,
+  };
+  decoder->table = &alloc->table;
 #ifdef UPB_TRACING_ENABLED
   // MiniTables built from MiniDescriptors will not be able to vend the message
   // name unless it is explicitly set with upb_MiniTable_SetFullName().
@@ -711,8 +710,13 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
 
   // Strip off and verify the version tag.
   if (!len--) goto done;
-  const char vers = *data++;
 
+  if (len) {
+    decoder->fields = &alloc->fields[0];
+    decoder->table->UPB_PRIVATE(fields) = decoder->fields;
+  }
+
+  const char vers = *data++;
   switch (vers) {
     case kUpb_EncodedVersion_MapV1:
       upb_MtDecoder_ParseMap(decoder, data, len);
@@ -768,7 +772,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
               .size = 0,
           },
       .arena = arena,
-      .table = upb_Arena_Malloc(arena, sizeof(*decoder.table)),
   };
 
   return upb_MtDecoder_BuildMiniTableWithBuf(&decoder, data, len, buf,
