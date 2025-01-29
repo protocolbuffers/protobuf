@@ -68,7 +68,7 @@ TEST(ObjCHelper, ParseSimple_BasicsSuccess) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(test.first.data(), test.first.size(),
+      io::ArrayInputStream input(test.first.data(), (int)test.first.size(),
                                  kBlockSizes[i]);
       std::string err_str;
       std::vector<std::string> lines;
@@ -97,7 +97,7 @@ TEST(ObjCHelper, ParseSimple_DropsComments) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(test.first.data(), test.first.size(),
+      io::ArrayInputStream input(test.first.data(), (int)test.first.size(),
                                  kBlockSizes[i]);
       std::string err_str;
       std::vector<std::string> lines;
@@ -120,7 +120,7 @@ TEST(ObjCHelper, ParseSimple_RejectLines) {
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
       io::ArrayInputStream input(std::get<0>(test).data(),
-                                 std::get<0>(test).size(), kBlockSizes[i]);
+                                 (int)std::get<0>(test).size(), kBlockSizes[i]);
       std::string err_str;
       TestLineCollector collector(nullptr, &std::get<1>(test));
       EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
@@ -143,7 +143,7 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
       io::ArrayInputStream input(std::get<0>(test).data(),
-                                 std::get<0>(test).size(), kBlockSizes[i]);
+                                 (int)std::get<0>(test).size(), kBlockSizes[i]);
       std::string err_str;
       TestLineCollector collector(nullptr, &std::get<1>(test),
                                   true /* skip msg */);

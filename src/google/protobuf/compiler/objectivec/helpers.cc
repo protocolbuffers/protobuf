@@ -284,7 +284,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32_t length = ghtonl(default_string.length());
+        uint32_t length = ghtonl((uint32_t)default_string.length());
         std::string bytes((const char*)&length, sizeof(length));
         absl::StrAppend(&bytes, default_string);
         return absl::StrCat("(NSData*)\"",

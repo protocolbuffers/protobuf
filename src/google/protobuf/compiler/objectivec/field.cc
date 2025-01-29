@@ -38,22 +38,19 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              SubstitutionMap& variables) {
   std::string camel_case_name = FieldName(descriptor);
-  std::string raw_field_name;
-  if (internal::cpp::IsGroupLike(*descriptor)) {
-    raw_field_name = std::string(descriptor->message_type()->name());
-  } else {
-    raw_field_name = std::string(descriptor->name());
-  }
+  std::string raw_field_name(internal::cpp::IsGroupLike(*descriptor)
+                                 ? descriptor->message_type()->name()
+                                 : descriptor->name());
   // The logic here has to match -[GGPBFieldDescriptor textFormatName].
   const std::string un_camel_case_name(
       UnCamelCaseFieldName(camel_case_name, descriptor));
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
-  const std::string& classname = ClassName(descriptor->containing_type());
+  const std::string classname = ClassName(descriptor->containing_type());
   variables.Set(Sub("classname", classname).AnnotatedAs(descriptor));
   variables.Set(Sub("name", camel_case_name).AnnotatedAs(descriptor));
 
-  const std::string& capitalized_name = FieldNameCapitalized(descriptor);
+  const std::string capitalized_name = FieldNameCapitalized(descriptor);
   variables.Set(
       Sub("hazzer_name", "has" + capitalized_name).AnnotatedAs(descriptor));
   variables.Set(
@@ -447,7 +444,7 @@ FieldGeneratorMap::FieldGeneratorMap(
     : descriptor_(descriptor),
       field_generators_(static_cast<size_t>(descriptor->field_count())) {
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
+    field_generators_[(size_t)i].reset(
         FieldGenerator::Make(descriptor->field(i), generation_options));
   }
 }
@@ -455,21 +452,21 @@ FieldGeneratorMap::FieldGeneratorMap(
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   ABSL_CHECK_EQ(field->containing_type(), descriptor_);
-  return *field_generators_[field->index()];
+  return *field_generators_[(size_t)field->index()];
 }
 
 int FieldGeneratorMap::CalculateHasBits() {
   int total_bits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (field_generators_[i]->RuntimeUsesHasBit()) {
-      field_generators_[i]->SetRuntimeHasBit(total_bits);
+    if (field_generators_[(size_t)i]->RuntimeUsesHasBit()) {
+      field_generators_[(size_t)i]->SetRuntimeHasBit(total_bits);
       ++total_bits;
     } else {
-      field_generators_[i]->SetNoHasBit();
+      field_generators_[(size_t)i]->SetNoHasBit();
     }
-    int extra_bits = field_generators_[i]->ExtraRuntimeHasBitsNeeded();
+    int extra_bits = field_generators_[(size_t)i]->ExtraRuntimeHasBitsNeeded();
     if (extra_bits) {
-      field_generators_[i]->SetExtraRuntimeHasBitsBase(total_bits);
+      field_generators_[(size_t)i]->SetExtraRuntimeHasBitsBase(total_bits);
       total_bits += extra_bits;
     }
   }
@@ -478,7 +475,7 @@ int FieldGeneratorMap::CalculateHasBits() {
 
 void FieldGeneratorMap::SetOneofIndexBase(int index_base) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_[i]->SetOneofIndexBase(index_base);
+    field_generators_[(size_t)i]->SetOneofIndexBase(index_base);
   }
 }
 

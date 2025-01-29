@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -169,10 +170,10 @@ std::string TextFormatDecodeData::Data() const {
     io::OstreamOutputStream data_outputstream(&data_stringstream);
     io::CodedOutputStream output_stream(&data_outputstream);
 
-    output_stream.WriteVarint32(num_entries());
+    output_stream.WriteVarint32((uint32_t)num_entries());
     for (std::vector<DataEntry>::const_iterator i = entries_.begin();
          i != entries_.end(); ++i) {
-      output_stream.WriteVarint32(i->first);
+      output_stream.WriteVarint32((uint32_t)i->first);
       output_stream.WriteString(i->second);
     }
   }
@@ -196,8 +197,8 @@ std::string TextFormatDecodeData::DecodeDataForString(
   DecodeDataBuilder builder;
 
   // Walk the output building it from the input.
-  int x = 0;
-  for (int y = 0; y < desired_output.size(); y++) {
+  size_t x = 0;
+  for (size_t y = 0; y < desired_output.size(); y++) {
     const char d = desired_output[y];
     if (d == '_') {
       builder.AddUnderscore();
