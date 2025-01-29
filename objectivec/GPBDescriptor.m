@@ -490,6 +490,15 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
                @"Field must have GPBFieldHasEnumDescriptor set");
 #endif  // DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+      if (enumDescriptor_.isClosed) {
+        NSAssert((coreDesc->flags & GPBFieldClosedEnum) != 0,
+                 @"Field must have GPBFieldClosedEnum set");
+      } else {
+        NSAssert((coreDesc->flags & GPBFieldClosedEnum) == 0,
+                 @"Field must not have GPBFieldClosedEnum set");
+      }
+#endif  // defined(DEBUG) && DEBUG && !NS_BLOCK_ASSERTIONS
     }
 
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
@@ -779,6 +788,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (BOOL)isClosed {
   return (flags_ & GPBEnumDescriptorInitializationFlag_IsClosed) != 0;
+}
+
+- (BOOL)isOpenOrValidValue:(int32_t)value {
+  return (flags_ & GPBEnumDescriptorInitializationFlag_IsClosed) == 0 || enumVerifier_(value);
 }
 
 - (void)calcValueNameOffsets {

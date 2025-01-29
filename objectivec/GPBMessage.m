@@ -2464,7 +2464,7 @@ static void MergeSingleFieldFromCodedInputStream(GPBMessage *self, GPBFieldDescr
 
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
-      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
+      if ([field.enumDescriptor isOpenOrValidValue:val]) {
         GPBSetInt32IvarWithFieldPrivate(self, field, val);
       } else {
         AddUnknownFieldVarint32(self, GPBFieldNumber(field), val);
@@ -2513,7 +2513,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(GPBMessage *self,
 
       case GPBDataTypeEnum: {
         int32_t val = GPBCodedInputStreamReadEnum(state);
-        if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
+        if ([field.enumDescriptor isOpenOrValidValue:val]) {
           [(GPBEnumArray *)genericArray addRawValue:val];
         } else {
           AddUnknownFieldVarint32(self, GPBFieldNumber(field), val);
@@ -2581,7 +2581,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     }
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(state);
-      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
+      if ([field.enumDescriptor isOpenOrValidValue:val]) {
         [(GPBEnumArray *)genericArray addRawValue:val];
       } else {
         AddUnknownFieldVarint32(self, GPBFieldNumber(field), val);

@@ -236,6 +236,7 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
                                  flags:(GPBEnumDescriptorInitializationFlags)flags
                    extraTextFormatInfo:(const char *)extraTextFormatInfo;
 
+- (BOOL)isOpenOrValidValue:(int32_t)value;
 @end
 
 @interface GPBExtensionDescriptor () {
@@ -279,10 +280,6 @@ GPB_INLINE int32_t GPBFieldHasIndex(GPBFieldDescriptor *field) {
 
 GPB_INLINE uint32_t GPBFieldNumber(GPBFieldDescriptor *field) {
   return field->description_->number;
-}
-
-GPB_INLINE BOOL GPBFieldIsClosedEnum(GPBFieldDescriptor *field) {
-  return (field->description_->flags & GPBFieldClosedEnum) != 0;
 }
 
 #pragma clang diagnostic pop
