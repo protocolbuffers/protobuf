@@ -222,7 +222,8 @@ void ReportReflectionUsageMessageError(const Descriptor* expected,
       "  Actual type  : %s\n"
       "  Field        : %s\n"
       "  Problem      : Message is not the right object for reflection",
-      method, expected->full_name(), actual->full_name(), field->full_name());
+      method, expected->full_name(), actual->full_name(),
+      (field != nullptr ? field->full_name() : "n/a"));
 }
 #endif
 
@@ -294,11 +295,16 @@ static void ReportReflectionUsageEnumTypeError(
 #ifdef NDEBUG
 // Avoid a virtual method call in optimized builds.
 #define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)
+#define STATIC_USAGE_CHECK_MESSAGE(METHOD, MESSAGE)
 #else
 #define USAGE_CHECK_MESSAGE(METHOD, MESSAGE)                                 \
   if (this != (MESSAGE)->GetReflection())                                    \
   ReportReflectionUsageMessageError(descriptor_, (MESSAGE)->GetDescriptor(), \
                                     field, #METHOD)
+#define STATIC_USAGE_CHECK_MESSAGE(METHOD, MESSAGE)                          \
+  if (this != (MESSAGE)->GetReflection())                                    \
+  ReportReflectionUsageMessageError(descriptor_, (MESSAGE)->GetDescriptor(), \
+                                    /*field=*/nullptr, #METHOD)
 #endif
 
 #define USAGE_CHECK_MESSAGE_TYPE(METHOD)                        \
@@ -347,17 +353,20 @@ Reflection::~Reflection() {
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
     const Message& message) const {
+  STATIC_USAGE_CHECK_MESSAGE(GetUnknownFields, &message);
   return GetInternalMetadata(message).unknown_fields<UnknownFieldSet>(
       UnknownFieldSet::default_instance);
 }
 
 UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
+  STATIC_USAGE_CHECK_MESSAGE(MutableUnknownFields, message);
   return MutableInternalMetadata(message)
       ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
 bool Reflection::IsLazyExtension(const Message& message,
                                  const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE(IsLazyExtension, &message);
   return field->is_extension() &&
          GetExtensionSet(message).HasLazy(field->number());
 }
@@ -383,6 +392,7 @@ internal::field_layout::TransformValidation Reflection::GetLazyStyle(
 }
 
 size_t Reflection::SpaceUsedLong(const Message& message) const {
+  STATIC_USAGE_CHECK_MESSAGE(SpaceUsedLong, &message);
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
   // the fields.
