@@ -1,5 +1,7 @@
 workspace(name = "com_google_protobuf_examples")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # This protobuf repository is required for proto_library rule.
 # It provides the protocol compiler binary (i.e., protoc).
 #
@@ -26,6 +28,16 @@ local_repository(
     path = "..",
 )
 
+# Bazel platform rules, for clang-cl.
+http_archive(
+    name = "platforms",
+    sha256 = "218efe8ee736d26a3572663b374a253c012b716d8af0c07e842e82f238a0a7ee",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+    ],
+)
+
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
@@ -41,3 +53,9 @@ rules_java_toolchains()
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
+
+rules_cc_dependencies()
+
+rules_cc_toolchains()

@@ -412,7 +412,11 @@ jobs:
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: Windows Bazel
             os: windows-2022
-            cache_key: windows-2022-bazel7
+            cache_key: windows-2022-msvc-cl
+            bazel: test //src/...  @com_google_protobuf_examples//... --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance --define=protobuf_allow_msvc=true
+          - name: Windows Bazel clang-cl
+            os: windows-2022
+            cache_key: windows-2022-clang-cl
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -524,6 +528,7 @@ jobs:
         if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         uses: protocolbuffers/protobuf-ci/bash@v4
         with:
+          bazel-version: 7.1.2
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 ${{ matrix.install-flags }}
@@ -550,6 +555,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: 7.1.2
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 ${{ matrix.flags }}
             ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
