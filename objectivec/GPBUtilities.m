@@ -277,7 +277,7 @@ BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
     return hasIvar;
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
-    uint32_t byteIndex = idx / 32;
+    uint32_t byteIndex = (uint32_t)idx / 32;
     uint32_t bitMask = (1U << (idx % 32));
     BOOL hasIvar = (self->messageStorage_->_has_storage_[byteIndex] & bitMask) ? YES : NO;
     return hasIvar;
@@ -298,7 +298,7 @@ void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber, BOOL val
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t *has_storage = self->messageStorage_->_has_storage_;
-    uint32_t byte = idx / 32;
+    uint32_t byte = (uint32_t)idx / 32;
     uint32_t bitMask = (1U << (idx % 32));
     if (value) {
       has_storage[byte] |= bitMask;
@@ -1871,7 +1871,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message, NSArra
 
         FIELD_CASE(Int32, int32_t, intValue, @"%d")
         FIELD_CASE(SInt32, int32_t, intValue, @"%d")
-        FIELD_CASE(SFixed32, int32_t, unsignedIntValue, @"%d")
+        FIELD_CASE(SFixed32, int32_t, intValue, @"%d")
         FIELD_CASE(UInt32, uint32_t, unsignedIntValue, @"%u")
         FIELD_CASE(Fixed32, uint32_t, unsignedIntValue, @"%u")
         FIELD_CASE(Int64, int64_t, longLongValue, @"%lld")
@@ -2137,12 +2137,12 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key, NSStri
   const uint8_t kOpAllUpper = 0b01100000;
   const uint8_t kSegmentLenMask = 0b00011111;
 
-  NSInteger i = 0;
+  NSUInteger i = 0;
   for (; *scan != 0; ++scan) {
     if (*scan & kAddUnderscore) {
       [result appendString:@"_"];
     }
-    int segmentLen = *scan & kSegmentLenMask;
+    NSUInteger segmentLen = *scan & kSegmentLenMask;
     uint8_t decodeOp = *scan & kOpMask;
 
     // Do op specific handling of the first character.
@@ -2160,7 +2160,7 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key, NSStri
     // else op == kOpAsIs || op == kOpAllUpper
 
     // Now pull over the rest of the length for this segment.
-    for (int x = 0; x < segmentLen; ++x) {
+    for (NSUInteger x = 0; x < segmentLen; ++x) {
       unichar c = [inputStr characterAtIndex:(i + x)];
       if (decodeOp == kOpAllUpper) {
         [result appendFormat:@"%c", toupper((char)c)];

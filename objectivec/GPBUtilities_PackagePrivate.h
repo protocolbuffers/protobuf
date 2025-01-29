@@ -174,9 +174,9 @@ GPB_INLINE BOOL GPBFieldStoresObject(GPBFieldDescriptor *field) {
   return GPBDataTypeIsObject(desc->dataType);
 }
 
-BOOL GPBGetHasIvar(GPBMessage *self, int32_t index, uint32_t fieldNumber);
+BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber);
 void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber, BOOL value);
-uint32_t GPBGetHasOneof(GPBMessage *self, int32_t index);
+uint32_t GPBGetHasOneof(GPBMessage *self, int32_t idx);
 
 GPB_INLINE BOOL GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBMessageFieldDescription *fieldDesc = field->description_;
