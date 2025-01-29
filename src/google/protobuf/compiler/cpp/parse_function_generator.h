@@ -61,6 +61,7 @@ class ParseFunctionGenerator {
   const std::vector<const FieldDescriptor*> ordered_fields_;
   int num_hasbits_;
   int index_in_file_messages_;
+
 };
 
 }  // namespace cpp
