@@ -145,7 +145,7 @@ public final class TextFormat {
      * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
      */
     static enum FieldReporterLevel {
-      NO_REPORT(0),
+      REPORT_ALL(0),
       PRINT(1),
       PRINTER_PRINT_TO_STRING(2),
       TEXTFORMAT_PRINT_TO_STRING(3),
@@ -156,7 +156,8 @@ public final class TextFormat {
       DEBUG_MULTILINE(8),
       DEBUG_SINGLE_LINE(9),
       ABSTRACT_TO_STRING(10),
-      ABSTRACT_MUTABLE_TO_STRING(11);
+      ABSTRACT_MUTABLE_TO_STRING(11),
+      REPORT_NONE(12);
       private final int index;
 
       FieldReporterLevel(int index) {
@@ -181,13 +182,13 @@ public final class TextFormat {
 
     private final boolean singleLine;
 
-    // Any API level higher than this level will be reported. This is set to
-    // ABSTRACT_MUTABLE_TO_STRING by default to prevent reporting for now.
+    // Any API level equal to or greater than this level will be reported. This is set to
+    // REPORT_NONE by default to prevent reporting for now.
     private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
         new ThreadLocal<FieldReporterLevel>() {
           @Override
           protected FieldReporterLevel initialValue() {
-            return FieldReporterLevel.ABSTRACT_MUTABLE_TO_STRING;
+            return FieldReporterLevel.ABSTRACT_TO_STRING;
           }
         };
 
@@ -882,7 +883,7 @@ public final class TextFormat {
   }
 
   private static TextGenerator setSingleLineOutput(Appendable output, boolean singleLine) {
-    return new TextGenerator(output, singleLine, Printer.FieldReporterLevel.NO_REPORT);
+    return new TextGenerator(output, singleLine, Printer.FieldReporterLevel.REPORT_NONE);
   }
 
   private static TextGenerator setSingleLineOutput(
