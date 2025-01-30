@@ -28,10 +28,11 @@ namespace pb {
 
 inline constexpr JavaFeatures::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
-        legacy_closed_enum_{false},
-        use_old_outer_classname_default_{false} {}
+    : _cached_size_{0},
+      utf8_validation_{static_cast<::pb::JavaFeatures_Utf8Validation>(0)},
+      legacy_closed_enum_{false},
+      use_old_outer_classname_default_{false},
+      nest_in_file_class_{static_cast<::pb::JavaFeatures_NestInFileClass>(0)} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
@@ -53,90 +54,143 @@ struct JavaFeaturesDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
 }  // namespace pb
-static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
-    file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[1];
-static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
-    file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = nullptr;
+static const ::_pb::EnumDescriptor*
+    file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto
+        [2];
+static constexpr const ::_pb::ServiceDescriptor**
+    file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto =
+        nullptr;
 const ::uint32_t
-    TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-        protodesc_cold) = {
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.legacy_closed_enum_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.utf8_validation_),
-        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.use_old_outer_classname_default_),
-        1,
-        0,
-        2,
+    TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::
+        offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_._has_bits_),
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _internal_metadata_),
+            ~0u,  // no _extensions_
+            ~0u,  // no _oneof_case_
+            ~0u,  // no _weak_field_map_
+            ~0u,  // no _inlined_string_donated_
+            ~0u,  // no _split_
+            ~0u,  // no sizeof(Split)
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures,
+                                  _impl_.legacy_closed_enum_),
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.utf8_validation_),
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures,
+                                  _impl_.use_old_outer_classname_default_),
+            PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures,
+                                  _impl_.nest_in_file_class_),
+            1,
+            0,
+            2,
+            3,
 };
 
-static const ::_pbi::MigrationSchema
-    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 11, -1, sizeof(::pb::JavaFeatures)},
+static const ::_pbi::MigrationSchema schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+    protodesc_cold) = {
+    {0, 12, -1, sizeof(::pb::JavaFeatures)},
 };
-static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
+static const ::_pb::Message* const file_default_instances[] = {
     &::pb::_JavaFeatures_default_instance_._instance,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
-    protodesc_cold) = {
-    "\n1google/protobuf/compiler/java/java_fea"
-    "tures.proto\022\002pb\032 google/protobuf/descrip"
-    "tor.proto\"\314\005\n\014JavaFeatures\022\376\001\n\022legacy_cl"
-    "osed_enum\030\001 \001(\010B\341\001\210\001\001\230\001\004\230\001\001\242\001\t\022\004true\030\204\007\242"
-    "\001\n\022\005false\030\347\007\262\001\273\001\010\350\007\020\350\007\032\262\001The legacy clos"
-    "ed enum behavior in Java is deprecated a"
-    "nd is scheduled to be removed in edition"
-    " 2025.  See http://protobuf.dev/programm"
-    "ing-guides/enum/#java for more informati"
-    "on.\022\237\002\n\017utf8_validation\030\002 \001(\0162\037.pb.JavaF"
-    "eatures.Utf8ValidationB\344\001\210\001\001\230\001\004\230\001\001\242\001\014\022\007D"
-    "EFAULT\030\204\007\262\001\310\001\010\350\007\020\351\007\032\277\001The Java-specific "
-    "utf8 validation feature is deprecated an"
-    "d is scheduled to be removed in edition "
-    "2025.  Utf8 validation behavior should u"
-    "se the global cross-language utf8_valida"
-    "tion feature.\022Q\n\037use_old_outer_classname"
-    "_default\030\004 \001(\010B(\210\001\001\230\001\001\242\001\t\022\004true\030\204\007\242\001\n\022\005f"
-    "alse\030\351\007\262\001\006\010\351\007 \351\007\"F\n\016Utf8Validation\022\033\n\027UT"
-    "F8_VALIDATION_UNKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006"
-    "VERIFY\020\002:<\n\004java\022\033.google.protobuf.Featu"
-    "reSet\030\351\007 \001(\0132\020.pb.JavaFeaturesB(\n\023com.go"
-    "ogle.protobufB\021JavaFeaturesProto"
-};
-static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
-    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps[1] = {
-        &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+const char
+    descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto
+        [] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+            "\n1google/protobuf/compiler/java/java_fea"
+            "tures.proto\022\002pb\032 google/protobuf/descrip"
+            "tor.proto\"\223\007\n\014JavaFeatures\022\376\001\n\022legacy_cl"
+            "osed_enum\030\001 "
+            "\001("
+            "\010B\341\001\210\001\001\230\001\004\230\001\001\242\001\t\022"
+            "\004true\030\204\007\242"
+            "\001\n\022\005false\030\347\007\262\001\273\001\010\350\007\020"
+            "\350\007\032\262\001The legacy clos"
+            "ed enum behavior in Java is deprecated a"
+            "nd is scheduled to be removed in edition"
+            " 2025.  See http://protobuf.dev/programm"
+            "ing-guides/enum/#java for more informati"
+            "on.\022\237\002\n\017utf8_validation\030\002 "
+            "\001(\0162\037.pb.JavaF"
+            "eatures."
+            "Utf8ValidationB\344\001\210\001\001\230\001\004\230\001\001\242"
+            "\001\014\022\007D"
+            "EFAULT\030\204\007\262\001\310\001\010\350\007\020\351\007\032\277"
+            "\001The Java-specific "
+            "utf8 validation feature is deprecated an"
+            "d is scheduled to be removed in edition "
+            "2025.  Utf8 validation behavior should u"
+            "se the global cross-language utf8_valida"
+            "tion feature.\022Q\n\037use_old_outer_classname"
+            "_default\030\004 "
+            "\001(\010B("
+            "\210\001\001\230\001\001\242\001\t\022\004true\030\204\007\242\001"
+            "\n\022\005f"
+            "alse\030\351\007\262\001\006\010\351\007 "
+            "\351\007\022k\n\022nest_in_file_class\030\005"
+            " \001(\0162 .pb.JavaFeatures.NestInFileClassB-"
+            "\210\001\001\230\001\001\230\001\003\230\001\006\230\001\010\242"
+            "\001\013\022\006LEGACY\030\204\007\242\001\007\022\002NO\030\351"
+            "\007\262"
+            "\001\003\010\351\007\"F\n\016Utf8Validation\022\033\n\027UTF8_"
+            "VALIDATI"
+            "ON_"
+            "UNKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020"
+            "\002\"X\n"
+            "\017NestInFileClass\022\036\n\032NEST_IN_FILE_CLASS_U"
+            "NKNOWN\020\000\022\006\n\002NO\020\001\022\007\n\003YES\020\002"
+            "\022\024\n\006LEGACY\020\003\032\010\""
+            "\006\010\351\007 "
+            "\351\007:<\n\004java\022\033.google.protobuf.Featur"
+            "eSet\030\351\007 \001(\0132\020.pb.JavaFeaturesB(\n\023com.goo"
+            "gle.protobufB\021JavaFeaturesProto"};
+static const ::_pbi::DescriptorTable* const
+    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps
+        [1] = {
+            &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once;
-PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = {
-    false,
-    false,
-    912,
-    descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
-    "google/protobuf/compiler/java/java_features.proto",
-    &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
-    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps,
-    1,
-    1,
-    schemas,
-    file_default_instances,
-    TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets,
-    file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
-    file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable
+    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = {
+        false,
+        false,
+        1111,
+        descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+        "google/protobuf/compiler/java/java_features.proto",
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
+        descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps,
+        1,
+        1,
+        schemas,
+        file_default_instances,
+        TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::
+            offsets,
+        file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+        file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
 };
 namespace pb {
-const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor() {
+const ::google::protobuf::EnumDescriptor*
+JavaFeatures_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0];
 }
 PROTOBUF_CONSTINIT const uint32_t JavaFeatures_Utf8Validation_internal_data_[] = {
     196608u, 0u, };
+bool JavaFeatures_Utf8Validation_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+const ::google::protobuf::EnumDescriptor*
+JavaFeatures_NestInFileClass_descriptor() {
+  ::google::protobuf::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto
+      [1];
+}
+PROTOBUF_CONSTINIT const uint32_t
+    JavaFeatures_NestInFileClass_internal_data_[] = {
+        262144u,
+        0u,
+};
+bool JavaFeatures_NestInFileClass_IsValid(int value) {
+  return 0 <= value && value <= 3;
+}
 // ===================================================================
 
 class JavaFeatures::_Internal {
@@ -147,7 +201,7 @@ class JavaFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
 };
 
-JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -156,8 +210,8 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
-JavaFeatures::JavaFeatures(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
+JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena,
+                           const JavaFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -169,17 +223,15 @@ JavaFeatures::JavaFeatures(
 }
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0} {}
+    ::google::protobuf::Arena* arena)
+    : _cached_size_{0} {}
 
-inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+inline void JavaFeatures::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
-               offsetof(Impl_, utf8_validation_),
-           0,
-           offsetof(Impl_, use_old_outer_classname_default_) -
-               offsetof(Impl_, utf8_validation_) +
-               sizeof(Impl_::use_old_outer_classname_default_));
+  ::memset(
+      reinterpret_cast<char*>(&_impl_) + offsetof(Impl_, utf8_validation_), 0,
+      offsetof(Impl_, nest_in_file_class_) - offsetof(Impl_, utf8_validation_) +
+          sizeof(Impl_::nest_in_file_class_));
 }
 JavaFeatures::~JavaFeatures() {
   // @@protoc_insertion_point(destructor:pb.JavaFeatures)
@@ -192,9 +244,8 @@ inline void JavaFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL JavaFeatures::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
+                                         ::google::protobuf::Arena* arena) {
   return ::new (mem) JavaFeatures(arena);
 }
 constexpr auto JavaFeatures::InternalNewImpl_() {
@@ -229,60 +280,105 @@ PROTOBUF_CONSTINIT PROTOC_EXPORT
         JavaFeatures_class_data_ =
             JavaFeatures::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL JavaFeatures::GetClassData() const {
+const ::google::protobuf::internal::ClassData* JavaFeatures::GetClassData()
+    const {
   ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(JavaFeatures_class_data_.tc_table);
   return JavaFeatures_class_data_.base();
 }
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 0, 2>
-JavaFeatures::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_),
-    0, // no _extensions_
-    4, 24,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967284,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
-    1,  // num_aux_entries
-    offsetof(decltype(_table_), aux_entries),
-    JavaFeatures_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.use_old_outer_classname_default_), 2>(),
-     {32, 2, 0, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_)}},
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 1>(),
-     {8, 1, 0, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_)}},
-    // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::FastEr0S1,
-     {16, 0, 2, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)}},
-    {::_pbi::TcParser::MiniParse, {}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 2, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-  }},
-  {{
-      {0, 3},
-  }},
-  {{
-  }},
-};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::_pbi::TcParseTable<
+    3, 4, 2, 0, 2>
+    JavaFeatures::_table_ = {
+        {
+            PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_),
+            0,      // no _extensions_
+            5, 56,  // max_field_number, fast_idx_mask
+            offsetof(decltype(_table_), field_lookup_table),
+            4294967268,  // skipmap
+            offsetof(decltype(_table_), field_entries),
+            4,  // num_field_entries
+            2,  // num_aux_entries
+            offsetof(decltype(_table_), aux_entries),
+            JavaFeatures_class_data_.base(),
+            nullptr,                            // post_loop_handler
+            ::_pbi::TcParser::GenericFallback,  // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+            ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+        },
+        {{
+            {::_pbi::TcParser::MiniParse, {}},
+            // optional bool legacy_closed_enum = 1 [retention =
+            // RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets =
+            // TARGET_TYPE_FILE, edition_defaults = {
+            {::_pbi::TcParser::SingularVarintNoZag1<
+                 bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 1>(),
+             {8, 1, 0,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_)}},
+            // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2
+            // [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD,
+            // targets = TARGET_TYPE_FILE, edition_defaults = {
+            {::_pbi::TcParser::FastEr0S1,
+             {16, 0, 2,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)}},
+            {::_pbi::TcParser::MiniParse, {}},
+            // optional bool use_old_outer_classname_default = 4 [retention =
+            // RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults =
+            // {
+            {::_pbi::TcParser::SingularVarintNoZag1<
+                 bool,
+                 offsetof(JavaFeatures,
+                          _impl_.use_old_outer_classname_default_),
+                 2>(),
+             {32, 2, 0,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures,
+                                    _impl_.use_old_outer_classname_default_)}},
+            // optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5
+            // [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE,
+            // targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM,
+            // targets = TARGET_TYPE_SERVICE, edition_defaults = {
+            {::_pbi::TcParser::FastEr0S1,
+             {40, 3, 3,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_)}},
+            {::_pbi::TcParser::MiniParse, {}},
+            {::_pbi::TcParser::MiniParse, {}},
+        }},
+        {{65535, 65535}},
+        {{
+            // optional bool legacy_closed_enum = 1 [retention =
+            // RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets =
+            // TARGET_TYPE_FILE, edition_defaults = {
+            {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_),
+             _Internal::kHasBitsOffset + 1, 0,
+             (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+            // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2
+            // [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD,
+            // targets = TARGET_TYPE_FILE, edition_defaults = {
+            {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_),
+             _Internal::kHasBitsOffset + 0, 0,
+             (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+            // optional bool use_old_outer_classname_default = 4 [retention =
+            // RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults =
+            // {
+            {PROTOBUF_FIELD_OFFSET(JavaFeatures,
+                                   _impl_.use_old_outer_classname_default_),
+             _Internal::kHasBitsOffset + 2, 0,
+             (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+            // optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5
+            // [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE,
+            // targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM,
+            // targets = TARGET_TYPE_SERVICE, edition_defaults = {
+            {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_),
+             _Internal::kHasBitsOffset + 3, 1,
+             (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+        }},
+        {{
+            {0, 3},
+            {0, 4},
+        }},
+        {{}},
+    };
+
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -291,56 +387,75 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
-    ::memset(&_impl_.utf8_validation_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.use_old_outer_classname_default_) -
-        reinterpret_cast<char*>(&_impl_.utf8_validation_)) + sizeof(_impl_.use_old_outer_classname_default_));
+  if (cached_has_bits & 0x0000000fu) {
+    ::memset(&_impl_.utf8_validation_, 0,
+             static_cast<::size_t>(
+                 reinterpret_cast<char*>(&_impl_.nest_in_file_class_) -
+                 reinterpret_cast<char*>(&_impl_.utf8_validation_)) +
+                 sizeof(_impl_.nest_in_file_class_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL JavaFeatures::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+::uint8_t* JavaFeatures::_InternalSerialize(
+    const MessageLite& base, ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) {
   const JavaFeatures& this_ = static_cast<const JavaFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL JavaFeatures::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+::uint8_t* JavaFeatures::_InternalSerialize(
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   const JavaFeatures& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  // @@protoc_insertion_point(serialize_to_array_start:pb.JavaFeatures)
+        // @@protoc_insertion_point(serialize_to_array_start:pb.JavaFeatures)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME,
+  // targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults =
+  // {
   if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_legacy_closed_enum(), target);
   }
 
-  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention =
+  // RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE,
+  // edition_defaults = {
   if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_utf8_validation(), target);
   }
 
-  // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
+  // optional bool use_old_outer_classname_default = 4 [retention =
+  // RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
   if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         4, this_._internal_use_old_outer_classname_default(), target);
   }
 
+  // optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5 [retention
+  // = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, targets =
+  // TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets =
+  // TARGET_TYPE_SERVICE, edition_defaults = {
+  if (cached_has_bits & 0x00000008u) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+        5, this_._internal_nest_in_file_class(), target);
+  }
+
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        this_._internal_metadata_
+            .unknown_fields<::google::protobuf::UnknownFieldSet>(
+                ::google::protobuf::UnknownFieldSet::default_instance),
+        target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:pb.JavaFeatures)
   return target;
@@ -353,7 +468,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 ::size_t JavaFeatures::ByteSizeLong() const {
   const JavaFeatures& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  // @@protoc_insertion_point(message_byte_size_start:pb.JavaFeatures)
+        // @@protoc_insertion_point(message_byte_size_start:pb.JavaFeatures)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
@@ -362,12 +477,32 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += ::absl::popcount(0x00000006u & cached_has_bits) * 2;
-   {
-    // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  if (cached_has_bits & 0x0000000fu) {
+    // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention =
+    // RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets =
+    // TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000001u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                            this_._internal_utf8_validation());
+    }
+    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME,
+    // targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults
+    // = {
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 2;
+    }
+    // optional bool use_old_outer_classname_default = 4 [retention =
+    // RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 2;
+    }
+    // optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5
+    // [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, targets =
+    // TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets =
+    // TARGET_TYPE_SERVICE, edition_defaults = {
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                            this_._internal_nest_in_file_class());
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -383,7 +518,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
@@ -392,6 +527,9 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _this->_impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -405,17 +543,16 @@ void JavaFeatures::CopyFrom(const JavaFeatures& from) {
   MergeFrom(from);
 }
 
-
-void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_)
-      + sizeof(JavaFeatures::_impl_.use_old_outer_classname_default_)
-      - PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)>(
-          reinterpret_cast<char*>(&_impl_.utf8_validation_),
-          reinterpret_cast<char*>(&other->_impl_.utf8_validation_));
+      PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_) +
+      sizeof(JavaFeatures::_impl_.nest_in_file_class_) -
+      PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)>(
+      reinterpret_cast<char*>(&_impl_.utf8_validation_),
+      reinterpret_cast<char*>(&other->_impl_.utf8_validation_));
 }
 
 ::google::protobuf::Metadata JavaFeatures::GetMetadata() const {
