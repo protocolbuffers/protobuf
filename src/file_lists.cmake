@@ -1638,6 +1638,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_extensions.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_redaction.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_type.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_view.proto
