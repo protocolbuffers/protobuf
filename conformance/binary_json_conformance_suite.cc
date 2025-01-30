@@ -1419,8 +1419,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
   for (uint8_t type : {0x6, 0x7}) {
     for (uint8_t field = 0; field < 4; ++field) {
       for (uint8_t value = 0; value < 4; ++value) {
-        std::string name = absl::StrFormat("UnknownWireType%d_Field%d_Verion%d",
-                                           type, field, value);
+        std::string name = absl::StrFormat(
+            "UnknownWireType%d_Field%d_Version%d", type, field, value);
 
         char data[2];
         data[0] = (field << 3) | type;  // unknown wire type.
