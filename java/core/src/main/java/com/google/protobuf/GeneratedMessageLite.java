@@ -1447,7 +1447,7 @@ public abstract class GeneratedMessageLite<
     private Class<?> resolveMessageClass() throws ClassNotFoundException {
       if (messageClass == null) {
         Class messageClass = Class.forName(messageClass, false, getClass().getClassLoader()); 
-        if (!MessageLite.class.isAssignableFrom(c)) {
+        if (!MessageLite.class.isAssignableFrom(messageClass)) {
           throw new ClassNotFoundException();
         }
       }
