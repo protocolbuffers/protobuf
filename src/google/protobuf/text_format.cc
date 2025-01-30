@@ -3026,12 +3026,70 @@ void TextFormat::Printer::PrintUnknownFields(
   }
 }
 
+// Traverse the tree of field options and check if any of them are sensitive.
+// We check for sensitive enum values in the options and in the fields of the
+// message-type options, recursively.
+TextFormat::RedactionState TextFormat::IsOptionSensitive(
+    const Message& opts, const Reflection* reflection,
+    const FieldDescriptor* option) {
+  if (option->type() == FieldDescriptor::TYPE_ENUM) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      int enum_val = option->is_repeated()
+                         ? reflection->GetRepeatedEnumValue(opts, option, i)
+                         : reflection->GetEnumValue(opts, option);
+      const EnumValueDescriptor* option_value =
+          option->enum_type()->FindValueByNumber(enum_val);
+      if (option_value->options().debug_redact()) {
+        return TextFormat::RedactionState{true, false};
+      }
+    }
+  } else if (option->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      const Message& sub_message =
+          option->is_repeated()
+              ? reflection->GetRepeatedMessage(opts, option, i)
+              : reflection->GetMessage(opts, option);
+      const Reflection* sub_reflection = sub_message.GetReflection();
+      std::vector<const FieldDescriptor*> message_fields;
+      sub_reflection->ListFields(sub_message, &message_fields);
+      for (const FieldDescriptor* message_field : message_fields) {
+        auto result = TextFormat::IsOptionSensitive(sub_message, sub_reflection,
+                                                    message_field);
+        if (result.redact) {
+          return result;
+        }
+      }
+    }
+  }
+  return TextFormat::RedactionState{false, false};
+}
+
+TextFormat::RedactionState TextFormat::GetRedactionState(
+    const FieldDescriptor* field) {
+  auto options = field->options();
+  auto state = TextFormat::RedactionState{options.debug_redact(), false};
+  std::vector<const FieldDescriptor*> field_options;
+  const Reflection* reflection = options.GetReflection();
+  reflection->ListFields(options, &field_options);
+  for (const FieldDescriptor* option : field_options) {
+    auto result = TextFormat::IsOptionSensitive(options, reflection, option);
+    state = TextFormat::RedactionState{state.redact || result.redact,
+                                       state.report || result.report};
+  }
+  return state;
+}
 bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
-  RedactionState redaction_state = field->options().debug_redact()
-                                       ? RedactionState{true, false}
-                                       : RedactionState{false, false};
+  TextFormat::RedactionState redaction_state =
+      field->file()->pool()->MemoizeProjection(
+          field, [](const FieldDescriptor* field) {
+            return TextFormat::GetRedactionState(field);
+          });
   if (redaction_state.redact) {
     if (redact_debug_string_) {
       IncrementRedactedFieldCounter();
@@ -3051,7 +3109,6 @@ bool TextFormat::Printer::TryRedactFieldValue(
   }
   return false;
 }
-
 }  // namespace protobuf
 }  // namespace google
 

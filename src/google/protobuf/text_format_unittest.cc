@@ -49,6 +49,7 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest_redaction.pb.h"
 #include "utf8_validity.h"
 
 
@@ -2676,6 +2677,85 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_TRUE(parser.ParseFromString(message_with_ext, &proto));
   // Unknown fields are still not accepted.
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
+}
+
+
+TEST(AbslStringifyTest, TextFormatIsUnchanged) {
+  unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.set_optional_string("foo");
+
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ(
+      "optional_int32: 1\n"
+      "optional_string: \"foo\"\n",
+      text);
+}
+
+TEST(AbslStringifyTest, StringifyHasRedactionMarker) {
+  unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.set_optional_string("foo");
+
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(
+                                       "optional_int32: 1\n"
+                                       "optional_string: \"foo\"\n"));
+}
+
+
+TEST(AbslStringifyTest, StringifyMetaAnnotatedIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_meta_annotated("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "meta_annotated: $0\n",
+                                       value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRepeatedMetaAnnotatedIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_repeated_meta_annotated("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "repeated_meta_annotated: $0\n",
+                                       value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRepeatedMetaAnnotatedIsNotRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_unredacted_repeated_annotations("foo");
+  EXPECT_THAT(absl::StrCat(proto),
+              testing::MatchesRegex(
+                  "unredacted_repeated_annotations: \"foo\"\n"));
+}
+
+TEST(AbslStringifyTest, TextFormatMetaAnnotatedIsNotRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_meta_annotated("foo");
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ("meta_annotated: \"foo\"\n", text);
+}
+TEST(AbslStringifyTest, StringifyDirectMessageEnumIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_direct_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "test_direct_message_enum: $0\n",
+                                       value_replacement)));
+}
+TEST(AbslStringifyTest, StringifyNestedMessageEnumIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_nested_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "test_nested_message_enum: $0\n",
+                                       value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRedactedOptionDoesNotRedact) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_redacted_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto),
+              testing::MatchesRegex(
+                  "test_redacted_message_enum: \"foo\"\n"));
 }
 
 

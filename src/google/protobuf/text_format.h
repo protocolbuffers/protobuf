@@ -622,6 +622,12 @@ class PROTOBUF_EXPORT TextFormat {
     bool report;
   };
 
+  static TextFormat::RedactionState GetRedactionState(
+      const FieldDescriptor* field);
+
+  static TextFormat::RedactionState IsOptionSensitive(
+      const Message& opts, const Reflection* reflection,
+      const FieldDescriptor* option);
   // Data structure which is populated with the locations of each field
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
