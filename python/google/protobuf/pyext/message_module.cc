@@ -347,3 +347,5 @@ PyMODINIT_FUNC PyInit__message() {
 
   return m;
 }
+
+#include "google/protobuf/port_undef.inc"
