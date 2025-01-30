@@ -19,7 +19,6 @@ public final class ProtobufToStringOutput {
 
   private ProtobufToStringOutput() {}
 
-  @CanIgnoreReturnValue
   private static OutputMode setOutputMode(OutputMode newMode) {
     OutputMode oldMode = outputMode.get();
     outputMode.set(newMode);
