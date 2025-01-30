@@ -11974,7 +11974,7 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
 
 // Returns a seed for upb's hash function. For now this is just a hard-coded
 // constant, but we are going to randomize it soon.
-static uint64_t _upb_Seed(void) { return 0xdff497e08889bf61; }
+static uint64_t _upb_Seed(void) { return 0x69835f69597ec1cc; }
 
 static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
   return _upb_Hash(p, n, _upb_Seed());
