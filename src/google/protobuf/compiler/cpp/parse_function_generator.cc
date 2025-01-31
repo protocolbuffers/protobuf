@@ -74,7 +74,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     fields.push_back({
         field,
         index < has_bit_indices.size() ? has_bit_indices[index] : -1,
-        GetPresenceProbability(field, options_),
+        // When not present, we're not sure how likely "field" is present.
+        // Assign a 50% probability to avoid pessimizing it.
+        GetPresenceProbability(field, options_).value_or(0.5f),
         GetLazyStyle(field, options_, scc_analyzer_),
         IsStringInlined(field, options_),
         IsImplicitWeakField(field, options_, scc_analyzer_),
