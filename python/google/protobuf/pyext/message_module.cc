@@ -4,12 +4,20 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+#include <cstdint>
+#include <string>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/proto_api.h"
@@ -347,3 +355,5 @@ PyMODINIT_FUNC PyInit__message() {
 
   return m;
 }
+
+#include "google/protobuf/port_undef.inc"
