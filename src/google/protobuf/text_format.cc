@@ -21,10 +21,12 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
@@ -36,6 +38,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -99,7 +103,7 @@ const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
 // Controls insertion of a marker making debug strings non-parseable, and
 // redacting annotated fields in Protobuf's DebugString APIs.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{true};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
@@ -2299,6 +2303,9 @@ bool TextFormat::Printer::Print(const Message& message,
                                 internal::FieldReporterLevel reporter) const {
   TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
 
+  internal::PrintTextMarker(&generator, redact_debug_string_,
+                            randomize_debug_string_, single_line_mode_);
+
 
   Print(message, &generator);
 
@@ -3109,6 +3116,74 @@ bool TextFormat::Printer::TryRedactFieldValue(
   }
   return false;
 }
+
+class TextMarkerGenerator final {
+ public:
+  static TextMarkerGenerator CreateRandom();
+
+  void PrintMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                   bool randomize, bool single_line_mode) const {
+    if (redact) {
+      generator->Print(redaction_marker_.data(), redaction_marker_.size());
+    }
+    if (randomize) {
+      generator->Print(random_marker_.data(), random_marker_.size());
+    }
+    if ((redact || randomize) && !single_line_mode) {
+      generator->PrintLiteral("\n");
+    }
+  }
+
+ private:
+  static constexpr absl::string_view kRedactionMarkers[] = {
+      "goo.gle/debugonly ", "goo.gle/nodeserialize ", "goo.gle/debugstr ",
+      "goo.gle/debugproto "};
+
+  static constexpr absl::string_view kRandomMarker = "   ";
+
+  static_assert(!kRandomMarker.empty(), "The random marker cannot be empty!");
+
+  constexpr TextMarkerGenerator(absl::string_view redaction_marker,
+                                absl::string_view random_marker)
+      : redaction_marker_(redaction_marker), random_marker_(random_marker) {}
+
+  absl::string_view redaction_marker_;
+  absl::string_view random_marker_;
+};
+
+TextMarkerGenerator TextMarkerGenerator::CreateRandom() {
+  // We avoid using sources backed by system entropy to allow the marker
+  // generator to work in sandboxed environments that have no access to syscalls
+  // such as getrandom or getpid. Note that this randomization has no security
+  // implications, it's only used to break code that attempts to deserialize
+  // debug strings.
+  std::mt19937_64 random{
+      static_cast<uint64_t>(absl::ToUnixMicros(absl::Now()))};
+
+  size_t redaction_marker_index = std::uniform_int_distribution<size_t>{
+      0, ABSL_ARRAYSIZE(kRedactionMarkers) - 1}(random);
+
+  size_t random_marker_size =
+      std::uniform_int_distribution<size_t>{1, kRandomMarker.size()}(random);
+
+  return TextMarkerGenerator(kRedactionMarkers[redaction_marker_index],
+                             kRandomMarker.substr(0, random_marker_size));
+}
+
+const TextMarkerGenerator& GetGlobalTextMarkerGenerator() {
+  static const TextMarkerGenerator kTextMarkerGenerator =
+      TextMarkerGenerator::CreateRandom();
+  return kTextMarkerGenerator;
+}
+
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode) {
+  GetGlobalTextMarkerGenerator().PrintMarker(generator, redact, randomize,
+                                             single_line_mode);
+}
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

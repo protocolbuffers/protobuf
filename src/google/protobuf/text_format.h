@@ -829,6 +829,10 @@ class PROTOBUF_EXPORT TextFormat {
                                    const T&... values);
 };
 
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode);
+}  // namespace internal
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,
