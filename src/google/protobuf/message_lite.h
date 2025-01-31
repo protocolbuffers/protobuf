@@ -941,6 +941,7 @@ class PROTOBUF_EXPORT MessageLite {
     return tc_table;
   }
 
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
       : _class_data_(data) {}
