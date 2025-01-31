@@ -1601,6 +1601,28 @@ class JsonFormatTest(JsonFormatBase):
         'TestAny.any_value.',
     )
 
+  def testParseDictNestedAnyDescriptorPoolMissingType(self):
+    # Confirm that ParseDict nondestructive with empty pool
+    js_dict = {
+        '@type': 'type.googleapis.com/google.protobuf.Any',
+        'value': {
+            '@type': 'type.googleapis.com/protobuf_unittest.TestAny',
+            'any_value': {
+                '@type': 'type.googleapis.com/UnknownMessageType',
+            },
+        },
+    }
+    js_dict_copy = json.loads(json.dumps(js_dict))
+    with self.assertRaises(json_format.ParseError) as cm:
+      json_format.ParseDict(js_dict_copy, any_pb2.Any())
+    self.assertEqual(
+        str(cm.exception),
+        'Failed to parse any_value field: Can not find message descriptor by'
+        ' type_url: type.googleapis.com/UnknownMessageType at'
+        ' Any.value.any_value.',
+    )
+    self.assertEqual(js_dict, js_dict_copy)
+
   def testParseDictUnknownValueType(self):
     class UnknownClass(object):
 
