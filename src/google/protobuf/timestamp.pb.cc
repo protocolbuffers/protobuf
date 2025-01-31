@@ -255,7 +255,7 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
     ::memset(&_impl_.seconds_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.nanos_) -
         reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
@@ -322,16 +322,16 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
     // int64 seconds = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (this_._internal_seconds() != 0) {
         total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
             this_._internal_seconds());
       }
     }
     // int32 nanos = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       if (this_._internal_nanos() != 0) {
         total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
             this_._internal_nanos());
@@ -351,13 +351,13 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (from._internal_seconds() != 0) {
         _this->_impl_.seconds_ = from._impl_.seconds_;
       }
     }
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       if (from._internal_nanos() != 0) {
         _this->_impl_.nanos_ = from._impl_.nanos_;
       }

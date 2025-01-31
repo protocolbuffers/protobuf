@@ -289,11 +289,11 @@ PROTOBUF_NOINLINE void Any::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       _impl_.type_url_.ClearNonDefaultToEmpty();
     }
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       _impl_.value_.ClearNonDefaultToEmpty();
     }
   }
@@ -359,16 +359,16 @@ PROTOBUF_NOINLINE void Any::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
     // string type_url = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (!this_._internal_type_url().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_type_url());
       }
     }
     // bytes value = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       if (!this_._internal_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
                                         this_._internal_value());
@@ -388,8 +388,8 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (!from._internal_type_url().empty()) {
         _this->_internal_set_type_url(from._internal_type_url());
       } else {
@@ -398,7 +398,7 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
         }
       }
     }
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       if (!from._internal_value().empty()) {
         _this->_internal_set_value(from._internal_value());
       } else {

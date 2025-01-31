@@ -260,7 +260,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000001u) != 0) {
     _impl_.file_name_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
@@ -318,7 +318,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
    {
     // string file_name = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if (cached_has_bits & 0x00000001u) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (!this_._internal_file_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_file_name());
@@ -338,7 +338,7 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000001u) != 0) {
     if (!from._internal_file_name().empty()) {
       _this->_internal_set_file_name(from._internal_file_name());
     } else {
