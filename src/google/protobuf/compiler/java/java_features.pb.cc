@@ -291,7 +291,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if ((cached_has_bits & 0x00000007u) != 0) {
     ::memset(&_impl_.utf8_validation_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.use_old_outer_classname_default_) -
         reinterpret_cast<char*>(&_impl_.utf8_validation_)) + sizeof(_impl_.use_old_outer_classname_default_));
@@ -317,21 +317,21 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000002u) {
+  if ((cached_has_bits & 0x00000002u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_legacy_closed_enum(), target);
   }
 
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000001u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_utf8_validation(), target);
   }
 
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000004u) {
+  if ((cached_has_bits & 0x00000004u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         4, this_._internal_use_old_outer_classname_default(), target);
@@ -365,7 +365,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   total_size += ::absl::popcount(0x00000006u & cached_has_bits) * 2;
    {
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000001u) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
     }
@@ -383,14 +383,14 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
-    if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000007u) != 0) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
-    if (cached_has_bits & 0x00000004u) {
+    if ((cached_has_bits & 0x00000004u) != 0) {
       _this->_impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
     }
   }

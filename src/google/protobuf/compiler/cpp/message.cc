@@ -109,7 +109,7 @@ void PrintPresenceCheck(const FieldDescriptor* field,
     }
     p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
             R"cc(
-              if (cached_has_bits & $mask$) {
+              if ((cached_has_bits & $mask$) != 0) {
             )cc");
   } else {
     p->Emit(R"cc(
@@ -1330,7 +1330,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
                                        /*with_enclosing_braces_always=*/false);
             }}},
           R"cc(
-            if (cached_has_bits & $mask$) {
+            if ((cached_has_bits & $mask$) != 0) {
               $check_nondefault_and_emit_body$;
             }
           )cc");
@@ -3188,7 +3188,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     } else {
       int index = has_bit_indices_[field->index()];
       std::string mask = absl::StrFormat("0x%08xu", 1u << (index % 32));
-      p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+      p->Emit({{"mask", mask}}, "(cached_has_bits & $mask$) != 0");
     }
   };
 
@@ -3619,7 +3619,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
         }
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if ((cached_has_bits & 0x$1$u) != 0) {\n", chunk_mask_str);
         format.Indent();
       }
 
@@ -4285,7 +4285,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if ((cached_has_bits & 0x$1$u) != 0) {\n", chunk_mask_str);
         format.Indent();
       }
 
@@ -4319,7 +4319,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           int has_bit_index = has_bit_indices_[field->index()];
           const std::string mask = absl::StrCat(
               absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-          format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          format("if ((cached_has_bits & 0x$1$u) != 0) {\n", mask);
           format.Indent();
 
           if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
@@ -4570,7 +4570,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                auto v = p->WithVars(HasBitVars(field));
                // Attempt to use the state of cached_has_bits, if possible.
                if (cached_has_bits_index == has_bit_index / 32) {
-                 p->Emit("cached_has_bits & $has_mask$");
+                 p->Emit("(cached_has_bits & $has_mask$) != 0");
                } else {
                  p->Emit(
                      "(this_.$has_bits$[$has_array_index$] & $has_mask$) != 0");
@@ -5223,7 +5223,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
                       p->Emit(
                           {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
-                          "if (cached_has_bits & $mask$)");
+                          "if ((cached_has_bits & $mask$) != 0)");
                     }}},
                   R"cc(
                     $may_update_cached_has_word_index$;
