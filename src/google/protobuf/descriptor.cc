@@ -2117,11 +2117,11 @@ DescriptorPool::DescriptorPool()
       default_error_collector_(nullptr),
       underlay_(nullptr),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2132,11 +2132,11 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       default_error_collector_(error_collector),
       underlay_(nullptr),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2146,11 +2146,11 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       default_error_collector_(nullptr),
       underlay_(underlay),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 

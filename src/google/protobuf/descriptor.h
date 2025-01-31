@@ -2567,14 +2567,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   class Tables;
   std::unique_ptr<Tables> tables_;
 
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
   ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  mutable bool build_started_ = false;
+
+  bool enforce_dependencies_ : 1;
+  bool lazily_build_dependencies_ : 1;
+  bool allow_unknown_ : 1;
+  bool enforce_weak_ : 1;
+  bool disallow_enforce_utf8_ : 1;
+  bool deprecated_legacy_json_field_conflicts_ : 1;
+  mutable bool build_started_ : 1 = false;
 
   // Set of files to track for additional validation. The bool value when true
   // means unused imports are treated as errors (and as warnings when false).
