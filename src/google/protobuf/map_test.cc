@@ -31,9 +31,9 @@
 #include "google/protobuf/unittest_import.pb.h"
 
 
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
+#define UNITTEST_PACKAGE_NAME "proto2_unittest"
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
@@ -192,7 +192,7 @@ TEST(MapTest, CalculateCapacityForSizeTest) {
 TEST(MapTest, AlwaysSerializesBothEntries) {
   for (const Message* prototype :
        {static_cast<const Message*>(
-            &protobuf_unittest::TestI32StrMap::default_instance()),
+            &proto2_unittest::TestI32StrMap::default_instance()),
         static_cast<const Message*>(
             &proto3_unittest::TestI32StrMap::default_instance())}) {
     const FieldDescriptor* map_field =
@@ -322,11 +322,11 @@ void TestAllKeyValueTypes(void (*)(Key...), void (*)(Value...), F f) {
 using KeyTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t,
                           std::string);
 // Some arbitrary proto enum.
-using SomeEnum = protobuf_unittest::TestAllTypes::NestedEnum;
+using SomeEnum = proto2_unittest::TestAllTypes::NestedEnum;
 using ValueTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
                             double, std::string, SomeEnum,
-                            protobuf_unittest::TestEmptyMessage,
-                            protobuf_unittest::TestAllTypes);
+                            proto2_unittest::TestEmptyMessage,
+                            proto2_unittest::TestAllTypes);
 
 TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
   TestAllKeyValueTypes(KeyTypes(), ValueTypes(), [](auto key, auto value) {
@@ -356,7 +356,7 @@ TEST(MapTest, StaticTypeKindWorks) {
   EXPECT_EQ(UMB::TypeKind::kU64, UMB::StaticTypeKind<uint64_t>());
   EXPECT_EQ(UMB::TypeKind::kString, UMB::StaticTypeKind<std::string>());
   EXPECT_EQ(UMB::TypeKind::kMessage,
-            UMB::StaticTypeKind<protobuf_unittest::TestAllTypes>());
+            UMB::StaticTypeKind<proto2_unittest::TestAllTypes>());
 }
 
 template <typename LHS, typename RHS>

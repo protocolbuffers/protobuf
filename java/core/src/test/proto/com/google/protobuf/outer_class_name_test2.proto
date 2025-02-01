@@ -7,7 +7,7 @@
 
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 
 message TestMessage2 {

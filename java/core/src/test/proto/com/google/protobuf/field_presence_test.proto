@@ -33,7 +33,7 @@ message TestAllTypes {
   double optional_double = 9;
   NestedEnum optional_nested_enum = 4;
   NestedMessage optional_nested_message = 5;
-  protobuf_unittest.TestRequired optional_proto2_message = 6;
+  proto2_unittest.TestRequired optional_proto2_message = 6;
   NestedMessage optional_lazy_message = 7 [lazy = true];
 
   oneof oneof_field {
@@ -43,7 +43,7 @@ message TestAllTypes {
     bytes oneof_bytes = 14;
     NestedEnum oneof_nested_enum = 15;
     NestedMessage oneof_nested_message = 16;
-    protobuf_unittest.TestRequired oneof_proto2_message = 17;
+    proto2_unittest.TestRequired oneof_proto2_message = 17;
   }
 
   repeated int32 repeated_int32 = 21;
@@ -51,7 +51,7 @@ message TestAllTypes {
   repeated bytes repeated_bytes = 23;
   repeated NestedEnum repeated_nested_enum = 24;
   repeated NestedMessage repeated_nested_message = 25;
-  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
+  repeated proto2_unittest.TestRequired repeated_proto2_message = 26;
   repeated NestedEnum packed_nested_enum = 27;
 }
 
@@ -61,7 +61,7 @@ message TestOptionalFieldsOnly {
   bytes optional_bytes = 3;
   TestAllTypes.NestedEnum optional_nested_enum = 4;
   TestAllTypes.NestedMessage optional_nested_message = 5;
-  protobuf_unittest.TestRequired optional_proto2_message = 6;
+  proto2_unittest.TestRequired optional_proto2_message = 6;
   TestAllTypes.NestedMessage optional_lazy_message = 7 [lazy = true];
 }
 
@@ -71,5 +71,5 @@ message TestRepeatedFieldsOnly {
   repeated bytes repeated_bytes = 23;
   repeated TestAllTypes.NestedEnum repeated_nested_enum = 24;
   repeated TestAllTypes.NestedMessage repeated_nested_message = 25;
-  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
+  repeated proto2_unittest.TestRequired repeated_proto2_message = 26;
 }

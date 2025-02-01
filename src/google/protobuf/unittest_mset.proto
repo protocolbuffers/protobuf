@@ -16,7 +16,7 @@ syntax = "proto2";
 
 import "google/protobuf/unittest_mset_wire_format.proto";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED;

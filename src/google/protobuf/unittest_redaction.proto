@@ -1,7 +1,7 @@
 // Test proto for redaction
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/descriptor.proto";
@@ -39,26 +39,26 @@ message TestRedactedMessage {
   string text_field = 1 [deprecated = true];
   string meta_annotated = 8 [(meta_annotated_enum) = TEST_REDACTABLE];
   string repeated_meta_annotated = 9 [
-    (protobuf_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
-    (protobuf_unittest.repeated_meta_annotated_enum) = TEST_REDACTABLE
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_REDACTABLE
   ];
   string unredacted_repeated_annotations = 10 [
-    (protobuf_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
-    (protobuf_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT_AGAIN
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT_AGAIN
   ];
   string unreported_non_meta_debug_redact_field = 17 [debug_redact = true];
   google.protobuf.Any any_field = 18 [debug_redact = true];
   string redactable_false = 19 [(meta_annotated_enum) = TEST_REDACTABLE_FALSE];
   string test_direct_message_enum = 22
-      [(protobuf_unittest.test_nested_message_enum) = {
+      [(proto2_unittest.test_nested_message_enum) = {
         direct_enum: [ TEST_NO_REDACT, TEST_REDACTABLE ]
       }];
   string test_nested_message_enum = 23
-      [(protobuf_unittest.test_nested_message_enum) = {
+      [(proto2_unittest.test_nested_message_enum) = {
         nested_enum { redactable_enum: [ TEST_NO_REDACT, TEST_REDACTABLE ] }
       }];
   string test_redacted_message_enum = 24
-      [(protobuf_unittest.test_nested_message_enum) = {
+      [(proto2_unittest.test_nested_message_enum) = {
         redacted_string: "redacted_but_doesnt_redact"
       }];
 }

@@ -41,8 +41,8 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestAllTypes;
-using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestMessageWithManyRepeatedPtrFields;
 using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;

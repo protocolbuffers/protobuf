@@ -9,7 +9,7 @@
 
 edition = "2023";
 
-package protobuf_unittest_import;
+package proto2_unittest_import;
 
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.protobuf";

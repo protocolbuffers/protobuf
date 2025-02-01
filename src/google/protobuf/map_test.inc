@@ -4337,7 +4337,7 @@ TEST(KeyMapBaseTest, InsertOrReplaceNodeWorks) {
 }
 
 TEST(NonUtf8Test, StringValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
+  proto2_unittest::TestProto2BytesMap message;
   (*message.mutable_map_string())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();
@@ -4347,7 +4347,7 @@ TEST(NonUtf8Test, StringValuePassesInProto2) {
 }
 
 TEST(NonUtf8Test, BytesValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
+  proto2_unittest::TestProto2BytesMap message;
   (*message.mutable_map_bytes())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();

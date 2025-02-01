@@ -17,8 +17,8 @@
 namespace google {
 namespace protobuf {
 
-namespace unittest = protobuf_unittest;
-namespace unittest_import = protobuf_unittest_import;
+namespace unittest = proto2_unittest;
+namespace unittest_import = proto2_unittest_import;
 
 class TestUtilLite {
  public:

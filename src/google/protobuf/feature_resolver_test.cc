@@ -425,7 +425,7 @@ TEST(FeatureResolverTest, CompileDefaultsInvalidExtension) {
   EXPECT_THAT(
       FeatureResolver::CompileDefaults(
           FeatureSet::descriptor(),
-          {GetExtension(protobuf_unittest::file_opt1, FileOptions::descriptor())},
+          {GetExtension(proto2_unittest::file_opt1, FileOptions::descriptor())},
           EDITION_2023, EDITION_2023),
       HasError(HasSubstr("is not an extension of")));
 }

@@ -29,9 +29,9 @@
 
 #define MESSAGE_TEST_NAME MessageTest
 #define MESSAGE_FACTORY_TEST_NAME MessageFactoryTest
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
+#define UNITTEST_PACKAGE_NAME "proto2_unittest"
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
 
 // Must include after the above macros.
 // clang-format off

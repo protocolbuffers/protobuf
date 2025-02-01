@@ -496,7 +496,7 @@ TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
 TEST_F(TextFormatTest, PrintUnknownMessage) {
   // Test heuristic printing of messages in an UnknownFieldSet.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   // Cases which should not be interpreted as sub-messages.
 
@@ -572,7 +572,7 @@ TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
 TEST_F(TextFormatTest, PrintMessageWithIndent) {
   // Test adding an initial indent to printing.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -594,7 +594,7 @@ TEST_F(TextFormatTest, PrintMessageWithIndent) {
 TEST_F(TextFormatTest, PrintMessageSingleLine) {
   // Test printing a message on a single line.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -614,7 +614,7 @@ TEST_F(TextFormatTest, PrintMessageSingleLine) {
 TEST_F(TextFormatTest, PrintBufferTooSmall) {
   // Test printing a message to a buffer that is too small.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -635,7 +635,7 @@ class CustomUInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, DefaultCustomFieldPrinter) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.set_optional_uint32(42);
   message.add_repeated_uint32(1);
@@ -659,7 +659,7 @@ class CustomInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.set_optional_int32(42);  // This will be handled by our Printer.
   message.add_repeated_int32(42);  // This will be printed as number.
@@ -674,7 +674,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
 }
 
 TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   const FieldDescriptor* const field =
       message.GetDescriptor()->FindFieldByName("optional_int32");
@@ -687,7 +687,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
 }
 
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   // nullptr printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
@@ -721,7 +721,7 @@ class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, CustomPrinterForComments) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   message.add_repeated_nested_message();
@@ -768,7 +768,7 @@ class CustomMessageContentFieldValuePrinter
 };
 
 TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   message.add_repeated_nested_message();
@@ -810,7 +810,7 @@ class CustomMultilineCommentPrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   TextFormat::Printer printer;
@@ -882,7 +882,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
               unittest::TestAllTypes::kRepeatedNestedMessageFieldNumber),
       new CompactRepeatedFieldPrinter));
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.add_repeated_nested_message()->set_bb(1);
   message.add_repeated_nested_message()->set_bb(2);
   message.add_repeated_nested_message()->set_bb(3);
@@ -932,7 +932,7 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
               unittest::TestAllTypes::kOptionalStringFieldNumber),
       new MultilineStringPrinter));
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.set_optional_string("first line\nsecond line\nthird line");
 
   std::string text;
@@ -1709,7 +1709,7 @@ TEST_F(TextFormatTest, ParseExotic) {
 }
 
 TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
-  protobuf_unittest::TestFieldOrderings message;
+  proto2_unittest::TestFieldOrderings message;
   // Fields are listed in index order instead of field number.
   message.set_my_string("str");  // Field number 11
   message.set_my_int(12345);     // Field number 1
@@ -1718,20 +1718,20 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // Extension number 12.
   message
       .MutableExtension(
-          protobuf_unittest::TestExtensionOrderings2::test_ext_orderings2)
+          proto2_unittest::TestExtensionOrderings2::test_ext_orderings2)
       ->set_my_string("ext_str2");
   // Extension number 13.
   message
       .MutableExtension(
-          protobuf_unittest::TestExtensionOrderings1::test_ext_orderings1)
+          proto2_unittest::TestExtensionOrderings1::test_ext_orderings1)
       ->set_my_string("ext_str1");
   // Extension number 14.
   message
-      .MutableExtension(protobuf_unittest::TestExtensionOrderings2::
+      .MutableExtension(proto2_unittest::TestExtensionOrderings2::
                             TestExtensionOrderings3::test_ext_orderings3)
       ->set_my_string("ext_str3");
   // Extension number 50.
-  *message.MutableExtension(protobuf_unittest::my_extension_string) = "ext_str0";
+  *message.MutableExtension(proto2_unittest::my_extension_string) = "ext_str0";
 
   TextFormat::Printer printer;
   std::string text;
@@ -1739,28 +1739,28 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // By default, print in field number order.
   // my_int: 12345
   // my_string: "str"
-  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  // [proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {
   //   my_string: "ext_str2"
   // }
-  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  // [proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {
   //   my_string: "ext_str1"
   // }
-  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // [proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
   // {
   //   my_string: "ext_str3"
   // }
-  // [protobuf_unittest.my_extension_string]: "ext_str0"
+  // [proto2_unittest.my_extension_string]: "ext_str0"
   // my_float: 0.999
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "my_int: 12345\nmy_string: "
-      "\"str\"\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "\"str\"\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
       "{\n  my_string: "
-      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "\"ext_str2\"\n}\n[proto2_unittest.TestExtensionOrderings1.test_ext_"
       "orderings1] {\n  my_string: "
-      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "\"ext_str1\"\n}\n[proto2_unittest.TestExtensionOrderings2."
       "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
-      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: "
+      "\"ext_str3\"\n}\n[proto2_unittest.my_extension_string]: "
       "\"ext_str0\"\nmy_float: 0.999\n",
       text);
 
@@ -1768,28 +1768,28 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // my_string: "str"
   // my_int: 12345
   // my_float: 0.999
-  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  // [proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {
   //   my_string: "ext_str2"
   // }
-  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  // [proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {
   //   my_string: "ext_str1"
   // }
-  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // [proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
   // {
   //   my_string: "ext_str3"
   // }
-  // [protobuf_unittest.my_extension_string]: "ext_str0"
+  // [proto2_unittest.my_extension_string]: "ext_str0"
   printer.SetPrintMessageFieldsInIndexOrder(true);
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "my_string: \"str\"\nmy_int: 12345\nmy_float: "
-      "0.999\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "0.999\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
       "{\n  my_string: "
-      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "\"ext_str2\"\n}\n[proto2_unittest.TestExtensionOrderings1.test_ext_"
       "orderings1] {\n  my_string: "
-      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "\"ext_str1\"\n}\n[proto2_unittest.TestExtensionOrderings2."
       "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
-      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: \"ext_str0\"\n",
+      "\"ext_str3\"\n}\n[proto2_unittest.my_extension_string]: \"ext_str0\"\n",
       text);
 }
 
@@ -2078,7 +2078,7 @@ TEST_F(TextFormatParserTest, InvalidToken) {
 TEST_F(TextFormatParserTest, InvalidFieldName) {
   ExpectFailure(
       "invalid_field: somevalue\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"invalid_field\".",
       1, 14);
 }
@@ -2091,12 +2091,12 @@ TEST_F(TextFormatParserTest, GroupCapitalization) {
 
   ExpectFailure(
       "OPTIONALgroup {\na: 15\n}\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"OPTIONALgroup\".",
       1, 15);
   ExpectFailure(
       "Optional_Double: 10.0\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"Optional_Double\".",
       1, 16);
 }
@@ -2124,7 +2124,7 @@ TEST_F(TextFormatParserTest, DelimitedCapitalization) {
 
 TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
   TextFormat::Parser parser;
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
 
   // These fields have a mismatching case.
   EXPECT_FALSE(parser.ParseFromString("Optional_Double: 10.0", &proto));
@@ -2245,7 +2245,7 @@ TEST_F(TextFormatParserTest, UnknownExtension) {
   // Non-matching delimiters.
   ExpectFailure("[blahblah]: 123",
                 "Extension \"blahblah\" is not defined or is not an "
-                "extension of \"protobuf_unittest.TestAllTypes\".",
+                "extension of \"proto2_unittest.TestAllTypes\".",
                 1, 11);
 }
 
@@ -2297,8 +2297,8 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
     EXPECT_CALL(
         log,
         Log(absl::LogSeverity::kError, testing::_,
-            "Error parsing text-format protobuf_unittest.TestAllTypes: "
-            "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
+            "Error parsing text-format proto2_unittest.TestAllTypes: "
+            "1:14: Message type \"proto2_unittest.TestAllTypes\" has no field "
             "named \"no_such_field\"."))
         .Times(1);
     log.StartCapturingLogs();
@@ -2312,7 +2312,7 @@ TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
     EXPECT_CALL(log,
                 Log(absl::LogSeverity::kError, testing::_,
-                    "Error parsing text-format protobuf_unittest.TestAllTypes: "
+                    "Error parsing text-format proto2_unittest.TestAllTypes: "
                     "1:1: Invalid control characters encountered in text."))
         .Times(1);
     log.StartCapturingLogs();
@@ -2368,7 +2368,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
   std::string deep_input = absl::StrCat("unknown_nested_array: ", input);
   ExpectMessage(
       deep_input,
-      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "WARNING:Message type \"proto2_unittest.NestedTestAllTypes\" has no "
       "field named \"unknown_nested_array\".\n1:123: Message is too deep, the "
       "parser exceeded the configured recursion limit of 100.",
       1, 21, &message, false);
@@ -2391,7 +2391,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   input = absl::Substitute(format, input);
   ExpectMessage(
       input,
-      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "WARNING:Message type \"proto2_unittest.NestedTestAllTypes\" has no "
       "field named \"unknown_child\".\n1:1716: Message is too deep, the parser "
       "exceeded the configured recursion limit of 100.",
       1, 14, &message, false);
@@ -2403,7 +2403,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
 TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
   Any any;
   std::string parse_string =
-      "[type.googleapis.com/protobuf_unittest.TestAllTypes] \t :  \t {\n"
+      "[type.googleapis.com/proto2_unittest.TestAllTypes] \t :  \t {\n"
       "  optional_int32: 321\n"
       "  optional_string: \"teststr0\"\n"
       "}\n";
@@ -2415,7 +2415,7 @@ TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
   std::string text;
   ASSERT_TRUE(printer.PrintToString(any, &text));
   EXPECT_EQ(text,
-            "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            "[type.googleapis.com/proto2_unittest.TestAllTypes] {\n"
             "  optional_int32: 321\n"
             "  optional_string: \"teststr0\"\n"
             "}\n");
@@ -2424,8 +2424,8 @@ TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
 TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
   unittest::TestAllExtensions proto;
   std::string parse_string =
-      "[protobuf_unittest.optional_int32_extension]   : \t 101\n"
-      "[protobuf_unittest.optional_int64_extension] \t : 102\n";
+      "[proto2_unittest.optional_int32_extension]   : \t 101\n"
+      "[proto2_unittest.optional_int64_extension] \t : 102\n";
 
   ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
 
@@ -2433,8 +2433,8 @@ TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
   std::string text;
   ASSERT_TRUE(printer.PrintToString(proto, &text));
   EXPECT_EQ(text,
-            "[protobuf_unittest.optional_int32_extension]: 101\n"
-            "[protobuf_unittest.optional_int64_extension]: 102\n");
+            "[proto2_unittest.optional_int32_extension]: 101\n"
+            "[proto2_unittest.optional_int64_extension]: 102\n");
 }
 
 TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
@@ -2472,7 +2472,7 @@ TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
 }
 
 TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
   EXPECT_TRUE(
@@ -2502,23 +2502,23 @@ class TextFormatMessageSetTest : public testing::Test {
 };
 const char TextFormatMessageSetTest::proto_text_format_[] =
     "message_set {\n"
-    "  [protobuf_unittest.TestMessageSetExtension1] {\n"
+    "  [proto2_unittest.TestMessageSetExtension1] {\n"
     "    i: 23\n"
     "  }\n"
-    "  [protobuf_unittest.TestMessageSetExtension2] {\n"
+    "  [proto2_unittest.TestMessageSetExtension2] {\n"
     "    str: \"foo\"\n"
     "  }\n"
     "}\n";
 
 TEST_F(TextFormatMessageSetTest, Serialize) {
-  protobuf_unittest::TestMessageSetContainer proto;
-  protobuf_unittest::TestMessageSetExtension1* item_a =
+  proto2_unittest::TestMessageSetContainer proto;
+  proto2_unittest::TestMessageSetExtension1* item_a =
       proto.mutable_message_set()->MutableExtension(
-          protobuf_unittest::TestMessageSetExtension1::message_set_extension);
+          proto2_unittest::TestMessageSetExtension1::message_set_extension);
   item_a->set_i(23);
-  protobuf_unittest::TestMessageSetExtension2* item_b =
+  proto2_unittest::TestMessageSetExtension2* item_b =
       proto.mutable_message_set()->MutableExtension(
-          protobuf_unittest::TestMessageSetExtension2::message_set_extension);
+          proto2_unittest::TestMessageSetExtension2::message_set_extension);
   item_b->set_str("foo");
   std::string actual_proto_text_format;
   TextFormat::PrintToString(proto, &actual_proto_text_format);
@@ -2526,19 +2526,19 @@ TEST_F(TextFormatMessageSetTest, Serialize) {
 }
 
 TEST_F(TextFormatMessageSetTest, Deserialize) {
-  protobuf_unittest::TestMessageSetContainer proto;
+  proto2_unittest::TestMessageSetContainer proto;
   ASSERT_TRUE(TextFormat::ParseFromString(proto_text_format_, &proto));
   EXPECT_EQ(
       23,
       proto.message_set()
           .GetExtension(
-              protobuf_unittest::TestMessageSetExtension1::message_set_extension)
+              proto2_unittest::TestMessageSetExtension1::message_set_extension)
           .i());
   EXPECT_EQ(
       "foo",
       proto.message_set()
           .GetExtension(
-              protobuf_unittest::TestMessageSetExtension2::message_set_extension)
+              proto2_unittest::TestMessageSetExtension2::message_set_extension)
           .str());
 
   // Ensure that these are the only entries present.
@@ -2549,7 +2549,7 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestUnknownField) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   // Unknown field is not permitted by default.
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 12345", &proto));
@@ -2653,7 +2653,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
   EXPECT_TRUE(
@@ -2665,7 +2665,7 @@ TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   std::string message_with_ext =
       "[test.extension1] {\n"

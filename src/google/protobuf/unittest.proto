@@ -17,8 +17,8 @@ edition = "2023";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In test_util.h we do "using namespace unittest = protobuf_unittest".
-package protobuf_unittest;
+// In test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest;
 
 import "google/protobuf/unittest_import.proto";
 
@@ -85,10 +85,10 @@ message TestAllTypes {
 
   NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
-  protobuf_unittest_import.ImportMessage optional_import_message = 20;
+  proto2_unittest_import.ImportMessage optional_import_message = 20;
   NestedEnum optional_nested_enum = 21;
   ForeignEnum optional_foreign_enum = 22;
-  protobuf_unittest_import.ImportEnum optional_import_enum = 23;
+  proto2_unittest_import.ImportEnum optional_import_enum = 23;
   string optional_string_piece = 24 [
     ctype = STRING_PIECE
   ];
@@ -99,7 +99,7 @@ message TestAllTypes {
   bytes optional_bytes_cord = 86 [ctype=CORD];
 
   // Defined in unittest_import_public.proto
-  protobuf_unittest_import.PublicImportMessage optional_public_import_message = 26;
+  proto2_unittest_import.PublicImportMessage optional_public_import_message = 26;
   NestedMessage optional_lazy_message = 27 [
     lazy = true
   ];
@@ -135,10 +135,10 @@ message TestAllTypes {
 
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessage repeated_foreign_message = 49;
-  repeated protobuf_unittest_import.ImportMessage repeated_import_message = 50;
+  repeated proto2_unittest_import.ImportMessage repeated_import_message = 50;
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
-  repeated protobuf_unittest_import.ImportEnum repeated_import_enum = 53;
+  repeated proto2_unittest_import.ImportEnum repeated_import_enum = 53;
   repeated string repeated_string_piece = 54 [
     ctype = STRING_PIECE
   ];
@@ -220,7 +220,7 @@ message TestAllTypes {
     default = FOREIGN_BAR
   ];
 
-  protobuf_unittest_import.ImportEnum default_import_enum = 83 [
+  proto2_unittest_import.ImportEnum default_import_enum = 83 [
     default = IMPORT_BAR
   ];
 
@@ -350,10 +350,10 @@ extend TestAllExtensions {
 
   TestAllTypes.NestedMessage optional_nested_message_extension = 18;
   ForeignMessage optional_foreign_message_extension = 19;
-  protobuf_unittest_import.ImportMessage optional_import_message_extension = 20;
+  proto2_unittest_import.ImportMessage optional_import_message_extension = 20;
   TestAllTypes.NestedEnum optional_nested_enum_extension = 21;
   ForeignEnum optional_foreign_enum_extension = 22;
-  protobuf_unittest_import.ImportEnum optional_import_enum_extension = 23;
+  proto2_unittest_import.ImportEnum optional_import_enum_extension = 23;
   string optional_string_piece_extension = 24 [
     ctype = STRING_PIECE
   ];
@@ -363,7 +363,7 @@ extend TestAllExtensions {
   string optional_cord_extension = 25;
   bytes optional_bytes_cord_extension = 86;
 
-  protobuf_unittest_import.PublicImportMessage
+  proto2_unittest_import.PublicImportMessage
       optional_public_import_message_extension = 26;
   TestAllTypes.NestedMessage optional_lazy_message_extension = 27 [
     lazy = true
@@ -395,11 +395,11 @@ extend TestAllExtensions {
 
   repeated TestAllTypes.NestedMessage repeated_nested_message_extension = 48;
   repeated ForeignMessage repeated_foreign_message_extension = 49;
-  repeated protobuf_unittest_import.ImportMessage
+  repeated proto2_unittest_import.ImportMessage
       repeated_import_message_extension = 50;
   repeated TestAllTypes.NestedEnum repeated_nested_enum_extension = 51;
   repeated ForeignEnum repeated_foreign_enum_extension = 52;
-  repeated protobuf_unittest_import.ImportEnum repeated_import_enum_extension = 53;
+  repeated proto2_unittest_import.ImportEnum repeated_import_enum_extension = 53;
   repeated string repeated_string_piece_extension = 54 [
     ctype = STRING_PIECE
   ];
@@ -480,7 +480,7 @@ extend TestAllExtensions {
     default = FOREIGN_BAR
   ];
 
-  protobuf_unittest_import.ImportEnum default_import_enum_extension = 83 [
+  proto2_unittest_import.ImportEnum default_import_enum_extension = 83 [
     default = IMPORT_BAR
   ];
 
@@ -904,7 +904,7 @@ message TestIsInitialized {
 // Test that groups have disjoint field numbers from their siblings and
 // parents.  This is NOT possible in proto1; only google.protobuf.  When attempting
 // to compile with proto1, this will emit an error; so we only include it
-// in protobuf_unittest_proto.
+// in proto2_unittest_proto.
 message TestDupFieldNumber {// NO_PROTO1
   int32 a = 1; // NO_PROTO1
   message Foo { // NO_PROTO1
@@ -1803,8 +1803,8 @@ message TestHugeFieldNumbers {
   extensions 536860000 to 536869999 [
     declaration = {
       number: 536860000
-      full_name: ".protobuf_unittest.test_all_types"
-      type: ".protobuf_unittest.TestAllTypes"
+      full_name: ".proto2_unittest.test_all_types"
+      type: ".proto2_unittest.TestAllTypes"
     }
   ];
 }
@@ -1843,7 +1843,7 @@ message TestNestedGroupExtensionOuter {
       // [metadata = {
       //  NOTE: can't write type there due to some clever build gen code at
       //  http://google3/google/protobuf/BUILD;l=1247;rcl=411090862
-      //  type: "protobuf_unittest.TestNestedGroupExtensionInnerExtension",
+      //  type: "proto2_unittest.TestNestedGroupExtensionInnerExtension",
       //  name: "inner",
       //  }]
       ;

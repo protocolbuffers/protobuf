@@ -240,21 +240,21 @@ class GeneratorTest(unittest.TestCase):
   def testPackage(self):
     self.assertEqual(
         unittest_pb2.TestAllTypes.DESCRIPTOR.file.package,
-        'protobuf_unittest')
+        'proto2_unittest')
     desc = unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR
-    self.assertEqual(desc.file.package, 'protobuf_unittest')
+    self.assertEqual(desc.file.package, 'proto2_unittest')
     self.assertEqual(
         unittest_import_pb2.ImportMessage.DESCRIPTOR.file.package,
-        'protobuf_unittest_import')
+        'proto2_unittest_import')
 
     self.assertEqual(
-        unittest_pb2._FOREIGNENUM.file.package, 'protobuf_unittest')
+        unittest_pb2._FOREIGNENUM.file.package, 'proto2_unittest')
     self.assertEqual(
         unittest_pb2._TESTALLTYPES_NESTEDENUM.file.package,
-        'protobuf_unittest')
+        'proto2_unittest')
     self.assertEqual(
         unittest_import_pb2._IMPORTENUM.file.package,
-        'protobuf_unittest_import')
+        'proto2_unittest_import')
 
   def testExtensionRange(self):
     self.assertEqual(
@@ -269,7 +269,7 @@ class GeneratorTest(unittest.TestCase):
   def testFileDescriptor(self):
     self.assertEqual(unittest_pb2.DESCRIPTOR.name,
                      'google/protobuf/unittest.proto')
-    self.assertEqual(unittest_pb2.DESCRIPTOR.package, 'protobuf_unittest')
+    self.assertEqual(unittest_pb2.DESCRIPTOR.package, 'proto2_unittest')
     self.assertFalse(unittest_pb2.DESCRIPTOR.serialized_pb is None)
     self.assertEqual(unittest_pb2.DESCRIPTOR.dependencies,
                      [unittest_import_pb2.DESCRIPTOR])
@@ -372,31 +372,31 @@ class SymbolDatabaseRegistrationTest(unittest.TestCase):
   def testGetSymbol(self):
     self.assertEqual(
         unittest_pb2.TestAllTypes, symbol_database.Default().GetSymbol(
-            'protobuf_unittest.TestAllTypes'))
+            'proto2_unittest.TestAllTypes'))
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage,
         symbol_database.Default().GetSymbol(
-            'protobuf_unittest.TestAllTypes.NestedMessage'))
+            'proto2_unittest.TestAllTypes.NestedMessage'))
     with self.assertRaises(KeyError):
-      symbol_database.Default().GetSymbol('protobuf_unittest.NestedMessage')
+      symbol_database.Default().GetSymbol('proto2_unittest.NestedMessage')
     self.assertEqual(
         unittest_pb2.TestAllTypes.OptionalGroup,
         symbol_database.Default().GetSymbol(
-            'protobuf_unittest.TestAllTypes.OptionalGroup'))
+            'proto2_unittest.TestAllTypes.OptionalGroup'))
     self.assertEqual(
         unittest_pb2.TestAllTypes.RepeatedGroup,
         symbol_database.Default().GetSymbol(
-            'protobuf_unittest.TestAllTypes.RepeatedGroup'))
+            'proto2_unittest.TestAllTypes.RepeatedGroup'))
 
   def testEnums(self):
     self.assertEqual(
-        'protobuf_unittest.ForeignEnum',
+        'proto2_unittest.ForeignEnum',
         symbol_database.Default().pool.FindEnumTypeByName(
-            'protobuf_unittest.ForeignEnum').full_name)
+            'proto2_unittest.ForeignEnum').full_name)
     self.assertEqual(
-        'protobuf_unittest.TestAllTypes.NestedEnum',
+        'proto2_unittest.TestAllTypes.NestedEnum',
         symbol_database.Default().pool.FindEnumTypeByName(
-            'protobuf_unittest.TestAllTypes.NestedEnum').full_name)
+            'proto2_unittest.TestAllTypes.NestedEnum').full_name)
 
   def testFindFileByName(self):
     self.assertEqual(

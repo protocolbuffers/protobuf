@@ -37,7 +37,7 @@ namespace {
 // Test that the descriptors are ordered in a topological order.
 TEST(FileTest, TopologicallyOrderedDescriptors) {
   const FileDescriptor* fdesc =
-      protobuf_unittest::TestAllTypes::descriptor()->file();
+      proto2_unittest::TestAllTypes::descriptor()->file();
   FileGenerator fgen(fdesc, /*options=*/{});
   static constexpr absl::string_view kExpectedDescriptorOrder[] = {
       "Uint64Message",
@@ -203,7 +203,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
   for (const Descriptor* desc :
        FileGeneratorFriendForTesting::MessagesInTopologicalOrder(fgen)) {
     actual_order.emplace_back(
-        absl::StripPrefix(desc->full_name(), "protobuf_unittest."));
+        absl::StripPrefix(desc->full_name(), "proto2_unittest."));
   }
   EXPECT_THAT(actual_order,
               ::testing::ElementsAreArray(kExpectedDescriptorOrder));

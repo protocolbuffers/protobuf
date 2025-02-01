@@ -2,8 +2,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestProto.RedactedFields;
-import protobuf_unittest.UnittestProto.TestNestedMessageRedaction;
+import proto2_unittest.UnittestProto.RedactedFields;
+import proto2_unittest.UnittestProto.TestNestedMessageRedaction;
 import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;

@@ -13,7 +13,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 message TestFlagsAndStrings {
   required int32 A = 1;

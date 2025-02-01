@@ -52,7 +52,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestAllTypes;
+using ::proto2_unittest::TestAllTypes;
 using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;

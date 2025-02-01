@@ -9,10 +9,10 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestMset.RawMessageSet;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension3;
+import proto2_unittest.UnittestMset.RawMessageSet;
+import proto2_unittest.UnittestMset.TestMessageSetExtension1;
+import proto2_unittest.UnittestMset.TestMessageSetExtension2;
+import proto2_unittest.UnittestMset.TestMessageSetExtension3;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import org.junit.Before;
 import org.junit.Test;

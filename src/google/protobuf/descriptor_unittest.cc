@@ -603,10 +603,10 @@ class SimpleErrorCollector : public io::ErrorCollector {
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
   absl::flat_hash_set<absl::string_view> visited;
   std::vector<std::pair<absl::string_view, std::string>> debug_strings;
-  ExtractDebugString(protobuf_unittest::TestAllTypes::descriptor()->file(),
+  ExtractDebugString(proto2_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
   ExtractDebugString(
-      protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file(),
+      proto2_unittest::TestMessageWithCustomOptions::descriptor()->file(),
       &visited, &debug_strings);
   ExtractDebugString(proto3_arena_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
@@ -636,7 +636,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
 TEST_F(FileDescriptorTest, AbslStringifyWorks) {
   std::string s = absl::StrFormat(
       "%v",
-      *protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file());
+      *proto2_unittest::TestMessageWithCustomOptions::descriptor()->file());
   EXPECT_THAT(s, HasSubstr("TestMessageWithCustomOptions"));
 }
 
@@ -986,15 +986,15 @@ TEST_F(DescriptorTest, PrintableNameIsFullNameForNonExtensionFields) {
 }
 
 TEST_F(DescriptorTest, PrintableNameIsFullNameForNonMessageSetExtension) {
-  EXPECT_EQ("protobuf_unittest.Aggregate.nested",
-            protobuf_unittest::Aggregate::descriptor()
+  EXPECT_EQ("proto2_unittest.Aggregate.nested",
+            proto2_unittest::Aggregate::descriptor()
                 ->FindExtensionByName("nested")
                 ->PrintableNameForExtension());
 }
 
 TEST_F(DescriptorTest, PrintableNameIsExtendingTypeForMessageSetExtension) {
-  EXPECT_EQ("protobuf_unittest.AggregateMessageSetElement",
-            protobuf_unittest::AggregateMessageSetElement::descriptor()
+  EXPECT_EQ("proto2_unittest.AggregateMessageSetElement",
+            proto2_unittest::AggregateMessageSetElement::descriptor()
                 ->FindExtensionByName("message_set_extension")
                 ->PrintableNameForExtension());
 }
@@ -1030,7 +1030,7 @@ TEST_F(DescriptorTest, FieldJsonName) {
   EXPECT_EQ("fieldname7", proto.field(6).json_name());
 
   // Test generated descriptor.
-  const Descriptor* generated = protobuf_unittest::TestJsonName::descriptor();
+  const Descriptor* generated = proto2_unittest::TestJsonName::descriptor();
   ASSERT_EQ(7, generated->field_count());
   EXPECT_EQ("fieldName1", generated->field(0)->json_name());
   EXPECT_EQ("fieldName2", generated->field(1)->json_name());
@@ -3703,7 +3703,7 @@ INSTANTIATE_TEST_SUITE_P(DatabaseSource, AllowUnknownDependenciesTest,
 
 TEST(CustomOptions, OptionLocations) {
   const Descriptor* message =
-      protobuf_unittest::TestMessageWithCustomOptions::descriptor();
+      proto2_unittest::TestMessageWithCustomOptions::descriptor();
   const FileDescriptor* file = message->file();
   const FieldDescriptor* field = message->FindFieldByName("field1");
   const OneofDescriptor* oneof = message->FindOneofByName("AnOneof");
@@ -3715,23 +3715,23 @@ TEST(CustomOptions, OptionLocations) {
   const MethodDescriptor* method = service->FindMethodByName("Foo");
 
   EXPECT_EQ(int64_t{9876543210},
-            file->options().GetExtension(protobuf_unittest::file_opt1));
+            file->options().GetExtension(proto2_unittest::file_opt1));
   EXPECT_EQ(-56,
-            message->options().GetExtension(protobuf_unittest::message_opt1));
+            message->options().GetExtension(proto2_unittest::message_opt1));
   EXPECT_EQ(int64_t{8765432109},
-            field->options().GetExtension(protobuf_unittest::field_opt1));
+            field->options().GetExtension(proto2_unittest::field_opt1));
   EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
-            field->options().GetExtension(protobuf_unittest::field_opt2));
-  EXPECT_EQ(-99, oneof->options().GetExtension(protobuf_unittest::oneof_opt1));
+            field->options().GetExtension(proto2_unittest::field_opt2));
+  EXPECT_EQ(-99, oneof->options().GetExtension(proto2_unittest::oneof_opt1));
   EXPECT_EQ(int64_t{12345},
-            map_field->options().GetExtension(protobuf_unittest::field_opt1));
-  EXPECT_EQ(-789, enm->options().GetExtension(protobuf_unittest::enum_opt1));
+            map_field->options().GetExtension(proto2_unittest::field_opt1));
+  EXPECT_EQ(-789, enm->options().GetExtension(proto2_unittest::enum_opt1));
   EXPECT_EQ(123, enm->value(1)->options().GetExtension(
-                     protobuf_unittest::enum_value_opt1));
+                     proto2_unittest::enum_value_opt1));
   EXPECT_EQ(int64_t{-9876543210},
-            service->options().GetExtension(protobuf_unittest::service_opt1));
-  EXPECT_EQ(protobuf_unittest::METHODOPT1_VAL2,
-            method->options().GetExtension(protobuf_unittest::method_opt1));
+            service->options().GetExtension(proto2_unittest::service_opt1));
+  EXPECT_EQ(proto2_unittest::METHODOPT1_VAL2,
+            method->options().GetExtension(proto2_unittest::method_opt1));
 
   // See that the regular options went through unscathed.
   EXPECT_TRUE(message->options().has_message_set_wire_format());
@@ -3749,110 +3749,110 @@ TEST(CustomOptions, OptionTypes) {
   constexpr uint64_t kuint64max = std::numeric_limits<uint64_t>::max();
 
   options =
-      &protobuf_unittest::CustomOptionMinIntegerValues::descriptor()->options();
-  EXPECT_EQ(false, options->GetExtension(protobuf_unittest::bool_opt));
-  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::int32_opt));
-  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::int64_opt));
-  EXPECT_EQ(0, options->GetExtension(protobuf_unittest::uint32_opt));
-  EXPECT_EQ(0, options->GetExtension(protobuf_unittest::uint64_opt));
-  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::sint32_opt));
-  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::sint64_opt));
-  EXPECT_EQ(0, options->GetExtension(protobuf_unittest::fixed32_opt));
-  EXPECT_EQ(0, options->GetExtension(protobuf_unittest::fixed64_opt));
-  EXPECT_EQ(kint32min, options->GetExtension(protobuf_unittest::sfixed32_opt));
-  EXPECT_EQ(kint64min, options->GetExtension(protobuf_unittest::sfixed64_opt));
+      &proto2_unittest::CustomOptionMinIntegerValues::descriptor()->options();
+  EXPECT_EQ(false, options->GetExtension(proto2_unittest::bool_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(proto2_unittest::int32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(proto2_unittest::int64_opt));
+  EXPECT_EQ(0, options->GetExtension(proto2_unittest::uint32_opt));
+  EXPECT_EQ(0, options->GetExtension(proto2_unittest::uint64_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(proto2_unittest::sint32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(proto2_unittest::sint64_opt));
+  EXPECT_EQ(0, options->GetExtension(proto2_unittest::fixed32_opt));
+  EXPECT_EQ(0, options->GetExtension(proto2_unittest::fixed64_opt));
+  EXPECT_EQ(kint32min, options->GetExtension(proto2_unittest::sfixed32_opt));
+  EXPECT_EQ(kint64min, options->GetExtension(proto2_unittest::sfixed64_opt));
 
   options =
-      &protobuf_unittest::CustomOptionMaxIntegerValues::descriptor()->options();
-  EXPECT_EQ(true, options->GetExtension(protobuf_unittest::bool_opt));
-  EXPECT_EQ(kint32max, options->GetExtension(protobuf_unittest::int32_opt));
-  EXPECT_EQ(kint64max, options->GetExtension(protobuf_unittest::int64_opt));
-  EXPECT_EQ(kuint32max, options->GetExtension(protobuf_unittest::uint32_opt));
-  EXPECT_EQ(kuint64max, options->GetExtension(protobuf_unittest::uint64_opt));
-  EXPECT_EQ(kint32max, options->GetExtension(protobuf_unittest::sint32_opt));
-  EXPECT_EQ(kint64max, options->GetExtension(protobuf_unittest::sint64_opt));
-  EXPECT_EQ(kuint32max, options->GetExtension(protobuf_unittest::fixed32_opt));
-  EXPECT_EQ(kuint64max, options->GetExtension(protobuf_unittest::fixed64_opt));
-  EXPECT_EQ(kint32max, options->GetExtension(protobuf_unittest::sfixed32_opt));
-  EXPECT_EQ(kint64max, options->GetExtension(protobuf_unittest::sfixed64_opt));
+      &proto2_unittest::CustomOptionMaxIntegerValues::descriptor()->options();
+  EXPECT_EQ(true, options->GetExtension(proto2_unittest::bool_opt));
+  EXPECT_EQ(kint32max, options->GetExtension(proto2_unittest::int32_opt));
+  EXPECT_EQ(kint64max, options->GetExtension(proto2_unittest::int64_opt));
+  EXPECT_EQ(kuint32max, options->GetExtension(proto2_unittest::uint32_opt));
+  EXPECT_EQ(kuint64max, options->GetExtension(proto2_unittest::uint64_opt));
+  EXPECT_EQ(kint32max, options->GetExtension(proto2_unittest::sint32_opt));
+  EXPECT_EQ(kint64max, options->GetExtension(proto2_unittest::sint64_opt));
+  EXPECT_EQ(kuint32max, options->GetExtension(proto2_unittest::fixed32_opt));
+  EXPECT_EQ(kuint64max, options->GetExtension(proto2_unittest::fixed64_opt));
+  EXPECT_EQ(kint32max, options->GetExtension(proto2_unittest::sfixed32_opt));
+  EXPECT_EQ(kint64max, options->GetExtension(proto2_unittest::sfixed64_opt));
 
-  options = &protobuf_unittest::CustomOptionOtherValues::descriptor()->options();
-  EXPECT_EQ(-100, options->GetExtension(protobuf_unittest::int32_opt));
+  options = &proto2_unittest::CustomOptionOtherValues::descriptor()->options();
+  EXPECT_EQ(-100, options->GetExtension(proto2_unittest::int32_opt));
   EXPECT_FLOAT_EQ(12.3456789,
-                  options->GetExtension(protobuf_unittest::float_opt));
+                  options->GetExtension(proto2_unittest::float_opt));
   EXPECT_DOUBLE_EQ(1.234567890123456789,
-                   options->GetExtension(protobuf_unittest::double_opt));
+                   options->GetExtension(proto2_unittest::double_opt));
   EXPECT_EQ("Hello, \"World\"",
-            options->GetExtension(protobuf_unittest::string_opt));
+            options->GetExtension(proto2_unittest::string_opt));
 
   EXPECT_EQ(std::string("Hello\0World", 11),
-            options->GetExtension(protobuf_unittest::bytes_opt));
+            options->GetExtension(proto2_unittest::bytes_opt));
 
-  EXPECT_EQ(protobuf_unittest::DummyMessageContainingEnum::TEST_OPTION_ENUM_TYPE2,
-            options->GetExtension(protobuf_unittest::enum_opt));
-
-  options =
-      &protobuf_unittest::SettingRealsFromPositiveInts::descriptor()->options();
-  EXPECT_FLOAT_EQ(12, options->GetExtension(protobuf_unittest::float_opt));
-  EXPECT_DOUBLE_EQ(154, options->GetExtension(protobuf_unittest::double_opt));
+  EXPECT_EQ(proto2_unittest::DummyMessageContainingEnum::TEST_OPTION_ENUM_TYPE2,
+            options->GetExtension(proto2_unittest::enum_opt));
 
   options =
-      &protobuf_unittest::SettingRealsFromNegativeInts::descriptor()->options();
-  EXPECT_FLOAT_EQ(-12, options->GetExtension(protobuf_unittest::float_opt));
-  EXPECT_DOUBLE_EQ(-154, options->GetExtension(protobuf_unittest::double_opt));
+      &proto2_unittest::SettingRealsFromPositiveInts::descriptor()->options();
+  EXPECT_FLOAT_EQ(12, options->GetExtension(proto2_unittest::float_opt));
+  EXPECT_DOUBLE_EQ(154, options->GetExtension(proto2_unittest::double_opt));
+
+  options =
+      &proto2_unittest::SettingRealsFromNegativeInts::descriptor()->options();
+  EXPECT_FLOAT_EQ(-12, options->GetExtension(proto2_unittest::float_opt));
+  EXPECT_DOUBLE_EQ(-154, options->GetExtension(proto2_unittest::double_opt));
 }
 
 TEST(CustomOptions, ComplexExtensionOptions) {
   const MessageOptions* options =
-      &protobuf_unittest::VariousComplexOptions::descriptor()->options();
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1).foo(), 42);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1)
-                .GetExtension(protobuf_unittest::mooo),
+      &proto2_unittest::VariousComplexOptions::descriptor()->options();
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt1).foo(), 42);
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt1)
+                .GetExtension(proto2_unittest::mooo),
             324);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt1)
-                .GetExtension(protobuf_unittest::corge)
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt1)
+                .GetExtension(proto2_unittest::corge)
                 .moo(),
             876);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).baz(), 987);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
-                .GetExtension(protobuf_unittest::grault),
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2).baz(), 987);
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
+                .GetExtension(proto2_unittest::grault),
             654);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).bar().foo(),
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2).bar().foo(),
             743);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
                 .bar()
-                .GetExtension(protobuf_unittest::mooo),
+                .GetExtension(proto2_unittest::mooo),
             1999);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
                 .bar()
-                .GetExtension(protobuf_unittest::corge)
+                .GetExtension(proto2_unittest::corge)
                 .moo(),
             2008);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
-                .GetExtension(protobuf_unittest::garply)
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
+                .GetExtension(proto2_unittest::garply)
                 .foo(),
             741);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
-                .GetExtension(protobuf_unittest::garply)
-                .GetExtension(protobuf_unittest::mooo),
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
+                .GetExtension(proto2_unittest::garply)
+                .GetExtension(proto2_unittest::mooo),
             1998);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2)
-                .GetExtension(protobuf_unittest::garply)
-                .GetExtension(protobuf_unittest::corge)
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2)
+                .GetExtension(proto2_unittest::garply)
+                .GetExtension(proto2_unittest::corge)
                 .moo(),
             2121);
   EXPECT_EQ(options
-                ->GetExtension(protobuf_unittest::ComplexOptionType2::
+                ->GetExtension(proto2_unittest::ComplexOptionType2::
                                    ComplexOptionType4::complex_opt4)
                 .waldo(),
             1971);
-  EXPECT_EQ(options->GetExtension(protobuf_unittest::complex_opt2).fred().waldo(),
+  EXPECT_EQ(options->GetExtension(proto2_unittest::complex_opt2).fred().waldo(),
             321);
-  EXPECT_EQ(9, options->GetExtension(protobuf_unittest::complex_opt3).moo());
-  EXPECT_EQ(22, options->GetExtension(protobuf_unittest::complex_opt3)
+  EXPECT_EQ(9, options->GetExtension(proto2_unittest::complex_opt3).moo());
+  EXPECT_EQ(22, options->GetExtension(proto2_unittest::complex_opt3)
                     .complexoptiontype5()
                     .plugh());
-  EXPECT_EQ(24, options->GetExtension(protobuf_unittest::complexopt6).xyzzy());
+  EXPECT_EQ(24, options->GetExtension(proto2_unittest::complexopt6).xyzzy());
 }
 
 TEST(CustomOptions, OptionsFromOtherFile) {
@@ -3871,13 +3871,13 @@ TEST(CustomOptions, OptionsFromOtherFile) {
     ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
   }
   FileDescriptorProto file_proto;
-  protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" "
       "options { "
       "  uninterpreted_option { "
@@ -3910,7 +3910,7 @@ TEST(CustomOptions, OptionsFromOtherFile) {
 
   const FileDescriptor* file = pool.BuildFile(file_proto);
   ASSERT_TRUE(file != nullptr);
-  EXPECT_EQ(1234, file->options().GetExtension(protobuf_unittest::file_opt1));
+  EXPECT_EQ(1234, file->options().GetExtension(proto2_unittest::file_opt1));
   EXPECT_TRUE(file->options().has_java_package());
   EXPECT_EQ("foo", file->options().java_package());
   EXPECT_TRUE(file->options().has_optimize_for());
@@ -3936,14 +3936,14 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
     ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
   }
   FileDescriptorProto file_proto;
-  protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   // The following represents the definition:
   //
   //   import "google/protobuf/unittest_custom_options.proto"
-  //   package protobuf_unittest;
+  //   package proto2_unittest;
   //   message Foo {
   //     option (complex_opt1).foo  = 1234;
   //     option (complex_opt1).foo2 = 1234;
@@ -3951,7 +3951,7 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
@@ -3998,7 +3998,7 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   ASSERT_EQ(1, file->message_type_count());
 
   const MessageOptions& options = file->message_type(0)->options();
-  EXPECT_EQ(1234, options.GetExtension(protobuf_unittest::complex_opt1).foo());
+  EXPECT_EQ(1234, options.GetExtension(proto2_unittest::complex_opt1).foo());
 }
 
 TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
@@ -4020,14 +4020,14 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
     ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
   }
   FileDescriptorProto file_proto;
-  protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   // The following represents the definition:
   //
   //   import "google/protobuf/unittest_custom_options.proto"
-  //   package protobuf_unittest;
+  //   package proto2_unittest;
   //   message Foo {
   //     option (complex_opt1).foo4 = 12;
   //     option (complex_opt1).foo4 = 34;
@@ -4035,7 +4035,7 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
@@ -4082,10 +4082,10 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   ASSERT_EQ(1, file->message_type_count());
 
   const MessageOptions& options = file->message_type(0)->options();
-  EXPECT_EQ(3, options.GetExtension(protobuf_unittest::complex_opt1).foo4_size());
-  EXPECT_EQ(12, options.GetExtension(protobuf_unittest::complex_opt1).foo4(0));
-  EXPECT_EQ(34, options.GetExtension(protobuf_unittest::complex_opt1).foo4(1));
-  EXPECT_EQ(56, options.GetExtension(protobuf_unittest::complex_opt1).foo4(2));
+  EXPECT_EQ(3, options.GetExtension(proto2_unittest::complex_opt1).foo4_size());
+  EXPECT_EQ(12, options.GetExtension(proto2_unittest::complex_opt1).foo4(0));
+  EXPECT_EQ(34, options.GetExtension(proto2_unittest::complex_opt1).foo4(1));
+  EXPECT_EQ(56, options.GetExtension(proto2_unittest::complex_opt1).foo4(2));
 }
 
 TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
@@ -4107,14 +4107,14 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
     ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
   }
   FileDescriptorProto file_proto;
-  protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   // The following represents the definition:
   //
   //   import "google/protobuf/unittest_custom_options.proto"
-  //   package protobuf_unittest;
+  //   package proto2_unittest;
   //   message Foo {
   //     option (complex_opt2).barney = {waldo: 1};
   //     option (complex_opt2).barney = {waldo: 10};
@@ -4122,7 +4122,7 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
@@ -4170,21 +4170,21 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
 
   const MessageOptions& options = file->message_type(0)->options();
   EXPECT_EQ(3,
-            options.GetExtension(protobuf_unittest::complex_opt2).barney_size());
+            options.GetExtension(proto2_unittest::complex_opt2).barney_size());
   EXPECT_EQ(
-      1, options.GetExtension(protobuf_unittest::complex_opt2).barney(0).waldo());
+      1, options.GetExtension(proto2_unittest::complex_opt2).barney(0).waldo());
   EXPECT_EQ(
       10,
-      options.GetExtension(protobuf_unittest::complex_opt2).barney(1).waldo());
+      options.GetExtension(proto2_unittest::complex_opt2).barney(1).waldo());
   EXPECT_EQ(
       100,
-      options.GetExtension(protobuf_unittest::complex_opt2).barney(2).waldo());
+      options.GetExtension(proto2_unittest::complex_opt2).barney(2).waldo());
 }
 
 // Check that aggregate options were parsed and saved correctly in
 // the appropriate descriptors.
 TEST(CustomOptions, AggregateOptions) {
-  const Descriptor* msg = protobuf_unittest::AggregateMessage::descriptor();
+  const Descriptor* msg = proto2_unittest::AggregateMessage::descriptor();
   const FileDescriptor* file = msg->file();
   const FieldDescriptor* field = msg->FindFieldByName("fieldname");
   const EnumDescriptor* enumd = file->FindEnumTypeByName("AggregateEnum");
@@ -4194,36 +4194,36 @@ TEST(CustomOptions, AggregateOptions) {
   const MethodDescriptor* method = service->FindMethodByName("Method");
 
   // Tests for the different types of data embedded in fileopt
-  const protobuf_unittest::Aggregate& file_options =
-      file->options().GetExtension(protobuf_unittest::fileopt);
+  const proto2_unittest::Aggregate& file_options =
+      file->options().GetExtension(proto2_unittest::fileopt);
   EXPECT_EQ(100, file_options.i());
   EXPECT_EQ("FileAnnotation", file_options.s());
   EXPECT_EQ("NestedFileAnnotation", file_options.sub().s());
   EXPECT_EQ("FileExtensionAnnotation",
-            file_options.file().GetExtension(protobuf_unittest::fileopt).s());
+            file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(protobuf_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
                                   message_set_extension)
                 .s());
 
-  protobuf_unittest::AggregateMessageSetElement any_payload;
+  proto2_unittest::AggregateMessageSetElement any_payload;
   ASSERT_TRUE(file_options.any().UnpackTo(&any_payload));
   EXPECT_EQ("EmbeddedMessageSetElement", any_payload.s());
 
   // Simple tests for all the other types of annotations
   EXPECT_EQ("MessageAnnotation",
-            msg->options().GetExtension(protobuf_unittest::msgopt).s());
+            msg->options().GetExtension(proto2_unittest::msgopt).s());
   EXPECT_EQ("FieldAnnotation",
-            field->options().GetExtension(protobuf_unittest::fieldopt).s());
+            field->options().GetExtension(proto2_unittest::fieldopt).s());
   EXPECT_EQ("EnumAnnotation",
-            enumd->options().GetExtension(protobuf_unittest::enumopt).s());
+            enumd->options().GetExtension(proto2_unittest::enumopt).s());
   EXPECT_EQ("EnumValueAnnotation",
-            enumv->options().GetExtension(protobuf_unittest::enumvalopt).s());
+            enumv->options().GetExtension(proto2_unittest::enumvalopt).s());
   EXPECT_EQ("ServiceAnnotation",
-            service->options().GetExtension(protobuf_unittest::serviceopt).s());
+            service->options().GetExtension(proto2_unittest::serviceopt).s());
   EXPECT_EQ("MethodAnnotation",
-            method->options().GetExtension(protobuf_unittest::methodopt).s());
+            method->options().GetExtension(proto2_unittest::methodopt).s());
 }
 
 TEST(CustomOptions, UnusedImportError) {
@@ -4240,14 +4240,14 @@ TEST(CustomOptions, UnusedImportError) {
     ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
   }
   FileDescriptorProto file_proto;
-  protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   pool.AddDirectInputFile("custom_options_import.proto", true);
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" ",
       &file_proto));
 
@@ -4274,26 +4274,26 @@ TEST(CustomOptions, OptionsWithIncompatibleDescriptors) {
   // messages defined in google/protobuf/unittest_custom_options.proto.
   file_proto.Clear();
   file_proto.set_name("unittest_custom_options.proto");
-  file_proto.set_package("protobuf_unittest");
+  file_proto.set_package("proto2_unittest");
   file_proto.add_dependency("google/protobuf/descriptor.proto");
 
   // Add the "required_enum_opt" extension.
   FieldDescriptorProto* extension = file_proto.add_extension();
-  protobuf_unittest::OldOptionType::descriptor()
+  proto2_unittest::OldOptionType::descriptor()
       ->file()
       ->FindExtensionByName("required_enum_opt")
       ->CopyTo(extension);
 
   // Add a test message that uses the "required_enum_opt" option.
   DescriptorProto* test_message_type = file_proto.add_message_type();
-  protobuf_unittest::TestMessageWithRequiredEnumOption::descriptor()->CopyTo(
+  proto2_unittest::TestMessageWithRequiredEnumOption::descriptor()->CopyTo(
       test_message_type);
 
   // Instruct the extension to use NewOptionType instead of
   // OldOptionType, and add the descriptor of NewOptionType.
-  extension->set_type_name(".protobuf_unittest.NewOptionType");
+  extension->set_type_name(".proto2_unittest.NewOptionType");
   DescriptorProto* new_option_type = file_proto.add_message_type();
-  protobuf_unittest::NewOptionType::descriptor()->CopyTo(new_option_type);
+  proto2_unittest::NewOptionType::descriptor()->CopyTo(new_option_type);
 
   // Replace the value of the "required_enum_opt" option used in the
   // test message with an enum value that only exists in NewOptionType.
@@ -4321,28 +4321,28 @@ TEST(CustomOptions, DebugString) {
 
   // Add "foo.proto":
   //   import "google/protobuf/descriptor.proto";
-  //   package "protobuf_unittest";
-  //   option (protobuf_unittest.cc_option1) = 1;
-  //   option (protobuf_unittest.cc_option2) = 2;
+  //   package "proto2_unittest";
+  //   option (proto2_unittest.cc_option1) = 1;
+  //   option (proto2_unittest.cc_option2) = 2;
   //   extend google.protobuf.FieldOptions {
   //     optional int32 cc_option1 = 7736974;
   //     optional int32 cc_option2 = 7736975;
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"foo.proto\" "
-      "package: \"protobuf_unittest\" "
+      "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/descriptor.proto\" "
       "options { "
       "  uninterpreted_option { "
       "    name { "
-      "      name_part: \"protobuf_unittest.cc_option1\" "
+      "      name_part: \"proto2_unittest.cc_option1\" "
       "      is_extension: true "
       "    } "
       "    positive_int_value: 1 "
       "  } "
       "  uninterpreted_option { "
       "    name { "
-      "      name_part: \"protobuf_unittest.cc_option2\" "
+      "      name_part: \"proto2_unittest.cc_option2\" "
       "      is_extension: true "
       "    } "
       "    positive_int_value: 2 "
@@ -4377,10 +4377,10 @@ TEST(CustomOptions, DebugString) {
       "syntax = \"proto2\";\n"
       "\n"
       "import \"google/protobuf/descriptor.proto\";\n"
-      "package protobuf_unittest;\n"
+      "package proto2_unittest;\n"
       "\n"
-      "option (.protobuf_unittest.cc_option1) = 1;\n"
-      "option (.protobuf_unittest.cc_option2) = 2;\n"
+      "option (.proto2_unittest.cc_option1) = 1;\n"
+      "option (.proto2_unittest.cc_option2) = 2;\n"
       "\n"
       "extend .google.protobuf.FileOptions {\n"
       "  optional int32 cc_option1 = 7736974;\n"
@@ -6780,20 +6780,20 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
 TEST_F(ValidationErrorTest, SamePackageUnusedImportError) {
   BuildFile(R"pb(
     name: "unused_dependency.proto"
-    package: "protobuf_unittest.subpackage"
+    package: "proto2_unittest.subpackage"
     message_type { name: "Foo" }
   )pb");
 
   BuildFile(R"pb(
     name: "used_dependency.proto"
-    package: "protobuf_unittest.subpackage"
+    package: "proto2_unittest.subpackage"
     message_type { name: "Bar" }
   )pb");
 
   pool_.AddDirectInputFile("import.proto", true);
   BuildFileWithErrors(R"pb(
                         name: "import.proto"
-                        package: "protobuf_unittest"
+                        package: "proto2_unittest"
                         dependency: "unused_dependency.proto"
                         dependency: "used_dependency.proto"
                         message_type {
@@ -11831,7 +11831,7 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
     counter++;
     return field->full_name();
   };
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
 
   auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
@@ -11840,21 +11840,21 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
       descriptor->file()->pool(), descriptor->field(0), name_lambda);
 
   ASSERT_EQ(counter, 1);
-  ASSERT_EQ(name, "protobuf_unittest.TestAllTypes.optional_int32");
-  ASSERT_EQ(dupe_name, "protobuf_unittest.TestAllTypes.optional_int32");
+  ASSERT_EQ(name, "proto2_unittest.TestAllTypes.optional_int32");
+  ASSERT_EQ(dupe_name, "proto2_unittest.TestAllTypes.optional_int32");
 
   auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(1), name_lambda);
 
   ASSERT_EQ(counter, 2);
-  ASSERT_NE(other_name, "protobuf_unittest.TestAllTypes.optional_int32");
+  ASSERT_NE(other_name, "proto2_unittest.TestAllTypes.optional_int32");
 }
 
 TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
   auto name_lambda = [](const FieldDescriptor* field) {
     return field->full_name();
   };
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
   std::vector<std::thread> threads;
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -11863,11 +11863,11 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
           descriptor->file()->pool(), descriptor->field(i), name_lambda);
       auto first_name = DescriptorPoolMemoizationTest::MemoizeProjection(
           descriptor->file()->pool(), descriptor->field(0), name_lambda);
-      ASSERT_THAT(name, HasSubstr("protobuf_unittest.TestAllTypes"));
+      ASSERT_THAT(name, HasSubstr("proto2_unittest.TestAllTypes"));
       if (i != 0) {
-        ASSERT_NE(name, "protobuf_unittest.TestAllTypes.optional_int32");
+        ASSERT_NE(name, "proto2_unittest.TestAllTypes.optional_int32");
       }
-      ASSERT_EQ(first_name, "protobuf_unittest.TestAllTypes.optional_int32");
+      ASSERT_EQ(first_name, "proto2_unittest.TestAllTypes.optional_int32");
     });
   }
   for (auto& thread : threads) {
@@ -12871,7 +12871,7 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
   // thoroughly test all paths through DescriptorBuilder to insure that there
   // are no deadlocking problems when pool_->mutex_ is non-null.
   const FileDescriptor* original_file =
-      protobuf_unittest::TestAllTypes::descriptor()->file();
+      proto2_unittest::TestAllTypes::descriptor()->file();
 
   DescriptorPoolDatabase database(*DescriptorPool::generated_pool());
   DescriptorPool pool(&database);
@@ -13924,7 +13924,7 @@ class LazilyBuildDependenciesTest : public testing::Test {
     ParseProtoAndAddToDb(absl::StrFormat(
         R"pb(
           name: '%s.proto'
-          package: "protobuf_unittest"
+          package: "proto2_unittest"
           message_type {
             name: '%s'
             field { name: 'a' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
@@ -13937,7 +13937,7 @@ class LazilyBuildDependenciesTest : public testing::Test {
                                   absl::string_view enum_value_name) {
     ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
                                       ".proto' "
-                                      "package: 'protobuf_unittest' "
+                                      "package: 'proto2_unittest' "
                                       "enum_type { "
                                       "  name:'",
                                       enum_name,
@@ -13956,7 +13956,7 @@ class LazilyBuildDependenciesTest : public testing::Test {
 TEST_F(LazilyBuildDependenciesTest, Message) {
   ParseProtoAndAddToDb(R"pb(
     name: 'foo.proto'
-    package: 'protobuf_unittest'
+    package: 'proto2_unittest'
     dependency: 'bar.proto'
     message_type {
       name: 'Foo'
@@ -13965,7 +13965,7 @@ TEST_F(LazilyBuildDependenciesTest, Message) {
         number: 1
         label: LABEL_OPTIONAL
         type: TYPE_MESSAGE
-        type_name: '.protobuf_unittest.Bar'
+        type_name: '.proto2_unittest.Bar'
       }
     })pb");
   AddSimpleMessageProtoFileToDb("bar", "Bar");
@@ -14002,7 +14002,7 @@ TEST_F(LazilyBuildDependenciesTest, Enum) {
   ParseProtoAndAddToDb(
       R"pb(
         name: 'foo.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         dependency: 'enum1.proto'
         dependency: 'enum2.proto'
         message_type {
@@ -14012,14 +14012,14 @@ TEST_F(LazilyBuildDependenciesTest, Enum) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_ENUM
-            type_name: '.protobuf_unittest.Enum1'
+            type_name: '.proto2_unittest.Enum1'
           }
           field {
             name: 'enum2'
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_ENUM
-            type_name: '.protobuf_unittest.Enum2'
+            type_name: '.proto2_unittest.Enum2'
           }
         })pb");
   AddSimpleEnumProtoFileToDb("enum1", "Enum1", "ENUM1");
@@ -14050,7 +14050,7 @@ TEST_F(LazilyBuildDependenciesTest, Type) {
   ParseProtoAndAddToDb(
       R"pb(
         name: 'foo.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         dependency: 'message1.proto'
         dependency: 'message2.proto'
         dependency: 'enum1.proto'
@@ -14062,28 +14062,28 @@ TEST_F(LazilyBuildDependenciesTest, Type) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_MESSAGE
-            type_name: '.protobuf_unittest.Message1'
+            type_name: '.proto2_unittest.Message1'
           }
           field {
             name: 'message2'
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_MESSAGE
-            type_name: '.protobuf_unittest.Message2'
+            type_name: '.proto2_unittest.Message2'
           }
           field {
             name: 'enum1'
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_ENUM
-            type_name: '.protobuf_unittest.Enum1'
+            type_name: '.proto2_unittest.Enum1'
           }
           field {
             name: 'enum2'
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_ENUM
-            type_name: '.protobuf_unittest.Enum2'
+            type_name: '.proto2_unittest.Enum2'
           }
         })pb");
   AddSimpleMessageProtoFileToDb("message1", "Message1");
@@ -14132,22 +14132,22 @@ TEST_F(LazilyBuildDependenciesTest, Extension) {
   ParseProtoAndAddToDb(
       R"pb(
         name: 'foo.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         dependency: 'bar.proto'
         dependency: 'baz.proto'
         extension {
-          extendee: '.protobuf_unittest.Bar'
+          extendee: '.proto2_unittest.Bar'
           name: 'bar'
           number: 11
           label: LABEL_OPTIONAL
           type: TYPE_MESSAGE
-          type_name: '.protobuf_unittest.Baz'
+          type_name: '.proto2_unittest.Baz'
         }
       )pb");
   ParseProtoAndAddToDb(
       R"pb(
         name: 'bar.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         message_type {
           name: 'Bar'
           extension_range { start: 10 end: 20 }
@@ -14173,7 +14173,7 @@ TEST_F(LazilyBuildDependenciesTest, Extension) {
 TEST_F(LazilyBuildDependenciesTest, Service) {
   ParseProtoAndAddToDb(R"pb(
     name: 'foo.proto'
-    package: 'protobuf_unittest'
+    package: 'proto2_unittest'
     dependency: 'message1.proto'
     dependency: 'message2.proto'
     dependency: 'message3.proto'
@@ -14182,8 +14182,8 @@ TEST_F(LazilyBuildDependenciesTest, Service) {
       name: 'LazyService'
       method {
         name: 'A'
-        input_type: '.protobuf_unittest.Message1'
-        output_type: '.protobuf_unittest.Message2'
+        input_type: '.proto2_unittest.Message1'
+        output_type: '.proto2_unittest.Message2'
       }
     })pb");
   AddSimpleMessageProtoFileToDb("message1", "Message1");
@@ -14229,7 +14229,7 @@ TEST_F(LazilyBuildDependenciesTest, GeneratedFile) {
   // lazily_build_dependencies_ is set on the generated pool, and also that
   // the generated function "descriptor()" doesn't somehow subvert the laziness
   // by manually loading the dependencies or something.
-  EXPECT_TRUE(protobuf_unittest::lazy_imports::ImportedMessage::descriptor() !=
+  EXPECT_TRUE(proto2_unittest::lazy_imports::ImportedMessage::descriptor() !=
               nullptr);
   EXPECT_TRUE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
       "google/protobuf/unittest_lazy_dependencies.proto"));
@@ -14242,35 +14242,35 @@ TEST_F(LazilyBuildDependenciesTest, GeneratedFile) {
   // and that a non-default value of a custom option doesn't load the file
   // where that enum is defined.
   const MessageOptions& options =
-      protobuf_unittest::lazy_imports::MessageCustomOption::descriptor()
+      proto2_unittest::lazy_imports::MessageCustomOption::descriptor()
           ->options();
-  protobuf_unittest::lazy_imports::LazyEnum custom_option_value =
-      options.GetExtension(protobuf_unittest::lazy_imports::lazy_enum_option);
+  proto2_unittest::lazy_imports::LazyEnum custom_option_value =
+      options.GetExtension(proto2_unittest::lazy_imports::lazy_enum_option);
 
   EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
       "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
   EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
       "google/protobuf/unittest_lazy_dependencies_enum.proto"));
-  EXPECT_EQ(custom_option_value, protobuf_unittest::lazy_imports::LAZY_ENUM_1);
+  EXPECT_EQ(custom_option_value, proto2_unittest::lazy_imports::LAZY_ENUM_1);
 
   const MessageOptions& options2 =
-      protobuf_unittest::lazy_imports::MessageCustomOption2::descriptor()
+      proto2_unittest::lazy_imports::MessageCustomOption2::descriptor()
           ->options();
   custom_option_value =
-      options2.GetExtension(protobuf_unittest::lazy_imports::lazy_enum_option);
+      options2.GetExtension(proto2_unittest::lazy_imports::lazy_enum_option);
 
   EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
       "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
   EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
       "google/protobuf/unittest_lazy_dependencies_enum.proto"));
-  EXPECT_EQ(custom_option_value, protobuf_unittest::lazy_imports::LAZY_ENUM_0);
+  EXPECT_EQ(custom_option_value, proto2_unittest::lazy_imports::LAZY_ENUM_0);
 }
 
 TEST_F(LazilyBuildDependenciesTest, Dependency) {
   ParseProtoAndAddToDb(
       R"pb(
         name: 'foo.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         dependency: 'bar.proto'
         message_type {
           name: 'Foo'
@@ -14279,14 +14279,14 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_MESSAGE
-            type_name: '.protobuf_unittest.Bar'
+            type_name: '.proto2_unittest.Bar'
           }
         }
       )pb");
   ParseProtoAndAddToDb(
       R"pb(
         name: 'bar.proto'
-        package: 'protobuf_unittest'
+        package: 'proto2_unittest'
         dependency: 'baz.proto'
         message_type {
           name: 'Bar'
@@ -14295,7 +14295,7 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_MESSAGE
-            type_name: '.protobuf_unittest.Baz'
+            type_name: '.proto2_unittest.Baz'
           }
         }
       )pb");
