@@ -344,9 +344,15 @@ bool SimpleDescriptorDatabase::AddUnowned(const FileDescriptorProto* file) {
   return index_.AddFile(*file, file);
 }
 
+bool SimpleDescriptorDatabase::FindFileByName(const absl::string_view filename,
+                                              FileDescriptorProto* output) {
+  return MaybeCopy(index_.FindFile(std::string(filename)), output);
+}
+
 bool SimpleDescriptorDatabase::FindFileByName(const std::string& filename,
                                               FileDescriptorProto* output) {
-  return MaybeCopy(index_.FindFile(filename), output);
+  return SimpleDescriptorDatabase::FindFileByName(absl::string_view(filename),
+                                                  output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingSymbol(
@@ -563,9 +569,14 @@ bool EncodedDescriptorDatabase::AddCopy(const void* encoded_file_descriptor,
   return Add(copy, size);
 }
 
-bool EncodedDescriptorDatabase::FindFileByName(const std::string& filename,
+bool EncodedDescriptorDatabase::FindFileByName(const absl::string_view filename,
                                                FileDescriptorProto* output) {
   return MaybeParse(index_->FindFile(filename), output);
+}
+bool EncodedDescriptorDatabase::FindFileByName(const std::string& filename,
+                                               FileDescriptorProto* output) {
+  return EncodedDescriptorDatabase::FindFileByName(absl::string_view(filename),
+                                                   output);
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingSymbol(
@@ -888,7 +899,7 @@ DescriptorPoolDatabase::DescriptorPoolDatabase(
     : pool_(pool), options_(std::move(options)) {}
 DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
 
-bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
+bool DescriptorPoolDatabase::FindFileByName(const absl::string_view filename,
                                             FileDescriptorProto* output) {
   const FileDescriptor* file = pool_.FindFileByName(filename);
   if (file == nullptr) return false;
@@ -898,6 +909,11 @@ bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
     file->CopySourceCodeInfoTo(output);
   }
   return true;
+}
+bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
+                                            FileDescriptorProto* output) {
+  return DescriptorPoolDatabase::FindFileByName(absl::string_view(filename),
+                                                output);
 }
 
 bool DescriptorPoolDatabase::FindFileContainingSymbol(
@@ -957,7 +973,7 @@ MergedDescriptorDatabase::MergedDescriptorDatabase(
     : sources_(sources) {}
 MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
-bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
+bool MergedDescriptorDatabase::FindFileByName(const absl::string_view filename,
                                               FileDescriptorProto* output) {
   for (DescriptorDatabase* source : sources_) {
     if (source->FindFileByName(filename, output)) {
@@ -965,6 +981,11 @@ bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
     }
   }
   return false;
+}
+bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
+                                              FileDescriptorProto* output) {
+  return MergedDescriptorDatabase::FindFileByName(absl::string_view(filename),
+                                                  output);
 }
 
 bool MergedDescriptorDatabase::FindFileContainingSymbol(
