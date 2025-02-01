@@ -41,6 +41,8 @@ LINK_OPTS = select({
     ],
     "@platforms//os:windows": [
         "-ldbghelp",
+        "-lpthread",
+        "-lm",
     ],
     "//conditions:default": [
         "-lpthread",
