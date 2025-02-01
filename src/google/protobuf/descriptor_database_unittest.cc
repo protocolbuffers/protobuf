@@ -14,11 +14,17 @@
 #include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
@@ -158,14 +164,16 @@ TEST_P(DescriptorDatabaseTest, FindFileByName) {
 
   {
     FileDescriptorProto file;
-    EXPECT_TRUE(database_->FindFileByName("foo.proto", &file));
+    EXPECT_TRUE(
+        database_->FindFileByName(absl::string_view("foo.proto"), &file));
     EXPECT_EQ("foo.proto", file.name());
     ExpectContainsType(file, "Foo");
   }
 
   {
     FileDescriptorProto file;
-    EXPECT_TRUE(database_->FindFileByName("bar.proto", &file));
+    EXPECT_TRUE(
+        database_->FindFileByName(absl::string_view("bar.proto"), &file));
     EXPECT_EQ("bar.proto", file.name());
     ExpectContainsType(file, "Bar");
   }
@@ -173,7 +181,8 @@ TEST_P(DescriptorDatabaseTest, FindFileByName) {
   {
     // Fails to find undefined files.
     FileDescriptorProto file;
-    EXPECT_FALSE(database_->FindFileByName("baz.proto", &file));
+    EXPECT_FALSE(
+        database_->FindFileByName(absl::string_view("baz.proto"), &file));
   }
 }
 
@@ -589,7 +598,7 @@ TEST(DescriptorPoolDatabaseTest, PreserveSourceCodeInfo) {
       pool, DescriptorPoolDatabaseOptions{/*preserve_source_code_info=*/true});
 
   FileDescriptorProto file;
-  ASSERT_TRUE(db.FindFileByName("foo.proto", &file));
+  ASSERT_TRUE(db.FindFileByName(absl::string_view("foo.proto"), &file));
   EXPECT_THAT(
       file.source_code_info(),
       EqualsProto(R"pb(location { leading_detached_comments: "comment" })pb"));
@@ -627,7 +636,7 @@ TEST(DescriptorPoolDatabaseTest, StripSourceCodeInfo) {
   DescriptorPoolDatabase db(pool);
 
   FileDescriptorProto file;
-  ASSERT_TRUE(db.FindFileByName("foo.proto", &file));
+  ASSERT_TRUE(db.FindFileByName(absl::string_view("foo.proto"), &file));
   EXPECT_FALSE(file.has_source_code_info());
 
   ASSERT_TRUE(db.FindFileContainingExtension("foo.Foo", 3, &file));
@@ -689,7 +698,8 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileByName) {
   {
     // Can find file that is only in database1_.
     FileDescriptorProto file;
-    EXPECT_TRUE(forward_merged_.FindFileByName("foo.proto", &file));
+    EXPECT_TRUE(
+        forward_merged_.FindFileByName(absl::string_view("foo.proto"), &file));
     EXPECT_EQ("foo.proto", file.name());
     ExpectContainsType(file, "Foo");
   }
@@ -697,7 +707,8 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileByName) {
   {
     // Can find file that is only in database2_.
     FileDescriptorProto file;
-    EXPECT_TRUE(forward_merged_.FindFileByName("bar.proto", &file));
+    EXPECT_TRUE(
+        forward_merged_.FindFileByName(absl::string_view("bar.proto"), &file));
     EXPECT_EQ("bar.proto", file.name());
     ExpectContainsType(file, "Bar");
   }
@@ -705,7 +716,8 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileByName) {
   {
     // In forward_merged_, database1_'s baz.proto takes precedence.
     FileDescriptorProto file;
-    EXPECT_TRUE(forward_merged_.FindFileByName("baz.proto", &file));
+    EXPECT_TRUE(
+        forward_merged_.FindFileByName(absl::string_view("baz.proto"), &file));
     EXPECT_EQ("baz.proto", file.name());
     ExpectContainsType(file, "FromPool1");
   }
@@ -713,7 +725,8 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileByName) {
   {
     // In reverse_merged_, database2_'s baz.proto takes precedence.
     FileDescriptorProto file;
-    EXPECT_TRUE(reverse_merged_.FindFileByName("baz.proto", &file));
+    EXPECT_TRUE(
+        reverse_merged_.FindFileByName(absl::string_view("baz.proto"), &file));
     EXPECT_EQ("baz.proto", file.name());
     ExpectContainsType(file, "FromPool2");
   }
@@ -721,7 +734,8 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileByName) {
   {
     // Can't find non-existent file.
     FileDescriptorProto file;
-    EXPECT_FALSE(forward_merged_.FindFileByName("no_such.proto", &file));
+    EXPECT_FALSE(forward_merged_.FindFileByName(
+        absl::string_view("no_such.proto"), &file));
   }
 }
 

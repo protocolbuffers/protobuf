@@ -84,6 +84,8 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
   }
 
   // implements DescriptorDatabase -----------------------------------
+  bool FindFileByName(absl::string_view filename,
+                      FileDescriptorProto* output) override;
   bool FindFileByName(const std::string& filename,
                       FileDescriptorProto* output) override;
   bool FindFileContainingSymbol(const std::string& symbol_name,

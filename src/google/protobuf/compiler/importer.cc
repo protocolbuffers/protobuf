@@ -13,6 +13,9 @@
 
 #include <string>
 
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
+
 #ifdef _MSC_VER
 #include <direct.h>
 #else
@@ -127,8 +130,8 @@ SourceTreeDescriptorDatabase::SourceTreeDescriptorDatabase(
 
 SourceTreeDescriptorDatabase::~SourceTreeDescriptorDatabase() {}
 
-bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
-                                                  FileDescriptorProto* output) {
+bool SourceTreeDescriptorDatabase::FindFileByName(
+    const absl::string_view filename, FileDescriptorProto* output) {
   std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
   if (input == nullptr) {
     if (fallback_database_ != nullptr &&
@@ -143,7 +146,8 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
   }
 
   // Set up the tokenizer and parser.
-  SingleFileErrorCollector file_error_collector(filename, error_collector_);
+  SingleFileErrorCollector file_error_collector(std::string(filename),
+                                                error_collector_);
   io::Tokenizer tokenizer(input.get(), &file_error_collector);
 
   Parser parser;
@@ -158,6 +162,12 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
   output->set_name(filename);
   return parser.Parse(&tokenizer, output) && !file_error_collector.had_errors();
 }
+
+// bool SourceTreeDescriptorDatabase::FindFileByName(
+//     const absl::string_view filename, FileDescriptorProto* output) {
+//   return SourceTreeDescriptorDatabase::FindFileByName(std::string(filename),
+//                                                       output);
+// }
 
 bool SourceTreeDescriptorDatabase::FindFileContainingSymbol(
     const std::string& symbol_name, FileDescriptorProto* output) {
