@@ -90,6 +90,12 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
 UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                        size_t size);
 
+#ifdef __ANDROID__
+static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) = 8 << 10;
+#else
+static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) = 32 << 10;
+#endif
+
 // Sets the maximum block size for all arenas. This is a global configuration
 // setting that will affect all existing and future arenas. If
 // upb_Arena_Malloc() is called with a size larger than this, we will exceed
