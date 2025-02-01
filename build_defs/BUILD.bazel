@@ -29,6 +29,11 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
         "@bazel_tools//tools/cpp:clang-cl",
+        # This is necessary for Bazel 7 compatibility with a MODULE.bazel file that still works in
+        # Bazel 8.  Using cc_configure_extension from rules_cc produces a @local_config_cc
+        # repository that's not compatible with @bazel_tools//tools/cpp:clang-cl from before
+        # Bazel 8.  See https://github.com/bazelbuild/rules_cc/issues/330.
+        "@rules_cc//cc/private/toolchain:clang-cl",
     ],
 )
 
@@ -38,6 +43,11 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
         "@bazel_tools//tools/cpp:msvc",
+        # This may be necessary in case cc_configure_extension from rules_cc produces a
+        # @local_config_cc repository that's not compatible with @bazel_tools//tools/cpp:msvc from
+        # before Bazel 8, as with clang-cl above, to avoid silently falling back to clang-cl.
+        # See https://github.com/bazelbuild/rules_cc/issues/330.
+        "@rules_cc//cc/private/toolchain:msvc",
     ],
 )
 

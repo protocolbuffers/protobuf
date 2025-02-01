@@ -77,10 +77,6 @@ build --incompatible_use_host_features
 #   --incompatible_fail_on_unknown_attributes
 #   --incompatible_merge_fixed_and_default_shell_env
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
-common --noenable_bzlmod
-
 # For easier debugging of build failures.
 common --announce_rc
 build --verbose_failures

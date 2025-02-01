@@ -1,5 +1,11 @@
 """Bazel module dependencies"""
 
+module(
+    name = "com_google_protobuf_examples",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
 bazel_dep(name = "protobuf", version = "0.0.0", repo_name = "com_google_protobuf")
 local_path_override(
     module_name = "protobuf",

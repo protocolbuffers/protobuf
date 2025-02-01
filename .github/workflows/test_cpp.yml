@@ -38,15 +38,14 @@ jobs:
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:7.1.2-2c05f44c25a209933743ddf0296ef0c1e583d2c3
-          - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
-
+          - targets: //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           # Override cases with custom images
-          - config: { name: "Bazel7", flags: --noenable_bzlmod }
-            cache_key: Bazel7
+          - config: { name: "Bazel7", flags: --cxxopt="-Wno-self-assign-overloaded" }
+            cache_key: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
-          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace --cxxopt="-Wno-self-assign-overloaded" }
-            cache_key: Bazel7bzlmod
+          - config: { name: "Bazel7 Workspace", flags: --noenable_bzlmod }
+            cache_key: Bazel7nobzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
@@ -89,7 +88,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          bazel: test //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
   linux-release:
     strategy:
@@ -413,11 +412,11 @@ jobs:
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  @com_google_protobuf_examples//... --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance --define=protobuf_allow_msvc=true
+            bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance --define=protobuf_allow_msvc=true
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl
-            bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/...  --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
