@@ -21,7 +21,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static UPB_ATOMIC(size_t) g_max_block_size = 32 << 10;
+static UPB_ATOMIC(size_t) g_max_block_size = UPB_DEFAULT_MAX_BLOCK_SIZE;
 
 void upb_Arena_SetMaxBlockSize(size_t max) {
   upb_Atomic_Store(&g_max_block_size, max, memory_order_relaxed);
