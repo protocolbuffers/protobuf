@@ -220,9 +220,9 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #ifdef __ANDROID__
-#define UPB_DEFAULT_MAX_BLOCK_SIZE 8192;
+#define UPB_DEFAULT_MAX_BLOCK_SIZE 8192
 #else
-#define UPB_DEFAULT_MAX_BLOCK_SIZE 32768;
+#define UPB_DEFAULT_MAX_BLOCK_SIZE 32768
 #endif
 
 /* UPB_SETJMP() / UPB_LONGJMP() */
