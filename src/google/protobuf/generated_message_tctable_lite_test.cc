@@ -84,7 +84,7 @@ T ReadAndReset(char* p) {
 }
 
 TEST(FastVarints, NameHere) {
-  constexpr uint8_t kHasBitsOffset = 4;
+  constexpr uint8_t kHasBitsOffset = 8;
   constexpr uint8_t kHasBitIndex = 0;
   constexpr uint8_t kFieldOffset = 24;
 

@@ -340,9 +340,9 @@ bool IsFieldEligibleForFastParsing(
       break;
   }
 
-  // The tailcall parser can only update the first 32 hasbits. Fields with
-  // has-bits beyond the first 32 are handled by mini parsing/fallback.
-  if (entry.hasbit_idx >= 32) return false;
+  // The tailcall parser can only update the first 63 hasbits. Fields with
+  // has-bits beyond the first 63 are handled by mini parsing/fallback.
+  if (entry.hasbit_idx >= kFastParserHasBitLength) return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
@@ -456,9 +456,11 @@ void PopulateFastFields(
             MakeFastFieldEntry(entry, options, message_options));
     fast_field.field = field;
     fast_field.coded_tag = tag;
+    ABSL_DCHECK_LT(entry.hasbit_idx, kFastParserHasBitLength);
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
+    fast_field.hasbit_idx =
+        entry.hasbit_idx >= 0 ? entry.hasbit_idx : kPhonyFastParserHasBitIndex;
     // 0.05 was selected based on load tests where 0.1 and 0.01 were also
     // evaluated and worse.
     constexpr float kMinPresence = 0.05f;

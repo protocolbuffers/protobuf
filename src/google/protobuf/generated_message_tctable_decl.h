@@ -279,7 +279,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -330,6 +330,7 @@ struct alignas(uint64_t) TcParseTableBase {
         to_prefetch(to_prefetch)
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   {
+    ABSL_DCHECK_EQ(has_bits_offset % sizeof(void*), std::size_t(0));
   }
 
   // Table entry for fast-path tailcall dispatch handling.

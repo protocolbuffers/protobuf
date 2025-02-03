@@ -1569,18 +1569,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             static void TrackerOnGetMetadata() { $annotate_reflection$; }
           )cc");
         }},
-       {"inlined_string_donated",
-        [&] {
-          // Generate _inlined_string_donated_ for inlined string type.
-          // TODO: To avoid affecting the locality of
-          // `_has_bits_`, should this be below or above `_has_bits_`?
-          if (inlined_string_indices_.empty()) return;
-
-          p->Emit({{"donated_size", InlinedStringDonatedSize()}},
-                  R"cc(
-                    $pbi$::HasBits<$donated_size$> _inlined_string_donated_;
-                  )cc");
-        }},
+       // Place hasbits immediately after extension set to ensure 8-byte
+       // alignment.
        {"has_bits",
         [&] {
           if (has_bit_indices_.empty()) return;
@@ -1598,6 +1588,18 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             )cc");
             need_to_emit_cached_size = false;
           }
+        }},
+       {"inlined_string_donated",
+        [&] {
+          // Generate _inlined_string_donated_ for inlined string type.
+          // TODO: To avoid affecting the locality of
+          // `_has_bits_`, should this be below or above `_has_bits_`?
+          if (inlined_string_indices_.empty()) return;
+
+          p->Emit({{"donated_size", InlinedStringDonatedSize()}},
+                  R"cc(
+                    $pbi$::HasBits<$donated_size$> _inlined_string_donated_;
+                  )cc");
         }},
        {"field_members",
         [&] {
@@ -1711,8 +1713,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           //~ Members assumed to align to 8 bytes:
           $extension_set$;
           $tracker$;
-          $inlined_string_donated$;
           $has_bits$;
+          $inlined_string_donated$;
           //~ Field members:
           $field_members$;
           $decl_split$;
@@ -2837,6 +2839,17 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
+  auto init_has_bits = [&] {
+    if (!has_bit_indices_.empty()) {
+      if (init_type == InitType::kArenaCopy) {
+        separator();
+        p->Emit("_has_bits_{from._has_bits_}");
+      }
+      separator();
+      p->Emit("_cached_size_{0}");
+    }
+  };
+
   auto init_inlined_string_indices = [&] {
     if (!inlined_string_indices_.empty()) {
       bool dtor_on_demand = NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand;
@@ -2852,17 +2865,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
       };
       separator();
       p->Emit({{"values", values}}, "_inlined_string_donated_{$values$}");
-    }
-  };
-
-  auto init_has_bits = [&] {
-    if (!has_bit_indices_.empty()) {
-      if (init_type == InitType::kArenaCopy) {
-        separator();
-        p->Emit("_has_bits_{from._has_bits_}");
-      }
-      separator();
-      p->Emit("_cached_size_{0}");
     }
   };
 
@@ -2944,8 +2946,8 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
 
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
-  init_inlined_string_indices();
   init_has_bits();
+  init_inlined_string_indices();
   init_fields();
   init_split();
   init_oneofs();
