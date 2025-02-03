@@ -297,27 +297,16 @@ inline const Message& GetMapEntryValuePrototype(const Message& default_entry) {
 // reflection implementation only. Users should never use this directly.
 class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
-  explicit constexpr MapFieldBase(const VTable* vtable)
-      : MapFieldBaseForParse(vtable) {}
-  explicit MapFieldBase(const VTable* vtable, Arena* arena)
-      : MapFieldBaseForParse(vtable), payload_{ToTaggedPtr(arena)} {}
+  explicit constexpr MapFieldBase(const void* prototype_as_void)
+      : MapFieldBaseForParse(prototype_as_void) {}
+  explicit MapFieldBase(const Message* prototype, Arena* arena)
+      : MapFieldBaseForParse(prototype, ToTaggedPtr(arena)) {}
   MapFieldBase(const MapFieldBase&) = delete;
   MapFieldBase& operator=(const MapFieldBase&) = delete;
 
  protected:
   // "protected" stops users from deleting a `MapFieldBase *`
   ~MapFieldBase();
-
-  struct VTable : MapFieldBaseForParse::VTable {
-    const Message* (*get_prototype)(const MapFieldBase& map);
-  };
-  template <typename T>
-  static constexpr VTable MakeVTable() {
-    VTable out{};
-    out.get_map = &T::GetMapImpl;
-    out.get_prototype = &T::GetPrototypeImpl;
-    return out;
-  }
 
  public:
   // Returns reference to internal repeated field. Data written using
@@ -327,8 +316,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Like above. Returns mutable pointer to the internal repeated field.
   RepeatedPtrFieldBase* MutableRepeatedField();
-
-  const VTable* vtable() const { return static_cast<const VTable*>(vtable_); }
 
   bool ContainsMapKey(const MapKey& map_key) const {
     return LookupMapValue(map_key, static_cast<MapValueConstRef*>(nullptr));
@@ -371,7 +358,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   }
 
  protected:
-  const Message* GetPrototype() const { return vtable()->get_prototype(*this); }
+  const Message* GetPrototype() const {
+    return reinterpret_cast<const Message*>(prototype_as_void_);
+  }
   void ClearMapNoSync();
 
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
@@ -411,15 +400,16 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
 #if defined(ABSL_HAVE_THREAD_SANITIZER)
-  void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
-  void MutableAccess() {
-    if (seq1_ & 1) {
-      seq2_ = ++seq1_;
-    } else {
-      seq1_ = ++seq2_;
-    }
+  // Using prototype_as_void_ as an arbitrary member that we can read/write.
+  void ConstAccess() const {
+    auto* p = prototype_as_void_;
+    asm volatile("" : "+r"(p));
   }
-  unsigned int seq1_ = 0, seq2_ = 0;
+  void MutableAccess() {
+    auto* p = prototype_as_void_;
+    asm volatile("" : "+r"(p));
+    prototype_as_void_ = p;
+  }
 #else
   void ConstAccess() const {}
   void MutableAccess() {}
@@ -466,9 +456,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
                         : STATE_MODIFIED_MAP;
   }
 
-  static const UntypedMapBase& GetMapImpl(const MapFieldBaseForParse& map,
-                                          bool is_mutable);
-
  private:
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
@@ -491,14 +478,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
         ->PlacementNew(msg, arena());
   }
 
-  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
-  const UntypedMapBase& GetMapRaw() const {
-    return *reinterpret_cast<const UntypedMapBase*>(this + 1);
-  }
-  UntypedMapBase& GetMapRaw() {
-    return *reinterpret_cast<UntypedMapBase*>(this + 1);
-  }
-
   // Virtual helper methods for MapIterator. MapIterator doesn't have the
   // type helper for key and value. Call these help methods to deal with
   // different types. Real helper methods are implemented in
@@ -514,10 +493,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   void IncreaseIterator(MapIterator* map_iter) const;
 
   bool LookupMapValueNoSync(const MapKey& map_key, MapValueConstRef* val) const;
-
-  enum class TaggedPtr : uintptr_t {};
-  static constexpr uintptr_t kHasPayloadBit = 1;
-
   static ReflectionPayload* ToPayload(TaggedPtr p) {
     ABSL_DCHECK(IsPayload(p));
     auto* res = reinterpret_cast<ReflectionPayload*>(static_cast<uintptr_t>(p) -
@@ -536,11 +511,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   static TaggedPtr ToTaggedPtr(Arena* p) {
     return static_cast<TaggedPtr>(reinterpret_cast<uintptr_t>(p));
   }
-  static bool IsPayload(TaggedPtr p) {
-    return static_cast<uintptr_t>(p) & kHasPayloadBit;
-  }
-
-  mutable std::atomic<TaggedPtr> payload_{};
 };
 
 // This class provides common Map Reflection implementations for generated
@@ -548,23 +518,22 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
-  explicit constexpr TypeDefinedMapFieldBase(const VTable* vtable)
-      : MapFieldBase(vtable), map_() {
-    // This invariant is required by MapFieldBase to easily access the map
-    // member without paying for dynamic dispatch. It reduces code size.
-    static_assert(PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) ==
-                      sizeof(MapFieldBase),
-                  "");
+  explicit constexpr TypeDefinedMapFieldBase(const void* prototype_as_void)
+      : MapFieldBase(prototype_as_void), map_() {
+    // This invariant is required by `GetMapRaw` to easily access the map
+    // member without paying for dynamic dispatch.
+    static_assert(MapFieldBaseForParse::MapOffset() ==
+                  PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_));
   }
   TypeDefinedMapFieldBase(const TypeDefinedMapFieldBase&) = delete;
   TypeDefinedMapFieldBase& operator=(const TypeDefinedMapFieldBase&) = delete;
 
-  TypeDefinedMapFieldBase(const VTable* vtable, Arena* arena)
-      : MapFieldBase(vtable, arena), map_(arena) {}
+  TypeDefinedMapFieldBase(const Message* prototype, Arena* arena)
+      : MapFieldBase(prototype, arena), map_(arena) {}
 
-  TypeDefinedMapFieldBase(const VTable* vtable, Arena* arena,
+  TypeDefinedMapFieldBase(const Message* prototype, Arena* arena,
                           const TypeDefinedMapFieldBase& from)
-      : MapFieldBase(vtable, arena), map_(arena, from.GetMap()) {}
+      : MapFieldBase(prototype, arena), map_(arena, from.GetMap()) {}
 
  protected:
   ~TypeDefinedMapFieldBase() { map_.~Map(); }
@@ -623,37 +592,32 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
   static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
-  constexpr MapField() : MapField::TypeDefinedMapFieldBase(&kVTable) {}
+  constexpr MapField()
+      : MapField::TypeDefinedMapFieldBase(
+            Derived::internal_default_instance()) {}
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
   ~MapField() = default;
 
   explicit MapField(Arena* arena)
-      : TypeDefinedMapFieldBase<Key, T>(&kVTable, arena) {}
+      : TypeDefinedMapFieldBase<Key, T>(
+            static_cast<const Message*>(Derived::internal_default_instance()),
+            arena) {}
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
   MapField(InternalVisibility, Arena* arena) : MapField(arena) {}
   MapField(InternalVisibility, Arena* arena, const MapField& from)
-      : TypeDefinedMapFieldBase<Key, T>(&kVTable, arena, from) {}
+      : TypeDefinedMapFieldBase<Key, T>(
+            static_cast<const Message*>(Derived::internal_default_instance()),
+            arena, from) {}
 
  private:
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
-
-  static const MapFieldBase::VTable kVTable;
-
   friend class google::protobuf::Arena;
   friend class MapFieldBase;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
 };
-
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType_,
-          WireFormatLite::FieldType kValueFieldType_>
-PROTOBUF_CONSTINIT const MapFieldBase::VTable
-    MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable =
-        MapField::template MakeVTable<MapField>();
 
 template <typename Key, typename T>
 bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {

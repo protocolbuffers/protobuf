@@ -15,6 +15,7 @@
 #define GOOGLE_PROTOBUF_MAP_H__
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -594,22 +595,65 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    return vtable_->get_map(*this, false);
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
+    }
+    return GetMapRaw();
   }
+
   UntypedMapBase* MutableMap() {
-    return &const_cast<UntypedMapBase&>(vtable_->get_map(*this, true));
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
+    }
+    return &GetMapRaw();
   }
 
  protected:
-  struct VTable {
-    const UntypedMapBase& (*get_map)(const MapFieldBaseForParse&,
-                                     bool is_mutable);
-  };
-  explicit constexpr MapFieldBaseForParse(const VTable* vtable)
-      : vtable_(vtable) {}
+  static constexpr size_t MapOffset() { return sizeof(MapFieldBaseForParse); }
+
+  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
+  const UntypedMapBase& GetMapRaw() const {
+    return *reinterpret_cast<const UntypedMapBase*>(
+        reinterpret_cast<const char*>(this) + MapOffset());
+  }
+  UntypedMapBase& GetMapRaw() {
+    return *reinterpret_cast<UntypedMapBase*>(reinterpret_cast<char*>(this) +
+                                              MapOffset());
+  }
+
+  // Injected from map_field.cc once we need to use it.
+  // We can't have a strong dep on it because it would cause protobuf_lite to
+  // depend on reflection.
+  using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
+  static std::atomic<SyncFunc> sync_map_with_repeated;
+
+  // The prototype is a `Message`, but due to restrictions on constexpr in the
+  // codegen we are receiving it as `void` during constant evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
+      : prototype_as_void_(prototype_as_void) {}
+
+  enum class TaggedPtr : uintptr_t {};
+  explicit MapFieldBaseForParse(const Message* prototype, TaggedPtr ptr)
+      : payload_(ptr), prototype_as_void_(prototype) {
+    // We should not have a payload on construction.
+    ABSL_DCHECK(!IsPayload(ptr));
+  }
+
   ~MapFieldBaseForParse() = default;
 
-  const VTable* vtable_;
+  static constexpr uintptr_t kHasPayloadBit = 1;
+
+  static bool IsPayload(TaggedPtr p) {
+    return static_cast<uintptr_t>(p) & kHasPayloadBit;
+  }
+
+  mutable std::atomic<TaggedPtr> payload_{};
+  const void* prototype_as_void_;
+  PROTOBUF_TSAN_DECLARE_MEMBER;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.

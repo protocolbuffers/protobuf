@@ -8,6 +8,7 @@
 #include "google/protobuf/map.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -26,6 +27,9 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+std::atomic<MapFieldBaseForParse::SyncFunc>
+    MapFieldBaseForParse::sync_map_with_repeated{};
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 

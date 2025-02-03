@@ -103,12 +103,6 @@ class DynamicMapField final : public MapFieldBase {
 
   // Must be first for GetMapRaw to work.
   UntypedMapBase map_;
-
-  const Message* default_entry_;
-
-  static const VTable kVTable;
-
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
 };
 
 static UntypedMapBase::TypeKind CppTypeToTypeKind(
@@ -153,21 +147,18 @@ static auto DefaultEntryToTypeInfo(
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  const Message* mapped_default_entry_if_message,
                                  Arena* arena)
-    : MapFieldBase(&kVTable, arena),
+    : MapFieldBase(default_entry, arena),
       map_(arena, DefaultEntryToTypeInfo(default_entry,
-                                         mapped_default_entry_if_message)),
-      default_entry_(default_entry) {}
-
-constexpr DynamicMapField::VTable DynamicMapField::kVTable =
-    MakeVTable<DynamicMapField>();
+                                         mapped_default_entry_if_message)) {
+  // This invariant is required by `GetMapRaw` to easily access the map
+  // member without paying for dynamic dispatch.
+  static_assert(MapFieldBaseForParse::MapOffset() ==
+                PROTOBUF_FIELD_OFFSET(DynamicMapField, map_));
+}
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);
   map_.ClearTable(false);
-}
-
-const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
-  return static_cast<const DynamicMapField&>(map).default_entry_;
 }
 
 }  // namespace internal

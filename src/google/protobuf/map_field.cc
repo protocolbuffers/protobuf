@@ -134,14 +134,6 @@ bool MapFieldBase::LookupMapValueNoSync(const MapKey& map_key,
   });
 }
 
-const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
-                                               bool is_mutable) {
-  const auto& self = static_cast<const MapFieldBase&>(map);
-  self.SyncMapWithRepeatedField();
-  if (is_mutable) const_cast<MapFieldBase&>(self).SetMapDirty();
-  return self.GetMapRaw();
-}
-
 void MapFieldBase::MapBegin(MapIterator* map_iter) const {
   map_iter->iter_ = GetMap().begin();
   SetMapIteratorValue(map_iter);
@@ -195,8 +187,18 @@ static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
 MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
   auto p = payload_.load(std::memory_order_acquire);
   if (!IsPayload(p)) {
+    // Inject the sync callback.
+    sync_map_with_repeated.store(
+        [](auto& map, bool is_mutable) {
+          const auto& self = static_cast<const MapFieldBase&>(map);
+          self.SyncMapWithRepeatedField();
+          if (is_mutable) const_cast<MapFieldBase&>(self).SetMapDirty();
+        },
+        std::memory_order_relaxed);
+
     auto* arena = ToArena(p);
     auto* payload = Arena::Create<ReflectionPayload>(arena, arena);
+
     auto new_p = ToTaggedPtr(payload);
     if (payload_.compare_exchange_strong(p, new_p, std::memory_order_acq_rel)) {
       // We were able to store it.
