@@ -534,9 +534,8 @@ class Struct_FieldsEntry_DoNotUse final
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static const Struct_FieldsEntry_DoNotUse* PROTOBUF_NONNULL internal_default_instance() {
-    return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
-        &_Struct_FieldsEntry_DoNotUse_default_instance_);
+  static constexpr const void* PROTOBUF_NONNULL internal_default_instance() {
+    return &_Struct_FieldsEntry_DoNotUse_default_instance_;
   }
 
 
