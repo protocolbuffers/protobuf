@@ -2445,6 +2445,10 @@ message RedactedFields {
     debug_redact = false
   ];
 
+  repeated string repeated_redacted_false_string = 12 [
+    debug_redact = false
+  ];
+
   extensions 20 to 30;
 }
 

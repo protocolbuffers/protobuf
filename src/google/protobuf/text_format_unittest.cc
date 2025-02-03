@@ -265,6 +265,9 @@ TEST_F(TextFormatTest, Utf8Format) {
   unredacted_message_2->set_optional_unredacted_nested_string("8");
   (*proto.mutable_map_redacted_string())["abc"] = "def";
   (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+  proto.set_optional_redacted_false_string("foo-3");
+  proto.add_repeated_redacted_false_string("holy");
+  proto.add_repeated_redacted_false_string("grail");
 
   EXPECT_THAT(google::protobuf::Utf8Format(proto),
               testing::MatchesRegex(absl::Substitute(
@@ -286,7 +289,10 @@ TEST_F(TextFormatTest, Utf8Format) {
                   "optional_unredacted_nested_string: \"8\"\n\\}\n"
                   "map_redacted_string: $0\n"
                   "map_unredacted_string \\{\n  "
-                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n",
+                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n"
+                  "optional_redacted_false_string: \"foo-3\"\n"
+                  "repeated_redacted_false_string: \"holy\"\n"
+                  "repeated_redacted_false_string: \"grail\"\n",
                   value_replacement, kTextMarkerRegex)));
 }
 
