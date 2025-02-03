@@ -57,7 +57,7 @@ Error, UINTPTR_MAX is undefined
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
+#define UPB_PTR_AT(msg, ofs, type) ((type *)((char *)(msg) + (ofs)))
 
 // A flexible array member may have lower alignment requirements than the struct
 // overall - in that case, it can overlap with the trailing padding of the rest
@@ -78,7 +78,7 @@ Error, UINTPTR_MAX is undefined
 // UPB_INLINE: inline if possible, emit standalone code if required.
 #ifdef __cplusplus
 #define UPB_INLINE inline
-#elif defined (__GNUC__) || defined(__clang__)
+#elif defined(__GNUC__) || defined(__clang__)
 #define UPB_INLINE static __inline__
 #else
 #define UPB_INLINE static
@@ -112,7 +112,13 @@ Error, UINTPTR_MAX is undefined
 #ifdef __clang__
 #define UPB_ALIGN_OF(type) _Alignof(type)
 #else
-#define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
+#define UPB_ALIGN_OF(type) \
+  offsetof(                \
+      struct {             \
+        char c;            \
+        type member;       \
+      },                   \
+      member)
 #endif
 
 #ifdef _MSC_VER
@@ -123,7 +129,7 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 // Hints to the compiler about likely/unlikely branches.
-#if defined (__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
 #define UPB_UNLIKELY(x) __builtin_expect((bool)(x), 0)
 #else
@@ -147,13 +153,14 @@ Error, UINTPTR_MAX is undefined
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline)) static
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
-#define UPB_PRINTF(str, first_vararg) __attribute__((format (printf, str, first_vararg)))
+#define UPB_PRINTF(str, first_vararg) \
+  __attribute__((format(printf, str, first_vararg)))
 #elif defined(_MSC_VER)
 #define UPB_NOINLINE
 #define UPB_FORCEINLINE static
 #define UPB_NORETURN __declspec(noreturn)
 #define UPB_PRINTF(str, first_vararg)
-#else  /* !defined(__GNUC__) */
+#else /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE static
 #define UPB_NOINLINE
 #define UPB_NORETURN
@@ -168,11 +175,15 @@ Error, UINTPTR_MAX is undefined
 // UPB_ASSUME(): in release mode, we tell the compiler to assume this is true.
 #ifdef NDEBUG
 #ifdef __GNUC__
-#define UPB_ASSUME(expr) if (!(expr)) __builtin_unreachable()
+#define UPB_ASSUME(expr) \
+  if (!(expr)) __builtin_unreachable()
 #elif defined _MSC_VER
-#define UPB_ASSUME(expr) if (!(expr)) __assume(0)
+#define UPB_ASSUME(expr) \
+  if (!(expr)) __assume(0)
 #else
-#define UPB_ASSUME(expr) do {} while (false && (expr))
+#define UPB_ASSUME(expr) \
+  do {                   \
+  } while (false && (expr))
 #endif
 #else
 #define UPB_ASSUME(expr) assert(expr)
@@ -181,13 +192,19 @@ Error, UINTPTR_MAX is undefined
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
  * evaluated.  This prevents "unused variable" warnings. */
 #ifdef NDEBUG
-#define UPB_ASSERT(expr) do {} while (false && (expr))
+#define UPB_ASSERT(expr) \
+  do {                   \
+  } while (false && (expr))
 #else
 #define UPB_ASSERT(expr) assert(expr)
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
+#define UPB_UNREACHABLE()    \
+  do {                       \
+    assert(0);               \
+    __builtin_unreachable(); \
+  } while (0)
 #elif defined(_MSC_VER)
 #define UPB_UNREACHABLE() \
   do {                    \
@@ -195,7 +212,16 @@ Error, UINTPTR_MAX is undefined
     __assume(0);          \
   } while (0)
 #else
-#define UPB_UNREACHABLE() do { assert(0); } while(0)
+#define UPB_UNREACHABLE() \
+  do {                    \
+    assert(0);            \
+  } while (0)
+#endif
+
+#ifdef __ANDROID__
+#define UPB_DEFAULT_MAX_BLOCK_SIZE 8192;
+#else
+#define UPB_DEFAULT_MAX_BLOCK_SIZE 32768;
 #endif
 
 /* UPB_SETJMP() / UPB_LONGJMP() */
@@ -343,10 +369,10 @@ Error, UINTPTR_MAX is undefined
 #ifdef __cplusplus
     extern "C" {
 #endif
-void __asan_poison_memory_region(void const volatile *addr, size_t size);
-void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+  void __asan_poison_memory_region(void const volatile *addr, size_t size);
+  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 #define UPB_POISON_MEMORY_REGION(addr, size) \
   __asan_poison_memory_region((addr), (size))
@@ -355,10 +381,8 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #else
 #define UPB_ASAN 0
 #define UPB_ASAN_GUARD_SIZE 0
-#define UPB_POISON_MEMORY_REGION(addr, size) \
-  ((void)(addr), (void)(size))
-#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
-  ((void)(addr), (void)(size))
+#define UPB_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define UPB_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 #if defined(__SANITIZE_THREAD__) || UPB_CLANG_TSAN
@@ -819,6 +843,9 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
 
 UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                        size_t size);
+
+static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) =
+    UPB_DEFAULT_MAX_BLOCK_SIZE;
 
 // Sets the maximum block size for all arenas. This is a global configuration
 // setting that will affect all existing and future arenas. If
@@ -16000,6 +16027,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASSUME
 #undef UPB_ASSERT
 #undef UPB_UNREACHABLE
+#undef UPB_DEFAULT_MAX_BLOCK_SIZE
 #undef UPB_SETJMP
 #undef UPB_LONGJMP
 #undef UPB_PTRADD
