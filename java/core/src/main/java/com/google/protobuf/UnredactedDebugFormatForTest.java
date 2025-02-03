@@ -11,7 +11,7 @@ public final class UnredactedDebugFormatForTest {
   /** Like {@code TextFormat.printer().printToString(message)}, but for test assertion purposes. */
   public static String unredactedMultilineString(MessageOrBuilder message) {
     return TextFormat.printer()
-        .printToString(message, TextFormat.Printer.FieldReporterLevel.NO_REPORT);
+        .printToString(message, TextFormat.Printer.FieldReporterLevel.TEXT_GENERATOR);
   }
 
   /** Like {@code TextFormat.printer().printToString(fields)}, but for test assertion purposes. */
@@ -26,7 +26,7 @@ public final class UnredactedDebugFormatForTest {
   public static String unredactedSingleLineString(MessageOrBuilder message) {
     return TextFormat.printer()
         .emittingSingleLine(true)
-        .printToString(message, TextFormat.Printer.FieldReporterLevel.NO_REPORT);
+        .printToString(message, TextFormat.Printer.FieldReporterLevel.TEXT_GENERATOR);
   }
 
   /**
