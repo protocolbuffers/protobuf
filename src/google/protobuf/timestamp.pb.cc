@@ -54,9 +54,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimestampDefaultTypeInternal _Timestamp_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static constexpr const ::_pb::EnumDescriptor**
+static constexpr const ::_pb::EnumDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
-static constexpr const ::_pb::ServiceDescriptor**
+static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -79,7 +79,7 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::google::protobuf::Timestamp)},
 };
-static const ::_pb::Message* const file_default_instances[] = {
+static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Timestamp_default_instance_._instance,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
@@ -120,7 +120,7 @@ class Timestamp::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_);
 };
 
-Timestamp::Timestamp(::google::protobuf::Arena* arena)
+Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Timestamp_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -130,7 +130,7 @@ Timestamp::Timestamp(::google::protobuf::Arena* arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(
-    ::google::protobuf::Arena* arena, const Timestamp& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, Timestamp_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -142,10 +142,10 @@ Timestamp::Timestamp(
 }
 PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
-inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
+inline void Timestamp::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, seconds_),
@@ -165,8 +165,9 @@ inline void Timestamp::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* Timestamp::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
+inline void* PROTOBUF_NONNULL Timestamp::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Timestamp(arena);
 }
 constexpr auto Timestamp::InternalNewImpl_() {
@@ -201,13 +202,14 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         Timestamp_class_data_ =
             Timestamp::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* Timestamp::GetClassData() const {
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Timestamp::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Timestamp_class_data_.tc_table);
   return Timestamp_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+Timestamp::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_),
     0, // no _extensions_
@@ -245,7 +247,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
   {{
   }},
 };
-
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -254,7 +255,7 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
     ::memset(&_impl_.seconds_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.nanos_) -
         reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
@@ -264,82 +265,82 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::uint8_t* Timestamp::_InternalSerialize(
-            const MessageLite& base, ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) {
-          const Timestamp& this_ = static_cast<const Timestamp&>(base);
+::uint8_t* PROTOBUF_NONNULL Timestamp::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::uint8_t* Timestamp::_InternalSerialize(
-            ::uint8_t* target,
-            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-          const Timestamp& this_ = *this;
+::uint8_t* PROTOBUF_NONNULL Timestamp::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const Timestamp& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
-          ::uint32_t cached_has_bits = 0;
-          (void)cached_has_bits;
+  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
 
-          // int64 seconds = 1;
-          if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
-            if (this_._internal_seconds() != 0) {
-              target = ::google::protobuf::internal::WireFormatLite::
-                  WriteInt64ToArrayWithField<1>(
-                      stream, this_._internal_seconds(), target);
-            }
-          }
+  // int64 seconds = 1;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (this_._internal_seconds() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
+              stream, this_._internal_seconds(), target);
+    }
+  }
 
-          // int32 nanos = 2;
-          if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
-            if (this_._internal_nanos() != 0) {
-              target = ::google::protobuf::internal::WireFormatLite::
-                  WriteInt32ToArrayWithField<2>(
-                      stream, this_._internal_nanos(), target);
-            }
-          }
+  // int32 nanos = 2;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (this_._internal_nanos() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
+              stream, this_._internal_nanos(), target);
+    }
+  }
 
-          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
-            target =
-                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-          }
-          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
-          return target;
-        }
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
+  return target;
+}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::size_t Timestamp::ByteSizeLong(const MessageLite& base) {
-          const Timestamp& this_ = static_cast<const Timestamp&>(base);
+::size_t Timestamp::ByteSizeLong(const MessageLite& base) {
+  const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t Timestamp::ByteSizeLong() const {
-          const Timestamp& this_ = *this;
+::size_t Timestamp::ByteSizeLong() const {
+  const Timestamp& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
-          ::size_t total_size = 0;
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
+  ::size_t total_size = 0;
 
-          ::uint32_t cached_has_bits = 0;
-          // Prevent compiler warnings about cached_has_bits being unused
-          (void)cached_has_bits;
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
 
-          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-          cached_has_bits = this_._impl_._has_bits_[0];
-          if (cached_has_bits & 0x00000003u) {
-            // int64 seconds = 1;
-            if (cached_has_bits & 0x00000001u) {
-              if (this_._internal_seconds() != 0) {
-                total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-                    this_._internal_seconds());
-              }
-            }
-            // int32 nanos = 2;
-            if (cached_has_bits & 0x00000002u) {
-              if (this_._internal_nanos() != 0) {
-                total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-                    this_._internal_nanos());
-              }
-            }
-          }
-          return this_.MaybeComputeUnknownFieldsSize(total_size,
-                                                     &this_._impl_._cached_size_);
-        }
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if ((cached_has_bits & 0x00000003u) != 0) {
+    // int64 seconds = 1;
+    if ((cached_has_bits & 0x00000001u) != 0) {
+      if (this_._internal_seconds() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+            this_._internal_seconds());
+      }
+    }
+    // int32 nanos = 2;
+    if ((cached_has_bits & 0x00000002u) != 0) {
+      if (this_._internal_nanos() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_nanos());
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
 
 void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Timestamp*>(&to_msg);
@@ -350,13 +351,13 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
+  if ((cached_has_bits & 0x00000003u) != 0) {
+    if ((cached_has_bits & 0x00000001u) != 0) {
       if (from._internal_seconds() != 0) {
         _this->_impl_.seconds_ = from._impl_.seconds_;
       }
     }
-    if (cached_has_bits & 0x00000002u) {
+    if ((cached_has_bits & 0x00000002u) != 0) {
       if (from._internal_nanos() != 0) {
         _this->_impl_.nanos_ = from._impl_.nanos_;
       }
@@ -374,7 +375,7 @@ void Timestamp::CopyFrom(const Timestamp& from) {
 }
 
 
-void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
+void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

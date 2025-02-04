@@ -19,8 +19,11 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
@@ -28,9 +31,12 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mem/arena.hpp"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/c/names.h"
@@ -1148,35 +1154,42 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
 }
 
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
-                  const Options& options, Plugin* plugin) {
+                  const Options& options,
+                  google::protobuf::compiler::GeneratorContext* context) {
   Output h_output;
   WriteHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(CApiHeaderFilename(file.name(), false),
-                        h_output.output());
+  {
+    auto stream =
+        absl::WrapUnique(context->Open(CApiHeaderFilename(file.name(), false)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(h_output.output())));
+  }
 
   if (options.bootstrap_stage == 0) {
     Output c_output;
     WriteMiniDescriptorSource(pools, file, options, c_output);
-    plugin->AddOutputFile(SourceFilename(file), c_output.output());
+    auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(c_output.output())));
   } else {
     // TODO: remove once we can figure out how to make both Blaze
     // and Bazel happy with header-only libraries.
 
-    plugin->AddOutputFile(SourceFilename(file), "\n");
+    auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord("\n")));
   }
 }
 
-bool ParseOptions(Plugin* plugin, Options* options) {
-  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
+bool ParseOptions(absl::string_view parameter, Options* options,
+                  std::string* error) {
+  for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "bootstrap_stage") {
       if (!absl::SimpleAtoi(pair.second, &options->bootstrap_stage)) {
-        plugin->SetError(absl::Substitute("Bad stage: $0", pair.second));
+        *error = absl::Substitute("Bad stage: $0", pair.second);
         return false;
       }
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       options->strip_nonfunctional_codegen = true;
     } else {
-      plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+      *error = absl::Substitute("Unknown parameter: $0", pair.first);
       return false;
     }
   }
@@ -1184,9 +1197,46 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   return true;
 }
 
-absl::string_view ToStringView(upb_StringView str) {
-  return absl::string_view(str.data, str.size);
-}
+class CGenerator : public google::protobuf::compiler::CodeGenerator {
+  bool Generate(const google::protobuf::FileDescriptor* file,
+                const std::string& parameter,
+                google::protobuf::compiler::GeneratorContext* generator_context,
+                std::string* error) const override {
+    std::vector<const google::protobuf::FileDescriptor*> files{file};
+    return GenerateAll(files, parameter, generator_context, error);
+  }
+
+  bool GenerateAll(const std::vector<const google::protobuf::FileDescriptor*>& files,
+                   const std::string& parameter,
+                   google::protobuf::compiler::GeneratorContext* generator_context,
+                   std::string* error) const override {
+    Options options;
+    if (!ParseOptions(parameter, &options, error)) {
+      return false;
+    }
+
+    upb::Arena arena;
+    DefPoolPair pools;
+    absl::flat_hash_set<std::string> files_seen;
+    for (const auto* file : files) {
+      PopulateDefPool(file, &arena, &pools, &files_seen);
+      upb::FileDefPtr upb_file = pools.GetFile(file->name());
+      GenerateFile(pools, upb_file, options, generator_context);
+    }
+
+    return true;
+  }
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
+  }
+  google::protobuf::Edition GetMinimumEdition() const override {
+    return google::protobuf::Edition::EDITION_PROTO2;
+  }
+  google::protobuf::Edition GetMaximumEdition() const override {
+    return google::protobuf::Edition::EDITION_2023;
+  }
+};
 
 }  // namespace
 
@@ -1194,21 +1244,6 @@ absl::string_view ToStringView(upb_StringView str) {
 }  // namespace upb
 
 int main(int argc, char** argv) {
-  upb::generator::DefPoolPair pools;
-  upb::generator::Plugin plugin;
-  upb::generator::Options options;
-  if (!ParseOptions(&plugin, &options)) return 0;
-  plugin.GenerateFilesRaw(
-      [&](const UPB_DESC(FileDescriptorProto) * file_proto, bool generate) {
-        upb::Status status;
-        upb::FileDefPtr file = pools.AddFile(file_proto, &status);
-        if (!file) {
-          absl::string_view name = upb::generator::ToStringView(
-              UPB_DESC(FileDescriptorProto_name)(file_proto));
-          ABSL_LOG(FATAL) << "Couldn't add file " << name
-                          << " to DefPool: " << status.error_message();
-        }
-        if (generate) GenerateFile(pools, file, options, &plugin);
-      });
-  return 0;
+  upb::generator::CGenerator generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

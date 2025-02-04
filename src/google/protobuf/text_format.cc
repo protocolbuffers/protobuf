@@ -21,10 +21,12 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
@@ -36,6 +38,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -99,7 +103,7 @@ const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
 // Controls insertion of a marker making debug strings non-parseable, and
 // redacting annotated fields in Protobuf's DebugString APIs.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{true};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
@@ -480,7 +484,7 @@ class TextFormat::Parser::ParserImpl {
   // Consumes the specified message with the given starting delimiter.
   // This method checks to see that the end delimiter at the conclusion of
   // the consumption matches the starting delimiter passed in here.
-  bool ConsumeMessage(Message* message, const std::string delimiter) {
+  bool ConsumeMessage(Message* message, const std::string& delimiter) {
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(ConsumeField(message));
     }
@@ -512,6 +516,26 @@ class TextFormat::Parser::ParserImpl {
     const FieldDescriptor* field = nullptr;
     int start_line = tokenizer_.current().line;
     int start_column = tokenizer_.current().column;
+
+    auto skip_parsing = [&](bool result) {
+      // For historical reasons, fields may optionally be separated by commas or
+      // semicolons.
+      TryConsume(";") || TryConsume(",");
+
+      // If a parse info tree exists, add the location for the parsed
+      // field.
+      if (parse_info_tree_ != nullptr) {
+        int end_line = tokenizer_.previous().line;
+        int end_column = tokenizer_.previous().end_column;
+
+        RecordLocation(
+            parse_info_tree_, field,
+            ParseLocationRange(ParseLocation(start_line, start_column),
+                               ParseLocation(end_line, end_column)));
+      }
+
+      return result;
+    };
 
     const FieldDescriptor* any_type_url_field;
     const FieldDescriptor* any_value_field;
@@ -553,7 +577,7 @@ class TextFormat::Parser::ParserImpl {
                             std::move(prefix_and_full_type_name));
       reflection->SetString(message, any_value_field,
                             std::move(serialized_value));
-      return true;
+      return skip_parsing(true);
     }
     if (TryConsume("[")) {
       // Extension.
@@ -649,10 +673,10 @@ class TextFormat::Parser::ParserImpl {
       if (TryConsumeBeforeWhitespace(":")) {
         TryConsumeWhitespace();
         if (!LookingAt("{") && !LookingAt("<")) {
-          return SkipFieldValue();
+          return skip_parsing(SkipFieldValue());
         }
       }
-      return SkipFieldMessage();
+      return skip_parsing(SkipFieldMessage());
     }
 
     if (field->options().deprecated()) {
@@ -700,7 +724,7 @@ class TextFormat::Parser::ParserImpl {
             finder_ ? finder_->FindExtensionFactory(field) : nullptr;
         reflection->MutableMessage(message, field, factory)
             ->ParseFromString(tmp);
-        goto label_skip_parsing;
+        return skip_parsing(true);
       }
     } else {
       // ':' is required here.
@@ -730,23 +754,8 @@ class TextFormat::Parser::ParserImpl {
     } else {
       DO(ConsumeFieldValue(message, reflection, field));
     }
-  label_skip_parsing:
-    // For historical reasons, fields may optionally be separated by commas or
-    // semicolons.
-    TryConsume(";") || TryConsume(",");
 
-    // If a parse info tree exists, add the location for the parsed
-    // field.
-    if (parse_info_tree_ != nullptr) {
-      int end_line = tokenizer_.previous().line;
-      int end_column = tokenizer_.previous().end_column;
-
-      RecordLocation(parse_info_tree_, field,
-                     ParseLocationRange(ParseLocation(start_line, start_column),
-                                        ParseLocation(end_line, end_column)));
-    }
-
-    return true;
+    return skip_parsing(true);
   }
 
   // Skips the next field including the field's name and value.
@@ -2294,6 +2303,9 @@ bool TextFormat::Printer::Print(const Message& message,
                                 internal::FieldReporterLevel reporter) const {
   TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
 
+  internal::PrintTextMarker(&generator, redact_debug_string_,
+                            randomize_debug_string_, single_line_mode_);
+
 
   Print(message, &generator);
 
@@ -3021,12 +3033,70 @@ void TextFormat::Printer::PrintUnknownFields(
   }
 }
 
+// Traverse the tree of field options and check if any of them are sensitive.
+// We check for sensitive enum values in the options and in the fields of the
+// message-type options, recursively.
+TextFormat::RedactionState TextFormat::IsOptionSensitive(
+    const Message& opts, const Reflection* reflection,
+    const FieldDescriptor* option) {
+  if (option->type() == FieldDescriptor::TYPE_ENUM) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      int enum_val = option->is_repeated()
+                         ? reflection->GetRepeatedEnumValue(opts, option, i)
+                         : reflection->GetEnumValue(opts, option);
+      const EnumValueDescriptor* option_value =
+          option->enum_type()->FindValueByNumber(enum_val);
+      if (option_value->options().debug_redact()) {
+        return TextFormat::RedactionState{true, false};
+      }
+    }
+  } else if (option->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      const Message& sub_message =
+          option->is_repeated()
+              ? reflection->GetRepeatedMessage(opts, option, i)
+              : reflection->GetMessage(opts, option);
+      const Reflection* sub_reflection = sub_message.GetReflection();
+      std::vector<const FieldDescriptor*> message_fields;
+      sub_reflection->ListFields(sub_message, &message_fields);
+      for (const FieldDescriptor* message_field : message_fields) {
+        auto result = TextFormat::IsOptionSensitive(sub_message, sub_reflection,
+                                                    message_field);
+        if (result.redact) {
+          return result;
+        }
+      }
+    }
+  }
+  return TextFormat::RedactionState{false, false};
+}
+
+TextFormat::RedactionState TextFormat::GetRedactionState(
+    const FieldDescriptor* field) {
+  auto options = field->options();
+  auto state = TextFormat::RedactionState{options.debug_redact(), false};
+  std::vector<const FieldDescriptor*> field_options;
+  const Reflection* reflection = options.GetReflection();
+  reflection->ListFields(options, &field_options);
+  for (const FieldDescriptor* option : field_options) {
+    auto result = TextFormat::IsOptionSensitive(options, reflection, option);
+    state = TextFormat::RedactionState{state.redact || result.redact,
+                                       state.report || result.report};
+  }
+  return state;
+}
 bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
-  RedactionState redaction_state = field->options().debug_redact()
-                                       ? RedactionState{true, false}
-                                       : RedactionState{false, false};
+  TextFormat::RedactionState redaction_state =
+      field->file()->pool()->MemoizeProjection(
+          field, [](const FieldDescriptor* field) {
+            return TextFormat::GetRedactionState(field);
+          });
   if (redaction_state.redact) {
     if (redact_debug_string_) {
       IncrementRedactedFieldCounter();
@@ -3046,6 +3116,73 @@ bool TextFormat::Printer::TryRedactFieldValue(
   }
   return false;
 }
+
+class TextMarkerGenerator final {
+ public:
+  static TextMarkerGenerator CreateRandom();
+
+  void PrintMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                   bool randomize, bool single_line_mode) const {
+    if (redact) {
+      generator->Print(redaction_marker_.data(), redaction_marker_.size());
+    }
+    if (randomize) {
+      generator->Print(random_marker_.data(), random_marker_.size());
+    }
+    if ((redact || randomize) && !single_line_mode) {
+      generator->PrintLiteral("\n");
+    }
+  }
+
+ private:
+  static constexpr absl::string_view kRedactionMarkers[] = {
+      "goo.gle/debugonly ", "goo.gle/nodeserialize ", "goo.gle/debugstr ",
+      "goo.gle/debugproto "};
+
+  static constexpr absl::string_view kRandomMarker = "   ";
+
+  static_assert(!kRandomMarker.empty(), "The random marker cannot be empty!");
+
+  constexpr TextMarkerGenerator(absl::string_view redaction_marker,
+                                absl::string_view random_marker)
+      : redaction_marker_(redaction_marker), random_marker_(random_marker) {}
+
+  absl::string_view redaction_marker_;
+  absl::string_view random_marker_;
+};
+
+TextMarkerGenerator TextMarkerGenerator::CreateRandom() {
+  // We avoid using sources backed by system entropy to allow the marker
+  // generator to work in sandboxed environments that have no access to syscalls
+  // such as getrandom or getpid. Note that this randomization has no security
+  // implications, it's only used to break code that attempts to deserialize
+  // debug strings.
+  std::mt19937_64 random{
+      static_cast<uint64_t>(absl::ToUnixMicros(absl::Now()))};
+
+  size_t redaction_marker_index = std::uniform_int_distribution<size_t>{
+      0, ABSL_ARRAYSIZE(kRedactionMarkers) - 1}(random);
+
+  size_t random_marker_size =
+      std::uniform_int_distribution<size_t>{1, kRandomMarker.size()}(random);
+
+  return TextMarkerGenerator(kRedactionMarkers[redaction_marker_index],
+                             kRandomMarker.substr(0, random_marker_size));
+}
+
+const TextMarkerGenerator& GetGlobalTextMarkerGenerator() {
+  static const TextMarkerGenerator kTextMarkerGenerator =
+      TextMarkerGenerator::CreateRandom();
+  return kTextMarkerGenerator;
+}
+
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode) {
+  GetGlobalTextMarkerGenerator().PrintMarker(generator, redact, randomize,
+                                             single_line_mode);
+}
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

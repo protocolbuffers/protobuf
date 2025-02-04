@@ -142,9 +142,9 @@ std::string ClassNameResolver::GetFileDefaultImmutableClassName(
   std::string basename;
   std::string::size_type last_slash = file->name().find_last_of('/');
   if (last_slash == std::string::npos) {
-    basename = file->name();
+    basename = std::string(file->name());
   } else {
-    basename = file->name().substr(last_slash + 1);
+    basename = std::string(file->name().substr(last_slash + 1));
   }
   // foo_bar_baz.proto -> FooBarBaz
   std::string ret = UnderscoresToCamelCase(StripProto(basename), true);

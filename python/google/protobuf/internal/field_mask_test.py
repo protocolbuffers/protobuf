@@ -323,7 +323,7 @@ class FieldMaskTest(unittest.TestCase):
     with self.assertRaises(ValueError) as e:
       mask.MergeMessage(src, dst)
     self.assertEqual('Error: Field optional_int32 in message '
-                     'protobuf_unittest.TestAllTypes is not a singular '
+                     'proto2_unittest.TestAllTypes is not a singular '
                      'message field and cannot have sub-fields.',
                      str(e.exception))
 

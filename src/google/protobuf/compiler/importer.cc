@@ -94,6 +94,13 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     had_errors_ = true;
   }
 
+  void RecordWarning(int line, int column, absl::string_view message) override {
+    if (multi_file_error_collector_ != nullptr) {
+      multi_file_error_collector_->RecordWarning(filename_, line, column,
+                                                 message);
+    }
+  }
+
  private:
   std::string filename_;
   MultiFileErrorCollector* multi_file_error_collector_;

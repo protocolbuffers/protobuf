@@ -31,7 +31,7 @@ class AnyTest(unittest.TestCase):
   def test_type_name(self):
     all_types = unittest_pb2.TestAllTypes()
     any_msg = any.pack(all_types)
-    self.assertEqual(any.type_name(any_msg), 'protobuf_unittest.TestAllTypes')
+    self.assertEqual(any.type_name(any_msg), 'proto2_unittest.TestAllTypes')
 
   def test_is_type(self):
     all_types = unittest_pb2.TestAllTypes()

@@ -15,6 +15,7 @@
 #define GOOGLE_PROTOBUF_MAP_H__
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -85,8 +86,6 @@ struct MapBenchmarkPeer;
 
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase;
-
-class DynamicMapField;
 
 class GeneratedMessageReflection;
 
@@ -278,7 +277,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kDouble,   // double
     kString,   // std::string
     kMessage,  // Derived from MessageLite
-    kUnknown,  // For DynamicMapField for now
   };
   // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
 
@@ -303,7 +301,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     } else if constexpr (std::is_base_of_v<MessageLite, T>) {
       return TypeKind::kMessage;
     } else {
-      return TypeKind::kUnknown;
+      static_assert(false && sizeof(T));
     }
   }
 
@@ -352,9 +350,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return reinterpret_cast<T*>(GetVoidValue(node));
   }
 
-  void ClearTable(bool reset, void (*destroy)(NodeBase*)) {
+  void ClearTable(bool reset) {
     if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
-    ClearTableImpl(reset, destroy);
+    ClearTableImpl(reset);
   }
 
   // Space used for the table and nodes.
@@ -378,6 +376,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(table_, other->table_);
     std::swap(arena_, other->arena_);
   }
+
+  void UntypedMergeFrom(const UntypedMapBase& other);
+  void UntypedSwap(UntypedMapBase& other);
 
   static size_type max_size() {
     return std::numeric_limits<map_index_t>::max();
@@ -426,7 +427,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     map_index_t bucket;
   };
 
-  void ClearTableImpl(bool reset, void (*destroy)(NodeBase*));
+  void ClearTableImpl(bool reset);
 
   // Returns whether we should insert after the head of the list. For
   // non-optimized builds, we randomly decide whether to insert right at the
@@ -479,21 +480,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void DeleteNode(NodeBase* node);
 
-  template <typename Node>
-  static void DestroyNode(NodeBase* node) {
-    static_cast<Node*>(node)->~Node();
-  }
-
-  template <typename Node>
-  static constexpr auto GetDestroyNode() {
-    return internal::UntypedMapBase::StaticTypeKind<
-               typename Node::key_type>() == TypeKind::kUnknown ||
-                   internal::UntypedMapBase::StaticTypeKind<
-                       typename Node::mapped_type>() == TypeKind::kUnknown
-               ? DestroyNode<Node>
-               : nullptr;
-  }
-
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
@@ -517,7 +503,6 @@ auto UntypedMapBase::VisitKeyType(F f) const {
     case TypeKind::kFloat:
     case TypeKind::kDouble:
     case TypeKind::kMessage:
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -541,7 +526,6 @@ auto UntypedMapBase::VisitValueType(F f) const {
     case TypeKind::kMessage:
       return f(std::enable_if<true, MessageLite>{});
 
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -611,22 +595,65 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    return vtable_->get_map(*this, false);
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
+    }
+    return GetMapRaw();
   }
+
   UntypedMapBase* MutableMap() {
-    return &const_cast<UntypedMapBase&>(vtable_->get_map(*this, true));
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
+    }
+    return &GetMapRaw();
   }
 
  protected:
-  struct VTable {
-    const UntypedMapBase& (*get_map)(const MapFieldBaseForParse&,
-                                     bool is_mutable);
-  };
-  explicit constexpr MapFieldBaseForParse(const VTable* vtable)
-      : vtable_(vtable) {}
+  static constexpr size_t MapOffset() { return sizeof(MapFieldBaseForParse); }
+
+  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
+  const UntypedMapBase& GetMapRaw() const {
+    return *reinterpret_cast<const UntypedMapBase*>(
+        reinterpret_cast<const char*>(this) + MapOffset());
+  }
+  UntypedMapBase& GetMapRaw() {
+    return *reinterpret_cast<UntypedMapBase*>(reinterpret_cast<char*>(this) +
+                                              MapOffset());
+  }
+
+  // Injected from map_field.cc once we need to use it.
+  // We can't have a strong dep on it because it would cause protobuf_lite to
+  // depend on reflection.
+  using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
+  static std::atomic<SyncFunc> sync_map_with_repeated;
+
+  // The prototype is a `Message`, but due to restrictions on constexpr in the
+  // codegen we are receiving it as `void` during constant evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
+      : prototype_as_void_(prototype_as_void) {}
+
+  enum class TaggedPtr : uintptr_t {};
+  explicit MapFieldBaseForParse(const Message* prototype, TaggedPtr ptr)
+      : payload_(ptr), prototype_as_void_(prototype) {
+    // We should not have a payload on construction.
+    ABSL_DCHECK(!IsPayload(ptr));
+  }
+
   ~MapFieldBaseForParse() = default;
 
-  const VTable* vtable_;
+  static constexpr uintptr_t kHasPayloadBit = 1;
+
+  static bool IsPayload(TaggedPtr p) {
+    return static_cast<uintptr_t>(p) & kHasPayloadBit;
+  }
+
+  mutable std::atomic<TaggedPtr> payload_{};
+  const void* prototype_as_void_;
+  PROTOBUF_TSAN_DECLARE_MEMBER;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -674,12 +701,17 @@ class KeyMapBase : public UntypedMapBase {
   using KeyNode = internal::KeyNode<Key>;
 
  protected:
+  friend UntypedMapBase;
   friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
   friend class v2::TableDriven;
+
+  Key* GetKey(NodeBase* node) const {
+    return UntypedMapBase::GetKey<Key>(node);
+  }
 
   PROTOBUF_NOINLINE size_type EraseImpl(map_index_t b, KeyNode* node,
                                         bool do_destroy) {
@@ -1034,7 +1066,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     StaticValidityCheck();
 
     this->AssertLoadFactor();
-    this->ClearTable(false, this->template GetDestroyNode<Node>());
+    this->ClearTable(false);
   }
 
  private:
@@ -1378,9 +1410,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  void clear() {
-    this->ClearTable(true, this->template GetDestroyNode<Node>());
-  }
+  void clear() { this->ClearTable(true); }
 
   // Assign
   Map& operator=(const Map& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1520,15 +1550,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                           true);
   }
 
-  // For DynamicMapField, which needs a special destructor.
-  void EraseDynamic(iterator it) {
-    this->EraseImpl(it.bucket_index_,
-                    static_cast<typename Map::KeyNode*>(it.node_), false);
-    if (this->arena() == nullptr) {
-      delete static_cast<Node*>(it.node_);
-    }
-  }
-
   using Base::arena;
 
   friend class Arena;
@@ -1538,7 +1559,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using DestructorSkippable_ = void;
   template <typename K, typename V>
   friend class internal::MapFieldLite;
-  friend class internal::DynamicMapField;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;

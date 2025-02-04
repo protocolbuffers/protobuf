@@ -21,6 +21,7 @@
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
@@ -188,6 +189,11 @@ class ExtensionRegistry {
     return *r;
   }
 
+  static const ExtensionRegistry& EmptyRegistry() {
+    static const ExtensionRegistry* r = new ExtensionRegistry();
+    return *r;
+  }
+
  private:
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
@@ -200,6 +206,8 @@ class ExtensionRegistry {
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;
   }
+
+  explicit ExtensionRegistry() = default;
 };
 
 template <typename T, typename Extendee, typename Extension,

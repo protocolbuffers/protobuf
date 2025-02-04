@@ -1624,6 +1624,7 @@ public final class Descriptors {
 
     // Caches the result of isSensitive() for performance reasons.
     private volatile Sensitivity sensitivity = Sensitivity.UNKNOWN;
+    private volatile boolean isReportable = false;
 
     // Possibly initialized during cross-linking.
     private Type type;
@@ -1798,64 +1799,73 @@ public final class Descriptors {
     }
 
     @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
-    private boolean isOptionSensitive(FieldDescriptor field, Object value) {
+    private List<Boolean> isOptionSensitive(FieldDescriptor field, Object value) {
       if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
         if (field.isRepeated()) {
           for (EnumValueDescriptor v : (List<EnumValueDescriptor>) value) {
             if (v.getOptions().getDebugRedact()) {
-              return true;
+              return Arrays.asList(true, false);
             }
           }
         } else {
           if (((EnumValueDescriptor) value).getOptions().getDebugRedact()) {
-            return true;
+            return Arrays.asList(true, false);
           }
         }
       } else if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
         if (field.isRepeated()) {
           for (Message m : (List<Message>) value) {
             for (Map.Entry<FieldDescriptor, Object> entry : m.getAllFields().entrySet()) {
-              if (isOptionSensitive(entry.getKey(), entry.getValue())) {
-                return true;
+              List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
+              if (result.get(0)) {
+                return result;
               }
             }
           }
         } else {
           for (Map.Entry<FieldDescriptor, Object> entry :
               ((Message) value).getAllFields().entrySet()) {
-            if (isOptionSensitive(entry.getKey(), entry.getValue())) {
-              return true;
+            List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
+            if (result.get(0)) {
+              return result;
             }
           }
         }
       }
-      return false;
+      return Arrays.asList(false, false);
     }
 
-    // Lazily calculates if the field is marked as sensitive. Is only called upon the first
-    // access of the isSensitive() method.
-    boolean isSensitive() {
+    // Lazily calculates if the field is marked as sensitive, and caches results.
+    private List<Boolean> calculateSensitivityData() {
       if (sensitivity == Sensitivity.UNKNOWN) {
         // If the field is directly marked with debug_redact=true, then it is sensitive.
         synchronized (this) {
           if (sensitivity == Sensitivity.UNKNOWN) {
             boolean isSensitive = proto.getOptions().getDebugRedact();
-            if (!isSensitive) {
-              // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
-              // either directly or indirectly via a message option.
-              for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
-                  proto.getOptions().getAllFields().entrySet()) {
-                if (isOptionSensitive(entry.getKey(), entry.getValue())) {
-                  isSensitive = true;
-                  break;
-                }
+            // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
+            // either directly or indirectly via a message option.
+            for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+                proto.getOptions().getAllFields().entrySet()) {
+              List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
+              isSensitive = isSensitive || result.get(0);
+              isReportable = result.get(1);
+              if (isSensitive) {
+                break;
               }
             }
             sensitivity = isSensitive ? Sensitivity.SENSITIVE : Sensitivity.NOT_SENSITIVE;
           }
         }
       }
-      return sensitivity == Sensitivity.SENSITIVE;
+      return Arrays.asList(sensitivity == Sensitivity.SENSITIVE, isReportable);
+    }
+
+    boolean isSensitive() {
+      return calculateSensitivityData().get(0);
+    }
+
+    boolean isReportable() {
+      return calculateSensitivityData().get(1);
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */

@@ -29,9 +29,9 @@ import com.google.protobuf.testAllExtensionsLite
 import com.google.protobuf.testAllTypesLite
 import com.google.protobuf.testEmptyMessageLite
 import com.google.protobuf.testEmptyMessageWithExtensionsLite
-import protobuf_unittest.MapLiteUnittest.MapEnumLite
-import protobuf_unittest.MapLiteUnittest.TestMapLite
-import protobuf_unittest.testMapLite
+import proto2_unittest.MapLiteUnittest.MapEnumLite
+import proto2_unittest.MapLiteUnittest.TestMapLite
+import proto2_unittest.testMapLite
 import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt

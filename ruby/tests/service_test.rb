@@ -33,6 +33,7 @@ class ServiceTest < Test::Unit::TestCase
   end
 
   def test_service_options_extensions
+    omit "JRuby and FFI do not support service options extensions" if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
     extension_field = Google::Protobuf::DescriptorPool.generated_pool.lookup('service_test_protos.test_options')
     assert_equal 8325, extension_field.get(@test_service.options).int_option_value
   end

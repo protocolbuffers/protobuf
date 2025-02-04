@@ -7,7 +7,7 @@
 
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 
 // This message's name is the same with the default outer class name of this

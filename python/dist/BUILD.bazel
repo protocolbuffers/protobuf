@@ -7,7 +7,7 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@pip_deps//:requirements.bzl", "requirement")
+load("@protobuf_pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
@@ -304,7 +304,7 @@ genrule(
     srcs = [":source_tarball"],
     outs = ["protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION],
     cmd = """
-        export PYTHONPATH=$$PWD/external/pip_deps_setuptools/site-packages
+        export PYTHONPATH=$$PWD/external/protobuf_pip_deps_setuptools/site-packages
         set -eux
         tar -xzvf $(location :source_tarball)
         cd protobuf/
@@ -446,7 +446,6 @@ py_wheel(
         "//:python_common_test_protos",
         "//:python_specific_test_protos",
         "//:python_test_srcs",
-        "//python/pb_unit_tests:test_files",
         "//src/google/protobuf:testdata",
         "@com_google_absl_py//absl/testing:parameterized",
     ],

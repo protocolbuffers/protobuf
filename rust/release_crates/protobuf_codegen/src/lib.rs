@@ -142,7 +142,8 @@ impl CodeGen {
             .output()
             .map_err(|e| {
                 format!(
-                    "Unable to find protoc-gen-upb_minitable: {}",
+                    "Unable to find protoc-gen-upb_minitable: {} {}",
+                    e,
                     missing_protoc_error_message()
                 )
             })?;
@@ -207,19 +208,19 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[googletest::test]
+    #[gtest]
     fn test_protoc_version() {
-        assert_eq!(protoc_version("libprotoc 30.0"), "30.0");
-        assert_eq!(protoc_version("libprotoc 30.0-dev"), "30.0");
-        assert_eq!(protoc_version("libprotoc 30.0-rc1"), "30.0-rc1");
+        assert_that!(protoc_version("libprotoc 30.0"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0-dev"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0-rc1"), eq("30.0-rc1"));
     }
 
     #[googletest::test]
     fn test_expected_protoc_version() {
-        assert_eq!(expected_protoc_version("4.30.0"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-alpha"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-beta"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-pre"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-rc1"), "30.0-rc1");
+        assert_that!(expected_protoc_version("4.30.0"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-alpha"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-rc1"), eq("30.0-rc1"));
     }
 }

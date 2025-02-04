@@ -240,6 +240,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // allocated Rep.
     return tagged_rep_or_elem_ != nullptr;
   }
+
+  // Pre-condition: NeedsDestroy() returns true.
   void DestroyProtos();
 
  public:
@@ -1559,7 +1561,9 @@ class RustRepeatedMessageHelper {
   static RepeatedPtrFieldBase* New() { return new RepeatedPtrFieldBase; }
 
   static void Delete(RepeatedPtrFieldBase* field) {
-    field->DestroyProtos();
+    if (field->NeedsDestroy()) {
+      field->DestroyProtos();
+    }
     delete field;
   }
 
@@ -1732,7 +1736,7 @@ class RepeatedPtrOverPtrsIterator {
       typename OtherElement, typename OtherVoidPtr,
       typename std::enable_if<
           std::is_convertible<OtherElement*, pointer>::value &&
-          std::is_convertible<OtherVoidPtr*, VoidPtr>::value>::type* = nullptr>
+          std::is_convertible<OtherVoidPtr, VoidPtr>::value>::type* = nullptr>
   RepeatedPtrOverPtrsIterator(
       const RepeatedPtrOverPtrsIterator<OtherElement, OtherVoidPtr>& other)
       : it_(other.it_) {}

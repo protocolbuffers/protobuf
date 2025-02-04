@@ -18,7 +18,7 @@ import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
 import com.google.protobuf.FieldPresenceTestProto.TestRepeatedFieldsOnly;
 import com.google.protobuf.testing.proto.TestProto3Optional;
-import protobuf_unittest.UnittestProto;
+import proto2_unittest.UnittestProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -102,6 +102,7 @@ public class FieldPresenceTest {
     assertThat(TestProto3Optional.getDefaultInstance().hasOptionalBool()).isFalse();
     assertThat(TestProto3Optional.getDefaultInstance().hasOptionalString()).isFalse();
     assertThat(TestProto3Optional.getDefaultInstance().hasOptionalBytes()).isFalse();
+    assertThat(TestProto3Optional.getDefaultInstance().hasOptionalNestedEnum()).isFalse();
 
     TestProto3Optional.Builder builder = TestProto3Optional.newBuilder().setOptionalInt32(0);
     assertThat(builder.hasOptionalInt32()).isTrue();
@@ -123,6 +124,67 @@ public class FieldPresenceTest {
     TestProto3Optional proto = TestProto3Optional.parseFrom(builder.build().toByteArray());
     assertThat(proto.hasOptionalInt32()).isTrue();
     assertThat(proto.toBuilder().hasOptionalInt32()).isTrue();
+  }
+
+  @Test
+  public void testMergeFrom_unknownExplicitOpenEnum() throws Exception {
+    TestProto3Optional.Builder builder =
+        TestProto3Optional.newBuilder().setOptionalNestedEnumValue(100);
+
+    TestProto3Optional.Builder mergedBuilder =
+        TestProto3Optional.newBuilder()
+            .setOptionalNestedEnum(TestProto3Optional.NestedEnum.FOO)
+            .mergeFrom(builder.build());
+
+    assertThat(builder.hasOptionalNestedEnum()).isTrue();
+    assertThat(builder.build().getOptionalNestedEnumValue()).isEqualTo(100);
+    assertThat(mergedBuilder.hasOptionalNestedEnum()).isTrue();
+    assertThat(mergedBuilder.getOptionalNestedEnumValue()).isEqualTo(100);
+  }
+
+  @Test
+  public void testParseFrom_unknownExplicitOpenEnum() throws Exception {
+    TestProto3Optional.Builder builder =
+        TestProto3Optional.newBuilder().setOptionalNestedEnumValue(100);
+
+    TestProto3Optional parsedProto =
+        TestProto3Optional.parseFrom(
+            builder.build().toByteArray(), ExtensionRegistry.getEmptyRegistry());
+
+    assertThat(parsedProto.hasOptionalNestedEnum()).isTrue();
+    assertThat(parsedProto.getOptionalNestedEnumValue()).isEqualTo(100);
+  }
+
+  @Test
+  public void testMergeFrom_defaultExplicitOpenEnum() throws Exception {
+    TestProto3Optional.Builder builder =
+        TestProto3Optional.newBuilder().setOptionalNestedEnumValue(0);
+
+    TestProto3Optional.Builder otherBuilder =
+        TestProto3Optional.newBuilder()
+            .setOptionalNestedEnum(TestProto3Optional.NestedEnum.FOO)
+            .mergeFrom(builder.build());
+
+    assertThat(builder.hasOptionalNestedEnum()).isTrue();
+    assertThat(builder.build().getOptionalNestedEnum())
+        .isEqualTo(TestProto3Optional.NestedEnum.UNSPECIFIED);
+    assertThat(otherBuilder.hasOptionalNestedEnum()).isTrue();
+    assertThat(otherBuilder.getOptionalNestedEnum())
+        .isEqualTo(TestProto3Optional.NestedEnum.UNSPECIFIED);
+  }
+
+  @Test
+  public void testParseFrom_defaultExplicitOpenEnum() throws Exception {
+    TestProto3Optional.Builder builder =
+        TestProto3Optional.newBuilder().setOptionalNestedEnumValue(0);
+
+    TestProto3Optional parsedProto =
+        TestProto3Optional.parseFrom(
+            builder.build().toByteArray(), ExtensionRegistry.getEmptyRegistry());
+
+    assertThat(parsedProto.hasOptionalNestedEnum()).isTrue();
+    assertThat(parsedProto.getOptionalNestedEnum())
+        .isEqualTo(TestProto3Optional.NestedEnum.UNSPECIFIED);
   }
 
   private static void assertProto3OptionalReflection(String name) throws Exception {

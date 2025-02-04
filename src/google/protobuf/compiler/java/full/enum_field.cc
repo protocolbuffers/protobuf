@@ -277,19 +277,21 @@ void ImmutableEnumFieldGenerator::GenerateBuilderClearCode(
 void ImmutableEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
-    printer->Print(variables_,
-                   "if (other.has$capitalized_name$()) {\n"
-                   "  set$capitalized_name$(other.get$capitalized_name$());\n"
-                   "}\n");
-  } else if (SupportUnknownEnumValue(descriptor_)) {
+    printer->Print(variables_, "if (other.has$capitalized_name$()) {\n");
+  } else {
+    printer->Print(variables_, "if (other.$name$_ != $default_number$) {\n");
+  }
+  printer->Indent();
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
-        "if (other.$name$_ != $default_number$) {\n"
-        "  set$capitalized_name$Value(other.get$capitalized_name$Value());\n"
-        "}\n");
+        "set$capitalized_name$Value(other.get$capitalized_name$Value());\n");
   } else {
-    ABSL_LOG(FATAL) << "Can't reach here.";
+    printer->Print(variables_,
+                   "set$capitalized_name$(other.get$capitalized_name$());\n");
   }
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuildingCode(

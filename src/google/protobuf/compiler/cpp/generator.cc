@@ -52,7 +52,6 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {
-      {"proto_ns", std::string(ProtobufNamespace(options))},
       {"pb", absl::StrCat("::", ProtobufNamespace(options))},
       {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
 
@@ -66,6 +65,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
 
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
+
+      {"nullable", "PROTOBUF_NULLABLE"},
+      {"nonnull", "PROTOBUF_NONNULL"},
 
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that

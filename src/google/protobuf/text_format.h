@@ -622,6 +622,12 @@ class PROTOBUF_EXPORT TextFormat {
     bool report;
   };
 
+  static TextFormat::RedactionState GetRedactionState(
+      const FieldDescriptor* field);
+
+  static TextFormat::RedactionState IsOptionSensitive(
+      const Message& opts, const Reflection* reflection,
+      const FieldDescriptor* option);
   // Data structure which is populated with the locations of each field
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
@@ -823,6 +829,10 @@ class PROTOBUF_EXPORT TextFormat {
                                    const T&... values);
 };
 
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode);
+}  // namespace internal
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,

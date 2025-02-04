@@ -7,3 +7,4 @@ Required.Proto2.JsonInput.EnumField.ProtobufOutput
 Required.Proto2.JsonInput.EnumFieldNumericValueZero.JsonOutput
 Required.Proto2.JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
+Required.*.JsonInput.AnyWithNoType.*

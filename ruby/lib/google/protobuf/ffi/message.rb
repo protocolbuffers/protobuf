@@ -22,7 +22,7 @@ module Google
       attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneofByDef, [:Message, OneofDescriptor], FieldDescriptor
-      attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
+      attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :DefPool, :int], :bool
       attach_function :message_next,            :upb_Message_Next,            [:Message, Descriptor, :DefPool, :FieldDefPointer, MessageValue.by_ref, :pointer], :bool
       attach_function :message_freeze,          :upb_Message_Freeze,          [:Message, MiniTable.by_ref], :void
       attach_function :message_frozen?,         :upb_Message_IsFrozen,        [:Message], :bool

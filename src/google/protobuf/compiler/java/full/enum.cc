@@ -85,7 +85,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
 
   for (const EnumValueDescriptor* value : canonical_values_) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
-    vars["name"] = value->name();
+    vars["name"] = std::string(value->name());
     vars["index"] = absl::StrCat(value->index());
     vars["number"] = absl::StrCat(value->number());
     WriteEnumValueDocComment(printer, value, context_->options());
@@ -124,9 +124,9 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
 
   for (const Alias& alias : aliases_) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
-    vars["classname"] = descriptor_->name();
-    vars["name"] = alias.value->name();
-    vars["canonical_name"] = alias.canonical_value->name();
+    vars["classname"] = std::string(descriptor_->name());
+    vars["name"] = std::string(alias.value->name());
+    vars["canonical_name"] = std::string(alias.canonical_value->name());
     WriteEnumValueDocComment(printer, alias.value, context_->options());
     printer->Print(
         vars, "public static final $classname$ $name$ = $canonical_name$;\n");
@@ -135,7 +135,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
-    vars["name"] = descriptor_->value(i)->name();
+    vars["name"] = std::string(descriptor_->value(i)->name());
     vars["number"] = absl::StrCat(descriptor_->value(i)->number());
     vars["{"] = "";
     vars["}"] = "";

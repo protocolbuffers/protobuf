@@ -581,7 +581,7 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                   raw_parent_arena: $pbr$::RawArena,
                   mut val: Self) -> $pbr$::upb_MessageValue {
                   // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-                  let parent_arena = core::mem::ManuallyDrop::new(
+                  let parent_arena = $std$::mem::ManuallyDrop::new(
                       unsafe { $pbr$::Arena::from_raw(raw_parent_arena) });
 
                   parent_arena.fuse(val.as_mutator_message_ref($pbi$::Private).arena());
@@ -775,7 +775,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Clear for $Msg$ {
           fn clear(&mut self) {
-            self.as_mut().clear()
+            let mut m = self.as_mut();
+            $pb$::Clear::clear(&mut m)
           }
         }
 

@@ -15,6 +15,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/mini_descriptor/internal/base92.h"
@@ -55,7 +56,7 @@ typedef struct {
 typedef struct {
   upb_OneOfLayoutItem* data;
   size_t size;
-  size_t capacity;
+  size_t buf_capacity_bytes;
 } upb_OneOfLayoutItemVector;
 
 typedef struct {
@@ -258,11 +259,13 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d,
   if (item.field_index == kUpb_OneOfLayoutItem_IndexSentinel) {
     upb_MdDecoder_ErrorJmp(&d->base, "Empty oneof");
   }
-  if (d->oneofs.size == d->oneofs.capacity) {
-    size_t new_cap = UPB_MAX(8, d->oneofs.size * 2);
-    d->oneofs.data = realloc(d->oneofs.data, new_cap * sizeof(*d->oneofs.data));
+  if ((d->oneofs.size + 1) * sizeof(*d->oneofs.data) >
+      d->oneofs.buf_capacity_bytes) {
+    size_t new_cap = UPB_MAX(8, d->oneofs.size * 2) * sizeof(*d->oneofs.data);
+    d->oneofs.data =
+        upb_grealloc(d->oneofs.data, d->oneofs.buf_capacity_bytes, new_cap);
     upb_MdDecoder_CheckOutOfMemory(&d->base, d->oneofs.data);
-    d->oneofs.capacity = new_cap;
+    d->oneofs.buf_capacity_bytes = new_cap;
   }
   item.field_index -= kOneofBase;
 
@@ -733,7 +736,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
 
 done:
   *buf = decoder->oneofs.data;
-  *buf_size = decoder->oneofs.capacity * sizeof(*decoder->oneofs.data);
+  *buf_size = decoder->oneofs.buf_capacity_bytes;
   return decoder->table;
 }
 
@@ -742,7 +745,7 @@ static upb_MiniTable* upb_MtDecoder_BuildMiniTableWithBuf(
     void** const buf, size_t* const buf_size) {
   if (UPB_SETJMP(decoder->base.err) != 0) {
     *buf = decoder->oneofs.data;
-    *buf_size = decoder->oneofs.capacity * sizeof(*decoder->oneofs.data);
+    *buf_size = decoder->oneofs.buf_capacity_bytes;
     return NULL;
   }
 
@@ -761,7 +764,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
       .oneofs =
           {
               .data = *buf,
-              .capacity = *buf_size / sizeof(*decoder.oneofs.data),
+              .buf_capacity_bytes = *buf_size,
               .size = 0,
           },
       .arena = arena,
@@ -859,6 +862,6 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
   size_t size = 0;
   upb_MiniTable* ret = upb_MiniTable_BuildWithBuf(data, len, platform, arena,
                                                   &buf, &size, status);
-  free(buf);
+  upb_gfree(buf);
   return ret;
 }

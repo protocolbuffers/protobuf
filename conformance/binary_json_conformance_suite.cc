@@ -1419,8 +1419,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
   for (uint8_t type : {0x6, 0x7}) {
     for (uint8_t field = 0; field < 4; ++field) {
       for (uint8_t value = 0; value < 4; ++value) {
-        std::string name = absl::StrFormat("UnknownWireType%d_Field%d_Verion%d",
-                                           type, field, value);
+        std::string name = absl::StrFormat(
+            "UnknownWireType%d_Field%d_Version%d", type, field, value);
 
         char data[2];
         data[0] = (field << 3) | type;  // unknown wire type.
@@ -3093,6 +3093,27 @@ void BinaryAndJsonConformanceSuiteImpl<
       })",
       "repeated_timestamp: {seconds: -62135596800}"
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
+  RunValidJsonTest("TimestampEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000Z"})",
+                   "optional_timestamp: {seconds: 0}");
+  RunValidJsonTest("TimestampNanoAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000000001Z"})",
+                   "optional_timestamp: {seconds: 0 nanos: 1}");
+  RunValidJsonTest("TimestampNanoBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:59.999999999Z"})",
+                   "optional_timestamp: {seconds: -1 nanos: 999999999}");
+  RunValidJsonTest("TimestampLittleAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:01.000000001Z"})",
+                   "optional_timestamp: {seconds: 1 nanos: 1}");
+  RunValidJsonTest("TimestampLittleBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:58.999999999Z"})",
+                   "optional_timestamp: {seconds: -2 nanos: 999999999}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsAfterEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:10.500Z"})",
+                   "optional_timestamp: {seconds: 10 nanos: 500000000}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:49.500Z"})",
+                   "optional_timestamp: {seconds: -11 nanos: 500000000}");
   RunValidJsonTest("TimestampLeap", REQUIRED,
                    R"({"optionalTimestamp": "1993-02-10T00:00:00.000Z"})",
                    "optional_timestamp: {seconds: 729302400}");
@@ -3523,6 +3544,40 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
             number_value: 1
     }
   }
+      )");
+  // When the Any is in WKT form (with "@type"), the type_url must be present
+  // and URL shaped, otherwise it should be a parse error (because it can't be
+  // parsed into the Any schema).
+  ExpectParseFailureForJson("AnyWktRepresentationWithEmptyTypeAndValue",
+                            REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "",
+          "value": ""
+        }
+      })");
+  ExpectParseFailureForJson("AnyWktRepresentationWithBadType", REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "not_a_url",
+          "value": ""
+        }
+      })");
+  // When the Any can be parsed as non-WKT form, the type_url could be missing
+  // or invalid, since that can still be parsed into the Any schema.
+  RunValidJsonTest("AnyWithNoType", REQUIRED,
+                   R"({
+        "optionalAny": {}
+      })",
+                   R"(
+        optional_any: {}
+      )");
+  // `null` where an Any exists should just result in the field being unset.
+  RunValidJsonTest("AnyNull", REQUIRED,
+                   R"({
+        "optionalAny": null
+      })",
+                   R"(
       )");
 }
 

@@ -39,6 +39,7 @@
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
@@ -963,10 +964,28 @@ struct SymbolByFullNameEq {
 using SymbolsByNameSet =
     absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
 
-struct ParentNameQuery {
+struct ParentNameQueryBase {
   std::pair<const void*, absl::string_view> query;
   std::pair<const void*, absl::string_view> parent_name_key() const {
     return query;
+  }
+};
+struct ParentNameQuery : public ParentNameQueryBase {
+  using SymbolT = Symbol;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    return *it;
+  }
+};
+struct ParentNameFieldQuery : public ParentNameQueryBase {
+  using SymbolT = const FieldDescriptor*;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    SymbolT field = it->field_descriptor();
+    ABSL_ASSUME(field != nullptr);
+    return field;
   }
 };
 struct SymbolByParentHash {
@@ -979,6 +998,14 @@ struct SymbolByParentHash {
 };
 struct SymbolByParentEq {
   using is_transparent = void;
+
+  bool operator()(const Symbol& symbol,
+                  const ParentNameFieldQuery& query) const {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    return field != nullptr && !field->is_extension() &&
+           field->containing_type() == query.query.first &&
+           field->name() == query.query.second;
+  }
 
   template <typename T, typename U>
   bool operator()(const T& a, const U& b) const {
@@ -1212,8 +1239,9 @@ class FileDescriptorTables {
   // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
-  inline Symbol FindNestedSymbol(const void* parent,
-                                 absl::string_view name) const;
+  template <typename K = ParentNameQuery>
+  inline auto FindNestedSymbol(const void* parent,
+                               absl::string_view name) const;
 
   // These return nullptr if not found.
   inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
@@ -1682,10 +1710,12 @@ inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
   return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
-inline Symbol FileDescriptorTables::FindNestedSymbol(
+template <typename K>
+inline auto FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
-  auto it = symbols_by_parent_.find(ParentNameQuery{{parent, name}});
-  return it == symbols_by_parent_.end() ? Symbol() : *it;
+  auto it = symbols_by_parent_.find(K{{{parent, name}}});
+  return it == symbols_by_parent_.end() ? typename K::SymbolT()
+                                        : K::IterToSymbol(it);
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -2506,9 +2536,7 @@ const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
 
 const FieldDescriptor* Descriptor::FindFieldByName(
     absl::string_view name) const {
-  const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
-  return field != nullptr && !field->is_extension() ? field : nullptr;
+  return file()->tables_->FindNestedSymbol<ParentNameFieldQuery>(this, name);
 }
 
 const OneofDescriptor* Descriptor::FindOneofByName(
@@ -3022,7 +3050,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!containing_type()->is_unqualified_placeholder_) {
       proto->set_extendee(".");
     }
-    proto->mutable_extendee()->append(containing_type()->full_name());
+    absl::StrAppend(proto->mutable_extendee(), containing_type()->full_name());
   }
 
   if (cpp_type() == CPPTYPE_MESSAGE) {
@@ -3035,12 +3063,12 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!message_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(message_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), message_type()->full_name());
   } else if (cpp_type() == CPPTYPE_ENUM) {
     if (!enum_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(enum_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), enum_type()->full_name());
   }
 
   if (has_default_value()) {
@@ -3124,12 +3152,12 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   if (!input_type()->is_unqualified_placeholder_) {
     proto->set_input_type(".");
   }
-  proto->mutable_input_type()->append(input_type()->full_name());
+  absl::StrAppend(proto->mutable_input_type(), input_type()->full_name());
 
   if (!output_type()->is_unqualified_placeholder_) {
     proto->set_output_type(".");
   }
-  proto->mutable_output_type()->append(output_type()->full_name());
+  absl::StrAppend(proto->mutable_output_type(), output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
     *proto->mutable_options() = options();
@@ -3195,7 +3223,7 @@ bool RetrieveOptionsAssumingRightPool(
       if (field->is_extension()) {
         name = absl::StrCat("(.", field->full_name(), ")");
       } else {
-        name = field->name();
+        name = std::string(field->name());
       }
       option_entries->push_back(absl::StrCat(name, " = ", fieldval));
     }
@@ -7142,9 +7170,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
     // scope.  Let's print an additional error to explain this.
     std::string outer_scope;
     if (parent->containing_type() == nullptr) {
-      outer_scope = file_->package();
+      outer_scope = std::string(file_->package());
     } else {
-      outer_scope = parent->containing_type()->full_name();
+      outer_scope = std::string(parent->containing_type()->full_name());
     }
 
     if (outer_scope.empty()) {
@@ -8140,14 +8168,12 @@ void DescriptorBuilder::ValidateFieldFeatures(
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence fields can't specify defaults.");
     }
-    if (field->enum_type() != nullptr &&
-        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+    if (field->enum_type() != nullptr && field->enum_type()->is_closed()) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence enum fields must always be open.");
     }
   }
-  if (field->is_extension() &&
-      field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+  if (field->is_extension() && field->is_required()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Extensions can't be required.");
   }
@@ -9784,8 +9810,9 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
-  // Do not generate hasbits for "real-oneof" and weak fields.
-  if (field->real_containing_oneof() || field->options().weak()) {
+  // Do not generate hasbits for "real-oneof", weak, or extension fields.
+  if (field->real_containing_oneof() || field->options().weak() ||
+      field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
 

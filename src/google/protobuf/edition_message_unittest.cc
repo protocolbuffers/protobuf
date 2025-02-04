@@ -34,7 +34,7 @@
 #define MESSAGE_FACTORY_TEST_NAME EditionMessageFactoryTest
 #define UNITTEST_PACKAGE_NAME "edition_unittest"
 #define UNITTEST ::edition_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
+#define UNITTEST_IMPORT ::proto2_unittest_import
 
 // Must include after the above macros.
 // clang-format off

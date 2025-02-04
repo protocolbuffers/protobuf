@@ -55,13 +55,11 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
-    descriptor_table_google_2fprotobuf_2fstruct_2eproto;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto;
 }  // extern "C"
 namespace google {
 namespace protobuf {
 enum NullValue : int;
-PROTOBUF_EXPORT bool NullValue_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueDefaultTypeInternal;
@@ -95,15 +93,16 @@ enum NullValue : int {
       std::numeric_limits<::int32_t>::max(),
 };
 
-PROTOBUF_EXPORT bool NullValue_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 inline constexpr NullValue NullValue_MIN =
     static_cast<NullValue>(0);
 inline constexpr NullValue NullValue_MAX =
     static_cast<NullValue>(0);
+inline bool NullValue_IsValid(int value) {
+  return 0 <= value && value <= 0;
+}
 inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
-NullValue_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor();
 template <typename T>
 const std::string& NullValue_Name(T value) {
   static_assert(std::is_same<T, NullValue>::value ||
@@ -113,13 +112,13 @@ const std::string& NullValue_Name(T value) {
 }
 template <>
 inline const std::string& NullValue_Name(NullValue value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<NullValue_descriptor,
-                                                 0, 0>(
+  return ::google::protobuf::internal::NameOfDenseEnum<NullValue_descriptor, 0, 0>(
       static_cast<int>(value));
 }
-inline bool NullValue_Parse(absl::string_view name, NullValue* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<NullValue>(
-      NullValue_descriptor(), name, value);
+inline bool NullValue_Parse(
+    absl::string_view name, NullValue* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<NullValue>(NullValue_descriptor(), name,
+                                           value);
 }
 
 // ===================================================================
@@ -134,15 +133,14 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   ~ListValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ListValue* msg, std::destroying_delete_t) {
+  void operator delete(ListValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ListValue));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR ListValue(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR ListValue(::google::protobuf::internal::ConstantInitialized);
 
   inline ListValue(const ListValue& from) : ListValue(nullptr, from) {}
   inline ListValue(ListValue&& from) noexcept
@@ -165,18 +163,18 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const ListValue& default_instance() {
@@ -185,7 +183,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(ListValue& a, ListValue& b) { a.Swap(&b); }
-  inline void Swap(ListValue* other) {
+  inline void Swap(ListValue* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -193,7 +191,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(ListValue* other) {
+  void UnsafeArenaSwap(ListValue* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -201,7 +199,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  ListValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  ListValue* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<ListValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -210,9 +208,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   void MergeFrom(const ListValue& from) { ListValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -222,45 +219,46 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(ListValue* other);
+  void InternalSwap(ListValue* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
  protected:
-  explicit ListValue(::google::protobuf::Arena* arena);
-  ListValue(::google::protobuf::Arena* arena, const ListValue& from);
-  ListValue(::google::protobuf::Arena* arena, ListValue&& from) noexcept
+  explicit ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ListValue& from);
+  ListValue(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ListValue&& from) noexcept
       : ListValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -280,23 +278,23 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   public:
   void clear_values() ;
-  ::google::protobuf::Value* mutable_values(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* mutable_values();
+  ::google::protobuf::Value* PROTOBUF_NONNULL mutable_values(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL mutable_values();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* _internal_mutable_values();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_values();
   public:
   const ::google::protobuf::Value& values(int index) const;
-  ::google::protobuf::Value* add_values();
+  ::google::protobuf::Value* PROTOBUF_NONNULL add_values();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 1,
-      0, 2>
+  static const ::google::protobuf::internal::TcParseTable<0, 1,
+                                   1, 0,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -306,13 +304,14 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const ListValue& from_msg);
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const ListValue& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -331,15 +330,14 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   ~Struct() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Struct* msg, std::destroying_delete_t) {
+  void operator delete(Struct* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Struct));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Struct(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Struct(::google::protobuf::internal::ConstantInitialized);
 
   inline Struct(const Struct& from) : Struct(nullptr, from) {}
   inline Struct(Struct&& from) noexcept
@@ -362,18 +360,18 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Struct& default_instance() {
@@ -382,7 +380,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(Struct& a, Struct& b) { a.Swap(&b); }
-  inline void Swap(Struct* other) {
+  inline void Swap(Struct* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -390,7 +388,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Struct* other) {
+  void UnsafeArenaSwap(Struct* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -398,7 +396,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Struct* New(::google::protobuf::Arena* arena = nullptr) const {
+  Struct* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Struct>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -407,9 +405,8 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   void MergeFrom(const Struct& from) { Struct::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -419,45 +416,46 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(Struct* other);
+  void InternalSwap(Struct* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
  protected:
-  explicit Struct(::google::protobuf::Arena* arena);
-  Struct(::google::protobuf::Arena* arena, const Struct& from);
-  Struct(::google::protobuf::Arena* arena, Struct&& from) noexcept
+  explicit Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Struct& from);
+  Struct(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Struct&& from) noexcept
       : Struct(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -478,20 +476,20 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   public:
   void clear_fields() ;
   const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& fields() const;
-  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* mutable_fields();
+  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
 
   private:
   const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& _internal_fields() const;
-  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* _internal_mutable_fields();
+  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_fields();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 2,
-      37, 2>
+  static const ::google::protobuf::internal::TcParseTable<0, 1,
+                                   2, 37,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -501,13 +499,14 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Struct& from_msg);
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Struct& from_msg);
     ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
@@ -523,23 +522,20 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_
 // -------------------------------------------------------------------
 
 class Struct_FieldsEntry_DoNotUse final
-    : public ::google::protobuf::internal::MapEntry<
-          std::string, ::google::protobuf::Message,
-          ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-          ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
+    : public ::google::protobuf::internal::MapEntry<std::string, ::google::protobuf::Message,
+                             ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+                             ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
  public:
-  using SuperType = ::google::protobuf::internal::MapEntry<
-      std::string, ::google::protobuf::Message,
-      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
+  using SuperType =
+      ::google::protobuf::internal::MapEntry<std::string, ::google::protobuf::Message,
+                      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+                      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
   Struct_FieldsEntry_DoNotUse();
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(
-      ::google::protobuf::internal::ConstantInitialized);
-  explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena);
-  static const Struct_FieldsEntry_DoNotUse* internal_default_instance() {
-    return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
-        &_Struct_FieldsEntry_DoNotUse_default_instance_);
+  explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized);
+  explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr const void* PROTOBUF_NONNULL internal_default_instance() {
+    return &_Struct_FieldsEntry_DoNotUse_default_instance_;
   }
 
 
@@ -550,14 +546,15 @@ class Struct_FieldsEntry_DoNotUse final
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 1,
-      46, 2>
+  static const ::google::protobuf::internal::TcParseTable<1, 2,
+                                   1, 46,
+                                   2>
       _table_;
 
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 };
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_;
@@ -570,15 +567,14 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   ~Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Value* msg, std::destroying_delete_t) {
+  void operator delete(Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Value));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Value(
-      ::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Value(::google::protobuf::internal::ConstantInitialized);
 
   inline Value(const Value& from) : Value(nullptr, from) {}
   inline Value(Value&& from) noexcept
@@ -601,18 +597,18 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const Value& default_instance() {
@@ -630,7 +626,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   };
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(Value& a, Value& b) { a.Swap(&b); }
-  inline void Swap(Value* other) {
+  inline void Swap(Value* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -638,7 +634,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Value* other) {
+  void UnsafeArenaSwap(Value* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -646,7 +642,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Value* New(::google::protobuf::Arena* arena = nullptr) const {
+  Value* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -655,9 +651,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   void MergeFrom(const Value& from) { Value::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -667,45 +662,46 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(Value* other);
+  void InternalSwap(Value* PROTOBUF_NONNULL other);
  private:
   template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
  protected:
-  explicit Value(::google::protobuf::Arena* arena);
-  Value(::google::protobuf::Arena* arena, const Value& from);
-  Value(::google::protobuf::Arena* arena, Value&& from) noexcept
+  explicit Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Value& from);
+  Value(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Value&& from) noexcept
       : Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static constexpr auto InternalNewImpl_();
 
  public:
@@ -751,14 +747,14 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   const std::string& string_value() const;
   template <typename Arg_ = const std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
-  std::string* mutable_string_value();
-  [[nodiscard]] std::string* release_string_value();
-  void set_allocated_string_value(std::string* value);
+  std::string* PROTOBUF_NONNULL mutable_string_value();
+  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_string_value();
+  void set_allocated_string_value(std::string* PROTOBUF_NULLABLE value);
 
   private:
   const std::string& _internal_string_value() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
-  std::string* _internal_mutable_string_value();
+  std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
 
   public:
   // bool bool_value = 4;
@@ -780,15 +776,15 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   public:
   void clear_struct_value() ;
   const ::google::protobuf::Struct& struct_value() const;
-  [[nodiscard]] ::google::protobuf::Struct* release_struct_value();
-  ::google::protobuf::Struct* mutable_struct_value();
-  void set_allocated_struct_value(::google::protobuf::Struct* value);
-  void unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value);
-  ::google::protobuf::Struct* unsafe_arena_release_struct_value();
+  [[nodiscard]] ::google::protobuf::Struct* PROTOBUF_NULLABLE release_struct_value();
+  ::google::protobuf::Struct* PROTOBUF_NONNULL mutable_struct_value();
+  void set_allocated_struct_value(::google::protobuf::Struct* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* PROTOBUF_NULLABLE value);
+  ::google::protobuf::Struct* PROTOBUF_NULLABLE unsafe_arena_release_struct_value();
 
   private:
   const ::google::protobuf::Struct& _internal_struct_value() const;
-  ::google::protobuf::Struct* _internal_mutable_struct_value();
+  ::google::protobuf::Struct* PROTOBUF_NONNULL _internal_mutable_struct_value();
 
   public:
   // .google.protobuf.ListValue list_value = 6;
@@ -799,15 +795,15 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   public:
   void clear_list_value() ;
   const ::google::protobuf::ListValue& list_value() const;
-  [[nodiscard]] ::google::protobuf::ListValue* release_list_value();
-  ::google::protobuf::ListValue* mutable_list_value();
-  void set_allocated_list_value(::google::protobuf::ListValue* value);
-  void unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value);
-  ::google::protobuf::ListValue* unsafe_arena_release_list_value();
+  [[nodiscard]] ::google::protobuf::ListValue* PROTOBUF_NULLABLE release_list_value();
+  ::google::protobuf::ListValue* PROTOBUF_NONNULL mutable_list_value();
+  void set_allocated_list_value(::google::protobuf::ListValue* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* PROTOBUF_NULLABLE value);
+  ::google::protobuf::ListValue* PROTOBUF_NULLABLE unsafe_arena_release_list_value();
 
   private:
   const ::google::protobuf::ListValue& _internal_list_value() const;
-  ::google::protobuf::ListValue* _internal_mutable_list_value();
+  ::google::protobuf::ListValue* PROTOBUF_NONNULL _internal_mutable_list_value();
 
   public:
   void clear_kind();
@@ -824,9 +820,9 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   inline bool has_kind() const;
   inline void clear_has_kind();
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      0, 6, 2,
-      42, 2>
+  static const ::google::protobuf::internal::TcParseTable<0, 6,
+                                   2, 42,
+                                   2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -836,13 +832,14 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Value& from_msg);
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const Value& from_msg);
     union KindUnion {
       constexpr KindUnion() : _constinit_{} {}
       ::google::protobuf::internal::ConstantInitialized _constinit_;
@@ -850,8 +847,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       double number_value_;
       ::google::protobuf::internal::ArenaStringPtr string_value_;
       bool bool_value_;
-      ::google::protobuf::Struct* struct_value_;
-      ::google::protobuf::ListValue* list_value_;
+      ::google::protobuf::Struct* PROTOBUF_NULLABLE struct_value_;
+      ::google::protobuf::ListValue* PROTOBUF_NULLABLE list_value_;
     } kind_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::uint32_t _oneof_case_[1];
@@ -900,11 +897,12 @@ inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& St
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return _internal_fields();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::_internal_mutable_fields() {
+inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::_internal_mutable_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.fields_.MutableMap();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::mutable_fields()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
@@ -999,8 +997,7 @@ inline const std::string& Value::string_value() const
   return _internal_string_value();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
-                                              Args_... args) {
+PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
@@ -1011,7 +1008,8 @@ PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
   _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
-inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* PROTOBUF_NONNULL Value::mutable_string_value()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
@@ -1033,7 +1031,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   }
   _impl_.kind_.string_value_.Set(value, GetArena());
 }
-inline std::string* Value::_internal_mutable_string_value() {
+inline std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
@@ -1043,7 +1041,7 @@ inline std::string* Value::_internal_mutable_string_value() {
   }
   return _impl_.kind_.string_value_.Mutable( GetArena());
 }
-inline std::string* Value::release_string_value() {
+inline std::string* PROTOBUF_NULLABLE Value::release_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (kind_case() != kStringValue) {
@@ -1052,7 +1050,7 @@ inline std::string* Value::release_string_value() {
   clear_has_kind();
   return _impl_.kind_.string_value_.Release();
 }
-inline void Value::set_allocated_string_value(std::string* value) {
+inline void Value::set_allocated_string_value(std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (has_kind()) {
     clear_kind();
@@ -1118,7 +1116,7 @@ inline void Value::clear_struct_value() {
     clear_has_kind();
   }
 }
-inline ::google::protobuf::Struct* Value::release_struct_value() {
+inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
   if (kind_case() == kStructValue) {
     clear_has_kind();
@@ -1139,7 +1137,7 @@ inline const ::google::protobuf::Struct& Value::struct_value() const ABSL_ATTRIB
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
   return _internal_struct_value();
 }
-inline ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
+inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::unsafe_arena_release_struct_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
   if (kind_case() == kStructValue) {
     clear_has_kind();
@@ -1150,7 +1148,8 @@ inline ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
     return nullptr;
   }
 }
-inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value) {
+inline void Value::unsafe_arena_set_allocated_struct_value(
+    ::google::protobuf::Struct* PROTOBUF_NULLABLE value) {
   // We rely on the oneof clear method to free the earlier contents
   // of this oneof. We can directly use the pointer we're given to
   // set the new value.
@@ -1161,16 +1160,17 @@ inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::S
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.struct_value)
 }
-inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
+inline ::google::protobuf::Struct* PROTOBUF_NONNULL Value::_internal_mutable_struct_value() {
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ =
+    _impl_.kind_.struct_value_ = 
         ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Struct>(GetArena());
   }
   return _impl_.kind_.struct_value_;
 }
-inline ::google::protobuf::Struct* Value::mutable_struct_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Struct* PROTOBUF_NONNULL Value::mutable_struct_value()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::Struct* _msg = _internal_mutable_struct_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.struct_value)
   return _msg;
@@ -1197,7 +1197,7 @@ inline void Value::clear_list_value() {
     clear_has_kind();
   }
 }
-inline ::google::protobuf::ListValue* Value::release_list_value() {
+inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
   if (kind_case() == kListValue) {
     clear_has_kind();
@@ -1218,7 +1218,7 @@ inline const ::google::protobuf::ListValue& Value::list_value() const ABSL_ATTRI
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)
   return _internal_list_value();
 }
-inline ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
+inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::unsafe_arena_release_list_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
   if (kind_case() == kListValue) {
     clear_has_kind();
@@ -1229,7 +1229,8 @@ inline ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
     return nullptr;
   }
 }
-inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value) {
+inline void Value::unsafe_arena_set_allocated_list_value(
+    ::google::protobuf::ListValue* PROTOBUF_NULLABLE value) {
   // We rely on the oneof clear method to free the earlier contents
   // of this oneof. We can directly use the pointer we're given to
   // set the new value.
@@ -1240,16 +1241,17 @@ inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::Lis
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.list_value)
 }
-inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
+inline ::google::protobuf::ListValue* PROTOBUF_NONNULL Value::_internal_mutable_list_value() {
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ =
+    _impl_.kind_.list_value_ = 
         ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ListValue>(GetArena());
   }
   return _impl_.kind_.list_value_;
 }
-inline ::google::protobuf::ListValue* Value::mutable_list_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::ListValue* PROTOBUF_NONNULL Value::mutable_list_value()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::ListValue* _msg = _internal_mutable_list_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.list_value)
   return _msg;
@@ -1279,12 +1281,12 @@ inline void ListValue::clear_values() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.values_.Clear();
 }
-inline ::google::protobuf::Value* ListValue::mutable_values(int index)
+inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::mutable_values(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
   return _internal_mutable_values()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* ListValue::mutable_values()
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL ListValue::mutable_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1295,7 +1297,8 @@ inline const ::google::protobuf::Value& ListValue::values(int index) const
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
   return _internal_values().Get(index);
 }
-inline ::google::protobuf::Value* ListValue::add_values() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::add_values()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
@@ -1311,7 +1314,7 @@ ListValue::_internal_values() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.values_;
 }
-inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>*
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL
 ListValue::_internal_mutable_values() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.values_;
@@ -1332,7 +1335,7 @@ namespace protobuf {
 template <>
 struct is_proto_enum<::google::protobuf::NullValue> : std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::NullValue>() {
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::NullValue>() {
   return ::google::protobuf::NullValue_descriptor();
 }
 

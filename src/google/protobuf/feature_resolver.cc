@@ -351,6 +351,8 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
   CHECK_ENUM_FEATURE(utf8_validation, Utf8Validation, UTF8_VALIDATION)
   CHECK_ENUM_FEATURE(message_encoding, MessageEncoding, MESSAGE_ENCODING)
   CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
+  CHECK_ENUM_FEATURE(enforce_naming_style, EnforceNamingStyle,
+                     ENFORCE_NAMING_STYLE)
 
 #undef CHECK_ENUM_FEATURE
 

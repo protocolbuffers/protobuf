@@ -65,6 +65,8 @@ std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
+
+std::string OneofCaseEnumCppName(const OneofDescriptor& oneof);
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);

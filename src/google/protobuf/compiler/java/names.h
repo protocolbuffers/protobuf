@@ -125,6 +125,13 @@ PROTOC_EXPORT std::string UnderscoresToCamelCase(
 PROTOC_EXPORT std::string UnderscoresToCamelCaseCheckReserved(
     const FieldDescriptor* field);
 
+// Requires:
+//   field != NULL
+// Returns:
+//   Same as UnderscoresToCamelCase, but capitalizes the first letter
+PROTOC_EXPORT std::string UnderscoresToCapitalizedCamelCase(
+    const FieldDescriptor* field);
+
 
 }  // namespace java
 }  // namespace compiler

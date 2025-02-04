@@ -9,7 +9,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest_import;
+package proto2_unittest_import;
 
 option java_package = "com.google.protobuf.test";
 

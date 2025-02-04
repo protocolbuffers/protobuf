@@ -62,7 +62,7 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
         "//upb:message",

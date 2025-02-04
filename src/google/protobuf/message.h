@@ -1665,12 +1665,14 @@ const Type& Reflection::GetRaw(const Message& message,
 template <typename T>
 RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
     const Message& message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message.GetReflection(), this);
   return RepeatedFieldRef<T>(message, field);
 }
 
 template <typename T>
 MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message->GetReflection(), this);
   return MutableRepeatedFieldRef<T>(message, field);
 }
 

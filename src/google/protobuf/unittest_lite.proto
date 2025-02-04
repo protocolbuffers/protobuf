@@ -11,7 +11,7 @@
 
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/unittest_import_lite.proto";
 
@@ -65,17 +65,17 @@ message TestAllTypesLite {
 
   NestedMessage optional_nested_message = 18;
   ForeignMessageLite optional_foreign_message = 19;
-  protobuf_unittest_import.ImportMessageLite optional_import_message = 20;
+  proto2_unittest_import.ImportMessageLite optional_import_message = 20;
   NestedEnum optional_nested_enum = 21;
   ForeignEnumLite optional_foreign_enum = 22;
-  protobuf_unittest_import.ImportEnumLite optional_import_enum = 23;
+  proto2_unittest_import.ImportEnumLite optional_import_enum = 23;
   string optional_string_piece = 24 [ctype = STRING_PIECE];
 
   string optional_cord = 25 [ctype = CORD];
   bytes optional_bytes_cord = 86 [ctype = CORD];
 
   // Defined in unittest_import_public.proto
-  protobuf_unittest_import.PublicImportMessageLite
+  proto2_unittest_import.PublicImportMessageLite
       optional_public_import_message = 26;
   NestedMessage optional_lazy_message = 27 [lazy = true];
 
@@ -107,11 +107,11 @@ message TestAllTypesLite {
 
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessageLite repeated_foreign_message = 49;
-  repeated protobuf_unittest_import.ImportMessageLite repeated_import_message =
+  repeated proto2_unittest_import.ImportMessageLite repeated_import_message =
       50;
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnumLite repeated_foreign_enum = 52;
-  repeated protobuf_unittest_import.ImportEnumLite repeated_import_enum = 53;
+  repeated proto2_unittest_import.ImportEnumLite repeated_import_enum = 53;
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
 
   repeated string repeated_cord = 55 [ctype = CORD];
@@ -153,7 +153,7 @@ message TestAllTypesLite {
 
   ForeignEnumLite default_foreign_enum = 82 [default = FOREIGN_LITE_BAR];
 
-  protobuf_unittest_import.ImportEnumLite default_import_enum = 83
+  proto2_unittest_import.ImportEnumLite default_import_enum = 83
       [default = IMPORT_LITE_BAR];
 
   string default_string_piece = 84 [ctype = STRING_PIECE, default = "abc"];
@@ -251,11 +251,11 @@ extend TestAllExtensionsLite {
 
   TestAllTypesLite.NestedMessage optional_nested_message_extension_lite = 18;
   ForeignMessageLite optional_foreign_message_extension_lite = 19;
-  protobuf_unittest_import.ImportMessageLite
+  proto2_unittest_import.ImportMessageLite
       optional_import_message_extension_lite = 20;
   TestAllTypesLite.NestedEnum optional_nested_enum_extension_lite = 21;
   ForeignEnumLite optional_foreign_enum_extension_lite = 22;
-  protobuf_unittest_import.ImportEnumLite optional_import_enum_extension_lite =
+  proto2_unittest_import.ImportEnumLite optional_import_enum_extension_lite =
       23;
   string optional_string_piece_extension_lite = 24 [ctype = STRING_PIECE];
 
@@ -263,7 +263,7 @@ extend TestAllExtensionsLite {
   // ctype=CORD option back after it is supported.
   string optional_cord_extension_lite = 25;
   bytes optional_bytes_cord_extension_lite = 86;
-  protobuf_unittest_import.PublicImportMessageLite
+  proto2_unittest_import.PublicImportMessageLite
       optional_public_import_message_extension_lite = 26;
   TestAllTypesLite.NestedMessage optional_lazy_message_extension_lite = 27
       [lazy = true];
@@ -294,11 +294,11 @@ extend TestAllExtensionsLite {
   repeated TestAllTypesLite.NestedMessage
       repeated_nested_message_extension_lite = 48;
   repeated ForeignMessageLite repeated_foreign_message_extension_lite = 49;
-  repeated protobuf_unittest_import.ImportMessageLite
+  repeated proto2_unittest_import.ImportMessageLite
       repeated_import_message_extension_lite = 50;
   repeated TestAllTypesLite.NestedEnum repeated_nested_enum_extension_lite = 51;
   repeated ForeignEnumLite repeated_foreign_enum_extension_lite = 52;
-  repeated protobuf_unittest_import.ImportEnumLite
+  repeated proto2_unittest_import.ImportEnumLite
       repeated_import_enum_extension_lite = 53;
   repeated string repeated_string_piece_extension_lite = 54
       [ctype = STRING_PIECE];
@@ -346,7 +346,7 @@ extend TestAllExtensionsLite {
   ForeignEnumLite default_foreign_enum_extension_lite = 82
       [default = FOREIGN_LITE_BAR];
 
-  protobuf_unittest_import.ImportEnumLite default_import_enum_extension_lite = 83
+  proto2_unittest_import.ImportEnumLite default_import_enum_extension_lite = 83
       [default = IMPORT_LITE_BAR];
 
   string default_string_piece_extension_lite = 84
@@ -554,8 +554,8 @@ message TestHugeFieldNumbersLite {
 
   extensions 536860000 to 536869999 [declaration = {
     number: 536860000
-    full_name: ".protobuf_unittest.test_all_types_lite"
-    type: ".protobuf_unittest.TestAllTypesLite"
+    full_name: ".proto2_unittest.test_all_types_lite"
+    type: ".proto2_unittest.TestAllTypesLite"
   }];
 }
 

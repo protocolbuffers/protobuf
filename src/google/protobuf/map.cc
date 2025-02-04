@@ -8,9 +8,9 @@
 #include "google/protobuf/map.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <string>
 
 #include "absl/base/optimization.h"
@@ -28,7 +28,82 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+std::atomic<MapFieldBaseForParse::SyncFunc>
+    MapFieldBaseForParse::sync_map_with_repeated{};
+
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
+
+void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
+  if (other.empty()) return;
+
+  // Do the merging in steps to avoid Key*Value number of instantiations and
+  // reduce code duplication per instantation.
+  NodeBase* nodes = nullptr;
+
+  // First, allocate all the nodes without types.
+  for (size_t i = 0; i < other.num_elements_; ++i) {
+    NodeBase* new_node = AllocNode();
+    new_node->next = nodes;
+    nodes = new_node;
+  }
+
+  // Then, copy the values.
+  VisitValueType([&](auto value_type) {
+    using Value = typename decltype(value_type)::type;
+    NodeBase* out_node = nodes;
+
+    // Get the ClassData once to avoid redundant virtual function calls.
+    const internal::ClassData* class_data =
+        std::is_same_v<MessageLite, Value>
+            ? GetClassData(*other.GetValue<MessageLite>(other.begin().node_))
+            : nullptr;
+
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      Value* out = GetValue<Value>(out_node);
+      out_node = out_node->next;
+      auto& in = *other.GetValue<Value>(it.node_);
+      if constexpr (std::is_same_v<MessageLite, Value>) {
+        class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
+      } else {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
+    }
+  });
+
+  // Finally, copy the keys and insert the nodes.
+  VisitKeyType([&](auto key_type) {
+    using Key = typename decltype(key_type)::type;
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      NodeBase* node = nodes;
+      nodes = nodes->next;
+      const Key& in = *other.GetKey<Key>(it.node_);
+      Key* out = GetKey<Key>(node);
+      if (!internal::InitializeMapKey(out, in, this->arena_)) {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
+
+      static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
+          static_cast<typename KeyMapBase<Key>::KeyNode*>(node));
+    }
+  });
+}
+
+void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
+  if (arena() == other.arena()) {
+    InternalSwap(&other);
+  } else {
+    UntypedMapBase tmp(arena_, type_info_);
+    InternalSwap(&tmp);
+
+    ABSL_DCHECK(empty());
+    UntypedMergeFrom(other);
+
+    other.ClearTable(true);
+    other.UntypedMergeFrom(tmp);
+
+    if (arena_ == nullptr) tmp.ClearTable(false);
+  }
+}
 
 void UntypedMapBase::DeleteNode(NodeBase* node) {
   const auto destroy = absl::Overload{
@@ -39,11 +114,11 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
   DeallocNode(node);
 }
 
-void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
+void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (arena_ == nullptr) {
-    const auto loop = [&, this](auto destroy_node) {
+    const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
@@ -59,15 +134,14 @@ void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
 
     const auto dispatch_key = [&](auto value_handler) {
       if (type_info_.key_type < TypeKind::kString) {
-        return loop(value_handler);
+        loop(value_handler);
       } else if (type_info_.key_type == TypeKind::kString) {
-        return loop([=](NodeBase* node) {
+        loop([=](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           value_handler(node);
         });
       } else {
-        ABSL_CHECK(destroy != nullptr);
-        return loop(destroy);
+        Unreachable();
       }
     };
 
@@ -82,8 +156,7 @@ void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
         GetValue<MessageLite>(node)->DestroyInstance();
       });
     } else {
-      ABSL_CHECK(destroy != nullptr);
-      loop(destroy);
+      Unreachable();
     }
   }
 

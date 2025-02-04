@@ -13,9 +13,9 @@ import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
-import protobuf_unittest.UnittestProto.SparseEnumMessage;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestSparseEnum;
+import proto2_unittest.UnittestProto.SparseEnumMessage;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestSparseEnum;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

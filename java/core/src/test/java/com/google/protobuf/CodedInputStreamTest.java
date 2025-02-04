@@ -14,11 +14,11 @@ import static org.junit.Assert.assertThrows;
 
 import com.google.common.primitives.Bytes;
 import map_test.MapTestProto.MapContainer;
-import protobuf_unittest.UnittestProto.BoolMessage;
-import protobuf_unittest.UnittestProto.Int32Message;
-import protobuf_unittest.UnittestProto.Int64Message;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestRecursiveMessage;
+import proto2_unittest.UnittestProto.BoolMessage;
+import proto2_unittest.UnittestProto.Int32Message;
+import proto2_unittest.UnittestProto.Int64Message;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestRecursiveMessage;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 import java.io.ByteArrayInputStream;

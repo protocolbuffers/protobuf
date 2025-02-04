@@ -170,7 +170,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
                         << " 'A::B::C' and not 'A.B.C'";
     }
   } else {
-    package_name = file->package();
+    package_name = std::string(file->package());
   }
 
   // Use the appropriate delimiter

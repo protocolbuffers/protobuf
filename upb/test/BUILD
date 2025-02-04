@@ -28,7 +28,7 @@ cc_library(
     hdrs = ["parse_text_proto.h"],
     visibility = ["//upb:__subpackages__"],
     deps = [
-        "//:protobuf",
+        "//src/google/protobuf",
         "@com_google_googletest//:gtest",
     ],
 )

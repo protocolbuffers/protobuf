@@ -80,7 +80,7 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2024) {
                            R"schema(
       edition = "2024";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message TestFileName2024 {
         int32 field = 1;
@@ -103,7 +103,7 @@ TEST_F(NameResolverTest, FileImmutableClassNameDefaultOverriddenEdition2024) {
                            R"schema(
       edition = "2024";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       option java_outer_classname = "BarBuz";
 
@@ -123,7 +123,7 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
                            R"schema(
       edition = "2023";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message ConflictingFileClassName {
         int32 field = 1;
@@ -146,7 +146,7 @@ TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
       option java_generic_services = true;
       option java_multiple_files = true;
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message Dummy {}
       service FooService {
@@ -155,12 +155,12 @@ TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
                 )schema");
 
   auto service_descriptor =
-      pool_.FindServiceByName("protobuf_unittest.FooService");
+      pool_.FindServiceByName("proto2_unittest.FooService");
   ClassNameResolver resolver;
   EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.FooService");
+            PACKAGE_PREFIX "proto2_unittest.FooService");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.FooService");
+            PACKAGE_PREFIX "proto2_unittest.FooService");
 }
 
 TEST_F(NameResolverTest, SingleFileServiceEdition2023) {
@@ -170,7 +170,7 @@ TEST_F(NameResolverTest, SingleFileServiceEdition2023) {
 
       option java_generic_services = true;
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message Dummy {}
       service FooService {
@@ -179,12 +179,12 @@ TEST_F(NameResolverTest, SingleFileServiceEdition2023) {
                 )schema");
 
   auto service_descriptor =
-      pool_.FindServiceByName("protobuf_unittest.FooService");
+      pool_.FindServiceByName("proto2_unittest.FooService");
   ClassNameResolver resolver;
   EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.Foo.FooService");
+            PACKAGE_PREFIX "proto2_unittest.Foo.FooService");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.Foo$FooService");
+            PACKAGE_PREFIX "proto2_unittest.Foo$FooService");
 }
 
 TEST_F(NameResolverTest, MultipleFilesMessageEdition2023) {
@@ -194,19 +194,19 @@ TEST_F(NameResolverTest, MultipleFilesMessageEdition2023) {
 
       option java_multiple_files = true;
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message FooMessage {}
                 )schema");
 
   auto message_descriptor =
-      pool_.FindMessageTypeByName("protobuf_unittest.FooMessage");
+      pool_.FindMessageTypeByName("proto2_unittest.FooMessage");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
+            PACKAGE_PREFIX "proto2_unittest.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
+            PACKAGE_PREFIX "proto2_unittest.FooMessage");
 }
 
 TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
@@ -214,19 +214,19 @@ TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
                            R"schema(
       edition = "2023";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       message FooMessage {}
                 )schema");
 
   auto message_descriptor =
-      pool_.FindMessageTypeByName("protobuf_unittest.FooMessage");
+      pool_.FindMessageTypeByName("proto2_unittest.FooMessage");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.Foo.FooMessage");
+            PACKAGE_PREFIX "proto2_unittest.Foo.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.Foo$FooMessage");
+            PACKAGE_PREFIX "proto2_unittest.Foo$FooMessage");
 }
 
 TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
@@ -234,7 +234,7 @@ TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
                            R"schema(
       edition = "2023";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       option java_multiple_files = true;
 
@@ -243,13 +243,13 @@ TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
       }
                 )schema");
 
-  auto enum_descriptor = pool_.FindEnumTypeByName("protobuf_unittest.FooEnum");
+  auto enum_descriptor = pool_.FindEnumTypeByName("proto2_unittest.FooEnum");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
+            PACKAGE_PREFIX "proto2_unittest.FooEnum");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
+            PACKAGE_PREFIX "proto2_unittest.FooEnum");
 }
 
 TEST_F(NameResolverTest, SingleFileEnumEdition2023) {
@@ -257,20 +257,20 @@ TEST_F(NameResolverTest, SingleFileEnumEdition2023) {
                            R"schema(
       edition = "2023";
 
-      package protobuf_unittest;
+      package proto2_unittest;
 
       enum FooEnum {
         FOO_ENUM_UNSPECIFIED = 0;
       }
                 )schema");
 
-  auto enum_descriptor = pool_.FindEnumTypeByName("protobuf_unittest.FooEnum");
+  auto enum_descriptor = pool_.FindEnumTypeByName("proto2_unittest.FooEnum");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "protobuf_unittest.Foo.FooEnum");
+            PACKAGE_PREFIX "proto2_unittest.Foo.FooEnum");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
-            PACKAGE_PREFIX "protobuf_unittest.Foo$FooEnum");
+            PACKAGE_PREFIX "proto2_unittest.Foo$FooEnum");
 }
 
 }  // namespace

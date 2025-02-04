@@ -409,3 +409,34 @@ rust_cc_proto_library(
     testonly = True,
     deps = ["unittest_proto3_optional_proto"],
 )
+
+proto_library(
+    name = "srcsless_library_test_child_proto",
+    testonly = True,
+    srcs = ["srcsless_library_test_child.proto"],
+)
+
+proto_library(
+    name = "srcsless_library_test_alias_proto",
+    testonly = True,
+    deps = [":srcsless_library_test_child_proto"],
+)
+
+proto_library(
+    name = "srcsless_library_test_parent_proto",
+    testonly = True,
+    srcs = ["srcsless_library_test_parent.proto"],
+    deps = [":srcsless_library_test_alias_proto"],
+)
+
+rust_cc_proto_library(
+    name = "srcsless_library_test_parent_cpp_rust_proto",
+    testonly = True,
+    deps = [":srcsless_library_test_parent_proto"],
+)
+
+rust_upb_proto_library(
+    name = "srcsless_library_test_parent_upb_rust_proto",
+    testonly = True,
+    deps = [":srcsless_library_test_parent_proto"],
+)
