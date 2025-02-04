@@ -181,7 +181,7 @@ bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
   return false;
 }
 
-static char* strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
+static char* _strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
   char* ret = upb_strdup2(view.data, view.size, _upb_DefBuilder_Arena(ctx));
   if (!ret) _upb_DefBuilder_OomErr(ctx);
   return ret;
@@ -310,7 +310,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
-  file->name = strviewdup(ctx, name);
+  file->name = _strviewdup(ctx, name);
   if (strlen(file->name) != name.size) {
     _upb_DefBuilder_Errf(ctx, "File name contained embedded NULL");
   }
@@ -319,7 +319,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (package.size) {
     _upb_DefBuilder_CheckIdentFull(ctx, package);
-    file->package = strviewdup(ctx, package);
+    file->package = _strviewdup(ctx, package);
   } else {
     file->package = NULL;
   }
