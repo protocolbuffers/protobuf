@@ -1974,11 +1974,9 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
-absl::string_view Reflection::GetStringView(const Message& message,
-                                            const FieldDescriptor* field,
-                                            ScratchSpace& scratch) const {
-  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
-
+absl::string_view Reflection::GetStringViewImpl(const Message& message,
+                                                const FieldDescriptor* field,
+                                                ScratchSpace* scratch) const {
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(
         field->number(), internal::DefaultValueStringAsString(field));
@@ -1992,12 +1990,20 @@ absl::string_view Reflection::GetStringView(const Message& message,
       const auto& cord = schema_.InRealOneof(field)
                              ? *GetField<absl::Cord*>(message, field)
                              : GetField<absl::Cord>(message, field);
-      return scratch.CopyFromCord(cord);
+      ABSL_DCHECK(scratch);
+      return scratch->CopyFromCord(cord);
     }
     default:
       auto str = GetField<ArenaStringPtr>(message, field);
       return str.IsDefault() ? field->default_value_string() : str.Get();
   }
+}
+
+absl::string_view Reflection::GetStringView(const Message& message,
+                                            const FieldDescriptor* field,
+                                            ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
+  return GetStringViewImpl(message, field, &scratch);
 }
 
 
