@@ -57,17 +57,13 @@ using FieldEntry = TcParseTableBase::FieldEntry;
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef NDEBUG
-void AlignFail(std::integral_constant<size_t, 4>, std::uintptr_t address) {
+[[noreturn]] void AlignFail(std::integral_constant<size_t, 4>,
+                            std::uintptr_t address) {
   ABSL_LOG(FATAL) << "Unaligned (4) access at " << address;
-
-  // Explicit abort to let compilers know this function does not return
-  abort();
 }
-void AlignFail(std::integral_constant<size_t, 8>, std::uintptr_t address) {
+[[noreturn]] void AlignFail(std::integral_constant<size_t, 8>,
+                            std::uintptr_t address) {
   ABSL_LOG(FATAL) << "Unaligned (8) access at " << address;
-
-  // Explicit abort to let compilers know this function does not return
-  abort();
 }
 #endif
 
