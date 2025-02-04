@@ -77,10 +77,19 @@ module Google
         end
       end
 
+      def to_proto
+        @to_proto ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.service_to_proto(self, size_ptr, temporary_arena)
+          Google::Protobuf::ServiceDescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+        end
+      end
+
       private
 
       def initialize(service_def, descriptor_pool)
-        @service_def = service_def 
+        @service_def = service_def
         @descriptor_pool = descriptor_pool
       end
 
@@ -102,6 +111,7 @@ module Google
       attach_function :method_count,                :upb_ServiceDef_MethodCount,            [ServiceDescriptor], :int
       attach_function :get_method_by_index,         :upb_ServiceDef_Method,                 [ServiceDescriptor, :int], MethodDescriptor
       attach_function :service_options,             :ServiceDescriptor_serialized_options,  [ServiceDescriptor, :pointer, Internal::Arena], :pointer
+      attach_function :service_to_proto,            :ServiceDescriptor_serialized_to_proto, [ServiceDescriptor, :pointer, Internal::Arena], :pointer
     end
   end
 end
