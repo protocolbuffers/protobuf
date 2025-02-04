@@ -2682,13 +2682,12 @@ const char* ReadFixed(void* obj, const char* ptr) {
 const char* TcParser::ParseOneMapEntry(
     NodeBase* node, const char* ptr, ParseContext* ctx,
     const TcParseTableBase::FieldAux* aux, const TcParseTableBase* table,
-    const TcParseTableBase::FieldEntry& entry, Arena* arena) {
+    const TcParseTableBase::FieldEntry& entry, UntypedMapBase& map) {
   using WFL = WireFormatLite;
 
   const auto map_info = aux[0].map_info;
-  const uint8_t key_tag = WFL::MakeTag(1, map_info.key_type_card.wiretype());
-  const uint8_t value_tag =
-      WFL::MakeTag(2, map_info.value_type_card.wiretype());
+  const uint8_t key_tag = map_info.key_type_card.tag();
+  const uint8_t value_tag = map_info.value_type_card.tag();
 
   while (!ctx->Done(&ptr)) {
     uint32_t inner_tag = ptr[0];
@@ -2714,31 +2713,34 @@ const char* TcParser::ParseOneMapEntry(
     }
 
     MapTypeCard type_card;
+    UntypedMapBase::TypeKind type_kind;
     void* obj;
     if (inner_tag == key_tag) {
       type_card = map_info.key_type_card;
+      type_kind = map.type_info().key_type;
       obj = node->GetVoidKey();
     } else {
       type_card = map_info.value_type_card;
-      obj = node->GetVoidValue(map_info.node_size_info);
+      type_kind = map.type_info().value_type;
+      obj = map.GetVoidValue(node);
     }
 
-    switch (type_card.wiretype()) {
+    switch (inner_tag & 7) {
       case WFL::WIRETYPE_VARINT:
         uint64_t tmp;
         ptr = ParseVarint(ptr, &tmp);
         if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
-        switch (type_card.cpp_type()) {
-          case MapTypeCard::kBool:
+        switch (type_kind) {
+          case UntypedMapBase::TypeKind::kBool:
             *reinterpret_cast<bool*>(obj) = static_cast<bool>(tmp);
             continue;
-          case MapTypeCard::k32: {
+          case UntypedMapBase::TypeKind::kU32: {
             uint32_t v = static_cast<uint32_t>(tmp);
             if (type_card.is_zigzag()) v = WFL::ZigZagDecode32(v);
             memcpy(obj, &v, sizeof(v));
             continue;
           }
-          case MapTypeCard::k64:
+          case UntypedMapBase::TypeKind::kU64:
             if (type_card.is_zigzag()) tmp = WFL::ZigZagDecode64(tmp);
             memcpy(obj, &tmp, sizeof(tmp));
             continue;
@@ -2752,7 +2754,7 @@ const char* TcParser::ParseOneMapEntry(
         ptr = ReadFixed<uint64_t>(obj, ptr);
         continue;
       case WFL::WIRETYPE_LENGTH_DELIMITED:
-        if (type_card.cpp_type() == MapTypeCard::kString) {
+        if (type_kind == UntypedMapBase::TypeKind::kString) {
           const int size = ReadSize(&ptr);
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           std::string* str = reinterpret_cast<std::string*>(obj);
@@ -2772,7 +2774,8 @@ const char* TcParser::ParseOneMapEntry(
           }
           continue;
         } else {
-          ABSL_DCHECK_EQ(+type_card.cpp_type(), +MapTypeCard::kMessage);
+          ABSL_DCHECK_EQ(static_cast<int>(type_kind),
+                         static_cast<int>(UntypedMapBase::TypeKind::kMessage));
           ABSL_DCHECK_EQ(inner_tag, value_tag);
           ptr = ctx->ParseMessage(reinterpret_cast<MessageLite*>(obj), ptr);
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
@@ -2851,7 +2854,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
               });
 
     ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
-      return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map.arena());
+      return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map);
     });
 
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
@@ -2867,20 +2870,20 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
       WriteMapEntryAsUnknown(msg, table, map, saved_tag, node, map_info);
     } else {
       // Done parsing the node, insert it.
-      switch (map_info.key_type_card.cpp_type()) {
-        case MapTypeCard::kBool:
+      switch (map.type_info().key_type) {
+        case UntypedMapBase::TypeKind::kBool:
           static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<bool>::KeyNode*>(node));
           break;
-        case MapTypeCard::k32:
+        case UntypedMapBase::TypeKind::kU32:
           static_cast<KeyMapBase<uint32_t>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
           break;
-        case MapTypeCard::k64:
+        case UntypedMapBase::TypeKind::kU64:
           static_cast<KeyMapBase<uint64_t>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
           break;
-        case MapTypeCard::kString:
+        case UntypedMapBase::TypeKind::kString:
           static_cast<KeyMapBase<std::string>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<std::string>::KeyNode*>(node));
           break;
