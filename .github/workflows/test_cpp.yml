@@ -52,6 +52,10 @@ jobs:
             cache_key: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:7.1.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
             targets: "//src/... //third_party/utf8_range/..."
+          - config: { name: "aarch64" }
+            cache_key: aarch64-bazel7
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8"
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -94,9 +98,9 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        arch: [x86_64]
+        arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch }}
-    runs-on: ubuntu-20-4core
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v4
