@@ -27,6 +27,7 @@
 #include <string>
 #include <thread>  // NOLINT
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -11819,8 +11820,8 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Func>
-  auto MemoizeProjection(const DescriptorPool* pool,
-                         const FieldDescriptor* field, Func func) {
+  const auto& MemoizeProjection(const DescriptorPool* pool,
+                                const FieldDescriptor* field, Func func) {
     return pool->MemoizeProjection(field, func);
   };
 };
@@ -11834,14 +11835,19 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
   proto2_unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
 
-  auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+  const auto& name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(0), name_lambda);
-  auto dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+  const auto& dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(0), name_lambda);
 
   ASSERT_EQ(counter, 1);
   ASSERT_EQ(name, "proto2_unittest.TestAllTypes.optional_int32");
   ASSERT_EQ(dupe_name, "proto2_unittest.TestAllTypes.optional_int32");
+
+  // Check that they are references aliasing the same object.
+  EXPECT_TRUE(
+      (std::is_same_v<decltype(name), const decltype(descriptor->name()) &>));
+  EXPECT_EQ(&name, &dupe_name);
 
   auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(1), name_lambda);
