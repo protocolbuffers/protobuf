@@ -19,7 +19,7 @@ extern "C" {
     /// # Safety
     /// - `mini_table` and `arena` must be valid to deref
     pub fn upb_Message_New(mini_table: *const upb_MiniTable, arena: RawArena)
-    -> Option<RawMessage>;
+        -> Option<RawMessage>;
 
     /// # Safety
     /// - `m` and `mini_table` must be valid to deref
@@ -31,6 +31,12 @@ extern "C" {
     /// - `f` must be a field associated with `f`
     pub fn upb_Message_ClearBaseField(m: RawMessage, f: *const upb_MiniTableField);
 
+    /// Copies the contents from `src` into `dst`.
+    ///
+    /// Returns false if the copy failed due to an allocation failure. If this returns false, `dst`
+    /// is in an indeterminate state. Returning false should be extremely rare under normal
+    /// circumstances unless a fixed sized arena is used.
+    ///
     /// # Safety
     /// - All four arguments must be valid to deref
     /// - `mini_table` must be the MiniTable associated with both `dst` and
@@ -40,7 +46,7 @@ extern "C" {
         src: RawMessage,
         mini_table: *const upb_MiniTable,
         arena: RawArena,
-    );
+    ) -> bool;
 
     /// # Safety
     /// - All three arguments must be valid to deref

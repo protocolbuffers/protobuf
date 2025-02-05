@@ -207,8 +207,6 @@ where
     }
 
     /// Copies from the `src` repeated field into this one.
-    ///
-    /// Also provided by [`MutProxy::set`].
     pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
         T::repeated_copy_from(src, self.as_mut())
     }
