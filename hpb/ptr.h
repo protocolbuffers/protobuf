@@ -44,19 +44,6 @@ class Ptr final {
     return const_cast<Proxy<T>*>(std::addressof(p_));
   }
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wclass-conversion"
-#endif
-  template <typename U = T, std::enable_if_t<!std::is_const<U>::value, int> = 0>
-  operator Ptr<const T>() const {
-    Proxy<const T> p(p_);
-    return Ptr<const T>(&p);
-  }
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
  private:
   friend class Ptr<const T>;
   friend typename T::Access;
