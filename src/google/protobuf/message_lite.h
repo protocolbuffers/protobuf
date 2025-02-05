@@ -81,6 +81,7 @@ namespace internal {
 
 namespace v2 {
 class TableDriven;
+class TableDrivenParse;
 }  // namespace v2
 
 class MessageCreator {
@@ -1057,6 +1058,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
   friend class internal::v2::TableDriven;
+  friend class internal::v2::TableDrivenParse;
   friend internal::MessageCreator;
 
   template <typename Type>

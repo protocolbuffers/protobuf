@@ -534,6 +534,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_TC_PARAM_NO_DATA_PASS \
   msg, ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
 
+
 // For the toolchains that support it, evaluates to `true` if the input is
 // determined to be a compile time constant after optimizations have happened
 // (like inlining and constant propagation). A `false` result means that the
