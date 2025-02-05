@@ -9,9 +9,8 @@
 
 namespace Google\Protobuf;
 
-class Options
+class PrintOptions
 {
-    const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0; // 1
-    const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1; // 2
-    const JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES = 1 << 2; // 4
+    const PRESERVE_PROTO_FIELD_NAMES = 1 << 0;
+    const ALWAYS_PRINT_ENUMS_AS_INTS = 1 << 1;
 }

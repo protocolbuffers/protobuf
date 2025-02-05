@@ -11,10 +11,6 @@ namespace Google\Protobuf\Internal;
 
 class CodedOutputStream
 {
-    /* @see ext/php-upb.h */
-    const JSON_ENCODE_EMIT_DEFAULTS = 1 << 0;
-    const JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS = 1 << 1;
-    const JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES = 1 << 2;
 
     private $buffer;
     private $buffer_size;

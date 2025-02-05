@@ -9,6 +9,8 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\PrintOptions;
+
 class GPBJsonWire
 {
 
@@ -178,7 +180,7 @@ class GPBJsonWire
                     $output->writeRaw("null", 4);
                     break;
                 }
-                if ($output->getOptions() & CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+                if ($output->getOptions() & PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS) {
                     $str_value = strval($value);
                     $output->writeRaw($str_value, strlen($str_value));
                     break;
@@ -227,7 +229,7 @@ class GPBJsonWire
 
     private static function formatFieldName($field, $options)
     {
-        if ($options & CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES) {
+        if ($options & PrintOptions::PRESERVE_PROTO_FIELD_NAMES) {
             return $field->getName();
         }
         return $field->getJsonName();

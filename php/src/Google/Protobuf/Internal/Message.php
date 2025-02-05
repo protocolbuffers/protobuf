@@ -22,7 +22,7 @@ use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\MapEntry;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\ListValue;
-use Google\Protobuf\Options;
+use Google\Protobuf\PrintOptions;
 use Google\Protobuf\Value;
 use Google\Protobuf\Struct;
 use Google\Protobuf\NullValue;
@@ -1571,19 +1571,12 @@ class Message
      * Serialize the message to json string.
      * @return string Serialized json protobuf data.
      */
-    public function serializeToJsonString($flags = 0)
+    public function serializeToJsonString($options = 0)
     {
         // BC compatibility which allows param bool = "preserve proto field names"
-        if ($flags === true) {
-            $flags = Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES;
-        }
-        $options = 0;
-        if ($flags & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
-            $options |= CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES;
-        }
-        if ($flags & Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
-            $options |= CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS;
-        }
+//        if ($options === true) {
+//            $options = CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES;
+//        }
         $output = new CodedOutputStream($this->jsonByteSize($options), $options);
         $this->serializeToJsonStream($output);
         return $output->getData();
@@ -1754,7 +1747,7 @@ class Message
                     $size += 4;
                     break;
                 }
-                if ($options & CodedOutputStream::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+                if ($options & PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS) {
                     $size += strlen(strval($value)); // size for integer length
                 } else {
                     $enum_value_desc = $enum_desc->getValueByNumber($value);
@@ -1878,7 +1871,7 @@ class Message
             if ($count !== 0) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
-                    if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                    if ($options & PrintOptions::PRESERVE_PROTO_FIELD_NAMES) {
                         $size += strlen($field->getName());
                     } else {
                         $size += strlen($field->getJsonName());
@@ -1918,7 +1911,7 @@ class Message
             if ($count !== 0) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
-                    if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                    if ($options & PrintOptions::PRESERVE_PROTO_FIELD_NAMES) {
                         $size += strlen($field->getName());
                     } else {
                         $size += strlen($field->getJsonName());
@@ -1934,7 +1927,7 @@ class Message
         } elseif ($this->existField($field) || GPBUtil::hasJsonValue($this)) {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $size += 3;                              // size for "\"\":".
-                if ($options & Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+                if ($options & PrintOptions::PRESERVE_PROTO_FIELD_NAMES) {
                     $size += strlen($field->getName());
                 } else {
                     $size += strlen($field->getJsonName());

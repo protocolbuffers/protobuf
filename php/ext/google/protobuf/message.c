@@ -20,9 +20,9 @@
 #include "convert.h"
 #include "def.h"
 #include "map.h"
-#include "options.h"
 #include "php-upb.h"
 #include "protobuf.h"
+#include "print_options.h"
 
 // -----------------------------------------------------------------------------
 // Message
@@ -768,10 +768,10 @@ PHP_METHOD(Message, serializeToJsonString) {
   } else if (Z_TYPE_P(flags) == IS_TRUE) {
     options |= upb_JsonEncode_UseProtoNames;
   } else if (Z_TYPE_P(flags) == IS_LONG) {
-    if (Z_LVAL_P(flags) & JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS) {
+    if (Z_LVAL_P(flags) & ALWAYS_PRINT_ENUMS_AS_INTS) {
       options |= upb_JsonEncode_FormatEnumsAsIntegers;
     }
-    if (Z_LVAL_P(flags) & JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES) {
+    if (Z_LVAL_P(flags) & PRESERVE_PROTO_FIELD_NAMES) {
       options |= upb_JsonEncode_UseProtoNames;
     }
   }

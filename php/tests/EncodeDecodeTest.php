@@ -3,7 +3,8 @@
 require_once('test_base.php');
 require_once('test_util.php');
 
-use Google\Protobuf\Options;
+use Google\Protobuf\Internal\CodedOutputStream;
+use Google\Protobuf\PrintOptions;
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\EmptyAnySerialization;
@@ -1646,15 +1647,15 @@ class EncodeDecodeTest extends TestBase
                 '{"oneofEnum":"ONE"}',
             ],
             'as int' => [
-                Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS,
+                PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS,
                 '{"oneofEnum":1}',
             ],
             'preserve' => [
-                Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES,
+                PrintOptions::PRESERVE_PROTO_FIELD_NAMES,
                 '{"oneof_enum":"ONE"}',
             ],
             'as int + preserve' => [
-                Options::JSON_ENCODE_FORMAT_ENUMS_AS_INTEGERS | Options::JSON_ENCODE_PRESERVE_PROTO_FIELDNAMES,
+                PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS | PrintOptions::PRESERVE_PROTO_FIELD_NAMES,
                 '{"oneof_enum":1}',
             ],
         ];
