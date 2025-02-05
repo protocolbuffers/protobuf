@@ -303,10 +303,7 @@ class DynamicMessage final : public Message {
   // class's memory is allocated via the global operator new. Thus, we need to
   // manually call the global operator delete. Calling the destructor is taken
   // care of for us. This makes DynamicMessage compatible with -fsized-delete.
-  // It doesn't work for MSVC though.
-#ifndef _MSC_VER
   static void operator delete(void* ptr) { ::operator delete(ptr); }
-#endif  // !_MSC_VER
 #endif
 
  private:
