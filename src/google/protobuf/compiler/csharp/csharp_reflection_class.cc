@@ -110,8 +110,7 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
 
   if (this->options()->enable_nullable_reference_types) {
     printer->Print(
-      "#nullable enable annotations\n", 
-      "file_name", file_->name());
+      "#nullable enable annotations\n");
   }
 
   printer->Print(

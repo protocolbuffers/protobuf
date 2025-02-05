@@ -31,9 +31,7 @@ WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
   is_value_type = wrapped_field->type() != FieldDescriptor::TYPE_STRING &&
       wrapped_field->type() != FieldDescriptor::TYPE_BYTES;
-  if (is_value_type) {
-    variables_["nonnullable_type_name"] = type_name(wrapped_field);
-  }
+  variables_["nonnullable_type_name"] = type_name(wrapped_field);
 }
 
 WrapperFieldGenerator::~WrapperFieldGenerator() {
@@ -171,7 +169,7 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   } else {
     printer->Print(
       variables_,
-      "pb::FieldCodec.ForClassWrapper<$type_name$>($tag$)");
+      "pb::FieldCodec.ForClassWrapper<$nonnullable_type_name$>($tag$)");
   }
 }
 
