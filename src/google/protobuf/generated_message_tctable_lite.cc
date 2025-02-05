@@ -923,33 +923,9 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
 template <typename FieldType, typename TagType, bool zigzag>
 PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
     PROTOBUF_TC_PARAM_DECL) {
-  // For some reason clang wants to save 5 registers to the stack here,
-  // but we only need four for this code, so save the data we don't need
-  // to the stack.  Happily, saving them this way uses regular store
-  // instructions rather than PUSH/POP, which saves time at the cost of greater
-  // code size, but for this heavily-used piece of code, that's fine.
-  struct Spill {
-    uint64_t field_data;
-    ::google::protobuf::MessageLite* msg;
-    const ::google::protobuf::internal::TcParseTableBase* table;
-    uint64_t hasbits;
-  };
-  Spill spill = {data.data, msg, table, hasbits};
-#if defined(__GNUC__)
-  // This empty asm block convinces the compiler that the contents of spill may
-  // have changed, and thus can't be cached in registers.  It's similar to, but
-  // more optimal than, the effect of declaring it "volatile".
-  asm("" : "+m"(spill));
-#endif
-
   uint64_t tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
-
-  data.data = spill.field_data;
-  msg = spill.msg;
-  table = spill.table;
-  hasbits = spill.hasbits;
 
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
