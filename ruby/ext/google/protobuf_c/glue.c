@@ -26,10 +26,28 @@ char* EnumDescriptor_serialized_options(const upb_EnumDef* enumdef,
   return serialized;
 }
 
+char* EnumDescriptor_serialized_to_proto(const upb_EnumDef* enumdef,
+                                         size_t* size, upb_Arena* arena) {
+  const google_protobuf_EnumDescriptorProto* file_proto =
+      upb_EnumDef_ToProto(enumdef, arena);
+  char* serialized =
+      google_protobuf_EnumDescriptorProto_serialize(file_proto, arena, size);
+  return serialized;
+}
+
 char* FileDescriptor_serialized_options(const upb_FileDef* filedef,
                                         size_t* size, upb_Arena* arena) {
   const google_protobuf_FileOptions* opts = upb_FileDef_Options(filedef);
   char* serialized = google_protobuf_FileOptions_serialize(opts, arena, size);
+  return serialized;
+}
+
+char* FileDescriptor_serialized_to_proto(const upb_FileDef* filedef,
+                                         size_t* size, upb_Arena* arena) {
+  const google_protobuf_FileDescriptorProto* file_proto =
+      upb_FileDef_ToProto(filedef, arena);
+  char* serialized =
+      google_protobuf_FileDescriptorProto_serialize(file_proto, arena, size);
   return serialized;
 }
 
@@ -41,6 +59,15 @@ char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t* size,
   return serialized;
 }
 
+char* Descriptor_serialized_to_proto(const upb_MessageDef* msgdef, size_t* size,
+                                     upb_Arena* arena) {
+  const google_protobuf_DescriptorProto* proto =
+      upb_MessageDef_ToProto(msgdef, arena);
+  char* serialized =
+      google_protobuf_DescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef,
                                          size_t* size, upb_Arena* arena) {
   const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(oneofdef);
@@ -48,10 +75,28 @@ char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef,
   return serialized;
 }
 
+char* OneOfDescriptor_serialized_to_proto(const upb_OneofDef* oneofdef,
+                                          size_t* size, upb_Arena* arena) {
+  const google_protobuf_OneofDescriptorProto* proto =
+      upb_OneofDef_ToProto(oneofdef, arena);
+  char* serialized =
+      google_protobuf_OneofDescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef,
                                          size_t* size, upb_Arena* arena) {
   const google_protobuf_FieldOptions* opts = upb_FieldDef_Options(fielddef);
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, size);
+  return serialized;
+}
+
+char* FieldDescriptor_serialized_to_proto(const upb_FieldDef* fieldef,
+                                          size_t* size, upb_Arena* arena) {
+  const google_protobuf_FieldDescriptorProto* proto =
+      upb_FieldDef_ToProto(fieldef, arena);
+  char* serialized =
+      google_protobuf_FieldDescriptorProto_serialize(proto, arena, size);
   return serialized;
 }
 
@@ -64,9 +109,27 @@ char* ServiceDescriptor_serialized_options(const upb_ServiceDef* servicedef,
   return serialized;
 }
 
+char* ServiceDescriptor_serialized_to_proto(const upb_ServiceDef* servicedef,
+                                            size_t* size, upb_Arena* arena) {
+  const google_protobuf_ServiceDescriptorProto* proto =
+      upb_ServiceDef_ToProto(servicedef, arena);
+  char* serialized =
+      google_protobuf_ServiceDescriptorProto_serialize(proto, arena, size);
+  return serialized;
+}
+
 char* MethodDescriptor_serialized_options(const upb_MethodDef* methoddef,
                                           size_t* size, upb_Arena* arena) {
   const google_protobuf_MethodOptions* opts = upb_MethodDef_Options(methoddef);
   char* serialized = google_protobuf_MethodOptions_serialize(opts, arena, size);
+  return serialized;
+}
+
+char* MethodDescriptor_serialized_to_proto(const upb_MethodDef* methodef,
+                                           size_t* size, upb_Arena* arena) {
+  const google_protobuf_MethodDescriptorProto* proto =
+      upb_MethodDef_ToProto(methodef, arena);
+  char* serialized =
+      google_protobuf_MethodDescriptorProto_serialize(proto, arena, size);
   return serialized;
 }

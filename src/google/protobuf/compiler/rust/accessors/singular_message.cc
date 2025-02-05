@@ -203,7 +203,7 @@ void SingularMessage::InExternC(Context& ctx,
              } else {
                // upb kernel may return NULL for a submsg, we can detect this
                // in terra rust if the option returned is None
-               ctx.Emit({}, "Option<$pbr$::RawMessage>;");
+               ctx.Emit({}, "$Option$<$pbr$::RawMessage>;");
              }
            }},
       },

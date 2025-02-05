@@ -12,16 +12,32 @@
 #include <cstring>
 #include <string>
 
+#include "absl/strings/string_view.h"
+
 namespace google {
 namespace protobuf {
 namespace rust {
 
 // Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
 // bytes) for FFI use only.
+//
+// Note that the intent is for either Rust or C++ to construct one of these with
+// the pointer that they would have from a Rust slice or C++ string_view.
+// Notably this means that if len==0, ptr may be any value, including nullptr or
+// an invalid pointer, which may be a value incompatible for use with either a
+// Rust slice or C++ string_view.
+//
+// It may be constructed trivially, but use the provided conversion methods
+// when converting from this type into any other type to avoid obscure undefined
+// behavior.
 struct PtrAndLen {
   /// Borrows the memory.
   const char* ptr;
   size_t len;
+
+  std::string CopyToString() const;
+  absl::string_view AsStringView() const;
+  void PlacementNewString(void* location);
 };
 
 // Represents an owned string for FFI purposes.

@@ -9,7 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import protobuf_unittest.UnittestProto.TestDeprecatedFields;
+import proto2_unittest.UnittestProto.TestDeprecatedFields;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import org.junit.Test;

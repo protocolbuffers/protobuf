@@ -1,6 +1,6 @@
 matrix:
   platform: ["debian10", "macos", "ubuntu2004", "windows"]
-  bazel: [6.x, 7.x]
+  bazel: [7.x]
 
 tasks:
   verify_targets:
@@ -8,8 +8,8 @@ tasks:
     platform: ${{ platform }}
     bazel: ${{ bazel }}
     build_flags:
-    - '--host_cxxopt=-std=c++14'
-    - '--cxxopt=-std=c++14'
+    - '--host_cxxopt=-std=c++17'
+    - '--cxxopt=-std=c++17'
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
@@ -23,14 +23,14 @@ bcr_test_module:
   module_path: "examples"
   matrix:
     platform: ["debian10", "macos", "ubuntu2004", "windows"]
-    bazel: [6.x, 7.x]
+    bazel: [7.x]
   tasks:
     run_test_module:
       name: "Run test module"
       platform: ${{ platform }}
       bazel: ${{ bazel }}
       build_flags:
-      - '--host_cxxopt=-std=c++14'
-      - '--cxxopt=-std=c++14'
+      - '--host_cxxopt=-std=c++17'
+      - '--cxxopt=-std=c++17'
       build_targets:
       - "//..."

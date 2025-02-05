@@ -274,6 +274,15 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
             message.repeated_nested_message(0).unknown_fields().field_count());
 }
 
+TEST(ReflectionOpsTest, DiscardUnknownFieldsIsANoopIfNotPresent) {
+  unittest::TestAllTypes message;
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+  ReflectionOps::DiscardUnknownFields(&message);
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+}
+
 TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);
@@ -466,15 +475,15 @@ TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
   message.AddExtension(unittest::TestRequired::multi);
   message.AddExtension(unittest::TestRequired::multi);
   EXPECT_EQ(
-      "(protobuf_unittest.TestRequired.single).a,"
-      "(protobuf_unittest.TestRequired.single).b,"
-      "(protobuf_unittest.TestRequired.single).c,"
-      "(protobuf_unittest.TestRequired.multi)[0].a,"
-      "(protobuf_unittest.TestRequired.multi)[0].b,"
-      "(protobuf_unittest.TestRequired.multi)[0].c,"
-      "(protobuf_unittest.TestRequired.multi)[1].a,"
-      "(protobuf_unittest.TestRequired.multi)[1].b,"
-      "(protobuf_unittest.TestRequired.multi)[1].c",
+      "(proto2_unittest.TestRequired.single).a,"
+      "(proto2_unittest.TestRequired.single).b,"
+      "(proto2_unittest.TestRequired.single).c,"
+      "(proto2_unittest.TestRequired.multi)[0].a,"
+      "(proto2_unittest.TestRequired.multi)[0].b,"
+      "(proto2_unittest.TestRequired.multi)[0].c,"
+      "(proto2_unittest.TestRequired.multi)[1].a,"
+      "(proto2_unittest.TestRequired.multi)[1].b,"
+      "(proto2_unittest.TestRequired.multi)[1].c",
       FindInitializationErrors(message));
 }
 

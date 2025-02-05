@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 
 // Must be included last.
@@ -60,7 +61,7 @@ class ChunkList {
  public:
   PROTOBUF_ALWAYS_INLINE void Add(void* elem, void (*destructor)(void*),
                                   SerialArena& arena) {
-    if (PROTOBUF_PREDICT_TRUE(next_ < limit_)) {
+    if (ABSL_PREDICT_TRUE(next_ < limit_)) {
       AddFromExisting(elem, destructor);
       return;
     }

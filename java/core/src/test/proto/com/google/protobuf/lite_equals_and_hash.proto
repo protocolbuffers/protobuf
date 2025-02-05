@@ -9,7 +9,7 @@
 
 edition = "2023";
 
-package protobuf_unittest.lite_equals_and_hash;
+package proto2_unittest.lite_equals_and_hash;
 
 option features.utf8_validation = NONE;
 

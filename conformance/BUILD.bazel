@@ -1,3 +1,10 @@
+# Copyright (c) 2024, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 # Conformance testing for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
@@ -346,7 +353,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=conformance:src/google/protobuf \\
+        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -354,6 +361,7 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
 )

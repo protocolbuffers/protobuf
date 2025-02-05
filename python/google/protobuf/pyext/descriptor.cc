@@ -1512,15 +1512,6 @@ static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetDebugString(PyFileDescriptor* self) {
-  PyErr_Warn(nullptr,
-             "GetDebugString() API is deprecated. This API only "
-             "exists in protobuf c++ and does not exists in pure python, upb "
-             "or any other languages. GetDebugString() for python cpp "
-             "extension will be removed in Jan 2025");
-  return PyString_FromCppString(_GetDescriptor(self)->DebugString());
-}
-
 static PyObject* GetOptions(PyFileDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1569,7 +1560,6 @@ static PyGetSetDef Getters[] = {
 };
 
 static PyMethodDef Methods[] = {
-    {"GetDebugString", (PyCFunction)GetDebugString, METH_NOARGS},
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
     {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
@@ -1842,6 +1832,15 @@ static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
   return PyMethodDescriptor_FromDescriptor(method_descriptor);
 }
 
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
+  const ServiceOptions& options = _GetDescriptor(self)->options();
+  if (&options != &ServiceOptions::default_instance()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1863,6 +1862,7 @@ static PyGetSetDef Getters[] = {
     {"methods", (getter)GetMethods, nullptr, "Methods", nullptr},
     {"methods_by_name", (getter)GetMethodsByName, nullptr, "Methods by name",
      nullptr},
+    {"has_options", (getter)GetHasOptions, nullptr},
     {nullptr},
 };
 
@@ -1973,6 +1973,15 @@ static PyObject* GetServerStreaming(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->server_streaming() ? 1 : 0);
 }
 
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
+  const MethodOptions& options = _GetDescriptor(self)->options();
+  if (&options != &MethodOptions::default_instance()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1997,6 +2006,7 @@ static PyGetSetDef Getters[] = {
      "Client streaming", nullptr},
     {"server_streaming", (getter)GetServerStreaming, nullptr,
      "Server streaming", nullptr},
+    {"has_options", (getter)GetHasOptions, nullptr},
     {nullptr},
 };
 

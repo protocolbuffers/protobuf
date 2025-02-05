@@ -31,8 +31,9 @@
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 # This works around https://github.com/bazelbuild/bazel/issues/19124 by using a generated header to
-# inject the Bazel path of the test plugins.  The simpler alternative is broken in Bazel 6.3.0,
-# which is to just inject these via copts.
+# inject the Bazel path of the test plugins.
+# TODO: Replace this with simpler alternative injecting these via copts once we drop
+# support for Bazel 6.3.0.
 def inject_plugin_paths(name):
     hdr = name + ".h"
     native.genrule(
@@ -51,6 +52,7 @@ cat <<'EOF' >$(OUTS)
 #define GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH "$(rootpath :fake_plugin)"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_TEST_PLUGIN_PATHS_H__
+EOF
 """,
         visibility = ["//visibility:private"],
         testonly = True,

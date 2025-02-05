@@ -39,7 +39,6 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
   ObjectiveCGenerator& operator=(const ObjectiveCGenerator&) = delete;
 
   // implements CodeGenerator ----------------------------------------
-  bool HasGenerateAll() const override;
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* context, std::string* error) const override;
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,

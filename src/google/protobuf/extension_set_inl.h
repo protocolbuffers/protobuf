@@ -47,8 +47,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         return internal::PackedEnumParserArg<T>(
             MutableRawRepeatedField(number, extension.type, extension.is_packed,
                                     extension.descriptor),
-            ptr, ctx, extension.enum_validity_check.func,
-            extension.enum_validity_check.arg, metadata, number);
+            ptr, ctx, extension.enum_validity_check, metadata, number);
       case WireFormatLite::TYPE_STRING:
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
@@ -123,8 +122,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         int value = tmp;
 
-        if (!extension.enum_validity_check.func(
-                extension.enum_validity_check.arg, value)) {
+        if (!extension.enum_validity_check.IsValid(value)) {
           WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
         } else if (extension.is_repeated) {
           AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,

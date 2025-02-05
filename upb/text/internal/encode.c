@@ -15,6 +15,8 @@
 #include "upb/base/string_view.h"
 #include "upb/lex/round_trip.h"
 #include "upb/message/array.h"
+#include "upb/message/message.h"
+#include "upb/text/options.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -22,11 +24,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define CHK(x)      \
-  do {              \
-    if (!(x)) {     \
-      return false; \
-    }               \
+#define CHK(x)     \
+  do {             \
+    if (!(x)) {    \
+      return NULL; \
+    }              \
   } while (0)
 
 /*
@@ -133,6 +135,23 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
 }
 
 #undef CHK
+
+void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
+                                               const upb_Message* msg) {
+  if ((e->options & UPB_TXTENC_SKIPUNKNOWN) != 0) return;
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView view;
+  while (upb_Message_NextUnknown(msg, &view, &iter)) {
+    char* start = e->ptr;
+    upb_EpsCopyInputStream stream;
+    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size, true);
+    if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
+      /* Unknown failed to parse, back up and don't print it at all. */
+      e->ptr = start;
+    }
+  }
+}
 
 void UPB_PRIVATE(_upb_TextEncode_Scalar)(txtenc* e, upb_MessageValue val,
                                          upb_CType ctype) {

@@ -63,7 +63,7 @@ class File {
                                 void* dummy2);
 
   // Change working directory to given directory.
-  static bool ChangeWorkingDirectory(const std::string& new_working_directory);
+  static bool ChangeWorkingDirectory(absl::string_view new_working_directory);
 
   static absl::Status GetContents(const std::string& name, std::string* output,
                                   bool /*is_default*/) {

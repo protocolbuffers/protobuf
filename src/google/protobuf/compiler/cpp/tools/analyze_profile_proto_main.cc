@@ -26,6 +26,9 @@
 
 ABSL_FLAG(bool, all, false, "Print all fields");
 ABSL_FLAG(bool, analysis, false, "Print field analysis");
+ABSL_FLAG(bool, analysis_all, false,
+          "Print detailed field analysis, such as field presence probability, "
+          "for all fields, not just hot or cold ones.");
 ABSL_FLAG(std::string, message_filter, "", "Regex match for message name");
 ABSL_FLAG(bool, aggregate_analysis, false,
           "If set, will recursively find proto.profile in the given dir and "
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]) {
   if (!absl::GetFlag(FLAGS_aggregate_analysis)) {
     options.print_all_fields = absl::GetFlag(FLAGS_all);
     options.print_analysis = absl::GetFlag(FLAGS_analysis);
+    options.print_analysis_all = absl::GetFlag(FLAGS_analysis_all);
     options.message_filter = absl::GetFlag(FLAGS_message_filter);
     status = AnalyzeProfileProtoToText(std::cout, argv[1], options);
   } else {

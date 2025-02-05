@@ -1,15 +1,31 @@
-if (protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
-    message(FATAL_ERROR
-            "Cannot find third_party/jsoncpp directory that's needed to "
-            "build conformance tests. If you use git, make sure you have cloned "
-            "submodules:\n"
-            "  git submodule update --init --recursive\n"
-            "If instead you want to skip them, run cmake with:\n"
-            "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
+# Don't run jsoncpp tests.
+set(JSONCPP_WITH_TESTS OFF)
+
+if (NOT TARGET jsoncpp_lib)
+  if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
+    find_package(jsoncpp)
   endif()
-elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
-  find_package(jsoncpp REQUIRED)
+
+  # Fallback to fetching Googletest from github if it's not found locally.
+  if (NOT jsoncpp_FOUND AND NOT protobuf_LOCAL_DEPENDENCIES_ONLY)
+    include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
+    message(STATUS "Fallback to downloading jsoncpp ${jsoncpp-version} from GitHub")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      jsoncpp
+      GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp.git"
+      GIT_TAG "${jsoncpp-version}"
+    )
+    FetchContent_MakeAvailable(jsoncpp)
+  endif()
+endif()
+
+if (NOT TARGET jsoncpp_lib)
+  message(FATAL_ERROR
+          "Cannot find jsoncpp dependency that's needed to build conformance tests.\n"
+          "If instead you want to skip these tests, run cmake with:\n"
+          "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
 endif()
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/conformance)
@@ -129,18 +145,13 @@ add_test(NAME conformance_cpp_test
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
     --maximum_edition 2023
-    ${CMAKE_CURRENT_BINARY_DIR}/conformance_cpp
+    $<TARGET_FILE:conformance_cpp>
   DEPENDS conformance_test_runner conformance_cpp)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
-if(protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
-  target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
-  if(BUILD_SHARED_LIBS)
-    target_link_libraries(conformance_test_runner jsoncpp_lib)
-  else()
-    target_link_libraries(conformance_test_runner jsoncpp_static)
-  endif()
+
+if(BUILD_SHARED_LIBS)
+  target_link_libraries(conformance_test_runner jsoncpp_lib)
 else()
-  target_link_libraries(conformance_test_runner jsoncpp)
+  target_link_libraries(conformance_test_runner jsoncpp_static)
 endif()

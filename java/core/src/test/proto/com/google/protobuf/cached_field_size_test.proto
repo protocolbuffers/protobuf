@@ -8,7 +8,7 @@
 // A regression test for b/74087933
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/unittest.proto";
 import "google/protobuf/unittest_proto3.proto";
@@ -17,6 +17,6 @@ option optimize_for = CODE_SIZE;
 option java_multiple_files = true;
 
 message TestCachedFieldSizeMessage {
-  protobuf_unittest.TestPackedTypes proto2_child = 1;
+  proto2_unittest.TestPackedTypes proto2_child = 1;
   proto3_unittest.TestPackedTypes proto3_child = 2;
 }

@@ -58,7 +58,7 @@ def _test_compile_basic_impl(env, target):
     action.argv().contains_exactly_predicates(
         [
             matching.str_endswith(protocol_compiler),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
@@ -111,7 +111,7 @@ def _test_compile_with_plugin_output_impl(env, target):
         [
             matching.str_endswith(protocol_compiler),
             matching.str_matches("--java_out=param1,param2:b*-out/*/test_compile_with_plugin_output_compile"),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
@@ -138,7 +138,7 @@ def _test_compile_with_directory_plugin_output_impl(env, target):
         [
             matching.str_endswith(protocol_compiler),
             matching.str_matches("--java_out=param1,param2:b*-out/*/bin"),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
@@ -166,7 +166,7 @@ def _test_compile_additional_args_impl(env, target):
             matching.str_endswith(protocol_compiler),
             matching.equals_wrapper("--a"),
             matching.equals_wrapper("--b"),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
@@ -294,7 +294,7 @@ def _test_compile_protoc_opts_impl(env, target):
             matching.str_endswith(protocol_compiler),
             matching.equals_wrapper("--foo"),
             matching.equals_wrapper("--bar"),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
@@ -325,7 +325,7 @@ def _test_compile_direct_generated_protos_impl(env, target):
     action.argv().contains_exactly_predicates(
         [
             matching.str_endswith(protocol_compiler),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.str_matches("-Ib*-out/*/*"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
@@ -360,7 +360,7 @@ def _test_compile_indirect_generated_protos_impl(env, target):
     action.argv().contains_exactly_predicates(
         [
             matching.str_endswith(protocol_compiler),
-            matching.str_matches("--plugin=b*-out/*-exec-*/bin/*/testdata/plugin"),
+            matching.str_matches("--plugin=b*-out/*-exec*/bin/*/testdata/plugin"),
             matching.str_matches("-Ib*-out/*/*"),
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),

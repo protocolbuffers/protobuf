@@ -242,7 +242,7 @@ def _system_python_impl(repository_ctx):
 # Pip dependencies can optionally be specified using a wrapper around rules_python's repository rules:
 #   load("@system_python//:pip.bzl", "pip_install")
 #   pip_install(
-#       name="pip_deps",
+#       name="protobuf_pip_deps",
 #       requirements = "@com_google_protobuf//python:requirements.txt",
 #   )
 # An optional argument `requirements_overrides` takes a dictionary mapping python versions to alternate
@@ -266,6 +266,6 @@ system_python = repository_rule(
     implementation = _system_python_impl,
     local = True,
     attrs = {
-        "minimum_python_version": attr.string(default = "3.8"),
+        "minimum_python_version": attr.string(default = "3.9"),
     },
 )

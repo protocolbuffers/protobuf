@@ -27,7 +27,9 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
 #endif
 }
 
-UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
+UPB_INLINE int upb_RoundUpToPowerOfTwo(int x) {
+  return 1 << upb_Log2Ceiling(x);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

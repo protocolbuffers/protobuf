@@ -12,8 +12,6 @@
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
-#import "GPBUnknownFieldSet.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
@@ -498,18 +496,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
                            endingTag:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup)];
   --state_.recursionDepth;
 }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message {
-  CheckRecursionLimit(&state_);
-  ++state_.recursionDepth;
-  [message mergeFromCodedInputStream:self];
-  GPBCodedInputStreamCheckLastTagWas(&state_,
-                                     GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
-  --state_.recursionDepth;
-}
-#pragma clang diagnostic pop
 
 - (void)readMessage:(GPBMessage *)message
     extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {

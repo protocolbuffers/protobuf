@@ -47,7 +47,6 @@ cc_library(
     deps = [
         ":internal",
         "//upb:base",
-        "//upb:eps_copy_input_stream",
         "//upb:message",
         "//upb:mini_table",
         "//upb:port",

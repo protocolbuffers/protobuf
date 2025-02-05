@@ -5,19 +5,12 @@
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
-using google::protobuf::compiler::rust::Context;
-using google::protobuf::compiler::rust::Kernel;
-using google::protobuf::compiler::rust::Options;
-using google::protobuf::compiler::rust::RustGeneratorContext;
 using google::protobuf::compiler::rust::RustInternalModuleName;
 using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
-using google::protobuf::io::Printer;
-using google::protobuf::io::StringOutputStream;
 
 namespace {
 TEST(RustProtoNaming, RustInternalModuleName) {
@@ -25,17 +18,7 @@ TEST(RustProtoNaming, RustInternalModuleName) {
   foo_file.set_name("strong_bad/lol.proto");
   google::protobuf::DescriptorPool pool;
   const google::protobuf::FileDescriptor* fd = pool.BuildFile(foo_file);
-
-  const Options opts = {Kernel::kUpb};
-  std::vector<const google::protobuf::FileDescriptor*> files{fd};
-  absl::flat_hash_map<std::string, std::string> mapping;
-  const RustGeneratorContext rust_generator_context(&files, &mapping);
-  std::string output;
-  StringOutputStream stream{&output};
-  Printer printer(&stream);
-  Context c = Context(&opts, &rust_generator_context, &printer);
-
-  EXPECT_EQ(RustInternalModuleName(c, *fd), "strong__bad_slol");
+  EXPECT_EQ(RustInternalModuleName(*fd), "strong__bad_slol");
 }
 
 TEST(RustProtoNaming, CamelToSnakeCase) {

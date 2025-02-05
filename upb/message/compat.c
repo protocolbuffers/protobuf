@@ -10,30 +10,27 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_MiniTableExtension* upb_Message_ExtensionByIndex(
-    const upb_Message* msg, size_t index) {
-  size_t count;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-
-  UPB_ASSERT(index < count);
-  return ext[index].ext;
+bool upb_Message_NextExtensionReverse(const upb_Message* msg,
+                                      const upb_MiniTableExtension** result,
+                                      uintptr_t* iter) {
+  upb_MessageValue val;
+  return UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, result, &val,
+                                                        iter);
 }
 
 const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
     const upb_Message* msg, uint32_t field_number) {
-  size_t count;
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-
-  for (; count--; ext++) {
-    const upb_MiniTableExtension* e = ext->ext;
-    if (upb_MiniTableExtension_Number(e) == field_number) return e;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* result;
+  while (upb_Message_NextExtensionReverse(msg, &result, &iter)) {
+    if (upb_MiniTableExtension_Number(result) == field_number) return result;
   }
   return NULL;
 }

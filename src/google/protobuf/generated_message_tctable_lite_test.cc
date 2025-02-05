@@ -11,15 +11,21 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -333,6 +339,10 @@ class FindFieldEntryTest : public ::testing::Test {
     return TcParser::FieldName(&table.header, entry);
   }
 
+  static int FieldNumber(const TcParseTableBase* table, size_t index) {
+    return TcParser::FieldNumber(table, table->field_entries_begin() + index);
+  }
+
   // Calls the private `MessageName` function.
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize, size_t kFieldLookupTableSize>
@@ -345,6 +355,36 @@ class FindFieldEntryTest : public ::testing::Test {
   // Returns the number of fields scanned during a small scan.
   static constexpr int small_scan_size() { return TcParser::kMtSmallScanSize; }
 };
+
+TEST_F(FindFieldEntryTest, FieldNumberWorksForAllFields) {
+  // Look at all types registered in the binary and verify that field number
+  // calculation works for all the fields.
+  auto* gen_db = DescriptorPool::internal_generated_database();
+  std::vector<std::string> all_file_names;
+  gen_db->FindAllFileNames(&all_file_names);
+
+  for (const auto& filename : all_file_names) {
+    SCOPED_TRACE(filename);
+    const auto* file =
+        DescriptorPool::generated_pool()->FindFileByName(filename);
+    VisitDescriptors(*file, [&](const Descriptor& desc) {
+      SCOPED_TRACE(desc.full_name());
+      const auto* prototype =
+          MessageFactory::generated_factory()->GetPrototype(&desc);
+      const auto* tc_table = internal::GetClassData(*prototype)->tc_table;
+
+      std::vector<int> sorted_field_numbers;
+      for (auto* field : internal::FieldRange(&desc)) {
+        sorted_field_numbers.push_back(field->number());
+      }
+      absl::c_sort(sorted_field_numbers);
+
+      for (int i = 0; i < desc.field_count(); ++i) {
+        EXPECT_EQ(FieldNumber(tc_table, i), sorted_field_numbers[i]);
+      }
+    });
+  }
+}
 
 TEST_F(FindFieldEntryTest, SequentialFieldRange) {
   // Look up fields that are within the range of `lookup_table_offset`.
@@ -851,12 +891,12 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
   // implementation of Reserve() -- Reserve(kNumVals) always results in a
   // different final capacity than you'd get by adding elements one at a time.
   constexpr int kNumVals = 1023;
-  protobuf_unittest::TestPackedEnumSmallRange proto;
+  proto2_unittest::TestPackedEnumSmallRange proto;
   for (int i = 0; i < kNumVals; i++) {
-    proto.add_vals(protobuf_unittest::TestPackedEnumSmallRange::FOO);
+    proto.add_vals(proto2_unittest::TestPackedEnumSmallRange::FOO);
   }
 
-  protobuf_unittest::TestPackedEnumSmallRange new_proto;
+  proto2_unittest::TestPackedEnumSmallRange new_proto;
   new_proto.ParseFromString(proto.SerializeAsString());
 
   // We should have reserved exactly the right size for new_proto's `vals`,
@@ -865,7 +905,7 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
 
   // Check that new_proto's capacity is equal to exactly what we'd get from
   // calling Reserve(n).
-  protobuf_unittest::TestPackedEnumSmallRange empty_proto;
+  proto2_unittest::TestPackedEnumSmallRange empty_proto;
   empty_proto.mutable_vals()->Reserve(kNumVals);
   EXPECT_EQ(new_proto.vals().Capacity(), empty_proto.vals().Capacity());
 }
@@ -877,10 +917,10 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
 // This test checks that the parser doesn't overflow an int32 when computing the
 // array's new length.
 TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
-#ifdef PROTOBUF_MSAN
-  // This test attempts to allocate 8GB of memory, which OOMs MSAN.
-  return;
-#endif
+  if constexpr (internal::HasAnySanitizer()) {
+    GTEST_SKIP() << "This test attempts to allocate 8GB of memory, which OOMs "
+                    "in sanitizer mode.";
+  }
 
 #ifdef _WIN32
   // This test OOMs on Windows.  I think this is because Windows is committing
@@ -913,11 +953,11 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
   // This isn't a legal proto because the given array length (a little less than
   // 2^31) doesn't match the actual array length (0).  But all we're checking
   // for here is that we don't have UB when deserializing.
-  protobuf_unittest::TestPackedEnumSmallRange proto;
+  proto2_unittest::TestPackedEnumSmallRange proto;
   // Add a few elements to the proto so that when we MergeFromString, the final
   // array length is greater than INT32_MAX.
   for (int i = 0; i < 128; i++) {
-    proto.add_vals(protobuf_unittest::TestPackedEnumSmallRange::FOO);
+    proto.add_vals(proto2_unittest::TestPackedEnumSmallRange::FOO);
   }
   EXPECT_FALSE(proto.MergeFromString(serialized));
 }
@@ -940,7 +980,7 @@ TEST(GeneratedMessageTctableLiteTest,
   // The deserialized proto should reserve much less than 2^20 elements for
   // field 1, because it notices that the input serialized proto is much smaller
   // than 2^20 bytes.
-  protobuf_unittest::TestPackedEnumSmallRange proto;
+  proto2_unittest::TestPackedEnumSmallRange proto;
   proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }

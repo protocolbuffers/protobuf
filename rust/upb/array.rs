@@ -57,11 +57,11 @@ mod tests {
             assert!(upb_Array_Append(array, upb_MessageValue { float_val: 7.0 }, raw_arena));
             assert!(upb_Array_Append(array, upb_MessageValue { float_val: 42.0 }, raw_arena));
             assert_eq!(upb_Array_Size(array), 2);
-            assert!(matches!(upb_Array_Get(array, 1), upb_MessageValue { float_val: 42.0 }));
+            assert_eq!(upb_Array_Get(array, 1).float_val, 42.0);
 
             assert!(upb_Array_Resize(array, 3, raw_arena));
             assert_eq!(upb_Array_Size(array), 3);
-            assert!(matches!(upb_Array_Get(array, 2), upb_MessageValue { float_val: 0.0 }));
+            assert_eq!(upb_Array_Get(array, 2).float_val, 0.0);
         }
     }
 }

@@ -37,3 +37,14 @@ message TestProto2 {
   repeated int32 repeated_int32 = 22;
   repeated NestedMessage repeated_nested_message = 23;
 }
+
+message MessageWithSelfField {
+  optional int32 something = 1;
+  optional int32 self = 2;
+}
+
+message MessageWithSelfAndSelfUnderscoreField {
+  optional int32 something = 1;
+  optional int32 self = 2;
+  optional int32 self_ = 3 [json_name = "self_underscore"];
+}

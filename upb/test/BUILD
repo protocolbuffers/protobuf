@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -27,7 +28,7 @@ cc_library(
     hdrs = ["parse_text_proto.h"],
     visibility = ["//upb:__subpackages__"],
     deps = [
-        "//:protobuf",
+        "//src/google/protobuf",
         "@com_google_googletest//:gtest",
     ],
 )

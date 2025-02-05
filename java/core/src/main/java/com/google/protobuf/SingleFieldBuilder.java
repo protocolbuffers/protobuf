@@ -100,12 +100,18 @@ public class SingleFieldBuilder<
    */
   @SuppressWarnings("unchecked")
   public BType getBuilder() {
+    // This code is very hot.
+    // Optimisation: store this.builder in a local variable so that the compiler doesn't reload
+    // it at 'return'. Android's compiler thinks the methods called between assignment & return
+    // might reassign this.builder so the compiler can't make this optimisation without our help.
+    BType builder = this.builder;
+
     if (builder == null) {
       // builder.mergeFrom() on a fresh builder
       // does not create any sub-objects with independent clean/dirty states,
       // therefore setting the builder itself to clean without actually calling
       // build() cannot break any invariants.
-      builder = (BType) message.newBuilderForType(this);
+      this.builder = builder = (BType) message.newBuilderForType(this);
       builder.mergeFrom(message); // no-op if message is the default message
       builder.markClean();
     }

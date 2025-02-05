@@ -9,10 +9,10 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestMset.RawMessageSet;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension3;
+import proto2_unittest.UnittestMset.RawMessageSet;
+import proto2_unittest.UnittestMset.TestMessageSetExtension1;
+import proto2_unittest.UnittestMset.TestMessageSetExtension2;
+import proto2_unittest.UnittestMset.TestMessageSetExtension3;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,6 +145,44 @@ public class LazilyParsedMessageSetTest {
         .isEqualTo(TestMessageSetExtension1.getDefaultInstance());
 
     // Serialize. The first extension should be serialized as an empty message.
+    ByteString outputData = messageSet.toByteString();
+
+    // Re-parse as RawMessageSet
+    RawMessageSet actualRaw =
+        RawMessageSet.parseFrom(outputData, ExtensionRegistry.getEmptyRegistry());
+
+    RawMessageSet expectedRaw =
+        RawMessageSet.newBuilder()
+            .addItem(
+                RawMessageSet.Item.newBuilder().setTypeId(TYPE_ID_1).setMessage(ByteString.empty()))
+            .build();
+
+    assertThat(actualRaw).isEqualTo(expectedRaw);
+  }
+
+  @Test
+  public void testLoadCorruptedLazyField_getSerializedSize() throws Exception {
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+    RawMessageSet inputRaw =
+        RawMessageSet.newBuilder()
+            .addItem(
+                RawMessageSet.Item.newBuilder()
+                    .setTypeId(TYPE_ID_1)
+                    .setMessage(CORRUPTED_MESSAGE_PAYLOAD))
+            .build();
+    ByteString inputData = inputRaw.toByteString();
+    TestMessageSet messageSet = TestMessageSet.parseFrom(inputData, extensionRegistry);
+
+    // Effectively cache the serialized size of the message set.
+    assertThat(messageSet.getSerializedSize()).isEqualTo(9);
+
+    // getExtension should mark the memoized size as "dirty" (i.e. -1).
+    assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension))
+        .isEqualTo(TestMessageSetExtension1.getDefaultInstance());
+
+    // toByteString calls getSerializedSize() which should re-compute the serialized size as the
+    // message contains lazy fields.
     ByteString outputData = messageSet.toByteString();
 
     // Re-parse as RawMessageSet

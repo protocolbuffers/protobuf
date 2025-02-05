@@ -67,7 +67,8 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }

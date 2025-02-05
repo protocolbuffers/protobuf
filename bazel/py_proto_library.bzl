@@ -76,7 +76,12 @@ def _py_proto_aspect_impl(target, ctx):
             proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
 
         plugin_output = ctx.bin_dir.path + "/" + proto_root
-        proto_root = ctx.workspace_name + "/" + proto_root
+
+        # Import path within the runfiles tree
+        if proto_root.startswith("external/"):
+            proto_root = proto_root[len("external") + 1:]
+        else:
+            proto_root = ctx.workspace_name + "/" + proto_root
 
         proto_common.compile(
             actions = ctx.actions,

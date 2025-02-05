@@ -4,8 +4,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Bazel support functions related to CMake support."""
+
+load("@rules_python//python:py_test.bzl", "py_test")
 
 def staleness_test(name, outs, generated_pattern, target_files = None, tags = [], **kwargs):
     """Tests that checked-in file(s) match the contents of generated file(s).
@@ -46,7 +47,7 @@ def staleness_test(name, outs, generated_pattern, target_files = None, tags = []
               "sed -i.bak -e 's|INSERT_FILE_LIST_HERE|" + "\\\n  ".join(file_list) + "|' $@",
     )
 
-    native.py_test(
+    py_test(
         name = name,
         srcs = [script_name],
         data = existing_outs + [generated_pattern % file for file in outs],

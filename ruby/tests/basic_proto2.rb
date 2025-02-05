@@ -43,6 +43,15 @@ module BasicTestProto2
 
       m = TestMessage.new(:optional_int32 => nil)
       refute m.has_optional_int32?
+      refute TestMessage.descriptor.lookup('optional_int32').has?(m)
+
+      m = TestMessage.new(:optional_int32 => 0)
+      assert m.has_optional_int32?
+      assert TestMessage.descriptor.lookup('optional_int32').has?(m)
+
+      m = TestMessage.decode(TestMessage.encode(m))
+      assert m.has_optional_int32?
+      assert TestMessage.descriptor.lookup('optional_int32').has?(m)
 
       assert_raises NoMethodError do
         m.has_repeated_msg?

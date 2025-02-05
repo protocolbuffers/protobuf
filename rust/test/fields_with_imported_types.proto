@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package main;
 
-import "google/protobuf/rust/test/imported_types.proto";
+import "rust/test/imported_types.proto";
 
 message MsgWithFieldsWithImportedTypes {
   optional imported_types.ImportedMessage imported_message_field = 1;
@@ -19,4 +19,10 @@ message MsgWithFieldsWithImportedTypes {
     imported_types.ImportedMessage imported_message_oneof = 3;
     imported_types.ImportedEnum imported_enum_oneof = 4;
   }
+}
+
+// This will produce a module called imported_types_proto. Let's verify that we
+// can do this without conflicting with the crate of the same name.
+message ImportedTypesProto {
+  message Nested {}
 }

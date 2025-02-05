@@ -35,6 +35,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -92,7 +93,7 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
   }
 }
 
-MessageBuilderGenerator::~MessageBuilderGenerator() {}
+MessageBuilderGenerator::~MessageBuilderGenerator() = default;
 
 void MessageBuilderGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_, context_->options());
@@ -211,8 +212,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
         "  switch (number) {\n");
     printer->Indent();
     printer->Indent();
-    for (int i = 0; i < map_fields.size(); ++i) {
-      const FieldDescriptor* field = map_fields[i];
+    for (const FieldDescriptor* field : map_fields) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
           "case $number$:\n"
@@ -237,8 +237,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
         "  switch (number) {\n");
     printer->Indent();
     printer->Indent();
-    for (int i = 0; i < map_fields.size(); ++i) {
-      const FieldDescriptor* field = map_fields[i];
+    for (const FieldDescriptor* field : map_fields) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
           "case $number$:\n"

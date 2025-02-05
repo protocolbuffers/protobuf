@@ -739,7 +739,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     bool report_modified_aggregates_;
     const Message* message1_;
     const Message* message2_;
-    MessageDifferencer::UnpackAnyField unpack_any_field_;
   };
 
  private:
@@ -932,6 +931,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool ShouldCompareNoPresence(const Message& message1,
                                const Reflection& reflection1,
                                const FieldDescriptor* field2) const;
+
+  // We move this code out of line to reduce stack cost of the caller.
+  // The map lookups and string copies are costly in stack space.
+  PROTOBUF_NOINLINE void ForceCompareField(const FieldDescriptor* field);
 
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;

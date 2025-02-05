@@ -1367,12 +1367,60 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
+  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroup", REQUIRED);
+  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroupUnknown", REQUIRED);
+  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
+                             "UnmatchedEndGroupWrongType", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18, tag(1234, WireFormatLite::WIRETYPE_END_GROUP)),
+      "UnmatchedEndGroupNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
+      "UnmatchedEndGroupNested", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
+                   len(2, "hello world")),
+      "UnmatchedEndGroupWithData", REQUIRED);
+
+  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroup", REQUIRED);
+  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupUnknown", REQUIRED);
+  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                             "UnmatchedStartGroupWrongType", REQUIRED);
+  ExpectParseFailureForProto(
+      len(18, tag(1234, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNestedLen", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, tag(202, WireFormatLite::WIRETYPE_START_GROUP)),
+      "UnmatchedStartGroupNested", REQUIRED);
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
+                   len(2, "hello world")),
+      "UnmatchedStartGroupWithData", REQUIRED);
+
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
+                   len(2, "hello world"),
+                   tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
+      "MismatchedGroupTags", REQUIRED);
+  ExpectParseFailureForProto(
+      group(201, absl::StrCat(tag(202, WireFormatLite::WIRETYPE_START_GROUP),
+                              len(2, "hello world"),
+                              tag(203, WireFormatLite::WIRETYPE_END_GROUP))),
+      "MismatchedNestedGroupTags", REQUIRED);
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
   for (uint8_t type : {0x6, 0x7}) {
     for (uint8_t field = 0; field < 4; ++field) {
       for (uint8_t value = 0; value < 4; ++value) {
-        std::string name = absl::StrFormat("UnknownWireType%d_Field%d_Verion%d",
-                                           type, field, value);
+        std::string name = absl::StrFormat(
+            "UnknownWireType%d_Field%d_Version%d", type, field, value);
 
         char data[2];
         data[0] = (field << 3) | type;  // unknown wire type.
@@ -1553,7 +1601,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
-
+    TestUnmatchedGroup();
     TestUnknownWireType();
 
     int64_t kInt64Min = -9223372036854775808ULL;
@@ -2289,6 +2337,10 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("Int32FieldStringValueEscaped", REQUIRED,
                    R"({"optionalInt32": "2\u003147483647"})",
                    "optional_int32: 2147483647");
+  RunValidJsonTest("Int32FieldStringValueZero", REQUIRED,
+                   R"({"optionalInt32": "0"})", "optional_int32: 0");
+  RunValidJsonTest("Int32FieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalInt32": "1e5"})", "optional_int32: 100000");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailureForJson("Int32FieldTooLarge", REQUIRED,
@@ -2303,7 +2355,8 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "-9223372036854775809"})");
   ExpectParseFailureForJson("Uint64FieldTooLarge", REQUIRED,
                             R"({"optionalUint64": "18446744073709551616"})");
-  // Parser reject non-integer numeric values as well.
+
+  // Parser reject non-integer numeric values.
   ExpectParseFailureForJson("Int32FieldNotInteger", REQUIRED,
                             R"({"optionalInt32": 0.5})");
   ExpectParseFailureForJson("Uint32FieldNotInteger", REQUIRED,
@@ -2312,6 +2365,22 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalInt32": "12abc"})");
+  ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalInt32": "abc"})");
+
+  // Parser reject empty string values.
+  ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
+                            R"({"optionalInt32": ""})");
+  ExpectParseFailureForJson("Uint32FieldEmptyString", REQUIRED,
+                            R"({"optionalUint32": ""})");
+  ExpectParseFailureForJson("Int64FieldEmptyString", REQUIRED,
+                            R"({"optionalInt64": ""})");
+  ExpectParseFailureForJson("Uint64FieldEmptyString", REQUIRED,
+                            R"({"optionalUint64": ""})");
 
   // Integers but represented as float values are accepted.
   RunValidJsonTest("Int32FieldFloatTrailingZero", REQUIRED,
@@ -2407,6 +2476,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("FloatFieldQuotedValue", REQUIRED,
                    R"({"optionalFloat": "1"})", "optional_float: 1");
+  RunValidJsonTest("FloatFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalFloat": "1.175494e-38"})",
+                   "optional_float: 1.175494e-38");
   // Special values.
   RunValidJsonTest("FloatFieldNan", REQUIRED, R"({"optionalFloat": "NaN"})",
                    "optional_float: nan");
@@ -2436,11 +2508,22 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalFloat": Infinity})");
   ExpectParseFailureForJson("FloatFieldNegativeInfinityNotQuoted", RECOMMENDED,
                             R"({"optionalFloat": -Infinity})");
+
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson("FloatFieldTooSmall", REQUIRED,
                             R"({"optionalFloat": -3.502823e+38})");
   ExpectParseFailureForJson("FloatFieldTooLarge", REQUIRED,
                             R"({"optionalFloat": 3.502823e+38})");
+
+  // Parsers should reject empty string values.
+  ExpectParseFailureForJson("FloatFieldEmptyString", REQUIRED,
+                            R"({"optionalFloat": ""})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalFloat": "12abc"})");
+  ExpectParseFailureForJson("FloatFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalFloat": "abc"})");
 
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
@@ -2458,6 +2541,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Values can be quoted.
   RunValidJsonTest("DoubleFieldQuotedValue", REQUIRED,
                    R"({"optionalDouble": "1"})", "optional_double: 1");
+  RunValidJsonTest("DoubleFieldQuotedExponentialValue", REQUIRED,
+                   R"({"optionalDouble": "2.22507e-308"})",
+                   "optional_double: 2.22507e-308");
   // Special values.
   RunValidJsonTest("DoubleFieldNan", REQUIRED, R"({"optionalDouble": "NaN"})",
                    "optional_double: nan");
@@ -2493,6 +2579,16 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalDouble": -1.89769e+308})");
   ExpectParseFailureForJson("DoubleFieldTooLarge", REQUIRED,
                             R"({"optionalDouble": +1.89769e+308})");
+
+  // Parsers should reject empty string values.
+  ExpectParseFailureForJson("DoubleFieldEmptyString", REQUIRED,
+                            R"({"optionalDouble": ""})");
+
+  // Parser reject non-numeric string values.
+  ExpectParseFailureForJson("DoubleFieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalDouble": "12abc"})");
+  ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalDouble": "abc"})");
 
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
@@ -2997,6 +3093,27 @@ void BinaryAndJsonConformanceSuiteImpl<
       })",
       "repeated_timestamp: {seconds: -62135596800}"
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
+  RunValidJsonTest("TimestampEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000Z"})",
+                   "optional_timestamp: {seconds: 0}");
+  RunValidJsonTest("TimestampNanoAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00.000000001Z"})",
+                   "optional_timestamp: {seconds: 0 nanos: 1}");
+  RunValidJsonTest("TimestampNanoBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:59.999999999Z"})",
+                   "optional_timestamp: {seconds: -1 nanos: 999999999}");
+  RunValidJsonTest("TimestampLittleAfterEpochlValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:01.000000001Z"})",
+                   "optional_timestamp: {seconds: 1 nanos: 1}");
+  RunValidJsonTest("TimestampLittleBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:58.999999999Z"})",
+                   "optional_timestamp: {seconds: -2 nanos: 999999999}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsAfterEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:10.500Z"})",
+                   "optional_timestamp: {seconds: 10 nanos: 500000000}");
+  RunValidJsonTest("TimestampTenAndHalfSecondsBeforeEpochValue", REQUIRED,
+                   R"({"optionalTimestamp": "1969-12-31T23:59:49.500Z"})",
+                   "optional_timestamp: {seconds: -11 nanos: 500000000}");
   RunValidJsonTest("TimestampLeap", REQUIRED,
                    R"({"optionalTimestamp": "1993-02-10T00:00:00.000Z"})",
                    "optional_timestamp: {seconds: 729302400}");
@@ -3427,6 +3544,40 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
             number_value: 1
     }
   }
+      )");
+  // When the Any is in WKT form (with "@type"), the type_url must be present
+  // and URL shaped, otherwise it should be a parse error (because it can't be
+  // parsed into the Any schema).
+  ExpectParseFailureForJson("AnyWktRepresentationWithEmptyTypeAndValue",
+                            REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "",
+          "value": ""
+        }
+      })");
+  ExpectParseFailureForJson("AnyWktRepresentationWithBadType", REQUIRED,
+                            R"({
+        "optionalAny": {
+          "@type": "not_a_url",
+          "value": ""
+        }
+      })");
+  // When the Any can be parsed as non-WKT form, the type_url could be missing
+  // or invalid, since that can still be parsed into the Any schema.
+  RunValidJsonTest("AnyWithNoType", REQUIRED,
+                   R"({
+        "optionalAny": {}
+      })",
+                   R"(
+        optional_any: {}
+      )");
+  // `null` where an Any exists should just result in the field being unset.
+  RunValidJsonTest("AnyNull", REQUIRED,
+                   R"({
+        "optionalAny": null
+      })",
+                   R"(
       )");
 }
 

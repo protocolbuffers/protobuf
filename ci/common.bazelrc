@@ -1,16 +1,16 @@
-# Needed for java_lite_proto_library, that's using ProguardSpecProvider
-# TODO: Once the provider is ported to Starlark the flag may be removed.
-common --experimental_google_legacy_api
+# TODO: ErrorProne's SelfAssertions are violated in tests
+build --javacopt=-Xep:SelfAssertion:WARN
 
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
 
-build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
+build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-pointer
+# TODO ASAN hits ODR violations with shared linkage due to
+# cc_proto_library cyclic dependency.
+build:san-common --dynamic_mode=off
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-# ASAN hits ODR violations with shared linkage due to rules_proto.
-build:asan --dynamic_mode=off
 
 build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
 build:msan --copt=-fsanitize-memory-track-origins
@@ -77,10 +77,12 @@ build --incompatible_use_host_features
 #   --incompatible_fail_on_unknown_attributes
 #   --incompatible_merge_fixed_and_default_shell_env
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
-common --noenable_bzlmod
+# For easier debugging of build failures.
+common --announce_rc
+build --verbose_failures
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
+
+build --enable_platform_specific_config

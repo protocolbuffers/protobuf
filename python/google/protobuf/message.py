@@ -13,6 +13,9 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+_INCONSISTENT_MESSAGE_ATTRIBUTES = ('Extensions',)
+
+
 class Error(Exception):
   """Base error type for this module."""
   pass
@@ -55,6 +58,29 @@ class Message(object):
     clone = type(self)()
     clone.MergeFrom(self)
     return clone
+
+  def __dir__(self):
+    """Provides the list of all accessible Message attributes."""
+    message_attributes = set(super().__dir__())
+
+    # TODO: Remove this once the UPB implementation is improved.
+    # The UPB proto implementation currently doesn't provide proto fields as
+    # attributes and they have to added.
+    if self.DESCRIPTOR is not None:
+      for field in self.DESCRIPTOR.fields:
+        message_attributes.add(field.name)
+
+    # The Fast C++ proto implementation provides inaccessible attributes that
+    # have to be removed.
+    for attribute in _INCONSISTENT_MESSAGE_ATTRIBUTES:
+      if attribute not in message_attributes:
+        continue
+      try:
+        getattr(self, attribute)
+      except AttributeError:
+        message_attributes.remove(attribute)
+
+    return sorted(message_attributes)
 
   def __eq__(self, other_msg):
     """Recursively compares two messages by value and structure."""

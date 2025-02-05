@@ -48,16 +48,25 @@
 #include <memory>
 #include <new>
 #include <string>
+#include <type_traits>
 
+#include "absl/base/attributes.h"
+#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/types/variant.h"
+#include "absl/utility/utility.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/map_field_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
@@ -68,10 +77,7 @@
 
 namespace google {
 namespace protobuf {
-
-using internal::DynamicMapField;
 using internal::ExtensionSet;
-using internal::MapField;
 
 
 using internal::ArenaStringPtr;
@@ -79,9 +85,94 @@ using internal::ArenaStringPtr;
 // ===================================================================
 // Some helper tables and functions...
 
+namespace internal {
+
+class DynamicMapField final : public MapFieldBase {
+ public:
+  // We pass the prototype for the entry and the mapped type (if message) to
+  // allow the caller to use the appropriate lookup function. During prototype
+  // building we need to use a different one.
+  DynamicMapField(const Message* default_entry,
+                  const Message* mapped_default_entry_if_message, Arena* arena);
+  DynamicMapField(const DynamicMapField&) = delete;
+  DynamicMapField& operator=(const DynamicMapField&) = delete;
+  ~DynamicMapField();
+
+ private:
+  friend class MapFieldBase;
+
+  // Must be first for GetMapRaw to work.
+  UntypedMapBase map_;
+};
+
+static UntypedMapBase::TypeKind CppTypeToTypeKind(
+    FieldDescriptor::CppType type) {
+  using TK = UntypedMapBase::TypeKind;
+  switch (type) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return TK::kBool;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return TK::kU32;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return TK::kU64;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return TK::kU64;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return TK::kFloat;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return TK::kDouble;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return TK::kString;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return TK::kMessage;
+    default:
+      Unreachable();
+  }
+}
+
+static auto DefaultEntryToTypeInfo(
+    const Message* default_entry,
+    const Message* mapped_default_entry_if_message) {
+  auto* desc = default_entry->GetDescriptor();
+  return UntypedMapBase::GetTypeInfoDynamic(
+      CppTypeToTypeKind(desc->map_key()->cpp_type()),
+      CppTypeToTypeKind(desc->map_value()->cpp_type()),
+      mapped_default_entry_if_message);
+}
+
+DynamicMapField::DynamicMapField(const Message* default_entry,
+                                 const Message* mapped_default_entry_if_message,
+                                 Arena* arena)
+    : MapFieldBase(default_entry, arena),
+      map_(arena, DefaultEntryToTypeInfo(default_entry,
+                                         mapped_default_entry_if_message)) {
+  // This invariant is required by `GetMapRaw` to easily access the map
+  // member without paying for dynamic dispatch.
+  static_assert(MapFieldBaseForParse::MapOffset() ==
+                PROTOBUF_FIELD_OFFSET(DynamicMapField, map_));
+}
+
+DynamicMapField::~DynamicMapField() {
+  ABSL_DCHECK_EQ(arena(), nullptr);
+  map_.ClearTable(false);
+}
+
+}  // namespace internal
+
+using internal::DynamicMapField;
+
 namespace {
 
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
+
+bool IsMapEntryField(const FieldDescriptor* field) {
+  return (field->containing_type() != nullptr &&
+          field->containing_type()->options().map_entry());
+}
 
 
 inline bool InRealOneof(const FieldDescriptor* field) {
@@ -204,7 +295,7 @@ class DynamicMessage final : public Message {
 
   // implements Message ----------------------------------------------
 
-  const ClassData* GetClassData() const PROTOBUF_FINAL;
+  const internal::ClassData* GetClassData() const PROTOBUF_FINAL;
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
   static void operator delete(DynamicMessage* msg, std::destroying_delete_t);
@@ -265,8 +356,8 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> has_bits_indices;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
-  DynamicMessage::ClassDataFull class_data = {
-      DynamicMessage::ClassData{
+  internal::ClassDataFull class_data = {
+      internal::ClassData{
           nullptr,  // default_instance
           nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
@@ -443,30 +534,22 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           new (field_ptr) Message*(nullptr);
         } else {
           if (IsMapFieldInApi(field)) {
+            const auto* sub =
+                field->message_type()->map_value()->message_type();
             // We need to lock in most cases to avoid data racing. Only not lock
             // when the constructor is called inside GetPrototype(), in which
             // case we have already locked the factory.
-            if (lock_factory) {
-              if (arena != nullptr) {
-                new (field_ptr) DynamicMapField(
-                    type_info_->factory->GetPrototype(field->message_type()),
-                    arena);
-              } else {
-                new (field_ptr) DynamicMapField(
-                    type_info_->factory->GetPrototype(field->message_type()));
-              }
-            } else {
-              if (arena != nullptr) {
-                new (field_ptr)
-                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
-                                        field->message_type()),
-                                    arena);
-              } else {
-                new (field_ptr)
-                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
-                        field->message_type()));
-              }
-            }
+            new (field_ptr) DynamicMapField(
+                lock_factory
+                    ? type_info_->factory->GetPrototype(field->message_type())
+                    : type_info_->factory->GetPrototypeNoLock(
+                          field->message_type()),
+                sub != nullptr
+                    ? lock_factory
+                          ? type_info_->factory->GetPrototype(sub)
+                          : type_info_->factory->GetPrototypeNoLock(sub)
+                    : nullptr,
+                arena);
           } else {
             new (field_ptr) RepeatedPtrField<Message>(arena);
           }
@@ -634,7 +717,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   }
 }
 
-const MessageLite::ClassData* DynamicMessage::GetClassData() const {
+const internal::ClassData* DynamicMessage::GetClassData() const {
   return type_info_->class_data.base();
 }
 
@@ -704,7 +787,43 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   type_info->has_bits_offset = -1;
   int max_hasbit = 0;
   for (int i = 0; i < type->field_count(); i++) {
-    if (internal::cpp::HasHasbit(type->field(i))) {
+    const FieldDescriptor* field = type->field(i);
+
+    // If a field has hasbits, it could be either an explicit-presence or
+    // implicit-presence field. Explicit presence fields will have "true
+    // hasbits" where hasbit is set iff field is present. Implicit presence
+    // fields will have "hint hasbits" where
+    // - if hasbit is unset, field is not present.
+    // - if hasbit is set, field is present if it is also nonempty.
+    if (internal::cpp::HasHasbit(field)) {
+      // TODO: b/112602698 - during Python textproto serialization, MapEntry
+      // messages may be generated from DynamicMessage on the fly. C++
+      // implementations of MapEntry messages always have hasbits, but
+      // has_presence return values might be different depending on how field
+      // presence is set. For MapEntrys, has_presence returns true for
+      // explicit-presence (proto2) messages and returns false for
+      // implicit-presence (proto3) messages.
+      //
+      // In the case of implicit presence, there is a potential inconsistency in
+      // code behavior between C++ and Python:
+      // - If C++ implementation is linked, hasbits are always generated for
+      //   MapEntry messages, and MapEntry messages will behave like explicit
+      //   presence.
+      // - If C++ implementation is not linked, Python defaults to the
+      //   DynamicMessage implementation for MapEntrys which traditionally does
+      //   not assume the presence of hasbits, so the default Python behavior
+      //   for MapEntry messages (by default C++ implementations are not linked)
+      //   will fall back to the DynamicMessage implementation and behave like
+      //   implicit presence.
+      // This is an inconsistency and this if-condition preserves it.
+      //
+      // Longer term, we want to get rid of this additional if-check of
+      // IsMapEntryField. It might take one or more breaking changes and more
+      // consensus gathering & clarification though.
+      if (!field->has_presence() && IsMapEntryField(field)) {
+        continue;
+      }
+
       if (type_info->has_bits_offset == -1) {
         // At least one field in the message requires a hasbit, so allocate
         // hasbits.

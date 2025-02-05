@@ -42,7 +42,8 @@ module Google
     def self.discard_unknown(message)
       raise FrozenError if message.frozen?
       raise ArgumentError.new "Expected message, got #{message.class} instead." if message.instance_variable_get(:@msg).nil?
-      unless Google::Protobuf::FFI.message_discard_unknown(message.instance_variable_get(:@msg), message.class.descriptor, 128)
+      pool_def = message.class.descriptor.instance_variable_get(:@descriptor_pool).descriptor_pool
+      unless Google::Protobuf::FFI.message_discard_unknown(message.instance_variable_get(:@msg), message.class.descriptor, pool_def, 128)
         raise RuntimeError.new "Messages nested too deeply."
       end
       nil

@@ -12,6 +12,8 @@
 #include <limits>
 #include <utility>
 
+#include "absl/base/optimization.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -129,7 +131,7 @@ ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state) {
   // We will only be negative on our first count, so we should just retry in
   // that case.
   if (first) {
-    if (PROTOBUF_PREDICT_TRUE(--sampling_state.next_sample > 0)) return nullptr;
+    if (ABSL_PREDICT_TRUE(--sampling_state.next_sample > 0)) return nullptr;
     return SampleSlow(sampling_state);
   }
 

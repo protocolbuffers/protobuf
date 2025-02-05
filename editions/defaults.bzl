@@ -64,32 +64,18 @@ compile_edition_defaults = rule(
 )
 
 def _embed_edition_defaults_impl(ctx):
-    if ctx.attr.encoding == "base64":
-        args = "--encoding=base64"
-    elif ctx.attr.encoding == "octal":
-        args = "--encoding=octal"
-    else:
-        fail("Unknown encoding %s" % ctx.attr.encoding)
-    ctx.actions.run_shell(
+    args = ctx.actions.args()
+    args.add(ctx.attr.encoding, format = "--encoding=%s")
+    args.add(ctx.file.defaults, format = "--defaults_path=%s")
+    args.add(ctx.file.template, format = "--template_path=%s")
+    args.add(ctx.outputs.output, format = "--output_path=%s")
+    args.add(ctx.attr.placeholder, format = "--placeholder=%s")
+
+    ctx.actions.run(
+        executable = ctx.executable._escape,
+        arguments = [args],
         outputs = [ctx.outputs.output],
         inputs = [ctx.file.defaults, ctx.file.template],
-        tools = [ctx.executable._escape],
-        command = """
-            DEFAULTS_RAW=$({escape} {args} < {defaults})
-            # Windows requires extra escaping.
-            DEFAULTS_ESCAPED=$(echo $DEFAULTS_RAW | sed 's/\\\\/\\\\\\\\/g' || 
-                echo $DEFAULTS_RAW | sed 's/\\\\\\\\/\\\\\\\\\\\\\\\\/g')
-            cp -f {template} {output}
-            # MacOS requires a backup file.
-            sed -i.bak \"s|{placeholder}|$DEFAULTS_ESCAPED|g\" {output}
-        """.format(
-            escape = ctx.executable._escape.path,
-            args = args,
-            defaults = ctx.file.defaults.path,
-            template = ctx.file.template.path,
-            output = ctx.outputs.output.path,
-            placeholder = ctx.attr.placeholder,
-        ),
     )
 
 embed_edition_defaults = rule(

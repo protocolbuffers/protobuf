@@ -1,7 +1,4 @@
-"""This file implements an experimental, do-not-use-kind of rust_proto_library.
-
-Disclaimer: This project is experimental, under heavy development, and should not
-be used yet."""
+"""This file implements rust_proto_library."""
 
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -15,11 +12,18 @@ load(
     "rust_upb_proto_library_aspect",
 )
 
+ProtoCrateNamesInfo = provider(
+    doc = """A provider that contains both names a Protobuf crate has throughout the build.""",
+    fields = {
+        "crate_name": "The name of rust_proto_library.",
+        "old_crate_name": "The name of the proto_library.",
+    },
+)
+
 def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
-
 
     Args:
         name: name of the Rust protobuf target.
@@ -28,7 +32,7 @@ def rust_proto_library(name, deps, **args):
     """
     if not name.endswith("_rust_proto"):
         fail(
-            "{}: Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
+            "Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
                 .format(name),
         )
     name = name.removesuffix("_rust_proto")
@@ -85,10 +89,15 @@ def _rust_proto_library_impl(ctx):
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
 
-    dep_variant_info = rust_proto_info.dep_variant_info
+    if len(rust_proto_info.dep_variant_infos) != 1:
+        fail(
+            "{}: rust_proto_library does not support src-less proto_library targets."
+                .format(_user_visible_label(ctx)),
+        )
+    dep_variant_info = rust_proto_info.dep_variant_infos[0]
     crate_info = dep_variant_info.crate_info
 
-    # Change the crate name from the hame of the proto_library to the name of the rust_proto_library.
+    # Change the crate name from the name of the proto_library to the name of the rust_proto_library.
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the
     # rust_proto_library (although the name of rust_proto_libraries is consistently ending with
@@ -100,11 +109,26 @@ def _rust_proto_library_impl(ctx):
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     fields = {field: getattr(crate_info, field) for field in dir(crate_info)}
     pkg, name = _user_visible_label(ctx).rsplit(":")
-    label = struct(**{"name": name, "pkg": pkg})
+
+    # Construct a label and compute the crate name.
+    # Package and workspace root are only relevant when 1P crate renaming is enabled.
+    # The current implementation of crate renaming supports only monorepos which
+    # means that it will only rename wen label.workspace_root is empty.
+    label = struct(**{"name": name, "package": pkg, "workspace_root": ""})
     fields["name"] = label_to_crate_name(ctx, label, toolchain)
+
+    # These two fields present on the dir(crate_info) but break on some versions of Bazel when
+    # passed back in to crate_info. Strip them for now.
+    fields.pop("to_json", None)
+    fields.pop("to_proto", None)
+
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [
+        ProtoCrateNamesInfo(
+            crate_name = crate_info_with_rust_proto_name.name,
+            old_crate_name = crate_info.name,
+        ),
         crate_info_with_rust_proto_name,
         dep_variant_info.dep_info,
         dep_variant_info.cc_info,

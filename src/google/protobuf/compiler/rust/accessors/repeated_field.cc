@@ -179,7 +179,7 @@ void RepeatedField::InExternC(Context& ctx,
                     fn $getter_thunk$(
                       raw_msg: $pbr$::RawMessage,
                       size: *const usize,
-                    ) -> Option<$pbr$::RawRepeatedField>;
+                    ) -> $Option$<$pbr$::RawRepeatedField>;
                   )rs");
                } else {
                  ctx.Emit(R"rs(

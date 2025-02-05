@@ -220,8 +220,19 @@ add_custom_target(restore-installed-headers)
 file(GLOB_RECURSE _local_hdrs
   "${PROJECT_SOURCE_DIR}/src/*.h"
   "${PROJECT_SOURCE_DIR}/src/*.inc"
+)
+file(GLOB_RECURSE _local_upb_hdrs
   "${PROJECT_SOURCE_DIR}/upb/*.h"
 )
+
+# Exclude test library headers.
+list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
+  ${compiler_test_utils_hdrs} ${upb_test_util_files} ${libprotoc_hdrs})
+foreach(_hdr ${_exclude_hdrs})
+  list(REMOVE_ITEM _local_hdrs ${_hdr})
+  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
+endforeach()
+list(APPEND _local_hdrs ${libprotoc_public_hdrs})
 
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
@@ -229,16 +240,25 @@ set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h")
-
-# Exclude test library headers.
-list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs} ${upb_test_util_files})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()
 
 foreach(_hdr ${_local_hdrs})
   string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
+  set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
+  add_custom_command(TARGET remove-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")
+  add_custom_command(TARGET save-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_hdr}" "${_tmp_file}" || true)
+  add_custom_command(TARGET restore-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_tmp_file}" "${_hdr}")
+endforeach()
+
+foreach(_hdr ${_local_upb_hdrs})
+  string(REPLACE "${protobuf_SOURCE_DIR}/upb" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
   add_custom_command(TARGET remove-installed-headers PRE_BUILD
                      COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")

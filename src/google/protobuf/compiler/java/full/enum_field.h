@@ -65,7 +65,6 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -131,7 +130,6 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 };

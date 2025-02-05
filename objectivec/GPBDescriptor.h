@@ -114,9 +114,6 @@ __attribute__((objc_subclassing_restricted))
 @property(nonatomic, readonly, copy) NSString *package;
 /** The objc prefix declared in the proto file. */
 @property(nonatomic, readonly, copy, nullable) NSString *objcPrefix;
-/** The syntax of the proto file, this property will be removed in the future. */
-@property(nonatomic, readonly) GPBFileSyntax syntax
-    __attribute__((deprecated("Syntax will be removed in the future.")));
 
 @end
 

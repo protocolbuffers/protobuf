@@ -52,7 +52,6 @@ extern bool fully_verify_message_sets_opt_out;
 
 namespace {
 
-using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
 // This test closely mirrors google/protobuf/compiler/cpp/unittest.cc
@@ -685,7 +684,7 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
   // Make sure we can add extensions.
   destination.AddExtension(unittest::unpacked_int32_extension, 1);
   destination.AddExtension(unittest::unpacked_enum_extension,
-                           protobuf_unittest::FOREIGN_BAR);
+                           proto2_unittest::FOREIGN_BAR);
 }
 
 TEST(ExtensionSetTest, UnpackedToPackedParsing) {
@@ -709,7 +708,7 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
   // Make sure we can add extensions.
   destination.AddExtension(unittest::packed_int32_extension, 1);
   destination.AddExtension(unittest::packed_enum_extension,
-                           protobuf_unittest::FOREIGN_BAR);
+                           proto2_unittest::FOREIGN_BAR);
 }
 
 TEST(ExtensionSetTest, IsInitialized) {
@@ -1184,7 +1183,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
   EXPECT_DEBUG_DEATH(
       message.SetExtension(unittest::optional_foreign_enum_extension,
                            static_cast<unittest::ForeignEnum>(53)),
-      "IsValid");
+      "ValidateEnum");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
@@ -1414,12 +1413,25 @@ TEST(ExtensionSetTest, BoolExtension) {
   unittest::TestAllExtensions msg;
   uint8_t wire_bytes[2] = {13 * 8, 42 /* out of bounds payload for bool */};
   EXPECT_TRUE(msg.ParseFromArray(wire_bytes, 2));
-  EXPECT_TRUE(msg.GetExtension(protobuf_unittest::optional_bool_extension));
+  EXPECT_TRUE(msg.GetExtension(proto2_unittest::optional_bool_extension));
 }
 
 TEST(ExtensionSetTest, ConstInit) {
   PROTOBUF_CONSTINIT static ExtensionSet set{};
   EXPECT_EQ(set.NumExtensions(), 0);
+}
+
+// Make sure that is_cleared is set correctly for repeated fields.
+TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
+  unittest::TestAllExtensions msg;
+  ExtensionSet set;
+  const auto* desc =
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "repeated_int32_extension");
+  ASSERT_NE(desc, nullptr);
+  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
+                              desc);
+  EXPECT_EQ(set.NumExtensions(), 1);
 }
 
 TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {

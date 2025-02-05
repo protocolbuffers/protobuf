@@ -112,16 +112,9 @@ VALUE Convert_CheckStringUtf8(VALUE str) {
     // not mean that it is *valid* UTF-8.  We have to check separately
     // whether it is valid.
     if (rb_enc_str_coderange(str) == ENC_CODERANGE_BROKEN) {
-      // TODO: For now
-      // we only warn for this case.  We will remove the warning and throw an
-      // exception below in the 30.x release
-
-      rb_warn(
-          "String is invalid UTF-8. This will be an error in a future "
-          "version.");
-      // VALUE exc = rb_const_get_at(
-      //     rb_cEncoding, rb_intern("InvalidByteSequenceError"));
-      // rb_raise(exc, "String is invalid UTF-8");
+      VALUE exc = rb_const_get_at(
+          rb_cEncoding, rb_intern("InvalidByteSequenceError"));
+      rb_raise(exc, "String is invalid UTF-8");
     }
   } else {
     // Note: this will not duplicate underlying string data unless

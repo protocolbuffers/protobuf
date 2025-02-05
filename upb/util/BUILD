@@ -1,3 +1,4 @@
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
@@ -49,7 +50,7 @@ cc_library(
     hdrs = ["def_to_proto_test.h"],
     deps = [
         ":def_to_proto",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf/util:differencer",
         "//upb:base",
@@ -69,7 +70,7 @@ cc_test(
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//src/google/protobuf/util:differencer",

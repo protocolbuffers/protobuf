@@ -25,10 +25,12 @@ class FieldDescriptor;
 namespace python {
 
 typedef struct ExtensionDict {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
 
   // Strong, owned reference to the parent message. Never NULL.
   CMessage* parent;
+  // clang-format on
 } ExtensionDict;
 
 extern PyTypeObject ExtensionDict_Type;
@@ -37,7 +39,7 @@ extern PyTypeObject ExtensionIterator_Type;
 namespace extension_dict {
 
 // Builds an Extensions dict for a specific message.
-ExtensionDict* NewExtensionDict(CMessage *parent);
+ExtensionDict* NewExtensionDict(CMessage* parent);
 
 }  // namespace extension_dict
 }  // namespace python

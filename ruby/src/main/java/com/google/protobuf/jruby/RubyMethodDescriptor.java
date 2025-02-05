@@ -148,6 +148,28 @@ public class RubyMethodDescriptor extends RubyObject {
         : context.runtime.getFalse();
   }
 
+  /*
+   * call-seq:
+   *     MethodDescriptor.to_proto => MethodDescriptorProto
+   *
+   * Returns the `MethodDescriptorProto` of this `MethodDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor methodDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(
+                context, context.runtime.newString("google.protobuf.MethodDescriptorProto"));
+    RubyClass msgClass = (RubyClass) methodDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(descriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   protected void setDescriptor(
       ThreadContext context, MethodDescriptor descriptor, RubyDescriptorPool pool) {
     this.descriptor = descriptor;

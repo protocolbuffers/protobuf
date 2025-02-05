@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use protobuf::AsView;
+use protobuf::{proto, AsMut, AsView, Repeated};
 use unittest_rust_proto::{test_all_types, test_all_types::NestedMessage, TestAllTypes};
 
 macro_rules! generate_repeated_numeric_test {
@@ -209,7 +209,13 @@ fn test_repeated_message() {
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
     let mut msg2 = TestAllTypes::new();
+    for _i in 0..2 {
+        msg2.repeated_nested_message_mut().push(NestedMessage::new());
+    }
+    assert_that!(msg2.repeated_nested_message().len(), eq(2));
+
     msg2.repeated_nested_message_mut().copy_from(msg.repeated_nested_message());
+    assert_that!(msg2.repeated_nested_message().len(), eq(1));
     assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
     let mut nested2 = NestedMessage::new();
@@ -237,6 +243,22 @@ fn test_repeated_message_setter() {
     nested.set_bb(1);
     msg.set_repeated_nested_message([nested].into_iter());
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+}
+
+#[gtest]
+fn test_empty_repeated_message_drop() {
+    let _ = Repeated::<TestAllTypes>::new();
+}
+
+#[gtest]
+fn test_repeated_message_drop() {
+    let mut repeated = Repeated::<TestAllTypes>::new();
+    repeated.as_mut().push(TestAllTypes::new());
+
+    {
+        let v: Vec<TestAllTypes> = vec![proto!(TestAllTypes { optional_int32: 1 })];
+        repeated.as_mut().extend(v.iter().cloned());
+    }
 }
 
 #[gtest]

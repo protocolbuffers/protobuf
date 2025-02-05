@@ -235,43 +235,6 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
               std::string::npos);
 }
 
-TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message abc {}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Message name should be in UpperCamelCase. Found: abc.") !=
-              std::string::npos);
-}
-
-TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message A {"
-      "  optional string SongName = 1;"
-      "}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Field name should be lowercase. Found: SongName") !=
-              std::string::npos);
-}
-
-TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
-  SetupParser(
-      "syntax = \"proto2\";"
-      "message A {"
-      "  optional string song_name_1 = 1;"
-      "}");
-  FileDescriptorProto file;
-  EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(error_collector_.warning_.find(
-                  "Number should not come right after an underscore. Found: "
-                  "song_name_1.") != std::string::npos);
-}
-
 TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
   std::string input("edition=\"a\000;", 12);
   input += std::string(100000, '{');
@@ -1465,38 +1428,38 @@ TEST_F(ParseMiscTest, InterpretedOptions) {
   // values from that file's descriptor in the generated code.
   {
     const MessageOptions& options =
-        protobuf_unittest::SettingRealsFromInf ::descriptor()->options();
-    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+        proto2_unittest::SettingRealsFromInf ::descriptor()->options();
+    float float_val = options.GetExtension(proto2_unittest::float_opt);
     ASSERT_TRUE(std::isinf(float_val));
     ASSERT_GT(float_val, 0);
-    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    double double_val = options.GetExtension(proto2_unittest::double_opt);
     ASSERT_TRUE(std::isinf(double_val));
     ASSERT_GT(double_val, 0);
   }
   {
     const MessageOptions& options =
-        protobuf_unittest::SettingRealsFromNegativeInf ::descriptor()->options();
-    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+        proto2_unittest::SettingRealsFromNegativeInf ::descriptor()->options();
+    float float_val = options.GetExtension(proto2_unittest::float_opt);
     ASSERT_TRUE(std::isinf(float_val));
     ASSERT_LT(float_val, 0);
-    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    double double_val = options.GetExtension(proto2_unittest::double_opt);
     ASSERT_TRUE(std::isinf(double_val));
     ASSERT_LT(double_val, 0);
   }
   {
     const MessageOptions& options =
-        protobuf_unittest::SettingRealsFromNan ::descriptor()->options();
-    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+        proto2_unittest::SettingRealsFromNan ::descriptor()->options();
+    float float_val = options.GetExtension(proto2_unittest::float_opt);
     ASSERT_TRUE(std::isnan(float_val));
-    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    double double_val = options.GetExtension(proto2_unittest::double_opt);
     ASSERT_TRUE(std::isnan(double_val));
   }
   {
     const MessageOptions& options =
-        protobuf_unittest::SettingRealsFromNegativeNan ::descriptor()->options();
-    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+        proto2_unittest::SettingRealsFromNegativeNan ::descriptor()->options();
+    float float_val = options.GetExtension(proto2_unittest::float_opt);
     ASSERT_TRUE(std::isnan(float_val));
-    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    double double_val = options.GetExtension(proto2_unittest::double_opt);
     ASSERT_TRUE(std::isnan(double_val));
   }
 }
@@ -2759,7 +2722,7 @@ void StripEmptyOptions(FileDescriptorProto& file_proto) {
 
 TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   const FileDescriptor* original_file =
-      protobuf_unittest::TestAllTypes::descriptor()->file();
+      proto2_unittest::TestAllTypes::descriptor()->file();
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
   StripEmptyOptions(expected);
@@ -2781,12 +2744,12 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
-      protobuf_unittest_import::PublicImportMessage::descriptor()->file();
+      proto2_unittest_import::PublicImportMessage::descriptor()->file();
   FileDescriptorProto public_import_proto;
   public_import->CopyTo(&public_import_proto);
   ASSERT_TRUE(pool_.BuildFile(public_import_proto) != nullptr);
   const FileDescriptor* import =
-      protobuf_unittest_import::ImportMessage::descriptor()->file();
+      proto2_unittest_import::ImportMessage::descriptor()->file();
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
   ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
@@ -2810,7 +2773,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
 
 TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   const FileDescriptor* original_file =
-      protobuf_unittest::AggregateMessage::descriptor()->file();
+      proto2_unittest::AggregateMessage::descriptor()->file();
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
 

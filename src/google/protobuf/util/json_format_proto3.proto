@@ -184,10 +184,13 @@ message TestEvilJson {
   int32 quotes = 3 [json_name = "unbalanced\"quotes"];
   int32 script_and_quotes = 4
       [json_name = "\"<script>alert('hello!);</script>"];
+  int32 empty_string = 5 [json_name = ""];
+  int32 backslash = 6 [json_name = "\\"];
+  int32 low_codepoint = 7 [json_name = "\1"];
 }
 
 message TestExtensions {
-  .protobuf_unittest.TestAllExtensions extensions = 1;
+  .proto2_unittest.TestAllExtensions extensions = 1;
 }
 
 message TestEnumValue {

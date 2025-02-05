@@ -542,8 +542,12 @@ impl<'msg> InnerMapMut<'msg> {
         self.raw
     }
 
+    pub fn arena(&mut self) -> &Arena {
+        self.arena
+    }
+
     #[doc(hidden)]
-    pub fn raw_arena(&self) -> RawArena {
+    pub fn raw_arena(&mut self) -> RawArena {
         self.arena.raw()
     }
 }

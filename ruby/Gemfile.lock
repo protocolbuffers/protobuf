@@ -1,0 +1,48 @@
+PATH
+  remote: .
+  specs:
+    google-protobuf (4.30.0-java)
+      ffi (~> 1)
+      ffi-compiler (~> 1)
+      rake (>= 13)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bigdecimal (3.1.8)
+    bigdecimal (3.1.8-java)
+    ffi (1.17.1)
+    ffi (1.17.1-java)
+    ffi-compiler (1.3.2)
+      ffi (>= 1.15.5)
+      rake
+    power_assert (2.0.5)
+    rake (13.2.1)
+    rake-compiler (1.1.9)
+      rake
+    test-unit (3.6.7)
+      power_assert
+
+PLATFORMS
+  aarch64-linux
+  arm-linux
+  arm64-darwin
+  arm64-linux
+  java
+  x64-mingw-ucrt
+  x64-mingw32
+  x86-linux
+  x86-mingw32
+  x86_64-darwin
+  x86_64-linux
+
+DEPENDENCIES
+  bigdecimal
+  ffi (~> 1)
+  ffi-compiler (~> 1)
+  google-protobuf!
+  rake-compiler (~> 1.1.0)
+  test-unit (~> 3.0, >= 3.0.9)
+
+BUNDLED WITH
+   2.4.10

@@ -189,3 +189,52 @@ fn test_is_known_for_open_enum() {
     assert_that!(TestEnumWithNumericNames::is_known(3), eq(true));
     assert_that!(TestEnumWithNumericNames::is_known(4), eq(false));
 }
+
+#[gtest]
+fn test_debug_string() {
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::_2020 }),
+        eq("TestEnumWithNumericNames::_2020")
+    );
+
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::from(2) }),
+        eq("TestEnumWithNumericNames::_2021")
+    );
+
+    // There is no name for 42, so the integer number is printed instead:
+    assert_that!(
+        format!("{:?}", { TestEnumWithNumericNames::from(42) }),
+        eq("TestEnumWithNumericNames::from(42)")
+    );
+}
+
+#[gtest]
+fn test_enum_in_hash_set() {
+    use test_all_types::NestedEnum;
+    let mut s = std::collections::HashSet::<NestedEnum>::new();
+    s.insert(NestedEnum::Foo);
+    s.insert(NestedEnum::Bar);
+    s.insert(NestedEnum::try_from(1).unwrap()); // FOO = 1
+    assert_that!(s.len(), eq(2));
+    assert_that!(s.contains(&NestedEnum::Bar), eq(true));
+    assert_that!(s.contains(&NestedEnum::Baz), eq(false));
+}
+
+#[gtest]
+fn test_enum_in_btree() {
+    use test_all_types::NestedEnum;
+    let mut s = std::collections::BTreeMap::<NestedEnum, i32>::new();
+
+    s.insert(NestedEnum::Baz, 1);
+    s.insert(NestedEnum::Bar, 2);
+    s.insert(NestedEnum::Foo, 3);
+    s.insert(NestedEnum::try_from(1).unwrap(), 4); // FOO = 1
+
+    // The order of entries should be sorted by the enum constant value, which is
+    // ordered FOO < BAR < BAZ.
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Foo, 4))));
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Bar, 2))));
+    assert_that!(s.pop_first(), some(eq((NestedEnum::Baz, 1))));
+    assert_that!(s.pop_first(), none());
+}

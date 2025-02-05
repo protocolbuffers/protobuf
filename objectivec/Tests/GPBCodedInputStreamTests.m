@@ -12,7 +12,6 @@
 #import "GPBCodedOutputStream.h"
 #import "GPBTestUtilities.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
@@ -293,10 +292,6 @@
       case GPBUnknownFieldTypeGroup:
         wireFormat = GPBWireFormatStartGroup;
         break;
-      case GPBUnknownFieldTypeLegacy:
-        XCTFail(@"Legacy field type not expected");
-        wireFormat = GPBWireFormatVarint;
-        break;
     }
     uint32_t tag = GPBWireFormatMakeTag(field.number, wireFormat);
     [fieldNumbers addObject:@(tag)];
@@ -304,23 +299,16 @@
 
   // Check the tags compared to what's in the UnknownFields to confirm the stream is
   // skipping as expected (this covers the tags within a group also).
-  GPBCodedInputStream* input1 = [GPBCodedInputStream streamWithData:rawBytes];
   GPBCodedInputStream* input2 = [GPBCodedInputStream streamWithData:rawBytes];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  GPBUnknownFieldSet* unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
-#pragma clang diagnostic pop
 
   NSUInteger idx = 0;
   while (YES) {
-    int32_t tag = [input1 readTag];
-    XCTAssertEqual(tag, [input2 readTag]);
+    int32_t tag = [input2 readTag];
     if (tag == 0) {
       XCTAssertEqual(idx, fieldNumbers.count);
       break;
     }
     XCTAssertEqual(tag, [fieldNumbers[idx] intValue]);
-    [unknownFields mergeFieldFrom:tag input:input1];
     [input2 skipField:tag];
     ++idx;
   }

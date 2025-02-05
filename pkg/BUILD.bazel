@@ -16,6 +16,7 @@ pkg_files(
     name = "wkt_protos_files",
     srcs = [
         "//:well_known_type_protos",
+        "//go:go_features_proto_srcs",
         "//java/core:java_features_proto_srcs",
         "//src/google/protobuf:cpp_features_proto_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
@@ -109,6 +110,7 @@ gen_file_lists(
         # Libraries:
         ":protobuf": "libprotobuf",
         ":protobuf_lite": "libprotobuf_lite",
+        ":protoc_public": "libprotoc_public",
         ":protoc": "libprotoc",
         ":upb": "libupb",
         ":protoc-gen-upb": "protoc-gen-upb",
@@ -120,6 +122,7 @@ gen_file_lists(
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
         "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
+        "//go:go_features_proto": "go_features_proto,go/",
 
         # Test libraries:
         ":common_test": "common_test",
@@ -208,6 +211,23 @@ cc_dist_library(
 )
 
 cc_dist_library(
+    name = "protoc_public",
+    dist_deps = [
+        ":protobuf",
+        ":protobuf_lite",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/csharp:names",
+        "//src/google/protobuf/compiler/java:names",
+        "//src/google/protobuf/compiler/objectivec:names",
+        "//src/google/protobuf/compiler/php:names",
+    ],
+)
+
+cc_dist_library(
     name = "upb",
     tags = ["manual"],
     deps = [
@@ -216,6 +236,7 @@ cc_dist_library(
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/text",
+        "//upb/text:debug",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
         "//upb/wire:byte_size",

@@ -13,12 +13,12 @@
 #include <gtest/gtest.h>
 
 
-namespace protobuf_unittest {}  // namespace protobuf_unittest
+namespace proto2_unittest {}  // namespace proto2_unittest
 
 namespace google {
 namespace protobuf {
 
-namespace unittest = ::protobuf_unittest;
+namespace unittest = ::proto2_unittest;
 
 class MapTestUtilImpl {
  public:

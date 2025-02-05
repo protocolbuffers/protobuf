@@ -91,10 +91,10 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
 }
 
 using google::protobuf::FieldMask;
-using protobuf_unittest::NestedTestAllTypes;
-using protobuf_unittest::TestAllTypes;
-using protobuf_unittest::TestRequired;
-using protobuf_unittest::TestRequiredMessage;
+using proto2_unittest::NestedTestAllTypes;
+using proto2_unittest::TestAllTypes;
+using proto2_unittest::TestRequired;
+using proto2_unittest::TestRequiredMessage;
 
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;

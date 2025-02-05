@@ -37,6 +37,9 @@ class LocalTestResult(unittest.TestResult):
   def addSkip(self, test, reason):
     pass
 
+  def addDuration(self, test, duration):
+    pass
+
 
 class ReferenceLeakCheckerMixin(object):
   """A mixin class for TestCase, which checks reference counts."""
@@ -59,7 +62,7 @@ class ReferenceLeakCheckerMixin(object):
     super(ReferenceLeakCheckerMixin, self).run(result=result)
     super(ReferenceLeakCheckerMixin, self).run(result=result)
 
-    oldrefcount = 0
+    oldrefcount = 0  # pylint: disable=unused-variable but needed for refcounts.
     local_result = LocalTestResult(result)
     num_flakes = 0
 

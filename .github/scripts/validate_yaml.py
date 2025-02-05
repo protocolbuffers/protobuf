@@ -53,47 +53,23 @@ for file in yaml_files:
       continuous_condition = 'inputs.continuous-prefix' in jobs[job]['name']
       steps = jobs[job]['steps']
       for step in steps:
+        if 'name' in step:
+          name = step['name']
+        elif 'with' in step and 'name' in step['with']:
+          name = step['with']['name']
+        else:
+          raise ValueError(
+              'Step in job %s from file %s does not have a name.' % (job, file)
+          )
         if continuous_condition and 'continuous-run' not in step.get('if', ''):
           raise ValueError(
-              'Step %s in job %s does not check the continuous-run condition'
-              % (step['name'], job)
+              'Step %s in job %s from file %s does not check the continuous-run'
+              ' condition' % (name, job, file)
           )
         if not continuous_condition and 'continuous-run' in step.get('if', ''):
           raise ValueError(
-              'Step %s in job %s checks the continuous-run condition but '
-              'the job does not contain the continuous-prefix'
-              % (step['name'], job)
+              'Step %s in job %s from file %s checks the continuous-run'
+              ' condition but the job does not contain the continuous-prefix'
+              % (name, job, file)
           )
 print('PASSED: All steps in all jobs check the continuous-run condition.')
-
-# Check to make sure the list of included branches matches the list of excluded
-# branches in staleness_check.yml.
-with open(
-    os.path.join(os.path.dirname(__file__), '../workflows/staleness_check.yml'),
-    'r',
-) as f:
-  regex_pattern = r"'(\d+\.x)'"
-  data = yaml.safe_load(f)
-  matrix = data['jobs']['test']['strategy']['matrix']
-  included_branches = matrix['branch']
-  # Main should be included in all test runs
-  included_branches.remove('main')
-  excludes = matrix['exclude']
-  for entry in excludes:
-    match = re.search(regex_pattern, entry['branch'])
-    branch = match.group(1)
-    if branch not in included_branches:
-      raise ValueError(
-          'Branch %s is excluded for presubmit runs but is not in the list of'
-          ' matrix branches in staleness_check.yml.' % branch
-      )
-    included_branches.remove(branch)
-  if included_branches:
-    raise ValueError(
-        'Branches %s are in the list of matrix branches but do not get excluded'
-        ' for presubmit runs in staleness_check.yml.' % included_branches
-    )
-  print(
-      'PASSED: The list of included branches matches the list of excluded'
-      ' branches in staleness_check.yml.'
-  )

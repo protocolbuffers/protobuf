@@ -6,12 +6,20 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.upb.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 #include "upb/util/def_to_proto.h"
@@ -21,6 +29,9 @@
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/plugin.h"
 #include "upb_generator/reflection/names.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 namespace upb {
 namespace generator {
@@ -141,22 +152,29 @@ void WriteDefSource(upb::FileDefPtr file, const Options& options,
 }
 
 void GenerateFile(upb::FileDefPtr file, const Options& options,
-                  Plugin* plugin) {
+                  google::protobuf::compiler::GeneratorContext* context) {
   Output h_def_output;
   WriteDefHeader(file, options, h_def_output);
-  plugin->AddOutputFile(DefHeaderFilename(file), h_def_output.output());
+  {
+    auto stream = absl::WrapUnique(context->Open(DefHeaderFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(h_def_output.output())));
+  }
 
   Output c_def_output;
   WriteDefSource(file, options, c_def_output);
-  plugin->AddOutputFile(DefSourceFilename(file), c_def_output.output());
+  {
+    auto stream = absl::WrapUnique(context->Open(DefSourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(c_def_output.output())));
+  }
 }
 
-bool ParseOptions(Plugin* plugin, Options* options) {
-  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
+bool ParseOptions(absl::string_view parameter, Options* options,
+                  std::string* error) {
+  for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "dllexport_decl") {
       options->dllexport_decl = pair.second;
     } else {
-      plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+      *error = absl::Substitute("Unknown parameter: $0", pair.first);
       return false;
     }
   }
@@ -165,15 +183,52 @@ bool ParseOptions(Plugin* plugin, Options* options) {
 }
 
 }  // namespace
+
+class ReflectionGenerator : public google::protobuf::compiler::CodeGenerator {
+  bool Generate(const google::protobuf::FileDescriptor* file,
+                const std::string& parameter,
+                google::protobuf::compiler::GeneratorContext* generator_context,
+                std::string* error) const override {
+    std::vector<const google::protobuf::FileDescriptor*> files{file};
+    return GenerateAll(files, parameter, generator_context, error);
+  }
+
+  bool GenerateAll(const std::vector<const google::protobuf::FileDescriptor*>& files,
+                   const std::string& parameter,
+                   google::protobuf::compiler::GeneratorContext* generator_context,
+                   std::string* error) const override {
+    Options options;
+    if (!ParseOptions(parameter, &options, error)) {
+      return false;
+    }
+
+    upb::Arena arena;
+    DefPoolPair pools;
+    absl::flat_hash_set<std::string> files_seen;
+    for (const auto* file : files) {
+      PopulateDefPool(file, &arena, &pools, &files_seen);
+      upb::FileDefPtr upb_file = pools.GetFile(file->name());
+      GenerateFile(upb_file, options, generator_context);
+    }
+
+    return true;
+  }
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
+  }
+  google::protobuf::Edition GetMinimumEdition() const override {
+    return google::protobuf::Edition::EDITION_PROTO2;
+  }
+  google::protobuf::Edition GetMaximumEdition() const override {
+    return google::protobuf::Edition::EDITION_2023;
+  }
+};
+
 }  // namespace generator
 }  // namespace upb
 
 int main(int argc, char** argv) {
-  upb::generator::Plugin plugin;
-  upb::generator::Options options;
-  if (!ParseOptions(&plugin, &options)) return 0;
-  plugin.GenerateFiles([&](upb::FileDefPtr file) {
-    upb::generator::GenerateFile(file, options, &plugin);
-  });
-  return 0;
+  upb::generator::ReflectionGenerator generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

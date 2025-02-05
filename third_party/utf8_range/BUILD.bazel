@@ -35,6 +35,8 @@ filegroup(
     srcs = [
         "utf8_range.c",
         "utf8_range.h",
+        "utf8_range_neon.inc",
+        "utf8_range_sse.inc",
     ],
     visibility = ["//:__subpackages__"],
 )
@@ -44,7 +46,11 @@ cc_library(
     srcs = [
         "utf8_range.c",
     ],
-    hdrs = ["utf8_range.h"],
+    hdrs = [
+        "utf8_range.h",
+        "utf8_range_neon.inc",
+        "utf8_range_sse.inc",
+    ],
     strip_include_prefix = "/third_party/utf8_range",
 )
 

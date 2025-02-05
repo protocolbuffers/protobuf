@@ -37,5 +37,5 @@ sed -e "s;TEMPLATE_TIME;${time};" |
 sed -e "s;TEMPLATE_PHP_RELEASE;${release_version};" |
 sed -e "s;TEMPLATE_PHP_API;${api_version};" |
 sed -e "s;TEMPLATE_PHP_STABILITY;${stability};g" |
-sed -e "s;TEMPLATE_PROTOC_VERSION;${protoc_version};" |
+sed -e "s;TEMPLATE_PROTOC_VERSION;${protoc_version//-rc-/-rc};" |
 sed -e "s;TEMPLATE_FILES;${files};" > $out

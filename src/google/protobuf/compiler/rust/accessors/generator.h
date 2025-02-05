@@ -124,13 +124,9 @@ class RepeatedField final : public AccessorGenerator {
 
 class UnsupportedField final : public AccessorGenerator {
  public:
-  explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}
   ~UnsupportedField() override = default;
   void InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  AccessorCase accessor_case) const override;
-
- private:
-  std::string reason_;
 };
 
 class Map final : public AccessorGenerator {

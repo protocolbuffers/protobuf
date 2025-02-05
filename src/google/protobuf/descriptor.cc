@@ -33,11 +33,13 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
@@ -257,6 +259,16 @@ template <typename T>
 using IntT = int;
 template <typename T>
 using PointerT = T*;
+
+// State that we gather during EstimatedMemoryUsed while on the lock, but we
+// will use outside the lock.
+struct EstimatedMemoryUsedState {
+  // We can't call SpaceUsed under the lock because it uses reflection and can
+  // potentially deadlock if it requires to load new files into the pool.
+  // NOTE: Messages added here must not be modified or destroyed outside the
+  // lock while the pool is alive.
+  std::vector<const Message*> messages;
+};
 
 // Manages an allocation of sequential arrays of type `T...`.
 // It is more space efficient than storing N (ptr, size) pairs, by storing only
@@ -542,21 +554,17 @@ class FlatAllocatorImpl {
     return pointers_.template Get<char>() != nullptr;
   }
 
-  static bool IsLower(char c) { return 'a' <= c && c <= 'z'; }
-  static bool IsDigit(char c) { return '0' <= c && c <= '9'; }
-  static bool IsLowerOrDigit(char c) { return IsLower(c) || IsDigit(c); }
-
   enum class FieldNameCase { kAllLower, kSnakeCase, kOther };
   FieldNameCase GetFieldNameCase(const absl::string_view name) {
-    if (!name.empty() && !IsLower(name[0])) return FieldNameCase::kOther;
+    if (!name.empty() && !absl::ascii_islower(name[0])) {
+      return FieldNameCase::kOther;
+    }
     FieldNameCase best = FieldNameCase::kAllLower;
     for (char c : name) {
-      if (IsLowerOrDigit(c)) {
-        // nothing to do
+      if (absl::ascii_isupper(c)) {
+        return FieldNameCase::kOther;
       } else if (c == '_') {
         best = FieldNameCase::kSnakeCase;
-      } else {
-        return FieldNameCase::kOther;
       }
     }
     return best;
@@ -573,17 +581,11 @@ class FlatAllocatorImpl {
   TypeMap<IntT, T...> used_;
 };
 
-// Allows us to disable tracking in the current thread while certain build steps
-// are happening.
-bool& is_tracking_enabled() {
-  static PROTOBUF_THREAD_LOCAL bool value = true;
-  return value;
-}
-
-auto DisableTracking() {
-  bool old_value = is_tracking_enabled();
-  is_tracking_enabled() = false;
-  return absl::MakeCleanup([=] { is_tracking_enabled() = old_value; });
+static auto DisableTracking() {
+  bool old_value = internal::cpp::IsTrackingEnabled();
+  internal::cpp::IsTrackingEnabledVar() = false;
+  return absl::MakeCleanup(
+      [=] { internal::cpp::IsTrackingEnabledVar() = old_value; });
 }
 
 }  // namespace
@@ -962,10 +964,28 @@ struct SymbolByFullNameEq {
 using SymbolsByNameSet =
     absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
 
-struct ParentNameQuery {
+struct ParentNameQueryBase {
   std::pair<const void*, absl::string_view> query;
   std::pair<const void*, absl::string_view> parent_name_key() const {
     return query;
+  }
+};
+struct ParentNameQuery : public ParentNameQueryBase {
+  using SymbolT = Symbol;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    return *it;
+  }
+};
+struct ParentNameFieldQuery : public ParentNameQueryBase {
+  using SymbolT = const FieldDescriptor*;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    SymbolT field = it->field_descriptor();
+    ABSL_ASSUME(field != nullptr);
+    return field;
   }
 };
 struct SymbolByParentHash {
@@ -978,6 +998,14 @@ struct SymbolByParentHash {
 };
 struct SymbolByParentEq {
   using is_transparent = void;
+
+  bool operator()(const Symbol& symbol,
+                  const ParentNameFieldQuery& query) const {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    return field != nullptr && !field->is_extension() &&
+           field->containing_type() == query.query.first &&
+           field->name() == query.query.second;
+  }
 
   template <typename T, typename U>
   bool operator()(const T& a, const U& b) const {
@@ -1102,20 +1130,6 @@ bool AllowedExtendeeInProto3(const absl::string_view name) {
          allowed_proto3_extendees->end();
 }
 
-const FeatureSetDefaults& GetCppFeatureSetDefaults() {
-  static const FeatureSetDefaults* default_spec =
-      internal::OnShutdownDelete([] {
-        auto* defaults = new FeatureSetDefaults();
-        internal::ParseNoReflection(
-            absl::string_view{
-                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-            *defaults);
-        return defaults;
-      }());
-  return *default_spec;
-}
-
 template <typename ProtoT>
 void RestoreFeaturesToOptions(const FeatureSet* features, ProtoT* proto) {
   if (features != &FeatureSet::default_instance()) {
@@ -1225,8 +1239,9 @@ class FileDescriptorTables {
   // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
-  inline Symbol FindNestedSymbol(const void* parent,
-                                 absl::string_view name) const;
+  template <typename K = ParentNameQuery>
+  inline auto FindNestedSymbol(const void* parent,
+                               absl::string_view name) const;
 
   // These return nullptr if not found.
   inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
@@ -1695,10 +1710,12 @@ inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
   return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
-inline Symbol FileDescriptorTables::FindNestedSymbol(
+template <typename K>
+inline auto FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
-  auto it = symbols_by_parent_.find(ParentNameQuery{{parent, name}});
-  return it == symbols_by_parent_.end() ? Symbol() : *it;
+  auto it = symbols_by_parent_.find(K{{{parent, name}}});
+  return it == symbols_by_parent_.end() ? typename K::SymbolT()
+                                        : K::IterToSymbol(it);
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -2104,7 +2121,7 @@ DescriptorPool::DescriptorPool()
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2119,7 +2136,7 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2133,7 +2150,7 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false) {}
 
@@ -2519,9 +2536,7 @@ const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
 
 const FieldDescriptor* Descriptor::FindFieldByName(
     absl::string_view name) const {
-  const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
-  return field != nullptr && !field->is_extension() ? field : nullptr;
+  return file()->tables_->FindNestedSymbol<ParentNameFieldQuery>(this, name);
 }
 
 const OneofDescriptor* Descriptor::FindOneofByName(
@@ -3035,7 +3050,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!containing_type()->is_unqualified_placeholder_) {
       proto->set_extendee(".");
     }
-    proto->mutable_extendee()->append(containing_type()->full_name());
+    absl::StrAppend(proto->mutable_extendee(), containing_type()->full_name());
   }
 
   if (cpp_type() == CPPTYPE_MESSAGE) {
@@ -3048,12 +3063,12 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!message_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(message_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), message_type()->full_name());
   } else if (cpp_type() == CPPTYPE_ENUM) {
     if (!enum_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(enum_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), enum_type()->full_name());
   }
 
   if (has_default_value()) {
@@ -3066,10 +3081,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
 
   if (&options() != &FieldOptions::default_instance()) {
     *proto->mutable_options() = options();
-    if (proto_features_->GetExtension(pb::cpp).has_string_type()) {
-      // ctype must have been set in InferLegacyProtoFeatures so avoid copying.
-      proto->mutable_options()->clear_ctype();
-    }
+  }
+  if (has_legacy_proto_ctype()) {
+    proto->mutable_options()->set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -3137,12 +3152,12 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   if (!input_type()->is_unqualified_placeholder_) {
     proto->set_input_type(".");
   }
-  proto->mutable_input_type()->append(input_type()->full_name());
+  absl::StrAppend(proto->mutable_input_type(), input_type()->full_name());
 
   if (!output_type()->is_unqualified_placeholder_) {
     proto->set_output_type(".");
   }
-  proto->mutable_output_type()->append(output_type()->full_name());
+  absl::StrAppend(proto->mutable_output_type(), output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
     *proto->mutable_options() = options();
@@ -3208,7 +3223,7 @@ bool RetrieveOptionsAssumingRightPool(
       if (field->is_extension()) {
         name = absl::StrCat("(.", field->full_name(), ")");
       } else {
-        name = field->name();
+        name = std::string(field->name());
       }
       option_entries->push_back(absl::StrCat(name, " = ", fieldval));
     }
@@ -3676,6 +3691,10 @@ void FieldDescriptor::DebugString(
 
   FieldOptions full_options = options();
   CopyFeaturesToOptions(proto_features_, &full_options);
+  if (has_legacy_proto_ctype()) {
+    full_options.set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
+  }
   std::string formatted_options;
   if (FormatBracketedOptions(depth, full_options, file()->pool(),
                              &formatted_options)) {
@@ -3917,6 +3936,10 @@ void MethodDescriptor::DebugString(
 
 // Feature methods ===============================================
 
+bool FieldDescriptor::has_legacy_proto_ctype() const {
+  return legacy_proto_ctype_ <= FieldOptions::CType_MAX;
+}
+
 bool EnumDescriptor::is_closed() const {
   return features().enum_type() == FeatureSet::CLOSED;
 }
@@ -3959,16 +3982,15 @@ bool FieldDescriptor::has_optional_keyword() const {
 
 FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
   ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*this)) {
+    return CppStringType::kString;
+  }
+
   switch (features().GetExtension(pb::cpp).string_type()) {
     case pb::CppFeatures::VIEW:
       return CppStringType::kView;
     case pb::CppFeatures::CORD:
-      // In open-source, protobuf CORD is only supported for singular bytes
-      // fields.
-      if (type() != FieldDescriptor::TYPE_BYTES || is_repeated() ||
-          is_extension()) {
-        return CppStringType::kString;
-      }
       return CppStringType::kCord;
     case pb::CppFeatures::STRING:
       return CppStringType::kString;
@@ -4790,6 +4812,36 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   return absl::OkStatus();
 }
 
+const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
+  if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
+  static const FeatureSetDefaults* cpp_default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
+  return *cpp_default_spec;
+}
+
+bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
+  for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
+    std::vector<const FieldDescriptor*> fields;
+    auto features = edition_default.fixed_features();
+    features.MergeFrom(edition_default.overridable_features());
+    features.GetReflection()->ListFields(features, &fields);
+    if (absl::c_find_if(fields, [&](const FieldDescriptor* field) {
+          return field->number() == extension_number;
+        }) == fields.end()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 DescriptorBuilder::DescriptorBuilder(
     const DescriptorPool* pool, DescriptorPool::Tables* tables,
     DescriptorPool::DeferredValidation& deferred_validation,
@@ -4806,7 +4858,7 @@ DescriptorBuilder::DescriptorBuilder(
   // have to avoid registering these pre-main, because we need to ensure that
   // the linker --gc-sections step can strip out the full runtime if it is
   // unused.
-  PROTOBUF_UNUSED static std::true_type lazy_register =
+  [[maybe_unused]] static std::true_type lazy_register =
       (internal::ExtensionSet::RegisterMessageExtension(
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
@@ -5511,23 +5563,6 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   }
 }
 
-// TODO: we should update proto code to not need ctype to be set
-// when string_type is set.
-static void EnforceCTypeStringTypeConsistency(
-    Edition edition, FieldDescriptor::CppType type,
-    const pb::CppFeatures& cpp_features, FieldOptions& options) {
-  if (&options == &FieldOptions::default_instance()) return;
-  if (type == FieldDescriptor::CPPTYPE_STRING) {
-    switch (cpp_features.string_type()) {
-      case pb::CppFeatures::CORD:
-        options.set_ctype(FieldOptions::CORD);
-        break;
-      default:
-        break;
-    }
-  }
-}
-
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     Edition edition, const typename DescriptorT::Proto& proto,
@@ -5618,6 +5653,13 @@ void DescriptorBuilder::PostProcessFieldFeatures(
         !type.descriptor()->options().map_entry()) {
       field.type_ = FieldDescriptor::TYPE_GROUP;
     }
+  }
+
+  if (field.options_->has_ctype()) {
+    field.legacy_proto_ctype_ = field.options_->ctype();
+    const_cast<FieldOptions*>(  // NOLINT(google3-runtime-proto-const-cast)
+        field.options_)
+        ->clear_ctype();
   }
 }
 
@@ -5922,10 +5964,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     });
   }
 
-  const FeatureSetDefaults& defaults =
-      pool_->feature_set_defaults_spec_ == nullptr
-          ? GetCppFeatureSetDefaults()
-          : *pool_->feature_set_defaults_spec_;
+  const FeatureSetDefaults& defaults = pool_->GetFeatureSetDefaults();
 
   absl::StatusOr<FeatureResolver> feature_resolver =
       FeatureResolver::Create(file_->edition_, defaults);
@@ -6154,24 +6193,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
 
-    // TODO: move this check back to generator.cc once we no longer
-    // need to set both ctype and string_type internally.
-    internal::VisitDescriptors(
-        *result, proto,
-        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
-          if (field.options_->has_ctype() && field.options_->features()
-                                                 .GetExtension(pb::cpp)
-                                                 .has_string_type()) {
-            AddError(field.full_name(), proto,
-                     DescriptorPool::ErrorCollector::TYPE, [&] {
-                       return absl::StrFormat(
-                           "Field %s specifies both string_type and ctype "
-                           "which is not supported.",
-                           field.full_name());
-                     });
-          }
-        });
-
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
     {
@@ -6192,22 +6213,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                 alloc);
           });
     }
-
-    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-      if (result->edition() >= Edition::EDITION_2024 &&
-          field.options().has_ctype()) {
-        // "ctype" is no longer supported in edition 2024 and beyond.
-        AddError(
-            field.full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-            "ctype option is not allowed under edition 2024 and beyond. Use "
-            "the feature string_type = VIEW|CORD|STRING|... instead.");
-      }
-      EnforceCTypeStringTypeConsistency(
-          field.file()->edition(), field.cpp_type(),
-          field.merged_features_->GetExtension(pb::cpp),
-          const_cast<  // NOLINT(google3-runtime-proto-const-cast)
-              FieldOptions&>(*field.options_));
-    });
 
     // Post-process cleanup for field features.
     internal::VisitDescriptors(
@@ -6604,6 +6609,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->is_oneof_ = false;
   result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
+  result->legacy_proto_ctype_ = FieldOptions::CType_MAX + 1;
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
@@ -7164,9 +7170,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
     // scope.  Let's print an additional error to explain this.
     std::string outer_scope;
     if (parent->containing_type() == nullptr) {
-      outer_scope = file_->package();
+      outer_scope = std::string(file_->package());
     } else {
-      outer_scope = parent->containing_type()->full_name();
+      outer_scope = std::string(parent->containing_type()->full_name());
     }
 
     if (outer_scope.empty()) {
@@ -7362,7 +7368,7 @@ void DescriptorBuilder::CheckExtensionDeclarationFieldType(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view type) {
   if (had_errors_) return;
-  std::string actual_type = field.type_name();
+  std::string actual_type(field.type_name());
   std::string expected_type(type);
   if (field.message_type() || field.enum_type()) {
     // Field message type descriptor can be in a partial state which will cause
@@ -7952,6 +7958,13 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
+  if (field->file()->edition() >= Edition::EDITION_2024 &&
+      field->has_legacy_proto_ctype()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "ctype option is not allowed under edition 2024 and beyond. Use "
+             "the feature string_type = VIEW|CORD|STRING|... instead.");
+  }
+
   // Only message type fields may be lazy.
   if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
@@ -8046,7 +8059,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->enforce_extension_declarations_) {
+    if (pool_->EnforceCustomExtensionDeclarations()) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {
@@ -8155,14 +8168,12 @@ void DescriptorBuilder::ValidateFieldFeatures(
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence fields can't specify defaults.");
     }
-    if (field->enum_type() != nullptr &&
-        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+    if (field->enum_type() != nullptr && field->enum_type()->is_closed()) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence enum fields must always be open.");
     }
   }
-  if (field->is_extension() &&
-      field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+  if (field->is_extension() && field->is_required()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Extensions can't be required.");
   }
@@ -9798,9 +9809,28 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
+HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
+  // Do not generate hasbits for "real-oneof", weak, or extension fields.
+  if (field->real_containing_oneof() || field->options().weak() ||
+      field->is_extension()) {
+    return HasbitMode::kNoHasbit;
+  }
+
+  // Explicit-presence fields always have true hasbits.
+  if (field->has_presence()) {
+    return HasbitMode::kTrueHasbit;
+  }
+
+  // Implicit presence fields.
+  if (!field->is_repeated()) {
+    return HasbitMode::kHintHasbit;
+  }
+  // We currently don't implement hasbits for implicit repeated fields.
+  return HasbitMode::kNoHasbit;
+}
+
 bool HasHasbit(const FieldDescriptor* field) {
-  return field->has_presence() && !field->real_containing_oneof() &&
-         !field->options().weak();
+  return GetFieldHasbitMode(field) != HasbitMode::kNoHasbit;
 }
 
 static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
@@ -9852,7 +9882,21 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
          filename == "google/protobuf/descriptor.proto";
 }
 
-bool IsTrackingEnabled() { return is_tracking_enabled(); }
+bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
+  // In open-source, protobuf CORD is only supported for singular bytes
+  // fields.
+  if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      InternalFeatureHelper::GetFeatures(field)
+              .GetExtension(pb::cpp)
+              .string_type() == pb::CppFeatures::CORD &&
+      (field.type() != FieldDescriptor::TYPE_BYTES || field.is_repeated() ||
+       field.is_extension())
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 }  // namespace cpp
 }  // namespace internal

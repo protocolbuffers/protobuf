@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -32,6 +33,7 @@ using ::proto2_nofieldpresence_unittest::ForeignMessage;
 using ::proto2_nofieldpresence_unittest::TestAllTypes;
 using ::testing::Eq;
 using ::testing::Gt;
+using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::StrEq;
 using ::testing::UnorderedPointwise;
@@ -66,6 +68,7 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::FOO, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_FOO, m.optional_foreign_enum());
 
+  EXPECT_EQ(0, m.optional_string_piece().size());
 
   EXPECT_EQ(0, m.repeated_int32_size());
   EXPECT_EQ(0, m.repeated_int64_size());
@@ -87,6 +90,7 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(0, m.repeated_proto2_message_size());
   EXPECT_EQ(0, m.repeated_nested_enum_size());
   EXPECT_EQ(0, m.repeated_foreign_enum_size());
+  EXPECT_EQ(0, m.repeated_string_piece_size());
   EXPECT_EQ(0, m.repeated_lazy_message_size());
   EXPECT_EQ(TestAllTypes::ONEOF_FIELD_NOT_SET, m.oneof_field_case());
 }
@@ -112,6 +116,7 @@ void FillValues(TestAllTypes* m) {
   m->mutable_optional_proto2_message()->set_optional_int32(44);
   m->set_optional_nested_enum(TestAllTypes::BAZ);
   m->set_optional_foreign_enum(FOREIGN_BAZ);
+  m->set_optional_string_piece("test");
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
@@ -133,6 +138,7 @@ void FillValues(TestAllTypes* m) {
   m->add_repeated_proto2_message()->set_optional_int32(48);
   m->add_repeated_nested_enum(TestAllTypes::BAZ);
   m->add_repeated_foreign_enum(FOREIGN_BAZ);
+  m->add_repeated_string_piece("test");
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -164,6 +170,7 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
   EXPECT_EQ(TestAllTypes::BAZ, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_BAZ, m.optional_foreign_enum());
+  EXPECT_EQ("test", m.optional_string_piece());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
 
@@ -207,6 +214,8 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::BAZ, m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
   EXPECT_EQ(FOREIGN_BAZ, m.repeated_foreign_enum(0));
+  EXPECT_EQ(1, m.repeated_string_piece_size());
+  EXPECT_EQ("test", m.repeated_string_piece(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
@@ -257,6 +266,452 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
             TestAllTypes::default_instance().has_optional_nested_message());
 }
 
+TEST(NoFieldPresenceTest, MergeFromDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+
+  dst = src;
+  dst = src;
+}
+
+class NoFieldPresenceSwapFieldTest : public testing::Test {
+ protected:
+  NoFieldPresenceSwapFieldTest()
+      : m1_(),
+        m2_(),
+        r1_(m1_.GetReflection()),
+        r2_(m2_.GetReflection()),
+        d1_(m1_.GetDescriptor()),
+        d2_(m2_.GetDescriptor()) {}
+
+  // Returns a field descriptor that corresponds to the field name.
+  // Note that different messages would still return the same field descriptor.
+  const FieldDescriptor* FindFieldByName(absl::string_view field_name) {
+    const FieldDescriptor* f1 = d1_->FindFieldByName(field_name);
+    const FieldDescriptor* f2 = d2_->FindFieldByName(field_name);
+
+    // We actually ensure uniqueness of *field descriptors* even if we try to
+    // obtain them from different *message descriptors*.
+    ABSL_CHECK_EQ(f1, f2);
+    return f1;
+  }
+
+  TestAllTypes m1_;
+  TestAllTypes m2_;
+  const Reflection* r1_;
+  const Reflection* r2_;
+  const Descriptor* d1_;
+  const Descriptor* d2_;
+};
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarNonZeroTest) {
+  m1_.set_optional_int32(1);
+  m2_.set_optional_int32(2);
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(2, m1_.optional_int32());
+  EXPECT_EQ(1, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(1, m1_.optional_int32());
+  EXPECT_EQ(2, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarOneZeroTest) {
+  m1_.set_optional_int32(1);
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(1, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(1, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldScalarBothZeroTest) {
+  m1_.set_optional_int32(0);  // setting an int field to zero should be noop
+
+  const FieldDescriptor* f = FindFieldByName("optional_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_EQ(0, m1_.optional_int32());
+  EXPECT_EQ(0, m2_.optional_int32());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldRepeatedNonZeroTest) {
+  m1_.add_repeated_int32(1);
+  m2_.add_repeated_int32(2);
+  m2_.add_repeated_int32(22);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 2);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {2, 22}));
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 2);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {2, 22}));
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldRepeatedOneZeroTest) {
+  m1_.add_repeated_int32(1);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 0);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), IsEmpty());
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 0);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {1}));
+  EXPECT_THAT(m2_.repeated_int32(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldRepeatedExplicitZeroTest) {
+  // For repeated fields, explicitly adding zero would cause it to be added into
+  // the repeated field.
+  m1_.add_repeated_int32(0);
+
+  const FieldDescriptor* f = FindFieldByName("repeated_int32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 0);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 1);
+  EXPECT_THAT(m1_.repeated_int32(), IsEmpty());
+  EXPECT_THAT(m2_.repeated_int32(), UnorderedPointwise(Eq(), {0}));
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped again.
+  EXPECT_EQ(r1_->FieldSize(m1_, f), 1);
+  EXPECT_EQ(r2_->FieldSize(m2_, f), 0);
+  EXPECT_THAT(m1_.repeated_int32(), UnorderedPointwise(Eq(), {0}));
+  EXPECT_THAT(m2_.repeated_int32(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldOneofFieldDescriptorTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  // NOTE: Calling swap on any field descriptor within the oneof works --
+  // even a completely unrelated field.
+  const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
+
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{never_set_field});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, never_set_field));
+  EXPECT_FALSE(r1_->HasField(m2_, never_set_field));
+  EXPECT_TRUE(m1_.has_oneof_string());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // Calling oneof accessors on a swapped-out field will give the default value.
+  EXPECT_FALSE(m1_.has_oneof_uint32());
+  EXPECT_FALSE(m2_.has_oneof_string());
+  EXPECT_EQ(m1_.oneof_uint32(), 0);
+  EXPECT_THAT(m2_.oneof_string(), IsEmpty());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest,
+       ReflectionSwapFieldOneofFieldMultipleIdenticalDescriptorTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  // NOTE: Calling swap on any field descriptor within the oneof works --
+  // even a completely unrelated field.
+  const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
+  const FieldDescriptor* f1 = d1_->FindFieldByName("oneof_uint32");
+  const FieldDescriptor* f2 = d2_->FindFieldByName("oneof_string");
+
+  // Multiple instances of the identical descriptor is ignored.
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{never_set_field, never_set_field});
+
+  // Fields should be swapped (just once).
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // Multiple instances of the identical descriptor is ignored.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f1, f2, never_set_field});
+
+  // Fields should be swapped (just once).
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_string());
+  EXPECT_TRUE(r1_->HasField(m1_, f1));
+  EXPECT_TRUE(r2_->HasField(m2_, f2));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_EQ(m2_.oneof_string(), "test");
+
+  // Calling oneof accessors on a swapped-out field will give the default value.
+  EXPECT_FALSE(m1_.has_oneof_string());
+  EXPECT_FALSE(m2_.has_oneof_uint32());
+  EXPECT_FALSE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_FALSE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_uint32")));
+  EXPECT_THAT(m1_.oneof_string(), IsEmpty());
+  EXPECT_EQ(m2_.oneof_uint32(), 0);
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofNonZeroTest) {
+  m1_.set_oneof_uint32(1);
+  m2_.set_oneof_string("test");
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(m1_.has_oneof_string());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_TRUE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_EQ(m1_.oneof_string(), "test");
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_string());
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_string")));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_EQ(m2_.oneof_string(), "test");
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofDefaultTest) {
+  m1_.set_oneof_uint32(1);
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, d1_->FindFieldByName("oneof_string")));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_FALSE(m1_.has_oneof_string());
+  EXPECT_EQ(m2_.oneof_uint32(), 1);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, d2_->FindFieldByName("oneof_string")));
+  EXPECT_EQ(m1_.oneof_uint32(), 1);
+  EXPECT_FALSE(m2_.has_oneof_string());
+}
+
+TEST_F(NoFieldPresenceSwapFieldTest, ReflectionSwapFieldOneofExplicitZeroTest) {
+  // Oneof fields essentially have explicit presence -- if set to zero, they
+  // will still be considered present.
+  m1_.set_oneof_uint32(0);
+
+  const FieldDescriptor* f = FindFieldByName("oneof_uint32");
+  r1_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_FALSE(r1_->HasField(m1_, f));
+  EXPECT_TRUE(r2_->HasField(m2_, f));
+  EXPECT_FALSE(m1_.has_oneof_uint32());
+  EXPECT_TRUE(m2_.has_oneof_uint32());
+  EXPECT_EQ(m2_.oneof_uint32(), 0);
+
+  // It doesn't matter which reflection or descriptor gets used; swapping should
+  // still work if m2_'s descriptor is provided.
+  r2_->SwapFields(&m1_, &m2_, /*fields=*/{f});
+
+  // Fields should be swapped.
+  EXPECT_TRUE(r1_->HasField(m1_, f));
+  EXPECT_FALSE(r2_->HasField(m2_, f));
+  EXPECT_TRUE(m1_.has_oneof_uint32());
+  EXPECT_EQ(m1_.oneof_uint32(), 0);
+  EXPECT_FALSE(m2_.has_oneof_uint32());
+}
+
+class NoFieldPresenceListFieldsTest : public testing::Test {
+ protected:
+  NoFieldPresenceListFieldsTest()
+      : message_(), r_(message_.GetReflection()), fields_() {
+    // Check initial state: scalars not present (due to need to be consistent
+    // with MergeFrom()), message fields not present, oneofs not present.
+    r_->ListFields(message_, &fields_);
+    ABSL_CHECK(fields_.empty());
+  }
+
+  TestAllTypes message_;
+  const Reflection* r_;
+  std::vector<const FieldDescriptor*> fields_;
+};
+
+TEST_F(NoFieldPresenceListFieldsTest, ScalarTest) {
+  // Check zero/empty-means-not-present semantics.
+  message_.set_optional_int32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_TRUE(fields_.empty());
+
+  message_.Clear();
+  message_.set_optional_int32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, MessageTest) {
+  // Message fields always have explicit presence.
+  message_.mutable_optional_nested_message();
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  message_.Clear();
+  message_.mutable_optional_nested_message()->set_bb(123);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, OneOfTest) {
+  // Oneof fields behave essentially like an explicit presence field.
+  message_.set_oneof_uint32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  // Note:
+  // we don't clear message_ -- oneof must only maintain one present field.
+  message_.set_oneof_uint32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
 TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // check that HasField reports true on all scalar fields. Check that it
   // behaves properly for message fields.
@@ -285,7 +740,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != FieldOptions::STRING) {
+    if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field)) {
       continue;
     }
     EXPECT_EQ(true, r->HasField(message, field));
@@ -507,7 +962,7 @@ bool TestSerialize<std::string>(const MessageLite& message,
 
 template <>
 bool TestSerialize<absl::Cord>(const MessageLite& message, absl::Cord* output) {
-  return message.SerializeToCord(output);
+  return message.SerializeToString(output);
 }
 
 template <typename T>
@@ -579,6 +1034,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   message.set_optional_bytes("");
   message.set_optional_nested_enum(TestAllTypes::FOO);  // first enum entry
   message.set_optional_foreign_enum(FOREIGN_FOO);       // first enum entry
+  message.set_optional_string_piece("");
 
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(0, this->GetOutput().size());

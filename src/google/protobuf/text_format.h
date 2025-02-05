@@ -46,7 +46,6 @@ PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_string_safe_format;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
-PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
 
 // This enum contains all the APIs that convert protos to human-readable
 // formats. A higher-level API must correspond to a greater number than any
@@ -618,6 +617,17 @@ class PROTOBUF_EXPORT TextFormat {
         : start(start_param), end(end_param) {}
   };
 
+  struct RedactionState {
+    bool redact;
+    bool report;
+  };
+
+  static TextFormat::RedactionState GetRedactionState(
+      const FieldDescriptor* field);
+
+  static TextFormat::RedactionState IsOptionSensitive(
+      const Message& opts, const Reflection* reflection,
+      const FieldDescriptor* option);
   // Data structure which is populated with the locations of each field
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
@@ -819,6 +829,10 @@ class PROTOBUF_EXPORT TextFormat {
                                    const T&... values);
 };
 
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode);
+}  // namespace internal
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,

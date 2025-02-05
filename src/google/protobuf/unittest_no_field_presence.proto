@@ -51,13 +51,13 @@ message TestAllTypes {
 
   NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
-  protobuf_unittest.TestAllTypes optional_proto2_message = 20;
+  proto2_unittest.TestAllTypes optional_proto2_message = 20;
 
   NestedEnum optional_nested_enum = 21;
   ForeignEnum optional_foreign_enum = 22;
   // N.B.: proto2-enum-type fields not allowed, because their default values
   // might not be zero.
-  // optional protobuf_unittest.ForeignEnum          optional_proto2_enum     =
+  // optional proto2_unittest.ForeignEnum          optional_proto2_enum     =
   // 23;
 
   string optional_string_piece = 24 [ctype = STRING_PIECE];
@@ -84,7 +84,7 @@ message TestAllTypes {
 
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessage repeated_foreign_message = 49;
-  repeated protobuf_unittest.TestAllTypes repeated_proto2_message = 50;
+  repeated proto2_unittest.TestAllTypes repeated_proto2_message = 50;
 
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
@@ -110,7 +110,7 @@ message TestAllMapTypes {
 }
 
 message TestProto2Required {
-  protobuf_unittest.TestRequired proto2 = 1;
+  proto2_unittest.TestRequired proto2 = 1;
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle
