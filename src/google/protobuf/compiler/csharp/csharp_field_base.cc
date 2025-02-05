@@ -216,11 +216,11 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
         const FieldDescriptor* wrapped_field =
             descriptor->message_type()->field(0);
         std::string wrapped_field_type_name = type_name(wrapped_field);
-        // ByteString go to the same type;
-        // String depends on enable_nullable_reference_types;
+        // String and ByteString depend on enable_nullable_reference_types;
         // other wrapped types go to the nullable equivalent.
-        if (wrapped_field->type() == FieldDescriptor::TYPE_BYTES ||
-            (wrapped_field->type() == FieldDescriptor::TYPE_STRING && !options()->enable_nullable_reference_types)) {
+        if (!options()->enable_nullable_reference_types &&
+            (wrapped_field->type() == FieldDescriptor::TYPE_BYTES ||
+              wrapped_field->type() == FieldDescriptor::TYPE_STRING)) {
           return wrapped_field_type_name;
         } else {
           return absl::StrCat(wrapped_field_type_name, "?");
