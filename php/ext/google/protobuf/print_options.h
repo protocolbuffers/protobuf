@@ -11,7 +11,7 @@
 #define PRESERVE_PROTO_FIELD_NAMES (1 << 0)
 #define ALWAYS_PRINT_ENUMS_AS_INTS (1 << 1)
 
-// Registers the PHP Options class.
+// Registers the PHP PrintOptions class.
 void PrintOptions_ModuleInit();
 
 #endif  // PHP_PROTOBUF_PRINT_OPTIONS_H_

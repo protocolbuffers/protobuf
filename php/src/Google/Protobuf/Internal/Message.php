@@ -1573,10 +1573,6 @@ class Message
      */
     public function serializeToJsonString($options = 0)
     {
-        // BC compatibility which allows param bool = "preserve proto field names"
-//        if ($options === true) {
-//            $options = CodedOutputStream::JSON_ENCODE_PRESERVE_PROTO_FIELD_NAMES;
-//        }
         $output = new CodedOutputStream($this->jsonByteSize($options), $options);
         $this->serializeToJsonStream($output);
         return $output->getData();
