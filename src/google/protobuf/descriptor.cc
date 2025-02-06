@@ -4734,22 +4734,9 @@ class DescriptorBuilder {
   void ValidateJSType(const FieldDescriptor* field,
                       const FieldDescriptorProto& proto);
 
-  void ValidateNamingStyle(const FileDescriptor* file,
-                           const FileDescriptorProto& proto);
-  void ValidateNamingStyle(const Descriptor* message,
-                           const DescriptorProto& proto);
-  void ValidateNamingStyle(const OneofDescriptor* oneof,
-                           const OneofDescriptorProto& proto);
-  void ValidateNamingStyle(const FieldDescriptor* field,
-                           const FieldDescriptorProto& proto);
-  void ValidateNamingStyle(const EnumDescriptor* enum_descriptor,
-                           const EnumDescriptorProto& proto);
-  void ValidateNamingStyle(const EnumValueDescriptor* enum_value,
-                           const EnumValueDescriptorProto& proto);
-  void ValidateNamingStyle(const ServiceDescriptor* service,
-                           const ServiceDescriptorProto& proto);
-  void ValidateNamingStyle(const MethodDescriptor* method,
-                           const MethodDescriptorProto& proto);
+  template <typename DescriptorT, typename DescriptorProtoT>
+  void ValidateNamingStyle(const DescriptorT* file,
+                           const DescriptorProtoT& proto);
 
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
@@ -8739,6 +8726,7 @@ constexpr absl::string_view kNamingStyleOptOutMessage =
 
 }  // namespace
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
                                             const FileDescriptorProto& proto) {
   // Ignore empty packages for style checks.
@@ -8754,6 +8742,7 @@ void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
                                             const DescriptorProto& proto) {
   std::string error;
@@ -8765,6 +8754,7 @@ void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
                                             const OneofDescriptorProto& proto) {
   std::string error;
@@ -8776,6 +8766,7 @@ void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
                                             const FieldDescriptorProto& proto) {
   std::string error;
@@ -8787,6 +8778,7 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
   std::string error;
@@ -8799,6 +8791,7 @@ void DescriptorBuilder::ValidateNamingStyle(
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumValueDescriptor* enum_value,
     const EnumValueDescriptorProto& proto) {
@@ -8812,6 +8805,7 @@ void DescriptorBuilder::ValidateNamingStyle(
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
   std::string error;
@@ -8823,6 +8817,7 @@ void DescriptorBuilder::ValidateNamingStyle(
   }
 }
 
+template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const MethodDescriptor* method, const MethodDescriptorProto& proto) {
   std::string error;
