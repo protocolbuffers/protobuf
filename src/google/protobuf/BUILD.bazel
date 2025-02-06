@@ -604,7 +604,6 @@ PROTOBUF_HEADERS = [
     "generated_message_tctable_gen.h",
     "map_entry.h",
     "map_field.h",
-    "map_field_inl.h",
     "message.h",
     "metadata.h",
     "reflection.h",

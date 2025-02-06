@@ -90,7 +90,6 @@ google/protobuf/json/json.h
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
-google/protobuf/map_field_inl.h
 google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
 google/protobuf/message.h
