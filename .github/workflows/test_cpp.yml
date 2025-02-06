@@ -79,15 +79,22 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         version: ['7.5', '9.1', '9.5', '13.1']
-    name: Linux GCC ${{ matrix.version }}
+        include:
+          - version: 9.1
+            continuous-only: true
+          - version: 9.5
+            continuous-only: true
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v4
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
