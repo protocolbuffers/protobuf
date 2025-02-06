@@ -1,3 +1,4 @@
+// clang-format off
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google Inc.  All rights reserved.
 //
@@ -37,28 +38,6 @@ service EmptyService {
 service BasicService {
   rpc BasicMethod(EmptyMessage) returns (EmptyMessage) {}
 }
-
-// clang-format off
-message UnformattedMessage {
-  int32 a = 1;
-
-  message Foo {
-    int32 a = 1;
-  }
-
-  Foo foo = 2 [
-    features.message_encoding = DELIMITED
-  ];
-
-  string string_piece_with_zero = 3 [
-    ctype = STRING_PIECE,
-    default = "ab\000c"
-  ];
-
-  float long_float_name_wrapped = 4;
-}
-
-// clang-format on
 
 message ParentMessage {
   message ExtendedMessage {
@@ -128,3 +107,25 @@ message TestOpenEnumMessage {
 
   TestEnum closed_enum_field = 2;
 }
+
+// clang-format off
+message UnformattedMessage {
+  int32 a = 1;
+
+  message Foo {
+    int32 a = 1;
+  }
+
+  Foo foo = 2 [
+    features.message_encoding = DELIMITED
+  ];
+
+  string string_piece_with_zero = 3 [
+    ctype = STRING_PIECE,
+    default = "ab\000c"
+  ];
+
+  float long_float_name_wrapped = 4;
+}
+
+// clang-format on
