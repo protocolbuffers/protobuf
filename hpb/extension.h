@@ -21,6 +21,7 @@
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
@@ -86,6 +87,22 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
           default_val);                                                     \
     }                                                                       \
   };
+
+template <>
+struct UpbExtensionTrait<std::string_view> {
+  using DefaultType = std::string_view;
+  using ReturnType = std::string_view;
+  static constexpr auto kSetter = upb_Message_SetExtensionString;
+
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    upb_StringView default_val;
+    upb_StringView result =
+        upb_Message_GetExtensionString(hpb::interop::upb::GetMessage(message),
+                                       id.mini_table_ext(), default_val);
+    return std::string_view(result.data, result.size);
+  }
+};
 
 UPB_EXT_PRIMITIVE(bool, Bool);
 UPB_EXT_PRIMITIVE(int32_t, Int32);
@@ -255,6 +272,12 @@ absl::Status SetExtension(
   if constexpr (std::is_arithmetic_v<Extension>) {
     bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
         hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
+        hpb::interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
+  } else if constexpr (std::is_same_v<Extension, std::string_view>) {
+    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+        upb_StringView_FromDataAndSize(value.data(), value.size()),
         hpb::interop::upb::GetArena(message));
     return res ? absl::OkStatus() : MessageAllocationError();
   } else {
