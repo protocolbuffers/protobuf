@@ -1520,6 +1520,16 @@ TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
       "generator --test_out specifies an unknown feature extension");
 }
 
+TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package badPackage;
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring("Package name badPackage should be lower_snake_case");
+}
+
 TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";

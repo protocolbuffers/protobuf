@@ -2276,6 +2276,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   // DescriptorPool will report a import not found error.
   void EnforceWeakDependencies(bool enforce) { enforce_weak_ = enforce; }
 
+  // Enforce the naming style rules. This applies the intended style rules
+  // corresponding to the edition of the file, and was first introduced
+  // with Edition 2024. Proto2, Proto3 and Edition 2023 are never considered
+  // to be in violation and so are unaffected by this.
+  //
+  // In Edition 2024+, the 'enforce_naming_style` feature can be used to opt out
+  // of this enforcement.
+  void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
+
   // Sets the default feature mappings used during the build. If this function
   // isn't called, the C++ feature set defaults are used.  If this function is
   // called, these defaults will be used instead.
@@ -2576,6 +2585,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
+  bool enforce_naming_style_;
   mutable bool build_started_ = false;
 
   // Set of files to track for additional validation. The bool value when true

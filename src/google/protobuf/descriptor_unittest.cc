@@ -4462,6 +4462,15 @@ class ValidationErrorTest : public testing::Test {
     EXPECT_EQ(expected_errors, error_collector.text_);
   }
 
+  void ParseAndBuildFileWithErrorSubstr(absl::string_view file_name,
+                                        absl::string_view file_text,
+                                        absl::string_view expected_errors) {
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
+                                                &error_collector) == nullptr);
+    EXPECT_THAT(error_collector.text_, HasSubstr(expected_errors));
+  }
+
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given warning text.
@@ -9324,11 +9333,197 @@ TEST_F(FeaturesTest, MapFieldFeaturesExplicitPresence) {
   validate_maps(proto2);
 }
 
+TEST_F(FeaturesTest, NoNamingStyleViolationsUnlessPoolOptIn) {
+  BuildDescriptorMessagesInTestPool();
+
+  // By default, the pool does not enforce naming style violations.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message bad_message_name {}
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  // Proto2 will have the name enforcement feature off.
+  ASSERT_THAT(ParseAndBuildFile("naming1.proto", R"schema(
+    syntax = "proto2";
+    package naming1;
+    message bad_message_name {}
+  )schema"),
+              NotNull());
+
+  // Edition 2024 with good names.
+  ASSERT_THAT(ParseAndBuildFile("naming2.proto", R"schema(
+    edition = "2024";
+    package naming2.good_package;
+    message GoodMessageName { int32 good_field_name = 1; }
+    enum GoodEnumName { GOOD_ENUM_VALUE = 0; }
+    service GoodServiceName {
+      rpc GoodMethodName(GoodMessageName) returns (GoodMessageName) {}
+    }
+  )schema"),
+              NotNull());
+
+  // Edition 2024 with bad names but out-out feature.
+  ASSERT_THAT(ParseAndBuildFile("naming3.proto", R"schema(
+    edition = "2024";
+    package naming3;
+    option features.enforce_naming_style = STYLE_LEGACY;
+    message bad_message { oneof BadOneof { int32 BadFieldName = 1;  } }
+    enum _bad_enum_ { bAd_eNuM_vAlUE = 0; }
+    service BadServiceName__1 {
+      rpc BadMethodName(bad_message) returns (bad_message) {}
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, BadPackageName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+      edition = "2024";
+      package bad.Package.name;
+      )schema",
+      "Package name bad.Package.name should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package bad_____underscores;
+      )schema",
+      "Package name bad_____underscores contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadMessageName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message GoodMessageName { message badmessagename {} }
+  )schema",
+      "Message name badmessagename should begin with a capital letter");
+}
+
+TEST_F(FeaturesTest, BadOneofName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message GoodMessageName { oneof BadOneofName { int32 x = 1; } }
+  )schema",
+      "Oneof name BadOneofName should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package naming2;
+      message GoodMessageName { oneof o_ { int32 x = 1; } }
+      )schema",
+      "Oneof name o_ contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadFieldName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message GoodMessageName { int32 BadFieldName = 1; }
+  )schema",
+      "Field name BadFieldName should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package naming2;
+      message GoodMessageName { int32 f_1 = 1; }
+      )schema",
+      "Field name f_1 contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadEnumName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    enum bad_enum { UNKNOWN = 0;}
+  )schema",
+                                   "Enum name bad_enum should be TitleCase");
+}
+
+TEST_F(FeaturesTest, BadEnumValueName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    enum GoodEnum { unknown = 0; }
+  )schema",
+      "Enum value name unknown should be UPPER_SNAKE_CASE");
+}
+
+TEST_F(FeaturesTest, BadServiceName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message M {}
+    service badService { rpc GoodMethodName(M) returns (M) {} }
+  )schema",
+      "Service name badService should begin with a capital letter");
+}
+
+TEST_F(FeaturesTest, BadMethodName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message M {}
+    service GoodService { rpc badMethodName(M) returns (M) {} }
+  )schema",
+      "Method name badMethodName should begin with a capital letter");
+}
+
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
     edition = "2023";
-    
+
     option features.message_encoding = DELIMITED;
 
     message Foo {
