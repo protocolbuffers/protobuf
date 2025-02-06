@@ -31,7 +31,7 @@
 #include "google/protobuf/map.h"  // IWYU pragma: export
 #include "google/protobuf/map_type_handler.h"  // IWYU pragma: export
 #include "google/protobuf/map_entry.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/unknown_field_set.h"
 // @@protoc_insertion_point(includes)
