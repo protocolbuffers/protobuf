@@ -83,7 +83,7 @@ void arena_delete_object(void* object) {
 }
 
 inline bool CanUseInternalSwap(Arena* lhs, Arena* rhs) {
-  if (DebugHardenForceCopyInSwap()) {
+  if constexpr (DebugHardenForceCopyInSwap()) {
     // We force copy in swap when we are not using an arena.
     // If we did with an arena we would grow arena usage too much.
     return lhs != nullptr && lhs == rhs;
@@ -93,7 +93,7 @@ inline bool CanUseInternalSwap(Arena* lhs, Arena* rhs) {
 }
 
 inline bool CanMoveWithInternalSwap(Arena* lhs, Arena* rhs) {
-  if (DebugHardenForceCopyInMove()) {
+  if constexpr (DebugHardenForceCopyInMove()) {
     // We force copy in move when we are not using an arena.
     // If we did with an arena we would grow arena usage too much.
     return lhs != nullptr && lhs == rhs;
@@ -525,7 +525,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T, bool trivial = std::is_trivially_destructible<T>::value>
   PROTOBUF_NDEBUG_INLINE void* AllocateInternal() {
-    if (trivial) {
+    if constexpr (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
       // We avoid instantiating arena_destruct_object<T> in the trivial case.
@@ -643,10 +643,10 @@ PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
-  // If the object is larger than half a cache line, prefetch it.
-  // This way of prefetching is a little more aggressive than if we
+  // If the object is larger than half a cache line, prefetch it starting from
+  // an offset.This way of prefetching is a little more aggressive than if we
   // condition off a whole cache line, but benchmarks show better results.
-  if (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
     PROTOBUF_PREFETCH_WITH_OFFSET(from, 64);
   }
   static_assert(is_destructor_skippable<T>::value, "");
