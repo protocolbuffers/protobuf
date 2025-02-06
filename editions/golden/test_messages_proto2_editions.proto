@@ -316,6 +316,8 @@ message TestAllTypesProto2 {
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
 
+  MessageSetCorrect message_set_correct = 500;
+
   // message_set test case.
   message MessageSetCorrect {
     option message_set_wire_format = true;
@@ -337,6 +339,17 @@ message TestAllTypesProto2 {
     }
 
     int32 i = 9;
+  }
+
+  message ExtensionWithOneof {
+    oneof oneof_field {
+      int32 a = 1;
+      int32 b = 2;
+    }
+
+    extend MessageSetCorrect {
+      ExtensionWithOneof extension_with_oneof = 123456789;
+    }
   }
 }
 

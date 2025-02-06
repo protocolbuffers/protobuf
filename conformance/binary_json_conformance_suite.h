@@ -45,12 +45,19 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                   const std::string& equivalent_text_format);
 
   template <typename MessageType>
+  void RunValidRoundtripProtobufTest(const std::string& test_name,
+                                     ConformanceLevel level,
+                                     const std::string& input_protobuf);
+
+  template <typename MessageType>
   void RunValidProtobufTest(const std::string& test_name,
                             ConformanceLevel level,
                             const std::string& input_protobuf,
                             const std::string& equivalent_text_format);
 
   void RunDelimitedFieldTests();
+
+  void RunMessageSetTests();
 
   template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
