@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['9.5', '13.1']
+        version: ['7.5', '9.1', '9.5', '13.1']
     name: Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +85,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
@@ -352,7 +352,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-

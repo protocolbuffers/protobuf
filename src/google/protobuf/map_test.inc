@@ -2389,7 +2389,10 @@ class MyMapEntry
   constexpr MyMapEntry()
       : MyMapEntry::MapEntry(static_cast<ClassData*>(nullptr)) {}
   MyMapEntry(Arena* arena) : MyMapEntry::MapEntry(arena, nullptr) {}
-  const ClassData* GetClassData() const { ABSL_CHECK(false); }
+  const ClassData* GetClassData() const {
+    ABSL_CHECK(false);
+    return nullptr;
+  }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };

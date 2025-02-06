@@ -133,9 +133,9 @@ void UntypedMapBase::ClearTableImpl(bool reset) {
     };
 
     const auto dispatch_key = [&](auto value_handler) {
-      if (type_info_.key_type < TypeKind::kString) {
+      if (type_info_.key_type_kind() < TypeKind::kString) {
         loop(value_handler);
-      } else if (type_info_.key_type == TypeKind::kString) {
+      } else if (type_info_.key_type_kind() == TypeKind::kString) {
         loop([=](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           value_handler(node);
@@ -145,13 +145,13 @@ void UntypedMapBase::ClearTableImpl(bool reset) {
       }
     };
 
-    if (type_info_.value_type < TypeKind::kString) {
+    if (type_info_.value_type_kind() < TypeKind::kString) {
       dispatch_key([](NodeBase*) {});
-    } else if (type_info_.value_type == TypeKind::kString) {
+    } else if (type_info_.value_type_kind() == TypeKind::kString) {
       dispatch_key([&](NodeBase* node) {
         GetValue<std::string>(node)->~basic_string();
       });
-    } else if (type_info_.value_type == TypeKind::kMessage) {
+    } else if (type_info_.value_type_kind() == TypeKind::kMessage) {
       dispatch_key([&](NodeBase* node) {
         GetValue<MessageLite>(node)->DestroyInstance();
       });
@@ -251,7 +251,8 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
       key_offsets.end, value_type, value_prototype_if_message, max_align);
   return TypeInfo{
       Narrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
-      Narrow<uint8_t>(value_offsets.start), key_type, value_type};
+      Narrow<uint8_t>(value_offsets.start), static_cast<uint8_t>(key_type),
+      static_cast<uint8_t>(value_type)};
 }
 
 }  // namespace internal
