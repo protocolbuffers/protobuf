@@ -16,11 +16,13 @@
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
@@ -86,6 +88,24 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
           default_val);                                                     \
     }                                                                       \
   };
+
+template <>
+struct UpbExtensionTrait<absl::string_view> {
+  using DefaultType = absl::string_view;
+  using ReturnType = absl::string_view;
+  static constexpr auto kSetter = upb_Message_SetExtensionString;
+
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    upb_StringView default_val = hpb::interop::upb::CopyToUpbStringView(
+        hpb::internal::PrivateAccess::GetDefaultValue(id),
+        hpb::interop::upb::GetArena(message));
+    upb_StringView result =
+        upb_Message_GetExtensionString(hpb::interop::upb::GetMessage(message),
+                                       id.mini_table_ext(), default_val);
+    return absl::string_view(result.data, result.size);
+  }
+};
 
 UPB_EXT_PRIMITIVE(bool, Bool);
 UPB_EXT_PRIMITIVE(int32_t, Int32);
@@ -257,6 +277,12 @@ absl::Status SetExtension(
         hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
         hpb::interop::upb::GetArena(message));
     return res ? absl::OkStatus() : MessageAllocationError();
+  } else if constexpr (std::is_same_v<Extension, absl::string_view>) {
+    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+        upb_StringView_FromDataAndSize(value.data(), value.size()),
+        hpb::interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
   } else {
     static_assert(!std::is_const_v<T>);
     auto* message_arena = hpb::interop::upb::GetArena(message);
@@ -290,6 +316,12 @@ absl::Status SetExtension(
   if constexpr (std::is_integral_v<Extension>) {
     bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
         hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
+        hpb::interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
+  } else if constexpr (std::is_same_v<Extension, absl::string_view>) {
+    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+        upb_StringView_FromDataAndSize(value.data(), value.size()),
         hpb::interop::upb::GetArena(message));
     return res ? absl::OkStatus() : MessageAllocationError();
   } else {

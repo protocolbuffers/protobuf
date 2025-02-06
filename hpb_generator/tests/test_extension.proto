@@ -32,4 +32,6 @@ extend TestModel {
   double double_ext = 13010
       [default = 340282000000000000000000000000000000001.23];
   bool bool_ext = 13011 [default = true];
+
+  string string_ext = 13012 [default = "mishpacha"];
 }
