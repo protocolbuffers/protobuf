@@ -330,12 +330,6 @@ inline int ToIntSize(size_t size) {
   return static_cast<int>(size);
 }
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-using GetTypeNameReturnType = absl::string_view;
-#else
-using GetTypeNameReturnType = std::string;
-#endif
-
 
 PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
@@ -539,7 +533,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  internal::GetTypeNameReturnType GetTypeName() const;
+  absl::string_view GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.

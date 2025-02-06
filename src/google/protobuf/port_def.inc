@@ -150,7 +150,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-#define PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE 1
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
 #endif

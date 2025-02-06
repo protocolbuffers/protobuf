@@ -103,8 +103,8 @@ const char* MessageLite::_InternalParse(const char* ptr,
   return internal::TcParser::ParseLoop(this, ptr, ctx, GetTcParseTable());
 }
 
-internal::GetTypeNameReturnType MessageLite::GetTypeName() const {
-  return internal::GetTypeNameReturnType(TypeId::Get(*this).name());
+absl::string_view MessageLite::GetTypeName() const {
+  return TypeId::Get(*this).name();
 }
 
 absl::string_view TypeId::name() const {
