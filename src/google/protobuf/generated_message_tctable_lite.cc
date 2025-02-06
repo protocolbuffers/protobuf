@@ -2689,11 +2689,11 @@ const char* TcParser::ParseOneMapEntry(
     void* obj;
     if (inner_tag == key_tag) {
       type_card = map_info.key_type_card;
-      type_kind = map.type_info().key_type;
+      type_kind = map.type_info().key_type_kind();
       obj = node->GetVoidKey();
     } else {
       type_card = map_info.value_type_card;
-      type_kind = map.type_info().value_type;
+      type_kind = map.type_info().value_type_kind();
       obj = map.GetVoidValue(node);
     }
 
@@ -2842,7 +2842,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
       WriteMapEntryAsUnknown(msg, table, map, saved_tag, node, map_info);
     } else {
       // Done parsing the node, insert it.
-      switch (map.type_info().key_type) {
+      switch (map.type_info().key_type_kind()) {
         case UntypedMapBase::TypeKind::kBool:
           static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<bool>::KeyNode*>(node));
