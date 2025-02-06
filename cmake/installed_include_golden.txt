@@ -25,6 +25,7 @@ google/protobuf/compiler/java/java_features.pb.h
 google/protobuf/compiler/java/name_resolver.h
 google/protobuf/compiler/java/names.h
 google/protobuf/compiler/java/options.h
+google/protobuf/compiler/notices.h
 google/protobuf/compiler/objectivec/line_consumer.h
 google/protobuf/compiler/objectivec/names.h
 google/protobuf/compiler/objectivec/nsobject_methods.h

@@ -28,6 +28,18 @@ proto_library(
     deps = ["//:descriptor_proto"],
 )
 
+# Generate notices.h from notices.txt to import in cli.
+genrule(
+    name = "notices_header",
+    srcs = ["notices.txt"],
+    outs = ["notices.h"],
+    cmd = """
+        echo 'const char* notices_text = R"(' > $@
+        cat $< >> $@
+        echo ')";' >> $@
+    """,
+)
+
 cc_proto_library(
     name = "plugin_cc_proto",
     visibility = ["//visibility:public"],
@@ -179,6 +191,7 @@ cc_library(
         "command_line_interface.h",
         "subprocess.h",
         "zip_writer.h",
+        ":notices_header",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
