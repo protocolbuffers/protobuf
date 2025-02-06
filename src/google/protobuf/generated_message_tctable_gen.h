@@ -31,6 +31,10 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
+uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field);
+
+bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
+
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
   struct MessageOptions {

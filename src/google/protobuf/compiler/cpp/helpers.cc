@@ -1771,6 +1771,23 @@ void ListAllFields(const FileDescriptor* d,
   }
 }
 
+void ListTopLevelNonWeakNonOneofFields(
+    const Descriptor* d, const Options& options,
+    std::vector<const FieldDescriptor*>* fields, int* num_weak_fields) {
+  for (auto field : FieldRange(d)) {
+    if (IsWeak(field, options)) {
+      if (num_weak_fields != nullptr) {
+        ++*num_weak_fields;
+      }
+      continue;
+    }
+
+    if (!field->real_containing_oneof()) {
+      fields->push_back(field);
+    }
+  }
+}
+
 void ListAllTypesForServices(const FileDescriptor* fd,
                              std::vector<const Descriptor*>* types) {
   for (int i = 0; i < fd->service_count(); i++) {

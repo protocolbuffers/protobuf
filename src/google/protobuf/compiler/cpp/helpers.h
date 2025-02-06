@@ -721,6 +721,11 @@ void ListAllFields(const Descriptor* d,
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 
+void ListTopLevelNonWeakNonOneofFields(
+    const Descriptor* d, const Options& options,
+    std::vector<const FieldDescriptor*>* fields,
+    int* num_weak_fields = nullptr);
+
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
   if (do_nested_types) {

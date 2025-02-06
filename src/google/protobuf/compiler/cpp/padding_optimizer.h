@@ -12,7 +12,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 
+#include <vector>
+
 #include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -32,6 +36,10 @@ class PaddingOptimizer : public MessageLayoutHelper {
   void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
                       const Options& options,
                       MessageSCCAnalyzer* scc_analyzer) override;
+
+  static bool IsFieldEligibleForFastParsing(const FieldDescriptor* field,
+                                            const Options& options,
+                                            MessageSCCAnalyzer* scc_analyzer);
 };
 
 }  // namespace cpp

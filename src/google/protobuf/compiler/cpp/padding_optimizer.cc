@@ -7,8 +7,19 @@
 
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 
+#include <algorithm>
+#include <bitset>
+#include <cstdint>
+#include <vector>
+
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
@@ -16,6 +27,47 @@ namespace compiler {
 namespace cpp {
 
 namespace {
+
+enum FieldPartition {
+  kFastParse,
+  kNormal,
+  kSplit,
+  kMax,
+};
+
+void partition_fields(std::vector<const FieldDescriptor*>* fields,
+                      const Options& options, MessageSCCAnalyzer* scc_analyzer,
+                      std::vector<const FieldDescriptor*> (
+                          &field_partitions)[FieldPartition::kMax]) {
+  std::bitset<internal::TcParseTableBase::kMaxFastFields> fast_field_idx_used;
+
+  for (const auto* field : *fields) {
+    if (ShouldSplit(field, options)) {
+      field_partitions[kSplit].push_back(field);
+      continue;
+    } else if (PaddingOptimizer::IsFieldEligibleForFastParsing(field, options,
+                                                               scc_analyzer)) {
+      uint32_t fast_field_idx = internal::TcParseTableBase::TagToIdx(
+          GetRecodedTagForFastParsing(field));
+      if (!fast_field_idx_used.test(fast_field_idx)) {
+        fast_field_idx_used.set(fast_field_idx);
+        field_partitions[kFastParse].push_back(field);
+        continue;
+      }
+    }
+
+    field_partitions[kNormal].push_back(field);
+  }
+}
+
+// options.lazy_opt might be on for fields that don't really support lazy, so we
+// make sure we only use lazy rep for singular TYPE_MESSAGE fields.
+// We can't trust the `lazy=true` annotation.
+bool HasLazyRep(const FieldDescriptor* field,
+                internal::field_layout::TransformValidation lazy_opt) {
+  return field->type() == field->TYPE_MESSAGE && !field->is_repeated() &&
+         lazy_opt != 0;
+}
 
 // FieldGroup is just a helper for PaddingOptimizer below. It holds a vector of
 // fields that are grouped together because they have compatible alignment, and
@@ -61,11 +113,9 @@ class FieldGroup {
   // used in a vector.
 };
 
-}  // namespace
-
-static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
-                                 const Options& options,
-                                 MessageSCCAnalyzer* scc_analyzer) {
+void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
+                          const Options& options,
+                          MessageSCCAnalyzer* scc_analyzer) {
   if (fields->empty()) return;
 
   // The sorted numeric order of Family determines the declaration order in the
@@ -165,6 +215,8 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   }
 }
 
+}  // namespace
+
 // Reorder 'fields' so that if the fields are output into a c++ class in the new
 // order, fields of similar family (see below) are together and within each
 // family, alignment padding is minimized.
@@ -201,20 +253,34 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 void PaddingOptimizer::OptimizeLayout(
     std::vector<const FieldDescriptor*>* fields, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
-  std::vector<const FieldDescriptor*> normal;
-  std::vector<const FieldDescriptor*> split;
-  for (const auto* field : *fields) {
-    if (ShouldSplit(field, options)) {
-      split.push_back(field);
-    } else {
-      normal.push_back(field);
-    }
-  }
-  OptimizeLayoutHelper(&normal, options, scc_analyzer);
-  OptimizeLayoutHelper(&split, options, scc_analyzer);
+  std::vector<const FieldDescriptor*> field_partitions[FieldPartition::kMax];
+  partition_fields(fields, options, scc_analyzer, field_partitions);
   fields->clear();
-  fields->insert(fields->end(), normal.begin(), normal.end());
-  fields->insert(fields->end(), split.begin(), split.end());
+  for (int partition = 0; partition < FieldPartition::kMax; ++partition) {
+    OptimizeLayoutHelper(&field_partitions[partition], options, scc_analyzer);
+    fields->insert(fields->end(), field_partitions[partition].begin(),
+                   field_partitions[partition].end());
+  }
+}
+
+bool PaddingOptimizer::IsFieldEligibleForFastParsing(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) {
+  // Map, oneof, weak, and split fields are not handled on the fast path.
+  if (!IsFieldTypeEligibleForFastParsing(field) ||
+      IsImplicitWeakField(field, options, scc_analyzer) ||
+      ShouldSplit(field, options)) {
+    return false;
+  }
+
+  auto lazy_opt = GetLazyStyle(field, options, scc_analyzer);
+  if (HasLazyRep(field, lazy_opt) &&
+      lazy_opt == internal::field_layout::kTvLazy) {
+    // We only support eagerly verified lazy fields in the fast path.
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace cpp

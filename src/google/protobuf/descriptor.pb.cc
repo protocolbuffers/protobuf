@@ -610,7 +610,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 inline constexpr FileOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
-        uninterpreted_option_{},
         java_package_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
@@ -620,13 +619,7 @@ inline constexpr FileOptions::Impl_::Impl_(
         go_package_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
-        objc_class_prefix_(
-            &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
         csharp_namespace_(
-            &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
-        swift_prefix_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         php_class_prefix_(
@@ -641,7 +634,6 @@ inline constexpr FileOptions::Impl_::Impl_(
         ruby_package_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
-        features_{nullptr},
         java_multiple_files_{false},
         java_generate_equals_and_hash_{false},
         java_string_check_utf8_{false},
@@ -650,7 +642,15 @@ inline constexpr FileOptions::Impl_::Impl_(
         py_generic_services_{false},
         deprecated_{false},
         optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
-        cc_enable_arenas_{true} {}
+        cc_enable_arenas_{true},
+        uninterpreted_option_{},
+        objc_class_prefix_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        swift_prefix_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        features_{nullptr} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
@@ -1522,24 +1522,24 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_),
         0,
         1,
+        8,
+        9,
+        10,
+        15,
+        2,
         11,
         12,
         13,
-        18,
-        2,
         14,
-        15,
         16,
         17,
-        19,
         3,
+        18,
         4,
         5,
         6,
         7,
-        8,
-        9,
-        10,
+        19,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _internal_metadata_),
@@ -8000,17 +8000,17 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
       : _extensions_{visibility, arena},
         _has_bits_{from._has_bits_},
         _cached_size_{0},
-        uninterpreted_option_{visibility, arena, from.uninterpreted_option_},
         java_package_(arena, from.java_package_),
         java_outer_classname_(arena, from.java_outer_classname_),
         go_package_(arena, from.go_package_),
-        objc_class_prefix_(arena, from.objc_class_prefix_),
         csharp_namespace_(arena, from.csharp_namespace_),
-        swift_prefix_(arena, from.swift_prefix_),
         php_class_prefix_(arena, from.php_class_prefix_),
         php_namespace_(arena, from.php_namespace_),
         php_metadata_namespace_(arena, from.php_metadata_namespace_),
-        ruby_package_(arena, from.ruby_package_) {}
+        ruby_package_(arena, from.ruby_package_),
+        uninterpreted_option_{visibility, arena, from.uninterpreted_option_},
+        objc_class_prefix_(arena, from.objc_class_prefix_),
+        swift_prefix_(arena, from.swift_prefix_) {}
 
 FileOptions::FileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -8026,10 +8026,6 @@ FileOptions::FileOptions(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = ((cached_has_bits & 0x00000400u) != 0)
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
-                : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -8037,6 +8033,10 @@ FileOptions::FileOptions(
            offsetof(Impl_, cc_enable_arenas_) -
                offsetof(Impl_, java_multiple_files_) +
                sizeof(Impl_::cc_enable_arenas_));
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.features_ = ((cached_has_bits & 0x00080000u) != 0)
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
+                : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
 }
@@ -8045,28 +8045,29 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _extensions_{visibility, arena},
         _cached_size_{0},
-        uninterpreted_option_{visibility, arena},
         java_package_(arena),
         java_outer_classname_(arena),
         go_package_(arena),
-        objc_class_prefix_(arena),
         csharp_namespace_(arena),
-        swift_prefix_(arena),
         php_class_prefix_(arena),
         php_namespace_(arena),
         php_metadata_namespace_(arena),
         ruby_package_(arena),
         optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
-        cc_enable_arenas_{true} {}
+        cc_enable_arenas_{true},
+        uninterpreted_option_{visibility, arena},
+        objc_class_prefix_(arena),
+        swift_prefix_(arena) {}
 
 inline void FileOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char *>(&_impl_) +
-               offsetof(Impl_, features_),
+               offsetof(Impl_, java_multiple_files_),
            0,
            offsetof(Impl_, deprecated_) -
-               offsetof(Impl_, features_) +
+               offsetof(Impl_, java_multiple_files_) +
                sizeof(Impl_::deprecated_));
+  _impl_.features_ = {};
 }
 FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
@@ -8079,13 +8080,13 @@ inline void FileOptions::SharedDtor(MessageLite& self) {
   this_._impl_.java_package_.Destroy();
   this_._impl_.java_outer_classname_.Destroy();
   this_._impl_.go_package_.Destroy();
-  this_._impl_.objc_class_prefix_.Destroy();
   this_._impl_.csharp_namespace_.Destroy();
-  this_._impl_.swift_prefix_.Destroy();
   this_._impl_.php_class_prefix_.Destroy();
   this_._impl_.php_namespace_.Destroy();
   this_._impl_.php_metadata_namespace_.Destroy();
   this_._impl_.ruby_package_.Destroy();
+  this_._impl_.objc_class_prefix_.Destroy();
+  this_._impl_.swift_prefix_.Destroy();
   delete this_._impl_.features_;
   this_._impl_.~Impl_();
 }
@@ -8181,10 +8182,10 @@ FileOptions::_table_ = {
      {66, 1, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_outer_classname_)}},
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
     {::_pbi::TcParser::FastEr1S1,
-     {72, 18, 3, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_)}},
+     {72, 15, 3, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_)}},
     // optional bool java_multiple_files = 10 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FileOptions, _impl_.java_multiple_files_), 11>(),
-     {80, 11, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FileOptions, _impl_.java_multiple_files_), 8>(),
+     {80, 8, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_)}},
     // optional string go_package = 11;
     {::_pbi::TcParser::FastSS1,
      {90, 2, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.go_package_)}},
@@ -8194,44 +8195,44 @@ FileOptions::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool cc_generic_services = 16 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {384, 14, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_)}},
+     {384, 11, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_)}},
     // optional bool java_generic_services = 17 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {392, 15, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_)}},
+     {392, 12, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_)}},
     // optional bool py_generic_services = 18 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {400, 16, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_)}},
+     {400, 13, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
     {::_pbi::TcParser::FastV8S2,
-     {416, 12, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_)}},
+     {416, 9, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_)}},
     // optional string csharp_namespace = 37;
     {::_pbi::TcParser::FastSS2,
-     {682, 4, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_)}},
+     {682, 3, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool deprecated = 23 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {440, 17, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_)}},
+     {440, 14, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_)}},
     // optional string php_class_prefix = 40;
     {::_pbi::TcParser::FastSS2,
-     {706, 6, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_class_prefix_)}},
+     {706, 4, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_class_prefix_)}},
     // optional string php_namespace = 41;
     {::_pbi::TcParser::FastSS2,
-     {714, 7, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_namespace_)}},
+     {714, 5, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_namespace_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool java_string_check_utf8 = 27 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {472, 13, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_)}},
+     {472, 10, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_)}},
     // optional string php_metadata_namespace = 44;
     {::_pbi::TcParser::FastSS2,
-     {738, 8, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_metadata_namespace_)}},
+     {738, 6, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_metadata_namespace_)}},
     // optional string ruby_package = 45;
     {::_pbi::TcParser::FastSS2,
-     {746, 9, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_)}},
+     {746, 7, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool cc_enable_arenas = 31 [default = true];
     {::_pbi::TcParser::FastV8S2,
-     {504, 19, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)}},
+     {504, 16, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)}},
   }}, {{
     36, 0, 1,
     48324, 12,
@@ -8246,58 +8247,58 @@ FileOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_outer_classname_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_), _Internal::kHasBitsOffset + 18, 2,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_), _Internal::kHasBitsOffset + 15, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool java_multiple_files = 10 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_), _Internal::kHasBitsOffset + 11, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional string go_package = 11;
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.go_package_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional bool cc_generic_services = 16 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_), _Internal::kHasBitsOffset + 14, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_), _Internal::kHasBitsOffset + 11, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_generic_services = 17 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_), _Internal::kHasBitsOffset + 15, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_), _Internal::kHasBitsOffset + 12, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool py_generic_services = 18 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_), _Internal::kHasBitsOffset + 16, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_), _Internal::kHasBitsOffset + 13, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_), _Internal::kHasBitsOffset + 12, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_), _Internal::kHasBitsOffset + 9, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool deprecated = 23 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 17, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 14, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_string_check_utf8 = 27 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_), _Internal::kHasBitsOffset + 13, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_), _Internal::kHasBitsOffset + 10, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool cc_enable_arenas = 31 [default = true];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_), _Internal::kHasBitsOffset + 19, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_), _Internal::kHasBitsOffset + 16, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional string objc_class_prefix = 36;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.objc_class_prefix_), _Internal::kHasBitsOffset + 3, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.objc_class_prefix_), _Internal::kHasBitsOffset + 17, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string csharp_namespace = 37;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_), _Internal::kHasBitsOffset + 4, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string swift_prefix = 39;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.swift_prefix_), _Internal::kHasBitsOffset + 5, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.swift_prefix_), _Internal::kHasBitsOffset + 18, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string php_class_prefix = 40;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_class_prefix_), _Internal::kHasBitsOffset + 6, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_class_prefix_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string php_namespace = 41;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_namespace_), _Internal::kHasBitsOffset + 7, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_namespace_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string php_metadata_namespace = 44;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_metadata_namespace_), _Internal::kHasBitsOffset + 8, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_metadata_namespace_), _Internal::kHasBitsOffset + 6, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string ruby_package = 45;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_), _Internal::kHasBitsOffset + 9, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_), _Internal::kHasBitsOffset + 7, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.FeatureSet features = 50;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_), _Internal::kHasBitsOffset + 10, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_), _Internal::kHasBitsOffset + 19, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_), -1, 1,
@@ -8331,7 +8332,6 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if ((cached_has_bits & 0x000000ffu) != 0) {
     if ((cached_has_bits & 0x00000001u) != 0) {
@@ -8344,44 +8344,40 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
       _impl_.go_package_.ClearNonDefaultToEmpty();
     }
     if ((cached_has_bits & 0x00000008u) != 0) {
-      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty();
-    }
-    if ((cached_has_bits & 0x00000010u) != 0) {
       _impl_.csharp_namespace_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000020u) != 0) {
-      _impl_.swift_prefix_.ClearNonDefaultToEmpty();
-    }
-    if ((cached_has_bits & 0x00000040u) != 0) {
+    if ((cached_has_bits & 0x00000010u) != 0) {
       _impl_.php_class_prefix_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000080u) != 0) {
+    if ((cached_has_bits & 0x00000020u) != 0) {
       _impl_.php_namespace_.ClearNonDefaultToEmpty();
     }
-  }
-  if ((cached_has_bits & 0x00000700u) != 0) {
-    if ((cached_has_bits & 0x00000100u) != 0) {
+    if ((cached_has_bits & 0x00000040u) != 0) {
       _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000200u) != 0) {
+    if ((cached_has_bits & 0x00000080u) != 0) {
       _impl_.ruby_package_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000400u) != 0) {
+  }
+  if ((cached_has_bits & 0x0000ff00u) != 0) {
+    ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.deprecated_) -
+        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.deprecated_));
+    _impl_.optimize_for_ = 1;
+  }
+  _impl_.cc_enable_arenas_ = true;
+  _impl_.uninterpreted_option_.Clear();
+  if ((cached_has_bits & 0x000e0000u) != 0) {
+    if ((cached_has_bits & 0x00020000u) != 0) {
+      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty();
+    }
+    if ((cached_has_bits & 0x00040000u) != 0) {
+      _impl_.swift_prefix_.ClearNonDefaultToEmpty();
+    }
+    if ((cached_has_bits & 0x00080000u) != 0) {
       ABSL_DCHECK(_impl_.features_ != nullptr);
       _impl_.features_->Clear();
     }
-  }
-  if ((cached_has_bits & 0x0000f800u) != 0) {
-    ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.java_generic_services_) -
-        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generic_services_));
-  }
-  if ((cached_has_bits & 0x000f0000u) != 0) {
-    ::memset(&_impl_.py_generic_services_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_) -
-        reinterpret_cast<char*>(&_impl_.py_generic_services_)) + sizeof(_impl_.deprecated_));
-    _impl_.optimize_for_ = 1;
-    _impl_.cc_enable_arenas_ = true;
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -8420,14 +8416,14 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  if ((cached_has_bits & 0x00040000u) != 0) {
+  if ((cached_has_bits & 0x00008000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         9, this_._internal_optimize_for(), target);
   }
 
   // optional bool java_multiple_files = 10 [default = false];
-  if ((cached_has_bits & 0x00000800u) != 0) {
+  if ((cached_has_bits & 0x00000100u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         10, this_._internal_java_multiple_files(), target);
@@ -8442,56 +8438,56 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if ((cached_has_bits & 0x00004000u) != 0) {
+  if ((cached_has_bits & 0x00000800u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         16, this_._internal_cc_generic_services(), target);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if ((cached_has_bits & 0x00008000u) != 0) {
+  if ((cached_has_bits & 0x00001000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         17, this_._internal_java_generic_services(), target);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if ((cached_has_bits & 0x00010000u) != 0) {
+  if ((cached_has_bits & 0x00002000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         18, this_._internal_py_generic_services(), target);
   }
 
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if ((cached_has_bits & 0x00001000u) != 0) {
+  if ((cached_has_bits & 0x00000200u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         20, this_._internal_java_generate_equals_and_hash(), target);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if ((cached_has_bits & 0x00020000u) != 0) {
+  if ((cached_has_bits & 0x00004000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         23, this_._internal_deprecated(), target);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if ((cached_has_bits & 0x00002000u) != 0) {
+  if ((cached_has_bits & 0x00000400u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         27, this_._internal_java_string_check_utf8(), target);
   }
 
   // optional bool cc_enable_arenas = 31 [default = true];
-  if ((cached_has_bits & 0x00080000u) != 0) {
+  if ((cached_has_bits & 0x00010000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         31, this_._internal_cc_enable_arenas(), target);
   }
 
   // optional string objc_class_prefix = 36;
-  if ((cached_has_bits & 0x00000008u) != 0) {
+  if ((cached_has_bits & 0x00020000u) != 0) {
     const std::string& _s = this_._internal_objc_class_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.objc_class_prefix");
@@ -8499,7 +8495,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string csharp_namespace = 37;
-  if ((cached_has_bits & 0x00000010u) != 0) {
+  if ((cached_has_bits & 0x00000008u) != 0) {
     const std::string& _s = this_._internal_csharp_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.csharp_namespace");
@@ -8507,7 +8503,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string swift_prefix = 39;
-  if ((cached_has_bits & 0x00000020u) != 0) {
+  if ((cached_has_bits & 0x00040000u) != 0) {
     const std::string& _s = this_._internal_swift_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.swift_prefix");
@@ -8515,7 +8511,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string php_class_prefix = 40;
-  if ((cached_has_bits & 0x00000040u) != 0) {
+  if ((cached_has_bits & 0x00000010u) != 0) {
     const std::string& _s = this_._internal_php_class_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_class_prefix");
@@ -8523,7 +8519,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string php_namespace = 41;
-  if ((cached_has_bits & 0x00000080u) != 0) {
+  if ((cached_has_bits & 0x00000020u) != 0) {
     const std::string& _s = this_._internal_php_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_namespace");
@@ -8531,7 +8527,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string php_metadata_namespace = 44;
-  if ((cached_has_bits & 0x00000100u) != 0) {
+  if ((cached_has_bits & 0x00000040u) != 0) {
     const std::string& _s = this_._internal_php_metadata_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_metadata_namespace");
@@ -8539,7 +8535,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional string ruby_package = 45;
-  if ((cached_has_bits & 0x00000200u) != 0) {
+  if ((cached_has_bits & 0x00000080u) != 0) {
     const std::string& _s = this_._internal_ruby_package();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.ruby_package");
@@ -8547,7 +8543,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional .google.protobuf.FeatureSet features = 50;
-  if ((cached_has_bits & 0x00000400u) != 0) {
+  if ((cached_has_bits & 0x00080000u) != 0) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         50, *this_._impl_.features_, this_._impl_.features_->GetCachedSize(), target,
         stream);
@@ -8592,18 +8588,9 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   (void)cached_has_bits;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-   {
-    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {
-      total_size += 2UL * this_._internal_uninterpreted_option_size();
-      for (const auto& msg : this_._internal_uninterpreted_option()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-  }
   cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += ::absl::popcount(0x000bf000u & cached_has_bits) * 3;
-  total_size += static_cast<bool>(0x00000800u & cached_has_bits) * 2;
+  total_size += ::absl::popcount(0x00017e00u & cached_has_bits) * 3;
+  total_size += static_cast<bool>(0x00000100u & cached_has_bits) * 2;
   if ((cached_has_bits & 0x000000ffu) != 0) {
     // optional string java_package = 1;
     if ((cached_has_bits & 0x00000001u) != 0) {
@@ -8620,54 +8607,63 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_go_package());
     }
-    // optional string objc_class_prefix = 36;
-    if ((cached_has_bits & 0x00000008u) != 0) {
-      total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_objc_class_prefix());
-    }
     // optional string csharp_namespace = 37;
-    if ((cached_has_bits & 0x00000010u) != 0) {
+    if ((cached_has_bits & 0x00000008u) != 0) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_csharp_namespace());
     }
-    // optional string swift_prefix = 39;
-    if ((cached_has_bits & 0x00000020u) != 0) {
-      total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_swift_prefix());
-    }
     // optional string php_class_prefix = 40;
-    if ((cached_has_bits & 0x00000040u) != 0) {
+    if ((cached_has_bits & 0x00000010u) != 0) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_php_class_prefix());
     }
     // optional string php_namespace = 41;
-    if ((cached_has_bits & 0x00000080u) != 0) {
+    if ((cached_has_bits & 0x00000020u) != 0) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_php_namespace());
     }
-  }
-  if ((cached_has_bits & 0x00000700u) != 0) {
     // optional string php_metadata_namespace = 44;
-    if ((cached_has_bits & 0x00000100u) != 0) {
+    if ((cached_has_bits & 0x00000040u) != 0) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_php_metadata_namespace());
     }
     // optional string ruby_package = 45;
-    if ((cached_has_bits & 0x00000200u) != 0) {
+    if ((cached_has_bits & 0x00000080u) != 0) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_ruby_package());
-    }
-    // optional .google.protobuf.FeatureSet features = 50;
-    if ((cached_has_bits & 0x00000400u) != 0) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
   }
    {
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-    if ((cached_has_bits & 0x00040000u) != 0) {
+    if ((cached_has_bits & 0x00008000u) != 0) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_optimize_for());
+    }
+  }
+   {
+    // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+    {
+      total_size += 2UL * this_._internal_uninterpreted_option_size();
+      for (const auto& msg : this_._internal_uninterpreted_option()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
+  }
+  if ((cached_has_bits & 0x000e0000u) != 0) {
+    // optional string objc_class_prefix = 36;
+    if ((cached_has_bits & 0x00020000u) != 0) {
+      total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this_._internal_objc_class_prefix());
+    }
+    // optional string swift_prefix = 39;
+    if ((cached_has_bits & 0x00040000u) != 0) {
+      total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this_._internal_swift_prefix());
+    }
+    // optional .google.protobuf.FeatureSet features = 50;
+    if ((cached_has_bits & 0x00080000u) != 0) {
+      total_size += 2 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -8683,8 +8679,6 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if ((cached_has_bits & 0x000000ffu) != 0) {
     if ((cached_has_bits & 0x00000001u) != 0) {
@@ -8697,64 +8691,66 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
       _this->_internal_set_go_package(from._internal_go_package());
     }
     if ((cached_has_bits & 0x00000008u) != 0) {
-      _this->_internal_set_objc_class_prefix(from._internal_objc_class_prefix());
-    }
-    if ((cached_has_bits & 0x00000010u) != 0) {
       _this->_internal_set_csharp_namespace(from._internal_csharp_namespace());
     }
-    if ((cached_has_bits & 0x00000020u) != 0) {
-      _this->_internal_set_swift_prefix(from._internal_swift_prefix());
-    }
-    if ((cached_has_bits & 0x00000040u) != 0) {
+    if ((cached_has_bits & 0x00000010u) != 0) {
       _this->_internal_set_php_class_prefix(from._internal_php_class_prefix());
     }
-    if ((cached_has_bits & 0x00000080u) != 0) {
+    if ((cached_has_bits & 0x00000020u) != 0) {
       _this->_internal_set_php_namespace(from._internal_php_namespace());
+    }
+    if ((cached_has_bits & 0x00000040u) != 0) {
+      _this->_internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
+    }
+    if ((cached_has_bits & 0x00000080u) != 0) {
+      _this->_internal_set_ruby_package(from._internal_ruby_package());
     }
   }
   if ((cached_has_bits & 0x0000ff00u) != 0) {
     if ((cached_has_bits & 0x00000100u) != 0) {
-      _this->_internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
+      _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
     }
     if ((cached_has_bits & 0x00000200u) != 0) {
-      _this->_internal_set_ruby_package(from._internal_ruby_package());
+      _this->_impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
     }
     if ((cached_has_bits & 0x00000400u) != 0) {
+      _this->_impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
+    }
+    if ((cached_has_bits & 0x00000800u) != 0) {
+      _this->_impl_.cc_generic_services_ = from._impl_.cc_generic_services_;
+    }
+    if ((cached_has_bits & 0x00001000u) != 0) {
+      _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
+    }
+    if ((cached_has_bits & 0x00002000u) != 0) {
+      _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
+    }
+    if ((cached_has_bits & 0x00004000u) != 0) {
+      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+    }
+    if ((cached_has_bits & 0x00008000u) != 0) {
+      _this->_impl_.optimize_for_ = from._impl_.optimize_for_;
+    }
+  }
+  if ((cached_has_bits & 0x00010000u) != 0) {
+    _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
+  }
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
+  if ((cached_has_bits & 0x000e0000u) != 0) {
+    if ((cached_has_bits & 0x00020000u) != 0) {
+      _this->_internal_set_objc_class_prefix(from._internal_objc_class_prefix());
+    }
+    if ((cached_has_bits & 0x00040000u) != 0) {
+      _this->_internal_set_swift_prefix(from._internal_swift_prefix());
+    }
+    if ((cached_has_bits & 0x00080000u) != 0) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
         _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-    }
-    if ((cached_has_bits & 0x00000800u) != 0) {
-      _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
-    }
-    if ((cached_has_bits & 0x00001000u) != 0) {
-      _this->_impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
-    }
-    if ((cached_has_bits & 0x00002000u) != 0) {
-      _this->_impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
-    }
-    if ((cached_has_bits & 0x00004000u) != 0) {
-      _this->_impl_.cc_generic_services_ = from._impl_.cc_generic_services_;
-    }
-    if ((cached_has_bits & 0x00008000u) != 0) {
-      _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
-    }
-  }
-  if ((cached_has_bits & 0x000f0000u) != 0) {
-    if ((cached_has_bits & 0x00010000u) != 0) {
-      _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
-    }
-    if ((cached_has_bits & 0x00020000u) != 0) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
-    }
-    if ((cached_has_bits & 0x00040000u) != 0) {
-      _this->_impl_.optimize_for_ = from._impl_.optimize_for_;
-    }
-    if ((cached_has_bits & 0x00080000u) != 0) {
-      _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -8777,7 +8773,7 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
     return false;
-  if ((this_._impl_._has_bits_[0] & 0x00000400u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00080000u) != 0) {
     if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
@@ -8790,13 +8786,10 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_package_, &other->_impl_.java_package_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.java_outer_classname_, &other->_impl_.java_outer_classname_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.go_package_, &other->_impl_.go_package_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.objc_class_prefix_, &other->_impl_.objc_class_prefix_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.csharp_namespace_, &other->_impl_.csharp_namespace_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.swift_prefix_, &other->_impl_.swift_prefix_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_class_prefix_, &other->_impl_.php_class_prefix_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_namespace_, &other->_impl_.php_namespace_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.php_metadata_namespace_, &other->_impl_.php_metadata_namespace_, arena);
@@ -8804,9 +8797,13 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)
       + sizeof(FileOptions::_impl_.cc_enable_arenas_)
-      - PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_)>(
-          reinterpret_cast<char*>(&_impl_.features_),
-          reinterpret_cast<char*>(&other->_impl_.features_));
+      - PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_)>(
+          reinterpret_cast<char*>(&_impl_.java_multiple_files_),
+          reinterpret_cast<char*>(&other->_impl_.java_multiple_files_));
+  _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.objc_class_prefix_, &other->_impl_.objc_class_prefix_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.swift_prefix_, &other->_impl_.swift_prefix_, arena);
+  swap(_impl_.features_, other->_impl_.features_);
 }
 
 ::google::protobuf::Metadata FileOptions::GetMetadata() const {
