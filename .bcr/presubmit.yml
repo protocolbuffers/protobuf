@@ -1,5 +1,5 @@
 matrix:
-  platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  platform: ["debian10", "macos", "ubuntu2004"]
   bazel: [7.x]
 
 tasks:
@@ -18,11 +18,31 @@ tasks:
     - '@protobuf//:protoc'
     - '@protobuf//:test_messages_proto2_cc_proto'
     - '@protobuf//:test_messages_proto3_cc_proto'
+  # Separate windows for different c++ build flags.
+  verify_targets_windows:
+    name: "Verify windows build targets"
+    platform: windows
+    bazel: ${{ bazel }}
+    build_flags:
+    - '--cxxopt=/std:c++17'
+    - '--host_cxxopt=/std:c++17'
+    # Run using clang-cl
+    - '--extra_execution_platforms=@protobuf//build_defs:x64_windows-clang-cl'
+    - '--host_platform=@protobuf//build_defs:x64_windows-clang-cl'
+    - '--extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl'
+    build_targets:
+    - '@protobuf//:protobuf'
+    - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protobuf_python'
+    - '@protobuf//:protobuf_java'
+    - '@protobuf//:protoc'
+    - '@protobuf//:test_messages_proto2_cc_proto'
+    - '@protobuf//:test_messages_proto3_cc_proto'
 
 bcr_test_module:
   module_path: "examples"
   matrix:
-    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+    platform: ["debian10", "macos", "ubuntu2004"]
     bazel: [7.x]
   tasks:
     run_test_module:
@@ -32,5 +52,15 @@ bcr_test_module:
       build_flags:
       - '--host_cxxopt=-std=c++17'
       - '--cxxopt=-std=c++17'
+      build_targets:
+      - "//..."
+    # Separate windows for different c++ build flags.
+    run_test_module_windows:
+      name: "Run windows test module"
+      platform: windows
+      bazel: ${{ bazel }}
+      build_flags:
+      - '--cxxopt=/std:c++17'
+      - '--host_cxxopt=/std:c++17'
       build_targets:
       - "//..."
