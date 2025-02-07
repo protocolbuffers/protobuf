@@ -118,11 +118,9 @@ namespace Google.Protobuf.Collections
                     {
                         EnsureSize(count + (length / codec.FixedSize));
 
-
                         // if littleEndian treat array as bytes and directly copy from buffer for improved performance
-                        if(BitConverter.IsLittleEndian)
+                        if(TryGetArrayAsSpanPinnedUnsafe(codec, out Span<byte> span, out GCHandle handle))
                         {
-                            GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
                             span = span.Slice(count * codec.FixedSize);
                             Debug.Assert(span.Length >= length);
                             ParsingPrimitives.ReadPackedFieldLittleEndian(ref ctx.buffer, ref ctx.state, length, span);
@@ -259,9 +257,8 @@ namespace Google.Protobuf.Collections
                 ctx.WriteLength(size);
 
                 // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
-                if(BitConverter.IsLittleEndian && codec.FixedSize > 0)
+                if(TryGetArrayAsSpanPinnedUnsafe(codec, out Span<byte> span, out GCHandle handle))
                 {
-                    GCHandle handle = AsSpanPinnedUnsafe(out Span<byte> span, codec);
                     span = span.Slice(0, Count * codec.FixedSize);
 
                     WritingPrimitives.WriteRawBytes(ref ctx.buffer, ref ctx.state, span);
@@ -709,12 +706,21 @@ namespace Google.Protobuf.Collections
         }
 
         [SecuritySafeCritical]
-        private unsafe GCHandle AsSpanPinnedUnsafe(out Span<byte> span, FieldCodec<T> codec)
+        private unsafe bool TryGetArrayAsSpanPinnedUnsafe(FieldCodec<T> codec, out Span<byte> span, out GCHandle handle)
         {
-            Debug.Assert(codec.FixedSize > 0);
-            GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            span = new Span<byte>(handle.AddrOfPinnedObject().ToPointer(), array.Length * codec.FixedSize);
-            return handle;
+            // 1. protobuf wire bytes is LittleEndian only
+            // 2. validate that size of csharp element T is matching the size of protobuf wire size
+            //    NOTE: cannot use bool with this span because csharp marshal it as 4 bytes
+            if (BitConverter.IsLittleEndian && (codec.FixedSize > 0 && Marshal.SizeOf<T>() == codec.FixedSize))
+            {
+                handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+                span = new Span<byte>(handle.AddrOfPinnedObject().ToPointer(), array.Length * codec.FixedSize);
+                return true;
+            }
+
+            span = default;
+            handle = default;
+            return false;
         }
 
         #region Explicit interface implementation for IList and ICollection.
