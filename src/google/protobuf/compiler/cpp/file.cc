@@ -254,8 +254,10 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
                      {"messages", [&] { GenerateMessageDefinitions(p); }},
                      {"services", [&] { GenerateServiceDefinitions(p); }},
                      {"extensions", [&] { GenerateExtensionIdentifiers(p); }},
-                     {"inline_fns",
-                      [&] { GenerateInlineFunctionDefinitions(p); }},
+                     {"inline_defs",
+                      [&] {
+                        GenerateInlineFunctionDefinitions(p);
+                      }},
                  },
                  R"(
                    $enums$
@@ -272,7 +274,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 
                    $hrule_thick$
 
-                   $inline_fns$
+                   $inline_defs$
 
                    // @@protoc_insertion_point(namespace_scope)
                  )");
@@ -1862,6 +1864,16 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(io::Printer* p) {
     gen->GenerateGetEnumDescriptorSpecializations(p);
   }
   p->PrintRaw("\n");
+#ifdef PROTOBUF_INTERNAL_STATIC_REFLECTION_IN_PROTO_H
+  p->Emit({{"enum_info_specializations",
+            [&] { GenerateEnumInfoSpecializations(p); }}},
+          R"cc(
+            namespace internal {
+            $enum_info_specializations$
+            }  // namespace internal
+          )cc");
+  p->PrintRaw("\n");
+#endif
 }
 
 std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()

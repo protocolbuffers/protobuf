@@ -21,6 +21,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/message_static_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -473,6 +474,25 @@ template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::JavaFeatures_Utf8Validation>() {
   return ::pb::JavaFeatures_Utf8Validation_descriptor();
 }
+
+namespace internal {
+template <>
+struct EnumInfoImpl<::pb::JavaFeatures_Utf8Validation> {
+  static constexpr absl::string_view name = "Utf8Validation";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"UTF8_VALIDATION_UNKNOWN", 0},{"DEFAULT", 1},{"VERIFY", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::pb::JavaFeatures_Utf8Validation* PROTOBUF_NONNULL) = &::pb::JavaFeatures_Utf8Validation_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::pb::JavaFeatures_Utf8Validation) = &::pb::JavaFeatures_Utf8Validation_Name;
+};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
