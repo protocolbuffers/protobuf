@@ -21,6 +21,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/message_static_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -475,6 +476,25 @@ template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::CppFeatures_StringType>() {
   return ::pb::CppFeatures_StringType_descriptor();
 }
+
+namespace internal {
+template <>
+struct EnumInfoImpl<::pb::CppFeatures_StringType> {
+  static constexpr absl::string_view name = "StringType";
+  static constexpr size_t enumerators_size = 4;
+  static constexpr int min = 0;
+  static constexpr int max = 3;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"STRING_TYPE_UNKNOWN", 0},{"VIEW", 1},{"CORD", 2},{"STRING", 3},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::pb::CppFeatures_StringType* PROTOBUF_NONNULL) = &::pb::CppFeatures_StringType_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::pb::CppFeatures_StringType) = &::pb::CppFeatures_StringType_Name;
+};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

@@ -21,6 +21,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/message_static_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -21404,6 +21405,297 @@ template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::Edition>() {
   return ::google::protobuf::Edition_descriptor();
 }
+
+namespace internal {
+template <>
+struct EnumInfoImpl<::google::protobuf::ExtensionRangeOptions_VerificationState> {
+  static constexpr absl::string_view name = "VerificationState";
+  static constexpr size_t enumerators_size = 2;
+  static constexpr int min = 0;
+  static constexpr int max = 1;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"DECLARATION", 0},{"UNVERIFIED", 1},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::ExtensionRangeOptions_VerificationState* PROTOBUF_NONNULL) = &::google::protobuf::ExtensionRangeOptions_VerificationState_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::ExtensionRangeOptions_VerificationState) = &::google::protobuf::ExtensionRangeOptions_VerificationState_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldDescriptorProto_Type> {
+  static constexpr absl::string_view name = "Type";
+  static constexpr size_t enumerators_size = 18;
+  static constexpr int min = 1;
+  static constexpr int max = 18;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"TYPE_DOUBLE", 1},{"TYPE_FLOAT", 2},{"TYPE_INT64", 3},{"TYPE_UINT64", 4},{"TYPE_INT32", 5},{"TYPE_FIXED64", 6},{"TYPE_FIXED32", 7},{"TYPE_BOOL", 8},{"TYPE_STRING", 9},{"TYPE_GROUP", 10},{"TYPE_MESSAGE", 11},{"TYPE_BYTES", 12},{"TYPE_UINT32", 13},{"TYPE_ENUM", 14},{"TYPE_SFIXED32", 15},{"TYPE_SFIXED64", 16},{"TYPE_SINT32", 17},{"TYPE_SINT64", 18},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldDescriptorProto_Type* PROTOBUF_NONNULL) = &::google::protobuf::FieldDescriptorProto_Type_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldDescriptorProto_Type) = &::google::protobuf::FieldDescriptorProto_Type_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldDescriptorProto_Label> {
+  static constexpr absl::string_view name = "Label";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 1;
+  static constexpr int max = 3;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"LABEL_OPTIONAL", 1},{"LABEL_REPEATED", 3},{"LABEL_REQUIRED", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldDescriptorProto_Label* PROTOBUF_NONNULL) = &::google::protobuf::FieldDescriptorProto_Label_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldDescriptorProto_Label) = &::google::protobuf::FieldDescriptorProto_Label_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FileOptions_OptimizeMode> {
+  static constexpr absl::string_view name = "OptimizeMode";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 1;
+  static constexpr int max = 3;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"SPEED", 1},{"CODE_SIZE", 2},{"LITE_RUNTIME", 3},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FileOptions_OptimizeMode* PROTOBUF_NONNULL) = &::google::protobuf::FileOptions_OptimizeMode_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FileOptions_OptimizeMode) = &::google::protobuf::FileOptions_OptimizeMode_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldOptions_CType> {
+  static constexpr absl::string_view name = "CType";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"STRING", 0},{"CORD", 1},{"STRING_PIECE", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldOptions_CType* PROTOBUF_NONNULL) = &::google::protobuf::FieldOptions_CType_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldOptions_CType) = &::google::protobuf::FieldOptions_CType_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldOptions_JSType> {
+  static constexpr absl::string_view name = "JSType";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"JS_NORMAL", 0},{"JS_STRING", 1},{"JS_NUMBER", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldOptions_JSType* PROTOBUF_NONNULL) = &::google::protobuf::FieldOptions_JSType_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldOptions_JSType) = &::google::protobuf::FieldOptions_JSType_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldOptions_OptionRetention> {
+  static constexpr absl::string_view name = "OptionRetention";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"RETENTION_UNKNOWN", 0},{"RETENTION_RUNTIME", 1},{"RETENTION_SOURCE", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldOptions_OptionRetention* PROTOBUF_NONNULL) = &::google::protobuf::FieldOptions_OptionRetention_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldOptions_OptionRetention) = &::google::protobuf::FieldOptions_OptionRetention_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FieldOptions_OptionTargetType> {
+  static constexpr absl::string_view name = "OptionTargetType";
+  static constexpr size_t enumerators_size = 10;
+  static constexpr int min = 0;
+  static constexpr int max = 9;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"TARGET_TYPE_UNKNOWN", 0},{"TARGET_TYPE_FILE", 1},{"TARGET_TYPE_EXTENSION_RANGE", 2},{"TARGET_TYPE_MESSAGE", 3},{"TARGET_TYPE_FIELD", 4},{"TARGET_TYPE_ONEOF", 5},{"TARGET_TYPE_ENUM", 6},{"TARGET_TYPE_ENUM_ENTRY", 7},{"TARGET_TYPE_SERVICE", 8},{"TARGET_TYPE_METHOD", 9},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FieldOptions_OptionTargetType* PROTOBUF_NONNULL) = &::google::protobuf::FieldOptions_OptionTargetType_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FieldOptions_OptionTargetType) = &::google::protobuf::FieldOptions_OptionTargetType_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::MethodOptions_IdempotencyLevel> {
+  static constexpr absl::string_view name = "IdempotencyLevel";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"IDEMPOTENCY_UNKNOWN", 0},{"NO_SIDE_EFFECTS", 1},{"IDEMPOTENT", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::MethodOptions_IdempotencyLevel* PROTOBUF_NONNULL) = &::google::protobuf::MethodOptions_IdempotencyLevel_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::MethodOptions_IdempotencyLevel) = &::google::protobuf::MethodOptions_IdempotencyLevel_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_FieldPresence> {
+  static constexpr absl::string_view name = "FieldPresence";
+  static constexpr size_t enumerators_size = 4;
+  static constexpr int min = 0;
+  static constexpr int max = 3;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"FIELD_PRESENCE_UNKNOWN", 0},{"EXPLICIT", 1},{"IMPLICIT", 2},{"LEGACY_REQUIRED", 3},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_FieldPresence* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_FieldPresence_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_FieldPresence) = &::google::protobuf::FeatureSet_FieldPresence_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_EnumType> {
+  static constexpr absl::string_view name = "EnumType";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"ENUM_TYPE_UNKNOWN", 0},{"OPEN", 1},{"CLOSED", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_EnumType* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_EnumType_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_EnumType) = &::google::protobuf::FeatureSet_EnumType_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_RepeatedFieldEncoding> {
+  static constexpr absl::string_view name = "RepeatedFieldEncoding";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"REPEATED_FIELD_ENCODING_UNKNOWN", 0},{"PACKED", 1},{"EXPANDED", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_RepeatedFieldEncoding* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_RepeatedFieldEncoding_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_RepeatedFieldEncoding) = &::google::protobuf::FeatureSet_RepeatedFieldEncoding_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_Utf8Validation> {
+  static constexpr absl::string_view name = "Utf8Validation";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 3;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"UTF8_VALIDATION_UNKNOWN", 0},{"VERIFY", 2},{"NONE", 3},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_Utf8Validation* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_Utf8Validation_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_Utf8Validation) = &::google::protobuf::FeatureSet_Utf8Validation_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_MessageEncoding> {
+  static constexpr absl::string_view name = "MessageEncoding";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"MESSAGE_ENCODING_UNKNOWN", 0},{"LENGTH_PREFIXED", 1},{"DELIMITED", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_MessageEncoding* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_MessageEncoding_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_MessageEncoding) = &::google::protobuf::FeatureSet_MessageEncoding_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_JsonFormat> {
+  static constexpr absl::string_view name = "JsonFormat";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"JSON_FORMAT_UNKNOWN", 0},{"ALLOW", 1},{"LEGACY_BEST_EFFORT", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_JsonFormat* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_JsonFormat_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_JsonFormat) = &::google::protobuf::FeatureSet_JsonFormat_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::FeatureSet_EnforceNamingStyle> {
+  static constexpr absl::string_view name = "EnforceNamingStyle";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"ENFORCE_NAMING_STYLE_UNKNOWN", 0},{"STYLE2024", 1},{"STYLE_LEGACY", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL) = &::google::protobuf::FeatureSet_EnforceNamingStyle_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::FeatureSet_EnforceNamingStyle) = &::google::protobuf::FeatureSet_EnforceNamingStyle_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic> {
+  static constexpr absl::string_view name = "Semantic";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"NONE", 0},{"SET", 1},{"ALIAS", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic* PROTOBUF_NONNULL) = &::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic) = &::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_Name;
+};
+template <>
+struct EnumInfoImpl<::google::protobuf::Edition> {
+  static constexpr absl::string_view name = "Edition";
+  static constexpr size_t enumerators_size = 12;
+  static constexpr int min = 0;
+  static constexpr int max = 2147483647;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"EDITION_UNKNOWN", 0},{"EDITION_LEGACY", 900},{"EDITION_PROTO2", 998},{"EDITION_PROTO3", 999},{"EDITION_2023", 1000},{"EDITION_2024", 1001},{"EDITION_1_TEST_ONLY", 1},{"EDITION_2_TEST_ONLY", 2},{"EDITION_99997_TEST_ONLY", 99997},{"EDITION_99998_TEST_ONLY", 99998},{"EDITION_99999_TEST_ONLY", 99999},{"EDITION_MAX", 2147483647},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::Edition* PROTOBUF_NONNULL) = &::google::protobuf::Edition_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::Edition) = &::google::protobuf::Edition_Name;
+};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

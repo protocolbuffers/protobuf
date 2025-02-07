@@ -21,6 +21,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/message_static_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -2199,6 +2200,25 @@ template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::compiler::CodeGeneratorResponse_Feature>() {
   return ::google::protobuf::compiler::CodeGeneratorResponse_Feature_descriptor();
 }
+
+namespace internal {
+template <>
+struct EnumInfoImpl<::google::protobuf::compiler::CodeGeneratorResponse_Feature> {
+  static constexpr absl::string_view name = "Feature";
+  static constexpr size_t enumerators_size = 3;
+  static constexpr int min = 0;
+  static constexpr int max = 2;
+  static constexpr std::pair<absl::string_view, int> enumerators[] = {
+      {"FEATURE_NONE", 0},{"FEATURE_PROTO3_OPTIONAL", 1},{"FEATURE_SUPPORTS_EDITIONS", 2},};
+  static constexpr bool is_closed = 1;
+
+ protected:
+  static constexpr bool (*PROTOBUF_NONNULL InternalParsePtr)(
+      absl::string_view, ::google::protobuf::compiler::CodeGeneratorResponse_Feature* PROTOBUF_NONNULL) = &::google::protobuf::compiler::CodeGeneratorResponse_Feature_Parse;
+  static constexpr const std::string& (*PROTOBUF_NONNULL InternalNamePtr)(
+      ::google::protobuf::compiler::CodeGeneratorResponse_Feature) = &::google::protobuf::compiler::CodeGeneratorResponse_Feature_Name;
+};
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
