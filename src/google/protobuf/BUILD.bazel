@@ -31,6 +31,11 @@ cc_proto_library(
     deps = [":any_proto"],
 )
 
+upb_c_proto_library(
+    name = "any_upb_proto",
+    deps = [":any_proto"],
+)
+
 proto_library(
     name = "api_proto",
     srcs = ["api.proto"],
@@ -57,6 +62,11 @@ cc_proto_library(
     deps = [":duration_proto"],
 )
 
+upb_c_proto_library(
+    name = "duration_upb_proto",
+    deps = [":duration_proto"],
+)
+
 proto_library(
     name = "empty_proto",
     srcs = ["empty.proto"],
@@ -65,6 +75,11 @@ proto_library(
 
 cc_proto_library(
     name = "empty_cc_proto",
+    deps = [":empty_proto"],
+)
+
+upb_c_proto_library(
+    name = "empty_upb_proto",
     deps = [":empty_proto"],
 )
 
@@ -101,6 +116,11 @@ cc_proto_library(
     deps = [":struct_proto"],
 )
 
+upb_c_proto_library(
+    name = "struct_upb_proto",
+    deps = [":struct_proto"],
+)
+
 proto_library(
     name = "timestamp_proto",
     srcs = ["timestamp.proto"],
@@ -109,6 +129,11 @@ proto_library(
 
 cc_proto_library(
     name = "timestamp_cc_proto",
+    deps = [":timestamp_proto"],
+)
+
+upb_c_proto_library(
+    name = "timestamp_upb_proto",
     deps = [":timestamp_proto"],
 )
 
@@ -135,6 +160,11 @@ proto_library(
 
 cc_proto_library(
     name = "wrappers_cc_proto",
+    deps = [":wrappers_proto"],
+)
+
+upb_c_proto_library(
+    name = "wrappers_upb_proto",
     deps = [":wrappers_proto"],
 )
 
