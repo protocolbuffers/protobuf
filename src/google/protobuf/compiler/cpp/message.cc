@@ -1360,10 +1360,15 @@ class AccessorVerifier {
 
 }  // namespace
 
+template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
-    field_generators_.get(field).GenerateByteSize(p);
+    const auto& gen = field_generators_.get(field);
+    if constexpr (!kIsV2) {
+      gen.GenerateByteSize(p);
+    } else {
+    }
   };
 
   if (!HasHasbit(field)) {
@@ -1399,6 +1404,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
           )cc");
 }
 
+template <bool kIsV2>
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
@@ -1419,7 +1425,7 @@ void MessageGenerator::EmitUpdateByteSizeForField(
                   )cc");
         }},
        {"check_and_update_byte_size_for_field",
-        [&]() { EmitCheckAndUpdateByteSizeForField(field, p); }}},
+        [&]() { EmitCheckAndUpdateByteSizeForField<kIsV2>(field, p); }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
@@ -2545,6 +2551,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
     GenerateByteSize(p);
     p->Emit("\n");
+
 
     GenerateClassSpecificMergeImpl(p);
     p->Emit("\n");
@@ -5126,6 +5133,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             return total_size;
           }
         )cc");
+    p->Emit("\n");
     return;
   }
 
@@ -5409,6 +5417,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_unknown_fields$;
         }
       )cc");
+}
+
+void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
 }
 
 bool MessageGenerator::NeedsIsInitialized() {
