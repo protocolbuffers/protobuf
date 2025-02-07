@@ -20,9 +20,18 @@ typedef struct {
   size_t array_count;       // Array part number of elements.
 } upb_inttable;
 
+typedef struct {
+  const upb_inttable* t;
+  size_t index;
+} upb_inttable_iter;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE const upb_tabent* int_tabent(const upb_inttable_iter* i) {
+  return &i->t->t.entries[i->index];
+}
 
 // Initialize a table. If memory allocation failed, false is returned and
 // the table is uninitialized.
@@ -57,6 +66,16 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // lookup time. Client should call this after all entries have been inserted;
 // inserting more entries is legal, but will likely require a table resize.
 void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
+
+bool upb_inttable_done(const upb_inttable_iter* i);
+
+uintptr_t upb_inttable_iter_key(const upb_inttable_iter* i);
+
+upb_value upb_inttable_iter_value(const upb_inttable_iter* i);
+
+void upb_inttable_clear(upb_inttable* t);
 
 // Iteration over inttable:
 //

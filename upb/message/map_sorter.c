@@ -123,8 +123,18 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   // Copy non-empty entries from the table to s->entries.
   const void** dst = &s->entries[sorted->start];
-  const upb_tabent* src = map->table.t.entries;
-  const upb_tabent* end = src + upb_table_size(&map->table.t);
+  const upb_tabent* src;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    src = map->table.strtable.t.entries;
+  } else {
+    src = map->table.inttable.t.entries;
+  }
+  const upb_tabent* end;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    end = src + upb_table_size(&map->table.strtable.t);
+  } else {
+    end = src + upb_table_size(&map->table.inttable.t);
+  }
   for (; src < end; src++) {
     if (!upb_tabent_isempty(src)) {
       *dst = src;

@@ -617,7 +617,7 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
 
   const upb_MiniTableField* key_field = &entry->UPB_PRIVATE(fields)[0];
   const upb_MiniTableField* val_field = &entry->UPB_PRIVATE(fields)[1];
-  char key_size = kSizeInMap[key_field->UPB_PRIVATE(descriptortype)];
+  char key_size = kSizeInMap[upb_MiniTableField_CType(key_field)];
   char val_size = kSizeInMap[val_field->UPB_PRIVATE(descriptortype)];
   UPB_ASSERT(key_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntry, k));
   UPB_ASSERT(val_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntry, v));

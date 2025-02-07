@@ -11,6 +11,7 @@
  * Implementation is heavily inspired by Lua's ltable.c.
  */
 
+#include "upb/hash/common.h"
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
@@ -842,4 +843,33 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
   upb_tabent* ent = &t->t.entries[iter];
   ent->val.val = v.val;
+}
+
+bool upb_inttable_done(const upb_inttable_iter* i) {
+  if (!i->t) return true;
+  return i->index >= upb_table_size(&i->t->t) ||
+         upb_tabent_isempty(int_tabent(i));
+}
+
+uintptr_t upb_inttable_iter_key(const upb_inttable_iter* i) {
+  UPB_ASSERT(!upb_inttable_done(i));
+  upb_tabkey key = int_tabent(i)->key;
+  printf("=======================upb_inttable_iter_key \n");
+  return key;
+}
+
+upb_value upb_inttable_iter_value(const upb_inttable_iter* i) {
+  UPB_ASSERT(!upb_inttable_done(i));
+  return _upb_value_val(int_tabent(i)->val.val);
+}
+
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v) {
+  upb_tabent* ent = &t->t.entries[iter];
+  ent->val.val = v.val;
+}
+
+void upb_inttable_clear(upb_inttable* t) {
+  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  t->t.count = 0;
+  memset((char*)t->t.entries, 0, bytes);
 }
