@@ -1307,7 +1307,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
   static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
                 "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
+  if (ABSL_PREDICT_FALSE(kMustBeFunc || (int8_t)as_tag < 0)) {
     PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
     return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
   }
