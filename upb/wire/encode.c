@@ -459,7 +459,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
     intptr_t iter = UPB_STRTABLE_BEGIN;
     upb_StringView key;
     upb_value val;
-    while (upb_strtable_next2(&map->table, &key, &val, &iter)) {
+    while (upb_strtable_next2(&map->t.strtable, &key, &val, &iter)) {
       upb_MapEntry ent;
       _upb_map_fromkey(key, &ent.k, map->key_size);
       _upb_map_fromvalue(val, &ent.v, map->val_size);
