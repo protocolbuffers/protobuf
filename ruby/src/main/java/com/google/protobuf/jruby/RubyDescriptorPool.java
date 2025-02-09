@@ -164,6 +164,11 @@ public class RubyDescriptorPool extends RubyObject {
     for (ServiceDescriptor serviceDescriptor : fd.getServices())
       registerService(context, serviceDescriptor, packageName);
 
+    RubyFileDescriptor rfd =
+      (RubyFileDescriptor) RubyFileDescriptor.getRubyFileDescriptor(context, fd);
+    RubyString name = context.runtime.newString(fd.getName());
+    symtab.put(name, rfd);
+
     // Mark this as a loaded file
     fileDescriptors.add(fd);
   }
