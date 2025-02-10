@@ -991,6 +991,10 @@ class PROTOBUF_EXPORT Reflection final {
   absl::string_view GetStringViewImpl(const Message& message,
                                       const FieldDescriptor* field,
                                       ScratchSpace* scratch) const;
+  absl::string_view GetRepeatedStringViewImpl(const Message& message,
+                                              const FieldDescriptor* field,
+                                              int index,
+                                              ScratchSpace* scratch) const;
 
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
