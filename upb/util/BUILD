@@ -56,7 +56,7 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb/reflection:internal",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -78,9 +78,9 @@ cc_test(
         "//upb:mem",
         "//upb:reflection",
         "//upb/test:parse_text_proto",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -145,9 +145,9 @@ cc_test(
         "//upb:mem",
         "//upb:reflection",
         "//upb/reflection:internal",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
