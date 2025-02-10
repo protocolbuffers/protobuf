@@ -150,6 +150,10 @@ class ReflectionVisit;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
+template <typename MessageT, typename FieldT>
+struct RepeatedEntityDynamicFieldInfoBase;
+template <typename MessageT, typename FieldT>
+struct RepeatedPtrEntityDynamicFieldInfoBase;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -983,6 +987,11 @@ class PROTOBUF_EXPORT Reflection final {
   RepeatedPtrField<T>* MutableRepeatedPtrFieldInternal(
       Message* message, const FieldDescriptor* field) const;
 
+  // REQUIRES: If the field is Cord, then `scratch != nullptr`.
+  absl::string_view GetStringViewImpl(const Message& message,
+                                      const FieldDescriptor* field,
+                                      ScratchSpace* scratch) const;
+
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
   //   on field->field_option().ctype() (if ctype >= 0)
@@ -1097,6 +1106,10 @@ class PROTOBUF_EXPORT Reflection final {
   friend class RepeatedFieldRef;
   template <typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
+  template <typename MessageT, typename FieldT>
+  friend struct internal::RepeatedEntityDynamicFieldInfoBase;
+  template <typename MessageT, typename FieldT>
+  friend struct internal::RepeatedPtrEntityDynamicFieldInfoBase;
   friend class Message;
   friend class MessageLayoutInspector;
   friend class AssignDescriptorsHelper;
@@ -1657,12 +1670,14 @@ const Type& Reflection::GetRaw(const Message& message,
 template <typename T>
 RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
     const Message& message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message.GetReflection(), this);
   return RepeatedFieldRef<T>(message, field);
 }
 
 template <typename T>
 MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message->GetReflection(), this);
   return MutableRepeatedFieldRef<T>(message, field);
 }
 

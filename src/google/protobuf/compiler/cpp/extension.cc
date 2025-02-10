@@ -69,6 +69,12 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
+  // Downgrade string to bytes if it is not UTF8 validated.
+  if (descriptor_->type() == FieldDescriptor::TYPE_STRING &&
+      !descriptor_->requires_utf8_validation()) {
+    variables_["field_type"] =
+        absl::StrCat(static_cast<int>(FieldDescriptor::TYPE_BYTES));
+  }
   variables_["repeated"] = descriptor_->is_repeated() ? "true" : "false";
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
   variables_["dllexport_decl"] = options.dllexport_decl;
@@ -110,9 +116,8 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
           R"cc(
             inline $constant_qualifier $constexpr int $constant_name$ =
                 $number$;
-            $id_qualifier$ ::$proto_ns$::internal::ExtensionIdentifier<
-                $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
-                $packed$>
+            $id_qualifier$ $pbi$::ExtensionIdentifier<
+                $extendee$, $pbi$::$type_traits$, $field_type$, $packed$>
                 $name$;
           )cc");
 }

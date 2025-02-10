@@ -625,6 +625,15 @@ TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
   EXPECT_TRUE(CanCallClearMessage<decltype(model.mutable_child_model_1())>());
 }
 
+TEST(CppGeneratedCode, CloneMessage) {
+  hpb::Arena arena;
+  TestModel model;
+  model.set_str1("Hello World");
+  auto ptr = hpb::Ptr<TestModel>(&model);
+  hpb::Ptr<TestModel> cloned_model = hpb::CloneMessage(ptr, arena);
+  EXPECT_EQ(cloned_model->str1(), "Hello World");
+}
+
 TEST(CppGeneratedCode, SetAlias) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);

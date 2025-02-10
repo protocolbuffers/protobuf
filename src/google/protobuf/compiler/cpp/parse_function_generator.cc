@@ -36,7 +36,7 @@ using internal::TailCallTableInfo;
 using internal::cpp::Utf8CheckMode;
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
-    const Descriptor* descriptor, const Options& options) {
+    const Descriptor* descriptor) {
   std::vector<const FieldDescriptor*> ordered_fields;
   for (auto field : FieldRange(descriptor)) {
     ordered_fields.push_back(field);
@@ -62,7 +62,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       options_(options),
       variables_(vars),
       inlined_string_indices_(inlined_string_indices),
-      ordered_fields_(GetOrderedFields(descriptor_, options_)),
+      ordered_fields_(GetOrderedFields(descriptor_)),
       num_hasbits_(max_has_bit_index),
       index_in_file_messages_(index_in_file_messages) {
   std::vector<TailCallTableInfo::FieldOptions> fields;
@@ -74,7 +74,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     fields.push_back({
         field,
         index < has_bit_indices.size() ? has_bit_indices[index] : -1,
-        GetPresenceProbability(field, options_),
+        // When not present, we're not sure how likely "field" is present.
+        // Assign a 50% probability to avoid pessimizing it.
+        GetPresenceProbability(field, options_).value_or(0.5f),
         GetLazyStyle(field, options_, scc_analyzer_),
         IsStringInlined(field, options_),
         IsImplicitWeakField(field, options_, scc_analyzer_),
@@ -162,11 +164,11 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
           {"field_lookup_size", field_num_to_entry_table.size16()},
       },
       R"cc(
-        friend class ::$proto_ns$::internal::TcParser;
+        friend class $pbi$::TcParser;
         $SECTION$
-        static const ::$proto_ns$::internal::TcParseTable<
-            $table_size_log2$, $num_field_entries$, $num_field_aux$,
-            $name_table_size$, $field_lookup_size$>
+        static const $pbi$::TcParseTable<$table_size_log2$, $num_field_entries$,
+                                         $num_field_aux$, $name_table_size$,
+                                         $field_lookup_size$>
             _table_;
       )cc");
 }
@@ -209,7 +211,7 @@ static NumToEntryTable MakeNumToEntryTable(
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's more than 31
+      // then we just extend the current block by one. If it's greater than 31
       // more, we have to add empty skip entries in order to continue using the
       // existing block.  Obviously it's just 32 more, it doesn't make sense to
       // start a whole new block, since new blocks mean having to write out
@@ -226,6 +228,7 @@ static NumToEntryTable MakeNumToEntryTable(
       start_new_block = false;
     }
 
+    ABSL_DCHECK(block != nullptr);
     auto skip_entry_num = (fnum - block->first_fnum) / 16;
     auto skip_entry_index = (fnum - block->first_fnum) % 16;
     while (skip_entry_num >= block->entries.size())
@@ -249,8 +252,8 @@ static std::string TcParseFunctionName(internal::TcParseFunction func) {
   return absl::StrCat(ns, kNames[func_index]);
 }
 
-void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
-  Formatter format(printer, variables_);
+void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
+  auto v = p->WithVars(variables_);
   // For simplicity and speed, the table is not covering all proto
   // configurations. This model uses a fallback to cover all situations that
   // the table can't accommodate, together with unknown fields or extensions.
@@ -258,252 +261,320 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   // maps, weak fields, lazy, more than 1 extension range. In the cases
   // the table is sufficient we can use a generic routine, that just handles
   // unknown fields and potentially an extension range.
-  auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
-  format(
-      "$1$ ::_pbi::TcParseTable<$2$, $3$, $4$, $5$, $6$> "
-      "$classname$::_table_ = "
-      "{\n",
-      // FileDescriptorProto's table must be constant initialized. For MSVC this
-      // means using `constexpr`. However, we can't use `constexpr` for all
-      // tables because it breaks when crossing DLL boundaries.
-      // FileDescriptorProto is safe from this.
-      IsFileDescriptorProto(descriptor_->file(), options_)
-          ? "constexpr"
-          : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst",
-      tc_table_info_->table_size_log2, ordered_fields_.size(),
-      tc_table_info_->aux_entries.size(),
-      FieldNameDataSize(tc_table_info_->field_name_data),
-      field_num_to_entry_table.size16());
-  {
-    auto table_scope = format.ScopedIndent();
-    format("{\n");
-    {
-      auto header_scope = format.ScopedIndent();
-      if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-        format("PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
-      } else {
-        format("0,  // no _has_bits_\n");
-      }
-      if (descriptor_->extension_range_count() != 0) {
-        format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
-      } else {
-        format("0, // no _extensions_\n");
-      }
-      format("$1$, $2$,  // max_field_number, fast_idx_mask\n",
-             (ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()),
-             (((1 << tc_table_info_->table_size_log2) - 1) << 3));
-      format(
-          "offsetof(decltype(_table_), field_lookup_table),\n"
-          "$1$,  // skipmap\n",
-          field_num_to_entry_table.skipmap32);
-      if (ordered_fields_.empty()) {
-        format(
-            "offsetof(decltype(_table_), field_names),  // no field_entries\n");
-      } else {
-        format("offsetof(decltype(_table_), field_entries),\n");
-      }
+  NumToEntryTable field_num_to_entry_table =
+      MakeNumToEntryTable(ordered_fields_);
 
-      format(
-          "$1$,  // num_field_entries\n"
-          "$2$,  // num_aux_entries\n",
-          ordered_fields_.size(), tc_table_info_->aux_entries.size());
-      if (tc_table_info_->aux_entries.empty()) {
-        format(
-            "offsetof(decltype(_table_), field_names),  // no aux_entries\n");
-      } else {
-        format("offsetof(decltype(_table_), aux_entries),\n");
-      }
-      format("$classname$_class_data_.base(),\n");
-      if (NeedsPostLoopHandler(descriptor_, options_)) {
-        printer->Emit(R"cc(
-          &$classname$::PostLoopHandler,
-        )cc");
-      } else {
-        printer->Emit(R"cc(
-          nullptr,  // post_loop_handler
-        )cc");
-      }
-      format("$1$,  // fallback\n",
-             TcParseFunctionName(tc_table_info_->fallback_function));
-      std::vector<const FieldDescriptor*> subtable_fields;
-      for (const auto& aux : tc_table_info_->aux_entries) {
-        if (aux.type == internal::TailCallTableInfo::kSubTable) {
-          subtable_fields.push_back(aux.field);
-        }
-      }
-      const auto* hottest = FindHottestField(subtable_fields, options_);
-      // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-      // branches. Set the pointer to itself to avoid nullptr.
-      printer->Emit(
-          {{"hottest_type_name",
-            QualifiedClassName(
-                hottest == nullptr ? descriptor_ : hottest->message_type(),
-                options_)}},
-          // clang-format off
-          R"cc(
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-::_pbi::TcParser::GetTable<$hottest_type_name$>(),  // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-          )cc");
-      // clang-format on
-    }
-    format("}, {{\n");
-    {
-      // fast_entries[]
-      auto fast_scope = format.ScopedIndent();
-      GenerateFastFieldEntries(format);
-    }
-    format("}}, {{\n");
-    {
-      // field_lookup_table[]
-      auto field_lookup_scope = format.ScopedIndent();
-      int line_entries = 0;
-      for (auto& entry_block : field_num_to_entry_table.blocks) {
-        format("$1$, $2$, $3$,\n", entry_block.first_fnum & 65535,
-               entry_block.first_fnum / 65536, entry_block.entries.size());
-        for (auto se16 : entry_block.entries) {
-          if (line_entries == 0) {
-            format("$1$, $2$,", se16.skipmap, se16.field_entry_offset);
-            ++line_entries;
-          } else if (line_entries < 5) {
-            format(" $1$, $2$,", se16.skipmap, se16.field_entry_offset);
-            ++line_entries;
-          } else {
-            format(" $1$, $2$,\n", se16.skipmap, se16.field_entry_offset);
-            line_entries = 0;
-          }
-        }
-      }
-      if (line_entries) format("\n");
-      format("65535, 65535\n");
-    }
-    if (ordered_fields_.empty() &&
-        !descriptor_->options().message_set_wire_format()) {
-      ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
-          << "Invalid message: " << descriptor_->full_name() << " has "
-          << tc_table_info_->aux_entries.size()
-          << " auxiliary field entries, but no fields";
-      format(
-          "}},\n"
-          "// no field_entries, or aux_entries\n"
-          "{{\n");
-    } else {
-      format("}}, {{\n");
-      {
-        // field_entries[]
-        auto field_scope = format.ScopedIndent();
-        GenerateFieldEntries(format);
-      }
-      if (tc_table_info_->aux_entries.empty()) {
-        format(
-            "}},\n"
-            "// no aux_entries\n"
-            "{{\n");
-      } else {
-        format("}}, {{\n");
-        {
-          // aux_entries[]
-          auto aux_scope = format.ScopedIndent();
-          for (const auto& aux_entry : tc_table_info_->aux_entries) {
-            switch (aux_entry.type) {
-              case TailCallTableInfo::kNothing:
-                format("{},\n");
-                break;
-              case TailCallTableInfo::kInlinedStringDonatedOffset:
-                format(
-                    "{_fl::Offset{offsetof($classname$, "
-                    "_impl_._inlined_string_donated_)}},\n");
-                break;
-              case TailCallTableInfo::kSplitOffset:
-                format(
-                    "{_fl::Offset{offsetof($classname$, _impl_._split_)}},\n");
-                break;
-              case TailCallTableInfo::kSplitSizeof:
-                format("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
-                break;
-              case TailCallTableInfo::kSubMessage:
-                format("{::_pbi::FieldAuxDefaultMessage{}, &$1$},\n",
-                       QualifiedDefaultInstanceName(
-                           aux_entry.field->message_type(), options_));
-                break;
-              case TailCallTableInfo::kSubTable:
-                format("{::_pbi::TcParser::GetTable<$1$>()},\n",
-                       QualifiedClassName(aux_entry.field->message_type(),
-                                          options_));
-                break;
-              case TailCallTableInfo::kSubMessageWeak:
-                format("{::_pbi::FieldAuxDefaultMessage{}, &$1$},\n",
-                       QualifiedDefaultInstancePtr(
-                           aux_entry.field->message_type(), options_));
-                break;
-              case TailCallTableInfo::kMessageVerifyFunc:
-                format("{$1$::InternalVerify},\n",
-                       QualifiedClassName(aux_entry.field->message_type(),
-                                          options_));
-                break;
-              case TailCallTableInfo::kSelfVerifyFunc:
-                if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
-                  format("{&InternalVerify},\n");
-                } else {
-                  format("{},\n");
-                }
-                break;
-              case TailCallTableInfo::kEnumRange:
-                format("{$1$, $2$},\n", aux_entry.enum_range.start,
-                       aux_entry.enum_range.size);
-                break;
-              case TailCallTableInfo::kEnumValidator:
-                format(
-                    "{::_pbi::FieldAuxEnumData{}, $1$_internal_data_},\n",
-                    QualifiedClassName(aux_entry.field->enum_type(), options_));
-                break;
-              case TailCallTableInfo::kNumericOffset:
-                format("{_fl::Offset{$1$}},\n", aux_entry.offset);
-                break;
-              case TailCallTableInfo::kMapAuxInfo: {
-                auto utf8_check = internal::cpp::GetUtf8CheckMode(
-                    aux_entry.field,
-                    GetOptimizeFor(aux_entry.field->file(), options_) ==
-                        FileOptions::LITE_RUNTIME);
-                auto* map_key = aux_entry.field->message_type()->map_key();
-                auto* map_value = aux_entry.field->message_type()->map_value();
-                const bool validated_enum =
-                    map_value->type() == FieldDescriptor::TYPE_ENUM &&
-                    !internal::cpp::HasPreservingUnknownEnumSemantics(
-                        map_value);
-                printer->Emit(
-                    {
-                        {"field", FieldMemberName(
-                                      aux_entry.field,
-                                      ShouldSplit(aux_entry.field, options_))},
-                        {"strict", utf8_check == Utf8CheckMode::kStrict},
-                        {"verify", utf8_check == Utf8CheckMode::kVerify},
-                        {"validate", validated_enum},
-                        {"key_wire", map_key->type()},
-                        {"value_wire", map_value->type()},
-                    },
-                    R"cc(
-                      {::_pbi::TcParser::GetMapAuxInfo<
-                          decltype($classname$().$field$)>(
-                          $strict$, $verify$, $validate$, $key_wire$,
-                          $value_wire$)},
-                    )cc");
-                break;
+  auto GenerateTableBase = [&] {
+    p->Emit(
+        {{"has_bits_offset",
+          [&] {
+            if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+              p->Emit(
+                  "PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
+            } else {
+              p->Emit("0,  // no _has_bits_\n");
+            }
+          }},
+         {"extension_offset",
+          [&] {
+            if (descriptor_->extension_range_count() != 0) {
+              p->Emit("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
+            } else {
+              p->Emit("0, // no _extensions_\n");
+            }
+          }},
+         {"max_field_number",
+          ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()},
+         {"fast_idx_mask", (((1 << tc_table_info_->table_size_log2) - 1) << 3)},
+         {"skipmap32", field_num_to_entry_table.skipmap32},
+         {"field_entries_offset",
+          [&] {
+            if (ordered_fields_.empty()) {
+              p->Emit(R"cc(
+                offsetof(decltype(_table_), field_names),  // no field_entries
+              )cc");
+            } else {
+              p->Emit(R"cc(
+                offsetof(decltype(_table_), field_entries),
+              )cc");
+            }
+          }},
+         {"num_field_entries", ordered_fields_.size()},
+         {"num_aux_entries", tc_table_info_->aux_entries.size()},
+         {"aux_offset",
+          [&] {
+            if (tc_table_info_->aux_entries.empty()) {
+              p->Emit(R"cc(
+                offsetof(decltype(_table_), field_names),  // no aux_entries
+              )cc");
+            } else {
+              p->Emit(R"cc(
+                offsetof(decltype(_table_), aux_entries),
+              )cc");
+            }
+          }},
+         {"class_data", [&] { p->Emit("$classname$_class_data_.base(),\n"); }},
+         {"post_loop_handler",
+          [&] {
+            if (NeedsPostLoopHandler(descriptor_, options_)) {
+              p->Emit("&$classname$::PostLoopHandler,\n");
+            } else {
+              p->Emit("nullptr,  // post_loop_handler\n");
+            }
+          }},
+         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)},
+         {"to_prefetch",
+          [&] {
+            std::vector<const FieldDescriptor*> subtable_fields;
+            for (const auto& aux : tc_table_info_->aux_entries) {
+              if (aux.type == internal::TailCallTableInfo::kSubTable) {
+                subtable_fields.push_back(aux.field);
               }
             }
+            const auto* hottest = FindHottestField(subtable_fields, options_);
+            p->Emit(
+                {{"hot_type", QualifiedClassName(hottest == nullptr
+                                                     ? descriptor_
+                                                     : hottest->message_type(),
+                                                 options_)}},
+                R"cc(
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+                  ::_pbi::TcParser::GetTable<$hot_type$>(),  // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE)cc");
+          }}},
+        // clang-format off
+        R"cc(
+        $has_bits_offset$,
+        $extension_offset$,
+        $max_field_number$, $fast_idx_mask$,  // max_field_number, fast_idx_mask
+        offsetof(decltype(_table_), field_lookup_table),
+        $skipmap32$,  // skipmap
+        $field_entries_offset$,
+        $num_field_entries$,  // num_field_entries
+        $num_aux_entries$,  // num_aux_entries
+        $aux_offset$,
+        $class_data$,
+        $post_loop_handler$,
+        $fallback$,  // fallback
+        $to_prefetch$)cc"
+        // clang-format on
+    );
+  };
+
+  auto GenerateAuxEntries = [&] {
+    for (const auto& aux_entry : tc_table_info_->aux_entries) {
+      switch (aux_entry.type) {
+        case TailCallTableInfo::kNothing:
+          p->Emit("{},\n");
+          break;
+        case TailCallTableInfo::kInlinedStringDonatedOffset:
+          p->Emit(
+              "{_fl::Offset{offsetof($classname$, "
+              "_impl_._inlined_string_donated_)}},\n");
+          break;
+        case TailCallTableInfo::kSplitOffset:
+          p->Emit("{_fl::Offset{offsetof($classname$, _impl_._split_)}},\n");
+          break;
+        case TailCallTableInfo::kSplitSizeof:
+          p->Emit("{_fl::Offset{sizeof($classname$::Impl_::Split)}},\n");
+          break;
+        case TailCallTableInfo::kSubMessage:
+          p->Emit({{"name", QualifiedDefaultInstanceName(
+                                aux_entry.field->message_type(), options_)}},
+                  "{::_pbi::FieldAuxDefaultMessage{}, &$name$},\n");
+          break;
+        case TailCallTableInfo::kSubTable:
+          p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),
+                                               options_)}},
+                  "{::_pbi::TcParser::GetTable<$name$>()},\n");
+          break;
+        case TailCallTableInfo::kSubMessageWeak:
+          p->Emit({{"ptr", QualifiedDefaultInstancePtr(
+                               aux_entry.field->message_type(), options_)}},
+                  "{::_pbi::FieldAuxDefaultMessage{}, &$ptr$},\n");
+          break;
+        case TailCallTableInfo::kMessageVerifyFunc:
+          p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),
+                                               options_)}},
+                  "{$name$::InternalVerify},\n");
+          break;
+        case TailCallTableInfo::kSelfVerifyFunc:
+          if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+            p->Emit("{&InternalVerify},\n");
+          } else {
+            p->Emit("{},\n");
           }
+          break;
+        case TailCallTableInfo::kEnumRange:
+          p->Emit(
+              {
+                  {"start", aux_entry.enum_range.start},
+                  {"size", aux_entry.enum_range.size},
+              },
+              "{$start$, $size$},\n");
+          break;
+        case TailCallTableInfo::kEnumValidator:
+          p->Emit({{"name", QualifiedClassName(aux_entry.field->enum_type(),
+                                               options_)}},
+                  "{::_pbi::FieldAuxEnumData{}, $name$_internal_data_},\n");
+          break;
+        case TailCallTableInfo::kNumericOffset:
+          p->Emit(
+              {
+                  {"offset", aux_entry.offset},
+              },
+              "{_fl::Offset{$offset$}},\n");
+          break;
+        case TailCallTableInfo::kMapAuxInfo: {
+          auto utf8_check = internal::cpp::GetUtf8CheckMode(
+              aux_entry.field,
+              GetOptimizeFor(aux_entry.field->file(), options_) ==
+                  FileOptions::LITE_RUNTIME);
+          auto* map_key = aux_entry.field->message_type()->map_key();
+          auto* map_value = aux_entry.field->message_type()->map_value();
+          const bool validated_enum =
+              map_value->type() == FieldDescriptor::TYPE_ENUM &&
+              !internal::cpp::HasPreservingUnknownEnumSemantics(map_value);
+          p->Emit(
+              {
+                  {"strict", utf8_check == Utf8CheckMode::kStrict},
+                  {"verify", utf8_check == Utf8CheckMode::kVerify},
+                  {"validate", validated_enum},
+                  {"key_wire", map_key->type()},
+                  {"value_wire", map_value->type()},
+                  {"is_lite",
+                   !HasDescriptorMethods(aux_entry.field->file(), options_)},
+              },
+              R"cc(
+                {::_pbi::TcParser::GetMapAuxInfo($strict$, $verify$, $validate$,
+                                                 $key_wire$, $value_wire$,
+                                                 $is_lite$)},
+              )cc");
+          break;
         }
-        format("}}, {{\n");
       }
-    }  // ordered_fields_.empty()
-    {
-      // field_names[]
-      auto field_name_scope = format.ScopedIndent();
-      GenerateFieldNames(format);
     }
-    format("}},\n");
-  }
-  format("};\n\n");  // _table_
+  };
+
+  p->Emit(
+      {{"const",
+        // FileDescriptorProto's table must be constant initialized. For MSVC
+        // this means using `constexpr`. However, we can't use `constexpr`
+        // for all tables because it breaks when crossing DLL boundaries.
+        // FileDescriptorProto is safe from this.
+        IsFileDescriptorProto(descriptor_->file(), options_)
+            ? "constexpr"
+            : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst"},
+       {"table_size_log2", tc_table_info_->table_size_log2},
+       {"ordered_size", ordered_fields_.size()},
+       {"aux_size", tc_table_info_->aux_entries.size()},
+       {"data_size", FieldNameDataSize(tc_table_info_->field_name_data)},
+       {"field_num_to_entry_table_size", field_num_to_entry_table.size16()},
+       {"table_base", GenerateTableBase},
+       {"fast_entries",
+        [&] {
+          // TODO: refactor this to use Emit.
+          Formatter format(p, variables_);
+          GenerateFastFieldEntries(format);
+        }},
+       {"field_lookup_table",
+        [&] {
+          for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
+            p->Emit(
+                {
+                    {"lower", entry_block.first_fnum & 65535},
+                    {"upper", entry_block.first_fnum / 65536},
+                    {"size", entry_block.entries.size()},
+                },
+                "$lower$, $upper$, $size$,\n");
+
+            for (SkipEntry16 se16 : entry_block.entries) {
+              p->Emit({{"skipmap", se16.skipmap},
+                       {"offset", se16.field_entry_offset}},
+                      R"cc(
+                        $skipmap$, $offset$,
+                      )cc");
+            }
+          }
+
+          // The last entry of the skipmap are all 1's.
+          p->Emit("65535, 65535\n");
+        }},
+       {"field_and_aux_entries",
+        [&] {
+          if (ordered_fields_.empty() &&
+              !descriptor_->options().message_set_wire_format()) {
+            ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
+                << "Invalid message: " << descriptor_->full_name() << " has "
+                << tc_table_info_->aux_entries.size()
+                << " auxiliary field entries, but no fields";
+            p->Emit("// no field_entries, or aux_entries\n");
+            return;
+          }
+
+          p->Emit(
+              {
+                  {"field_entries",
+                   [&] {
+                     // TODO: refactor this to use Emit.
+                     Formatter format(p, variables_);
+                     GenerateFieldEntries(format);
+                   }},
+                  {"aux_entries",
+                   [&] {
+                     if (tc_table_info_->aux_entries.empty()) {
+                       p->Emit("// no aux_entries\n");
+                     } else {
+                       p->Emit(
+                           {
+                               {"aux_entries_list", GenerateAuxEntries},
+                           },
+                           // clang-format off
+                              R"cc(
+                                {{
+                                    $aux_entries_list$
+                                }},
+                              )cc"
+                           // clang-format on
+                       );
+                     }
+                   }},
+              },
+              // clang-format off
+                 R"cc(
+                 {{
+                   $field_entries$,
+                 }},
+                 $aux_entries$)cc"
+              // clang-format on
+          );
+        }},
+       {"field_names",
+        [&] {
+          Formatter format(p, variables_);
+          GenerateFieldNames(format);
+        }}},
+      // Disable clang-format, as we want to generate a denser table
+      // representation than what clang-format typically wants. clang would
+      // insert a newline at every brace, whereas we prefer {{ ... }} here.
+      // clang-format off
+R"cc(
+$const$ ::_pbi::TcParseTable<$table_size_log2$, $ordered_size$, $aux_size$, $data_size$, $field_num_to_entry_table_size$>
+$classname$::_table_ = {
+  {
+    $table_base$
+  }, {{
+    $fast_entries$
+  }}, {{
+    $field_lookup_table$
+  }}, $field_and_aux_entries$,
+  {{
+    $field_names$,
+  }},
+};
+)cc"
+      // clang-format on
+  );
 }
 
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {

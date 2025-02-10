@@ -19,7 +19,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestStringView;
+using ::proto2_unittest::TestStringView;
 using ::testing::ElementsAre;
 using ::testing::StrEq;
 

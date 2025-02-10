@@ -1832,6 +1832,15 @@ static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
   return PyMethodDescriptor_FromDescriptor(method_descriptor);
 }
 
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
+  const ServiceOptions& options = _GetDescriptor(self)->options();
+  if (&options != &ServiceOptions::default_instance()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1853,6 +1862,7 @@ static PyGetSetDef Getters[] = {
     {"methods", (getter)GetMethods, nullptr, "Methods", nullptr},
     {"methods_by_name", (getter)GetMethodsByName, nullptr, "Methods by name",
      nullptr},
+    {"has_options", (getter)GetHasOptions, nullptr},
     {nullptr},
 };
 
@@ -1963,6 +1973,15 @@ static PyObject* GetServerStreaming(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->server_streaming() ? 1 : 0);
 }
 
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
+  const MethodOptions& options = _GetDescriptor(self)->options();
+  if (&options != &MethodOptions::default_instance()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1987,6 +2006,7 @@ static PyGetSetDef Getters[] = {
      "Client streaming", nullptr},
     {"server_streaming", (getter)GetServerStreaming, nullptr,
      "Server streaming", nullptr},
+    {"has_options", (getter)GetHasOptions, nullptr},
     {nullptr},
 };
 

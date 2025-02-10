@@ -734,8 +734,10 @@ class _Parser(object):
       )(self)
     else:
       del value['@type']
-      self._ConvertFieldValuePair(value, sub_message, path)
-      value['@type'] = type_url
+      try:
+        self._ConvertFieldValuePair(value, sub_message, path)
+      finally:
+        value['@type'] = type_url
     # Sets Any message
     message.value = sub_message.SerializeToString()
     message.type_url = type_url
@@ -972,7 +974,20 @@ def _ConvertInteger(value):
         'Bool value {0} is not acceptable for integer field'.format(value)
     )
 
-  return int(value)
+  try:
+    return int(value)
+  except ValueError as e:
+    # Attempt to parse as an integer-valued float.
+    try:
+      f = float(value)
+    except ValueError:
+      # Raise the original exception for the int parse.
+      raise e  # pylint: disable=raise-missing-from
+    if not f.is_integer():
+      raise ParseError(
+          'Couldn\'t parse non-integer string: "{0}"'.format(value)
+      ) from e
+    return int(f)
 
 
 def _ConvertFloat(value, field):

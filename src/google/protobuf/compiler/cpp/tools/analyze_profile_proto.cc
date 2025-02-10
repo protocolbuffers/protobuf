@@ -32,6 +32,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
@@ -54,6 +55,7 @@ struct PDProtoAnalysis {
   PDProtoScale usage = PDProtoScale::kDefault;
   uint64_t presence_count = 0;
   uint64_t usage_count = 0;
+  float presence_probability = 0.0;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
@@ -119,6 +121,8 @@ class PDProtoAnalyzer {
       return analysis;
     }
 
+    analysis.presence_probability = GetPresenceProbability(field);
+
     if (IsLikelyPresent(field)) {
       analysis.presence = PDProtoScale::kLikely;
     } else if (IsRarelyPresent(field)) {
@@ -180,6 +184,13 @@ class PDProtoAnalyzer {
 
     return info_map_.IsCold(field, AccessInfoMap::kRead, kColdRatio) &&
            info_map_.IsCold(field, AccessInfoMap::kWrite, kColdRatio);
+  }
+
+  float GetPresenceProbability(const FieldDescriptor* field) {
+    // Since message count is max(#parse, #serialization), return the max of
+    // access ratio of both parse and serialization.
+    return std::max(info_map_.AccessRatio(field, AccessInfoMap::kWrite),
+                    info_map_.AccessRatio(field, AccessInfoMap::kRead));
   }
 
   cpp::Options options_;
@@ -270,7 +281,7 @@ absl::StatusOr<AccessInfo> AccessInfoFromFile(absl::string_view profile) {
   }
 
   AccessInfo access_info_proto;
-  if (!access_info_proto.ParseFromCord(cord)) {
+  if (!access_info_proto.ParseFromString(cord)) {
     return absl::DataLossError("Failed to parse AccessInfo");
   }
 
@@ -436,8 +447,12 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
               stream << "  " << TypeName(field) << " " << field->name() << ":";
 
               if (options.print_analysis) {
-                if (analysis.presence != PDProtoScale::kDefault) {
-                  stream << " " << analysis.presence << "_PRESENT";
+                if (analysis.presence != PDProtoScale::kDefault ||
+                    options.print_analysis_all) {
+                  stream << " " << analysis.presence << "_PRESENT"
+                         << absl::StrFormat(
+                                "(%.2f%%)",
+                                analysis.presence_probability * 100);
                 }
                 if (analysis.usage != PDProtoScale::kDefault) {
                   stream << " " << analysis.usage << "_USED("

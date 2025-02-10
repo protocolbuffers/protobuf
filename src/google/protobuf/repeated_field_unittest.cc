@@ -52,7 +52,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestAllTypes;
+using ::proto2_unittest::TestAllTypes;
 using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -1341,6 +1341,35 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Halves) {
                          protobuffer.repeated_double().begin()));
   EXPECT_TRUE(std::equal(protobuffer.repeated_double().begin(),
                          protobuffer.repeated_double().end(), halves.begin()));
+}
+
+TEST(RepeatedField, CheckedGetOrAbortTest) {
+  RepeatedField<int> field;
+
+  // Empty container tests.
+  EXPECT_DEATH(CheckedGetOrAbort(field, -1), "index: -1, size: 0");
+  EXPECT_DEATH(CheckedGetOrAbort(field, field.size()), "index: 0, size: 0");
+
+  // Non-empty container tests
+  field.Add(5);
+  field.Add(4);
+  EXPECT_DEATH(CheckedGetOrAbort(field, 2), "index: 2, size: 2");
+  EXPECT_DEATH(CheckedGetOrAbort(field, -1), "index: -1, size: 2");
+}
+
+TEST(RepeatedField, CheckedMutableOrAbortTest) {
+  RepeatedField<int> field;
+
+  // Empty container tests.
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "index: -1, size: 0");
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, field.size()),
+               "index: 0, size: 0");
+
+  // Non-empty container tests
+  field.Add(5);
+  field.Add(4);
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2), "index: 2, size: 2");
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "index: -1, size: 2");
 }
 
 }  // namespace

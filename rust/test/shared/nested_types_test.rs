@@ -9,7 +9,7 @@
 
 use googletest::prelude::*;
 
-#[googletest::test]
+#[gtest]
 fn test_nested_messages_accessible() {
     let _parent: unittest_rust_proto::TestAllTypes;
     let _child: unittest_rust_proto::test_all_types::NestedMessage;
@@ -17,7 +17,7 @@ fn test_nested_messages_accessible() {
     nested_test_all_extensions_data::NestedDynamicExtensions::new();
 }
 
-#[googletest::test]
+#[gtest]
 fn test_nested_enums_accessible() {
     let _parent: unittest_rust_proto::TestAllTypes;
     let _child: unittest_rust_proto::test_all_types::NestedEnum;

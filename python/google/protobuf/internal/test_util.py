@@ -33,7 +33,7 @@ except NameError:
 # This is used to gate several fields/features that only exist
 # for the protobuf_unittest version of the message.
 def IsProto2(message):
-  return message.DESCRIPTOR.full_name == 'protobuf_unittest.TestAllTypes'
+  return message.DESCRIPTOR.full_name == 'proto2_unittest.TestAllTypes'
 
 
 def SetAllNonLazyFields(message):

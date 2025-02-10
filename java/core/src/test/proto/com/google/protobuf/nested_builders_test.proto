@@ -8,7 +8,7 @@
 // Author: jonp@google.com (Jon Perlow)
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 option java_multiple_files = true;
 option java_outer_classname = "NestedBuilders";

@@ -23,6 +23,8 @@ message Self {
   optional Self self = 2;
   optional bool true = 3;
   optional string false = 4;
+  repeated int32 match = 5;
+  optional bool clear = 6;
 }
 
 message Pub {

@@ -19,10 +19,17 @@ pub use crate::ProtoStr;
 use crate::Proxied;
 pub use std::fmt::Debug;
 
+#[cfg(all(bzl, cpp_kernel))]
+#[path = "cpp.rs"]
+pub mod runtime;
+#[cfg(any(not(bzl), upb_kernel))]
+#[path = "upb.rs"]
+pub mod runtime;
+
 // TODO: Temporarily re-export these symbols which are now under
-// __runtime under __internal since some external callers using it through
-// __internal.
-pub use crate::__runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
+// runtime under __internal directly since some external callers using it
+// through __internal.
+pub use runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
 
 /// Used to protect internal-only items from being used accidentally.
 #[derive(Debug)]
@@ -59,3 +66,46 @@ pub fn get_map_default_value<K: Proxied, V: map::ProxiedInMapValue<K> + Default>
 ) -> V {
     Default::default()
 }
+
+/// A function that is used to assert that the generated code is compatible with
+/// the current runtime version. Right now a perfect/exact match with zero skew
+/// is require, except any -prerelease suffixes are ignored as long it is
+/// present on both. This may be relaxed in the future.
+///
+/// As the generated code is permitted to use unstable internal APIs, the protoc
+/// used to generate the code must correspond to the runtime dependency. This
+/// const fn is used to check at compile time that the right gencode is used
+/// with the right runtime; if you are seeing this fail it means your protoc
+/// version mismatches the Rust runtime crate version.
+#[cfg(not(bzl))]
+pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
+    // Helper since str eq is not allowed in const context. In a future rust release
+    // &str PartialEq will be allowed in const contexts and we can drop this.
+    const fn const_str_eq(lhs: &str, rhs: &str) -> bool {
+        let lhs = lhs.as_bytes();
+        let rhs = rhs.as_bytes();
+        if lhs.len() != rhs.len() {
+            return false;
+        }
+        let mut i = 0;
+        while i < lhs.len() {
+            if lhs[i] != rhs[i] {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
+    let runtime_version = env!("CARGO_PKG_VERSION");
+    assert!(
+        const_str_eq(gencode_version, runtime_version),
+        "Gencode version is not compatible with runtime version",
+    )
+}
+
+/// There is no need for gencode/runtime poison pill when running in bzl; the
+/// gencode using the __internal mod which is not available to checked in
+/// gencode; gencode built from source should always match.
+#[cfg(bzl)]
+pub const fn assert_compatible_gencode_version(_gencode_version: &'static str) {}

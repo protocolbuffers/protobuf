@@ -126,7 +126,7 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
 // limit for string literal size
 TEST(GENERATED_DESCRIPTOR_TEST_NAME, EnormousDescriptor) {
   const Descriptor* generated_descriptor =
-    ::protobuf_unittest::TestEnormousDescriptor::descriptor();
+    ::proto2_unittest::TestEnormousDescriptor::descriptor();
 
   EXPECT_TRUE(generated_descriptor != nullptr);
 }
@@ -2146,12 +2146,12 @@ namespace cpp_unittest {
 TEST_F(GENERATED_SERVICE_TEST_NAME, NoGenericServices) {
   // Verify that non-services in unittest_no_generic_services.proto were
   // generated.
-  ::protobuf_unittest::no_generic_services_test::TestMessage message;
+  ::proto2_unittest::no_generic_services_test::TestMessage message;
   message.set_a(1);
   message.SetExtension(
-      ::protobuf_unittest::no_generic_services_test::test_extension, 123);
-  ::protobuf_unittest::no_generic_services_test::TestEnum e =
-      ::protobuf_unittest::no_generic_services_test::FOO;
+      ::proto2_unittest::no_generic_services_test::test_extension, 123);
+  ::proto2_unittest::no_generic_services_test::TestEnum e =
+      ::proto2_unittest::no_generic_services_test::FOO;
   EXPECT_EQ(e, 1);
 
   // Verify that a ServiceDescriptor is generated for the service even if the

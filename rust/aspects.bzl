@@ -106,6 +106,12 @@ def _generate_rust_gencode(
         proto_info = proto_info,
         extension = ".{}.pb.rs".format("u" if is_upb else "c"),
     )
+
+    entry_point_rs_output = actions.declare_file(
+        "{}.generated.{}.rs".format(ctx.label.name, "u" if is_upb else "c"),
+        sibling = proto_info.direct_sources[0],
+    )
+
     if is_upb:
         cc_outputs = []
     else:
@@ -117,9 +123,10 @@ def _generate_rust_gencode(
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={},generated_entry_point_rs_file_name={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
+            entry_point_rs_output.basename,
         ),
     )
 
@@ -128,10 +135,10 @@ def _generate_rust_gencode(
         proto_info = proto_info,
         additional_inputs = depset(direct = [crate_mapping]),
         additional_args = additional_args,
-        generated_files = rs_outputs + cc_outputs,
+        generated_files = [entry_point_rs_output] + rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
     )
-    return (rs_outputs, cc_outputs)
+    return (entry_point_rs_output, rs_outputs, cc_outputs)
 
 def _get_crate_info(providers):
     for provider in providers:
@@ -197,7 +204,7 @@ def _compile_cc(
         linking_context = linking_context,
     )
 
-def _compile_rust(ctx, attr, src, extra_srcs, deps):
+def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
     """Compiles a Rust source file.
 
     Eventually this function could be upstreamed into rules_rust and be made present in rust_common.
@@ -208,6 +215,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
       src (File): The crate root source file to be compiled.
       extra_srcs ([File]): Additional source files to include in the crate.
       deps (List[DepVariantInfo]): A list of dependencies needed.
+      runtime: The protobuf runtime target.
 
     Returns:
       A DepVariantInfo provider.
@@ -246,7 +254,11 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
             srcs = depset([src] + extra_srcs),
             deps = depset(deps),
             proc_macro_deps = depset([]),
-            aliases = {},
+            # Make "protobuf" into an alias for the runtime. This allows the
+            # generated code to use a consistent name, even though the actual
+            # name of the runtime crate varies depending on the protobuf kernel
+            # and build system.
+            aliases = {runtime: "protobuf"},
             output = lib,
             metadata = rmeta,
             edition = "2021",
@@ -286,6 +298,26 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
         return []
 
+    proto_srcs = target[ProtoInfo].direct_sources
+    proto_deps = getattr(ctx.rule.attr, "deps", [])
+    transitive_crate_mappings = []
+    for dep in proto_deps:
+        rust_proto_info = dep[RustProtoInfo]
+        transitive_crate_mappings.append(rust_proto_info.crate_mapping)
+
+    dep_variant_infos = []
+    for info in [d[RustProtoInfo].dep_variant_infos for d in proto_deps]:
+        dep_variant_infos += info
+
+    # If there are no srcs, then this is an alias library (which in Rust acts as a middle
+    # library in a dependency chain). Don't generate any Rust code for it, but do propagate the
+    # crate mappings.
+    if not proto_srcs:
+        return [RustProtoInfo(
+            dep_variant_infos = dep_variant_infos,
+            crate_mapping = depset(transitive = transitive_crate_mappings),
+        )]
+
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
     cc_toolchain = find_cpp_toolchain(ctx)
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
@@ -297,13 +329,6 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         unsupported_features = ctx.disabled_features,
     )
 
-    proto_srcs = target[ProtoInfo].direct_sources
-    proto_deps = getattr(ctx.rule.attr, "deps", [])
-    transitive_crate_mappings = []
-    for dep in proto_deps:
-        rust_proto_info = dep[RustProtoInfo]
-        transitive_crate_mappings.append(rust_proto_info.crate_mapping)
-
     mapping_for_current_target = depset(transitive = transitive_crate_mappings)
     crate_mapping_file = _register_crate_mapping_write_action(
         target.label.name,
@@ -311,7 +336,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         mapping_for_current_target,
     )
 
-    (gencode, thunks) = _generate_rust_gencode(
+    (entry_point_rs_output, rs_gencode, cc_thunks_gencode) = _generate_rust_gencode(
         ctx,
         target[ProtoInfo],
         proto_lang_toolchain,
@@ -333,7 +358,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             attr = attr,
             cc_toolchain = cc_toolchain,
             cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
-        ) for thunk in thunks])
+        ) for thunk in cc_thunks_gencode])
 
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
@@ -342,35 +367,27 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         cc_info = runtime[CcInfo] if CcInfo in runtime else None,
         build_info = None,
     )
+
     dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
 
-    dep_variant_infos = []
-    for info in [d[RustProtoInfo].dep_variant_infos for d in proto_deps]:
-        dep_variant_infos += info
-
-    if proto_srcs:
-        dep_variant_info = _compile_rust(
-            ctx = ctx,
-            attr = ctx.rule.attr,
-            src = gencode[0],
-            extra_srcs = gencode[1:],
-            deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
-        )
-        return [RustProtoInfo(
-            dep_variant_infos = [dep_variant_info],
-            crate_mapping = depset(
-                direct = [CrateMappingInfo(
-                    crate_name = label_to_crate_name(ctx, target.label, toolchain),
-                    import_paths = tuple([get_import_path(f) for f in proto_srcs]),
-                )],
-                transitive = transitive_crate_mappings,
-            ),
-        )]
-    else:
-        return [RustProtoInfo(
-            dep_variant_infos = dep_variant_infos,
-            crate_mapping = depset(transitive = transitive_crate_mappings),
-        )]
+    dep_variant_info = _compile_rust(
+        ctx = ctx,
+        attr = ctx.rule.attr,
+        src = entry_point_rs_output,
+        extra_srcs = rs_gencode,
+        deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
+        runtime = runtime,
+    )
+    return [RustProtoInfo(
+        dep_variant_infos = [dep_variant_info],
+        crate_mapping = depset(
+            direct = [CrateMappingInfo(
+                crate_name = label_to_crate_name(ctx, target.label, toolchain),
+                import_paths = tuple([get_import_path(f) for f in proto_srcs]),
+            )],
+            transitive = transitive_crate_mappings,
+        ),
+    )]
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
@@ -378,14 +395,6 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps"],
         requires = ([upb_minitable_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         attrs = {
-            "_cc_toolchain": attr.label(
-                doc = (
-                    "In order to use find_cc_toolchain, your rule has to depend " +
-                    "on C++ toolchain. See `@rules_cc//cc:find_cc_toolchain.bzl` " +
-                    "docs for details."
-                ),
-                default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
-            ),
             "_collect_cc_coverage": attr.label(
                 default = Label("@rules_rust//util:collect_coverage"),
                 executable = True,

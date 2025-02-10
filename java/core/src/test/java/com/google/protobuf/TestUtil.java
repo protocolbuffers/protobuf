@@ -97,96 +97,96 @@ import static com.google.protobuf.UnittestLite.repeatedStringExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedStringPieceExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedUint32ExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedUint64ExtensionLite;
-import static protobuf_unittest.UnittestProto.defaultBoolExtension;
-import static protobuf_unittest.UnittestProto.defaultBytesExtension;
-import static protobuf_unittest.UnittestProto.defaultCordExtension;
-import static protobuf_unittest.UnittestProto.defaultDoubleExtension;
-import static protobuf_unittest.UnittestProto.defaultFixed32Extension;
-import static protobuf_unittest.UnittestProto.defaultFixed64Extension;
-import static protobuf_unittest.UnittestProto.defaultFloatExtension;
-import static protobuf_unittest.UnittestProto.defaultForeignEnumExtension;
-import static protobuf_unittest.UnittestProto.defaultImportEnumExtension;
-import static protobuf_unittest.UnittestProto.defaultInt32Extension;
-import static protobuf_unittest.UnittestProto.defaultInt64Extension;
-import static protobuf_unittest.UnittestProto.defaultNestedEnumExtension;
-import static protobuf_unittest.UnittestProto.defaultSfixed32Extension;
-import static protobuf_unittest.UnittestProto.defaultSfixed64Extension;
-import static protobuf_unittest.UnittestProto.defaultSint32Extension;
-import static protobuf_unittest.UnittestProto.defaultSint64Extension;
-import static protobuf_unittest.UnittestProto.defaultStringExtension;
-import static protobuf_unittest.UnittestProto.defaultStringPieceExtension;
-import static protobuf_unittest.UnittestProto.defaultUint32Extension;
-import static protobuf_unittest.UnittestProto.defaultUint64Extension;
-import static protobuf_unittest.UnittestProto.oneofBytesExtension;
-import static protobuf_unittest.UnittestProto.oneofNestedMessageExtension;
-import static protobuf_unittest.UnittestProto.oneofStringExtension;
-import static protobuf_unittest.UnittestProto.oneofUint32Extension;
-import static protobuf_unittest.UnittestProto.optionalBoolExtension;
-import static protobuf_unittest.UnittestProto.optionalBytesExtension;
-import static protobuf_unittest.UnittestProto.optionalCordExtension;
-import static protobuf_unittest.UnittestProto.optionalDoubleExtension;
-import static protobuf_unittest.UnittestProto.optionalFixed32Extension;
-import static protobuf_unittest.UnittestProto.optionalFixed64Extension;
-import static protobuf_unittest.UnittestProto.optionalFloatExtension;
-import static protobuf_unittest.UnittestProto.optionalForeignEnumExtension;
-import static protobuf_unittest.UnittestProto.optionalForeignMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalGroupExtension;
-import static protobuf_unittest.UnittestProto.optionalImportEnumExtension;
-import static protobuf_unittest.UnittestProto.optionalImportMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalInt32Extension;
-import static protobuf_unittest.UnittestProto.optionalInt64Extension;
-import static protobuf_unittest.UnittestProto.optionalLazyMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalNestedEnumExtension;
-import static protobuf_unittest.UnittestProto.optionalNestedMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalPublicImportMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalSfixed32Extension;
-import static protobuf_unittest.UnittestProto.optionalSfixed64Extension;
-import static protobuf_unittest.UnittestProto.optionalSint32Extension;
-import static protobuf_unittest.UnittestProto.optionalSint64Extension;
-import static protobuf_unittest.UnittestProto.optionalStringExtension;
-import static protobuf_unittest.UnittestProto.optionalStringPieceExtension;
-import static protobuf_unittest.UnittestProto.optionalUint32Extension;
-import static protobuf_unittest.UnittestProto.optionalUint64Extension;
-import static protobuf_unittest.UnittestProto.optionalUnverifiedLazyMessageExtension;
-import static protobuf_unittest.UnittestProto.packedBoolExtension;
-import static protobuf_unittest.UnittestProto.packedDoubleExtension;
-import static protobuf_unittest.UnittestProto.packedEnumExtension;
-import static protobuf_unittest.UnittestProto.packedFixed32Extension;
-import static protobuf_unittest.UnittestProto.packedFixed64Extension;
-import static protobuf_unittest.UnittestProto.packedFloatExtension;
-import static protobuf_unittest.UnittestProto.packedInt32Extension;
-import static protobuf_unittest.UnittestProto.packedInt64Extension;
-import static protobuf_unittest.UnittestProto.packedSfixed32Extension;
-import static protobuf_unittest.UnittestProto.packedSfixed64Extension;
-import static protobuf_unittest.UnittestProto.packedSint32Extension;
-import static protobuf_unittest.UnittestProto.packedSint64Extension;
-import static protobuf_unittest.UnittestProto.packedUint32Extension;
-import static protobuf_unittest.UnittestProto.packedUint64Extension;
-import static protobuf_unittest.UnittestProto.repeatedBoolExtension;
-import static protobuf_unittest.UnittestProto.repeatedBytesExtension;
-import static protobuf_unittest.UnittestProto.repeatedCordExtension;
-import static protobuf_unittest.UnittestProto.repeatedDoubleExtension;
-import static protobuf_unittest.UnittestProto.repeatedFixed32Extension;
-import static protobuf_unittest.UnittestProto.repeatedFixed64Extension;
-import static protobuf_unittest.UnittestProto.repeatedFloatExtension;
-import static protobuf_unittest.UnittestProto.repeatedForeignEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedForeignMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedGroupExtension;
-import static protobuf_unittest.UnittestProto.repeatedImportEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedImportMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedInt32Extension;
-import static protobuf_unittest.UnittestProto.repeatedInt64Extension;
-import static protobuf_unittest.UnittestProto.repeatedLazyMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedNestedEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedNestedMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedSfixed32Extension;
-import static protobuf_unittest.UnittestProto.repeatedSfixed64Extension;
-import static protobuf_unittest.UnittestProto.repeatedSint32Extension;
-import static protobuf_unittest.UnittestProto.repeatedSint64Extension;
-import static protobuf_unittest.UnittestProto.repeatedStringExtension;
-import static protobuf_unittest.UnittestProto.repeatedStringPieceExtension;
-import static protobuf_unittest.UnittestProto.repeatedUint32Extension;
-import static protobuf_unittest.UnittestProto.repeatedUint64Extension;
+import static proto2_unittest.UnittestProto.defaultBoolExtension;
+import static proto2_unittest.UnittestProto.defaultBytesExtension;
+import static proto2_unittest.UnittestProto.defaultCordExtension;
+import static proto2_unittest.UnittestProto.defaultDoubleExtension;
+import static proto2_unittest.UnittestProto.defaultFixed32Extension;
+import static proto2_unittest.UnittestProto.defaultFixed64Extension;
+import static proto2_unittest.UnittestProto.defaultFloatExtension;
+import static proto2_unittest.UnittestProto.defaultForeignEnumExtension;
+import static proto2_unittest.UnittestProto.defaultImportEnumExtension;
+import static proto2_unittest.UnittestProto.defaultInt32Extension;
+import static proto2_unittest.UnittestProto.defaultInt64Extension;
+import static proto2_unittest.UnittestProto.defaultNestedEnumExtension;
+import static proto2_unittest.UnittestProto.defaultSfixed32Extension;
+import static proto2_unittest.UnittestProto.defaultSfixed64Extension;
+import static proto2_unittest.UnittestProto.defaultSint32Extension;
+import static proto2_unittest.UnittestProto.defaultSint64Extension;
+import static proto2_unittest.UnittestProto.defaultStringExtension;
+import static proto2_unittest.UnittestProto.defaultStringPieceExtension;
+import static proto2_unittest.UnittestProto.defaultUint32Extension;
+import static proto2_unittest.UnittestProto.defaultUint64Extension;
+import static proto2_unittest.UnittestProto.oneofBytesExtension;
+import static proto2_unittest.UnittestProto.oneofNestedMessageExtension;
+import static proto2_unittest.UnittestProto.oneofStringExtension;
+import static proto2_unittest.UnittestProto.oneofUint32Extension;
+import static proto2_unittest.UnittestProto.optionalBoolExtension;
+import static proto2_unittest.UnittestProto.optionalBytesExtension;
+import static proto2_unittest.UnittestProto.optionalCordExtension;
+import static proto2_unittest.UnittestProto.optionalDoubleExtension;
+import static proto2_unittest.UnittestProto.optionalFixed32Extension;
+import static proto2_unittest.UnittestProto.optionalFixed64Extension;
+import static proto2_unittest.UnittestProto.optionalFloatExtension;
+import static proto2_unittest.UnittestProto.optionalForeignEnumExtension;
+import static proto2_unittest.UnittestProto.optionalForeignMessageExtension;
+import static proto2_unittest.UnittestProto.optionalGroupExtension;
+import static proto2_unittest.UnittestProto.optionalImportEnumExtension;
+import static proto2_unittest.UnittestProto.optionalImportMessageExtension;
+import static proto2_unittest.UnittestProto.optionalInt32Extension;
+import static proto2_unittest.UnittestProto.optionalInt64Extension;
+import static proto2_unittest.UnittestProto.optionalLazyMessageExtension;
+import static proto2_unittest.UnittestProto.optionalNestedEnumExtension;
+import static proto2_unittest.UnittestProto.optionalNestedMessageExtension;
+import static proto2_unittest.UnittestProto.optionalPublicImportMessageExtension;
+import static proto2_unittest.UnittestProto.optionalSfixed32Extension;
+import static proto2_unittest.UnittestProto.optionalSfixed64Extension;
+import static proto2_unittest.UnittestProto.optionalSint32Extension;
+import static proto2_unittest.UnittestProto.optionalSint64Extension;
+import static proto2_unittest.UnittestProto.optionalStringExtension;
+import static proto2_unittest.UnittestProto.optionalStringPieceExtension;
+import static proto2_unittest.UnittestProto.optionalUint32Extension;
+import static proto2_unittest.UnittestProto.optionalUint64Extension;
+import static proto2_unittest.UnittestProto.optionalUnverifiedLazyMessageExtension;
+import static proto2_unittest.UnittestProto.packedBoolExtension;
+import static proto2_unittest.UnittestProto.packedDoubleExtension;
+import static proto2_unittest.UnittestProto.packedEnumExtension;
+import static proto2_unittest.UnittestProto.packedFixed32Extension;
+import static proto2_unittest.UnittestProto.packedFixed64Extension;
+import static proto2_unittest.UnittestProto.packedFloatExtension;
+import static proto2_unittest.UnittestProto.packedInt32Extension;
+import static proto2_unittest.UnittestProto.packedInt64Extension;
+import static proto2_unittest.UnittestProto.packedSfixed32Extension;
+import static proto2_unittest.UnittestProto.packedSfixed64Extension;
+import static proto2_unittest.UnittestProto.packedSint32Extension;
+import static proto2_unittest.UnittestProto.packedSint64Extension;
+import static proto2_unittest.UnittestProto.packedUint32Extension;
+import static proto2_unittest.UnittestProto.packedUint64Extension;
+import static proto2_unittest.UnittestProto.repeatedBoolExtension;
+import static proto2_unittest.UnittestProto.repeatedBytesExtension;
+import static proto2_unittest.UnittestProto.repeatedCordExtension;
+import static proto2_unittest.UnittestProto.repeatedDoubleExtension;
+import static proto2_unittest.UnittestProto.repeatedFixed32Extension;
+import static proto2_unittest.UnittestProto.repeatedFixed64Extension;
+import static proto2_unittest.UnittestProto.repeatedFloatExtension;
+import static proto2_unittest.UnittestProto.repeatedForeignEnumExtension;
+import static proto2_unittest.UnittestProto.repeatedForeignMessageExtension;
+import static proto2_unittest.UnittestProto.repeatedGroupExtension;
+import static proto2_unittest.UnittestProto.repeatedImportEnumExtension;
+import static proto2_unittest.UnittestProto.repeatedImportMessageExtension;
+import static proto2_unittest.UnittestProto.repeatedInt32Extension;
+import static proto2_unittest.UnittestProto.repeatedInt64Extension;
+import static proto2_unittest.UnittestProto.repeatedLazyMessageExtension;
+import static proto2_unittest.UnittestProto.repeatedNestedEnumExtension;
+import static proto2_unittest.UnittestProto.repeatedNestedMessageExtension;
+import static proto2_unittest.UnittestProto.repeatedSfixed32Extension;
+import static proto2_unittest.UnittestProto.repeatedSfixed64Extension;
+import static proto2_unittest.UnittestProto.repeatedSint32Extension;
+import static proto2_unittest.UnittestProto.repeatedSint64Extension;
+import static proto2_unittest.UnittestProto.repeatedStringExtension;
+import static proto2_unittest.UnittestProto.repeatedStringPieceExtension;
+import static proto2_unittest.UnittestProto.repeatedUint32Extension;
+import static proto2_unittest.UnittestProto.repeatedUint64Extension;
 
 import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
@@ -196,20 +196,20 @@ import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportMessage;
 import com.google.protobuf.test.UnittestImportPublic.PublicImportMessage;
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.ForeignEnum;
-import protobuf_unittest.UnittestProto.ForeignMessage;
-import protobuf_unittest.UnittestProto.OptionalGroup_extension;
-import protobuf_unittest.UnittestProto.RepeatedGroup_extension;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllExtensionsOrBuilder;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-import protobuf_unittest.UnittestProto.TestOneof2;
-import protobuf_unittest.UnittestProto.TestPackedExtensions;
-import protobuf_unittest.UnittestProto.TestPackedTypes;
-import protobuf_unittest.UnittestProto.TestRequired;
-import protobuf_unittest.UnittestProto.TestUnpackedTypes;
+import proto2_unittest.UnittestProto;
+import proto2_unittest.UnittestProto.ForeignEnum;
+import proto2_unittest.UnittestProto.ForeignMessage;
+import proto2_unittest.UnittestProto.OptionalGroup_extension;
+import proto2_unittest.UnittestProto.RepeatedGroup_extension;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllExtensionsOrBuilder;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypesOrBuilder;
+import proto2_unittest.UnittestProto.TestOneof2;
+import proto2_unittest.UnittestProto.TestPackedExtensions;
+import proto2_unittest.UnittestProto.TestPackedTypes;
+import proto2_unittest.UnittestProto.TestRequired;
+import proto2_unittest.UnittestProto.TestUnpackedTypes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -368,143 +368,143 @@ public final class TestUtil {
 
   public static final String ALL_EXTENSIONS_SET_TEXT =
       ""
-          + "[protobuf_unittest.optional_int32_extension]: 101\n"
-          + "[protobuf_unittest.optional_int64_extension]: 102\n"
-          + "[protobuf_unittest.optional_uint32_extension]: 103\n"
-          + "[protobuf_unittest.optional_uint64_extension]: 104\n"
-          + "[protobuf_unittest.optional_sint32_extension]: 105\n"
-          + "[protobuf_unittest.optional_sint64_extension]: 106\n"
-          + "[protobuf_unittest.optional_fixed32_extension]: 107\n"
-          + "[protobuf_unittest.optional_fixed64_extension]: 108\n"
-          + "[protobuf_unittest.optional_sfixed32_extension]: 109\n"
-          + "[protobuf_unittest.optional_sfixed64_extension]: 110\n"
-          + "[protobuf_unittest.optional_float_extension]: 111.0\n"
-          + "[protobuf_unittest.optional_double_extension]: 112.0\n"
-          + "[protobuf_unittest.optional_bool_extension]: true\n"
-          + "[protobuf_unittest.optional_string_extension]: \"115\"\n"
-          + "[protobuf_unittest.optional_bytes_extension]: \"116\"\n"
-          + "[protobuf_unittest.optionalgroup_extension] {\n"
+          + "[proto2_unittest.optional_int32_extension]: 101\n"
+          + "[proto2_unittest.optional_int64_extension]: 102\n"
+          + "[proto2_unittest.optional_uint32_extension]: 103\n"
+          + "[proto2_unittest.optional_uint64_extension]: 104\n"
+          + "[proto2_unittest.optional_sint32_extension]: 105\n"
+          + "[proto2_unittest.optional_sint64_extension]: 106\n"
+          + "[proto2_unittest.optional_fixed32_extension]: 107\n"
+          + "[proto2_unittest.optional_fixed64_extension]: 108\n"
+          + "[proto2_unittest.optional_sfixed32_extension]: 109\n"
+          + "[proto2_unittest.optional_sfixed64_extension]: 110\n"
+          + "[proto2_unittest.optional_float_extension]: 111.0\n"
+          + "[proto2_unittest.optional_double_extension]: 112.0\n"
+          + "[proto2_unittest.optional_bool_extension]: true\n"
+          + "[proto2_unittest.optional_string_extension]: \"115\"\n"
+          + "[proto2_unittest.optional_bytes_extension]: \"116\"\n"
+          + "[proto2_unittest.optionalgroup_extension] {\n"
           + "  a: 117\n"
           + "}\n"
-          + "[protobuf_unittest.optional_nested_message_extension] {\n"
+          + "[proto2_unittest.optional_nested_message_extension] {\n"
           + "  bb: 118\n"
           + "}\n"
-          + "[protobuf_unittest.optional_foreign_message_extension] {\n"
+          + "[proto2_unittest.optional_foreign_message_extension] {\n"
           + "  c: 119\n"
           + "}\n"
-          + "[protobuf_unittest.optional_import_message_extension] {\n"
+          + "[proto2_unittest.optional_import_message_extension] {\n"
           + "  d: 120\n"
           + "}\n"
-          + "[protobuf_unittest.optional_nested_enum_extension]: BAZ\n"
-          + "[protobuf_unittest.optional_foreign_enum_extension]: FOREIGN_BAZ\n"
-          + "[protobuf_unittest.optional_import_enum_extension]: IMPORT_BAZ\n"
-          + "[protobuf_unittest.optional_string_piece_extension]: \"124\"\n"
-          + "[protobuf_unittest.optional_cord_extension]: \"125\"\n"
-          + "[protobuf_unittest.optional_public_import_message_extension] {\n"
+          + "[proto2_unittest.optional_nested_enum_extension]: BAZ\n"
+          + "[proto2_unittest.optional_foreign_enum_extension]: FOREIGN_BAZ\n"
+          + "[proto2_unittest.optional_import_enum_extension]: IMPORT_BAZ\n"
+          + "[proto2_unittest.optional_string_piece_extension]: \"124\"\n"
+          + "[proto2_unittest.optional_cord_extension]: \"125\"\n"
+          + "[proto2_unittest.optional_public_import_message_extension] {\n"
           + "  e: 126\n"
           + "}\n"
-          + "[protobuf_unittest.optional_lazy_message_extension] {\n"
+          + "[proto2_unittest.optional_lazy_message_extension] {\n"
           + "  bb: 127\n"
           + "}\n"
-          + "[protobuf_unittest.optional_unverified_lazy_message_extension] {\n"
+          + "[proto2_unittest.optional_unverified_lazy_message_extension] {\n"
           + "  bb: 128\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_int32_extension]: 201\n"
-          + "[protobuf_unittest.repeated_int32_extension]: 301\n"
-          + "[protobuf_unittest.repeated_int64_extension]: 202\n"
-          + "[protobuf_unittest.repeated_int64_extension]: 302\n"
-          + "[protobuf_unittest.repeated_uint32_extension]: 203\n"
-          + "[protobuf_unittest.repeated_uint32_extension]: 303\n"
-          + "[protobuf_unittest.repeated_uint64_extension]: 204\n"
-          + "[protobuf_unittest.repeated_uint64_extension]: 304\n"
-          + "[protobuf_unittest.repeated_sint32_extension]: 205\n"
-          + "[protobuf_unittest.repeated_sint32_extension]: 305\n"
-          + "[protobuf_unittest.repeated_sint64_extension]: 206\n"
-          + "[protobuf_unittest.repeated_sint64_extension]: 306\n"
-          + "[protobuf_unittest.repeated_fixed32_extension]: 207\n"
-          + "[protobuf_unittest.repeated_fixed32_extension]: 307\n"
-          + "[protobuf_unittest.repeated_fixed64_extension]: 208\n"
-          + "[protobuf_unittest.repeated_fixed64_extension]: 308\n"
-          + "[protobuf_unittest.repeated_sfixed32_extension]: 209\n"
-          + "[protobuf_unittest.repeated_sfixed32_extension]: 309\n"
-          + "[protobuf_unittest.repeated_sfixed64_extension]: 210\n"
-          + "[protobuf_unittest.repeated_sfixed64_extension]: 310\n"
-          + "[protobuf_unittest.repeated_float_extension]: 211.0\n"
-          + "[protobuf_unittest.repeated_float_extension]: 311.0\n"
-          + "[protobuf_unittest.repeated_double_extension]: 212.0\n"
-          + "[protobuf_unittest.repeated_double_extension]: 312.0\n"
-          + "[protobuf_unittest.repeated_bool_extension]: true\n"
-          + "[protobuf_unittest.repeated_bool_extension]: false\n"
-          + "[protobuf_unittest.repeated_string_extension]: \"215\"\n"
-          + "[protobuf_unittest.repeated_string_extension]: \"315\"\n"
-          + "[protobuf_unittest.repeated_bytes_extension]: \"216\"\n"
-          + "[protobuf_unittest.repeated_bytes_extension]: \"316\"\n"
-          + "[protobuf_unittest.repeatedgroup_extension] {\n"
+          + "[proto2_unittest.repeated_int32_extension]: 201\n"
+          + "[proto2_unittest.repeated_int32_extension]: 301\n"
+          + "[proto2_unittest.repeated_int64_extension]: 202\n"
+          + "[proto2_unittest.repeated_int64_extension]: 302\n"
+          + "[proto2_unittest.repeated_uint32_extension]: 203\n"
+          + "[proto2_unittest.repeated_uint32_extension]: 303\n"
+          + "[proto2_unittest.repeated_uint64_extension]: 204\n"
+          + "[proto2_unittest.repeated_uint64_extension]: 304\n"
+          + "[proto2_unittest.repeated_sint32_extension]: 205\n"
+          + "[proto2_unittest.repeated_sint32_extension]: 305\n"
+          + "[proto2_unittest.repeated_sint64_extension]: 206\n"
+          + "[proto2_unittest.repeated_sint64_extension]: 306\n"
+          + "[proto2_unittest.repeated_fixed32_extension]: 207\n"
+          + "[proto2_unittest.repeated_fixed32_extension]: 307\n"
+          + "[proto2_unittest.repeated_fixed64_extension]: 208\n"
+          + "[proto2_unittest.repeated_fixed64_extension]: 308\n"
+          + "[proto2_unittest.repeated_sfixed32_extension]: 209\n"
+          + "[proto2_unittest.repeated_sfixed32_extension]: 309\n"
+          + "[proto2_unittest.repeated_sfixed64_extension]: 210\n"
+          + "[proto2_unittest.repeated_sfixed64_extension]: 310\n"
+          + "[proto2_unittest.repeated_float_extension]: 211.0\n"
+          + "[proto2_unittest.repeated_float_extension]: 311.0\n"
+          + "[proto2_unittest.repeated_double_extension]: 212.0\n"
+          + "[proto2_unittest.repeated_double_extension]: 312.0\n"
+          + "[proto2_unittest.repeated_bool_extension]: true\n"
+          + "[proto2_unittest.repeated_bool_extension]: false\n"
+          + "[proto2_unittest.repeated_string_extension]: \"215\"\n"
+          + "[proto2_unittest.repeated_string_extension]: \"315\"\n"
+          + "[proto2_unittest.repeated_bytes_extension]: \"216\"\n"
+          + "[proto2_unittest.repeated_bytes_extension]: \"316\"\n"
+          + "[proto2_unittest.repeatedgroup_extension] {\n"
           + "  a: 217\n"
           + "}\n"
-          + "[protobuf_unittest.repeatedgroup_extension] {\n"
+          + "[proto2_unittest.repeatedgroup_extension] {\n"
           + "  a: 317\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_nested_message_extension] {\n"
+          + "[proto2_unittest.repeated_nested_message_extension] {\n"
           + "  bb: 218\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_nested_message_extension] {\n"
+          + "[proto2_unittest.repeated_nested_message_extension] {\n"
           + "  bb: 318\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_foreign_message_extension] {\n"
+          + "[proto2_unittest.repeated_foreign_message_extension] {\n"
           + "  c: 219\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_foreign_message_extension] {\n"
+          + "[proto2_unittest.repeated_foreign_message_extension] {\n"
           + "  c: 319\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_import_message_extension] {\n"
+          + "[proto2_unittest.repeated_import_message_extension] {\n"
           + "  d: 220\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_import_message_extension] {\n"
+          + "[proto2_unittest.repeated_import_message_extension] {\n"
           + "  d: 320\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_nested_enum_extension]: BAR\n"
-          + "[protobuf_unittest.repeated_nested_enum_extension]: BAZ\n"
-          + "[protobuf_unittest.repeated_foreign_enum_extension]: FOREIGN_BAR\n"
-          + "[protobuf_unittest.repeated_foreign_enum_extension]: FOREIGN_BAZ\n"
-          + "[protobuf_unittest.repeated_import_enum_extension]: IMPORT_BAR\n"
-          + "[protobuf_unittest.repeated_import_enum_extension]: IMPORT_BAZ\n"
-          + "[protobuf_unittest.repeated_string_piece_extension]: \"224\"\n"
-          + "[protobuf_unittest.repeated_string_piece_extension]: \"324\"\n"
-          + "[protobuf_unittest.repeated_cord_extension]: \"225\"\n"
-          + "[protobuf_unittest.repeated_cord_extension]: \"325\"\n"
-          + "[protobuf_unittest.repeated_lazy_message_extension] {\n"
+          + "[proto2_unittest.repeated_nested_enum_extension]: BAR\n"
+          + "[proto2_unittest.repeated_nested_enum_extension]: BAZ\n"
+          + "[proto2_unittest.repeated_foreign_enum_extension]: FOREIGN_BAR\n"
+          + "[proto2_unittest.repeated_foreign_enum_extension]: FOREIGN_BAZ\n"
+          + "[proto2_unittest.repeated_import_enum_extension]: IMPORT_BAR\n"
+          + "[proto2_unittest.repeated_import_enum_extension]: IMPORT_BAZ\n"
+          + "[proto2_unittest.repeated_string_piece_extension]: \"224\"\n"
+          + "[proto2_unittest.repeated_string_piece_extension]: \"324\"\n"
+          + "[proto2_unittest.repeated_cord_extension]: \"225\"\n"
+          + "[proto2_unittest.repeated_cord_extension]: \"325\"\n"
+          + "[proto2_unittest.repeated_lazy_message_extension] {\n"
           + "  bb: 227\n"
           + "}\n"
-          + "[protobuf_unittest.repeated_lazy_message_extension] {\n"
+          + "[proto2_unittest.repeated_lazy_message_extension] {\n"
           + "  bb: 327\n"
           + "}\n"
-          + "[protobuf_unittest.default_int32_extension]: 401\n"
-          + "[protobuf_unittest.default_int64_extension]: 402\n"
-          + "[protobuf_unittest.default_uint32_extension]: 403\n"
-          + "[protobuf_unittest.default_uint64_extension]: 404\n"
-          + "[protobuf_unittest.default_sint32_extension]: 405\n"
-          + "[protobuf_unittest.default_sint64_extension]: 406\n"
-          + "[protobuf_unittest.default_fixed32_extension]: 407\n"
-          + "[protobuf_unittest.default_fixed64_extension]: 408\n"
-          + "[protobuf_unittest.default_sfixed32_extension]: 409\n"
-          + "[protobuf_unittest.default_sfixed64_extension]: 410\n"
-          + "[protobuf_unittest.default_float_extension]: 411.0\n"
-          + "[protobuf_unittest.default_double_extension]: 412.0\n"
-          + "[protobuf_unittest.default_bool_extension]: false\n"
-          + "[protobuf_unittest.default_string_extension]: \"415\"\n"
-          + "[protobuf_unittest.default_bytes_extension]: \"416\"\n"
-          + "[protobuf_unittest.default_nested_enum_extension]: FOO\n"
-          + "[protobuf_unittest.default_foreign_enum_extension]: FOREIGN_FOO\n"
-          + "[protobuf_unittest.default_import_enum_extension]: IMPORT_FOO\n"
-          + "[protobuf_unittest.default_string_piece_extension]: \"424\"\n"
-          + "[protobuf_unittest.default_cord_extension]: \"425\"\n"
-          + "[protobuf_unittest.oneof_uint32_extension]: 601\n"
-          + "[protobuf_unittest.oneof_nested_message_extension] {\n"
+          + "[proto2_unittest.default_int32_extension]: 401\n"
+          + "[proto2_unittest.default_int64_extension]: 402\n"
+          + "[proto2_unittest.default_uint32_extension]: 403\n"
+          + "[proto2_unittest.default_uint64_extension]: 404\n"
+          + "[proto2_unittest.default_sint32_extension]: 405\n"
+          + "[proto2_unittest.default_sint64_extension]: 406\n"
+          + "[proto2_unittest.default_fixed32_extension]: 407\n"
+          + "[proto2_unittest.default_fixed64_extension]: 408\n"
+          + "[proto2_unittest.default_sfixed32_extension]: 409\n"
+          + "[proto2_unittest.default_sfixed64_extension]: 410\n"
+          + "[proto2_unittest.default_float_extension]: 411.0\n"
+          + "[proto2_unittest.default_double_extension]: 412.0\n"
+          + "[proto2_unittest.default_bool_extension]: false\n"
+          + "[proto2_unittest.default_string_extension]: \"415\"\n"
+          + "[proto2_unittest.default_bytes_extension]: \"416\"\n"
+          + "[proto2_unittest.default_nested_enum_extension]: FOO\n"
+          + "[proto2_unittest.default_foreign_enum_extension]: FOREIGN_FOO\n"
+          + "[proto2_unittest.default_import_enum_extension]: IMPORT_FOO\n"
+          + "[proto2_unittest.default_string_piece_extension]: \"424\"\n"
+          + "[proto2_unittest.default_cord_extension]: \"425\"\n"
+          + "[proto2_unittest.oneof_uint32_extension]: 601\n"
+          + "[proto2_unittest.oneof_nested_message_extension] {\n"
           + "  bb: 602\n"
           + "}\n"
-          + "[protobuf_unittest.oneof_string_extension]: \"603\"\n"
-          + "[protobuf_unittest.oneof_bytes_extension]: \"604\"\n";
+          + "[proto2_unittest.oneof_string_extension]: \"603\"\n"
+          + "[proto2_unittest.oneof_bytes_extension]: \"604\"\n";
 
   public static final TestRequired TEST_REQUIRED_UNINITIALIZED =
       TestRequired.newBuilder().setA(1).buildPartial();

@@ -1,6 +1,6 @@
 # Minimum CMake required. If available, accept the policy-controlled behavior up
 # to 3.26.
-cmake_minimum_required(VERSION 3.10...3.26)
+cmake_minimum_required(VERSION 3.16...3.26)
 
 # Revert to old behavior for MSVC debug symbols.
 if(POLICY CMP0141)
@@ -86,7 +86,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "5.30.0")
+set(protobuf_VERSION_STRING "6.31.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -186,7 +186,7 @@ set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++14)
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++17)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {

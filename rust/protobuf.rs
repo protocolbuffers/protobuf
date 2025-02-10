@@ -11,9 +11,9 @@
 //! is a thin re-export of the `shared.rs` file but is needed for two reasons:
 //! - To create a single `protobuf` crate name for either cpp and upb kernels
 //!   from user code (toggled at compile time).
-//! - Blocks the __internal and __runtime modules from being re-exported to
-//!   application code, unless they use one of our visibility-restricted targets
-//!   (gencode does have access to them).
+//! - Blocks the __internal module from being re-exported to application code,
+//!   unless they use one of our visibility-restricted targets (gencode does
+//!   have access to them).
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -30,9 +30,5 @@ use protobuf_upb as kernel;
 #[doc(hidden)]
 #[allow(non_upper_case_globals)]
 pub const __internal: () = ();
-
-#[doc(hidden)]
-#[allow(non_upper_case_globals)]
-pub const __runtime: () = ();
 
 pub use kernel::*;

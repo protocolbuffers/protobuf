@@ -427,6 +427,7 @@ public final class UnknownFieldSetLite {
         storeField(tag, subFieldSet);
         return true;
       case WireFormat.WIRETYPE_END_GROUP:
+        input.checkValidEndTag();
         return false;
       default:
         throw InvalidProtocolBufferException.invalidWireType();

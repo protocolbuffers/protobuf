@@ -31,6 +31,11 @@ cc_proto_library(
     deps = [":any_proto"],
 )
 
+upb_c_proto_library(
+    name = "any_upb_proto",
+    deps = [":any_proto"],
+)
+
 proto_library(
     name = "api_proto",
     srcs = ["api.proto"],
@@ -57,6 +62,11 @@ cc_proto_library(
     deps = [":duration_proto"],
 )
 
+upb_c_proto_library(
+    name = "duration_upb_proto",
+    deps = [":duration_proto"],
+)
+
 proto_library(
     name = "empty_proto",
     srcs = ["empty.proto"],
@@ -65,6 +75,11 @@ proto_library(
 
 cc_proto_library(
     name = "empty_cc_proto",
+    deps = [":empty_proto"],
+)
+
+upb_c_proto_library(
+    name = "empty_upb_proto",
     deps = [":empty_proto"],
 )
 
@@ -101,6 +116,11 @@ cc_proto_library(
     deps = [":struct_proto"],
 )
 
+upb_c_proto_library(
+    name = "struct_upb_proto",
+    deps = [":struct_proto"],
+)
+
 proto_library(
     name = "timestamp_proto",
     srcs = ["timestamp.proto"],
@@ -109,6 +129,11 @@ proto_library(
 
 cc_proto_library(
     name = "timestamp_cc_proto",
+    deps = [":timestamp_proto"],
+)
+
+upb_c_proto_library(
+    name = "timestamp_upb_proto",
     deps = [":timestamp_proto"],
 )
 
@@ -135,6 +160,11 @@ proto_library(
 
 cc_proto_library(
     name = "wrappers_cc_proto",
+    deps = [":wrappers_proto"],
+)
+
+upb_c_proto_library(
+    name = "wrappers_upb_proto",
     deps = [":wrappers_proto"],
 )
 
@@ -604,7 +634,6 @@ PROTOBUF_HEADERS = [
     "generated_message_tctable_gen.h",
     "map_entry.h",
     "map_field.h",
-    "map_field_inl.h",
     "message.h",
     "metadata.h",
     "reflection.h",
@@ -672,6 +701,7 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:function_ref",
+        "@com_google_absl//absl/functional:overload",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
@@ -680,6 +710,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:charset",
         "@com_google_absl//absl/strings:cord",
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/strings:str_format",
@@ -877,6 +908,7 @@ filegroup(
         "unittest_proto3_extensions.proto",
         "unittest_proto3_lite.proto",
         "unittest_proto3_optional.proto",
+        "unittest_redaction.proto",
         "unittest_retention.proto",
         "unittest_string_type.proto",
         "unittest_well_known_types.proto",
@@ -960,6 +992,7 @@ proto_library(
         "unittest_proto3_bad_macros.proto",
         "unittest_proto3_extensions.proto",
         "unittest_proto3_lite.proto",
+        "unittest_redaction.proto",
         "unittest_retention.proto",
         "unittest_string_type.proto",
         "unittest_string_view.proto",
@@ -1274,6 +1307,7 @@ cc_library(
         ":lite_test_util",
         ":port",
         ":protobuf",
+        ":test_textproto",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/base:config",
@@ -1381,9 +1415,15 @@ cc_test(
     srcs = ["arenaz_sampler_test.cc"],
     deps = [
         ":arena",
+        ":arena_allocation_policy",
         ":port",
         ":protobuf",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1702,6 +1742,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":protobuf_lite",
+        ":test_textproto",
         ":test_util",
         ":test_util2",
         "//src/google/protobuf/io",

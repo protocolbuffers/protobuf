@@ -25,6 +25,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -41,9 +44,13 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   return {
       {"Enum", enum_name},
       {"kDefault", Int32ToString(default_value->number())},
-      Sub("assert_valid",
-          is_open ? ""
-                  : absl::Substitute("assert($0_IsValid(value));", enum_name))
+      Sub("assert_valid", is_open ? ""
+                                  : absl::Substitute(
+                                        R"cc(
+                                          assert(::$0::internal::ValidateEnum(
+                                              value, $1_internal_data_));
+                                        )cc",
+                                        ProtobufNamespace(opts), enum_name))
           .WithSuffix(";"),
 
       {"cached_size_name", MakeVarintCachedSizeName(field)},
@@ -113,6 +120,7 @@ class SingularEnum : public FieldGeneratorBase {
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
     )cc");
   }
+
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -385,11 +393,11 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
     $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedField<int>* $mutable_name$();
+    $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
 
     private:
     const $pb$::RepeatedField<int>& $_internal_name$() const;
-    $pb$::RepeatedField<int>* $_internal_mutable_name$();
+    $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
 
     public:
   )cc");
@@ -433,7 +441,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$()
+    inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_mutable_list$;
@@ -449,7 +457,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* $nonnull$
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
@@ -465,7 +474,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* $nonnull$
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
       }
@@ -570,3 +580,5 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

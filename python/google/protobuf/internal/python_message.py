@@ -29,6 +29,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import datetime
 from io import BytesIO
+import math
 import struct
 import sys
 import warnings
@@ -522,7 +523,11 @@ def _AddInitMethod(message_descriptor, cls):
           if _IsMapField(field):
             if _IsMessageMapField(field):
               for key in field_value:
-                field_copy[key].MergeFrom(field_value[key])
+                item_value = field_value[key]
+                if isinstance(item_value, dict):
+                  field_copy[key].__init__(**item_value)
+                else:
+                  field_copy[key].MergeFrom(item_value)
             else:
               field_copy.update(field_value)
           else:
@@ -716,14 +721,14 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
 
   def field_setter(self, new_value):
     # pylint: disable=protected-access
-    # Testing the value for truthiness captures all of the proto3 defaults
-    # (0, 0.0, enum 0, and False).
+    # Testing the value for truthiness captures all of the implicit presence
+    # defaults (0, 0.0, enum 0, and False), except for -0.0.
     try:
       new_value = type_checker.CheckValue(new_value)
     except TypeError as e:
       raise TypeError(
           'Cannot set %s to %.1024r: %s' % (field.full_name, new_value, e))
-    if not field.has_presence and not new_value:
+    if not field.has_presence and decoder.IsDefaultScalarValue(new_value):
       self._fields.pop(field, None)
     else:
       self._fields[field] = new_value
@@ -1192,8 +1197,6 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     return length   # Return this for legacy reasons.
   cls.MergeFromString = MergeFromString
 
-  local_ReadTag = decoder.ReadTag
-  local_SkipField = decoder.SkipField
   fields_by_tag = cls._fields_by_tag
   message_set_decoders_by_tag = cls._message_set_decoders_by_tag
 
@@ -1215,7 +1218,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     self._Modified()
     field_dict = self._fields
     while pos != end:
-      (tag_bytes, new_pos) = local_ReadTag(buffer, pos)
+      (tag_bytes, new_pos) = decoder.ReadTag(buffer, pos)
       field_decoder, field_des = message_set_decoders_by_tag.get(
           tag_bytes, (None, None)
       )
@@ -1226,23 +1229,17 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       if field_des is None:
         if not self._unknown_fields:   # pylint: disable=protected-access
           self._unknown_fields = []    # pylint: disable=protected-access
-        # pylint: disable=protected-access
-        (tag, _) = decoder._DecodeVarint(tag_bytes, 0)
-        field_number, wire_type = wire_format.UnpackTag(tag)
+        field_number, wire_type = decoder.DecodeTag(tag_bytes)
         if field_number == 0:
           raise message_mod.DecodeError('Field number 0 is illegal.')
-        # TODO: remove old_pos.
-        old_pos = new_pos
         (data, new_pos) = decoder._DecodeUnknownField(
-            buffer, new_pos, wire_type)  # pylint: disable=protected-access
-        if new_pos == -1:
-          return pos
-        # TODO: remove _unknown_fields.
-        new_pos = local_SkipField(buffer, old_pos, end, tag_bytes)
+            buffer, new_pos, end, field_number, wire_type
+        )  # pylint: disable=protected-access
         if new_pos == -1:
           return pos
         self._unknown_fields.append(
-            (tag_bytes, buffer[old_pos:new_pos].tobytes()))
+            (tag_bytes, buffer[pos + len(tag_bytes) : new_pos].tobytes())
+        )
         pos = new_pos
       else:
         _MaybeAddDecoder(cls, field_des)

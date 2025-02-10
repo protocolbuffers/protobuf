@@ -33,11 +33,13 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
@@ -51,6 +53,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -962,10 +965,28 @@ struct SymbolByFullNameEq {
 using SymbolsByNameSet =
     absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
 
-struct ParentNameQuery {
+struct ParentNameQueryBase {
   std::pair<const void*, absl::string_view> query;
   std::pair<const void*, absl::string_view> parent_name_key() const {
     return query;
+  }
+};
+struct ParentNameQuery : public ParentNameQueryBase {
+  using SymbolT = Symbol;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    return *it;
+  }
+};
+struct ParentNameFieldQuery : public ParentNameQueryBase {
+  using SymbolT = const FieldDescriptor*;
+
+  template <typename It>
+  static SymbolT IterToSymbol(It it) {
+    SymbolT field = it->field_descriptor();
+    ABSL_ASSUME(field != nullptr);
+    return field;
   }
 };
 struct SymbolByParentHash {
@@ -978,6 +999,14 @@ struct SymbolByParentHash {
 };
 struct SymbolByParentEq {
   using is_transparent = void;
+
+  bool operator()(const Symbol& symbol,
+                  const ParentNameFieldQuery& query) const {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    return field != nullptr && !field->is_extension() &&
+           field->containing_type() == query.query.first &&
+           field->name() == query.query.second;
+  }
 
   template <typename T, typename U>
   bool operator()(const T& a, const U& b) const {
@@ -1102,20 +1131,6 @@ bool AllowedExtendeeInProto3(const absl::string_view name) {
          allowed_proto3_extendees->end();
 }
 
-const FeatureSetDefaults& GetCppFeatureSetDefaults() {
-  static const FeatureSetDefaults* default_spec =
-      internal::OnShutdownDelete([] {
-        auto* defaults = new FeatureSetDefaults();
-        internal::ParseNoReflection(
-            absl::string_view{
-                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-            *defaults);
-        return defaults;
-      }());
-  return *default_spec;
-}
-
 template <typename ProtoT>
 void RestoreFeaturesToOptions(const FeatureSet* features, ProtoT* proto) {
   if (features != &FeatureSet::default_instance()) {
@@ -1225,8 +1240,9 @@ class FileDescriptorTables {
   // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
-  inline Symbol FindNestedSymbol(const void* parent,
-                                 absl::string_view name) const;
+  template <typename K = ParentNameQuery>
+  inline auto FindNestedSymbol(const void* parent,
+                               absl::string_view name) const;
 
   // These return nullptr if not found.
   inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
@@ -1695,10 +1711,12 @@ inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
   return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
-inline Symbol FileDescriptorTables::FindNestedSymbol(
+template <typename K>
+inline auto FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
-  auto it = symbols_by_parent_.find(ParentNameQuery{{parent, name}});
-  return it == symbols_by_parent_.end() ? Symbol() : *it;
+  auto it = symbols_by_parent_.find(K{{{parent, name}}});
+  return it == symbols_by_parent_.end() ? typename K::SymbolT()
+                                        : K::IterToSymbol(it);
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -2106,7 +2124,8 @@ DescriptorPool::DescriptorPool()
       enforce_weak_(false),
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false) {}
+      deprecated_legacy_json_field_conflicts_(false),
+      enforce_naming_style_(false) {}
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
@@ -2121,7 +2140,8 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       enforce_weak_(false),
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false) {}
+      deprecated_legacy_json_field_conflicts_(false),
+      enforce_naming_style_(false) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
     : mutex_(nullptr),
@@ -2135,7 +2155,8 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       enforce_weak_(false),
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
-      deprecated_legacy_json_field_conflicts_(false) {}
+      deprecated_legacy_json_field_conflicts_(false),
+      enforce_naming_style_(false) {}
 
 DescriptorPool::~DescriptorPool() {
   if (mutex_ != nullptr) delete mutex_;
@@ -2519,9 +2540,7 @@ const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
 
 const FieldDescriptor* Descriptor::FindFieldByName(
     absl::string_view name) const {
-  const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
-  return field != nullptr && !field->is_extension() ? field : nullptr;
+  return file()->tables_->FindNestedSymbol<ParentNameFieldQuery>(this, name);
 }
 
 const OneofDescriptor* Descriptor::FindOneofByName(
@@ -3035,7 +3054,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!containing_type()->is_unqualified_placeholder_) {
       proto->set_extendee(".");
     }
-    proto->mutable_extendee()->append(containing_type()->full_name());
+    absl::StrAppend(proto->mutable_extendee(), containing_type()->full_name());
   }
 
   if (cpp_type() == CPPTYPE_MESSAGE) {
@@ -3048,12 +3067,12 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     if (!message_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(message_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), message_type()->full_name());
   } else if (cpp_type() == CPPTYPE_ENUM) {
     if (!enum_type()->is_unqualified_placeholder_) {
       proto->set_type_name(".");
     }
-    proto->mutable_type_name()->append(enum_type()->full_name());
+    absl::StrAppend(proto->mutable_type_name(), enum_type()->full_name());
   }
 
   if (has_default_value()) {
@@ -3066,10 +3085,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
 
   if (&options() != &FieldOptions::default_instance()) {
     *proto->mutable_options() = options();
-    if (proto_features_->GetExtension(pb::cpp).has_string_type()) {
-      // ctype must have been set in InferLegacyProtoFeatures so avoid copying.
-      proto->mutable_options()->clear_ctype();
-    }
+  }
+  if (has_legacy_proto_ctype()) {
+    proto->mutable_options()->set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -3137,12 +3156,12 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   if (!input_type()->is_unqualified_placeholder_) {
     proto->set_input_type(".");
   }
-  proto->mutable_input_type()->append(input_type()->full_name());
+  absl::StrAppend(proto->mutable_input_type(), input_type()->full_name());
 
   if (!output_type()->is_unqualified_placeholder_) {
     proto->set_output_type(".");
   }
-  proto->mutable_output_type()->append(output_type()->full_name());
+  absl::StrAppend(proto->mutable_output_type(), output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
     *proto->mutable_options() = options();
@@ -3208,7 +3227,7 @@ bool RetrieveOptionsAssumingRightPool(
       if (field->is_extension()) {
         name = absl::StrCat("(.", field->full_name(), ")");
       } else {
-        name = field->name();
+        name = std::string(field->name());
       }
       option_entries->push_back(absl::StrCat(name, " = ", fieldval));
     }
@@ -3676,6 +3695,10 @@ void FieldDescriptor::DebugString(
 
   FieldOptions full_options = options();
   CopyFeaturesToOptions(proto_features_, &full_options);
+  if (has_legacy_proto_ctype()) {
+    full_options.set_ctype(
+        static_cast<FieldOptions::CType>(legacy_proto_ctype()));
+  }
   std::string formatted_options;
   if (FormatBracketedOptions(depth, full_options, file()->pool(),
                              &formatted_options)) {
@@ -3916,6 +3939,10 @@ void MethodDescriptor::DebugString(
 }
 
 // Feature methods ===============================================
+
+bool FieldDescriptor::has_legacy_proto_ctype() const {
+  return legacy_proto_ctype_ <= FieldOptions::CType_MAX;
+}
 
 bool EnumDescriptor::is_closed() const {
   return features().enum_type() == FeatureSet::CLOSED;
@@ -4706,6 +4733,15 @@ class DescriptorBuilder {
 
   void ValidateJSType(const FieldDescriptor* field,
                       const FieldDescriptorProto& proto);
+
+  template <typename DescriptorT, typename DescriptorProtoT>
+  void ValidateNamingStyle(const DescriptorT* file,
+                           const DescriptorProtoT& proto);
+
+  // Nothing to validate for extension ranges. This overload only exists
+  // so that VisitDescriptors can be exhaustive.
+  void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
+                           const DescriptorProto::ExtensionRange& proto) {}
 };
 
 const FileDescriptor* DescriptorPool::BuildFile(
@@ -4787,6 +4823,36 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   feature_set_defaults_spec_ =
       absl::make_unique<FeatureSetDefaults>(std::move(spec));
   return absl::OkStatus();
+}
+
+const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
+  if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
+  static const FeatureSetDefaults* cpp_default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
+  return *cpp_default_spec;
+}
+
+bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
+  for (const auto& edition_default : GetFeatureSetDefaults().defaults()) {
+    std::vector<const FieldDescriptor*> fields;
+    auto features = edition_default.fixed_features();
+    features.MergeFrom(edition_default.overridable_features());
+    features.GetReflection()->ListFields(features, &fields);
+    if (absl::c_find_if(fields, [&](const FieldDescriptor* field) {
+          return field->number() == extension_number;
+        }) == fields.end()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 DescriptorBuilder::DescriptorBuilder(
@@ -5510,23 +5576,6 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   }
 }
 
-// TODO: we should update proto code to not need ctype to be set
-// when string_type is set.
-static void EnforceCTypeStringTypeConsistency(
-    Edition edition, FieldDescriptor::CppType type,
-    const pb::CppFeatures& cpp_features, FieldOptions& options) {
-  if (&options == &FieldOptions::default_instance()) return;
-  if (type == FieldDescriptor::CPPTYPE_STRING) {
-    switch (cpp_features.string_type()) {
-      case pb::CppFeatures::CORD:
-        options.set_ctype(FieldOptions::CORD);
-        break;
-      default:
-        break;
-    }
-  }
-}
-
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     Edition edition, const typename DescriptorT::Proto& proto,
@@ -5617,6 +5666,13 @@ void DescriptorBuilder::PostProcessFieldFeatures(
         !type.descriptor()->options().map_entry()) {
       field.type_ = FieldDescriptor::TYPE_GROUP;
     }
+  }
+
+  if (field.options_->has_ctype()) {
+    field.legacy_proto_ctype_ = field.options_->ctype();
+    const_cast<FieldOptions*>(  // NOLINT(google3-runtime-proto-const-cast)
+        field.options_)
+        ->clear_ctype();
   }
 }
 
@@ -5921,10 +5977,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     });
   }
 
-  const FeatureSetDefaults& defaults =
-      pool_->feature_set_defaults_spec_ == nullptr
-          ? GetCppFeatureSetDefaults()
-          : *pool_->feature_set_defaults_spec_;
+  const FeatureSetDefaults& defaults = pool_->GetFeatureSetDefaults();
 
   absl::StatusOr<FeatureResolver> feature_resolver =
       FeatureResolver::Create(file_->edition_, defaults);
@@ -6153,24 +6206,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
 
-    // TODO: move this check back to generator.cc once we no longer
-    // need to set both ctype and string_type internally.
-    internal::VisitDescriptors(
-        *result, proto,
-        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
-          if (field.options_->has_ctype() && field.options_->features()
-                                                 .GetExtension(pb::cpp)
-                                                 .has_string_type()) {
-            AddError(field.full_name(), proto,
-                     DescriptorPool::ErrorCollector::TYPE, [&] {
-                       return absl::StrFormat(
-                           "Field %s specifies both string_type and ctype "
-                           "which is not supported.",
-                           field.full_name());
-                     });
-          }
-        });
-
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
     {
@@ -6191,22 +6226,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                 alloc);
           });
     }
-
-    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-      if (result->edition() >= Edition::EDITION_2024 &&
-          field.options().has_ctype()) {
-        // "ctype" is no longer supported in edition 2024 and beyond.
-        AddError(
-            field.full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-            "ctype option is not allowed under edition 2024 and beyond. Use "
-            "the feature string_type = VIEW|CORD|STRING|... instead.");
-      }
-      EnforceCTypeStringTypeConsistency(
-          field.file()->edition(), field.cpp_type(),
-          field.merged_features_->GetExtension(pb::cpp),
-          const_cast<  // NOLINT(google3-runtime-proto-const-cast)
-              FieldOptions&>(*field.options_));
-    });
 
     // Post-process cleanup for field features.
     internal::VisitDescriptors(
@@ -6264,6 +6283,16 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
             deferred_validation_.ValidateFeatureLifetimes(
                 GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
+          }
+        });
+  }
+
+  if (!had_errors_ && pool_->enforce_naming_style_) {
+    internal::VisitDescriptors(
+        *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
+          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
+                  .enforce_naming_style() == FeatureSet::STYLE2024) {
+            ValidateNamingStyle(&descriptor, desc_proto);
           }
         });
   }
@@ -6603,6 +6632,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->is_oneof_ = false;
   result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
+  result->legacy_proto_ctype_ = FieldOptions::CType_MAX + 1;
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
@@ -7163,9 +7193,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
     // scope.  Let's print an additional error to explain this.
     std::string outer_scope;
     if (parent->containing_type() == nullptr) {
-      outer_scope = file_->package();
+      outer_scope = std::string(file_->package());
     } else {
-      outer_scope = parent->containing_type()->full_name();
+      outer_scope = std::string(parent->containing_type()->full_name());
     }
 
     if (outer_scope.empty()) {
@@ -7361,7 +7391,7 @@ void DescriptorBuilder::CheckExtensionDeclarationFieldType(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view type) {
   if (had_errors_) return;
-  std::string actual_type = field.type_name();
+  std::string actual_type(field.type_name());
   std::string expected_type(type);
   if (field.message_type() || field.enum_type()) {
     // Field message type descriptor can be in a partial state which will cause
@@ -7951,6 +7981,13 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
+  if (field->file()->edition() >= Edition::EDITION_2024 &&
+      field->has_legacy_proto_ctype()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "ctype option is not allowed under edition 2024 and beyond. Use "
+             "the feature string_type = VIEW|CORD|STRING|... instead.");
+  }
+
   // Only message type fields may be lazy.
   if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
@@ -8154,14 +8191,12 @@ void DescriptorBuilder::ValidateFieldFeatures(
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence fields can't specify defaults.");
     }
-    if (field->enum_type() != nullptr &&
-        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+    if (field->enum_type() != nullptr && field->enum_type()->is_closed()) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Implicit presence enum fields must always be open.");
     }
   }
-  if (field->is_extension() &&
-      field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+  if (field->is_extension() && field->is_required()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Extensions can't be required.");
   }
@@ -8601,6 +8636,196 @@ void DescriptorBuilder::ValidateJSType(const FieldDescriptor* field,
                "jstype is only allowed on int64, uint64, sint64, fixed64 "
                "or sfixed64 fields.");
       break;
+  }
+}
+
+namespace {
+
+// Whether the name contains underscores that violate the naming style guide (
+// a leading or trailing underscore, or an underscore which is not followed by
+// a letter)
+bool ContainsBadUnderscores(absl::string_view name) {
+  if (name.empty()) {
+    return false;
+  }
+  if (name[0] == '_' || name[name.size() - 1] == '_') {
+    return true;
+  }
+  for (size_t i = 1; i < name.size(); ++i) {
+    if (name[i - 1] == '_' && !absl::ascii_isalpha(name[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsValidTitleCaseName(absl::string_view name, std::string* error) {
+  ABSL_CHECK(!name.empty());
+  for (char c : name) {
+    if (!absl::ascii_isalnum(c)) {
+      *error = "should be TitleCase";
+      return false;
+    }
+  }
+  if (!absl::ascii_isupper(name[0])) {
+    *error = "should begin with a capital letter";
+    return false;
+  }
+  return true;
+}
+
+bool IsValidLowerSnakeCaseName(absl::string_view name, std::string* error) {
+  ABSL_CHECK(!name.empty());
+
+  constexpr absl::CharSet kLowerSnakeCaseChars =
+      absl::CharSet::Range('a', 'z') | absl::CharSet::Range('0', '9') |
+      absl::CharSet::Char('_') | absl::CharSet::Char('.');
+  for (char c : name) {
+    if (!kLowerSnakeCaseChars.contains(c)) {
+      *error = "should be lower_snake_case";
+      return false;
+    }
+  }
+  if (!absl::ascii_islower(name[0])) {
+    *error = "should begin with a lower case letter";
+    return false;
+  }
+  if (ContainsBadUnderscores(name)) {
+    *error = "contains style violating underscores";
+    return false;
+  }
+  return true;
+}
+
+bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
+  ABSL_CHECK(!name.empty());
+
+  constexpr absl::CharSet kUpperSnakeCaseChars =
+      absl::CharSet::Range('A', 'Z') | absl::CharSet::Range('0', '9') |
+      absl::CharSet::Char('_');
+  for (char c : name) {
+    if (!kUpperSnakeCaseChars.contains(c)) {
+      *error = "should be UPPER_SNAKE_CASE";
+      return false;
+    }
+  }
+  if (!absl::ascii_isupper(name[0])) {
+    *error = "should begin with an upper case letter";
+    return false;
+  }
+  if (ContainsBadUnderscores(name)) {
+    *error = "contains style violating underscores";
+    return false;
+  }
+  return true;
+}
+
+constexpr absl::string_view kNamingStyleOptOutMessage =
+    " (feature.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
+    "this check)";
+
+}  // namespace
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
+                                            const FileDescriptorProto& proto) {
+  // Ignore empty packages for style checks.
+  if (file->package().empty()) {
+    return;
+  }
+  std::string error;
+  if (!IsValidLowerSnakeCaseName(file->package(), &error)) {
+    AddError(file->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Package name ", file->package(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
+                                            const DescriptorProto& proto) {
+  std::string error;
+  if (!IsValidTitleCaseName(message->name(), &error)) {
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
+                                            const OneofDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidLowerSnakeCaseName(oneof->name(), &error)) {
+    AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
+                                            const FieldDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidLowerSnakeCaseName(field->name(), &error)) {
+    AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Field name ", field->name(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(
+    const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidTitleCaseName(enum_descriptor->name(), &error)) {
+    AddError(enum_descriptor->name(), proto,
+             DescriptorPool::ErrorCollector::NAME, [&] {
+               return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
+                                   error, kNamingStyleOptOutMessage);
+             });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(
+    const EnumValueDescriptor* enum_value,
+    const EnumValueDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidUpperSnakeCaseName(enum_value->name(), &error)) {
+    AddError(enum_value->name(), proto, DescriptorPool::ErrorCollector::NAME,
+             [&] {
+               return absl::StrCat("Enum value name ", enum_value->name(), " ",
+                                   error, kNamingStyleOptOutMessage);
+             });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(
+    const ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidTitleCaseName(service->name(), &error)) {
+    AddError(service->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Service name ", service->name(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
+  }
+}
+
+template <>
+void DescriptorBuilder::ValidateNamingStyle(
+    const MethodDescriptor* method, const MethodDescriptorProto& proto) {
+  std::string error;
+  if (!IsValidTitleCaseName(method->name(), &error)) {
+    AddError(method->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Method name ", method->name(), " ", error,
+                          kNamingStyleOptOutMessage);
+    });
   }
 }
 
@@ -9699,8 +9924,7 @@ const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
   return default_value_enum_;
 }
 
-internal::DescriptorStringView FieldDescriptor::PrintableNameForExtension()
-    const {
+absl::string_view FieldDescriptor::PrintableNameForExtension() const {
   const bool is_message_set_extension =
       is_extension() &&
       containing_type()->options().message_set_wire_format() &&
@@ -9798,8 +10022,9 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
-  // Do not generate hasbits for "real-oneof" and weak fields.
-  if (field->real_containing_oneof() || field->options().weak()) {
+  // Do not generate hasbits for "real-oneof", weak, or extension fields.
+  if (field->real_containing_oneof() || field->options().weak() ||
+      field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
 

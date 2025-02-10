@@ -1,3 +1,10 @@
+# Copyright (c) 2025, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 ################################################################################
 # Protocol Buffers Compiler - Rust code generator
 ################################################################################
@@ -25,6 +32,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:versions",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
@@ -51,7 +59,6 @@ cc_library(
     deps = [
         ":context",
         "//src/google/protobuf",
-        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",

@@ -31,6 +31,13 @@
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__) && \
+    defined(GOOGLE_PROTOBUF_USING_BAZEL) &&     \
+    !defined(GOOGLE_PROTOBUF_MSVC_BAZEL_OVERRIDE)
+#error \
+    "Protobuf will be dropping support for MSVC + Bazel in 34.0.  To continue using it until then, use the flag --define=protobuf_allow_msvc=true.  For feedback or discussion, see github.com/protocolbuffers/protobuf/issues/20085."
+#endif
+
 // Legacy: some users reference these (internal-only) macros even though we
 // don't need them any more.
 #if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)

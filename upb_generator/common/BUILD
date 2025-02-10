@@ -30,7 +30,6 @@ cc_library(
         "//third_party/kotlin/protobuf/generator/native:__subpackages__",
     ],
     deps = [
-        "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//upb:base",

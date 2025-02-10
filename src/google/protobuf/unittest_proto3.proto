@@ -55,7 +55,7 @@ message TestAllTypes {
 
   optional NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
-  protobuf_unittest_import.ImportMessage optional_import_message = 20;
+  proto2_unittest_import.ImportMessage optional_import_message = 20;
 
   NestedEnum optional_nested_enum = 21;
   ForeignEnum optional_foreign_enum = 22;
@@ -63,18 +63,18 @@ message TestAllTypes {
   // Omitted (compared to unittest.proto) because proto2 enums are not allowed
   // inside proto2 messages.
   //
-  // optional protobuf_unittest_import.ImportEnum    optional_import_enum  = 23;
+  // optional proto2_unittest_import.ImportEnum    optional_import_enum  = 23;
 
   string optional_string_piece = 24 [ctype = STRING_PIECE];
   string optional_cord = 25 [ctype = CORD];
 
   // Defined in unittest_import_public.proto
-  protobuf_unittest_import.PublicImportMessage optional_public_import_message =
+  proto2_unittest_import.PublicImportMessage optional_public_import_message =
       26;
 
   NestedMessage optional_lazy_message = 27 [lazy = true];
   NestedMessage optional_unverified_lazy_message = 28 [unverified_lazy = true];
-  protobuf_unittest_import.ImportMessage optional_lazy_import_message = 115
+  proto2_unittest_import.ImportMessage optional_lazy_import_message = 115
       [lazy = true];
 
   // Repeated
@@ -101,7 +101,7 @@ message TestAllTypes {
 
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessage repeated_foreign_message = 49;
-  repeated protobuf_unittest_import.ImportMessage repeated_import_message = 50;
+  repeated proto2_unittest_import.ImportMessage repeated_import_message = 50;
 
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
@@ -109,7 +109,7 @@ message TestAllTypes {
   // Omitted (compared to unittest.proto) because proto2 enums are not allowed
   // inside proto2 messages.
   //
-  // repeated protobuf_unittest_import.ImportEnum    repeated_import_enum  = 53;
+  // repeated proto2_unittest_import.ImportEnum    repeated_import_enum  = 53;
 
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];

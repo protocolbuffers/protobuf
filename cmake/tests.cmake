@@ -225,19 +225,23 @@ file(GLOB_RECURSE _local_upb_hdrs
   "${PROJECT_SOURCE_DIR}/upb/*.h"
 )
 
+# Exclude test library headers.
+list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
+  ${compiler_test_utils_hdrs} ${upb_test_util_files} ${libprotoc_hdrs})
+foreach(_hdr ${_exclude_hdrs})
+  list(REMOVE_ITEM _local_hdrs ${_hdr})
+  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
+endforeach()
+list(APPEND _local_hdrs ${libprotoc_public_hdrs})
+
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h")
-
-# Exclude test library headers.
-list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs} ${upb_test_util_files})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
-  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
 endforeach()
 
 foreach(_hdr ${_local_hdrs})

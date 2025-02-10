@@ -15,7 +15,7 @@
 
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "com/google/protobuf/non_nested_extension_lite.proto";
 

@@ -5,6 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:proto_library.bzl", "proto_library")
+load(
+    "//bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
 load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
@@ -90,6 +95,33 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "message_benchmark_proto",
+    testonly = 1,
+    srcs = ["message_benchmark.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "message_benchmark_upb_minitable_proto",
+    testonly = 1,
+    deps = [":message_benchmark_proto"],
+)
+
+cc_test(
+    name = "message_benchmark",
+    srcs = ["message_benchmark.cc"],
+    deps = [
+        ":message_benchmark_upb_minitable_proto",
+        ":mini_table",
+        "//upb:mini_table_compat",
+        "//upb:port",
+        "@com_github_google_benchmark//:benchmark_main",
+        "@com_google_absl//absl/random",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

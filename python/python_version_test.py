@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-"""Test that Kokoro is using the expected version of python."""
+"""Test that test runner is using the expected version of python."""
 
 import os
 import sys
@@ -18,7 +18,7 @@ class PythonVersionTest(unittest.TestCase):
 
     exp = os.getenv('KOKORO_PYTHON_VERSION', '')
     if not exp:
-      print('No kokoro python version found, skipping check', file=sys.stderr)
+      print('No system python version found, skipping check', file=sys.stderr)
       return
     self.assertTrue(
         sys.version.startswith(exp),

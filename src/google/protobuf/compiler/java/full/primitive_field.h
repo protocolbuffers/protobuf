@@ -36,8 +36,8 @@ namespace java {
 class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutablePrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                            int messageBitIndex,
-                                            int builderBitIndex,
+                                            int message_bit_index,
+                                            int builder_bit_index,
                                             Context* context);
   ImmutablePrimitiveFieldGenerator(const ImmutablePrimitiveFieldGenerator&) =
       delete;
@@ -81,8 +81,9 @@ class ImmutablePrimitiveOneofFieldGenerator
     : public ImmutablePrimitiveFieldGenerator {
  public:
   ImmutablePrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                        int messageBitIndex,
-                                        int builderBitIndex, Context* context);
+                                        int message_bit_index,
+                                        int builder_bit_index,
+                                        Context* context);
   ImmutablePrimitiveOneofFieldGenerator(
       const ImmutablePrimitiveOneofFieldGenerator&) = delete;
   ImmutablePrimitiveOneofFieldGenerator& operator=(
@@ -103,8 +104,8 @@ class RepeatedImmutablePrimitiveFieldGenerator
     : public ImmutablePrimitiveFieldGenerator {
  public:
   explicit RepeatedImmutablePrimitiveFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+      const FieldDescriptor* descriptor, int message_bit_index,
+      int builder_bit_index, Context* context);
   RepeatedImmutablePrimitiveFieldGenerator(
       const RepeatedImmutablePrimitiveFieldGenerator&) = delete;
   RepeatedImmutablePrimitiveFieldGenerator& operator=(

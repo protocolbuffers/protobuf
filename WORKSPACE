@@ -10,35 +10,34 @@ local_repository(
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-local_repository(
-    name = "com_google_protobuf_examples",
-    path = "examples",
-)
-
 # Load common dependencies first to ensure we use the correct version
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
 
-load("//:protobuf_extra_deps.bzl", "protobuf_extra_deps")
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
 
-protobuf_extra_deps()
+rules_java_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
+
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-
-pip_install_dependencies()
-
 # Bazel platform rules.
 http_archive(
     name = "platforms",
-    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
+    sha256 = "218efe8ee736d26a3572663b374a253c012b716d8af0c07e842e82f238a0a7ee",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
-        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
     ],
 )
 
@@ -142,6 +141,7 @@ load("@system_ruby//:bundle.bzl", "ruby_bundle")
 ruby_bundle(
     name = "protobuf_bundle",
     srcs = ["//ruby:google-protobuf.gemspec"],
+    bundler_version = "2.4.22",
     gemfile = "//ruby:Gemfile",
 )
 
@@ -175,13 +175,22 @@ http_archive(
 load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
-    name = "pip_deps",
+    name = "protobuf_pip_deps",
     requirements = "//python:requirements.txt",
 )
 
-load("@pip_deps//:requirements.bzl", "install_deps")
+load("@protobuf_pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+http_archive(
+    name = "com_google_absl_py",
+    sha256 = "8a3d0830e4eb4f66c4fa907c06edf6ce1c719ced811a12e26d9d3162f8471758",
+    strip_prefix = "abseil-py-2.1.0",
+    urls = [
+        "https://github.com/abseil/abseil-py/archive/refs/tags/v2.1.0.tar.gz",
+    ],
+)
 
 http_archive(
     name = "rules_fuzzing",
@@ -206,8 +215,8 @@ fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
-    integrity = "sha256-BCrPtzRpstGEj+FI2Bw0IsYepHqeGQDxyew29R6OcZM=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.51.0/rules_rust-v0.51.0.tar.gz"],
+    integrity = "sha256-r09Wyq5QqZpov845sUG1Cd1oVIyCBLmKt6HK/JTVuwI=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.54.1/rules_rust-v0.54.1.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
@@ -241,6 +250,7 @@ crate_repositories()
 # For testing runtime against old gencode from a previous major version.
 http_archive(
     name = "com_google_protobuf_v25.0",
+    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
     strip_prefix = "protobuf-25.0",
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
 )

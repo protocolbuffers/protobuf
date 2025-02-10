@@ -22,6 +22,12 @@ cc_library(
         "status_macros.h",
     ],
     copts = COPTS,
+    defines = ["GOOGLE_PROTOBUF_USING_BAZEL=1"] + select({
+        "//build_defs:protobuf_allow_msvc": [
+            "GOOGLE_PROTOBUF_MSVC_BAZEL_OVERRIDE=1",
+        ],
+        "//conditions:default": [],
+    }),
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     deps = [

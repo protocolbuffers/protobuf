@@ -14,6 +14,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
+#if NET5_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Google.Protobuf.Collections
 {
@@ -641,6 +644,39 @@ namespace Google.Protobuf.Collections
                 ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 array[index] = value;
             }
+        }
+
+        [SecuritySafeCritical]
+        internal Span<T> AsSpan() => array.AsSpan(0, count);
+
+        internal void SetCount(int targetCount)
+        {
+            if (targetCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(targetCount),
+                    targetCount,
+                    "Non-negative number required.");
+            }
+
+            if (targetCount > Capacity)
+            {
+                EnsureSize(targetCount);
+            }
+#if NET5_0_OR_GREATER
+            else if (targetCount < count && RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                // Only reference types need to be cleared to allow GC to collect them.
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#else
+            else if (targetCount < count)
+            {
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#endif
+
+            count = targetCount;
         }
 
         #region Explicit interface implementation for IList and ICollection.

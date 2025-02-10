@@ -1001,17 +1001,32 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           if (source_value.get() == nullptr || dest_value.get() == nullptr) {
             return -1;
           }
-          ScopedPyObjectPtr ok(PyObject_CallMethod(
-              dest_value.get(), "MergeFrom", "O", source_value.get()));
-          if (ok.get() == nullptr) {
+          if (!PyObject_TypeCheck(dest_value.get(), CMessage_Type)) {
+            PyErr_Format(PyExc_SystemError,
+                         "Unexpectedly, a map of messages contains a "
+                         "non-message value: %s",
+                         Py_TYPE(dest_value.get())->tp_name);
             return -1;
+          }
+          CMessage* target_message =
+              reinterpret_cast<CMessage*>(dest_value.get());
+          if (PyDict_Check(source_value.get())) {
+            if (InitAttributes(target_message, nullptr, source_value.get()) <
+                0) {
+              return -1;
+            }
+          } else {
+            ScopedPyObjectPtr ok(PyObject_CallMethod(
+                dest_value.get(), "MergeFrom", "O", source_value.get()));
+            if (ok.get() == nullptr) {
+              return -1;
+            }
           }
         }
       } else {
-        ScopedPyObjectPtr function_return;
-        function_return.reset(
+        ScopedPyObjectPtr ok(
             PyObject_CallMethod(map.get(), "update", "O", value));
-        if (function_return.get() == nullptr) {
+        if (ok.get() == nullptr) {
           return -1;
         }
       }
@@ -1111,33 +1126,29 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             return -1;
           }
         }
-      } else {
-        if (PyObject_TypeCheck(value, CMessage_Type)) {
-          ScopedPyObjectPtr merged(MergeFrom(cmessage, value));
-          if (merged == nullptr) {
-            return -1;
-          }
-        } else {
-          if (descriptor->message_type()->well_known_type() !=
-                  Descriptor::WELLKNOWNTYPE_UNSPECIFIED &&
-              PyObject_HasAttrString(reinterpret_cast<PyObject*>(cmessage),
-                                     "_internal_assign")) {
-            AssureWritable(cmessage);
-            ScopedPyObjectPtr ok(
-                PyObject_CallMethod(reinterpret_cast<PyObject*>(cmessage),
-                                    "_internal_assign", "O", value));
-            if (ok.get() == nullptr) {
-              return -1;
-            }
-          } else {
-            PyErr_Format(PyExc_TypeError,
-                         "Parameter to initialize message field must be "
-                         "dict or instance of same class: expected %s got %s.",
-                         std::string(descriptor->full_name()).c_str(),
-                         Py_TYPE(value)->tp_name);
-            return -1;
-          }
+      } else if (PyObject_TypeCheck(value, CMessage_Type)) {
+        ScopedPyObjectPtr merged(MergeFrom(cmessage, value));
+        if (merged == nullptr) {
+          return -1;
         }
+      } else if (descriptor->message_type()->well_known_type() !=
+                     Descriptor::WELLKNOWNTYPE_UNSPECIFIED &&
+                 PyObject_HasAttrString(reinterpret_cast<PyObject*>(cmessage),
+                                        "_internal_assign")) {
+        AssureWritable(cmessage);
+        ScopedPyObjectPtr ok(
+            PyObject_CallMethod(reinterpret_cast<PyObject*>(cmessage),
+                                "_internal_assign", "O", value));
+        if (ok.get() == nullptr) {
+          return -1;
+        }
+      } else {
+        PyErr_Format(PyExc_TypeError,
+                     "Parameter to initialize message field must be "
+                     "dict or instance of same class: expected %s got %s.",
+                     std::string(descriptor->full_name()).c_str(),
+                     Py_TYPE(value)->tp_name);
+        return -1;
       }
     } else {
       ScopedPyObjectPtr new_val;
@@ -1900,10 +1911,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   // ctx has an explicit limit set (length of string_view), so we have to
   // check we ended at that limit.
   if (!ctx.EndedAtLimit()) {
-    // TODO: Raise error and return NULL instead.
-    // b/27494216
-    PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyLong_FromLong(data.len - ctx.BytesUntilLimit(ptr));
+    PyErr_Format(DecodeError_class,
+                 "Unexpected end-group tag: Not all data was converted");
+    return nullptr;
   }
   return PyLong_FromLong(data.len);
 }

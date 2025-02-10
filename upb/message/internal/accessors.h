@@ -163,7 +163,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
   }
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
+UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
     const upb_MiniTableField* f, void* to, const void* from) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:
@@ -183,7 +183,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
   UPB_UNREACHABLE();
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
+UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     const upb_MiniTableField* f, const void* a, const void* b) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:
@@ -856,9 +856,7 @@ UPB_API_INLINE void upb_Message_Clear(struct upb_Message* msg,
   memset(msg, 0, m->UPB_PRIVATE(size));
   if (in) {
     // Reset the internal buffer to empty.
-    in->unknown_end = sizeof(upb_Message_Internal);
-    in->ext_begin = in->size;
-    UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
+    in->size = 0;
   }
 }
 
@@ -882,11 +880,15 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return;
-  const upb_Extension* base = UPB_PTR_AT(in, in->ext_begin, upb_Extension);
-  upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
-  if (ext) {
-    *ext = *base;
-    in->ext_begin += sizeof(upb_Extension);
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (ext->ext == e) {
+        in->aux_data[i] = upb_TaggedAuxPtr_Null();
+        return;
+      }
+    }
   }
 }
 

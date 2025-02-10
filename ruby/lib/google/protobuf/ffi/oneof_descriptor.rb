@@ -64,6 +64,15 @@ module Google
        end
       end
 
+      def to_proto
+        @to_proto ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.oneof_to_proto(self, size_ptr, temporary_arena)
+          Google::Protobuf::OneofDescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+        end
+      end
+
       private
 
       def initialize(oneof_def, descriptor_pool)
@@ -89,6 +98,7 @@ module Google
       attach_function :get_oneof_field_by_index, :upb_OneofDef_Field,                     [OneofDescriptor, :int], FieldDescriptor
       attach_function :get_oneof_containing_type,:upb_OneofDef_ContainingType,            [:pointer], Descriptor
       attach_function :oneof_options,            :OneOfDescriptor_serialized_options,     [OneofDescriptor, :pointer, Internal::Arena], :pointer
+      attach_function :oneof_to_proto,           :OneOfDescriptor_serialized_to_proto,    [OneofDescriptor, :pointer, Internal::Arena], :pointer
 
       # FieldDescriptor
       attach_function :real_containing_oneof,    :upb_FieldDef_RealContainingOneof,       [FieldDescriptor], OneofDescriptor

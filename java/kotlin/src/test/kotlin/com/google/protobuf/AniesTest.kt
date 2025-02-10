@@ -10,9 +10,9 @@ package com.google.protobuf.kotlin
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any as ProtoAny
 import com.google.protobuf.InvalidProtocolBufferException
-import protobuf_unittest.UnittestProto.BoolMessage
-import protobuf_unittest.UnittestProto.Int32Message
-import protobuf_unittest.int32Message
+import proto2_unittest.UnittestProto.BoolMessage
+import proto2_unittest.UnittestProto.Int32Message
+import proto2_unittest.int32Message
 import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith

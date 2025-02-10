@@ -26,7 +26,6 @@ enum { upb_JsonDecode_IgnoreUnknown = 1 };
 
 enum {
   kUpb_JsonDecodeResult_Ok = 0,
-  kUpb_JsonDecodeResult_OkWithEmptyStringNumerics = 1,
   kUpb_JsonDecodeResult_Error = 2,
 };
 

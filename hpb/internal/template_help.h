@@ -33,6 +33,9 @@ using RemovePtrT = typename RemovePtr<T>::type;
 
 template <typename T, typename U = RemovePtrT<T>,
           typename = std::enable_if_t<!std::is_const_v<U>>>
+using PtrOrRawMutable = T;
+
+template <typename T, typename U = RemovePtrT<T>>
 using PtrOrRaw = T;
 
 template <typename T, typename = void>

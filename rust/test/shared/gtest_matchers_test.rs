@@ -16,7 +16,7 @@ use unittest_rust_proto::TestAllTypes;
 macro_rules! generate_eq_msgs_tests {
   ($(($type: ident, $name_ext: ident)),*) => {
         paste! {$(
-            #[googletest::test]
+            #[gtest]
             fn [<expect_eq_msgs_ $name_ext>]() {
               let mut msg = [< $type >]::new();
               let mut msg2 = [< $type >]::new();
@@ -33,7 +33,7 @@ macro_rules! generate_eq_msgs_tests {
 macro_rules! generate_not_eq_msgs_tests {
   ($(($type: ident, $name_ext: ident)),*) => {
         paste! {$(
-            #[googletest::test]
+            #[gtest]
             fn [<expect_not_eq_msgs_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 let mut msg2 = [< $type >]::new();
@@ -51,7 +51,7 @@ generate_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
 
 generate_not_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
 
-#[googletest::test]
+#[gtest]
 fn proto_eq_works_on_view() {
     // This exercises the `impl<T> Matcher<T> for MessageMatcher<T>
     // where T: MatcherEq + Copy` implementation.

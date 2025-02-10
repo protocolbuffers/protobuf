@@ -23,7 +23,7 @@ from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import unittest_pb2
 
 try:
@@ -38,7 +38,7 @@ except ImportError:
   has_zoneinfo = False
 
 
-class TimeUtilTestBase(_parameterized.TestCase):
+class TimeUtilTestBase(parameterized.TestCase):
 
   def CheckTimestampConversion(self, message, text):
     self.assertEqual(text, message.ToJsonString())
@@ -270,7 +270,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(naive_min_datetime, ts.ToDatetime())
 
   # Two hours after the Unix Epoch, around the world.
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       ('London', [1970, 1, 1, 2], datetime.timezone.utc),
       ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
       ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
@@ -355,7 +355,7 @@ class TimeUtilTest(TimeUtilTestBase):
     )
 
   # Two hours after the Unix Epoch, around the world.
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       ('London', [1970, 1, 1, 2], datetime.timezone.utc),
       ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
       ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
@@ -368,7 +368,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(0, msg.optional_timestamp.nanos)
 
   # Two hours after the Unix Epoch, around the world.
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       ('London', [1970, 1, 1, 2], datetime.timezone.utc),
       ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
       ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
@@ -387,7 +387,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(7200, msg2.optional_timestamp.seconds)
     self.assertEqual(0, msg2.optional_timestamp.nanos)
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       (
           'tz_aware_min_dt',
           datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
@@ -426,7 +426,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(expected_sec, new_msg3.optional_timestamp.seconds)
     self.assertEqual(expected_nano, new_msg3.optional_timestamp.nanos)
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       (
           'test1',
           datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),
@@ -593,7 +593,7 @@ class TimeUtilTest(TimeUtilTestBase):
     with self.assertRaises(TypeError):
       123 - msg.optional_duration
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
   )
   def testDurationAssignment(self, microseconds, expected_sec, expected_nano):
@@ -604,7 +604,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(expected_sec, message.optional_duration.seconds)
     self.assertEqual(expected_nano, message.optional_duration.nanos)
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
   )
   def testDurationCreation(self, microseconds, expected_sec, expected_nano):
@@ -616,7 +616,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(expected_sec, message.optional_duration.seconds)
     self.assertEqual(expected_nano, message.optional_duration.nanos)
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       (
           'tz_aware_min_dt',
           datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
@@ -655,7 +655,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(expected_sec, msg3.optional_timestamp.seconds)
     self.assertEqual(expected_nano, msg3.optional_timestamp.nanos)
 
-  @_parameterized.named_parameters(
+  @parameterized.named_parameters(
       (
           'test1',
           datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),

@@ -212,7 +212,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
     vars["name"] = UnderscoresToCamelCase(oneof->name(), false);
     vars["property_name"] = UnderscoresToCamelCase(oneof->name(), true);
-    vars["original_name"] = oneof->name();
+    vars["original_name"] = std::string(oneof->name());
     printer->Print(vars,
                    "private object $name$_;\n"
                    "/// <summary>Enum of possible cases for the "

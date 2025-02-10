@@ -11,8 +11,11 @@
 /// submessage is being defined as part of the original struct literal.
 /// Introducing an expression using () or {} as the value of a field will
 /// require another call to this macro in order to return a submessage
-/// literal.``` /*
-/// Given the following proto definition
+/// literal.
+///
+/// ```rust,ignore
+/// /*
+/// Given the following proto definition:
 /// message Data {
 ///     int32 number = 1;
 ///     string letters = 2;
@@ -29,7 +32,8 @@
 ///             x + 1
 ///         }
 ///     }
-/// }); ```
+/// });
+/// ```
 #[macro_export]
 macro_rules! proto {
     ($msgtype:ty { $($tt:tt)* }) => {
@@ -99,7 +103,7 @@ macro_rules! proto_internal {
     // field with array literal, calls out to @array to look for nested messages
     (@msg $msg:ident $ident:ident : [$($elems:tt)*]) => {
         {
-            let _repeated = $crate::__internal::paste!($msg.[<$ident>]());
+            let _repeated = $msg.$ident();
             let elems = proto_internal!(@array $msg _repeated [] $($elems)*);
             $crate::__internal::paste!($msg.[<set_ $ident>](elems.into_iter()));
         }

@@ -38,7 +38,6 @@ module Google
 
       ## JSON Decoding results
       Upb_JsonDecodeResult_Ok = 0
-      Upb_JsonDecodeResult_OkWithEmptyStringNumerics = 1
       Upb_JsonDecodeResult_Error = 2
 
       typedef :pointer, :Array

@@ -690,7 +690,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an {@code int32} field, including
+   * Compute the number of bytes that would be needed to encode an {@code int32} field, excluding
    * tag.
    */
   public static int computeInt32SizeNoTag(final int value) {

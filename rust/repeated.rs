@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::{self, Debug};
 use std::iter;
 use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
@@ -12,13 +13,12 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
-use std::fmt::{self, Debug};
 
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
+    __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
-    __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
 /// Views the elements in a `repeated` field of `T`.
@@ -207,8 +207,6 @@ where
     }
 
     /// Copies from the `src` repeated field into this one.
-    ///
-    /// Also provided by [`MutProxy::set`].
     pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
         T::repeated_copy_from(src, self.as_mut())
     }
@@ -379,7 +377,10 @@ impl<T> Proxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
+    type View<'msg>
+        = RepeatedView<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> SealedInternal for Repeated<T> where T: ProxiedInRepeated {}
@@ -399,7 +400,10 @@ impl<T> MutProxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
+    type Mut<'msg>
+        = RepeatedMut<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> AsMut for Repeated<T>
@@ -585,7 +589,7 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[googletest::test]
+    #[gtest]
     fn test_primitive_repeated() {
         macro_rules! primitive_repeated_tests {
             ($($t:ty => [$($vals:expr),* $(,)?]),* $(,)?) => {
@@ -626,7 +630,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_repeated_extend() {
         let mut r = Repeated::<i32>::new();
 
@@ -643,7 +647,7 @@ mod tests {
         assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_repeated_iter_into_proxied() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);

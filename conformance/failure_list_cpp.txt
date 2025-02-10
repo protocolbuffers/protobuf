@@ -14,8 +14,6 @@ Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                      
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FieldNameExtension.Validator                                                               # Expected JSON payload but got type 1
 Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                                       # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                                      # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
 Recommended.*.JsonInput.MapFieldValueIsNull                                                                        # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.RepeatedFieldMessageElementIsNull                                                          # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.RepeatedFieldPrimitiveElementIsNull                                                        # Should have failed to parse, but didn't.
@@ -35,4 +33,3 @@ Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                          
 Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                                                            # Failed to parse input or produce output.

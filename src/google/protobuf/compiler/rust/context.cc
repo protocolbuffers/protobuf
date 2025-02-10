@@ -78,6 +78,15 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
     opts.strip_nonfunctional_codegen = true;
   }
 
+  auto generated_entry_point_rs_file_name_arg =
+      absl::c_find_if(args, [](auto& arg) {
+        return arg.first == "generated_entry_point_rs_file_name";
+      });
+  if (generated_entry_point_rs_file_name_arg != args.end()) {
+    opts.generated_entry_point_rs_file_name =
+        generated_entry_point_rs_file_name_arg->second;
+  }
+
   return opts;
 }
 

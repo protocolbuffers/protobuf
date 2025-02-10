@@ -303,7 +303,8 @@ FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* p) const {
+void FileGenerator::GenerateHeader(io::Printer* p,
+                                   absl::string_view info_path) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
     absl::btree_set<std::string> fwd_decls;
     for (const auto& generator : message_generators_) {
@@ -320,6 +321,18 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
     }
 
     p->Emit("NS_ASSUME_NONNULL_BEGIN\n\n");
+
+    if (!info_path.empty()) {
+      p->Emit({{"info_path", info_path},
+               {"guard", generation_options_.annotation_guard_name},
+               {"pragma", generation_options_.annotation_pragma_name}},
+              R"objc(
+                #ifdef $guard$
+                #pragma $pragma$ "$info_path$"
+                #endif  // $guard$
+              )objc");
+      p->Emit("\n");
+    }
 
     for (const auto& generator : enum_generators_) {
       generator->GenerateHeader(p);
@@ -459,7 +472,7 @@ void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
   });
 }
 
-void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+void FileGenerator::GenerateSourceForMessage(size_t idx, io::Printer* p) const {
   ABSL_CHECK(!is_bundled_proto_)
       << "Bundled protos aren't expected to use multi source generation.";
   const auto& generator = message_generators_[idx];

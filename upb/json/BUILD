@@ -39,9 +39,9 @@ cc_test(
     srcs = ["decode_test.cc"],
     deps = [
         ":json",
-        ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:struct_upb_proto",
         "//upb:base",
         "//upb:mem",
         "//upb:reflection",
@@ -55,9 +55,9 @@ cc_test(
     srcs = ["encode_test.cc"],
     deps = [
         ":json",
-        ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:struct_upb_proto",
         "//upb:base",
         "//upb:mem",
         "//upb:reflection",
@@ -83,13 +83,6 @@ upb_proto_reflection_library(
     name = "test_upb_proto_reflection",
     testonly = 1,
     deps = [":test_proto"],
-)
-
-# TODO: This target arguably belongs in //google/protobuf/BUILD
-upb_c_proto_library(
-    name = "struct_upb_proto",
-    testonly = 1,
-    deps = ["//:struct_proto"],
 )
 
 filegroup(

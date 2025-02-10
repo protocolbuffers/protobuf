@@ -7,11 +7,8 @@
 
 #include "google/protobuf/compiler/rust/message.h"
 
-#include <string>
-
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -303,11 +300,25 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   }
 }
 
-void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
+void MessageMutTakeCopyMergeFrom(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      ctx.Emit({},
-               R"rs(
+      ctx.Emit(R"rs(
+          impl $pb$::TakeFrom for $Msg$Mut<'_> {
+            fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = $Msg$>) {
+              //~ TODO: b/393559271 - Optimize this copy out.
+              let mut src = src.as_mut();
+              $pb$::CopyFrom::copy_from(self, $pb$::AsView::as_view(&src));
+              $pb$::Clear::clear(&mut src);
+            }
+          }
+
+          impl $pb$::CopyFrom for $Msg$Mut<'_> {
+            fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              unsafe { $pbr$::proto2_rust_Message_copy_from(self.raw_msg(), src.as_view().raw_msg()) };
+            }
+          }
+
           impl $pb$::MergeFrom for $Msg$Mut<'_> {
             fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
               // SAFETY: self and src are both valid `$Msg$`s.
@@ -321,6 +332,31 @@ void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
+          impl $pb$::TakeFrom for $Msg$Mut<'_> {
+            fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = $Msg$>) {
+              let mut src = src.as_mut();
+              //~ TODO: b/393559271 - Optimize this copy out.
+              $pb$::CopyFrom::copy_from(self, $pb$::AsView::as_view(&src));
+              $pb$::Clear::clear(&mut src);
+            }
+          }
+
+          impl $pb$::CopyFrom for $Msg$Mut<'_> {
+            fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              // SAFETY: self and src are both valid `$Msg$`s associated with
+              // `Self::mini_table()`.
+              unsafe {
+                assert!(
+                  $pbr$::upb_Message_DeepCopy(
+                    self.raw_msg(),
+                    src.as_view().raw_msg(),
+                    <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                    self.arena().raw())
+                );
+              }
+            }
+          }
+
           impl $pb$::MergeFrom for $Msg$Mut<'_> {
             fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
               // SAFETY: self and src are both valid `$Msg$`s.
@@ -584,7 +620,7 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                   raw_parent_arena: $pbr$::RawArena,
                   mut val: Self) -> $pbr$::upb_MessageValue {
                   // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-                  let parent_arena = core::mem::ManuallyDrop::new(
+                  let parent_arena = $std$::mem::ManuallyDrop::new(
                       unsafe { $pbr$::Arena::from_raw(raw_parent_arena) });
 
                   parent_arena.fuse(val.as_mutator_message_ref($pbi$::Private).arena());
@@ -621,119 +657,123 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     return;
   }
   ctx.Emit(
-      {{"Msg", RsSafeName(msg.name())},
-       {"Msg::new", [&] { MessageNew(ctx, msg); }},
-       {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-       {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
-       {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
-       {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
-       {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
-       {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
-       {"default_instance_impl",
-        [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
-       {"accessor_fns",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::OWNED);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::OWNED);
-          }
-        }},
-       {"nested_in_msg",
-        [&] {
-          // If we have no nested types, enums, or oneofs, bail out without
-          // emitting an empty mod some_msg.
-          if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
-              msg.real_oneof_decl_count() == 0) {
-            return;
-          }
-          ctx.Emit({{"mod_name", RsSafeName(CamelToSnakeCase(msg.name()))},
-                    {"nested_msgs",
-                     [&] {
-                       for (int i = 0; i < msg.nested_type_count(); ++i) {
-                         GenerateRs(ctx, *msg.nested_type(i));
-                       }
-                     }},
-                    {"nested_enums",
-                     [&] {
-                       for (int i = 0; i < msg.enum_type_count(); ++i) {
-                         GenerateEnumDefinition(ctx, *msg.enum_type(i));
-                       }
-                     }},
-                    {"oneofs",
-                     [&] {
-                       for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-                         GenerateOneofDefinition(ctx, *msg.real_oneof_decl(i));
-                       }
-                     }}},
-                   R"rs(
-                 pub mod $mod_name$ {
+      {
+          {"Msg", RsSafeName(msg.name())},
+          {"Msg::new", [&] { MessageNew(ctx, msg); }},
+          {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+          {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
+          {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
+          {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+          {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
+          {"MsgMut::take_copy_merge_from",
+           [&] { MessageMutTakeCopyMergeFrom(ctx, msg); }},
+          {"default_instance_impl",
+           [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
+          {"accessor_fns",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::OWNED);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::OWNED);
+             }
+           }},
+          {"nested_in_msg",
+           [&] {
+             // If we have no nested types, enums, or oneofs, bail out without
+             // emitting an empty mod some_msg.
+             if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
+                 msg.real_oneof_decl_count() == 0) {
+               return;
+             }
+             ctx.PushModule(RsSafeName(CamelToSnakeCase(msg.name())));
+             ctx.Emit(
+                 {{"nested_msgs",
+                   [&] {
+                     for (int i = 0; i < msg.nested_type_count(); ++i) {
+                       GenerateRs(ctx, *msg.nested_type(i));
+                     }
+                   }},
+                  {"nested_enums",
+                   [&] {
+                     for (int i = 0; i < msg.enum_type_count(); ++i) {
+                       GenerateEnumDefinition(ctx, *msg.enum_type(i));
+                     }
+                   }},
+                  {"oneofs",
+                   [&] {
+                     for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+                       GenerateOneofDefinition(ctx, *msg.real_oneof_decl(i));
+                     }
+                   }}},
+                 R"rs(
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
-                 }  // mod $mod_name$
                 )rs");
-        }},
-       {"raw_arena_getter_for_message",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit({}, R"rs(
+             ctx.PopModule();
+           }},
+          {"raw_arena_getter_for_message",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     &self.inner.arena
                   }
                   )rs");
-          }
-        }},
-       {"raw_arena_getter_for_msgmut",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit({}, R"rs(
+             }
+           }},
+          {"raw_arena_getter_for_msgmut",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     self.inner.arena()
                   }
                   )rs");
-          }
-        }},
-       {"accessor_fns_for_views",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::VIEW);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::VIEW);
-          }
-        }},
-       {"accessor_fns_for_muts",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
-          }
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
-                                   AccessorCase::MUT);
-          }
-        }},
-       {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
-       {"upb_generated_message_trait_impls",
-        [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
-       {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
-       {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
-       {"unwrap_upb",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit(".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block())");
-          }
-        }},
-       {"upb_arena",
-        [&] {
-          if (ctx.is_upb()) {
-            ctx.Emit(", inner.msg_ref().arena().raw()");
-          }
-        }}},
+             }
+           }},
+          {"accessor_fns_for_views",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::VIEW);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::VIEW);
+             }
+           }},
+          {"accessor_fns_for_muts",
+           [&] {
+             for (int i = 0; i < msg.field_count(); ++i) {
+               GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
+             }
+             for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                      AccessorCase::MUT);
+             }
+           }},
+          {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
+          {"upb_generated_message_trait_impls",
+           [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
+          {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
+          {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
+          {"unwrap_upb",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit(
+                   ".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block())");
+             }
+           }},
+          {"upb_arena",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit(", inner.msg_ref().arena().raw()");
+             }
+           }},
+      },
       R"rs(
         #[allow(non_camel_case_types)]
         pub struct $Msg$ {
@@ -760,6 +800,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pb$::TakeFrom for $Msg$ {
+          fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = Self>) {
+            let mut m = self.as_mut();
+            $pb$::TakeFrom::take_from(&mut m, src)
+          }
+        }
+
+        impl $pb$::CopyFrom for $Msg$ {
+          fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = Self>) {
+            let mut m = self.as_mut();
+            $pb$::CopyFrom::copy_from(&mut m, src)
+          }
+        }
+
         impl $pb$::MergeFrom for $Msg$ {
           fn merge_from<'src>(&mut self, src: impl $pb$::AsView<Proxied = Self>) {
             let mut m = self.as_mut();
@@ -775,7 +829,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Clear for $Msg$ {
           fn clear(&mut self) {
-            self.as_mut().clear()
+            let mut m = self.as_mut();
+            $pb$::Clear::clear(&mut m)
           }
         }
 
@@ -916,7 +971,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
-        $MsgMut::merge_from$
+        $MsgMut::take_copy_merge_from$
 
         #[allow(dead_code)]
         impl<'msg> $Msg$Mut<'msg> {

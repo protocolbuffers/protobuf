@@ -932,6 +932,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
                                const Reflection& reflection1,
                                const FieldDescriptor* field2) const;
 
+  // We move this code out of line to reduce stack cost of the caller.
+  // The map lookups and string copies are costly in stack space.
+  PROTOBUF_NOINLINE void ForceCompareField(const FieldDescriptor* field);
+
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;

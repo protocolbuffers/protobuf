@@ -69,7 +69,7 @@ cc_test(
         ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf/json",
         "//upb:base",
         "//upb:json",
@@ -98,19 +98,16 @@ SIZE_BENCHMARKS = {
 py_binary(
     name = "gen_synthetic_protos",
     srcs = ["gen_synthetic_protos.py"],
-    python_version = "PY3",
 )
 
 py_binary(
     name = "gen_upb_binary_c",
     srcs = ["gen_upb_binary_c.py"],
-    python_version = "PY3",
 )
 
 py_binary(
     name = "gen_protobuf_binary_cc",
     srcs = ["gen_protobuf_binary_cc.py"],
-    python_version = "PY3",
 )
 
 genrule(

@@ -1098,6 +1098,29 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
+  enum EnforceNamingStyle {
+    ENFORCE_NAMING_STYLE_UNKNOWN = 0;
+    STYLE2024 = 1;
+    STYLE_LEGACY = 2;
+  }
+  optional EnforceNamingStyle enforce_naming_style = 7 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_ONEOF,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_SERVICE,
+    targets = TARGET_TYPE_METHOD,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
+  ];
+
   reserved 999;
 
   extensions 1000 to 9994 [

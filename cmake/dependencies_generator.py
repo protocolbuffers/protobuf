@@ -90,8 +90,11 @@ class ModuleFileFunctions(object):
   def use_repo(self, *args, **kwargs):
     pass
 
-  def use_extension(self, *args):
+  def use_extension(self, *args, **kwargs):
     return ExtensionFunctions()
+
+  def local_path_override(self, *args, **kwargs):
+    pass
 
 
 class Converter(object):
@@ -114,7 +117,7 @@ class Converter(object):
     #
     # Changes to this file will be overwritten based on Bazel definitions.
 
-    if(${CMAKE_VERSION} VERSION_GREATER 3.10 OR ${CMAKE_VERSION} VERSION_EQUAL 3.10)
+    if(${CMAKE_VERSION} VERSION_GREATER 3.16 OR ${CMAKE_VERSION} VERSION_EQUAL 3.16)
       include_guard()
     endif()
 

@@ -15,7 +15,7 @@ use protobuf::Optional;
 use unittest_proto3_optional_rust_proto::{test_proto3_optional, TestProto3Optional};
 use unittest_proto3_rust_proto::{test_all_types, TestAllTypes};
 
-#[googletest::test]
+#[gtest]
 fn test_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_fixed32(), eq(0));
@@ -30,7 +30,7 @@ fn test_fixed32_accessors() {
     assert_that!(msg.optional_fixed32(), eq(43));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_bool_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_bool(), eq(false));
@@ -42,7 +42,7 @@ fn test_bool_accessors() {
     assert_that!(msg.optional_bool(), eq(false));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_bytes_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_bytes', the field is actually not
@@ -62,7 +62,7 @@ fn test_bytes_accessors() {
     assert_that!(*msg.optional_bytes(), empty());
 }
 
-#[googletest::test]
+#[gtest]
 fn test_optional_bytes_accessors() {
     let mut msg = TestProto3Optional::new();
     assert_that!(*msg.optional_bytes(), empty());
@@ -84,7 +84,7 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"\xffbinary\x85non-utf8"[..])));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_string_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_string', the field is actually not
@@ -104,7 +104,7 @@ fn test_string_accessors() {
     assert_that!(*msg.optional_string().as_bytes(), empty());
 }
 
-#[googletest::test]
+#[gtest]
 fn test_optional_string_accessors() {
     let mut msg = TestProto3Optional::new();
     assert_that!(*msg.optional_string().as_bytes(), empty());
@@ -126,7 +126,7 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_nested_enum_accessors() {
     use test_all_types::NestedEnum;
 
@@ -140,7 +140,7 @@ fn test_nested_enum_accessors() {
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_optional_nested_enum_accessors() {
     use test_proto3_optional::NestedEnum;
 
@@ -157,7 +157,7 @@ fn test_optional_nested_enum_accessors() {
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Unspecified)));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_foreign_enum_accessors() {
     use unittest_proto3_rust_proto::ForeignEnum;
 
@@ -171,9 +171,9 @@ fn test_foreign_enum_accessors() {
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_oneof_accessors() {
-    use test_all_types::OneofField::*;
+    use test_all_types::OneofFieldOneof::*;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
@@ -200,9 +200,9 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_oneof_accessors_view_long_lifetime() {
-    use test_all_types::OneofField::*;
+    use test_all_types::OneofFieldOneof::*;
 
     let mut msg = TestAllTypes::new();
     msg.set_oneof_uint32(7);
@@ -216,25 +216,25 @@ fn test_oneof_accessors_view_long_lifetime() {
     assert_that!(oneof, matches_pattern!(OneofUint32(eq(7))));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_oneof_enum_accessors() {
     use unittest_proto3_rust_proto::{
-        test_oneof2::{Foo, FooCase, NestedEnum},
+        test_oneof2::{FooCase, FooOneof, NestedEnum},
         TestOneof2,
     };
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
-    assert_that!(msg.foo(), matches_pattern!(Foo::not_set(_)));
+    assert_that!(msg.foo(), matches_pattern!(FooOneof::not_set(_)));
     assert_that!(msg.foo_case(), matches_pattern!(FooCase::not_set));
 
     msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
-    assert_that!(msg.foo(), matches_pattern!(Foo::FooEnum(eq(NestedEnum::Bar))));
+    assert_that!(msg.foo(), matches_pattern!(FooOneof::FooEnum(eq(NestedEnum::Bar))));
     assert_that!(msg.foo_case(), matches_pattern!(FooCase::FooEnum));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_submsg_setter() {
     use test_all_types::*;
 
@@ -247,7 +247,7 @@ fn test_submsg_setter() {
     assert_that!(parent.optional_nested_message().bb(), eq(7));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_ctype_stringpiece() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_string_piece(), eq(""));
@@ -255,7 +255,7 @@ fn test_ctype_stringpiece() {
     assert_that!(msg.optional_string_piece(), eq("hello"));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_msg_clear() {
     let mut m = TestAllTypes::new();
     m.set_optional_int32(42);
@@ -264,7 +264,7 @@ fn test_msg_clear() {
     assert_that!(m.optional_int32(), eq(0));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_submsg_clear() {
     let mut m = TestAllTypes::new();
     let mut sub = m.optional_nested_message_mut();

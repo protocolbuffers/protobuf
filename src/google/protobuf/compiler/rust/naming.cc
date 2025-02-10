@@ -8,6 +8,7 @@
 #include "google/protobuf/compiler/rust/naming.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -39,7 +39,15 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return RsSafeName(ctx.ImportPathToCrateName(dep.name()));
+  return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
+}
+
+std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {
+  size_t last_slash = file.name().find_last_of('/');
+  return absl::StrCat(last_slash == std::string::npos
+                          ? ""
+                          : file.name().substr(0, last_slash + 1),
+                      ctx.opts().generated_entry_point_rs_file_name);
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -103,15 +111,6 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
 }
 
 template <typename Desc>
-std::string GetFullyQualifiedPath(Context& ctx, const Desc& desc) {
-  auto rel_path = GetCrateRelativeQualifiedPath(ctx, desc);
-  if (IsInCurrentlyGeneratingCrate(ctx, desc)) {
-    return absl::StrCat("crate::", rel_path);
-  }
-  return absl::StrCat(GetCrateName(ctx, *desc.file()), "::", rel_path);
-}
-
-template <typename Desc>
 std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc) {
   return UnderscoreDelimitFullName(ctx, desc.full_name());
 }
@@ -140,16 +139,24 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::DOUBLE:
       return "f64";
     case RustFieldType::BYTES:
-      return "::__pb::ProtoBytes";
+      return "::protobuf::ProtoBytes";
     case RustFieldType::STRING:
-      return "::__pb::ProtoString";
+      return "::protobuf::ProtoString";
     case RustFieldType::MESSAGE:
-      return GetFullyQualifiedPath(ctx, *field.message_type());
+      return RsTypePath(ctx, *field.message_type());
     case RustFieldType::ENUM:
-      return GetFullyQualifiedPath(ctx, *field.enum_type());
+      return RsTypePath(ctx, *field.enum_type());
   }
   ABSL_LOG(ERROR) << "Unknown field type: " << field.type_name();
   internal::Unreachable();
+}
+
+std::string RsTypePath(Context& ctx, const Descriptor& message) {
+  return absl::StrCat(RustModule(ctx, message), RsSafeName(message.name()));
+}
+
+std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor) {
+  return absl::StrCat(RustModule(ctx, descriptor), EnumRsName(descriptor));
 }
 
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
@@ -169,23 +176,23 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
     case RustFieldType::BYTES:
       return absl::StrFormat("&%s [u8]", lifetime);
     case RustFieldType::STRING:
-      return absl::StrFormat("&%s ::__pb::ProtoStr", lifetime);
+      return absl::StrFormat("&%s ::protobuf::ProtoStr", lifetime);
     case RustFieldType::MESSAGE:
       if (lifetime.empty()) {
-        return absl::StrFormat(
-            "%sView", GetFullyQualifiedPath(ctx, *field.message_type()));
+        return absl::StrFormat("%sView",
+                               RsTypePath(ctx, *field.message_type()));
       } else {
         return absl::StrFormat(
-            "%sView<%s>", GetFullyQualifiedPath(ctx, *field.message_type()),
-            lifetime);
+            "%sView<%s>", RsTypePath(ctx, *field.message_type()), lifetime);
       }
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
   internal::Unreachable();
 }
 
-std::string RustModuleForContainingType(Context& ctx,
-                                        const Descriptor* containing_type) {
+static std::string RustModuleForContainingType(
+    Context& ctx, const Descriptor* containing_type,
+    const FileDescriptor& file) {
   std::vector<std::string> modules;
 
   // Innermost to outermost order.
@@ -204,33 +211,39 @@ std::string RustModuleForContainingType(Context& ctx,
     modules.push_back("");
   }
 
-  return absl::StrJoin(modules, "::");
+  std::string crate_relative = absl::StrJoin(modules, "::");
+
+  if (IsInCurrentlyGeneratingCrate(ctx, file)) {
+    std::string prefix;
+    for (size_t i = 0; i < ctx.GetModuleDepth(); ++i) {
+      prefix += "super::";
+    }
+    return absl::StrCat(prefix, crate_relative);
+  }
+  return absl::StrCat(GetCrateName(ctx, file), "::", crate_relative);
 }
 
 std::string RustModule(Context& ctx, const Descriptor& msg) {
-  return RustModuleForContainingType(ctx, msg.containing_type());
+  return RustModuleForContainingType(ctx, msg.containing_type(), *msg.file());
 }
 
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
-  return RustModuleForContainingType(ctx, enum_.containing_type());
+  return RustModuleForContainingType(ctx, enum_.containing_type(),
+                                     *enum_.file());
 }
 
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
-  return RustModuleForContainingType(ctx, oneof.containing_type());
+  return RustModuleForContainingType(ctx, oneof.containing_type(),
+                                     *oneof.file());
 }
 
-std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
+std::string RustInternalModuleName(const FileDescriptor& file) {
   return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {{"_", "__"}, {"/", "_s"}}));
-}
-
-std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg) {
-  return absl::StrCat(RustModule(ctx, msg), RsSafeName(msg.name()));
-}
-
-std::string GetCrateRelativeQualifiedPath(Context& ctx,
-                                          const EnumDescriptor& enum_) {
-  return absl::StrCat(RustModule(ctx, enum_), EnumRsName(enum_));
+      absl::StrReplaceAll(StripProto(file.name()), {
+                                                       {"_", "__"},
+                                                       {"/", "_s"},
+                                                       {"-", "__"},
+                                                   }));
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
@@ -321,12 +334,14 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
 }
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
-  return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
+  return SnakeToUpperCamelCase(oneof.name()) + "Oneof";
 }
 
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
-  // Note: This is the name used for the cpp Case enum, we use it for both
-  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
+  return SnakeToUpperCamelCase(oneof.name()) + "Case";
+}
+
+std::string OneofCaseEnumCppName(const OneofDescriptor& oneof) {
   return SnakeToUpperCamelCase(oneof.name()) + "Case";
 }
 
