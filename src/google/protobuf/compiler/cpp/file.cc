@@ -1680,6 +1680,8 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
   }
+  if (options_.field_listener_options.inject_field_listener_events)
+  IncludeFile("third_party/protobuf/field_access_listener.h", p);
   if (HasCordFields(file_, options_)) {
     p->Emit(R"(
       #include "absl/strings/cord.h"
