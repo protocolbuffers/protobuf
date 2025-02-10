@@ -894,38 +894,30 @@ static void DecodeSingleValueFromInputStream(GPBExtensionDescriptor *extension,
         nsValue = [[NSNumber alloc] initWithInt:val];
       } else {
         AddUnknownFieldVarint32(messageToGetExtension, extension->description_->fieldNumber, val);
-        nsValue = nil;
+        return;
       }
       break;
     }
-    case GPBDataTypeGroup:
-    case GPBDataTypeMessage: {
-      if (description->dataType == GPBDataTypeGroup) {
-        [input readGroup:description->fieldNumber
-                      message:targetMessage
-            extensionRegistry:extensionRegistry];
-      } else {
-// description->dataType == GPBDataTypeMessage
-#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
-        NSCAssert(!GPBExtensionIsWireFormat(description),
-                  @"Internal error: got a MessageSet extension when not expected.");
-#endif
-        [input readMessage:targetMessage extensionRegistry:extensionRegistry];
-      }
+    case GPBDataTypeGroup: {
+      [input readGroup:description->fieldNumber
+                    message:targetMessage
+          extensionRegistry:extensionRegistry];
       // Nothing to add below since the caller provided the message (and added it).
-      nsValue = nil;
-      break;
+      return;
+    }
+    case GPBDataTypeMessage: {
+      [input readMessage:targetMessage extensionRegistry:extensionRegistry];
+      // Nothing to add below since the caller provided the message (and added it).
+      return;
     }
   }  // switch
 
-  if (nsValue) {
-    if (isRepeated) {
-      [messageToGetExtension addExtension:extension value:nsValue];
-    } else {
-      [messageToGetExtension setExtension:extension value:nsValue];
-    }
-    [nsValue release];
+  if (isRepeated) {
+    [messageToGetExtension addExtension:extension value:nsValue];
+  } else {
+    [messageToGetExtension setExtension:extension value:nsValue];
   }
+  [nsValue release];
 }
 
 static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
@@ -1576,24 +1568,41 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output {
   GPBDescriptor *descriptor = [self descriptor];
+  BOOL isMessageSetWireFormat = descriptor.isWireFormat;
   NSArray *fieldsArray = descriptor->fields_;
   NSUInteger fieldCount = fieldsArray.count;
-  const GPBExtensionRange *extensionRanges = descriptor.extensionRanges;
-  NSUInteger extensionRangesCount = descriptor.extensionRangesCount;
   NSArray *sortedExtensions =
       [[extensionMap_ allKeys] sortedArrayUsingSelector:@selector(compareByFieldNumber:)];
-  for (NSUInteger i = 0, j = 0; i < fieldCount || j < extensionRangesCount;) {
-    if (i == fieldCount) {
-      [self writeExtensionsToCodedOutputStream:output
-                                         range:extensionRanges[j++]
-                              sortedExtensions:sortedExtensions];
-    } else if (j == extensionRangesCount ||
-               GPBFieldNumber(fieldsArray[i]) < extensionRanges[j].start) {
-      [self writeField:fieldsArray[i++] toCodedOutputStream:output];
-    } else {
-      [self writeExtensionsToCodedOutputStream:output
-                                         range:extensionRanges[j++]
-                              sortedExtensions:sortedExtensions];
+  if (isMessageSetWireFormat) {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+    NSAssert(fieldCount == 0, @"MessageSet wire format messages must have no fields.");
+#endif
+    for (GPBExtensionDescriptor *extension in sortedExtensions) {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+      NSAssert(extension.dataType == GPBDataTypeMessage,
+               @"Internal Error: MessageSet extension must be a message field.");
+      NSAssert(!GPBExtensionIsRepeated(extension->description_),
+               @"Internal Error: MessageSet extension can't be repeated.");
+#endif
+      id value = [extensionMap_ objectForKey:extension];
+      [output writeMessageSetExtension:(int32_t)extension.fieldNumber value:value];
+    }
+  } else {
+    const GPBExtensionRange *extensionRanges = descriptor.extensionRanges;
+    NSUInteger extensionRangesCount = descriptor.extensionRangesCount;
+    for (NSUInteger i = 0, j = 0; i < fieldCount || j < extensionRangesCount;) {
+      if (i == fieldCount) {
+        [self writeExtensionsToCodedOutputStream:output
+                                           range:extensionRanges[j++]
+                                sortedExtensions:sortedExtensions];
+      } else if (j == extensionRangesCount ||
+                 GPBFieldNumber(fieldsArray[i]) < extensionRanges[j].start) {
+        [self writeField:fieldsArray[i++] toCodedOutputStream:output];
+      } else {
+        [self writeExtensionsToCodedOutputStream:output
+                                           range:extensionRanges[j++]
+                                sortedExtensions:sortedExtensions];
+      }
     }
   }
   if (unknownFieldData_) {
@@ -2359,8 +2368,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
     NSAssert(extension.dataType == GPBDataTypeMessage,
              @"Internal Error: MessageSet extension must be a message field.");
-    NSAssert(GPBExtensionIsWireFormat(extension->description_),
-             @"Internal Error: MessageSet extension must have message_set_wire_format set.");
     NSAssert(!GPBExtensionIsRepeated(extension->description_),
              @"Internal Error: MessageSet extension can't be repeated.");
 #endif
@@ -3280,9 +3287,22 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   result += [unknownFieldData_ length];
 
   // Add any extensions.
-  for (GPBExtensionDescriptor *extension in extensionMap_) {
-    id value = [extensionMap_ objectForKey:extension];
-    result += GPBComputeExtensionSerializedSizeIncludingTag(extension, value);
+  if (descriptor.isWireFormat) {
+    for (GPBExtensionDescriptor *extension in extensionMap_) {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+      NSAssert(extension.dataType == GPBDataTypeMessage,
+               @"Internal Error: MessageSet extension must be a message field.");
+      NSAssert(!GPBExtensionIsRepeated(extension->description_),
+               @"Internal Error: MessageSet extension can't be repeated.");
+#endif
+      id value = [extensionMap_ objectForKey:extension];
+      result += GPBComputeMessageSetExtensionSize((int32_t)extension.fieldNumber, value);
+    }
+  } else {
+    for (GPBExtensionDescriptor *extension in extensionMap_) {
+      id value = [extensionMap_ objectForKey:extension];
+      result += GPBComputeExtensionSerializedSizeIncludingTag(extension, value);
+    }
   }
 
   return result;
