@@ -191,8 +191,8 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_upb_proto",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -267,9 +267,9 @@ cc_test(
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -280,8 +280,8 @@ cc_test(
         ":message",
         "//upb:base",
         "//upb:mem",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -299,9 +299,9 @@ cc_test(
         "//upb:wire_reader",
         "//upb/base:internal",
         "//upb/test:test_messages_proto2_upb_proto",
-        "@com_google_absl//absl/types:variant",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/types:variant",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -321,9 +321,9 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_upb_proto",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -334,8 +334,8 @@ cc_test(
         ":message",
         "//upb:base",
         "//upb:mem",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -358,9 +358,9 @@ cc_test(
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -387,9 +387,9 @@ cc_test(
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/text:debug",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -440,8 +440,8 @@ cc_test(
         "//upb:base",
         "//upb:mem",
         "//upb:wire",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

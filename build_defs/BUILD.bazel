@@ -66,6 +66,14 @@ selects.config_setting_group(
     ],
 )
 
+platform(
+    name = "aarch64_linux",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
+)
+
 config_setting(
     name = "aarch64",
     values = {"cpu": "linux-aarch_64"},
