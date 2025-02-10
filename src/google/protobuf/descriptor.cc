@@ -1092,14 +1092,16 @@ bool AllowedExtendeeInProto3(const std::string& name) {
 }
 
 const FeatureSetDefaults& GetCppFeatureSetDefaults() {
-  static const FeatureSetDefaults* default_spec = [] {
-    auto* defaults = new FeatureSetDefaults();
-    internal::ParseNoReflection(
-        absl::string_view{PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                          sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-        *defaults);
-    return defaults;
-  }();
+  static const FeatureSetDefaults* default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
   return *default_spec;
 }
 
@@ -3786,6 +3788,16 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
   return type() == TYPE_ENUM &&
          (features().GetExtension(pb::cpp).legacy_closed_enum() ||
           enum_type()->is_closed());
+}
+
+FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+  ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  switch (internal::cpp::EffectiveStringCType(this)) {
+  case FieldOptions::CORD:
+    return CppStringType::kCord;
+  default:
+    return CppStringType::kString;
+  }
 }
 
 // Location methods ===============================================

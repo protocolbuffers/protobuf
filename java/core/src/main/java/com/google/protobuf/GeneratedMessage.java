@@ -310,9 +310,27 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     return memoizedSize;
   }
 
+  static final String PRE22_GENCODE_ACKNOWLEGE_PROPERTY =
+      "com.google.protobuf.use_unsafe_pre22_gencode";
+  static final String PRE22_GENCODE_VULNERABILITY_MESSAGE =
+      "As of 2022/09/29 (release 21.7) makeExtensionsImmutable should not be called from protobuf"
+          + " gencode. If you are seeing this message, your gencode is vulnerable to a denial of"
+          + " service attack. You should regenerate your code using protobuf 25.6 or later. Use the"
+          + " latest version that meets your needs. However, if you understand the risks and wish"
+          + " to continue with vulnerable gencode, you can set the system property"
+          + " `-Dcom.google.protobuf.use_unsafe_pre22_gencode` on the command line. See security"
+          + " vulnerability:"
+          + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
+
+  static void warnPre22Gencode() {
+    if (System.getProperty(PRE22_GENCODE_ACKNOWLEGE_PROPERTY) == null) {
+      throw new UnsupportedOperationException(PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    }
+  }
+
   /** Used by parsing constructors in generated classes. */
   protected void makeExtensionsImmutable() {
-    // Noop for messages without extensions.
+    warnPre22Gencode();
   }
 
   /**
@@ -902,6 +920,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Used by parsing constructors in generated classes. */
     @Override
     protected void makeExtensionsImmutable() {
+      warnPre22Gencode();
       extensions.makeImmutable();
     }
 

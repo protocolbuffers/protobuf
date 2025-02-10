@@ -219,7 +219,8 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
   if (size == 0) {
     result = @"";
   } else {
-    CheckSize(state, size);
+    size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+    CheckSize(state, size2);
     result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
                                       length:ns_size
                                     encoding:NSUTF8StringEncoding];
@@ -239,8 +240,9 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
   uint64_t size = GPBCodedInputStreamReadUInt64(state);
   CheckFieldSize(size);
+  size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+  CheckSize(state, size2);
   NSUInteger ns_size = (NSUInteger)size;
-  CheckSize(state, size);
   NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:ns_size];
   state->bufferPos += size;
   return result;
@@ -249,8 +251,9 @@ NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
 NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state) {
   uint64_t size = GPBCodedInputStreamReadUInt64(state);
   CheckFieldSize(size);
+  size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+  CheckSize(state, size2);
   NSUInteger ns_size = (NSUInteger)size;
-  CheckSize(state, size);
   // Cast is safe because freeWhenDone is NO.
   NSData *result = [[NSData alloc] initWithBytesNoCopy:(void *)(state->bytes + state->bufferPos)
                                                 length:ns_size
@@ -338,7 +341,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
     case GPBWireFormatLengthDelimited: {
       uint64_t size = GPBCodedInputStreamReadUInt64(&state_);
       CheckFieldSize(size);
-      SkipRawData(&state_, size);
+      size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+      SkipRawData(&state_, size2);
       return YES;
     }
     case GPBWireFormatStartGroup:
@@ -441,7 +445,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   CheckRecursionLimit(&state_);
   uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
   CheckFieldSize(length);
-  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
+  size_t length2 = (size_t)length;  // Cast safe on 32bit because of CheckFieldSize() above.
+  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length2);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
   GPBCodedInputStreamCheckLastTagWas(&state_, 0);
@@ -456,7 +461,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   CheckRecursionLimit(&state_);
   uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
   CheckFieldSize(length);
-  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
+  size_t length2 = (size_t)length;  // Cast safe on 32bit because of CheckFieldSize() above.
+  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length2);
   ++state_.recursionDepth;
   GPBDictionaryReadEntry(mapDictionary, self, extensionRegistry, field, parentMessage);
   GPBCodedInputStreamCheckLastTagWas(&state_, 0);

@@ -144,18 +144,24 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
- * exists with the given name.
+ * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
+  const upb_FieldDef* fielddef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
+  }
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
   }
 
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
@@ -856,7 +862,7 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  const upb_MessageDef* msg = Message_Get(msg_rb, &m);
+  const upb_Message* msg = Message_Get(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -876,7 +882,7 @@ static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -897,7 +903,7 @@ static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
   upb_Arena* arena = Arena_get(Message_GetArena(msg_rb));
   upb_MessageValue msgval;
 

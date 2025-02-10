@@ -528,6 +528,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    */
   protected void makeExtensionsImmutable() {
     // Noop for messages without extensions.
+    GeneratedMessage.warnPre22Gencode();
   }
 
   /**
@@ -1275,6 +1276,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      */
     @Override
     protected void makeExtensionsImmutable() {
+      GeneratedMessage.warnPre22Gencode();
       extensions.makeImmutable();
     }
 

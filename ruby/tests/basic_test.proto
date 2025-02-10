@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package basic_test;
 
+import "google/protobuf/descriptor.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -70,12 +71,23 @@ message TestMessage2 {
   optional int32 foo = 1;
 }
 
+extend google.protobuf.OneofOptions {
+  optional string test_top_level_option = 1000;
+}
+
 message TestDeprecatedMessage {
   option deprecated = true;
+
+  extend google.protobuf.OneofOptions {
+    optional string test_nested_option = 1001;
+  }
 
   optional int32 foo = 1 [deprecated = true];
 
   oneof test_deprecated_message_oneof {
+    option (test_top_level_option) = "Custom option value";
+    option (test_nested_option) = "Another custom option value";
+
     string a = 2;
     int32 b = 3;
   }

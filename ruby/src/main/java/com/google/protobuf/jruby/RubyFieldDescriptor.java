@@ -103,6 +103,10 @@ public class RubyFieldDescriptor extends RubyObject {
     return this.name;
   }
 
+  protected void setName(IRubyObject name) {
+    this.name = name;
+  }
+
   /*
    * call-seq:
    *     FieldDescriptor.subtype => message_or_enum_descriptor
@@ -229,7 +233,7 @@ public class RubyFieldDescriptor extends RubyObject {
    */
   @JRubyMethod(name = "set")
   public IRubyObject setValue(ThreadContext context, IRubyObject message, IRubyObject value) {
-    ((RubyMessage) message).setField(context, descriptor, value);
+    ((RubyMessage) message).setField(context, this, value);
     return context.nil;
   }
 
@@ -261,6 +265,10 @@ public class RubyFieldDescriptor extends RubyObject {
     this.descriptor = descriptor;
     this.name = context.runtime.newString(descriptor.getName());
     this.pool = pool;
+  }
+
+  protected FieldDescriptor getDescriptor() {
+    return descriptor;
   }
 
   private void calculateLabel(ThreadContext context) {

@@ -19,9 +19,9 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
-          - { name: TSAN, flags: --config=tsan }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-4core }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-4core }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-4core }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
@@ -77,7 +77,7 @@ jobs:
       matrix:
         arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -314,12 +314,12 @@ jobs:
       matrix:
         include:
           - name: MacOS
-            os: macos-12
-            cache_key: macos-12
+            os: macos-13
+            cache_key: macos-13
             bazel: test //src/...
           - name: MacOS Apple Silicon (build only)
-            os: macos-12
-            cache_key: macos-12-arm
+            os: macos-13
+            cache_key: macos-13-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/...
@@ -347,7 +347,7 @@ jobs:
       matrix:
         include:
           - name: MacOS CMake
-            os: macos-12
+            os: macos-13
             flags: -DCMAKE_CXX_STANDARD=14
             cache-prefix: macos-cmake
           - name: Windows CMake
@@ -367,7 +367,7 @@ jobs:
             vsversion: '2019'
             cache-prefix: windows-2019-cmake
             # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
-            python-version: '3.8'
+            python-version: '3.9'
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-

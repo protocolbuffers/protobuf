@@ -19,14 +19,13 @@ jobs:
         config:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
-          - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-4core }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: b/297027295 - Add 32-bit ASAN test
 
     name: ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes
@@ -90,7 +89,7 @@ jobs:
           - { name: "macOS", bazel-command: "test" }
           - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
     name: ${{ matrix.config.name }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -148,11 +147,11 @@ jobs:
           bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: python-wheels
           path: wheels/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
@@ -170,13 +169,13 @@ jobs:
           # supported Python versions and assume this gives us sufficient test
           # coverage.
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.11", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: macos-13, python-version: "3.11", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
@@ -195,12 +194,12 @@ jobs:
         shell: bash
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: requirements
           path: requirements
@@ -253,7 +252,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
         with:
           name: python-wheels
           path: wheels

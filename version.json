@@ -1,17 +1,17 @@
 {
     "25.x": {
-        "protoc_version": "25.1-dev",
+        "protoc_version": "25.7-dev",
         "lts": false,
-        "date": "2023-11-01",
+        "date": "2025-01-24",
         "languages": {
-            "cpp": "4.25.1-dev",
-            "csharp": "3.25.1-dev",
-            "java": "3.25.1-dev",
-            "javascript": "3.25.1-dev",
-            "objectivec": "3.25.1-dev",
-            "php": "3.25.1-dev",
-            "python": "4.25.1-dev",
-            "ruby": "3.25.1-dev"
+            "cpp": "4.25.7-dev",
+            "csharp": "3.25.7-dev",
+            "java": "3.25.7-dev",
+            "javascript": "3.25.7-dev",
+            "objectivec": "3.25.7-dev",
+            "php": "3.25.7-dev",
+            "python": "4.25.7-dev",
+            "ruby": "3.25.7-dev"
         }
     }
 }

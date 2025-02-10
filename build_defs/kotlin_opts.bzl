@@ -1,32 +1,12 @@
-"""Java options and protobuf-specific java build rules with those options."""
+"""Protobuf-specific kotlin build rules."""
 
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_jvm_external//:defs.bzl", "java_export")
-load("//java/osgi:osgi.bzl", "osgi_java_library")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
-
-JAVA_OPTS = [
-    "-source 8",
-    "-target 8",
-    "-Xep:Java8ApiChecker:ERROR",
-]
+load("//java/osgi:kotlin_osgi.bzl", "osgi_kt_jvm_library")
 
 BUNDLE_DOC_URL = "https://developers.google.com/protocol-buffers/"
 BUNDLE_LICENSE = "https://opensource.org/licenses/BSD-3-Clause"
 
-def protobuf_java_export(**kwargs):
-    java_export(
-        javacopts = JAVA_OPTS,
-        **kwargs
-    )
-
-def protobuf_java_library(**kwargs):
-    java_library(
-        javacopts = JAVA_OPTS,
-        **kwargs
-    )
-
-def protobuf_versioned_java_library(
+def protobuf_versioned_kt_jvm_library(
         automatic_module_name,
         bundle_description,
         bundle_name,
@@ -34,14 +14,14 @@ def protobuf_versioned_java_library(
         bundle_additional_imports = [],
         bundle_additional_exports = [],
         **kwargs):
-    """Extends `java_library` to add OSGi headers to the MANIFEST.MF using bndlib
+    """Extends `kt_jvm_library` to add OSGi headers to the MANIFEST.MF using bndlib
 
-    This macro should be usable as a drop-in replacement for java_library.
+    This macro should be usable as a drop-in replacement for kt_jvm_library.
 
     The additional arguments are given the bndlib tool to generate an OSGi-compliant manifest file.
     See [bnd documentation](https://bnd.bndtools.org/chapters/110-introduction.html)
 
-    Takes all the args that are standard for a java_library target plus the following.
+    Takes all the args that are standard for a kt_jvm_library target plus the following.
     Args:
         bundle_description: (required) The Bundle-Description header defines a short
             description of this bundle.
@@ -65,10 +45,9 @@ def protobuf_versioned_java_library(
             package statements to be added before the default wildcard import
             "*".
         **kwargs: Additional key-word arguments that are passed to the internal
-            java_library target.
+            kt_jvm_library target.
     """
-    osgi_java_library(
-        javacopts = JAVA_OPTS,
+    osgi_kt_jvm_library(
         automatic_module_name = automatic_module_name,
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,
