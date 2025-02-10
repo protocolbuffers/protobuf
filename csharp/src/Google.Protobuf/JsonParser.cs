@@ -146,10 +146,8 @@ namespace Google.Protobuf
             }
             var descriptor = message.Descriptor;
             var jsonFieldMap = descriptor.Fields.ByJsonName();
-            // All the oneof fields we've already accounted for - we can only see each of them once.
-            // The set is created lazily to avoid the overhead of creating a set for every message
-            // we parsed, when oneofs are relatively rare.
-            HashSet<OneofDescriptor> seenOneofs = null;
+
+            var duplicateFieldValidator = new DuplicateFieldValidator(validateAllFields: !settings.IgnoreDuplicateFields);
             while (true)
             {
                 token = tokenizer.Next();
@@ -164,17 +162,7 @@ namespace Google.Protobuf
                 string name = token.StringValue;
                 if (jsonFieldMap.TryGetValue(name, out FieldDescriptor field))
                 {
-                    if (field.ContainingOneof != null)
-                    {
-                        if (seenOneofs == null)
-                        {
-                            seenOneofs = new HashSet<OneofDescriptor>();
-                        }
-                        if (!seenOneofs.Add(field.ContainingOneof))
-                        {
-                            throw new InvalidProtocolBufferException($"Multiple values specified for oneof {field.ContainingOneof.Name}");
-                        }
-                    }
+                    duplicateFieldValidator.Validate(field);
                     MergeField(message, field, tokenizer);
                 }
                 else
@@ -1027,11 +1015,18 @@ namespace Google.Protobuf
             /// </summary>
             public bool IgnoreUnknownFields { get; }
 
-            private Settings(int recursionLimit, TypeRegistry typeRegistry, bool ignoreUnknownFields)
+            /// <summary>
+            /// Whether the parser should ignore duplicate fields (<c>true</c>) or throw an exception when
+            /// they are encountered (<c>false</c>).
+            /// </summary>
+            public bool IgnoreDuplicateFields { get; }
+
+            private Settings(int recursionLimit, TypeRegistry typeRegistry, bool ignoreUnknownFields, bool ignoreDuplicateFields)
             {
                 RecursionLimit = recursionLimit;
                 TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
                 IgnoreUnknownFields = ignoreUnknownFields;
+                IgnoreDuplicateFields = ignoreDuplicateFields;
             }
 
             /// <summary>
@@ -1047,7 +1042,7 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
             /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
-            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(recursionLimit, typeRegistry, false)
+            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(recursionLimit, typeRegistry, false, true)
             {
             }
 
@@ -1056,13 +1051,20 @@ namespace Google.Protobuf
             /// when unknown fields are encountered.
             /// </summary>
             /// <param name="ignoreUnknownFields"><c>true</c> if unknown fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
-            public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) => new(RecursionLimit, TypeRegistry, ignoreUnknownFields);
+            public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) => new(RecursionLimit, TypeRegistry, ignoreUnknownFields, IgnoreDuplicateFields);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object set to either ignore duplicate fields, or throw an exception
+            /// when duplicate fields are encountered.
+            /// </summary>
+            /// <param name="ignoreDuplicateFields"><c>true</c> if duplicate fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
+            public Settings WithIgnoreDuplicateFields(bool ignoreDuplicateFields) => new(RecursionLimit, TypeRegistry, IgnoreUnknownFields, ignoreDuplicateFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified recursion limit.
             /// </summary>
             /// <param name="recursionLimit">The new recursion limit.</param>
-            public Settings WithRecursionLimit(int recursionLimit) => new(recursionLimit, TypeRegistry, IgnoreUnknownFields);
+            public Settings WithRecursionLimit(int recursionLimit) => new(recursionLimit, TypeRegistry, IgnoreUnknownFields, IgnoreDuplicateFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified type registry.
@@ -1071,7 +1073,49 @@ namespace Google.Protobuf
             public Settings WithTypeRegistry(TypeRegistry typeRegistry) =>
                 new(RecursionLimit,
                     ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
-                    IgnoreUnknownFields);
+                    IgnoreUnknownFields,
+                    IgnoreDuplicateFields);
+        }
+
+        /// <summary>
+        /// Provides means to validate duplicate fields.
+        /// </summary>
+        /// <remarks>
+        /// For optimization purposes this is a mutable struct, use with caution!
+        /// </remarks>
+        private ref struct DuplicateFieldValidator
+        {
+            private readonly bool validateAllFields;
+            private HashSet<FieldDescriptor> seenFields = null;
+            private HashSet<OneofDescriptor> seenOneofs = null;
+
+            public DuplicateFieldValidator(bool validateAllFields)
+            {
+                this.validateAllFields = validateAllFields;
+            }
+
+            public void Validate(FieldDescriptor field)
+            {
+                // Duplicate fields are validated only if necessary
+                if (validateAllFields)
+                {
+                    seenFields ??= new();
+                    if (!seenFields.Add(field))
+                    {
+                        throw new InvalidProtocolBufferException($"Multiple values specified for field {field.Name}");
+                    }
+                }
+
+                // Duplicate one-of values are always validated
+                if (field.ContainingOneof != null)
+                {
+                    seenOneofs ??= new();
+                    if (!seenOneofs.Add(field.ContainingOneof))
+                    {
+                        throw new InvalidProtocolBufferException($"Multiple values specified for oneof {field.ContainingOneof.Name}");
+                    }
+                }
+            }
         }
     }
 }
