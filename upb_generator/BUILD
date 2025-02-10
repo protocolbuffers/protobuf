@@ -55,7 +55,7 @@ bootstrap_cc_library(
         "//src/google/protobuf:port",
         "//upb:mini_table",
         "//upb:port",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -79,8 +79,8 @@ bootstrap_cc_library(
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -106,11 +106,11 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:port",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

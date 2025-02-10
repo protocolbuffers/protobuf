@@ -16,8 +16,8 @@ cc_library(
     hdrs = ["names.h"],
     visibility = ["//upb_generator:__subpackages__"],
     deps = [
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:string_view",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -36,7 +36,7 @@ cc_library(
         "//upb:mem",
         "//upb:mini_table",
         "//upb:reflection",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
     ],
 )
