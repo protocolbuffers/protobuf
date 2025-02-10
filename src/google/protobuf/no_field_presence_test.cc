@@ -869,6 +869,54 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   EXPECT_EQ("test2", dest.optional_string());
 }
 
+TEST(NoFieldPresenceTest, ParseEmptyStringFromWire) {
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(15)->name(),
+            "optional_bytes");
+
+  // Input wire tag: 0172 (octal) which is 01 111 010
+  //   Field number 15 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty string
+  //   encoded on the wire.
+  absl::string_view wire("\172\x00",  // 3:LEN 0
+                         2);
+
+  TestAllTypes message;
+  message.MergeFromString(wire);
+
+  // Implicit-presence fields don't have hazzers, so we can only verify that the
+  // empty bytes field is not overwritten.
+  EXPECT_THAT(message.optional_bytes(), IsEmpty());
+
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_THAT(output_data, IsEmpty());
+}
+
+TEST(MessageTest, ParseEmptyStringFromWireOverwritesExistingField) {
+  TestAllTypes message;
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(15)->name(),
+            "optional_bytes");
+  message.set_optional_bytes("hello");
+
+  // Input wire tag: 0172 (octal) which is 01 111 010
+  //   Field number 15 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty string
+  //   encoded on the wire.
+  absl::string_view wire("\172\x00",  // 3:LEN 0
+                         2);
+  message.MergeFromString(wire);
+
+  // Implicit-presence fields don't have hazzers, so we can only verify that the
+  // empty bytes field is overwritten.
+  EXPECT_THAT(message.optional_bytes(), IsEmpty());
+
+  // Since string field is overwritten to be empty, this message will not
+  // serialize.
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_THAT(output_data, IsEmpty());
+}
+
 TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
   // check extra serialized zeroes on the wire are parsed into the object.
   ForeignMessage dest;
