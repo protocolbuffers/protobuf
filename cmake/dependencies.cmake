@@ -10,7 +10,7 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.16 OR ${CMAKE_VERSION} VERSION_EQUAL 3.16)
   include_guard()
 endif()
 
-set(abseil-cpp-version "20240722.0")
+set(abseil-cpp-version "20250127.0")
 set(bazel_skylib-version "1.7.1")
 set(jsoncpp-version "1.9.6")
 set(rules_apple-version "3.13.0")
