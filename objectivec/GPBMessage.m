@@ -2317,50 +2317,56 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 }
 
 - (void)parseMessageSet:(GPBCodedInputStream *)input
-      extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
+      extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
+           forcedTypeID:(uint32_t)forcedTypeID {
   uint32_t typeId = 0;
   NSData *rawBytes = nil;
   GPBCodedInputStreamState *state = &input->state_;
-  BOOL gotType = NO;
-  BOOL gotBytes = NO;
-  while (true) {
-    uint32_t tag = GPBCodedInputStreamReadTag(state);
-    if (tag == GPBWireFormatMessageSetItemEndTag || tag == 0) {
-      break;
-    }
-
-    if (tag == GPBWireFormatMessageSetTypeIdTag) {
-      uint32_t tmp = GPBCodedInputStreamReadUInt32(state);
-      // Spec says only use the first value.
-      if (!gotType) {
-        gotType = YES;
-        typeId = tmp;
-      }
-    } else if (tag == GPBWireFormatMessageSetMessageTag) {
-      if (gotBytes) {
-        // Skip over the payload instead of collecting it.
-        [input skipField:tag];
-      } else {
-        rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
-        gotBytes = YES;
-      }
-    } else {
-      // Don't capture unknowns within the message set impl group.
-      if (![input skipField:tag]) {
+  if (forcedTypeID) {
+    typeId = forcedTypeID;
+    rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
+  } else {
+    BOOL gotType = NO;
+    BOOL gotBytes = NO;
+    while (true) {
+      uint32_t tag = GPBCodedInputStreamReadTag(state);
+      if (tag == GPBWireFormatMessageSetItemEndTag || tag == 0) {
         break;
       }
+
+      if (tag == GPBWireFormatMessageSetTypeIdTag) {
+        uint32_t tmp = GPBCodedInputStreamReadUInt32(state);
+        // Spec says only use the first value.
+        if (!gotType) {
+          gotType = YES;
+          typeId = tmp;
+        }
+      } else if (tag == GPBWireFormatMessageSetMessageTag) {
+        if (gotBytes) {
+          // Skip over the payload instead of collecting it.
+          [input skipField:tag];
+        } else {
+          rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
+          gotBytes = YES;
+        }
+      } else {
+        // Don't capture unknowns within the message set impl group.
+        if (![input skipField:tag]) {
+          break;
+        }
+      }
     }
-  }
 
-  // If we get here because of end of input (tag zero) or the wrong end tag (within the skipField:),
-  // this will error.
-  GPBCodedInputStreamCheckLastTagWas(state, GPBWireFormatMessageSetItemEndTag);
+    // If we get here because of end of input (tag zero) or the wrong end tag (within the
+    // skipField:), this will error.
+    GPBCodedInputStreamCheckLastTagWas(state, GPBWireFormatMessageSetItemEndTag);
 
-  if (!gotType || !gotBytes) {
-    // upb_Decoder_DecodeMessageSetItem does't keep this partial as an unknown field, it just drops
-    // it, so do the same thing.
-    return;
-  }
+    if (!gotType || !gotBytes) {
+      // upb_Decoder_DecodeMessageSetItem does't keep this partial as an unknown field, it just
+      // drops it, so do the same thing.
+      return;
+    }
+  }  // else forcedTypeID
 
   GPBExtensionDescriptor *extension = [extensionRegistry extensionForDescriptor:[self descriptor]
                                                                     fieldNumber:typeId];
@@ -2689,7 +2695,15 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
     if (isMessageSetWireFormat) {
       if (GPBWireFormatMessageSetItemTag == tag) {
-        [self parseMessageSet:input extensionRegistry:extensionRegistry];
+        [self parseMessageSet:input extensionRegistry:extensionRegistry forcedTypeID:0];
+        continue;  // On to the next tag
+      }
+      // If some encoder didn't know about the MessageSet format, then still pull that in. This
+      // matches what _upb_Decoder_FindField does.
+      if (GPBWireFormatGetTagWireType(tag) == GPBWireFormatLengthDelimited) {
+        [self parseMessageSet:input
+            extensionRegistry:extensionRegistry
+                 forcedTypeID:GPBWireFormatGetTagFieldNumber(tag)];
         continue;  // On to the next tag
       }
     } else {

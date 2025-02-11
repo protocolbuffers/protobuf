@@ -1,3 +1,2 @@
 # JSON input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support JSON wire format to avoid code bloat.
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.SubmessageEncoding.NotUnknown.ProtobufOutput # Output was not equivalent to reference message: added: message_set_correct.(protobuf_test_messages.proto2.TestAllTypesProto2.Ext
