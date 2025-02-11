@@ -196,6 +196,75 @@ namespace internal {
 #define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected)
 #endif
 
+// This class is used to index into the memory it is pointing at.
+// The layout is as follows:
+//  [ chars .... ] [ data0 (uint16_t) ] [ ... ] [ dataN (uint16_t) ]
+//                ^
+//       payload_ points here
+//
+// The offsets are relative to payload_.
+//
+// The offsets are as follows:
+//  (0) `name` size. `name` ends at `payload_`
+//  (1) `full_name` size. `full_name` ends at `payload_` and shares bytes with
+//      `name`.
+//    .. the following offsets only available for `FieldDescriptor` ..
+//  (2)/(3) `lowercase` offset/size. The data bytes could be shared.
+//  (4)/(5) `camelcase` offset/size. The data bytes could be shared.
+//  (6)/(7) `json_name` offset/size. The data bytes could be shared.
+//
+//  NOTE ABOUT NULL TERMINATION:
+//  The name accessors were migrated from `std::string` to `absl::string_view`,
+//  which caused valid code to break. In particular, there are previously
+//  correct callers calling `foo.name().data()` and using it as a NULL
+//  terminated C-string.
+//  To prevent further breakage we are adding null termination on all these
+//  names even though it is outside the contract for `absl::string_view`.
+//  This might change in the future.
+class DescriptorNames {
+ public:
+  // Uninitialized, to support `= default` of descriptor types.
+  DescriptorNames() = default;
+  explicit DescriptorNames(const char* payload) : payload_(payload) {}
+
+  // The full name is just before `payload_`, and the name is the suffix of it.
+  // We don't need a special offset for them.
+  // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
+  absl::string_view name() const { return get(get_size(0) + 1, get_size(0)); }
+  absl::string_view full_name() const {
+    return get(get_size(1) + 1, get_size(1));
+  }
+
+  // Only available for `FieldDescriptor`. This is not checked at runtime.
+  // NOTE: The offsets here already take into account the null terminator.
+  absl::string_view lowercase_name() const {
+    return get(get_size(2), get_size(3));
+  }
+  absl::string_view camelcase_name() const {
+    return get(get_size(4), get_size(5));
+  }
+  absl::string_view json_name() const { return get(get_size(6), get_size(7)); }
+
+  static constexpr size_t AllocationSizeForSimpleNames(size_t full_name_size) {
+    return full_name_size + /* \0 */ 1 + 2 * sizeof(uint16_t);
+  }
+
+ private:
+  uint16_t get_size(int index) const {
+    // We don't use `uint16_t` in the payload type to avoid having to align it.
+    // Instead, we read via memcpy.
+    uint16_t size;
+    memcpy(&size, payload_ + index * sizeof(size), sizeof(size));
+    return size;
+  }
+
+  absl::string_view get(uint16_t offset, uint16_t size) const {
+    return absl::string_view(payload_ - offset, size);
+  }
+
+  const char* payload_;
+};
+
 class FlatAllocator;
 
 class PROTOBUF_EXPORT LazyDescriptor {
@@ -695,8 +764,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   int field_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const MessageOptions* options_;
@@ -1119,17 +1187,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Actually a `Type`, but stored as uint8_t to save space.
   uint8_t type_;
 
-  // Logically:
-  //   all_names_ = [name, full_name, lower, camel, json]
-  // However:
-  //   duplicates will be omitted, so lower/camel/json might be in the same
-  //   position.
-  // We store the true offset for each name here, and the bit width must be
-  // large enough to account for the worst case where all names are present.
-  uint8_t lowercase_name_index_ : 2;
-  uint8_t camelcase_name_index_ : 2;
-  uint8_t json_name_index_ : 3;
-
   // Can be calculated from containing_oneof(), but we cache it for performance.
   // Located here for bitpacking.
   bool in_real_oneof_ : 1;
@@ -1141,7 +1198,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
 
   // The once_flag is followed by a NUL terminated string for the type name and
@@ -1195,7 +1252,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
@@ -1280,8 +1337,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   int field_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const Descriptor* containing_type_;
   const OneofOptions* options_;
   const FeatureSet* proto_features_;
@@ -1481,8 +1537,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   int value_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const EnumOptions* options_;
@@ -1598,7 +1653,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   void GetLocationPath(std::vector<int>* output) const;
 
   int number_;
-  // all_names_ = [name, full_name]
+  // We keep the old-style std::string payload to support `NameOfEnumAsString`
+  // Once we start migrating Enum_Name functions to string_view we can switch
+  // this too.
   const std::string* all_names_;
   const EnumDescriptor* type_;
   const EnumValueOptions* options_;
@@ -1700,8 +1757,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const ServiceOptions* options_;
   const FeatureSet* proto_features_;
@@ -1809,8 +1865,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   bool client_streaming_;
   bool server_streaming_;
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const ServiceDescriptor* service_;
   mutable internal::LazyDescriptor input_type_;
   mutable internal::LazyDescriptor output_type_;
@@ -2618,9 +2673,11 @@ class PROTOBUF_EXPORT DescriptorPool {
   inline absl::string_view CLASS::FIELD() const { return *FIELD##_; }
 
 // Name and full name are stored in a single array to save space.
-#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                             \
-  inline absl::string_view CLASS::name() const { return all_names_[0]; } \
-  inline absl::string_view CLASS::full_name() const { return all_names_[1]; }
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                                 \
+  inline absl::string_view CLASS::name() const { return all_names_.name(); } \
+  inline absl::string_view CLASS::full_name() const {                        \
+    return all_names_.full_name();                                           \
+  }
 
 // Arrays take an index parameter, obviously.
 #define PROTOBUF_DEFINE_ARRAY_ACCESSOR(CLASS, FIELD, TYPE) \
@@ -2702,7 +2759,12 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
-PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
+inline absl::string_view EnumValueDescriptor::name() const {
+  return all_names_[0];
+}
+inline absl::string_view EnumValueDescriptor::full_name() const {
+  return all_names_[1];
+}
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumValueDescriptor, EnumValueOptions)
@@ -2793,15 +2855,15 @@ inline absl::string_view EnumDescriptor::reserved_name(int index) const {
 }
 
 inline absl::string_view FieldDescriptor::lowercase_name() const {
-  return all_names_[lowercase_name_index_];
+  return all_names_.lowercase_name();
 }
 
 inline absl::string_view FieldDescriptor::camelcase_name() const {
-  return all_names_[camelcase_name_index_];
+  return all_names_.camelcase_name();
 }
 
 inline absl::string_view FieldDescriptor::json_name() const {
-  return all_names_[json_name_index_];
+  return all_names_.json_name();
 }
 
 inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {

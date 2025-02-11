@@ -854,14 +854,14 @@ TEST_F(DescriptorTest, ContainingType) {
   EXPECT_TRUE(message2_->containing_type() == nullptr);
 }
 
-TEST_F(DescriptorTest, FieldNamesDedup) {
+TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
   const auto collect_unique_names = [](const FieldDescriptor* field) {
     absl::btree_set<absl::string_view> names{
         field->name(), field->lowercase_name(), field->camelcase_name(),
         field->json_name()};
-    // Verify that we have the same number of string objects as we have string
-    // values. That is, duplicate names use the same std::string object.
-    // This is for memory efficiency.
+    // For names following the style guide, verify that we have the same number
+    // of string objects as we have string values. That is, duplicate names use
+    // the same std::string object. This is for memory efficiency.
     EXPECT_EQ(names.size(),
               (absl::flat_hash_set<const void*>{
                   field->name().data(), field->lowercase_name().data(),
@@ -874,25 +874,74 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
   // field_name1
   EXPECT_THAT(collect_unique_names(message4_->field(0)),
               ElementsAre("fieldName1", "field_name1"));
-  // fieldName2
-  EXPECT_THAT(collect_unique_names(message4_->field(1)),
-              ElementsAre("fieldName2", "fieldname2"));
-  // FieldName3
-  EXPECT_THAT(collect_unique_names(message4_->field(2)),
-              ElementsAre("FieldName3", "fieldName3", "fieldname3"));
-  // _field_name4
-  EXPECT_THAT(collect_unique_names(message4_->field(3)),
-              ElementsAre("FieldName4", "_field_name4", "fieldName4"));
-  // FIELD_NAME5
-  EXPECT_THAT(
-      collect_unique_names(message4_->field(4)),
-      ElementsAre("FIELDNAME5", "FIELD_NAME5", "fIELDNAME5", "field_name5"));
-  // field_name6, with json name @type
-  EXPECT_THAT(collect_unique_names(message4_->field(5)),
-              ElementsAre("@type", "fieldName6", "field_name6"));
   // fieldname7
   EXPECT_THAT(collect_unique_names(message4_->field(6)),
               ElementsAre("fieldname7"));
+}
+
+TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
+  // Name accessors where migrated from std::string to absl::string_view.
+  // Some callers were taking the C-String out of the std::string via `.data()`
+  // and that code kept working when the type was changed.
+  // We want to keep that working for now to prevent breaking these users
+  // dynamically.
+  const auto check_nul_terminated = [](absl::string_view view) {
+    EXPECT_EQ(view.data()[view.size()], '\0');
+  };
+  const auto check_nul_names = [&](auto* entity) {
+    check_nul_terminated(entity->name());
+    check_nul_terminated(entity->full_name());
+  };
+
+  const auto check_nul_field_names = [&](auto* field) {
+    check_nul_terminated(field->name());
+    check_nul_terminated(field->full_name());
+    check_nul_terminated(field->lowercase_name());
+    check_nul_terminated(field->camelcase_name());
+    check_nul_terminated(field->json_name());
+  };
+
+  check_nul_names(message4_);
+  check_nul_names(enum_);
+  for (int i = 0; i < message4_->field_count(); ++i) {
+    check_nul_field_names(message4_->field(i));
+  }
+}
+
+TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
+  const auto names = [&](auto* field) {
+    return std::vector<absl::string_view>{
+        field->name(), field->lowercase_name(), field->camelcase_name(),
+        field->json_name()};
+  };
+
+  // field_name1
+  EXPECT_THAT(
+      names(message4_->field(0)),
+      ElementsAre("field_name1", "field_name1", "fieldName1", "fieldName1"));
+  // fieldName2
+  EXPECT_THAT(
+      names(message4_->field(1)),
+      ElementsAre("fieldName2", "fieldname2", "fieldName2", "fieldName2"));
+  // FieldName3
+  EXPECT_THAT(
+      names(message4_->field(2)),
+      ElementsAre("FieldName3", "fieldname3", "fieldName3", "FieldName3"));
+  // _field_name4
+  EXPECT_THAT(
+      names(message4_->field(3)),
+      ElementsAre("_field_name4", "_field_name4", "fieldName4", "FieldName4"));
+  // FIELD_NAME5
+  EXPECT_THAT(
+      names(message4_->field(4)),
+      ElementsAre("FIELD_NAME5", "field_name5", "fIELDNAME5", "FIELDNAME5"));
+  // field_name6, with json name @type
+  EXPECT_THAT(names(message4_->field(5)),
+              ElementsAre("field_name6", "field_name6", "fieldName6", "@type"));
+  // fieldname7
+  EXPECT_THAT(
+      names(message4_->field(6)),
+      ElementsAre("fieldname7", "fieldname7", "fieldname7", "fieldname7"));
 }
 
 TEST_F(DescriptorTest, FieldNameDedupJsonEqFull) {
@@ -5949,6 +5998,16 @@ TEST_F(ValidationErrorTest, InputTypeNotDefined) {
       "}",
 
       "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n");
+}
+
+TEST_F(ValidationErrorTest, ServiceWithEmptyName) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        service { name: "" }
+      )pb",
+      "foo.proto: : NAME: Missing name.\n");
 }
 
 TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
