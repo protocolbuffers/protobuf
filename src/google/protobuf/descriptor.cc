@@ -2906,6 +2906,10 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
     proto->add_weak_dependency(weak_dependencies_[i]);
   }
 
+  for (int i = 0; i < option_dependency_count(); i++) {
+    proto->add_option_dependency(option_dependency(i)->name());
+  }
+
   for (int i = 0; i < message_type_count(); i++) {
     message_type(i)->CopyTo(proto->add_message_type());
   }
@@ -3407,6 +3411,10 @@ std::string FileDescriptor::DebugStringWithOptions(
       absl::SubstituteAndAppend(&contents, "import \"$0\";\n",
                                 dependency(i)->name());
     }
+  }
+  for (int i = 0; i < option_dependency_count(); i++) {
+    absl::SubstituteAndAppend(&contents, "import option \"$0\";\n",
+                              option_dependency(i)->name());
   }
 
   if (!package().empty()) {
@@ -4219,6 +4227,7 @@ class DescriptorBuilder {
   FileDescriptor* file_;
   FileDescriptorTables* file_tables_;
   absl::flat_hash_set<const FileDescriptor*> dependencies_;
+  absl::flat_hash_set<const FileDescriptor*> option_dependencies_;
 
   struct MessageHints {
     int fields_to_suggest = 0;
@@ -4316,6 +4325,10 @@ class DescriptorBuilder {
   // Helper function which finds all public dependencies of the given file, and
   // stores the them in the dependencies_ set in the builder.
   void RecordPublicDependencies(const FileDescriptor* file);
+
+  // Helper function which finds all option dependencies of the given file, and
+  // stores the them in the option_dependencies_ set in the builder.
+  void RecordOptionDependencies(const FileDescriptor* file);
 
   // Like tables_->FindSymbol(), but additionally:
   // - Search the pool's underlay if not found in tables_.
@@ -4977,6 +4990,13 @@ void DescriptorBuilder::RecordPublicDependencies(const FileDescriptor* file) {
   }
 }
 
+void DescriptorBuilder::RecordOptionDependencies(const FileDescriptor* file) {
+  if (file == nullptr || !option_dependencies_.insert(file).second) return;
+  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
+    RecordOptionDependencies(file->public_dependency(i));
+  }
+}
+
 Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     const DescriptorPool* pool, const absl::string_view name, bool build_it) {
   // If we are looking at an underlay, we must lock its mutex_, since we are
@@ -5012,7 +5032,9 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDeps(
   // Only find symbols which were defined in this file or one of its
   // dependencies.
   const FileDescriptor* file = result.GetFile();
-  if ((file == file_ || dependencies_.contains(file)) && !result.IsPackage()) {
+  if ((file == file_ || dependencies_.contains(file) ||
+       option_dependencies_.contains(file)) &&
+      !result.IsPackage()) {
     unused_dependency_.erase(file);
   }
   return result;
@@ -5036,6 +5058,12 @@ Symbol DescriptorBuilder::FindSymbol(const absl::string_view name,
     return result;
   }
 
+  if (option_dependencies_.contains(file) &&
+      result.field_descriptor() != nullptr &&
+      result.field_descriptor()->is_extension()) {
+    return result;
+  }
+
   if (result.IsPackage()) {
     // Arg, this is overcomplicated.  The symbol is a package name.  It could
     // be that the package was defined in multiple files.  result.GetFile()
@@ -5046,6 +5074,10 @@ Symbol DescriptorBuilder::FindSymbol(const absl::string_view name,
     // symbol unless none of the dependencies define it.
     if (IsInPackage(file_, name)) return result;
     for (const auto* dep : dependencies_) {
+      // Note:  A dependency may be nullptr if it was not found or had errors.
+      if (dep != nullptr && IsInPackage(dep, name)) return result;
+    }
+    for (const auto* dep : option_dependencies_) {
       // Note:  A dependency may be nullptr if it was not found or had errors.
       if (dep != nullptr && IsInPackage(dep, name)) return result;
     }
@@ -5719,16 +5751,17 @@ void DescriptorBuilder::AddTwiceListedError(const FileDescriptorProto& proto,
 
 void DescriptorBuilder::AddImportError(const FileDescriptorProto& proto,
                                        int index) {
+  absl::string_view name =
+      index >= proto.dependency_size()
+          ? proto.option_dependency(index - proto.dependency_size())
+          : proto.dependency(index);
   auto make_error = [&] {
     if (pool_->fallback_database_ == nullptr) {
-      return absl::StrCat("Import \"", proto.dependency(index),
-                          "\" has not been loaded.");
+      return absl::StrCat("Import \"", name, "\" has not been loaded.");
     }
-    return absl::StrCat("Import \"", proto.dependency(index),
-                        "\" was not found or had errors.");
+    return absl::StrCat("Import \"", name, "\" was not found or had errors.");
   };
-  AddError(proto.dependency(index), proto,
-           DescriptorPool::ErrorCollector::IMPORT, make_error);
+  AddError(name, proto, DescriptorPool::ErrorCollector::IMPORT, make_error);
 }
 
 PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
@@ -5864,7 +5897,8 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
 
   alloc.PlanArray<int>(proto.weak_dependency_size());
   alloc.PlanArray<int>(proto.public_dependency_size());
-  alloc.PlanArray<const FileDescriptor*>(proto.dependency_size());
+  alloc.PlanArray<const FileDescriptor*>(proto.dependency_size() +
+                                         proto.option_dependency_size());
 }
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
@@ -5925,14 +5959,17 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   if (!pool_->lazily_build_dependencies_) {
     if (pool_->fallback_database_ != nullptr) {
       tables_->pending_files_.push_back(proto.name());
-      for (int i = 0; i < proto.dependency_size(); i++) {
-        if (tables_->FindFile(proto.dependency(i)) == nullptr &&
+      for (int i = 0;
+           i < proto.dependency_size() + proto.option_dependency_size(); i++) {
+        absl::string_view name =
+            i >= proto.dependency_size()
+                ? proto.option_dependency(i - proto.dependency_size())
+                : proto.dependency(i);
+        if (tables_->FindFile(name) == nullptr &&
             (pool_->underlay_ == nullptr ||
-             pool_->underlay_->FindFileByName(proto.dependency(i)) ==
-                 nullptr)) {
+             pool_->underlay_->FindFileByName(name) == nullptr)) {
           // We don't care what this returns since we'll find out below anyway.
-          pool_->TryFindFileInFallbackDatabase(proto.dependency(i),
-                                               deferred_validation_);
+          pool_->TryFindFileInFallbackDatabase(name, deferred_validation_);
         }
       }
       tables_->pending_files_.pop_back();
@@ -6047,8 +6084,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // Make sure all dependencies are loaded.
   absl::flat_hash_set<absl::string_view> seen_dependencies;
   result->dependency_count_ = proto.dependency_size();
-  result->dependencies_ =
-      alloc.AllocateArray<const FileDescriptor*>(proto.dependency_size());
+  result->option_dependency_count_ = proto.option_dependency_size();
+  result->dependencies_ = alloc.AllocateArray<const FileDescriptor*>(
+      proto.dependency_size() + proto.option_dependency_size());
   result->dependencies_once_ = nullptr;
   unused_dependency_.clear();
   absl::flat_hash_set<int> weak_deps;
@@ -6057,14 +6095,19 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
 
   bool need_lazy_deps = false;
-  for (int i = 0; i < proto.dependency_size(); i++) {
-    if (!seen_dependencies.insert(proto.dependency(i)).second) {
+  for (int i = 0; i < proto.dependency_size() + proto.option_dependency_size();
+       i++) {
+    bool is_option = i >= proto.dependency_size();
+    absl::string_view name =
+        is_option ? proto.option_dependency(i - proto.dependency_size())
+                  : proto.dependency(i);
+    if (!seen_dependencies.insert(name).second) {
       AddTwiceListedError(proto, i);
     }
 
-    const FileDescriptor* dependency = tables_->FindFile(proto.dependency(i));
+    const FileDescriptor* dependency = tables_->FindFile(name);
     if (dependency == nullptr && pool_->underlay_ != nullptr) {
-      dependency = pool_->underlay_->FindFileByName(proto.dependency(i));
+      dependency = pool_->underlay_->FindFileByName(name);
     }
 
     if (dependency == result) {
@@ -6077,13 +6120,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     if (dependency == nullptr) {
       if (!pool_->lazily_build_dependencies_) {
         if (pool_->allow_unknown_ ||
-            (!pool_->enforce_weak_ && weak_deps.contains(i))) {
+            (!pool_->enforce_weak_ && weak_deps.contains(i)) ||
+            (!pool_->enforce_option_ && is_option)) {
           internal::FlatAllocator lazy_dep_alloc;
           lazy_dep_alloc.PlanArray<FileDescriptor>(1);
           lazy_dep_alloc.PlanArray<std::string>(1);
           lazy_dep_alloc.FinalizePlanning(tables_);
-          dependency = pool_->NewPlaceholderFileWithMutexHeld(
-              proto.dependency(i), lazy_dep_alloc);
+          dependency =
+              pool_->NewPlaceholderFileWithMutexHeld(name, lazy_dep_alloc);
         } else {
           AddImportError(proto, i);
         }
@@ -6106,9 +6150,15 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
   if (need_lazy_deps) {
     int total_char_size = 0;
-    for (int i = 0; i < proto.dependency_size(); i++) {
+    for (int i = 0;
+         i < proto.dependency_size() + proto.option_dependency_size(); i++) {
       if (result->dependencies_[i] == nullptr) {
-        total_char_size += static_cast<int>(proto.dependency(i).size());
+        if (i < proto.dependency_size()) {
+          total_char_size += static_cast<int>(proto.dependency(i).size());
+        } else {
+          total_char_size += static_cast<int>(
+              proto.option_dependency(i - proto.dependency_size()).size());
+        }
       }
       ++total_char_size;  // For NUL char
     }
@@ -6118,11 +6168,15 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     result->dependencies_once_ = ::new (data) absl::once_flag{};
     char* name_data = reinterpret_cast<char*>(result->dependencies_once_ + 1);
 
-    for (int i = 0; i < proto.dependency_size(); i++) {
+    for (int i = 0;
+         i < proto.dependency_size() + proto.option_dependency_size(); i++) {
+      absl::string_view name =
+          i < proto.dependency_size()
+              ? proto.dependency(i)
+              : proto.option_dependency(i - proto.dependency_size());
       if (result->dependencies_[i] == nullptr) {
-        memcpy(name_data, proto.dependency(i).data(),
-               proto.dependency(i).size());
-        name_data += proto.dependency(i).size();
+        memcpy(name_data, name.data(), name.size());
+        name_data += name.size();
       }
       *name_data++ = '\0';
     }
@@ -6153,12 +6207,16 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   // Build dependency set
   dependencies_.clear();
+  option_dependencies_.clear();
   // We don't/can't do proper dependency error checking when
   // lazily_build_dependencies_, and calling dependency(i) will force
   // a dependency to be built, which we don't want.
   if (!pool_->lazily_build_dependencies_) {
     for (int i = 0; i < result->dependency_count(); i++) {
       RecordPublicDependencies(result->dependency(i));
+    }
+    for (int i = 0; i < result->option_dependency_count(); i++) {
+      RecordOptionDependencies(result->option_dependency(i));
     }
   }
 

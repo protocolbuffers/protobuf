@@ -345,6 +345,7 @@ class PROTOBUF_EXPORT Parser final {
                     const LocationRecorder& root_location,
                     const FileDescriptorProto* containing_file);
   bool ParseImport(RepeatedPtrField<std::string>* dependency,
+                   RepeatedPtrField<std::string>* option_dependency,
                    RepeatedField<int32_t>* public_dependency,
                    RepeatedField<int32_t>* weak_dependency,
                    const LocationRecorder& root_location,

@@ -1874,6 +1874,15 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // These are returned in the order they were defined in the .proto file.
   const FileDescriptor* weak_dependency(int index) const;
 
+  // The number of files that are imported for options.
+  // The option dependency list is separate from the dependency list.
+  int option_dependency_count() const;
+  // Gets a option imported file by index, where 0 <= index <
+  // option_dependency_count().
+  // These are returned in the relative order they were defined in the .proto
+  // file.
+  const FileDescriptor* option_dependency(int index) const;
+
   // Number of top-level message types defined in this file.  (This does not
   // include nested types.)
   int message_type_count() const;
@@ -2013,6 +2022,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   int dependency_count_;
   int public_dependency_count_;
   int weak_dependency_count_;
+  int option_dependency_count_;
   int message_type_count_;
   int enum_type_count_;
   int service_count_;
@@ -2048,7 +2058,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   friend class ServiceDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 168);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 176);
 
 #ifndef SWIG
 enum class ExtDeclEnforcementLevel : uint8_t {
@@ -2284,6 +2294,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   // In Edition 2024+, the 'enforce_naming_style` feature can be used to opt out
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
+
+  // By default, option imports are allowed to be missing, in which case we will
+  // use a placeholder for the dependency and convert the field to be an Empty
+  // message field. If you call EnforceWeakDependencies(true), however, the
+  // DescriptorPool will report a import not found error.
+  void EnforceOptionDependencies(bool enforce) { enforce_option_ = enforce; }
 
   // Sets the default feature mappings used during the build. If this function
   // isn't called, the C++ feature set defaults are used.  If this function is
@@ -2582,6 +2598,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
+  bool enforce_option_ = false;
   ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
@@ -2726,6 +2743,7 @@ PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, pool, const DescriptorPool*)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, dependency_count, int)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, public_dependency_count, int)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, weak_dependency_count, int)
+PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, option_dependency_count, int)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, message_type_count, int)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, enum_type_count, int)
 PROTOBUF_DEFINE_ACCESSOR(FileDescriptor, service_count, int)
@@ -2960,6 +2978,11 @@ inline const FileDescriptor* FileDescriptor::public_dependency(
 
 inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
+}
+
+inline const FileDescriptor* FileDescriptor::option_dependency(
+    int index) const {
+  return dependency(index - dependency_count());
 }
 
 namespace internal {

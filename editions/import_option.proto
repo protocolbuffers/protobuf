@@ -1,0 +1,15 @@
+edition = "2024";
+
+package third_party_protobuf_editions;
+
+import option "google/protobuf/cpp_features.proto";
+
+enum FooEnum {
+  FOO_ENUM_UNKNOWN = 0;
+  FOO_ENUM_ONE = 1;
+}
+
+message Foo {
+  FooEnum foo_enum = 1 [features.(.pb.cpp).legacy_closed_enum = true];
+  FooEnum foo_enum2 = 2 [features.(pb.cpp).legacy_closed_enum = true];
+}
