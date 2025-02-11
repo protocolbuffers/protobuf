@@ -15,8 +15,8 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/unittest.pb.h"
 
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
 // Must be included when the preprocessor symbols above are defined.
 #include "google/protobuf/test_util.inc"
 #undef UNITTEST
@@ -28,8 +28,8 @@
 namespace google {
 namespace protobuf {
 // This file doesn't use these declarations, but some .cc files do.
-namespace unittest = ::protobuf_unittest;
-namespace unittest_import = ::protobuf_unittest_import;
+namespace unittest = ::proto2_unittest;
+namespace unittest_import = ::proto2_unittest_import;
 
 namespace TestUtil {
 

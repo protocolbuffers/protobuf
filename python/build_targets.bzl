@@ -146,11 +146,12 @@ def build_targets(name):
             "//src/google/protobuf/io:tokenizer",
             "//src/google/protobuf/stubs:lite",
             "//src/google/protobuf/util:differencer",
-            "@com_google_absl//absl/container:flat_hash_map",
-            "@com_google_absl//absl/log:absl_check",
-            "@com_google_absl//absl/log:absl_log",
-            "@com_google_absl//absl/status",
-            "@com_google_absl//absl/strings",
+            "@abseil-cpp//absl/container:flat_hash_map",
+            "@abseil-cpp//absl/log:absl_check",
+            "@abseil-cpp//absl/log:absl_log",
+            "@abseil-cpp//absl/status",
+            "@abseil-cpp//absl/status:statusor",
+            "@abseil-cpp//absl/strings",
         ] + select({
             "//conditions:default": [],
             ":use_fast_cpp_protos": ["@system_python//:python_headers"],
@@ -457,8 +458,8 @@ def build_targets(name):
         deps = [
             "//src/google/protobuf",
             "//src/google/protobuf/io",
-            "@com_google_absl//absl/log:absl_check",
-            "@com_google_absl//absl/status",
+            "@abseil-cpp//absl/log:absl_check",
+            "@abseil-cpp//absl/status",
             "@system_python//:python_headers",
         ],
     )

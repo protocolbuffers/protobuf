@@ -8,6 +8,7 @@
 #include "google/protobuf/map.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -26,6 +27,9 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+std::atomic<MapFieldBaseForParse::SyncFunc>
+    MapFieldBaseForParse::sync_map_with_repeated{};
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
@@ -94,10 +98,10 @@ void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
     ABSL_DCHECK(empty());
     UntypedMergeFrom(other);
 
-    other.ClearTable(true, nullptr);
+    other.ClearTable(true);
     other.UntypedMergeFrom(tmp);
 
-    if (arena_ == nullptr) tmp.ClearTable(false, nullptr);
+    if (arena_ == nullptr) tmp.ClearTable(false);
   }
 }
 
@@ -110,11 +114,11 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
   DeallocNode(node);
 }
 
-void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
+void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (arena_ == nullptr) {
-    const auto loop = [&, this](auto destroy_node) {
+    const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
@@ -129,32 +133,30 @@ void UntypedMapBase::ClearTableImpl(bool reset, void (*destroy)(NodeBase*)) {
     };
 
     const auto dispatch_key = [&](auto value_handler) {
-      if (type_info_.key_type < TypeKind::kString) {
-        return loop(value_handler);
-      } else if (type_info_.key_type == TypeKind::kString) {
-        return loop([=](NodeBase* node) {
+      if (type_info_.key_type_kind() < TypeKind::kString) {
+        loop(value_handler);
+      } else if (type_info_.key_type_kind() == TypeKind::kString) {
+        loop([=](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           value_handler(node);
         });
       } else {
-        ABSL_CHECK(destroy != nullptr);
-        return loop(destroy);
+        Unreachable();
       }
     };
 
-    if (type_info_.value_type < TypeKind::kString) {
+    if (type_info_.value_type_kind() < TypeKind::kString) {
       dispatch_key([](NodeBase*) {});
-    } else if (type_info_.value_type == TypeKind::kString) {
+    } else if (type_info_.value_type_kind() == TypeKind::kString) {
       dispatch_key([&](NodeBase* node) {
         GetValue<std::string>(node)->~basic_string();
       });
-    } else if (type_info_.value_type == TypeKind::kMessage) {
+    } else if (type_info_.value_type_kind() == TypeKind::kMessage) {
       dispatch_key([&](NodeBase* node) {
         GetValue<MessageLite>(node)->DestroyInstance();
       });
     } else {
-      ABSL_CHECK(destroy != nullptr);
-      loop(destroy);
+      Unreachable();
     }
   }
 
@@ -249,7 +251,8 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
       key_offsets.end, value_type, value_prototype_if_message, max_align);
   return TypeInfo{
       Narrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
-      Narrow<uint8_t>(value_offsets.start), key_type, value_type};
+      Narrow<uint8_t>(value_offsets.start), static_cast<uint8_t>(key_type),
+      static_cast<uint8_t>(value_type)};
 }
 
 }  // namespace internal

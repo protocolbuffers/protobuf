@@ -74,7 +74,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     fields.push_back({
         field,
         index < has_bit_indices.size() ? has_bit_indices[index] : -1,
-        GetPresenceProbability(field, options_),
+        // When not present, we're not sure how likely "field" is present.
+        // Assign a 50% probability to avoid pessimizing it.
+        GetPresenceProbability(field, options_).value_or(0.5f),
         GetLazyStyle(field, options_, scc_analyzer_),
         IsStringInlined(field, options_),
         IsImplicitWeakField(field, options_, scc_analyzer_),
@@ -209,7 +211,7 @@ static NumToEntryTable MakeNumToEntryTable(
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's more than 31
+      // then we just extend the current block by one. If it's greater than 31
       // more, we have to add empty skip entries in order to continue using the
       // existing block.  Obviously it's just 32 more, it doesn't make sense to
       // start a whole new block, since new blocks mean having to write out
@@ -435,19 +437,18 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
               !internal::cpp::HasPreservingUnknownEnumSemantics(map_value);
           p->Emit(
               {
-                  {"field",
-                   FieldMemberName(aux_entry.field,
-                                   ShouldSplit(aux_entry.field, options_))},
                   {"strict", utf8_check == Utf8CheckMode::kStrict},
                   {"verify", utf8_check == Utf8CheckMode::kVerify},
                   {"validate", validated_enum},
                   {"key_wire", map_key->type()},
                   {"value_wire", map_value->type()},
+                  {"is_lite",
+                   !HasDescriptorMethods(aux_entry.field->file(), options_)},
               },
               R"cc(
-                {::_pbi::TcParser::GetMapAuxInfo<
-                    decltype($classname$().$field$)>(
-                    $strict$, $verify$, $validate$, $key_wire$, $value_wire$)},
+                {::_pbi::TcParser::GetMapAuxInfo($strict$, $verify$, $validate$,
+                                                 $key_wire$, $value_wire$,
+                                                 $is_lite$)},
               )cc");
           break;
         }
@@ -478,9 +479,6 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
         }},
        {"field_lookup_table",
         [&] {
-          // A bookkeeping variable used as a crude heuristic to generating
-          // 'readable' output code.
-          int line_entries = 0;
           for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
             p->Emit(
                 {
@@ -491,26 +489,14 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
                 "$lower$, $upper$, $size$,\n");
 
             for (SkipEntry16 se16 : entry_block.entries) {
-              if (line_entries == 0) {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        "$skipmap$, $offset$,");
-                ++line_entries;
-              } else if (line_entries < 5) {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        " $skipmap$, $offset$,");
-                ++line_entries;
-              } else {
-                p->Emit({{"skipmap", se16.skipmap},
-                         {"offset", se16.field_entry_offset}},
-                        "$skipmap$, $offset$,\n");
-                line_entries = 0;
-              }
+              p->Emit({{"skipmap", se16.skipmap},
+                       {"offset", se16.field_entry_offset}},
+                      R"cc(
+                        $skipmap$, $offset$,
+                      )cc");
             }
           }
 
-          if (line_entries) p->Emit("\n");
           // The last entry of the skipmap are all 1's.
           p->Emit("65535, 65535\n");
         }},

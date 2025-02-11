@@ -224,6 +224,8 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
+        # TODO Make this private once gRPC migrates off it.
+        "//src/google/protobuf/compiler/php",
     ],
 )
 

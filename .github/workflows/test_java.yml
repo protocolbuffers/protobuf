@@ -34,7 +34,8 @@ jobs:
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
-            flags: --java_language_version=8
+            # TODO: b/393604460 - enable bzlmod once coursier error is fixed.
+            flags: --java_language_version=8 --noenable_bzlmod
           - name: OpenJDK 11
             cache_key: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-11-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
@@ -45,19 +46,19 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-17-641278a52587c01f44525819b76499db35c2804d
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: Bazel7
+            cache_key: 'bazel7bzlmod'
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
+            targets: //java/... //java/internal:java_version //compatibility/...
+          - name: Bazel7 Workspace
             cache_key: 'bazel7nobzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
             targets: //java/... //java/internal:java_version //compatibility/...
             flags: --noenable_bzlmod
-          - name: Bazel7 with Bzlmod
-            cache_key: 'bazel7bzlmod'
-            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
-            targets: //java/... //java/internal:java_version //compatibility/...
-            flags: --enable_bzlmod --enable_workspace
-          - name: aarch64
-            cache_key: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8
-            targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
+          # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
+          # - name: aarch64
+          #   cache_key: 'aarch64'
+          #   image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8
+          #   targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
     runs-on: ubuntu-latest

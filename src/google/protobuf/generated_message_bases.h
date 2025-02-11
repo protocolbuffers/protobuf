@@ -33,6 +33,9 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL { Clear(*this); }
   size_t ByteSizeLong() const PROTOBUF_FINAL { return ByteSizeLong(*this); }
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  size_t ByteSizeV2() const { return ByteSizeV2Impl(*this); }
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, io::EpsCopyOutputStream* stream) const PROTOBUF_FINAL {
@@ -49,6 +52,11 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   void InternalSwap(ZeroFieldsBase* other);
   static void Clear(MessageLite& msg);
   static size_t ByteSizeLong(const MessageLite& base);
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  static size_t ByteSizeV2Impl(const MessageLite& base);
+
+  static constexpr auto& _v2_table_ = v2::kEmptyMessageTable;
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   static ::uint8_t* _InternalSerialize(const MessageLite& msg,
                                        ::uint8_t* target,
                                        io::EpsCopyOutputStream* stream);

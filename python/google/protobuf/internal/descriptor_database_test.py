@@ -88,15 +88,15 @@ class DescriptorDatabaseTest(unittest.TestCase):
         unittest_pb2.DESCRIPTOR.serialized_pb)
     db.Add(file_desc_proto2)
     self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
-        'protobuf_unittest.TestService'))
+        'proto2_unittest.TestService'))
 
     # Non-existent field under a valid top level symbol can also be
     # found. The behavior is the same with protobuf C++.
     self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
-        'protobuf_unittest.TestAllTypes.none_field'))
+        'proto2_unittest.TestAllTypes.none_field'))
 
-    with self.assertRaisesRegex(KeyError, r'\'protobuf_unittest\.NoneMessage\''):
-      db.FindFileContainingSymbol('protobuf_unittest.NoneMessage')
+    with self.assertRaisesRegex(KeyError, r'\'proto2_unittest\.NoneMessage\''):
+      db.FindFileContainingSymbol('proto2_unittest.NoneMessage')
 
     with self.assertRaises(KeyError):
       db.FindFileContainingSymbol(

@@ -31,9 +31,9 @@
 #include "google/protobuf/unittest_import.pb.h"
 
 
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
+#define UNITTEST_PACKAGE_NAME "proto2_unittest"
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
@@ -48,19 +48,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-struct AlignedAsDefault {
-  int x;
-};
-struct alignas(8) AlignedAs8 {
-  int x;
-};
-
-template <>
-struct is_internal_map_value_type<AlignedAsDefault> : std::true_type {};
-template <>
-struct is_internal_map_value_type<AlignedAs8> : std::true_type {};
-
 namespace {
 
 using ::testing::AllOf;
@@ -205,7 +192,7 @@ TEST(MapTest, CalculateCapacityForSizeTest) {
 TEST(MapTest, AlwaysSerializesBothEntries) {
   for (const Message* prototype :
        {static_cast<const Message*>(
-            &protobuf_unittest::TestI32StrMap::default_instance()),
+            &proto2_unittest::TestI32StrMap::default_instance()),
         static_cast<const Message*>(
             &proto3_unittest::TestI32StrMap::default_instance())}) {
     const FieldDescriptor* map_field =
@@ -322,42 +309,14 @@ TEST(MapTest, SizeTypeIsSizeT) {
   (void)x;
 }
 
-template <typename F, typename... Key, typename... Value>
-void TestAllKeyValueTypes(void (*)(Key...), void (*)(Value...), F f) {
-  (
-      [f]() {
-        using K = Key;
-        (f(K{}, Value{}), ...);
-      }(),
-      ...);
-}
-
 using KeyTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t,
                           std::string);
 // Some arbitrary proto enum.
-using SomeEnum = protobuf_unittest::TestAllTypes::NestedEnum;
+using SomeEnum = proto2_unittest::TestAllTypes::NestedEnum;
 using ValueTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
                             double, std::string, SomeEnum,
-                            protobuf_unittest::TestEmptyMessage,
-                            protobuf_unittest::TestAllTypes);
-
-TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
-  TestAllKeyValueTypes(KeyTypes(), ValueTypes(), [](auto key, auto value) {
-    using Key = decltype(key);
-    using Value = decltype(value);
-    const MessageLite* value_prototype = nullptr;
-    if constexpr (std::is_base_of_v<MessageLite, Value>) {
-      value_prototype = &Value::default_instance();
-    }
-    const auto type_info = MapTestPeer::GetTypeInfo<Map<Key, Value>>();
-    const auto dyn_type_info = internal::UntypedMapBase::GetTypeInfoDynamic(
-        type_info.key_type, type_info.value_type, value_prototype);
-    EXPECT_EQ(dyn_type_info.node_size, type_info.node_size);
-    EXPECT_EQ(dyn_type_info.value_offset, type_info.value_offset);
-    EXPECT_EQ(dyn_type_info.key_type, type_info.key_type);
-    EXPECT_EQ(dyn_type_info.value_type, type_info.value_type);
-  });
-}
+                            proto2_unittest::TestEmptyMessage,
+                            proto2_unittest::TestAllTypes);
 
 TEST(MapTest, StaticTypeKindWorks) {
   using UMB = UntypedMapBase;
@@ -369,8 +328,40 @@ TEST(MapTest, StaticTypeKindWorks) {
   EXPECT_EQ(UMB::TypeKind::kU64, UMB::StaticTypeKind<uint64_t>());
   EXPECT_EQ(UMB::TypeKind::kString, UMB::StaticTypeKind<std::string>());
   EXPECT_EQ(UMB::TypeKind::kMessage,
-            UMB::StaticTypeKind<protobuf_unittest::TestAllTypes>());
-  EXPECT_EQ(UMB::TypeKind::kUnknown, UMB::StaticTypeKind<void**>());
+            UMB::StaticTypeKind<proto2_unittest::TestAllTypes>());
+}
+
+#if !defined(__GNUC__) || defined(__clang__) || PROTOBUF_GNUC_MIN(9, 4)
+// Parameter pack expansion bug before GCC 8.2:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85305
+
+template <typename F, typename... Key, typename... Value>
+void TestAllKeyValueTypes(void (*)(Key...), void (*)(Value...), F f) {
+  (
+      [f]() {
+        using K = Key;
+        (f(K{}, Value{}), ...);
+      }(),
+      ...);
+}
+
+TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
+  TestAllKeyValueTypes(KeyTypes(), ValueTypes(), [](auto key, auto value) {
+    using Key = decltype(key);
+    using Value = decltype(value);
+    const MessageLite* value_prototype = nullptr;
+    if constexpr (std::is_base_of_v<MessageLite, Value>) {
+      value_prototype = &Value::default_instance();
+    }
+    const auto type_info = MapTestPeer::GetTypeInfo<Map<Key, Value>>();
+    const auto dyn_type_info = internal::UntypedMapBase::GetTypeInfoDynamic(
+        type_info.key_type_kind(), type_info.value_type_kind(),
+        value_prototype);
+    EXPECT_EQ(dyn_type_info.node_size, type_info.node_size);
+    EXPECT_EQ(dyn_type_info.value_offset, type_info.value_offset);
+    EXPECT_EQ(dyn_type_info.key_type, type_info.key_type);
+    EXPECT_EQ(dyn_type_info.value_type, type_info.value_type);
+  });
 }
 
 template <typename LHS, typename RHS>
@@ -442,6 +433,8 @@ TEST(MapTest, VisitAllNodesUsesTheRightTypesOnAllNodes) {
   });
 }
 
+#endif
+
 TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
   Map<int, int> map;
   EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cbegin()).node_,
@@ -452,23 +445,6 @@ TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
             nullptr);
   EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cend()).node_, nullptr);
 }
-
-template <typename Aligned, bool on_arena = false>
-void MapTest_Aligned() {
-  Arena arena;
-  constexpr size_t align_mask = alignof(Aligned) - 1;
-  Map<int, Aligned> map(on_arena ? &arena : nullptr);
-  map.insert({1, Aligned{}});
-  auto it = map.find(1);
-  ASSERT_NE(it, map.end());
-  ASSERT_EQ(reinterpret_cast<intptr_t>(&it->second) & align_mask, 0);
-  map.clear();
-}
-
-TEST(MapTest, Aligned) { MapTest_Aligned<AlignedAsDefault>(); }
-TEST(MapTest, AlignedOnArena) { MapTest_Aligned<AlignedAsDefault, true>(); }
-TEST(MapTest, Aligned8) { MapTest_Aligned<AlignedAs8>(); }
-TEST(MapTest, Aligned8OnArena) { MapTest_Aligned<AlignedAs8, true>(); }
 
 
 

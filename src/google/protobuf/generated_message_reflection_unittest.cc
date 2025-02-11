@@ -194,9 +194,9 @@ TEST(GeneratedMessageReflectionTest, GetStringViewWithExtensions) {
       descriptor_file->FindExtensionByName("optional_string_piece_extension");
   google::protobuf::FieldDescriptor const* cord_ext =
       descriptor_file->FindExtensionByName("optional_cord_extension");
-  message.SetExtension(protobuf_unittest::optional_string_extension, "foo");
-  message.SetExtension(protobuf_unittest::optional_string_piece_extension, "bar");
-  message.SetExtension(protobuf_unittest::optional_cord_extension, "baz");
+  message.SetExtension(proto2_unittest::optional_string_extension, "foo");
+  message.SetExtension(proto2_unittest::optional_string_piece_extension, "bar");
+  message.SetExtension(proto2_unittest::optional_cord_extension, "baz");
   const Reflection* reflection = message.GetReflection();
   Reflection::ScratchSpace scratch;
 
@@ -248,9 +248,9 @@ TEST(GeneratedMessageReflectionTest, GetRepeatedStringViewWithExtensions) {
       descriptor_file->FindExtensionByName("repeated_string_piece_extension");
   google::protobuf::FieldDescriptor const* cord_ext =
       descriptor_file->FindExtensionByName("repeated_cord_extension");
-  message.AddExtension(protobuf_unittest::repeated_string_extension, "foo");
-  message.AddExtension(protobuf_unittest::repeated_string_piece_extension, "bar");
-  message.AddExtension(protobuf_unittest::repeated_cord_extension, "baz");
+  message.AddExtension(proto2_unittest::repeated_string_extension, "foo");
+  message.AddExtension(proto2_unittest::repeated_string_piece_extension, "bar");
+  message.AddExtension(proto2_unittest::repeated_cord_extension, "baz");
   const Reflection* reflection = message.GetReflection();
   Reflection::ScratchSpace scratch;
 
@@ -736,7 +736,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   message.Clear();
   TestUtil::SetAllFields(&message);
   ASSERT_EQ(2, message.repeated_foreign_message_size());
-  const protobuf_unittest::ForeignMessage* expected =
+  const proto2_unittest::ForeignMessage* expected =
       message.mutable_repeated_foreign_message(1);
   (void)expected;  // unused in somce configurations
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
@@ -766,7 +766,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
   TestUtil::SetAllExtensions(&message);
   ASSERT_EQ(
       2, message.ExtensionSize(unittest::repeated_foreign_message_extension));
-  const protobuf_unittest::ForeignMessage* expected =
+  const proto2_unittest::ForeignMessage* expected =
       message.MutableExtension(unittest::repeated_foreign_message_extension, 1);
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->file()->FindExtensionByName(
@@ -1433,8 +1433,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                            descriptor->FindFieldByName("optional_int64")),
       "Protocol Buffer reflection usage error:\n"
       "  Method      : google::protobuf::Reflection::GetInt32\n"
-      "  Message type: protobuf_unittest\\.TestAllTypes\n"
-      "  Field       : protobuf_unittest\\.TestAllTypes\\.optional_int64\n"
+      "  Message type: proto2_unittest\\.TestAllTypes\n"
+      "  Field       : proto2_unittest\\.TestAllTypes\\.optional_int64\n"
       "  Problem     : Field is not the right type for this message:\n"
       "    Expected  : CPPTYPE_INT32\n"
       "    Field type: CPPTYPE_INT64");
@@ -1442,8 +1442,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                    message, descriptor->FindFieldByName("repeated_int32")),
                "Protocol Buffer reflection usage error:\n"
                "  Method      : google::protobuf::Reflection::GetInt32\n"
-               "  Message type: protobuf_unittest.TestAllTypes\n"
-               "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
+               "  Message type: proto2_unittest.TestAllTypes\n"
+               "  Field       : proto2_unittest.TestAllTypes.repeated_int32\n"
                "  Problem     : Field is repeated; the method requires a "
                "singular field.");
 #ifndef NDEBUG
@@ -1452,9 +1452,9 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                            descriptor->FindFieldByName("optional_int32")),
       "Protocol Buffer reflection usage error:\n"
       "  Method       : google::protobuf::Reflection::GetInt32\n"
-      "  Expected type: protobuf_unittest.TestAllTypes\n"
-      "  Actual type  : protobuf_unittest.ForeignMessage\n"
-      "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
+      "  Expected type: proto2_unittest.TestAllTypes\n"
+      "  Actual type  : proto2_unittest.ForeignMessage\n"
+      "  Field        : proto2_unittest.TestAllTypes.optional_int32\n"
       "  Problem      : Message is not the right object for reflection");
 #endif
   EXPECT_DEATH(
@@ -1463,8 +1463,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
       "  Method      : google::protobuf::Reflection::GetInt32\n"
-      "  Message type: protobuf_unittest.TestAllTypes\n"
-      "  Field       : protobuf_unittest.ForeignMessage.c\n"
+      "  Message type: proto2_unittest.TestAllTypes\n"
+      "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
   EXPECT_DEATH(
       reflection->HasField(
@@ -1472,8 +1472,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
       "  Method      : google::protobuf::Reflection::HasField\n"
-      "  Message type: protobuf_unittest.TestAllTypes\n"
-      "  Field       : protobuf_unittest.ForeignMessage.c\n"
+      "  Message type: proto2_unittest.TestAllTypes\n"
+      "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
 }
 
@@ -1809,17 +1809,17 @@ TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
 }
 
 TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
-  protobuf_unittest::TestChildExtension parsed_msg;
+  proto2_unittest::TestChildExtension parsed_msg;
   google::protobuf::TextFormat::ParseFromString(
       R"pb(
         optional_extension <
-          [protobuf_unittest.repeated_string_extension]: "foo"
+          [proto2_unittest.repeated_string_extension]: "foo"
         >
       )pb",
       &parsed_msg);
-  protobuf_unittest::TestChildExtension msg;
+  proto2_unittest::TestChildExtension msg;
   msg.mutable_optional_extension()->AddExtension(
-      protobuf_unittest::repeated_string_extension, "bar");
+      proto2_unittest::repeated_string_extension, "bar");
   parsed_msg.mutable_optional_extension()->Swap(
       msg.mutable_optional_extension());
 }

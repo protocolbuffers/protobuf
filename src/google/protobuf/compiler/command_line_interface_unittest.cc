@@ -660,7 +660,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
   google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
 
   const FileDescriptor* custom_file =
-      protobuf_unittest::AggregateMessage::descriptor()->file();
+      proto2_unittest::AggregateMessage::descriptor()->file();
   FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
   custom_file->CopyTo(file_descriptor_proto);
   file_descriptor_proto->set_name("custom_options.proto");
@@ -705,7 +705,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
   file_descriptor_proto->mutable_message_type(0)
       ->mutable_options()
       ->mutable_unknown_fields()
-      ->AddVarint(protobuf_unittest::message_opt1.number(), 2222);
+      ->AddVarint(proto2_unittest::message_opt1.number(), 2222);
 
   WriteDescriptorSet("foo.bin", &file_descriptor_set);
 
@@ -1518,6 +1518,16 @@ TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies an unknown feature extension");
+}
+
+TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package badPackage;
+    )schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring("Package name badPackage should be lower_snake_case");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
@@ -3629,7 +3639,7 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
-      package protobuf_unittest;
+      package proto2_unittest;
       import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string file_option = 1 [targets = TARGET_TYPE_FILE];
@@ -3695,31 +3705,31 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `file`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `extension range`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `message`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `field`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `oneof`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.file_option "
+      "Option proto2_unittest.MyOptions.file_option "
       "cannot be set on an entity of type `enum`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `enum entry`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `service`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.enum_option "
+      "Option proto2_unittest.MyOptions.enum_option "
       "cannot be set on an entity of type `method`.");
 }
 
@@ -3729,7 +3739,7 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
-      package protobuf_unittest;
+      package proto2_unittest;
       import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
@@ -3757,7 +3767,7 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
-      package protobuf_unittest;
+      package proto2_unittest;
       import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
@@ -3774,7 +3784,7 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.MyOptions.message_or_file_option cannot be set "
+      "Option proto2_unittest.MyOptions.message_or_file_option cannot be set "
       "on an entity of type `enum`.");
 }
 
@@ -3785,7 +3795,7 @@ TEST_F(CommandLineInterfaceTest,
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
-      package protobuf_unittest;
+      package proto2_unittest;
       import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_FILE,
@@ -3812,7 +3822,7 @@ TEST_F(CommandLineInterfaceTest,
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
-      package protobuf_unittest;
+      package proto2_unittest;
       import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_ENUM];
@@ -3830,9 +3840,9 @@ TEST_F(CommandLineInterfaceTest,
   // We have target constraint violations at two different edges in the file
   // options, so let's make sure both are caught.
   ExpectErrorSubstring(
-      "Option protobuf_unittest.A.b cannot be set on an entity of type `file`.");
+      "Option proto2_unittest.A.b cannot be set on an entity of type `file`.");
   ExpectErrorSubstring(
-      "Option protobuf_unittest.B.i cannot be set on an entity of type `file`.");
+      "Option proto2_unittest.B.i cannot be set on an entity of type `file`.");
 }
 
 
@@ -4327,13 +4337,13 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     unittest_proto_descriptor_set_filename_ =
         absl::StrCat(TestTempDir(), "/unittest_proto_descriptor_set.bin");
     FileDescriptorSet file_descriptor_set;
-    protobuf_unittest::TestAllTypes test_all_types;
+    proto2_unittest::TestAllTypes test_all_types;
     test_all_types.descriptor()->file()->CopyTo(file_descriptor_set.add_file());
 
-    protobuf_unittest_import::ImportMessage import_message;
+    proto2_unittest_import::ImportMessage import_message;
     import_message.descriptor()->file()->CopyTo(file_descriptor_set.add_file());
 
-    protobuf_unittest_import::PublicImportMessage public_import_message;
+    proto2_unittest_import::PublicImportMessage public_import_message;
     public_import_message.descriptor()->file()->CopyTo(
         file_descriptor_set.add_file());
     ABSL_DCHECK(file_descriptor_set.IsInitialized());
@@ -4354,7 +4364,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 };
 
 static void WriteGoldenMessage(const std::string& filename) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   TestUtil::SetAllFields(&message);
   std::string golden = message.SerializeAsString();
   ABSL_CHECK_OK(File::SetContents(filename, golden, true));
@@ -4371,7 +4381,7 @@ TEST_P(EncodeDecodeTest, Encode) {
     args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(
-      Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
+      Run(absl::StrCat(args, " --encode=proto2_unittest.TestAllTypes")));
   ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectNoErrors();
 }
@@ -4382,7 +4392,7 @@ TEST_P(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(golden_path);
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
-          " --decode=protobuf_unittest.TestAllTypes"));
+          " --decode=proto2_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
@@ -4393,13 +4403,13 @@ TEST_P(EncodeDecodeTest, Partial) {
   RedirectStdinFromText("");
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
-          " --encode=protobuf_unittest.TestRequired"));
+          " --encode=proto2_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }
 
 TEST_P(EncodeDecodeTest, DecodeRaw) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.set_optional_int32(123);
   message.set_optional_string("foo");
   std::string data;
@@ -4442,7 +4452,7 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
     args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(Run(absl::StrCat(
-      args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
+      args, " --encode=proto2_unittest.TestAllTypes --deterministic_output")));
   ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectNoErrors();
 }
@@ -4453,7 +4463,7 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   RedirectStdinFromFile(golden_path);
   EXPECT_FALSE(
       Run("google/protobuf/unittest.proto"
-          " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
+          " --decode=proto2_unittest.TestAllTypes --deterministic_output"));
   ExpectError("Can only use --deterministic_output with --encode.");
 }
 

@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
-#include <any>
 #include <atomic>
 #include <cstdint>
 #include <iterator>
@@ -197,18 +196,74 @@ namespace internal {
 #define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected)
 #endif
 
-// `typedef` instead of `using` for SWIG
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-typedef absl::string_view DescriptorStringView;
-#else
-typedef const std::string& DescriptorStringView;
-#endif
+// This class is used to index into the memory it is pointing at.
+// The layout is as follows:
+//  [ chars .... ] [ data0 (uint16_t) ] [ ... ] [ dataN (uint16_t) ]
+//                ^
+//       payload_ points here
+//
+// The offsets are relative to payload_.
+//
+// The offsets are as follows:
+//  (0) `name` size. `name` ends at `payload_`
+//  (1) `full_name` size. `full_name` ends at `payload_` and shares bytes with
+//      `name`.
+//    .. the following offsets only available for `FieldDescriptor` ..
+//  (2)/(3) `lowercase` offset/size. The data bytes could be shared.
+//  (4)/(5) `camelcase` offset/size. The data bytes could be shared.
+//  (6)/(7) `json_name` offset/size. The data bytes could be shared.
+//
+//  NOTE ABOUT NULL TERMINATION:
+//  The name accessors were migrated from `std::string` to `absl::string_view`,
+//  which caused valid code to break. In particular, there are previously
+//  correct callers calling `foo.name().data()` and using it as a NULL
+//  terminated C-string.
+//  To prevent further breakage we are adding null termination on all these
+//  names even though it is outside the contract for `absl::string_view`.
+//  This might change in the future.
+class DescriptorNames {
+ public:
+  // Uninitialized, to support `= default` of descriptor types.
+  DescriptorNames() = default;
+  explicit DescriptorNames(const char* payload) : payload_(payload) {}
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME)
-typedef absl::string_view DescriptorTypenameStringView;
-#else
-typedef const char* DescriptorTypenameStringView;
-#endif
+  // The full name is just before `payload_`, and the name is the suffix of it.
+  // We don't need a special offset for them.
+  // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
+  absl::string_view name() const { return get(get_size(0) + 1, get_size(0)); }
+  absl::string_view full_name() const {
+    return get(get_size(1) + 1, get_size(1));
+  }
+
+  // Only available for `FieldDescriptor`. This is not checked at runtime.
+  // NOTE: The offsets here already take into account the null terminator.
+  absl::string_view lowercase_name() const {
+    return get(get_size(2), get_size(3));
+  }
+  absl::string_view camelcase_name() const {
+    return get(get_size(4), get_size(5));
+  }
+  absl::string_view json_name() const { return get(get_size(6), get_size(7)); }
+
+  static constexpr size_t AllocationSizeForSimpleNames(size_t full_name_size) {
+    return full_name_size + /* \0 */ 1 + 2 * sizeof(uint16_t);
+  }
+
+ private:
+  uint16_t get_size(int index) const {
+    // We don't use `uint16_t` in the payload type to avoid having to align it.
+    // Instead, we read via memcpy.
+    uint16_t size;
+    memcpy(&size, payload_ + index * sizeof(size), sizeof(size));
+    return size;
+  }
+
+  absl::string_view get(uint16_t offset, uint16_t size) const {
+    return absl::string_view(payload_ - offset, size);
+  }
+
+  const char* payload_;
+};
 
 class FlatAllocator;
 
@@ -327,14 +382,14 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 #endif
 
   // The name of the message type, not including its scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
 
   // The fully-qualified name of the message type, scope delimited by
   // periods.  For example, message type "Foo" which is declared in package
   // "bar" has full name "bar.Foo".  If a type "Baz" is nested within
   // Foo, Baz's full_name is "bar.Foo.Baz".  To get only the part that
   // comes after the last '.', use name().
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // Index of this descriptor within the file or containing type's message
   // type array.
@@ -514,12 +569,10 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     const ExtensionRangeOptions& options() const { return *options_; }
 
     // Returns the name of the containing type.
-    internal::DescriptorStringView name() const {
-      return containing_type_->name();
-    }
+    absl::string_view name() const { return containing_type_->name(); }
 
     // Returns the full name of the containing type.
-    internal::DescriptorStringView full_name() const {
+    absl::string_view full_name() const {
       return containing_type_->full_name();
     }
 
@@ -638,7 +691,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  internal::DescriptorStringView reserved_name(int index) const;
+  absl::string_view reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -711,8 +764,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   int field_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const MessageOptions* options_;
@@ -851,11 +903,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   static const int kLastReservedNumber = 19999;
 
   // Name of this field within the message.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // Fully-qualified name of the field.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // JSON name of this field.
-  internal::DescriptorStringView json_name() const;
+  absl::string_view json_name() const;
 
   const FileDescriptor* file() const;  // File in which this field was defined.
   bool is_extension() const;           // Is this an extension field?
@@ -867,7 +919,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // field names should be lowercased anyway according to the protobuf style
   // guide, so this only makes a difference when dealing with old .proto files
   // which do not follow the guide.)
-  internal::DescriptorStringView lowercase_name() const;
+  absl::string_view lowercase_name() const;
 
   // Same as name() except converted to camel-case.  In this conversion, any
   // time an underscore appears in the name, it is removed and the next
@@ -878,14 +930,14 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   //   fooBar -> fooBar
   // This (and especially the FindFieldByCamelcaseName() method) can be useful
   // when parsing formats which prefer to use camel-case naming style.
-  internal::DescriptorStringView camelcase_name() const;
+  absl::string_view camelcase_name() const;
 
   Type type() const;  // Declared type of this field.
   // Name of the declared type.
-  internal::DescriptorTypenameStringView type_name() const;
+  absl::string_view type_name() const;
   CppType cpp_type() const;  // C++ type of this field.
   // Name of the C++ type.
-  internal::DescriptorTypenameStringView cpp_type_name() const;
+  absl::string_view cpp_type_name() const;
   Label label() const;  // optional/required/repeated
 
 #ifndef SWIG
@@ -980,7 +1032,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   const EnumValueDescriptor* default_value_enum() const;
   // Get the field default value if cpp_type() == CPPTYPE_STRING.  If no
   // explicit default was defined, the default is the empty string.
-  internal::DescriptorStringView default_value_string() const;
+  absl::string_view default_value_string() const;
 
   // The Descriptor for the message of which this is a field.  For extensions,
   // this is the extended type.  Never nullptr.
@@ -1037,10 +1089,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   static CppType TypeToCppType(Type type);
 
   // Helper method to get the name of a Type.
-  static internal::DescriptorTypenameStringView TypeName(Type type);
+  static absl::string_view TypeName(Type type);
 
   // Helper method to get the name of a CppType.
-  static internal::DescriptorTypenameStringView CppTypeName(CppType cpp_type);
+  static absl::string_view CppTypeName(CppType cpp_type);
 
   // Return true iff [packed = true] is valid for fields of this type.
   static inline bool IsTypePackable(Type field_type);
@@ -1058,7 +1110,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // its printable name) can be accomplished with
   //     message->file()->pool()->FindExtensionByPrintableName(message, name)
   // where the extension extends "message".
-  internal::DescriptorStringView PrintableNameForExtension() const;
+  absl::string_view PrintableNameForExtension() const;
 
   // Source Location ---------------------------------------------------
 
@@ -1135,17 +1187,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Actually a `Type`, but stored as uint8_t to save space.
   uint8_t type_;
 
-  // Logically:
-  //   all_names_ = [name, full_name, lower, camel, json]
-  // However:
-  //   duplicates will be omitted, so lower/camel/json might be in the same
-  //   position.
-  // We store the true offset for each name here, and the bit width must be
-  // large enough to account for the worst case where all names are present.
-  uint8_t lowercase_name_index_ : 2;
-  uint8_t camelcase_name_index_ : 2;
-  uint8_t json_name_index_ : 3;
-
   // Can be calculated from containing_oneof(), but we cache it for performance.
   // Located here for bitpacking.
   bool in_real_oneof_ : 1;
@@ -1157,7 +1198,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
 
   // The once_flag is followed by a NUL terminated string for the type name and
@@ -1211,7 +1252,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
@@ -1224,9 +1265,9 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 #endif
 
   // Name of this oneof.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // Fully-qualified name of the oneof.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // Index of this oneof within the message's oneof array.
   int index() const;
@@ -1296,8 +1337,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   int field_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const Descriptor* containing_type_;
   const OneofOptions* options_;
   const FeatureSet* proto_features_;
@@ -1331,10 +1371,10 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of this enum type in the containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
 
   // The fully-qualified name of the enum type, scope delimited by periods.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // Index of this enum within the file or containing message's enum array.
   int index() const;
@@ -1431,7 +1471,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  internal::DescriptorStringView reserved_name(int index) const;
+  absl::string_view reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -1497,8 +1537,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   int value_count_;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const EnumOptions* options_;
@@ -1544,7 +1583,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   EnumValueDescriptor& operator=(const EnumValueDescriptor&) = delete;
 #endif
 
-  internal::DescriptorStringView name() const;  // Name of this enum constant.
+  absl::string_view name() const;   // Name of this enum constant.
   int index() const;                // Index within the enums's Descriptor.
   int number() const;               // Numeric value of this enum constant.
 
@@ -1553,7 +1592,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // "google.protobuf.FieldDescriptorProto.TYPE_INT32", NOT
   // "google.protobuf.FieldDescriptorProto.Type.TYPE_INT32".  This is to conform
   // with C++ scoping rules for enums.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
 
   // The .proto file in which this value was defined.  Never nullptr.
   const FileDescriptor* file() const;
@@ -1614,7 +1653,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   void GetLocationPath(std::vector<int>* output) const;
 
   int number_;
-  // all_names_ = [name, full_name]
+  // We keep the old-style std::string payload to support `NameOfEnumAsString`
+  // Once we start migrating Enum_Name functions to string_view we can switch
+  // this too.
   const std::string* all_names_;
   const EnumDescriptor* type_;
   const EnumValueOptions* options_;
@@ -1647,9 +1688,9 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of the service, not including its containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // The fully-qualified name of the service, scope delimited by periods.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // Index of this service within the file's services array.
   int index() const;
 
@@ -1716,8 +1757,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const FileDescriptor* file_;
   const ServiceOptions* options_;
   const FeatureSet* proto_features_;
@@ -1751,9 +1791,9 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 #endif
 
   // Name of this method, not including containing scope.
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
   // The fully-qualified name of the method, scope delimited by periods.
-  internal::DescriptorStringView full_name() const;
+  absl::string_view full_name() const;
   // Index within the service's Descriptor.
   int index() const;
 
@@ -1825,8 +1865,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   bool client_streaming_;
   bool server_streaming_;
-  // all_names_ = [name, full_name]
-  const std::string* all_names_;
+  internal::DescriptorNames all_names_;
   const ServiceDescriptor* service_;
   mutable internal::LazyDescriptor input_type_;
   mutable internal::LazyDescriptor output_type_;
@@ -1859,10 +1898,10 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
   // The filename, relative to the source tree.
   // e.g. "foo/bar/baz.proto"
-  internal::DescriptorStringView name() const;
+  absl::string_view name() const;
 
   // The package, e.g. "google.protobuf.compiler".
-  internal::DescriptorStringView package() const;
+  absl::string_view package() const;
 
   // The DescriptorPool in which this FileDescriptor and all its contents were
   // allocated.  Never nullptr.
@@ -2292,6 +2331,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   // DescriptorPool will report a import not found error.
   void EnforceWeakDependencies(bool enforce) { enforce_weak_ = enforce; }
 
+  // Enforce the naming style rules. This applies the intended style rules
+  // corresponding to the edition of the file, and was first introduced
+  // with Edition 2024. Proto2, Proto3 and Edition 2023 are never considered
+  // to be in violation and so are unaffected by this.
+  //
+  // In Edition 2024+, the 'enforce_naming_style` feature can be used to opt out
+  // of this enforcement.
+  void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
+
   // Sets the default feature mappings used during the build. If this function
   // isn't called, the C++ feature set defaults are used.  If this function is
   // called, these defaults will be used instead.
@@ -2461,11 +2509,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
   friend class ::google::protobuf::compiler::CommandLineInterface;
   friend class TextFormat;
+
+  struct MemoBase {
+    virtual ~MemoBase() = default;
+  };
+  template <typename T>
+  struct MemoData : MemoBase {
+    T value;
+  };
+
   // Memoize a projection of a field.  This is used to cache the results of
   // calling a function on a field, used for expensive descriptor calculations.
   template <typename Func>
-  auto MemoizeProjection(const FieldDescriptor* field, Func func) const {
-    using ResultT = decltype(func(field));
+  const auto& MemoizeProjection(const FieldDescriptor* field, Func func) const {
+    using ResultT = std::decay_t<decltype(func(field))>;
     ABSL_DCHECK(field->file()->pool() == this);
     static_assert(std::is_empty_v<Func>);
     // This static bool is unique per-Func, so its address can be used as a key.
@@ -2475,15 +2532,21 @@ class PROTOBUF_EXPORT DescriptorPool {
       absl::ReaderMutexLock lock(&field_memo_table_mutex_);
       auto it = field_memo_table_.find(key);
       if (it != field_memo_table_.end()) {
-        return std::any_cast<ResultT>(it->second);
+        return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
       }
     }
-    ResultT result = func(field);
+    auto result = std::make_unique<MemoData<ResultT>>();
+    result->value = func(field);
     {
       absl::MutexLock lock(&field_memo_table_mutex_);
-      field_memo_table_[key] = result;
+      auto& res = field_memo_table_[key];
+      // Only initialize the first time. We don't want to invalidate old
+      // references.
+      if (res == nullptr) {
+        res = std::move(result);
+      }
+      return internal::DownCast<const MemoData<ResultT>&>(*res).value;
     }
-    return result;
   }
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
@@ -2543,9 +2606,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
                                      PlaceholderType placeholder_type) const;
 
+#ifndef SWIG
   mutable absl::Mutex field_memo_table_mutex_;
-  mutable absl::flat_hash_map<std::pair<const void*, const void*>, std::any>
+  mutable absl::flat_hash_map<std::pair<const void*, const void*>,
+                              std::unique_ptr<MemoBase>>
       field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_);
+#endif  // SWIG
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
@@ -2574,6 +2640,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
+  bool enforce_naming_style_;
   mutable bool build_started_ = false;
 
   // Set of files to track for additional validation. The bool value when true
@@ -2602,18 +2669,14 @@ class PROTOBUF_EXPORT DescriptorPool {
   inline TYPE CLASS::FIELD() const { return FIELD##_; }
 
 // Strings fields are stored as pointers but returned as const references.
-#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD)          \
-  inline internal::DescriptorStringView CLASS::FIELD() const { \
-    return *FIELD##_;                                          \
-  }
+#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD) \
+  inline absl::string_view CLASS::FIELD() const { return *FIELD##_; }
 
 // Name and full name are stored in a single array to save space.
-#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                       \
-  inline internal::DescriptorStringView CLASS::name() const {      \
-    return all_names_[0];                                          \
-  }                                                                \
-  inline internal::DescriptorStringView CLASS::full_name() const { \
-    return all_names_[1];                                          \
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                                 \
+  inline absl::string_view CLASS::name() const { return all_names_.name(); } \
+  inline absl::string_view CLASS::full_name() const {                        \
+    return all_names_.full_name();                                           \
   }
 
 // Arrays take an index parameter, obviously.
@@ -2696,7 +2759,12 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
-PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
+inline absl::string_view EnumValueDescriptor::name() const {
+  return all_names_[0];
+}
+inline absl::string_view EnumValueDescriptor::full_name() const {
+  return all_names_[1];
+}
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumValueDescriptor, EnumValueOptions)
@@ -2763,8 +2831,7 @@ inline bool Descriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline internal::DescriptorStringView Descriptor::reserved_name(
-    int index) const {
+inline absl::string_view Descriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
@@ -2783,21 +2850,20 @@ inline bool EnumDescriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline internal::DescriptorStringView EnumDescriptor::reserved_name(
-    int index) const {
+inline absl::string_view EnumDescriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
-inline internal::DescriptorStringView FieldDescriptor::lowercase_name() const {
-  return all_names_[lowercase_name_index_];
+inline absl::string_view FieldDescriptor::lowercase_name() const {
+  return all_names_.lowercase_name();
 }
 
-inline internal::DescriptorStringView FieldDescriptor::camelcase_name() const {
-  return all_names_[camelcase_name_index_];
+inline absl::string_view FieldDescriptor::camelcase_name() const {
+  return all_names_.camelcase_name();
 }
 
-inline internal::DescriptorStringView FieldDescriptor::json_name() const {
-  return all_names_[json_name_index_];
+inline absl::string_view FieldDescriptor::json_name() const {
+  return all_names_.json_name();
 }
 
 inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
@@ -2918,8 +2984,7 @@ inline int MethodDescriptor::index() const {
   return static_cast<int>(this - service_->methods_);
 }
 
-inline internal::DescriptorTypenameStringView FieldDescriptor::type_name()
-    const {
+inline absl::string_view FieldDescriptor::type_name() const {
   return kTypeToName[type()];
 }
 
@@ -2927,8 +2992,7 @@ inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
   return kTypeToCppTypeMap[type()];
 }
 
-inline internal::DescriptorTypenameStringView FieldDescriptor::cpp_type_name()
-    const {
+inline absl::string_view FieldDescriptor::cpp_type_name() const {
   return kCppTypeToName[kTypeToCppTypeMap[type()]];
 }
 
@@ -2936,13 +3000,11 @@ inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
   return kTypeToCppTypeMap[type];
 }
 
-inline internal::DescriptorTypenameStringView FieldDescriptor::TypeName(
-    Type type) {
+inline absl::string_view FieldDescriptor::TypeName(Type type) {
   return kTypeToName[type];
 }
 
-inline internal::DescriptorTypenameStringView FieldDescriptor::CppTypeName(
-    CppType cpp_type) {
+inline absl::string_view FieldDescriptor::CppTypeName(CppType cpp_type) {
   return kCppTypeToName[cpp_type];
 }
 

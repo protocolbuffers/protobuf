@@ -10,11 +10,11 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
@@ -27,13 +27,12 @@ namespace objectivec {
 
 namespace {
 
-void SetEnumVariables(
-    const FieldDescriptor* descriptor,
-    const GenerationOptions& generation_options,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+void SetEnumVariables(const FieldDescriptor* descriptor,
+                      const GenerationOptions& generation_options,
+                      SubstitutionMap& variables) {
   const std::string type = EnumName(descriptor->enum_type());
   const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
-  (*variables)["enum_name"] = type;
+  variables.Set("enum_name", type);
   // When using fwd decls, for non repeated fields, if it was defined in a
   // different file, the property decls need to use "enum NAME" rather than just
   // "NAME" to support the forward declaration of the enums.
@@ -41,16 +40,16 @@ void SetEnumVariables(
       !descriptor->is_repeated() &&
       !IsProtobufLibraryBundledProtoFile(descriptor->enum_type()->file()) &&
       (descriptor->file() != descriptor->enum_type()->file())) {
-    (*variables)["property_type"] = absl::StrCat("enum ", type, " ");
+    variables.Set("property_type", absl::StrCat("enum ", type, " "));
   }
-  (*variables)["enum_verifier"] = absl::StrCat(type, "_IsValidValue");
-  (*variables)["enum_desc_func"] = enum_desc_func;
+  variables.Set("enum_verifier", absl::StrCat(type, "_IsValidValue"));
+  variables.Set("enum_desc_func", enum_desc_func);
 
-  (*variables)["dataTypeSpecific_name"] = "enumDescFunc";
-  (*variables)["dataTypeSpecific_value"] = enum_desc_func;
+  variables.Set("dataTypeSpecific_name", "enumDescFunc");
+  variables.Set("dataTypeSpecific_value", enum_desc_func);
 
   const Descriptor* msg_descriptor = descriptor->containing_type();
-  (*variables)["owning_message_class"] = ClassName(msg_descriptor);
+  variables.Set("owning_message_class", ClassName(msg_descriptor));
 }
 }  // namespace
 
@@ -58,7 +57,7 @@ EnumFieldGenerator::EnumFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : SingleFieldGenerator(descriptor, generation_options) {
-  SetEnumVariables(descriptor, generation_options, &variables_);
+  SetEnumVariables(descriptor, generation_options, variables_);
 }
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
@@ -67,7 +66,7 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
     return;
   }
 
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(R"objc(
     /**
      * Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even
@@ -90,7 +89,7 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
     return;
   }
 
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(R"objc(
     int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {
       GPBDescriptor *descriptor = [$owning_message_class$ descriptor];
@@ -134,11 +133,11 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : RepeatedFieldGenerator(descriptor, generation_options) {
-  SetEnumVariables(descriptor, generation_options, &variables_);
+  SetEnumVariables(descriptor, generation_options, variables_);
 }
 
 void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(R"objc(
     // |$name$| contains |$enum_name$|
   )objc");

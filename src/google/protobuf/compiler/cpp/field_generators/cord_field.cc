@@ -26,6 +26,9 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -248,7 +251,6 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
-
 
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
@@ -473,3 +475,5 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

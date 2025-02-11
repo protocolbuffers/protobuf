@@ -1,12 +1,12 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
-import static protobuf_unittest.UnittestProto.redactedExtension;
+import static proto2_unittest.UnittestProto.redactedExtension;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import protobuf_unittest.UnittestProto.RedactedFields;
-import protobuf_unittest.UnittestProto.TestEmptyMessage;
-import protobuf_unittest.UnittestProto.TestNestedMessageRedaction;
+import proto2_unittest.UnittestProto.RedactedFields;
+import proto2_unittest.UnittestProto.TestEmptyMessage;
+import proto2_unittest.UnittestProto.TestNestedMessageRedaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -94,7 +94,7 @@ public class DebugFormatTest {
     assertThat(result)
         .matches(
             String.format(
-                "%s\\[protobuf_unittest\\.redacted_extension\\]: %s\n",
+                "%s\\[proto2_unittest\\.redacted_extension\\]: %s\n",
                 UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX));
   }
 

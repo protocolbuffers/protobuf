@@ -232,8 +232,8 @@ module Google
       def hash
         return_value = 0
         each_msg_val do |key_message_value, value_message_value|
-          return_value = Google::Protobuf::FFI.message_value_hash(key_message_value, key_type, nil, return_value)
-          return_value = Google::Protobuf::FFI.message_value_hash(value_message_value, value_type, descriptor, return_value)
+          return_value += Google::Protobuf::FFI.message_value_hash(key_message_value, key_type, nil, 0)
+          return_value += Google::Protobuf::FFI.message_value_hash(value_message_value, value_type, descriptor, 0)
         end
         return_value
       end

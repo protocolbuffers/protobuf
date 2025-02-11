@@ -13,7 +13,7 @@ edition = "2023";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/unittest.proto";

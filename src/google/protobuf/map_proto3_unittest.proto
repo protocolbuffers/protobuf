@@ -14,7 +14,7 @@ option features.field_presence = IMPLICIT;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
+// In map_test_util.h we do "using namespace unittest = proto2_unittest".
 package proto3_unittest;
 
 message TestProto3BytesMap {

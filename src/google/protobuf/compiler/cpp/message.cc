@@ -19,10 +19,12 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/any_invocable.h"
@@ -93,9 +95,71 @@ std::string ConditionalToCheckBitmasks(
   return result + (return_success ? " == 0" : " != 0");
 }
 
+template <typename PredicateT>
+void DebugAssertUniform(const std::vector<const FieldDescriptor*>& fields,
+                        const Options& options, PredicateT&& pred) {
+  ABSL_DCHECK(!fields.empty() && absl::c_all_of(fields, [&](const auto* f) {
+    return pred(f) == pred(fields.front());
+  }));
+}
+
+void DebugAssertUniformLikelyPresence(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+  DebugAssertUniform(fields, options, [&](const FieldDescriptor* f) {
+    return IsLikelyPresent(f, options);
+  });
+}
+
+// Generates a condition that checks presence of a field. If probability is
+// provided, the condition will be wrapped with
+// PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY.
+//
+// If use_cached_has_bits is true, the condition will be generated based on
+// cached_has_bits. Otherwise, the condition will be generated based on the
+// _has_bits_ array, with has_array_index indicating which element of the array
+// to use.
+std::string GenerateConditionMaybeWithProbability(
+    uint32_t mask, absl::optional<float> probability, bool use_cached_has_bits,
+    absl::optional<int> has_array_index) {
+  std::string condition;
+  if (use_cached_has_bits) {
+    condition = absl::StrFormat("(cached_has_bits & 0x%08xu) != 0", mask);
+  } else {
+    // We only use has_array_index when use_cached_has_bits is false, make sure
+    // we pas a valid index when we need it.
+    ABSL_DCHECK(has_array_index.has_value());
+    condition = absl::StrFormat("(this_._impl_._has_bits_[%d] & 0x%08xu) != 0",
+                                *has_array_index, mask);
+  }
+  if (probability.has_value()) {
+    return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
+                           condition, *probability);
+  }
+  return condition;
+}
+
+std::string GenerateConditionMaybeWithProbabilityForField(
+    int has_bit_index, const FieldDescriptor* field, const Options& options) {
+  auto prob = GetPresenceProbability(field, options);
+  return GenerateConditionMaybeWithProbability(
+      1u << (has_bit_index % 32), prob,
+      /*use_cached_has_bits*/ true,
+      /*has_array_index*/ absl::nullopt);
+}
+
+std::string GenerateConditionMaybeWithProbabilityForGroup(
+    uint32_t mask, const std::vector<const FieldDescriptor*>& fields,
+    const Options& options) {
+  auto prob = GetFieldGroupPresenceProbability(fields, options);
+  return GenerateConditionMaybeWithProbability(
+      mask, prob,
+      /*use_cached_has_bits*/ true,
+      /*has_array_index*/ absl::nullopt);
+}
+
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
-                        int* cached_has_word_index) {
+                        int* cached_has_word_index, const Options& options) {
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
@@ -105,9 +169,10 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                 cached_has_bits = $has_bits$[$index$];
               )cc");
     }
-    p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
+    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options)}},
             R"cc(
-              if (cached_has_bits & $mask$) {
+              if ($condition$) {
             )cc");
   } else {
     p->Emit(R"cc(
@@ -1295,10 +1360,15 @@ class AccessorVerifier {
 
 }  // namespace
 
+template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
-    field_generators_.get(field).GenerateByteSize(p);
+    const auto& gen = field_generators_.get(field);
+    if constexpr (!kIsV2) {
+      gen.GenerateByteSize(p);
+    } else {
+    }
   };
 
   if (!HasHasbit(field)) {
@@ -1317,8 +1387,8 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"mask",
-            absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
            {"check_nondefault_and_emit_body",
             [&] {
               // Note that it's possible that the field has explicit presence.
@@ -1328,12 +1398,13 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
                                        /*with_enclosing_braces_always=*/false);
             }}},
           R"cc(
-            if (cached_has_bits & $mask$) {
+            if ($condition$) {
               $check_nondefault_and_emit_body$;
             }
           )cc");
 }
 
+template <bool kIsV2>
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
@@ -1354,7 +1425,7 @@ void MessageGenerator::EmitUpdateByteSizeForField(
                   )cc");
         }},
        {"check_and_update_byte_size_for_field",
-        [&]() { EmitCheckAndUpdateByteSizeForField(field, p); }}},
+        [&]() { EmitCheckAndUpdateByteSizeForField<kIsV2>(field, p); }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
@@ -1449,9 +1520,8 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           template <typename = void>
           explicit PROTOBUF_CONSTEXPR $classname$($pbi$::ConstantInitialized);
           explicit $classname$($pb$::Arena* $nullable$ arena);
-          static const $classname$* $nonnull$ internal_default_instance() {
-            return reinterpret_cast<const $classname$*>(
-                &_$classname$_default_instance_);
+          static constexpr const void* $nonnull$ internal_default_instance() {
+            return &_$classname$_default_instance_;
           }
 
           $decl_verify_func$;
@@ -2482,6 +2552,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     GenerateByteSize(p);
     p->Emit("\n");
 
+
     GenerateClassSpecificMergeImpl(p);
     p->Emit("\n");
 
@@ -3184,9 +3255,10 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     if (has_bit_indices_.empty()) {
       p->Emit("from.$field$ != nullptr");
     } else {
-      int index = has_bit_indices_[field->index()];
-      std::string mask = absl::StrFormat("0x%08xu", 1u << (index % 32));
-      p->Emit({{"mask", mask}}, "cached_has_bits & $mask$");
+      int has_bit_index = has_bit_indices_[field->index()];
+      p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                                 has_bit_index, field, options_)}},
+              "$condition$");
     }
   };
 
@@ -3601,11 +3673,11 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           !IsLikelyPresent(fields.back(), options_) &&
           (memset_end != fields.back() || merge_zero_init);
 
+      DebugAssertUniformLikelyPresence(fields, options_);
+
       if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
-        std::string chunk_mask_str =
-            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
         // Check (up to) 8 has_bits at a time if we have more than one field in
         // this chunk.  Due to field layout ordering, we may check
@@ -3617,7 +3689,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
         }
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+
+        format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForGroup(
+                                   chunk_mask, fields, options_));
         format.Indent();
       }
 
@@ -3650,8 +3724,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
         if (have_enclosing_if) {
-          PrintPresenceCheck(field, has_bit_indices_, p,
-                             &cached_has_word_index);
+          PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index,
+                             options_);
           format.Indent();
         }
 
@@ -4264,6 +4338,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
                                   !IsLikelyPresent(fields.back(), options_);
 
+      DebugAssertUniformLikelyPresence(fields, options_);
+
       if (cache_has_bits &&
           cached_has_word_index != HasWordIndex(fields.front())) {
         cached_has_word_index = HasWordIndex(fields.front());
@@ -4274,8 +4350,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
-        std::string chunk_mask_str =
-            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
         // Check (up to) 8 has_bits at a time if we have more than one field in
         // this chunk.  Due to field layout ordering, we may check
@@ -4283,7 +4357,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
+        format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForGroup(
+                                   chunk_mask, fields, options_));
         format.Indent();
       }
 
@@ -4315,9 +4390,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // Check hasbit, using cached bits.
           ABSL_CHECK(HasHasbit(field));
           int has_bit_index = has_bit_indices_[field->index()];
-          const std::string mask = absl::StrCat(
-              absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-          format("if (cached_has_bits & 0x$1$u) {\n", mask);
+          format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForField(
+                                     has_bit_index, field, options_));
           format.Indent();
 
           if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
@@ -4554,6 +4628,9 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
   PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field)) {
+    int has_bit_index = HasBitIndex(field);
+    int has_word_index = has_bit_index / 32;
+    bool use_cached_has_bits = cached_has_bits_index == has_word_index;
     p->Emit(
         {
             {"body",
@@ -4562,18 +4639,10 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                                         std::move(emit_body),
                                         /*with_enclosing_braces_always=*/false);
              }},
-            {"cond",
-             [&] {
-               int has_bit_index = HasBitIndex(field);
-               auto v = p->WithVars(HasBitVars(field));
-               // Attempt to use the state of cached_has_bits, if possible.
-               if (cached_has_bits_index == has_bit_index / 32) {
-                 p->Emit("cached_has_bits & $has_mask$");
-               } else {
-                 p->Emit(
-                     "(this_.$has_bits$[$has_array_index$] & $has_mask$) != 0");
-               }
-             }},
+            {"cond", GenerateConditionMaybeWithProbability(
+                         1u << (has_bit_index % 32),
+                         GetPresenceProbability(field, options_),
+                         use_cached_has_bits, has_word_index)},
         },
         R"cc(
           if ($cond$) {
@@ -5010,6 +5079,34 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   return masks;
 }
 
+static std::optional<int> FixedSize(const FieldDescriptor* field) {
+  if (field->is_repeated() || field->real_containing_oneof() ||
+      !field->has_presence()) {
+    return std::nullopt;
+  }
+
+  const size_t tag_size = WireFormat::TagSize(field->number(), field->type());
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_FIXED32:
+      return tag_size + WireFormatLite::kFixed32Size;
+    case FieldDescriptor::TYPE_FIXED64:
+      return tag_size + WireFormatLite::kFixed64Size;
+    case FieldDescriptor::TYPE_SFIXED32:
+      return tag_size + WireFormatLite::kSFixed32Size;
+    case FieldDescriptor::TYPE_SFIXED64:
+      return tag_size + WireFormatLite::kSFixed64Size;
+    case FieldDescriptor::TYPE_FLOAT:
+      return tag_size + WireFormatLite::kFloatSize;
+    case FieldDescriptor::TYPE_DOUBLE:
+      return tag_size + WireFormatLite::kDoubleSize;
+    case FieldDescriptor::TYPE_BOOL:
+      return tag_size + WireFormatLite::kBoolSize;
+    default:
+      return std::nullopt;
+  }
+}
+
 void MessageGenerator::GenerateByteSize(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
@@ -5036,16 +5133,48 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             return total_size;
           }
         )cc");
+    p->Emit("\n");
     return;
   }
 
-  std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_, options_,
-      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
+  std::vector<const FieldDescriptor*> fixed;
+  std::vector<const FieldDescriptor*> rest;
+  for (auto* f : optimized_order_) {
+    if (FixedSize(f).has_value()) {
+      fixed.push_back(f);
+    } else {
+      rest.push_back(f);
+    }
+  }
+
+  // Sort the fixed fields to ensure maximum grouping.
+  // The layout of the fields is irrelevant because we are not going to read
+  // them. We only look at the hasbits.
+  const auto fixed_tuple = [&](auto* f) {
+    return std::make_tuple(HasWordIndex(f), FixedSize(f));
+  };
+  absl::c_sort(
+      fixed, [&](auto* a, auto* b) { return fixed_tuple(a) < fixed_tuple(b); });
+  std::vector<FieldChunk> fixed_chunks =
+      CollectFields(fixed, options_, [&](const auto* a, const auto* b) {
+        return fixed_tuple(a) == fixed_tuple(b);
+      });
+
+  std::vector<FieldChunk> chunks =
+      CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
+
+  // Interleave the fixed chunks in the right place to be able to reuse
+  // cached_has_bits if available. Otherwise, add them to the end.
+  for (auto& chunk : fixed_chunks) {
+    auto it = std::find_if(chunks.begin(), chunks.end(), [&](auto& c) {
+      return HasWordIndex(c.fields[0]) == HasWordIndex(chunk.fields[0]);
+    });
+    chunks.insert(it, std::move(chunk));
+  }
 
   p->Emit(
       {{"handle_extension_set",
@@ -5086,6 +5215,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           auto it = chunks.begin();
           auto end = chunks.end();
           int cached_has_word_index = -1;
+          const auto update_cached_has_bits = [&](auto& fields) {
+            if (cached_has_word_index == HasWordIndex(fields.front())) return;
+
+            cached_has_word_index = HasWordIndex(fields.front());
+            p->Emit({{"index", cached_has_word_index}},
+                    R"cc(
+                      cached_has_bits = this_.$has_bits$[$index$];
+                    )cc");
+          };
 
           while (it != end) {
             auto next =
@@ -5096,9 +5234,29 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
             while (it != next) {
               const auto& fields = it->fields;
+
+              // If the chunk is a fixed size singular chunk, use a branchless
+              // approach for it.
+              if (std::optional<int> fsize = FixedSize(fields[0])) {
+                update_cached_has_bits(fields);
+                uint32_t mask = GenChunkMask(fields, has_bit_indices_);
+                p->Emit({{"mask", absl::StrFormat("0x%08xu", mask)},
+                         {"popcount", absl::has_single_bit(mask)
+                                          ? "static_cast<bool>"
+                                          : "::absl::popcount"},
+                         {"fsize", *fsize}},
+                        R"cc(
+                          //~
+                          total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
+                        )cc");
+                ++it;
+                continue;
+              }
+
               const bool check_has_byte =
                   fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
                   !IsLikelyPresent(fields.back(), options_);
+              DebugAssertUniformLikelyPresence(fields, options_);
               p->Emit(
                   {{"update_byte_size_for_chunk",
                     [&] {
@@ -5112,14 +5270,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                    {"may_update_cached_has_word_index",
                     [&] {
                       if (!check_has_byte) return;
-                      if (cached_has_word_index == HasWordIndex(fields.front()))
-                        return;
-
-                      cached_has_word_index = HasWordIndex(fields.front());
-                      p->Emit({{"index", cached_has_word_index}},
-                              R"cc(
-                                cached_has_bits = this_.$has_bits$[$index$];
-                              )cc");
+                      update_cached_has_bits(fields);
                     }},
                    {"check_if_chunk_present",
                     [&] {
@@ -5139,9 +5290,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                       ABSL_DCHECK_LE(2, popcnt(chunk_mask));
                       ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-                      p->Emit(
-                          {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
-                          "if (cached_has_bits & $mask$)");
+                      p->Emit({{"condition",
+                                GenerateConditionMaybeWithProbabilityForGroup(
+                                    chunk_mask, fields, options_)}},
+                              "if ($condition$)");
                     }}},
                   R"cc(
                     $may_update_cached_has_word_index$;
@@ -5265,6 +5417,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_unknown_fields$;
         }
       )cc");
+}
+
+void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
 }
 
 bool MessageGenerator::NeedsIsInitialized() {

@@ -38,8 +38,6 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
-  private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
-
   private static final String REDACTED_MARKER = "[REDACTED]";
 
   /**
@@ -147,18 +145,20 @@ public final class TextFormat {
      * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
      */
     static enum FieldReporterLevel {
-      NO_REPORT(0),
-      PRINT(1),
-      PRINTER_PRINT_TO_STRING(2),
-      TEXTFORMAT_PRINT_TO_STRING(3),
-      PRINT_UNICODE(4),
-      SHORT_DEBUG_STRING(5),
-      LEGACY_MULTILINE(6),
-      LEGACY_SINGLE_LINE(7),
-      DEBUG_MULTILINE(8),
-      DEBUG_SINGLE_LINE(9),
-      ABSTRACT_TO_STRING(10),
-      ABSTRACT_MUTABLE_TO_STRING(11);
+      REPORT_ALL(0),
+      TEXT_GENERATOR(1),
+      PRINT(2),
+      PRINTER_PRINT_TO_STRING(3),
+      TEXTFORMAT_PRINT_TO_STRING(4),
+      PRINT_UNICODE(5),
+      SHORT_DEBUG_STRING(6),
+      LEGACY_MULTILINE(7),
+      LEGACY_SINGLE_LINE(8),
+      DEBUG_MULTILINE(9),
+      DEBUG_SINGLE_LINE(10),
+      ABSTRACT_TO_STRING(11),
+      ABSTRACT_MUTABLE_TO_STRING(12),
+      REPORT_NONE(13);
       private final int index;
 
       FieldReporterLevel(int index) {
@@ -183,13 +183,13 @@ public final class TextFormat {
 
     private final boolean singleLine;
 
-    // Any API level higher than this level will be reported. This is set to
-    // ABSTRACT_MUTABLE_TO_STRING by default to prevent reporting for now.
+    // Any API level equal to or greater than this level will be reported. This is set to
+    // REPORT_NONE by default to prevent reporting for now.
     private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
         new ThreadLocal<FieldReporterLevel>() {
           @Override
           protected FieldReporterLevel initialValue() {
-            return FieldReporterLevel.ABSTRACT_MUTABLE_TO_STRING;
+            return FieldReporterLevel.ABSTRACT_TO_STRING;
           }
         };
 
@@ -334,7 +334,8 @@ public final class TextFormat {
 
     void print(final MessageOrBuilder message, final Appendable output, FieldReporterLevel level)
         throws IOException {
-      TextGenerator generator = setSingleLineOutput(output, this.singleLine, level);
+      TextGenerator generator =
+          setSingleLineOutput(output, this.singleLine, message.getDescriptorForType(), level);
       print(message, generator);
     }
 
@@ -459,68 +460,57 @@ public final class TextFormat {
     }
 
     /** An adapter class that can take a {@link MapEntry} and returns its key and entry. */
-    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+    static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
-
-      @SuppressWarnings({"rawtypes"})
-      private MapEntry mapEntry;
-
-      private final FieldDescriptor.JavaType fieldType;
+      private Message messageEntry;
+      private final FieldDescriptor keyField;
 
       MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
-        if (entry instanceof MapEntry) {
-          this.mapEntry = (MapEntry) entry;
+        if (entry instanceof Message) {
+          this.messageEntry = (Message) entry;
         } else {
           this.entry = entry;
         }
-        this.fieldType = extractFieldType(fieldDescriptor);
-      }
-
-      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+        this.keyField = fieldDescriptor.getMessageType().findFieldByName("key");
       }
 
       Object getKey() {
-        if (mapEntry != null) {
-          return mapEntry.getKey();
+        if (messageEntry != null && keyField != null) {
+          return messageEntry.getField(keyField);
         }
         return null;
       }
 
       Object getEntry() {
-        if (mapEntry != null) {
-          return mapEntry;
+        if (messageEntry != null) {
+          return messageEntry;
         }
         return entry;
       }
 
       @Override
       public int compareTo(MapEntryAdapter b) {
-        if (getKey() == null || b.getKey() == null) {
-          logger.info("Invalid key for map field.");
+        Object aKey = getKey();
+        Object bKey = b.getKey();
+        if (aKey == null && bKey == null) {
+          return 0;
+        } else if (aKey == null) {
           return -1;
-        }
-        switch (fieldType) {
-          case BOOLEAN:
-            return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
-          case LONG:
-            return ((Long) getKey()).compareTo((Long) b.getKey());
-          case INT:
-            return ((Integer) getKey()).compareTo((Integer) b.getKey());
-          case STRING:
-            String aString = (String) getKey();
-            String bString = (String) b.getKey();
-            if (aString == null && bString == null) {
+        } else if (bKey == null) {
+          return 1;
+        } else {
+          switch (keyField.getJavaType()) {
+            case BOOLEAN:
+              return ((Boolean) aKey).compareTo((Boolean) bKey);
+            case LONG:
+              return ((Long) aKey).compareTo((Long) bKey);
+            case INT:
+              return ((Integer) aKey).compareTo((Integer) bKey);
+            case STRING:
+              return ((String) aKey).compareTo((String) bKey);
+            default:
               return 0;
-            } else if (aString == null && bString != null) {
-              return -1;
-            } else if (aString != null && bString == null) {
-              return 1;
-            } else {
-              return aString.compareTo(bString);
-            }
-          default:
-            return 0;
+          }
         }
       }
     }
@@ -626,15 +616,7 @@ public final class TextFormat {
     // field, b) via an enum field marked with debug_redact=true that is within the proto's
     // FieldOptions, either directly or indirectly via a message option.
     private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
-      // Skip checking if it's sensitive and potentially reporting it if we don't care about either.
-      if (!shouldReport(generator.fieldReporterLevel) && !enablingSafeDebugFormat) {
-        return false;
-      }
-      return field.isSensitive() && enablingSafeDebugFormat;
-    }
-
-    private boolean shouldReport(FieldReporterLevel level) {
-      return sensitiveFieldReportingLevel.get().compareTo(level) < 0;
+      return enablingSafeDebugFormat && field.isSensitive();
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
@@ -895,12 +877,15 @@ public final class TextFormat {
   }
 
   private static TextGenerator setSingleLineOutput(Appendable output, boolean singleLine) {
-    return new TextGenerator(output, singleLine, Printer.FieldReporterLevel.NO_REPORT);
+    return new TextGenerator(output, singleLine, null, Printer.FieldReporterLevel.TEXT_GENERATOR);
   }
 
   private static TextGenerator setSingleLineOutput(
-      Appendable output, boolean singleLine, Printer.FieldReporterLevel fieldReporterLevel) {
-    return new TextGenerator(output, singleLine, fieldReporterLevel);
+      Appendable output,
+      boolean singleLine,
+      Descriptor rootMessageType,
+      Printer.FieldReporterLevel fieldReporterLevel) {
+    return new TextGenerator(output, singleLine, rootMessageType, fieldReporterLevel);
   }
 
   /** An inner class for writing text to the output stream. */
@@ -915,13 +900,18 @@ public final class TextFormat {
     // Indicate which Protobuf public stringification API (e.g AbstractMessage.toString()) is
     // called.
     private final Printer.FieldReporterLevel fieldReporterLevel;
+    // The root message type being printed. Null if the root message type is not known (e.g.
+    // printing a field).
+    private final Descriptor rootMessageType;
 
     private TextGenerator(
         final Appendable output,
         boolean singleLineMode,
+        Descriptor rootMessageType,
         Printer.FieldReporterLevel fieldReporterLevel) {
       this.output = output;
       this.singleLineMode = singleLineMode;
+      this.rootMessageType = rootMessageType;
       this.fieldReporterLevel = fieldReporterLevel;
     }
 
@@ -1008,15 +998,6 @@ public final class TextFormat {
     private int previousLine = 0;
     private int previousColumn = 0;
 
-    /**
-     * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
-     * current token. This value is moved to {@link containsSilentMarkerAfterPrevToken} every time
-     * the next token is parsed.
-     */
-    private boolean containsSilentMarkerAfterCurrentToken = false;
-
-    private boolean containsSilentMarkerAfterPrevToken = false;
-
     /** Construct a tokenizer that parses tokens from the given text. */
     private Tokenizer(final CharSequence text) {
       this.text = text;
@@ -1038,14 +1019,6 @@ public final class TextFormat {
 
     int getColumn() {
       return column;
-    }
-
-    boolean getContainsSilentMarkerAfterCurrentToken() {
-      return containsSilentMarkerAfterCurrentToken;
-    }
-
-    boolean getContainsSilentMarkerAfterPrevToken() {
-      return containsSilentMarkerAfterPrevToken;
     }
 
     /** Are we at the end of the input? */
@@ -1736,19 +1709,6 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
-
-    /**
-     * A valid silent marker appears between a field name and its value. If there is a ":" in
-     * between, the silent marker will only appear after the colon. This is called after a field
-     * name is parsed, and before the ":" if it exists. If the current token is ":", then
-     * containsSilentMarkerAfterCurrentToken indicates if there is a valid silent marker. Otherwise,
-     * the current token is part of the field value, so the silent marker is indicated by
-     * containsSilentMarkerAfterPrevToken.
-     */
-    private void detectSilentMarker(
-        Tokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
-    }
-
     /**
      * Determines if repeated values for non-repeated fields and oneofs are permitted. For example,
      * given required/optional field "foo" and a oneof containing "baz" and "moo":
@@ -2121,14 +2081,12 @@ public final class TextFormat {
 
       // Skips unknown fields.
       if (field == null) {
-        detectSilentMarker(tokenizer, type, name);
         guessFieldTypeAndSkip(tokenizer, type, recursionLimit);
         return;
       }
 
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
@@ -2154,7 +2112,6 @@ public final class TextFormat {
               recursionLimit);
         }
       } else {
-        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.consume(":"); // required
         consumeFieldValues(
             tokenizer,
@@ -2178,27 +2135,26 @@ public final class TextFormat {
       }
     }
 
-    private String consumeFullTypeName(Tokenizer tokenizer) throws ParseException {
+    private void consumeFullTypeName(Tokenizer tokenizer) throws ParseException {
       // If there is not a leading `[`, this is just a type name.
       if (!tokenizer.tryConsume("[")) {
-        return tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
+        return;
       }
 
       // Otherwise, this is an extension or google.protobuf.Any type URL: we consume proto path
       // elements until we've addressed the type.
-      String name = tokenizer.consumeIdentifier();
+      tokenizer.consumeIdentifier();
       while (tokenizer.tryConsume(".")) {
-        name += "." + tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
       }
       if (tokenizer.tryConsume("/")) {
-        name += "/" + tokenizer.consumeIdentifier();
+        tokenizer.consumeIdentifier();
         while (tokenizer.tryConsume(".")) {
-          name += "." + tokenizer.consumeIdentifier();
+          tokenizer.consumeIdentifier();
         }
       }
       tokenizer.consume("]");
-
-      return name;
     }
 
     /**
@@ -2444,7 +2400,6 @@ public final class TextFormat {
           throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
         }
       }
-      detectSilentMarker(tokenizer, anyDescriptor, typeUrlBuilder.toString());
       tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
@@ -2489,8 +2444,7 @@ public final class TextFormat {
     /** Skips the next field including the field's name and value. */
     private void skipField(Tokenizer tokenizer, Descriptor type, int recursionLimit)
         throws ParseException {
-      String name = consumeFullTypeName(tokenizer);
-      detectSilentMarker(tokenizer, type, name);
+      consumeFullTypeName(tokenizer);
       guessFieldTypeAndSkip(tokenizer, type, recursionLimit);
 
       // For historical reasons, fields may optionally be separated by commas or

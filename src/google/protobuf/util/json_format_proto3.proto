@@ -190,7 +190,7 @@ message TestEvilJson {
 }
 
 message TestExtensions {
-  .protobuf_unittest.TestAllExtensions extensions = 1;
+  .proto2_unittest.TestAllExtensions extensions = 1;
 }
 
 message TestEnumValue {

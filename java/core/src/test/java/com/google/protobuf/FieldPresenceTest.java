@@ -18,7 +18,7 @@ import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
 import com.google.protobuf.FieldPresenceTestProto.TestRepeatedFieldsOnly;
 import com.google.protobuf.testing.proto.TestProto3Optional;
-import protobuf_unittest.UnittestProto;
+import proto2_unittest.UnittestProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

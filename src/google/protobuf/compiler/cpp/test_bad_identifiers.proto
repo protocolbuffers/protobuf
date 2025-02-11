@@ -22,7 +22,7 @@ option cc_generic_services = true;  // auto-added
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-package protobuf_unittest;
+package proto2_unittest;
 
 // Test that fields can have names like "input" and "i" which are also used
 // internally by the code generator for local variables.

@@ -60,12 +60,6 @@ struct RepeatedFieldBase;
 class ExtensionSet;
 }  // namespace internal
 
-namespace arena_metrics {
-
-void EnableArenaMetrics(ArenaOptions* options);
-
-}  // namespace arena_metrics
-
 namespace TestUtil {
 class ReflectionTester;  // defined in test_util.h
 }  // namespace TestUtil

@@ -8,6 +8,9 @@
 #include "google/protobuf/arenaz_sampler.h"
 
 #include <atomic>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <random>
@@ -16,6 +19,12 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/serial_arena.h"
 
 
 // Must be included last.
@@ -598,3 +607,5 @@ TEST(ThreadSafeArenazSamplerTest, UsedAndWasted) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

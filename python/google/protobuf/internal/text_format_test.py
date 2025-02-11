@@ -493,7 +493,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '  type: TYPE_STRING\n'
         '  options {\n'
         '    ctype: CORD\n'
-        '    [protobuf_unittest.field_opt1]: 8765432109\n'
+        '    [proto2_unittest.field_opt1]: 8765432109\n'
         '  }\n'
         '}\n'
         'field {\n'
@@ -508,10 +508,10 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '  number: 3\n'
         '  label: LABEL_REPEATED\n'
         '  type: TYPE_MESSAGE\n'
-        '  type_name: ".protobuf_unittest.TestMessageWithCustomOptions.'
+        '  type_name: ".proto2_unittest.TestMessageWithCustomOptions.'
         'MapFieldEntry"\n'
         '  options {\n'
-        '    [protobuf_unittest.field_opt1]: 12345\n'
+        '    [proto2_unittest.field_opt1]: 12345\n'
         '  }\n'
         '}\n'
         'nested_type {\n'
@@ -542,21 +542,21 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '    name: "ANENUM_VAL2"\n'
         '    number: 2\n'
         '    options {\n'
-        '      [protobuf_unittest.enum_value_opt1]: 123\n'
+        '      [proto2_unittest.enum_value_opt1]: 123\n'
         '    }\n'
         '  }\n'
         '  options {\n'
-        '    [protobuf_unittest.enum_opt1]: -789\n'
+        '    [proto2_unittest.enum_opt1]: -789\n'
         '  }\n'
         '}\n'
         'options {\n'
         '  message_set_wire_format: false\n'
-        '  [protobuf_unittest.message_opt1]: -56\n'
+        '  [proto2_unittest.message_opt1]: -56\n'
         '}\n'
         'oneof_decl {\n'
         '  name: "AnOneof"\n'
         '  options {\n'
-        '    [protobuf_unittest.oneof_opt1]: -99\n'
+        '    [proto2_unittest.oneof_opt1]: -99\n'
         '  }\n'
         '}\n')
     self.assertEqual(expected_text,
@@ -1140,33 +1140,33 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  oo: 0\n'
         '  bb: 1\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
         '  my_string: "ext_str2"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '[proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
         '  my_string: "ext_str1"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '[proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
         '.test_ext_orderings3] {\n'
         '  my_string: "ext_str3"\n'
         '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n')
+        '[proto2_unittest.my_extension_string]: "ext_str0"\n')
     # By default, print in field number order.
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'my_int: 101\n'
         'my_string: "str"\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
         '  my_string: "ext_str2"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '[proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
         '  my_string: "ext_str1"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '[proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
         '.test_ext_orderings3] {\n'
         '  my_string: "ext_str3"\n'
         '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n'
+        '[proto2_unittest.my_extension_string]: "ext_str0"\n'
         'my_float: 111\n'
         'optional_nested_message {\n'
         '  bb: 1\n'
@@ -1408,10 +1408,10 @@ class Proto2Tests(TextFormatBase):
     message.message_set.Extensions[ext2].str = 'foo'
     self.CompareToGoldenText(
         text_format.MessageToString(message), 'message_set {\n'
-        '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+        '  [proto2_unittest.TestMessageSetExtension1] {\n'
         '    i: 23\n'
         '  }\n'
-        '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+        '  [proto2_unittest.TestMessageSetExtension2] {\n'
         '    str: \"foo\"\n'
         '  }\n'
         '}\n')
@@ -1469,10 +1469,10 @@ class Proto2Tests(TextFormatBase):
     self.CompareToGoldenText(
         text_format.MessageToString(message, as_one_line=True),
         'message_set {'
-        ' [protobuf_unittest.TestMessageSetExtension1] {'
+        ' [proto2_unittest.TestMessageSetExtension1] {'
         ' i: 23'
         ' }'
-        ' [protobuf_unittest.TestMessageSetExtension2] {'
+        ' [proto2_unittest.TestMessageSetExtension2] {'
         ' str: \"foo\"'
         ' }'
         ' }')
@@ -1486,10 +1486,10 @@ class Proto2Tests(TextFormatBase):
 
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
-            '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+            '  [proto2_unittest.TestMessageSetExtension1] {\n'
             '    i: 23\n'
             '  }\n'
-            '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+            '  [proto2_unittest.TestMessageSetExtension2] {\n'
             '    str: \"foo\"\n'
             '  }\n'
             '}\n')
@@ -1704,10 +1704,10 @@ class Proto2Tests(TextFormatBase):
     # Parse known extension correctly.
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
-            '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+            '  [proto2_unittest.TestMessageSetExtension1] {\n'
             '    i: 23\n'
             '  }\n'
-            '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+            '  [proto2_unittest.TestMessageSetExtension2] {\n'
             '    str: \"foo\"\n'
             '  }\n'
             '}\n')
@@ -1724,7 +1724,7 @@ class Proto2Tests(TextFormatBase):
             '    [unknown_extension] {\n'
             '      str: "string"\n'
             '      any_value {\n'
-            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '        [type.googleapis.com/proto2_unittest.OneString] {\n'
             '          data: "string"\n'
             '        }\n'
             '      }\n'
@@ -1742,7 +1742,7 @@ class Proto2Tests(TextFormatBase):
             '    [unknown_extension] {\n'
             '      str: "string"\n'
             '      any_value {\n'
-            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '        [type.googleapis.com/proto2_unittest.OneString] {\n'
             '          data: "string"\n'
             '        }\n'
             '      }\n'
@@ -1777,7 +1777,7 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
+        ('1:2 : Message type "proto2_unittest.TestAllTypes" does not have '
          'extensions.'), text_format.Parse, text, message)
 
   def testParseNumericUnknownEnum(self):
@@ -1791,32 +1791,32 @@ class Proto2Tests(TextFormatBase):
 
   def testMergeDuplicateExtensionScalars(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
+    text = ('[proto2_unittest.optional_int32_extension]: 42 '
+            '[proto2_unittest.optional_int32_extension]: 67')
     text_format.Merge(text, message)
     self.assertEqual(67,
                      message.Extensions[unittest_pb2.optional_int32_extension])
 
   def testParseDuplicateExtensionScalars(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
+    text = ('[proto2_unittest.optional_int32_extension]: 42 '
+            '[proto2_unittest.optional_int32_extension]: 67')
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:96 : Message type "protobuf_unittest.TestAllExtensions" '
+        ('1:92 : Message type "proto2_unittest.TestAllExtensions" '
          'should not have multiple '
-         '"protobuf_unittest.optional_int32_extension" extensions.'),
+         '"proto2_unittest.optional_int32_extension" extensions.'),
         text_format.Parse, text, message)
 
   def testParseDuplicateExtensionMessages(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
-            '[protobuf_unittest.optional_nested_message_extension]: {}')
+    text = ('[proto2_unittest.optional_nested_message_extension]: {} '
+            '[proto2_unittest.optional_nested_message_extension]: {}')
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:114 : Message type "protobuf_unittest.TestAllExtensions" '
+        ('1:110 : Message type "proto2_unittest.TestAllExtensions" '
          'should not have multiple '
-         '"protobuf_unittest.optional_nested_message_extension" extensions.'),
+         '"proto2_unittest.optional_nested_message_extension" extensions.'),
         text_format.Parse, text, message)
 
   def testParseGroupNotClosed(self):
@@ -1892,7 +1892,7 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     descriptor_pool=descriptor_pool.Default()),
         'any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string"\n'
         '  }\n'
         '}\n')
@@ -1941,12 +1941,12 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(
         text_format.MessageToString(message),
         'repeated_any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string0"\n'
         '  }\n'
         '}\n'
         'repeated_any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string1"\n'
         '  }\n'
         '}\n')
@@ -1960,7 +1960,7 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(
         text_format.MessageToString(message, descriptor_pool=empty_pool),
         'any_value {\n'
-        '  type_url: "type.googleapis.com/protobuf_unittest.OneString"\n'
+        '  type_url: "type.googleapis.com/proto2_unittest.OneString"\n'
         '  value: "\\n\\006string"\n'
         '}\n')
 
@@ -1973,7 +1973,7 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     pointy_brackets=True),
         'any_value <\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] <\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] <\n'
         '    data: "string"\n'
         '  >\n'
         '>\n')
@@ -1987,7 +1987,7 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     as_one_line=True),
         'any_value {'
-        ' [type.googleapis.com/protobuf_unittest.OneString]'
+        ' [type.googleapis.com/proto2_unittest.OneString]'
         ' { data: "string" } '
         '}')
 
@@ -2002,7 +2002,7 @@ class Proto3Tests(unittest.TestCase):
                                     pointy_brackets=True,
                                     descriptor_pool=descriptor_pool.Default()),
         'any_value <'
-        ' [type.googleapis.com/protobuf_unittest.OneString]'
+        ' [type.googleapis.com/proto2_unittest.OneString]'
         ' < data: "string" > '
         '>')
 
@@ -2016,7 +2016,7 @@ class Proto3Tests(unittest.TestCase):
     text = text_format.MessageToString(message)
     self.assertEqual(
         text, 'any_value {\n'
-        '  type_url: "protobuf_unittest.OneString"\n'
+        '  type_url: "proto2_unittest.OneString"\n'
         '  value: "\\n\\006string"\n'
         '}\n')
 
@@ -2035,7 +2035,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAny(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
@@ -2052,12 +2052,12 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAnyRepeated(self):
     message = any_test_pb2.TestAny()
     text = ('repeated_any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string0"\n'
             '  }\n'
             '}\n'
             'repeated_any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string1"\n'
             '  }\n'
             '}\n')
@@ -2071,7 +2071,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAnyPointyBrackets(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] <\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] <\n'
             '    data: "string"\n'
             '  >\n'
             '}\n')
@@ -2083,19 +2083,19 @@ class Proto3Tests(unittest.TestCase):
   def testMergeAlternativeUrl(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.otherapi.com/protobuf_unittest.OneString] {\n'
+            '  [type.otherapi.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
     text_format.Merge(text, message)
     packed_message = unittest_pb2.OneString()
-    self.assertEqual('type.otherapi.com/protobuf_unittest.OneString',
+    self.assertEqual('type.otherapi.com/proto2_unittest.OneString',
                      message.any_value.type_url)
 
   def testMergeExpandedAnyDescriptorPoolMissingType(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
@@ -2104,11 +2104,11 @@ class Proto3Tests(unittest.TestCase):
       text_format.Merge(text, message, descriptor_pool=empty_pool)
     self.assertEqual(
         str(e.exception),
-        'Type protobuf_unittest.OneString not found in descriptor pool')
+        'Type proto2_unittest.OneString not found in descriptor pool')
 
   def testMergeUnexpandedAny(self):
     text = ('any_value {\n'
-            '  type_url: "type.googleapis.com/protobuf_unittest.OneString"\n'
+            '  type_url: "type.googleapis.com/proto2_unittest.OneString"\n'
             '  value: "\\n\\006string"\n'
             '}\n')
     message = any_test_pb2.TestAny()
@@ -2120,7 +2120,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeMissingAnyEndToken(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n')
     with self.assertRaises(text_format.ParseError) as e:
       text_format.Merge(text, message)
@@ -2596,7 +2596,7 @@ class TokenizerTest(parameterized.TestCase):
   def testGroupName(self):
     grp = unittest_pb2.TestGroupExtension()
     grp.Extensions[unittest_pb2.TestNestedExtension.optionalgroup_extension].a = 6
-    self.assertEqual('[protobuf_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
+    self.assertEqual('[proto2_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
 
     msg = unittest_pb2.TestAllTypes(
         repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)])
@@ -2889,7 +2889,7 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
         message,
         force_colon=True)
     expected = ('any_value: {\n'
-                '  [type.googleapis.com/protobuf_unittest.OneString]: {\n'
+                '  [type.googleapis.com/proto2_unittest.OneString]: {\n'
                 '    data: "string"\n'
                 '  }\n'
                 '}\n')

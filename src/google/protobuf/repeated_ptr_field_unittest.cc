@@ -41,8 +41,8 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestAllTypes;
-using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestMessageWithManyRepeatedPtrFields;
 using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -528,7 +528,7 @@ TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
   field.AddAllocated(msg);
 }
 
-TEST(RepeatedPtrField, MergeFrom) {
+TEST(RepeatedPtrField, MergeFromString) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
   source.Add()->assign("5");
@@ -544,6 +544,110 @@ TEST(RepeatedPtrField, MergeFrom) {
   EXPECT_EQ("3", destination.Get(2));
   EXPECT_EQ("4", destination.Get(3));
   EXPECT_EQ("5", destination.Get(4));
+
+  destination.Clear();
+
+  ASSERT_EQ(0, destination.size());
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(2, destination.size());
+  EXPECT_EQ("4", destination.Get(0));
+  EXPECT_EQ("5", destination.Get(1));
+
+  delete destination.ReleaseLast();
+
+  ASSERT_EQ(1, destination.size());
+  EXPECT_EQ("4", destination.Get(0));
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(3, destination.size());
+  EXPECT_EQ("4", destination.Get(0));
+  EXPECT_EQ("4", destination.Get(1));
+  EXPECT_EQ("5", destination.Get(2));
+}
+
+TEST(RepeatedPtrField, MergeFromMessage) {
+  RepeatedPtrField<TestAllTypes::NestedMessage> source, destination;
+  source.Add()->set_bb(4);
+  source.Add()->set_bb(5);
+  destination.Add()->set_bb(1);
+  destination.Add()->set_bb(2);
+  destination.Add()->set_bb(3);
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(5, destination.size());
+  EXPECT_EQ(1, destination.Get(0).bb());
+  EXPECT_EQ(2, destination.Get(1).bb());
+  EXPECT_EQ(3, destination.Get(2).bb());
+  EXPECT_EQ(4, destination.Get(3).bb());
+  EXPECT_EQ(5, destination.Get(4).bb());
+
+  destination.Clear();
+
+  ASSERT_EQ(0, destination.size());
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(2, destination.size());
+  EXPECT_EQ(4, destination.Get(0).bb());
+  EXPECT_EQ(5, destination.Get(1).bb());
+
+  delete destination.ReleaseLast();
+
+  ASSERT_EQ(1, destination.size());
+  EXPECT_EQ(4, destination.Get(0).bb());
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(3, destination.size());
+  EXPECT_EQ(4, destination.Get(0).bb());
+  EXPECT_EQ(4, destination.Get(1).bb());
+  EXPECT_EQ(5, destination.Get(2).bb());
+}
+
+TEST(RepeatedPtrField, MergeFromStringWithArena) {
+  using Field = RepeatedPtrField<std::string>;
+  Arena arena;
+  Field* source = Arena::Create<Field>(&arena);
+  Field* destination = Arena::Create<Field>(&arena);
+  source->Add()->assign("4");
+  source->Add()->assign("5");
+  destination->Add()->assign("1");
+  destination->Add()->assign("2");
+  destination->Add()->assign("3");
+
+  destination->MergeFrom(*source);
+
+  ASSERT_EQ(5, destination->size());
+  EXPECT_EQ("1", destination->Get(0));
+  EXPECT_EQ("2", destination->Get(1));
+  EXPECT_EQ("3", destination->Get(2));
+  EXPECT_EQ("4", destination->Get(3));
+  EXPECT_EQ("5", destination->Get(4));
+}
+
+TEST(RepeatedPtrField, MergeFromMessageWithArena) {
+  using Field = RepeatedPtrField<TestAllTypes::NestedMessage>;
+  Arena arena;
+  Field* source = Arena::Create<Field>(&arena);
+  Field* destination = Arena::Create<Field>(&arena);
+  source->Add()->set_bb(4);
+  source->Add()->set_bb(5);
+  destination->Add()->set_bb(1);
+  destination->Add()->set_bb(2);
+  destination->Add()->set_bb(3);
+
+  destination->MergeFrom(*source);
+
+  ASSERT_EQ(5, destination->size());
+  EXPECT_EQ(1, destination->Get(0).bb());
+  EXPECT_EQ(2, destination->Get(1).bb());
+  EXPECT_EQ(3, destination->Get(2).bb());
+  EXPECT_EQ(4, destination->Get(3).bb());
+  EXPECT_EQ(5, destination->Get(4).bb());
 }
 
 

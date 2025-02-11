@@ -43,7 +43,6 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/message.h"
@@ -77,100 +76,6 @@ namespace internal {
 void MapTestForceDeterministic() {
   io::CodedOutputStream::SetDefaultSerializationDeterministic();
 }
-
-struct MoveTestKey {
-  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
-
-  MoveTestKey(const MoveTestKey& other)
-      : data(other.data), copies(other.copies) {
-    ++*copies;
-  }
-
-  MoveTestKey(MoveTestKey&& other) noexcept
-      : data(other.data), copies(other.copies) {}
-
-  template <typename H>
-  friend auto AbslHashValue(H state, const MoveTestKey& m) {
-    return H::combine(std::move(state), m.data);
-  }
-
-  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
-    return lhs.data == rhs.data;
-  }
-  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
-    return lhs.data < rhs.data;
-  }
-
-  int data;
-  int* copies;
-};
-
-enum class ConstructorType {
-  kDefault,
-  kCopy,
-  kMove,
-};
-
-struct ConstructorTag {
-  ConstructorTag() : invoked_constructor(ConstructorType::kDefault) {}
-  ConstructorTag(const ConstructorTag&)
-      : invoked_constructor(ConstructorType::kCopy) {}
-  ConstructorTag(ConstructorTag&&)
-      : invoked_constructor(ConstructorType::kMove) {}
-
-  bool operator<(const ConstructorTag&) const { return false; }
-
-  bool operator==(const ConstructorTag&) const { return true; }
-
-  ConstructorType invoked_constructor;
-};
-
-struct CountedInstance {
-  CountedInstance() { ++num_created; }
-  CountedInstance(const CountedInstance&) : CountedInstance() {}
-  CountedInstance(CountedInstance&&) : CountedInstance() {}
-
-  CountedInstance& operator=(const CountedInstance&) {
-    ++num_assigned;
-    return *this;
-  }
-
-  explicit CountedInstance(int x) : CountedInstance() {}
-
-  static int num_created;
-  static int num_assigned;
-};
-
-int CountedInstance::num_created = 0;
-int CountedInstance::num_assigned = 0;
-
-struct ArenaConstructible {
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-
-  ArenaConstructible() = default;
-  ArenaConstructible(const ArenaConstructible&) = default;
-  ArenaConstructible(Arena*) : ArenaConstructible() {}
-
-  ArenaConstructible& operator=(const ArenaConstructible&) = default;
-
-  explicit ArenaConstructible(int) : ArenaConstructible() {}
-
-  Arena* arena() const { return nullptr; }
-
-  CountedInstance unused;
-};
-
-template <>
-struct is_internal_map_key_type<MoveTestKey> : std::true_type {};
-template <>
-struct is_internal_map_key_type<ConstructorTag> : std::true_type {};
-template <>
-struct is_internal_map_value_type<ConstructorTag> : std::true_type {};
-template <>
-struct is_internal_map_value_type<ArenaConstructible> : std::true_type {};
-template <>
-struct is_internal_map_value_type<CountedInstance> : std::true_type {};
 
 struct MapTestPeer {
   template <typename T>
@@ -323,48 +228,27 @@ TEST_F(MapImplTest, OperatorBracket) {
 namespace google {
 namespace protobuf {
 namespace internal {
-
-template <>
-struct TransparentSupport<MoveTestKey> {
-  using hash = absl::Hash<MoveTestKey>;
-
-  template <typename K>
-  using key_arg = MoveTestKey;
-
-  using ViewType = const MoveTestKey&;
-
-  static ViewType ToView(ViewType v) { return v; }
-};
-
-template <>
-struct TransparentSupport<ConstructorTag> {
-  using hash = absl::Hash<ConstructorTag>;
-
-  static bool Equals(const ConstructorTag& a, const ConstructorTag& b) {
-    return a == b;
-  }
-
-  template <typename K>
-  using key_arg = ConstructorTag;
-
-  using ViewType = const ConstructorTag&;
-
-  static ViewType ToView(ViewType v) { return v; }
-};
-
 namespace {
 
 TEST_F(MapImplTest, OperatorBracketRValue) {
   Arena arena;
   for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
-    int copies = 0;
-    Map<MoveTestKey, int> map(arena_to_use);
-    MoveTestKey key1(1, &copies);
-    EXPECT_EQ(copies, 0);
-    map[key1] = 0;
-    EXPECT_EQ(copies, 1);
-    map[MoveTestKey(2, &copies)] = 2;
-    EXPECT_EQ(copies, 1);
+    Map<std::string, int> map(arena_to_use);
+    {
+      std::string key(10000, 'a');
+      const char* const data = key.data();
+      map[key] = 0;
+      EXPECT_EQ(data, key.data());
+      EXPECT_NE(data, map.find(std::string(10000, 'a'))->first.data());
+    }
+
+    {
+      std::string key(10000, 'b');
+      const char* const data = key.data();
+      map[std::move(key)] = 0;
+      EXPECT_NE(data, key.data());  // NOLINT
+      EXPECT_EQ(data, map.find(std::string(10000, 'b'))->first.data());
+    }
   }
 }
 
@@ -831,84 +715,21 @@ TEST_F(MapImplTest, Emplace) {
       m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
 }
 
-TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
-  using vt = typename Map<ConstructorTag, ConstructorTag>::value_type;
-  ConstructorTag l, r;
-
-  vt pair(l, std::move(r));
-
-  EXPECT_EQ(pair.first.invoked_constructor, ConstructorType::kCopy);
-  EXPECT_EQ(pair.second.invoked_constructor, ConstructorType::kMove);
-}
-
 TEST_F(MapImplTest, TryEmplaceExisting) {
-  Map<int32_t, CountedInstance> m;
+  Arena arena;
+  Map<int32_t, int32_t>& m = *Arena::Create<Map<int32_t, int32_t>>(&arena);
+  const size_t size1 = arena.SpaceUsed();
 
   m.try_emplace(1, 1);
   ASSERT_EQ(m.size(), 1);
 
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
+  const size_t size2 = arena.SpaceUsed();
+  ASSERT_GT(size2, size1);
+
   m.try_emplace(1, 123);
   EXPECT_EQ(m.size(), 1);
-  EXPECT_EQ(CountedInstance::num_created, 0);
-  EXPECT_EQ(CountedInstance::num_assigned, 0);
-}
 
-TEST_F(MapImplTest, TryEmplaceArenaConstructible) {
-  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
-
-  ArenaConstructible v1, v2;
-
-  Map<int32_t, ArenaConstructible> m;
-
-  // "default" construction
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
-  m.try_emplace(1);
-  EXPECT_EQ(m.size(), 1);
-  EXPECT_EQ(CountedInstance::num_created, 1);
-  EXPECT_EQ(CountedInstance::num_assigned, 0);
-
-  // "default" construction + copy assignment
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
-  m.try_emplace(2, v1);
-  EXPECT_EQ(m.size(), 2);
-  EXPECT_EQ(CountedInstance::num_created, 1);
-  EXPECT_EQ(CountedInstance::num_assigned, 1);
-
-  // "default" construction + move assignment
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
-  m.try_emplace(3, std::move(v2));
-  EXPECT_EQ(m.size(), 3);
-  EXPECT_EQ(CountedInstance::num_created, 1);
-  EXPECT_EQ(CountedInstance::num_assigned, 1);
-
-  // "default" construction + in-place temporary + move assignment
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
-  m.try_emplace(4, 239);
-  EXPECT_EQ(m.size(), 4);
-  EXPECT_EQ(CountedInstance::num_created, 2);
-  EXPECT_EQ(CountedInstance::num_assigned, 1);
-}
-
-TEST_F(MapImplTest, TryEmplaceExistingArenaConstructible) {
-  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
-
-  Map<int32_t, ArenaConstructible> m;
-
-  m.try_emplace(1, 1);
-  ASSERT_EQ(m.size(), 1);
-
-  CountedInstance::num_created = 0;
-  CountedInstance::num_assigned = 0;
-  m.try_emplace(1, 123);
-  EXPECT_EQ(m.size(), 1);
-  EXPECT_EQ(CountedInstance::num_created, 0);
-  EXPECT_EQ(CountedInstance::num_assigned, 0);
+  EXPECT_EQ(size2, arena.SpaceUsed());
 }
 
 TEST_F(MapImplTest, EmplaceSingle) {
@@ -1246,6 +1067,25 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
 
       // Add an entry to make sure it is using the right arena.
     (*rhs.mutable_map_int32_int32())[1234] = 1234;
+  }
+}
+
+TEST_F(MapImplTest, RecursiveMapTypeDoesNotDeadlockOnDynamicMessage) {
+  const auto* descriptor = UNITTEST::TestRecursiveMapMessage::descriptor();
+  const auto* entry_descriptor =
+      descriptor->FindFieldByNumber(1)->message_type();
+
+  {
+    // Start at the message
+    DynamicMessageFactory factory;
+    const Message* prototype = factory.GetPrototype(descriptor);
+    std::unique_ptr<Message> msg(prototype->New());
+  }
+  {
+    // Start at the map entry
+    DynamicMessageFactory factory;
+    const Message* prototype = factory.GetPrototype(entry_descriptor);
+    std::unique_ptr<Message> msg(prototype->New());
   }
 }
 
@@ -2548,7 +2388,10 @@ class MyMapEntry
   constexpr MyMapEntry()
       : MyMapEntry::MapEntry(static_cast<ClassData*>(nullptr)) {}
   MyMapEntry(Arena* arena) : MyMapEntry::MapEntry(arena, nullptr) {}
-  const ClassData* GetClassData() const { ABSL_CHECK(false); }
+  const ClassData* GetClassData() const {
+    ABSL_CHECK(false);
+    return nullptr;
+  }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -4496,7 +4339,7 @@ TEST(KeyMapBaseTest, InsertOrReplaceNodeWorks) {
 }
 
 TEST(NonUtf8Test, StringValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
+  proto2_unittest::TestProto2BytesMap message;
   (*message.mutable_map_string())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();
@@ -4506,7 +4349,7 @@ TEST(NonUtf8Test, StringValuePassesInProto2) {
 }
 
 TEST(NonUtf8Test, BytesValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
+  proto2_unittest::TestProto2BytesMap message;
   (*message.mutable_map_bytes())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();

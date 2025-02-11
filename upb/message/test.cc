@@ -333,6 +333,38 @@ TEST(MessageTest, UnknownMessageSet) {
   EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknowngroup(items[0]));
 }
 
+TEST(MessageTest, MessageSetSubmessageEncoding) {
+  upb::Arena arena;
+
+  // Create a normal extension message and use the set the doppelgänger message
+  // set member extension on it. This will allow us to serialize as a normal
+  // extension and then attempt to parse it as a message set.
+  // This mimics the behavior of an encoder that is message set unaware.
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_MessageSetMember* ext_member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  upb_test_MessageSetMember_set_optional_int32(ext_member, 234);
+  upb_test_MessageSetMember_set_doppelganger_message_set_extension(
+      ext_msg, ext_member, arena.ptr());
+
+  size_t size;
+  char* serialized =
+      upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_GE(size, 0);
+
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  upb_test_TestMessageSet* message_set = upb_test_TestMessageSet_parse_ex(
+      serialized, size, upb_DefPool_ExtensionRegistry(defpool.ptr()), 0,
+      arena.ptr());
+  ASSERT_TRUE(message_set != nullptr);
+
+  VerifyMessageSet(message_set);
+}
+
 TEST(MessageTest, Proto2Enum) {
   upb::Arena arena;
   upb_test_Proto2FakeEnumMessage* fake_msg =

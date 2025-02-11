@@ -26,6 +26,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -37,47 +40,38 @@ using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
-                      bool weak) {
+                      bool is_weak, bool use_base_class) {
   bool split = ShouldSplit(field, opts);
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
   std::string default_ref =
       QualifiedDefaultInstanceName(field->message_type(), opts);
-  std::string default_ptr =
-      QualifiedDefaultInstancePtr(field->message_type(), opts);
-  std::string base =
-      absl::StrCat("::", ProtobufNamespace(opts), "::", "MessageLite");
+  std::string base = absl::StrCat(
+      "::", ProtobufNamespace(opts), "::",
+      HasDescriptorMethods(field->file(), opts) ? "Message" : "MessageLite");
 
   return {
       {"Submsg", qualified_type},
-      {"MemberType", !weak ? qualified_type : base},
-      {"CompleteType", !is_foreign ? qualified_type : base},
+      {"MemberType", use_base_class ? base : qualified_type},
       {"kDefault", default_ref},
-      {"kDefaultPtr", !weak
-                          ? default_ptr
-                          : absl::Substitute("reinterpret_cast<const $0*>($1)",
-                                             base, default_ptr)},
-      Sub{"base_cast", !is_foreign && !weak
-                           ? ""
-                           : absl::Substitute("reinterpret_cast<$0*>", base)}
+      Sub{"cast_to_field",
+          use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
           .ConditionalFunctionCall(),
-      Sub{"weak_cast",
-          !weak ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
-          .ConditionalFunctionCall(),
-      Sub{"foreign_cast",
+      Sub{"arena_cast",
           !is_foreign ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
           .ConditionalFunctionCall(),
-      {"cast_field_", !weak ? field_name
-                            : absl::Substitute("reinterpret_cast<$0*>($1)",
-                                               qualified_type, field_name)},
-      {"Weak", weak ? "Weak" : ""},
-      {".weak", weak ? ".weak" : ""},
-      {"_weak", weak ? "_weak" : ""},
-      Sub("StrongRef",
-          !weak ? ""
-                : absl::StrCat(
-                      StrongReferenceToType(field->message_type(), opts), ";"))
+      {"cast_field_", use_base_class
+                          ? absl::Substitute("reinterpret_cast<$0*>($1)",
+                                             qualified_type, field_name)
+                          : field_name},
+      {"Weak", is_weak ? "Weak" : ""},
+      {".weak", is_weak ? ".weak" : ""},
+      {"_weak", is_weak ? "_weak" : ""},
+      Sub("StrongRef", !is_weak ? ""
+                                : absl::StrCat(StrongReferenceToType(
+                                                   field->message_type(), opts),
+                                               ";"))
           .WithSuffix(";"),
   };
 }
@@ -94,7 +88,7 @@ class SingularMessage : public FieldGeneratorBase {
   ~SingularMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak());
+    return Vars(field_, *opts_, is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
@@ -289,14 +283,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       if (message_arena == nullptr) {
-        delete $base_cast$($field_$);
+        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
       }
 
       if (value != nullptr) {
-        //~ When $Submsg$ is a cross-file type, have to read the arena
-        //~ through the virtual method, because the type isn't defined in
-        //~ this file, only forward-declared.
-        $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
+        $pb$::Arena* submessage_arena = $arena_cast$(value)->GetArena();
         if (message_arena != submessage_arena) {
           value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
         }
@@ -468,9 +459,43 @@ class OneofMessage : public SingularMessage {
  public:
   OneofMessage(const FieldDescriptor* descriptor, const Options& options,
                MessageSCCAnalyzer* scc_analyzer)
-      : SingularMessage(descriptor, options, scc_analyzer) {}
+      : SingularMessage(descriptor, options, scc_analyzer) {
+    auto* oneof = descriptor->containing_oneof();
+    num_message_fields_in_oneof_ = 0;
+    for (int i = 0; i < oneof->field_count(); ++i) {
+      num_message_fields_in_oneof_ +=
+          oneof->field(i)->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+    }
+  }
 
   ~OneofMessage() override = default;
+
+  bool use_base_class() const {
+    if (is_weak()) return true;
+
+    // For non-weak oneof fields, we choose to use a base class pointer when the
+    // oneof has many message fields in it.  Using a base class here is not
+    // about correctness, but about performance and binary size.
+    //
+    // This allows the compiler to merge all the different switch cases (since
+    // the code is identical for all message alternatives) reducing binary size.
+    // The runtime dispatch is effectively changed from a switch statement to a
+    // virtual function call. For many oneofs, it completely elides the switch
+    // dispatch.
+    //
+    // This constant is a tradeoff. We want to allow optimizations (like
+    // inlining) on small oneofs. For small oneofs the compiler can use faster
+    // alternatives to table-based jumps. Also, the technique used here has less
+    // of a binary size win for small oneofs.
+    static constexpr int kMaxStaticTypeCount = 3;
+    return num_message_fields_in_oneof_ >= kMaxStaticTypeCount &&
+           // Hot alternatives are kept as their static type for performance..
+           !IsLikelyPresent(field_, *opts_);
+  }
+
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, is_weak(), use_base_class());
+  }
 
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
@@ -484,6 +509,9 @@ class OneofMessage : public SingularMessage {
   bool NeedsIsInitialized() const override;
   void GenerateMergingCode(io::Printer* p) const override;
   bool RequiresArena(GeneratorFunction func) const override;
+
+ private:
+  int num_message_fields_in_oneof_;
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
@@ -492,7 +520,7 @@ void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
       $pb$::Arena* message_arena = GetArena();
       clear_$oneof_name$();
       if ($name$) {
-        $pb$::Arena* submessage_arena = $foreign_cast$($name$)->GetArena();
+        $pb$::Arena* submessage_arena = $arena_cast$($name$)->GetArena();
         if (message_arena != submessage_arena) {
           $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
         }
@@ -569,7 +597,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       clear_$oneof_name$();
       if (value) {
         set_has_$name_internal$();
-        $field_$ = $weak_cast$(value);
+        $field_$ = $cast_to_field$(value);
       }
       $annotate_set$;
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
@@ -581,8 +609,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field_$ =
-            $weak_cast$($superclass$::DefaultConstruct<$Submsg$>(GetArena()));
+        $field_$ = $cast_to_field$(
+            $superclass$::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -662,22 +690,17 @@ void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
 bool OneofMessage::NeedsIsInitialized() const { return has_required_; }
 
 void OneofMessage::GenerateMergingCode(io::Printer* p) const {
-  if (is_weak()) {
-    p->Emit(R"cc(
-      if (oneof_needs_init) {
-        _this->$field_$ = from.$field_$->New(arena);
-      }
-      _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      if (oneof_needs_init) {
-        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
-      } else {
-        _this->$field_$->MergeFrom(from._internal_$name$());
-      }
-    )cc");
-  }
+  p->Emit({{"merge",
+            use_base_class() && !HasDescriptorMethods(field_->file(), options_)
+                ? "CheckTypeAndMergeFrom"
+                : "MergeFrom"}},
+          R"cc(
+            if (oneof_needs_init) {
+              _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+            } else {
+              _this->$field_$->$merge$(*from.$field_$);
+            }
+          )cc");
 }
 
 bool OneofMessage::RequiresArena(GeneratorFunction func) const {
@@ -699,7 +722,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   ~RepeatedMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak());
+    return Vars(field_, *opts_, is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -1040,3 +1063,5 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

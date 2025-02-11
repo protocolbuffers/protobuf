@@ -243,7 +243,7 @@ TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
 }
 
 TEST(Proto3OptionalTest, OptionalFields) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   EXPECT_FALSE(msg.has_optional_int32());
   msg.set_optional_int32(0);
   EXPECT_TRUE(msg.has_optional_int32());
@@ -297,7 +297,7 @@ TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
 }
 
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
-  const Descriptor* d = protobuf_unittest::TestProto3Optional::descriptor();
+  const Descriptor* d = proto2_unittest::TestProto3Optional::descriptor();
 
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
@@ -316,32 +316,32 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
 TEST(Proto3OptionalTest, Extensions) {
   const DescriptorPool* p = DescriptorPool::generated_pool();
   const FieldDescriptor* no_optional = p->FindExtensionByName(
-      "protobuf_unittest.Proto3OptionalExtensions.ext_no_optional");
+      "proto2_unittest.Proto3OptionalExtensions.ext_no_optional");
   const FieldDescriptor* with_optional = p->FindExtensionByName(
-      "protobuf_unittest.Proto3OptionalExtensions.ext_with_optional");
+      "proto2_unittest.Proto3OptionalExtensions.ext_with_optional");
   ABSL_CHECK(no_optional);
   ABSL_CHECK(with_optional);
 
-  const Descriptor* d = protobuf_unittest::Proto3OptionalExtensions::descriptor();
+  const Descriptor* d = proto2_unittest::Proto3OptionalExtensions::descriptor();
   EXPECT_TRUE(d->options().HasExtension(
-      protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+      proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
   EXPECT_TRUE(d->options().HasExtension(
-      protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+      proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
   EXPECT_EQ(8, d->options().GetExtension(
-                   protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+                   proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
   EXPECT_EQ(16,
             d->options().GetExtension(
-                protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+                proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
 
-  const Descriptor* d2 = protobuf_unittest::TestProto3Optional::descriptor();
+  const Descriptor* d2 = proto2_unittest::TestProto3Optional::descriptor();
   EXPECT_FALSE(d2->options().HasExtension(
-      protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+      proto2_unittest::Proto3OptionalExtensions::ext_no_optional));
   EXPECT_FALSE(d2->options().HasExtension(
-      protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+      proto2_unittest::Proto3OptionalExtensions::ext_with_optional));
 }
 
 TEST(Proto3OptionalTest, OptionalField) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   EXPECT_FALSE(msg.has_optional_int32());
   msg.set_optional_int32(0);
   EXPECT_TRUE(msg.has_optional_int32());
@@ -361,7 +361,7 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   //
   // We test this more deeply elsewhere by parsing/serializing TextFormat (which
   // doesn't treat synthetic oneofs specially, so reflects over them normally).
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   const google::protobuf::Descriptor* d = msg.GetDescriptor();
   const google::protobuf::Reflection* r = msg.GetReflection();
   const google::protobuf::FieldDescriptor* f = d->FindFieldByName("optional_int32");
@@ -406,7 +406,7 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
 
 // It's a regression test for b/160665543.
 TEST(Proto3OptionalTest, ClearNonOptionalMessageField) {
-  protobuf_unittest::TestProto3OptionalMessage msg;
+  proto2_unittest::TestProto3OptionalMessage msg;
   msg.mutable_nested_message();
   const google::protobuf::Descriptor* d = msg.GetDescriptor();
   const google::protobuf::Reflection* r = msg.GetReflection();
@@ -415,7 +415,7 @@ TEST(Proto3OptionalTest, ClearNonOptionalMessageField) {
 }
 
 TEST(Proto3OptionalTest, ClearOptionalMessageField) {
-  protobuf_unittest::TestProto3OptionalMessage msg;
+  proto2_unittest::TestProto3OptionalMessage msg;
   msg.mutable_optional_nested_message();
   const google::protobuf::Descriptor* d = msg.GetDescriptor();
   const google::protobuf::Reflection* r = msg.GetReflection();
@@ -425,8 +425,8 @@ TEST(Proto3OptionalTest, ClearOptionalMessageField) {
 }
 
 TEST(Proto3OptionalTest, SwapNonOptionalMessageField) {
-  protobuf_unittest::TestProto3OptionalMessage msg1;
-  protobuf_unittest::TestProto3OptionalMessage msg2;
+  proto2_unittest::TestProto3OptionalMessage msg1;
+  proto2_unittest::TestProto3OptionalMessage msg2;
   msg1.mutable_nested_message();
   const google::protobuf::Descriptor* d = msg1.GetDescriptor();
   const google::protobuf::Reflection* r = msg1.GetReflection();
@@ -435,8 +435,8 @@ TEST(Proto3OptionalTest, SwapNonOptionalMessageField) {
 }
 
 TEST(Proto3OptionalTest, SwapOptionalMessageField) {
-  protobuf_unittest::TestProto3OptionalMessage msg1;
-  protobuf_unittest::TestProto3OptionalMessage msg2;
+  proto2_unittest::TestProto3OptionalMessage msg1;
+  proto2_unittest::TestProto3OptionalMessage msg2;
   msg1.mutable_optional_nested_message();
   const google::protobuf::Descriptor* d = msg1.GetDescriptor();
   const google::protobuf::Reflection* r = msg1.GetReflection();
@@ -445,7 +445,7 @@ TEST(Proto3OptionalTest, SwapOptionalMessageField) {
   r->SwapFields(&msg1, &msg2, {f});
 }
 
-void SetAllFieldsZero(protobuf_unittest::TestProto3Optional* msg) {
+void SetAllFieldsZero(proto2_unittest::TestProto3Optional* msg) {
   msg->set_optional_int32(0);
   msg->set_optional_int64(0);
   msg->set_optional_uint32(0);
@@ -464,10 +464,10 @@ void SetAllFieldsZero(protobuf_unittest::TestProto3Optional* msg) {
   msg->mutable_optional_nested_message();
   msg->mutable_lazy_nested_message();
   msg->set_optional_nested_enum(
-      protobuf_unittest::TestProto3Optional::UNSPECIFIED);
+      proto2_unittest::TestProto3Optional::UNSPECIFIED);
 }
 
-void SetAllFieldsNonZero(protobuf_unittest::TestProto3Optional* msg) {
+void SetAllFieldsNonZero(proto2_unittest::TestProto3Optional* msg) {
   msg->set_optional_int32(101);
   msg->set_optional_int64(102);
   msg->set_optional_uint32(103);
@@ -485,10 +485,10 @@ void SetAllFieldsNonZero(protobuf_unittest::TestProto3Optional* msg) {
   msg->set_optional_bytes("def");
   msg->mutable_optional_nested_message();
   msg->mutable_lazy_nested_message();
-  msg->set_optional_nested_enum(protobuf_unittest::TestProto3Optional::BAZ);
+  msg->set_optional_nested_enum(proto2_unittest::TestProto3Optional::BAZ);
 }
 
-void TestAllFieldsZero(const protobuf_unittest::TestProto3Optional& msg) {
+void TestAllFieldsZero(const proto2_unittest::TestProto3Optional& msg) {
   EXPECT_EQ(0, msg.optional_int32());
   EXPECT_EQ(0, msg.optional_int64());
   EXPECT_EQ(0, msg.optional_uint32());
@@ -504,7 +504,7 @@ void TestAllFieldsZero(const protobuf_unittest::TestProto3Optional& msg) {
   EXPECT_EQ(0, msg.optional_bool());
   EXPECT_EQ("", msg.optional_string());
   EXPECT_EQ("", msg.optional_bytes());
-  EXPECT_EQ(protobuf_unittest::TestProto3Optional::UNSPECIFIED,
+  EXPECT_EQ(proto2_unittest::TestProto3Optional::UNSPECIFIED,
             msg.optional_nested_enum());
 
   const Reflection* r = msg.GetReflection();
@@ -512,7 +512,7 @@ void TestAllFieldsZero(const protobuf_unittest::TestProto3Optional& msg) {
   EXPECT_EQ("", r->GetString(msg, d->FindFieldByName("optional_string")));
 }
 
-void TestAllFieldsNonZero(const protobuf_unittest::TestProto3Optional& msg) {
+void TestAllFieldsNonZero(const proto2_unittest::TestProto3Optional& msg) {
   EXPECT_EQ(101, msg.optional_int32());
   EXPECT_EQ(102, msg.optional_int64());
   EXPECT_EQ(103, msg.optional_uint32());
@@ -528,11 +528,11 @@ void TestAllFieldsNonZero(const protobuf_unittest::TestProto3Optional& msg) {
   EXPECT_EQ(true, msg.optional_bool());
   EXPECT_EQ("abc", msg.optional_string());
   EXPECT_EQ("def", msg.optional_bytes());
-  EXPECT_EQ(protobuf_unittest::TestProto3Optional::BAZ,
+  EXPECT_EQ(proto2_unittest::TestProto3Optional::BAZ,
             msg.optional_nested_enum());
 }
 
-void TestAllFieldsSet(const protobuf_unittest::TestProto3Optional& msg,
+void TestAllFieldsSet(const proto2_unittest::TestProto3Optional& msg,
                       bool set) {
   EXPECT_EQ(set, msg.has_optional_int32());
   EXPECT_EQ(set, msg.has_optional_int64());
@@ -555,13 +555,13 @@ void TestAllFieldsSet(const protobuf_unittest::TestProto3Optional& msg,
 }
 
 TEST(Proto3OptionalTest, BinaryRoundTrip) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   TestAllFieldsSet(msg, false);
   SetAllFieldsZero(&msg);
   TestAllFieldsZero(msg);
   TestAllFieldsSet(msg, true);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   std::string serialized;
   msg.SerializeToString(&serialized);
   EXPECT_TRUE(msg2.ParseFromString(serialized));
@@ -570,10 +570,10 @@ TEST(Proto3OptionalTest, BinaryRoundTrip) {
 }
 
 TEST(Proto3OptionalTest, TextFormatRoundTripZeros) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   SetAllFieldsZero(&msg);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   std::string text;
   EXPECT_TRUE(TextFormat::PrintToString(msg, &text));
   EXPECT_TRUE(TextFormat::ParseFromString(text, &msg2));
@@ -582,10 +582,10 @@ TEST(Proto3OptionalTest, TextFormatRoundTripZeros) {
 }
 
 TEST(Proto3OptionalTest, TextFormatRoundTripNonZeros) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   SetAllFieldsNonZero(&msg);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   std::string text;
   EXPECT_TRUE(TextFormat::PrintToString(msg, &text));
   EXPECT_TRUE(TextFormat::ParseFromString(text, &msg2));
@@ -594,33 +594,33 @@ TEST(Proto3OptionalTest, TextFormatRoundTripNonZeros) {
 }
 
 TEST(Proto3OptionalTest, SwapRoundTripZero) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   SetAllFieldsZero(&msg);
   TestAllFieldsSet(msg, true);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   msg.Swap(&msg2);
   TestAllFieldsSet(msg2, true);
   TestAllFieldsZero(msg2);
 }
 
 TEST(Proto3OptionalTest, SwapRoundTripNonZero) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   SetAllFieldsNonZero(&msg);
   TestAllFieldsSet(msg, true);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   msg.Swap(&msg2);
   TestAllFieldsSet(msg2, true);
   TestAllFieldsNonZero(msg2);
 }
 
 TEST(Proto3OptionalTest, ReflectiveSwapRoundTrip) {
-  protobuf_unittest::TestProto3Optional msg;
+  proto2_unittest::TestProto3Optional msg;
   SetAllFieldsZero(&msg);
   TestAllFieldsSet(msg, true);
 
-  protobuf_unittest::TestProto3Optional msg2;
+  proto2_unittest::TestProto3Optional msg2;
   msg2.GetReflection()->Swap(&msg, &msg2);
   TestAllFieldsSet(msg2, true);
   TestAllFieldsZero(msg2);

@@ -97,7 +97,7 @@ class DescriptorPoolTestBase(object):
                      file_desc4.name)
 
     file_desc5 = self.pool.FindFileContainingSymbol(
-        'protobuf_unittest.TestService')
+        'proto2_unittest.TestService')
     self.assertIsInstance(file_desc5, descriptor.FileDescriptor)
     self.assertEqual('google/protobuf/unittest.proto',
                      file_desc5.name)
@@ -107,7 +107,7 @@ class DescriptorPoolTestBase(object):
     assert descriptor_pool.Default().FindFileContainingSymbol(
         'google.protobuf.python.internal.another_field')
     assert descriptor_pool.Default().FindFileContainingSymbol(
-        'protobuf_unittest.TestService')
+        'proto2_unittest.TestService')
 
     # Can find field.
     file_desc6 = self.pool.FindFileContainingSymbol(
@@ -125,7 +125,7 @@ class DescriptorPoolTestBase(object):
 
     # Can find nested Enum value.
     file_desc8 = self.pool.FindFileContainingSymbol(
-        'protobuf_unittest.TestAllTypes.FOO')
+        'proto2_unittest.TestAllTypes.FOO')
     self.assertIsInstance(file_desc8, descriptor.FileDescriptor)
     self.assertEqual('google/protobuf/unittest.proto',
                      file_desc8.name)
@@ -404,15 +404,15 @@ class DescriptorPoolTestBase(object):
           'google.protobuf.python.internal.Factory1Message.list_value')
 
   def testFindService(self):
-    service = self.pool.FindServiceByName('protobuf_unittest.TestService')
-    self.assertEqual(service.full_name, 'protobuf_unittest.TestService')
+    service = self.pool.FindServiceByName('proto2_unittest.TestService')
+    self.assertEqual(service.full_name, 'proto2_unittest.TestService')
     with self.assertRaises(KeyError):
       self.pool.FindServiceByName('Does not exist')
 
-    method = self.pool.FindMethodByName('protobuf_unittest.TestService.Foo')
+    method = self.pool.FindMethodByName('proto2_unittest.TestService.Foo')
     self.assertIs(method.containing_service, service)
     with self.assertRaises(KeyError):
-      self.pool.FindMethodByName('protobuf_unittest.TestService.Doesnotexist')
+      self.pool.FindMethodByName('proto2_unittest.TestService.Doesnotexist')
 
   def testUserDefinedDB(self):
     db = descriptor_database.DescriptorDatabase()
@@ -653,24 +653,24 @@ class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         self.pool.FindFileByName('google/protobuf/unittest.proto'),
         unittest_pb2.DESCRIPTOR)
     self.assertIs(
-        self.pool.FindMessageTypeByName('protobuf_unittest.TestAllTypes'),
+        self.pool.FindMessageTypeByName('proto2_unittest.TestAllTypes'),
         unittest_pb2.TestAllTypes.DESCRIPTOR)
     self.assertIs(
         self.pool.FindFieldByName(
-            'protobuf_unittest.TestAllTypes.optional_int32'),
+            'proto2_unittest.TestAllTypes.optional_int32'),
         unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name['optional_int32'])
     self.assertIs(
-        self.pool.FindEnumTypeByName('protobuf_unittest.ForeignEnum'),
+        self.pool.FindEnumTypeByName('proto2_unittest.ForeignEnum'),
         unittest_pb2.ForeignEnum.DESCRIPTOR)
     self.assertIs(
         self.pool.FindExtensionByName(
-            'protobuf_unittest.optional_int32_extension'),
+            'proto2_unittest.optional_int32_extension'),
         unittest_pb2.DESCRIPTOR.extensions_by_name['optional_int32_extension'])
     self.assertIs(
-        self.pool.FindOneofByName('protobuf_unittest.TestAllTypes.oneof_field'),
+        self.pool.FindOneofByName('proto2_unittest.TestAllTypes.oneof_field'),
         unittest_pb2.TestAllTypes.DESCRIPTOR.oneofs_by_name['oneof_field'])
     self.assertIs(
-        self.pool.FindServiceByName('protobuf_unittest.TestService'),
+        self.pool.FindServiceByName('proto2_unittest.TestService'),
         unittest_pb2.DESCRIPTOR.services_by_name['TestService'])
 
 
@@ -1031,20 +1031,20 @@ class AddDescriptorTest(unittest.TestCase):
     pool = descriptor_pool.DescriptorPool()
     pool._AddDescriptor(unittest_pb2.TestAllTypes.DESCRIPTOR)
     self.assertEqual(
-        'protobuf_unittest.TestAllTypes',
+        'proto2_unittest.TestAllTypes',
         pool.FindMessageTypeByName(
-            prefix + 'protobuf_unittest.TestAllTypes').full_name)
+            prefix + 'proto2_unittest.TestAllTypes').full_name)
 
     # AddDescriptor is not recursive.
     with self.assertRaises(KeyError):
       pool.FindMessageTypeByName(
-          prefix + 'protobuf_unittest.TestAllTypes.NestedMessage')
+          prefix + 'proto2_unittest.TestAllTypes.NestedMessage')
 
     pool._AddDescriptor(unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR)
     self.assertEqual(
-        'protobuf_unittest.TestAllTypes.NestedMessage',
+        'proto2_unittest.TestAllTypes.NestedMessage',
         pool.FindMessageTypeByName(
-            prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').full_name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedMessage').full_name)
 
     # Files are implicitly also indexed when messages are added.
     self.assertEqual(
@@ -1055,7 +1055,7 @@ class AddDescriptorTest(unittest.TestCase):
     self.assertEqual(
         'google/protobuf/unittest.proto',
         pool.FindFileContainingSymbol(
-            prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedMessage').name)
 
   @unittest.skipIf(api_implementation.Type() != 'python',
                    'Only pure python allows _Add*()')
@@ -1069,19 +1069,19 @@ class AddDescriptorTest(unittest.TestCase):
     pool.AddSerializedFile(unittest_import_pb2.DESCRIPTOR.serialized_pb)
     pool.AddSerializedFile(unittest_pb2.DESCRIPTOR.serialized_pb)
     self.assertEqual(
-        'protobuf_unittest.ForeignEnum',
+        'proto2_unittest.ForeignEnum',
         pool.FindEnumTypeByName(
-            prefix + 'protobuf_unittest.ForeignEnum').full_name)
+            prefix + 'proto2_unittest.ForeignEnum').full_name)
 
     # AddEnumDescriptor is not recursive.
     with self.assertRaises(KeyError):
       pool.FindEnumTypeByName(
-          prefix + 'protobuf_unittest.ForeignEnum.NestedEnum')
+          prefix + 'proto2_unittest.ForeignEnum.NestedEnum')
 
     self.assertEqual(
-        'protobuf_unittest.TestAllTypes.NestedEnum',
+        'proto2_unittest.TestAllTypes.NestedEnum',
         pool.FindEnumTypeByName(
-            prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').full_name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedEnum').full_name)
 
     # Files are implicitly also indexed when enums are added.
     self.assertEqual(
@@ -1092,7 +1092,7 @@ class AddDescriptorTest(unittest.TestCase):
     self.assertEqual(
         'google/protobuf/unittest.proto',
         pool.FindFileContainingSymbol(
-            prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedEnum').name)
 
   @unittest.skipIf(api_implementation.Type() != 'python',
                    'Only pure python allows _Add*()')
@@ -1105,11 +1105,11 @@ class AddDescriptorTest(unittest.TestCase):
   def testService(self):
     pool = descriptor_pool.DescriptorPool()
     with self.assertRaises(KeyError):
-      pool.FindServiceByName('protobuf_unittest.TestService')
+      pool.FindServiceByName('proto2_unittest.TestService')
     pool._AddServiceDescriptor(unittest_pb2._TESTSERVICE)
     self.assertEqual(
-        'protobuf_unittest.TestService',
-        pool.FindServiceByName('protobuf_unittest.TestService').full_name)
+        'proto2_unittest.TestService',
+        pool.FindServiceByName('proto2_unittest.TestService').full_name)
 
   @unittest.skipIf(api_implementation.Type() != 'python',
                    'Only pure python allows _Add*()')
@@ -1125,7 +1125,7 @@ class AddDescriptorTest(unittest.TestCase):
     # be explicitly registered.
     with self.assertRaises(KeyError):
       pool.FindFileContainingSymbol(
-          'protobuf_unittest.TestAllTypes')
+          'proto2_unittest.TestAllTypes')
 
   def testEmptyDescriptorPool(self):
     # Check that an empty DescriptorPool() contains no messages.

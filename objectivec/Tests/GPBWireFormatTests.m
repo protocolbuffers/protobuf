@@ -286,6 +286,24 @@ const int kUnknownTypeId2 = 1550056;
   XCTAssertTrue(ufs.empty);
 }
 
+- (void)testMessageSet_normalEncoding {
+  MSetMessageEx* msgEx = [MSetMessageEx message];
+  MSetMessageExtension1* message1 = [MSetMessageExtension1 message];
+  message1.i = 123;
+  [msgEx setExtension:[MSetMessageExtension1 doppelgangerMessageSetExtension] value:message1];
+
+  NSData* data = [msgEx data];
+  XCTAssertNotNil(data);
+
+  NSError* err = nil;
+  MSetMessage* msg = [MSetMessage parseFromData:data
+                              extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                          error:&err];
+  XCTAssertNil(err);
+  XCTAssertNotNil(msg);
+  XCTAssertEqual([[msg getExtension:[MSetMessageExtension1 messageSetExtension]] i], 123);
+}
+
 - (void)assertFieldsInOrder:(NSData*)data {
   GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
   int32_t previousTag = 0;

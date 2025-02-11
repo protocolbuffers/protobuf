@@ -114,7 +114,7 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesRoot) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
@@ -137,7 +137,7 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
@@ -176,7 +176,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
@@ -209,7 +209,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 

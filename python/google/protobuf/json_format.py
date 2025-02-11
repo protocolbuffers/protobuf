@@ -734,8 +734,10 @@ class _Parser(object):
       )(self)
     else:
       del value['@type']
-      self._ConvertFieldValuePair(value, sub_message, path)
-      value['@type'] = type_url
+      try:
+        self._ConvertFieldValuePair(value, sub_message, path)
+      finally:
+        value['@type'] = type_url
     # Sets Any message
     message.value = sub_message.SerializeToString()
     message.type_url = type_url

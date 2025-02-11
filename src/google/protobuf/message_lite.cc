@@ -50,6 +50,13 @@
 namespace google {
 namespace protobuf {
 
+MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
+  auto* data = from.GetClassData();
+  auto* res = data->New(arena);
+  data->merge_to_from(*res, from);
+  return res;
+}
+
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   _class_data_->destroy_message(*this);
@@ -96,8 +103,8 @@ const char* MessageLite::_InternalParse(const char* ptr,
   return internal::TcParser::ParseLoop(this, ptr, ctx, GetTcParseTable());
 }
 
-internal::GetTypeNameReturnType MessageLite::GetTypeName() const {
-  return internal::GetTypeNameReturnType(TypeId::Get(*this).name());
+absl::string_view MessageLite::GetTypeName() const {
+  return TypeId::Get(*this).name();
 }
 
 absl::string_view TypeId::name() const {

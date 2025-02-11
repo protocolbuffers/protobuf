@@ -170,7 +170,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
     text_blob += short_name + '\0';
     if (UnCamelCaseEnumShortName(short_name) != v->name()) {
       text_format_decode_data.AddString(enum_value_description_key, short_name,
-                                        std::string(v->name()));
+                                        v->name());
     }
   }
 

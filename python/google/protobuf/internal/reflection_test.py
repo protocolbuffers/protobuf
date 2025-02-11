@@ -1744,7 +1744,7 @@ class Proto2ReflectionTest(unittest.TestCase):
             unittest_pb2.TestAllExtensions.DESCRIPTOR, 1))
     self.assertIs(
         pool.FindExtensionByName(
-            'protobuf_unittest.optional_int32_extension').containing_type,
+            'proto2_unittest.optional_int32_extension').containing_type,
         unittest_pb2.TestAllExtensions.DESCRIPTOR)
     # Make sure extensions haven't been registered into types that shouldn't
     # have any.
@@ -2923,7 +2923,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: '
+        'Message proto2_unittest.TestRequired is missing required fields: '
         'a,b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
@@ -2938,7 +2938,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: b,c')
+        'Message proto2_unittest.TestRequired is missing required fields: b,c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2946,7 +2946,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message protobuf_unittest.TestRequired is missing required fields: c')
+        'Message proto2_unittest.TestRequired is missing required fields: c')
     # Shouldn't raise exceptions.
     partial = proto.SerializePartialToString()
 
@@ -2979,7 +2979,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message protobuf_unittest.TestRequiredForeign '
+        'Message proto2_unittest.TestRequiredForeign '
         'is missing required fields: '
         'optional_message.b,optional_message.c')
 
@@ -2992,7 +2992,7 @@ class SerializationTest(unittest.TestCase):
     self._CheckRaises(
         message.EncodeError,
         proto.SerializeToString,
-        'Message protobuf_unittest.TestRequiredForeign is missing required fields: '
+        'Message proto2_unittest.TestRequiredForeign is missing required fields: '
         'repeated_message[0].b,repeated_message[0].c,'
         'repeated_message[1].a,repeated_message[1].c')
 

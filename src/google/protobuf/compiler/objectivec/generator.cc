@@ -294,6 +294,10 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "annotation_pragma_name") {
+      generation_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      generation_options.annotation_guard_name = options[i].second;
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -384,6 +388,19 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  if (generation_options.annotation_guard_name.empty() !=
+      generation_options.annotation_pragma_name.empty()) {
+    *error =
+        "error: both annotation_guard_name and annotation_pragma_name must "
+        "be set to output annotations";
+    return false;
+  }
+  bool should_annotate_headers =
+      !generation_options.annotation_pragma_name.empty() &&
+      !generation_options.annotation_guard_name.empty();
+
+  // -----------------------------------------------------------------
+
   // Validate the objc prefix/package pairings.
   if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
@@ -400,12 +417,30 @@ bool ObjectiveCGenerator::GenerateAll(
     {
       auto output =
           absl::WrapUnique(context->Open(absl::StrCat(filepath, ".pbobjc.h")));
-      io::Printer printer(output.get());
-      file_generator.GenerateHeader(&printer);
+      GeneratedCodeInfo annotations;
+      io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+          &annotations);
+      io::Printer::Options options;
+      std::string info_path = "";
+      if (should_annotate_headers) {
+        info_path = absl::StrCat(filepath, ".pbobjc.h.meta");
+        options.annotation_collector = &annotation_collector;
+      }
+      io::Printer printer(output.get(), options);
+      file_generator.GenerateHeader(&printer, info_path);
       if (printer.failed()) {
         *error = absl::StrCat("error: internal error generating a header: ",
                               file->name());
         return false;
+      }
+
+      if (should_annotate_headers) {
+        auto info_output = absl::WrapUnique(context->Open(info_path));
+        if (!annotations.SerializeToZeroCopyStream(info_output.get())) {
+          *error = absl::StrCat("error: internal error writing annotations: ",
+                                info_path);
+          return false;
+        }
       }
     }
 

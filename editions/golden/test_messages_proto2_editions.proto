@@ -1,3 +1,4 @@
+// clang-format off
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -316,6 +317,8 @@ message TestAllTypesProto2 {
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
 
+  MessageSetCorrect message_set_correct = 500;
+
   // message_set test case.
   message MessageSetCorrect {
     option message_set_wire_format = true;
@@ -337,6 +340,17 @@ message TestAllTypesProto2 {
     }
 
     int32 i = 9;
+  }
+
+  message ExtensionWithOneof {
+    oneof oneof_field {
+      int32 a = 1;
+      int32 b = 2;
+    }
+
+    extend MessageSetCorrect {
+      ExtensionWithOneof extension_with_oneof = 123456789;
+    }
   }
 }
 
@@ -638,5 +652,30 @@ message TestAllRequiredTypesProto2 {
     int32 i = 9 [
       features.field_presence = LEGACY_REQUIRED
     ];
+  }
+}
+
+message TestLargeOneof {
+  message A1 {
+  }
+
+  message A2 {
+  }
+
+  message A3 {
+  }
+
+  message A4 {
+  }
+
+  message A5 {
+  }
+
+  oneof large_oneof {
+    A1 a1 = 1;
+    A2 a2 = 2;
+    A3 a3 = 3;
+    A4 a4 = 4;
+    A5 a5 = 5;
   }
 }

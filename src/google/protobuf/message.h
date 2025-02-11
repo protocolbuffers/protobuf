@@ -987,6 +987,15 @@ class PROTOBUF_EXPORT Reflection final {
   RepeatedPtrField<T>* MutableRepeatedPtrFieldInternal(
       Message* message, const FieldDescriptor* field) const;
 
+  // REQUIRES: If the field is Cord, then `scratch != nullptr`.
+  absl::string_view GetStringViewImpl(const Message& message,
+                                      const FieldDescriptor* field,
+                                      ScratchSpace* scratch) const;
+  absl::string_view GetRepeatedStringViewImpl(const Message& message,
+                                              const FieldDescriptor* field,
+                                              int index,
+                                              ScratchSpace* scratch) const;
+
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
   //   on field->field_option().ctype() (if ctype >= 0)
@@ -1665,12 +1674,14 @@ const Type& Reflection::GetRaw(const Message& message,
 template <typename T>
 RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
     const Message& message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message.GetReflection(), this);
   return RepeatedFieldRef<T>(message, field);
 }
 
 template <typename T>
 MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(message->GetReflection(), this);
   return MutableRepeatedFieldRef<T>(message, field);
 }
 

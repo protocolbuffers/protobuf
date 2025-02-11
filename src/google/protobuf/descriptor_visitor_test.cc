@@ -28,19 +28,19 @@ constexpr absl::string_view kUnittestProtoFile =
 
 TEST(VisitDescriptorsTest, SingleTypeNoProto) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   std::vector<absl::string_view> descriptors;
   VisitDescriptors(file, [&](const Descriptor& descriptor) {
     descriptors.push_back(descriptor.full_name());
   });
   EXPECT_THAT(descriptors,
-              IsSupersetOf({"protobuf_unittest.TestAllTypes",
-                            "protobuf_unittest.TestAllTypes.NestedMessage"}));
+              IsSupersetOf({"proto2_unittest.TestAllTypes",
+                            "proto2_unittest.TestAllTypes.NestedMessage"}));
 }
 
 TEST(VisitDescriptorsTest, SingleTypeWithProto) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
   std::vector<absl::string_view> descriptors;
@@ -51,13 +51,13 @@ TEST(VisitDescriptorsTest, SingleTypeWithProto) {
         EXPECT_EQ(descriptor.name(), proto.name());
       });
   EXPECT_THAT(descriptors,
-              IsSupersetOf({"protobuf_unittest.TestAllTypes",
-                            "protobuf_unittest.TestAllTypes.NestedMessage"}));
+              IsSupersetOf({"proto2_unittest.TestAllTypes",
+                            "proto2_unittest.TestAllTypes.NestedMessage"}));
 }
 
 TEST(VisitDescriptorsTest, SingleTypeMutableProto) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
   std::vector<absl::string_view> descriptors;
@@ -68,14 +68,14 @@ TEST(VisitDescriptorsTest, SingleTypeMutableProto) {
                      proto.set_name("<redacted>");
                    });
   EXPECT_THAT(descriptors,
-              IsSupersetOf({"protobuf_unittest.TestAllTypes",
-                            "protobuf_unittest.TestAllTypes.NestedMessage"}));
+              IsSupersetOf({"proto2_unittest.TestAllTypes",
+                            "proto2_unittest.TestAllTypes.NestedMessage"}));
   EXPECT_EQ(proto.message_type(0).name(), "<redacted>");
 }
 
 TEST(VisitDescriptorsTest, AllTypesDeduce) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   std::vector<absl::string_view> descriptors;
   VisitDescriptors(file, [&](const auto& descriptor) {
     descriptors.push_back(descriptor.name());
@@ -89,7 +89,7 @@ TEST(VisitDescriptorsTest, AllTypesDeduce) {
 
 TEST(VisitDescriptorsTest, AllTypesDeduceSelective) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   std::vector<absl::string_view> descriptors;
   VisitDescriptors(
       file,
@@ -103,12 +103,12 @@ TEST(VisitDescriptorsTest, AllTypesDeduceSelective) {
   EXPECT_THAT(descriptors, Not(Contains(kUnittestProtoFile)));
   EXPECT_THAT(descriptors,
               IsSupersetOf(
-                  {"protobuf_unittest.TestAllTypes",
-                   "protobuf_unittest.TestSparseEnum", "protobuf_unittest.SPARSE_C",
-                   "protobuf_unittest.TestAllTypes.optional_int32",
-                   "protobuf_unittest.TestAllTypes.oneof_nested_message",
-                   "protobuf_unittest.TestAllTypes.oneof_field",
-                   "protobuf_unittest.optional_nested_message_extension"}));
+                  {"proto2_unittest.TestAllTypes",
+                   "proto2_unittest.TestSparseEnum", "proto2_unittest.SPARSE_C",
+                   "proto2_unittest.TestAllTypes.optional_int32",
+                   "proto2_unittest.TestAllTypes.oneof_nested_message",
+                   "proto2_unittest.TestAllTypes.oneof_field",
+                   "proto2_unittest.optional_nested_message_extension"}));
 }
 
 void TestHandle(const Descriptor& message, const DescriptorProto& proto,
@@ -123,7 +123,7 @@ void TestHandle(const EnumDescriptor& enm, const EnumDescriptorProto& proto,
 }
 TEST(VisitDescriptorsTest, AllTypesDeduceDelegate) {
   const FileDescriptor& file =
-      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+      *proto2_unittest::TestAllTypes::GetDescriptor()->file();
   FileDescriptorProto proto;
   file.CopyTo(&proto);
   std::vector<absl::string_view> descriptors;
@@ -134,8 +134,8 @@ TEST(VisitDescriptorsTest, AllTypesDeduceDelegate) {
                      TestHandle(descriptor, proto, &descriptors);
                    });
 
-  EXPECT_THAT(descriptors, IsSupersetOf({"protobuf_unittest.TestAllTypes",
-                                         "protobuf_unittest.TestSparseEnum"}));
+  EXPECT_THAT(descriptors, IsSupersetOf({"proto2_unittest.TestAllTypes",
+                                         "proto2_unittest.TestSparseEnum"}));
 }
 
 }  // namespace

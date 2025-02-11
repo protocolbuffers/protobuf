@@ -41,7 +41,12 @@ message TestMessageSet {
 message MessageSetMember {
   optional int32 optional_int32 = 1;
   extend TestMessageSet {
-    optional MessageSetMember message_set_extension = 4;
+    optional MessageSetMember message_set_extension = 2000;
+  }
+  // Also extend a non-MessageSet with the same field number. This will allow us
+  // to test parsing a normal extension into a MessageSet.
+  extend TestExtensions {
+    optional MessageSetMember doppelganger_message_set_extension = 2000;
   }
 }
 

@@ -78,13 +78,13 @@ jobs:
           bash: |
             set -ex
             COMPOSER_HOME=/workspace/composer-cache
-            BAZEL_FLAGS=${{ env.BAZEL_FLAGS }}
-            ./regenerate_stale_files.sh ${{ env.BAZEL_FLAGS }}
+            export BAZEL_FLAGS='$BAZEL_FLAGS'
+            ./regenerate_stale_files.sh $BAZEL_FLAGS
             pushd /workspace/php
             composer update
             ${{ matrix.command }}
             popd
-            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH ${{ env.BAZEL_FLAGS }}
+            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH $BAZEL_FLAGS
 
   linux-32bit:
     strategy:

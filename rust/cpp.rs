@@ -799,7 +799,6 @@ pub enum MapValueTag {
     F64,
     String,
     Message,
-    Unknown,
 }
 // For the purposes of FFI, we treat all integral types of a given size the same
 // way. For example, u32 and i32 values are all represented as a u32.

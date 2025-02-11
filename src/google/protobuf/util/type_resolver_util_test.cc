@@ -160,7 +160,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
   Type type;
   ASSERT_TRUE(resolver_
                   ->ResolveMessageType(
-                      GetTypeUrl<protobuf_unittest::TestAllTypes>(), &type)
+                      GetTypeUrl<proto2_unittest::TestAllTypes>(), &type)
                   .ok());
   // Check all optional fields.
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_INT32,
@@ -199,7 +199,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "optionalgroup",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::OptionalGroup>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::OptionalGroup>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_MESSAGE,
                        "optional_nested_message", 18));
@@ -208,9 +208,9 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "optional_nested_message",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::NestedMessage>()));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+                                GetTypeUrl<proto2_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_ENUM,
                        "optional_nested_enum", 21));
@@ -219,9 +219,9 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(
       CheckFieldTypeUrl(type, "optional_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+                        GetTypeUrl("proto2_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_enum",
-                                GetTypeUrl("protobuf_unittest.ForeignEnum")));
+                                GetTypeUrl("proto2_unittest.ForeignEnum")));
 
   // Check all repeated fields.
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_INT32,
@@ -260,7 +260,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeatedgroup",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::RepeatedGroup>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::RepeatedGroup>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_MESSAGE,
                        "repeated_nested_message", 48));
@@ -269,9 +269,9 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeated_nested_message",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::NestedMessage>()));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+                                GetTypeUrl<proto2_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_ENUM,
                        "repeated_nested_enum", 51));
@@ -280,16 +280,16 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
 
   EXPECT_TRUE(
       CheckFieldTypeUrl(type, "repeated_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+                        GetTypeUrl("proto2_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_enum",
-                                GetTypeUrl("protobuf_unittest.ForeignEnum")));
+                                GetTypeUrl("proto2_unittest.ForeignEnum")));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestPackedField) {
   Type type;
   ASSERT_TRUE(resolver_
                   ->ResolveMessageType(
-                      GetTypeUrl<protobuf_unittest::TestPackedTypes>(), &type)
+                      GetTypeUrl<proto2_unittest::TestPackedTypes>(), &type)
                   .ok());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_INT32,
                        "packed_int32", 90));
@@ -300,7 +300,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestOneof) {
   Type type;
   ASSERT_TRUE(resolver_
                   ->ResolveMessageType(
-                      GetTypeUrl<protobuf_unittest::TestAllTypes>(), &type)
+                      GetTypeUrl<proto2_unittest::TestAllTypes>(), &type)
                   .ok());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_UINT32,
                        "oneof_uint32", 111));
@@ -320,18 +320,18 @@ TEST_F(DescriptorPoolTypeResolverTest, TestMap) {
   Type type;
   ASSERT_TRUE(
       resolver_
-          ->ResolveMessageType(GetTypeUrl<protobuf_unittest::TestMap>(), &type)
+          ->ResolveMessageType(GetTypeUrl<proto2_unittest::TestMap>(), &type)
           .ok());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_MESSAGE,
                        "map_int32_int32", 1));
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "map_int32_int32",
-      GetTypeUrl("protobuf_unittest.TestMap.MapInt32Int32Entry")));
+      GetTypeUrl("proto2_unittest.TestMap.MapInt32Int32Entry")));
 
   ASSERT_TRUE(
       resolver_
           ->ResolveMessageType(
-              GetTypeUrl("protobuf_unittest.TestMap.MapInt32Int32Entry"), &type)
+              GetTypeUrl("proto2_unittest.TestMap.MapInt32Int32Entry"), &type)
           .ok());
   EXPECT_TRUE(HasBoolOption(type.options(), "map_entry", true));
 }
@@ -341,11 +341,11 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomMessageOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveMessageType(
-              GetTypeUrl<protobuf_unittest::TestMessageWithCustomOptions>(),
+              GetTypeUrl<proto2_unittest::TestMessageWithCustomOptions>(),
               &type)
           .ok());
   EXPECT_TRUE(
-      HasInt32Option(type.options(), "protobuf_unittest.message_opt1", -56));
+      HasInt32Option(type.options(), "proto2_unittest.message_opt1", -56));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestCustomFieldOptions) {
@@ -353,12 +353,12 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomFieldOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveMessageType(
-              GetTypeUrl<protobuf_unittest::TestMessageWithCustomOptions>(),
+              GetTypeUrl<proto2_unittest::TestMessageWithCustomOptions>(),
               &type)
           .ok());
   const Field* field = FindField(type, "field1");
   ASSERT_TRUE(field != nullptr);
-  EXPECT_TRUE(HasUInt64Option(field->options(), "protobuf_unittest.field_opt1",
+  EXPECT_TRUE(HasUInt64Option(field->options(), "proto2_unittest.field_opt1",
                               8765432109));
 }
 
@@ -367,7 +367,7 @@ TEST_F(DescriptorPoolTypeResolverTest, TestEnum) {
   ASSERT_TRUE(
       resolver_
           ->ResolveEnumType(
-              GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum"), &type)
+              GetTypeUrl("proto2_unittest.TestAllTypes.NestedEnum"), &type)
           .ok());
   EnumHasValue(type, "FOO", 1);
   EnumHasValue(type, "BAR", 2);
@@ -380,11 +380,11 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomEnumOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveEnumType(
-              GetTypeUrl("protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
+              GetTypeUrl("proto2_unittest.TestMessageWithCustomOptions.AnEnum"),
               &type)
           .ok());
   ASSERT_TRUE(
-      HasInt32Option(type.options(), "protobuf_unittest.enum_opt1", -789));
+      HasInt32Option(type.options(), "proto2_unittest.enum_opt1", -789));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestCustomValueOptions) {
@@ -392,20 +392,20 @@ TEST_F(DescriptorPoolTypeResolverTest, TestCustomValueOptions) {
   ASSERT_TRUE(
       resolver_
           ->ResolveEnumType(
-              GetTypeUrl("protobuf_unittest.TestMessageWithCustomOptions.AnEnum"),
+              GetTypeUrl("proto2_unittest.TestMessageWithCustomOptions.AnEnum"),
               &type)
           .ok());
   const EnumValue* value = FindEnumValue(type, "ANENUM_VAL2");
   ASSERT_TRUE(value != nullptr);
   ASSERT_TRUE(
-      HasInt32Option(value->options(), "protobuf_unittest.enum_value_opt1", 123));
+      HasInt32Option(value->options(), "proto2_unittest.enum_value_opt1", 123));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestJsonName) {
   Type type;
   ASSERT_TRUE(resolver_
                   ->ResolveMessageType(
-                      GetTypeUrl<protobuf_unittest::TestAllTypes>(), &type)
+                      GetTypeUrl<proto2_unittest::TestAllTypes>(), &type)
                   .ok());
   EXPECT_EQ("optionalInt32", FindField(type, "optional_int32")->json_name());
 
@@ -553,7 +553,7 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsEnumFeatures) {
 
 TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
   Type type = ConvertDescriptorToType(
-      kUrlPrefix, *protobuf_unittest::TestAllTypes::GetDescriptor());
+      kUrlPrefix, *proto2_unittest::TestAllTypes::GetDescriptor());
 
   // Check all optional fields.
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_INT32,
@@ -592,7 +592,7 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "optionalgroup",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::OptionalGroup>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::OptionalGroup>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_MESSAGE,
                        "optional_nested_message", 18));
@@ -601,9 +601,9 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "optional_nested_message",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::NestedMessage>()));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+                                GetTypeUrl<proto2_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_ENUM,
                        "optional_nested_enum", 21));
@@ -612,9 +612,9 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(
       CheckFieldTypeUrl(type, "optional_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+                        GetTypeUrl("proto2_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "optional_foreign_enum",
-                                GetTypeUrl("protobuf_unittest.ForeignEnum")));
+                                GetTypeUrl("proto2_unittest.ForeignEnum")));
 
   // Check all repeated fields.
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_INT32,
@@ -653,7 +653,7 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeatedgroup",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::RepeatedGroup>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::RepeatedGroup>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_MESSAGE,
                        "repeated_nested_message", 48));
@@ -662,9 +662,9 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeated_nested_message",
-      GetTypeUrl<protobuf_unittest::TestAllTypes::NestedMessage>()));
+      GetTypeUrl<proto2_unittest::TestAllTypes::NestedMessage>()));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_message",
-                                GetTypeUrl<protobuf_unittest::ForeignMessage>()));
+                                GetTypeUrl<proto2_unittest::ForeignMessage>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_ENUM,
                        "repeated_nested_enum", 51));
@@ -673,14 +673,14 @@ TEST(ConvertDescriptorToTypeTest, TestAllTypes) {
 
   EXPECT_TRUE(
       CheckFieldTypeUrl(type, "repeated_nested_enum",
-                        GetTypeUrl("protobuf_unittest.TestAllTypes.NestedEnum")));
+                        GetTypeUrl("proto2_unittest.TestAllTypes.NestedEnum")));
   EXPECT_TRUE(CheckFieldTypeUrl(type, "repeated_foreign_enum",
-                                GetTypeUrl("protobuf_unittest.ForeignEnum")));
+                                GetTypeUrl("proto2_unittest.ForeignEnum")));
 }
 
 TEST(ConvertDescriptorToTypeTest, ConvertDescriptorToTypePacked) {
   Type type = ConvertDescriptorToType(
-      kUrlPrefix, *protobuf_unittest::TestPackedTypes::GetDescriptor());
+      kUrlPrefix, *proto2_unittest::TestPackedTypes::GetDescriptor());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_INT32,
                        "packed_int32", 90));
   EXPECT_TRUE(IsPacked(type, "packed_int32"));
@@ -688,7 +688,7 @@ TEST(ConvertDescriptorToTypeTest, ConvertDescriptorToTypePacked) {
 
 TEST(ConvertDescriptorToTypeTest, TestOneof) {
   Type type = ConvertDescriptorToType(
-      kUrlPrefix, *protobuf_unittest::TestAllTypes::GetDescriptor());
+      kUrlPrefix, *proto2_unittest::TestAllTypes::GetDescriptor());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_UINT32,
                        "oneof_uint32", 111));
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL, Field::TYPE_MESSAGE,
@@ -705,29 +705,29 @@ TEST(ConvertDescriptorToTypeTest, TestOneof) {
 
 TEST(ConvertDescriptorToTypeTest, TestMap) {
   Type type = ConvertDescriptorToType(
-      kUrlPrefix, *protobuf_unittest::TestMap::GetDescriptor());
+      kUrlPrefix, *proto2_unittest::TestMap::GetDescriptor());
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED, Field::TYPE_MESSAGE,
                        "map_int32_int32", 1));
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "map_int32_int32",
-      GetTypeUrl("protobuf_unittest.TestMap.MapInt32Int32Entry")));
+      GetTypeUrl("proto2_unittest.TestMap.MapInt32Int32Entry")));
 }
 
 TEST(ConvertDescriptorToTypeTest, TestCustomOptions) {
   Type type = ConvertDescriptorToType(
       kUrlPrefix,
-      *protobuf_unittest::TestMessageWithCustomOptions::GetDescriptor());
+      *proto2_unittest::TestMessageWithCustomOptions::GetDescriptor());
   EXPECT_TRUE(
-      HasInt32Option(type.options(), "protobuf_unittest.message_opt1", -56));
+      HasInt32Option(type.options(), "proto2_unittest.message_opt1", -56));
   const Field* field = FindField(type, "field1");
   ASSERT_TRUE(field != nullptr);
-  EXPECT_TRUE(HasUInt64Option(field->options(), "protobuf_unittest.field_opt1",
+  EXPECT_TRUE(HasUInt64Option(field->options(), "proto2_unittest.field_opt1",
                               8765432109));
 }
 
 TEST(ConvertDescriptorToTypeTest, TestJsonName) {
   Type type = ConvertDescriptorToType(
-      kUrlPrefix, *protobuf_unittest::TestAllTypes::GetDescriptor());
+      kUrlPrefix, *proto2_unittest::TestAllTypes::GetDescriptor());
   EXPECT_EQ("optionalInt32", FindField(type, "optional_int32")->json_name());
 
   type = ConvertDescriptorToType(kUrlPrefix,
@@ -737,7 +737,7 @@ TEST(ConvertDescriptorToTypeTest, TestJsonName) {
 
 TEST(ConvertDescriptorToTypeTest, TestEnum) {
   Enum type = ConvertDescriptorToType(
-      *protobuf_unittest::TestAllTypes::NestedEnum_descriptor());
+      *proto2_unittest::TestAllTypes::NestedEnum_descriptor());
   EnumHasValue(type, "FOO", 1);
   EnumHasValue(type, "BAR", 2);
   EnumHasValue(type, "BAZ", 3);
@@ -746,13 +746,13 @@ TEST(ConvertDescriptorToTypeTest, TestEnum) {
 
 TEST(ConvertDescriptorToTypeTest, TestCustomEnumOptions) {
   Enum type = ConvertDescriptorToType(
-      *protobuf_unittest::TestMessageWithCustomOptions::AnEnum_descriptor());
+      *proto2_unittest::TestMessageWithCustomOptions::AnEnum_descriptor());
   ASSERT_TRUE(
-      HasInt32Option(type.options(), "protobuf_unittest.enum_opt1", -789));
+      HasInt32Option(type.options(), "proto2_unittest.enum_opt1", -789));
   const EnumValue* value = FindEnumValue(type, "ANENUM_VAL2");
   ASSERT_TRUE(value != nullptr);
   ASSERT_TRUE(
-      HasInt32Option(value->options(), "protobuf_unittest.enum_value_opt1", 123));
+      HasInt32Option(value->options(), "proto2_unittest.enum_value_opt1", 123));
 }
 
 }  // namespace

@@ -7,7 +7,7 @@
 
 syntax = "proto3";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/descriptor.proto";
 
@@ -68,8 +68,8 @@ message TestProto3OptionalMessage {
 }
 
 message Proto3OptionalExtensions {
-  option (protobuf_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
-  option (protobuf_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
+  option (proto2_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
+  option (proto2_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
 
   extend google.protobuf.MessageOptions {
     int32 ext_no_optional = 355886728;
