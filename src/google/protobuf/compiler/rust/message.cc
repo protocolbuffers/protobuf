@@ -801,7 +801,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         impl $pb$::TakeFrom for $Msg$ {
-          fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = Self>) {
+          fn take_from(&mut self, src: impl $pb$::AsMut<MutProxied = Self>) {
             let mut m = self.as_mut();
             $pb$::TakeFrom::take_from(&mut m, src)
           }
