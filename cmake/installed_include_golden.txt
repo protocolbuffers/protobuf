@@ -30,6 +30,7 @@ google/protobuf/compiler/objectivec/names.h
 google/protobuf/compiler/objectivec/nsobject_methods.h
 google/protobuf/compiler/parser.h
 google/protobuf/compiler/php/names.h
+google/protobuf/compiler/php/php_generator.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
