@@ -1622,10 +1622,24 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals('', $m->getA());
     }
 
+    public function testSerializeToJsonStringNoOption()
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString();
+        $this->assertSame('{"oneofEnum":"ONE"}', $data);
+
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+    }
+
     /**
      * @dataProvider serializeToJsonStringOptionsProvider
      */
-    public function testSerializeToJsonStringWithOptions(int $flags, string $expected)
+    public function testSerializeToJsonStringWithOptions(int|bool|null $flags, string $expected)
     {
         $m = new TestMessage();
 
@@ -1642,7 +1656,19 @@ class EncodeDecodeTest extends TestBase
     public static function serializeToJsonStringOptionsProvider(): array
     {
         return [
-            'default' => [
+            'null' => [
+                null,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'boolean false (BC)' => [
+                false,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'boolean true (BC)' => [
+                true,
+                '{"oneof_enum":"ONE"}',
+            ],
+            'default int' => [
                 0,
                 '{"oneofEnum":"ONE"}',
             ],
