@@ -18,11 +18,9 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "No bzlmod", flags: --noenable_bzlmod }
-          # TODO: b/379846319 - Fix the tests with bzlmod and enable this.
-          # - { name: "bzlmod", flags: --enable_bzlmod --enable_workspace }
-          - { name: Optimized, flags: --config=opt }
-          - { name: ASAN, flags: --config=asan }
+          - { name: Fastbuild, flags: --noenable_bzlmod }
+          - { name: Optimized, flags: --noenable_bzlmod --config=opt }
+          - { name: ASAN, flags: --noenable_bzlmod --config=asan }
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
@@ -30,7 +28,7 @@ jobs:
           - bazel_cmd: "test"
 
           # Override cases with custom images
-          - config: { name: Cargo }
+          - config: { name: Cargo, flags: --noenable_bzlmod }
             image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:7.1.2-1.74.0-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
