@@ -7,6 +7,7 @@
 
 #include "google/protobuf/hpb/extension.h"
 
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/status.h"
@@ -46,6 +47,13 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
   return upb_Message_SetExtension(message, ext, &extension, message_arena)
              ? absl::OkStatus()
              : MessageAllocationError();
+}
+
+void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
+                       const upb_MiniTableExtension* ext,
+                       upb_Message* extension, upb_Arena* extension_arena) {
+  ABSL_CHECK(upb_Arena_IsFused(message_arena, extension_arena));
+  upb_Message_SetExtension(message, ext, &extension, message_arena);
 }
 
 }  // namespace internal

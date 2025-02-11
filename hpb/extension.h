@@ -10,10 +10,8 @@
 
 #include <cstdint>
 #include <type_traits>
-#include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
@@ -45,6 +43,10 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
+
+void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
+                       const upb_MiniTableExtension* ext,
+                       upb_Message* extension, upb_Arena* extension_arena);
 
 /**
  * Trait that maps upb extension types to the corresponding
@@ -326,6 +328,22 @@ absl::Status SetExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
   return ::hpb::SetExtension(Ptr(message), id, value);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
+void SetAliasExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    Ptr<Extension> value) {
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = hpb::interop::upb::GetArena(message);
+  auto* extension_arena = hpb::interop::upb::GetArena(value);
+  return ::hpb::internal::SetAliasExtension(
+      hpb::interop::upb::GetMessage(message), message_arena,
+      id.mini_table_ext(), hpb::interop::upb::GetMessage(value),
+      extension_arena);
 }
 
 template <typename T, typename Extendee, typename Extension,
