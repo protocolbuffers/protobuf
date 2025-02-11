@@ -34,6 +34,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 
+
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif
@@ -1867,7 +1868,7 @@ inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 inline size_t WireFormatLite::BytesSize(const std::string& value) {
-  return LengthDelimitedSize(value.size());
+  return StringSize(value);
 }
 
 inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
