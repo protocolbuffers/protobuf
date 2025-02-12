@@ -2653,7 +2653,6 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   } else {
     format("~0u,  // no _has_bits_\n");
   }
-  format("PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_),\n");
   if (descriptor_->extension_range_count() > 0) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $extensions$),\n");
   } else {
@@ -2685,7 +2684,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
         "~0u,  // no _split_\n"
         "~0u,  // no sizeof(Split)\n");
   }
-  const int kNumGenericOffsets = 8;  // the number of fixed offsets above
+  const int kNumGenericOffsets = 7;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;

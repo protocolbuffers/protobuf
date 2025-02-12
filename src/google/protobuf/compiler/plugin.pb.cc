@@ -164,7 +164,6 @@ const ::uint32_t
     TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -180,7 +179,6 @@ const ::uint32_t
         3,
         0,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -198,7 +196,6 @@ const ::uint32_t
         ~0u,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -214,7 +211,6 @@ const ::uint32_t
         2,
         3,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -235,10 +231,10 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 12, -1, sizeof(::google::protobuf::compiler::Version)},
-        {16, 29, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
-        {34, 46, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
-        {50, 63, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
+        {0, 11, -1, sizeof(::google::protobuf::compiler::Version)},
+        {15, 27, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
+        {32, 43, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
+        {47, 59, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::compiler::_Version_default_instance_._instance,
