@@ -1241,7 +1241,6 @@ const ::uint32_t
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1250,7 +1249,6 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1284,7 +1282,6 @@ const ::uint32_t
         2,
         5,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto_ExtensionRange, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto_ExtensionRange, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1298,7 +1295,6 @@ const ::uint32_t
         2,
         0,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto_ReservedRange, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto_ReservedRange, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1310,7 +1306,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1338,7 +1333,6 @@ const ::uint32_t
         ~0u,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions_Declaration, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions_Declaration, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1356,7 +1350,6 @@ const ::uint32_t
         3,
         4,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1372,7 +1365,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1402,7 +1394,6 @@ const ::uint32_t
         5,
         8,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1414,7 +1405,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto_EnumReservedRange, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1426,7 +1416,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1444,7 +1433,6 @@ const ::uint32_t
         ~0u,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1458,7 +1446,6 @@ const ::uint32_t
         2,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1472,7 +1459,6 @@ const ::uint32_t
         ~0u,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodDescriptorProto, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodDescriptorProto, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1492,7 +1478,6 @@ const ::uint32_t
         4,
         5,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1542,7 +1527,6 @@ const ::uint32_t
         10,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1564,7 +1548,6 @@ const ::uint32_t
         0,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_EditionDefault, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_EditionDefault, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1576,7 +1559,6 @@ const ::uint32_t
         1,
         0,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1592,7 +1574,6 @@ const ::uint32_t
         0,
         3,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1628,7 +1609,6 @@ const ::uint32_t
         1,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1640,7 +1620,6 @@ const ::uint32_t
         0,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1658,7 +1637,6 @@ const ::uint32_t
         0,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1676,7 +1654,6 @@ const ::uint32_t
         1,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1690,7 +1667,6 @@ const ::uint32_t
         1,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1706,7 +1682,6 @@ const ::uint32_t
         0,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption_NamePart, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption_NamePart, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1718,7 +1693,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1740,7 +1714,6 @@ const ::uint32_t
         1,
         2,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1762,7 +1735,6 @@ const ::uint32_t
         5,
         6,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1776,7 +1748,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1790,7 +1761,6 @@ const ::uint32_t
         0,
         1,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1808,7 +1778,6 @@ const ::uint32_t
         1,
         ~0u,
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_._extensions_),
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1817,7 +1786,6 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1835,7 +1803,6 @@ const ::uint32_t
         2,
         3,
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -1848,38 +1815,38 @@ const ::uint32_t
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, -1, -1, sizeof(::google::protobuf::FileDescriptorSet)},
-        {9, 30, -1, sizeof(::google::protobuf::FileDescriptorProto)},
-        {43, 54, -1, sizeof(::google::protobuf::DescriptorProto_ExtensionRange)},
-        {57, 67, -1, sizeof(::google::protobuf::DescriptorProto_ReservedRange)},
-        {69, 87, -1, sizeof(::google::protobuf::DescriptorProto)},
-        {97, 110, -1, sizeof(::google::protobuf::ExtensionRangeOptions_Declaration)},
-        {115, 127, -1, sizeof(::google::protobuf::ExtensionRangeOptions)},
-        {131, 150, -1, sizeof(::google::protobuf::FieldDescriptorProto)},
-        {161, 171, -1, sizeof(::google::protobuf::OneofDescriptorProto)},
-        {173, 183, -1, sizeof(::google::protobuf::EnumDescriptorProto_EnumReservedRange)},
-        {185, 198, -1, sizeof(::google::protobuf::EnumDescriptorProto)},
-        {203, 214, -1, sizeof(::google::protobuf::EnumValueDescriptorProto)},
-        {217, 228, -1, sizeof(::google::protobuf::ServiceDescriptorProto)},
-        {231, 245, -1, sizeof(::google::protobuf::MethodDescriptorProto)},
-        {251, 280, -1, sizeof(::google::protobuf::FileOptions)},
-        {301, 316, -1, sizeof(::google::protobuf::MessageOptions)},
-        {323, 333, -1, sizeof(::google::protobuf::FieldOptions_EditionDefault)},
-        {335, 347, -1, sizeof(::google::protobuf::FieldOptions_FeatureSupport)},
-        {351, 373, -1, sizeof(::google::protobuf::FieldOptions)},
-        {387, 397, -1, sizeof(::google::protobuf::OneofOptions)},
-        {399, 412, -1, sizeof(::google::protobuf::EnumOptions)},
-        {417, 430, -1, sizeof(::google::protobuf::EnumValueOptions)},
-        {435, 446, -1, sizeof(::google::protobuf::ServiceOptions)},
-        {449, 461, -1, sizeof(::google::protobuf::MethodOptions)},
-        {465, 475, -1, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
-        {477, 492, -1, sizeof(::google::protobuf::UninterpretedOption)},
-        {499, 514, -1, sizeof(::google::protobuf::FeatureSet)},
-        {521, 532, -1, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
-        {535, 546, -1, sizeof(::google::protobuf::FeatureSetDefaults)},
-        {549, 562, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-        {567, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
-        {576, 589, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-        {594, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
+        {8, 28, -1, sizeof(::google::protobuf::FileDescriptorProto)},
+        {41, 51, -1, sizeof(::google::protobuf::DescriptorProto_ExtensionRange)},
+        {54, 63, -1, sizeof(::google::protobuf::DescriptorProto_ReservedRange)},
+        {65, 82, -1, sizeof(::google::protobuf::DescriptorProto)},
+        {92, 104, -1, sizeof(::google::protobuf::ExtensionRangeOptions_Declaration)},
+        {109, 120, -1, sizeof(::google::protobuf::ExtensionRangeOptions)},
+        {124, 142, -1, sizeof(::google::protobuf::FieldDescriptorProto)},
+        {153, 162, -1, sizeof(::google::protobuf::OneofDescriptorProto)},
+        {164, 173, -1, sizeof(::google::protobuf::EnumDescriptorProto_EnumReservedRange)},
+        {175, 187, -1, sizeof(::google::protobuf::EnumDescriptorProto)},
+        {192, 202, -1, sizeof(::google::protobuf::EnumValueDescriptorProto)},
+        {205, 215, -1, sizeof(::google::protobuf::ServiceDescriptorProto)},
+        {218, 231, -1, sizeof(::google::protobuf::MethodDescriptorProto)},
+        {237, 265, -1, sizeof(::google::protobuf::FileOptions)},
+        {286, 300, -1, sizeof(::google::protobuf::MessageOptions)},
+        {307, 316, -1, sizeof(::google::protobuf::FieldOptions_EditionDefault)},
+        {318, 329, -1, sizeof(::google::protobuf::FieldOptions_FeatureSupport)},
+        {333, 354, -1, sizeof(::google::protobuf::FieldOptions)},
+        {368, 377, -1, sizeof(::google::protobuf::OneofOptions)},
+        {379, 391, -1, sizeof(::google::protobuf::EnumOptions)},
+        {396, 408, -1, sizeof(::google::protobuf::EnumValueOptions)},
+        {413, 423, -1, sizeof(::google::protobuf::ServiceOptions)},
+        {426, 437, -1, sizeof(::google::protobuf::MethodOptions)},
+        {441, 450, -1, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
+        {452, 466, -1, sizeof(::google::protobuf::UninterpretedOption)},
+        {473, 487, -1, sizeof(::google::protobuf::FeatureSet)},
+        {494, 504, -1, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
+        {507, 517, -1, sizeof(::google::protobuf::FeatureSetDefaults)},
+        {520, 532, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+        {537, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
+        {545, 557, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+        {562, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_FileDescriptorSet_default_instance_._instance,

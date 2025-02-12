@@ -291,6 +291,9 @@ const int kUnknownTypeId2 = 1550056;
   MSetMessageExtension1* message1 = [MSetMessageExtension1 message];
   message1.i = 123;
   [msgEx setExtension:[MSetMessageExtension1 doppelgangerMessageSetExtension] value:message1];
+  MSetMessageExtension3* message3 = [MSetMessageExtension3 message];
+  message3.x = 10;
+  [msgEx setExtension:[MSetMessageExtension3 doppelgangerMessageSetExtension] value:message3];
 
   NSData* data = [msgEx data];
   XCTAssertNotNil(data);
@@ -302,6 +305,14 @@ const int kUnknownTypeId2 = 1550056;
   XCTAssertNil(err);
   XCTAssertNotNil(msg);
   XCTAssertEqual([[msg getExtension:[MSetMessageExtension1 messageSetExtension]] i], 123);
+  // Extension 3 is unknown on the actually test MessageSet, so it will stay in unknown fields
+  // without being transformed into the group structure.
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  NSData* bytes = [ufs
+      firstLengthDelimited:[MSetMessageExtension3 doppelgangerMessageSetExtension].fieldNumber];
+  XCTAssertNotNil(bytes);
+  XCTAssertEqualObjects(bytes, [message3 data]);
 }
 
 - (void)assertFieldsInOrder:(NSData*)data {

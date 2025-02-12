@@ -2318,12 +2318,14 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 
 - (void)parseMessageSet:(GPBCodedInputStream *)input
       extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
-           forcedTypeID:(uint32_t)forcedTypeID {
+        forcedExtension:(GPBExtensionDescriptor *)forcedExtension {
   uint32_t typeId = 0;
   NSData *rawBytes = nil;
   GPBCodedInputStreamState *state = &input->state_;
-  if (forcedTypeID) {
-    typeId = forcedTypeID;
+  GPBExtensionDescriptor *extension;
+  if (forcedExtension) {
+    extension = forcedExtension;
+    typeId = forcedExtension.fieldNumber;
     rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
   } else {
     BOOL gotType = NO;
@@ -2366,10 +2368,10 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       // drops it, so do the same thing.
       return;
     }
-  }  // else forcedTypeID
 
-  GPBExtensionDescriptor *extension = [extensionRegistry extensionForDescriptor:[self descriptor]
-                                                                    fieldNumber:typeId];
+    extension = [extensionRegistry extensionForDescriptor:[self descriptor] fieldNumber:typeId];
+  }  // else forcedExtension
+
   if (extension) {
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
     NSAssert(extension.dataType == GPBDataTypeMessage,
@@ -2395,7 +2397,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
     }
   } else {
     // The extension isn't in the registry, but it was well formed, so the whole group structure
-    // get preserved as an unknown field.
+    // gets preserved as an unknown field.
 
     // rawBytes was created via a NoCopy, so it can be reusing a
     // subrange of another NSData that might go out of scope as things
@@ -2695,16 +2697,22 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
     if (isMessageSetWireFormat) {
       if (GPBWireFormatMessageSetItemTag == tag) {
-        [self parseMessageSet:input extensionRegistry:extensionRegistry forcedTypeID:0];
+        [self parseMessageSet:input extensionRegistry:extensionRegistry forcedExtension:nil];
         continue;  // On to the next tag
       }
-      // If some encoder didn't know about the MessageSet format, then still pull that in. This
-      // matches what _upb_Decoder_FindField does.
+      // If some encoder didn't know about the MessageSet format, but it is a known extension
+      // field, then parse that in also. If it isn't known, we'll leave it as a normal unknonwn
+      // field. _upb_Decoder_FindField() does something similar to this.
       if (GPBWireFormatGetTagWireType(tag) == GPBWireFormatLengthDelimited) {
-        [self parseMessageSet:input
-            extensionRegistry:extensionRegistry
-                 forcedTypeID:GPBWireFormatGetTagFieldNumber(tag)];
-        continue;  // On to the next tag
+        GPBExtensionDescriptor *extension =
+            [extensionRegistry extensionForDescriptor:[self descriptor]
+                                          fieldNumber:GPBWireFormatGetTagFieldNumber(tag)];
+        if (extension) {
+          [self parseMessageSet:input
+              extensionRegistry:extensionRegistry
+                forcedExtension:extension];
+          continue;  // On to the next tag
+        }
       }
     } else {
       // ObjC Runtime currently doesn't track if a message supported extensions, so the check is

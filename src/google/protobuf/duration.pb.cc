@@ -62,7 +62,6 @@ const ::uint32_t
     TableStruct_google_2fprotobuf_2fduration_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Duration, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Duration, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -77,7 +76,7 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 10, -1, sizeof(::google::protobuf::Duration)},
+        {0, 9, -1, sizeof(::google::protobuf::Duration)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Duration_default_instance_._instance,

@@ -1244,9 +1244,13 @@ class PROTOBUF_EXPORT Reflection final {
   internal::ExtensionSet* MutableExtensionSet(Message* message) const;
 
   const internal::InternalMetadata& GetInternalMetadata(
-      const Message& message) const;
+      const Message& message) const {
+    return message._internal_metadata_;
+  }
 
-  internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
+  internal::InternalMetadata* MutableInternalMetadata(Message* message) const {
+    return &message->_internal_metadata_;
+  }
 
   inline bool IsInlined(const FieldDescriptor* field) const {
     return schema_.IsFieldInlined(field);
