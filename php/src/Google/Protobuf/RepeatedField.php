@@ -17,6 +17,7 @@ namespace Google\Protobuf;
 use Google\Protobuf\Internal\DescriptorPool;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\Internal\Message;
 use Google\Protobuf\Internal\RepeatedFieldIter;
 use Traversable;
 
@@ -247,3 +248,5 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
         );
     }
 }
+
+class_alias(RepeatedField::class, Internal\RepeatedField::class);
