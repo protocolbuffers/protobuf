@@ -130,7 +130,6 @@ const ::uint32_t
     TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -142,7 +141,6 @@ const ::uint32_t
         0,
         1,
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -151,7 +149,6 @@ const ::uint32_t
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_),
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _internal_metadata_),
         ~0u,  // no _extensions_
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_[0]),
         ~0u,  // no _weak_field_map_
@@ -166,7 +163,6 @@ const ::uint32_t
         ::_pbi::kInvalidFieldOffsetTag,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
         ~0u,  // no _has_bits_
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
         ~0u,  // no _weak_field_map_
@@ -178,10 +174,10 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 10, -1, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
-        {12, -1, -1, sizeof(::google::protobuf::Struct)},
-        {21, -1, -1, sizeof(::google::protobuf::Value)},
-        {36, -1, -1, sizeof(::google::protobuf::ListValue)},
+        {0, 9, -1, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
+        {11, -1, -1, sizeof(::google::protobuf::Struct)},
+        {19, -1, -1, sizeof(::google::protobuf::Value)},
+        {33, -1, -1, sizeof(::google::protobuf::ListValue)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
