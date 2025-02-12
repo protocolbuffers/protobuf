@@ -25,7 +25,6 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.51.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
@@ -70,18 +69,6 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 ]
 
 use_repo(pip, "protobuf_pip_deps")
-
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
-crate.spec(
-    package = "googletest",
-    version = ">0.0.0",
-)
-crate.spec(
-    package = "paste",
-    version = ">=1",
-)
-crate.from_specs()
-use_repo(crate, crate_index = "crates")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
 maven.install(
