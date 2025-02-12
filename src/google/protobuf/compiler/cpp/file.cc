@@ -47,6 +47,7 @@
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
+#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -254,8 +255,10 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
                      {"messages", [&] { GenerateMessageDefinitions(p); }},
                      {"services", [&] { GenerateServiceDefinitions(p); }},
                      {"extensions", [&] { GenerateExtensionIdentifiers(p); }},
-                     {"inline_fns",
-                      [&] { GenerateInlineFunctionDefinitions(p); }},
+                     {"inline_defs",
+                      [&] {
+                        GenerateInlineFunctionDefinitions(p);
+                      }},
                  },
                  R"(
                    $enums$
@@ -272,7 +275,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 
                    $hrule_thick$
 
-                   $inline_fns$
+                   $inline_defs$
 
                    // @@protoc_insertion_point(namespace_scope)
                  )");
@@ -1651,6 +1654,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
+
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
   IncludeFile("third_party/protobuf/metadata_lite.h", p);
 
