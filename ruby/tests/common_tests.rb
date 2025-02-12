@@ -416,6 +416,22 @@ module CommonTests
     end
   end
 
+  # This is a regression test for a bug in Map.hash. It used to return an
+  # inconsistent result when there was a collision in the map (two keys mapping
+  # to the same hash table entry).
+  def test_map_hash
+    for i in 0..25
+      for j in i+1..25
+        m = Google::Protobuf::Map.new(:int32, :string)
+        m[i] = "abc"
+        m[j] = "def"
+        m2 = m.dup
+        assert_equal m, m2
+        assert_equal m.hash, m2.hash
+      end
+    end
+  end
+
   def test_b_8385
     m1 = Google::Protobuf::Map.new(:string, :string)
     m2 = Google::Protobuf::Map.new(:string, :string)

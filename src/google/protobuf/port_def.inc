@@ -150,11 +150,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-#ifdef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
-#error PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE was previously defined
-#endif
-#define PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE 1
-
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
 #endif
@@ -299,9 +294,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
   _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
   __builtin_offsetof(TYPE, FIELD)                            \
   _Pragma("clang diagnostic pop")
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_FIELD_OFFSET(TYPE, FIELD) __builtin_offsetof(TYPE, FIELD)
-#else  // defined(__clang__)
+#else
 // Note that we calculate relative to the pointer value 16 here since if we
 // just use zero, GCC complains about dereferencing a NULL pointer.  We
 // choose 16 rather than some other number just in case the compiler would
@@ -566,7 +561,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
 #endif
 #if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
-    !defined(_MSC_VER)
+    !defined(_MSC_VER) && !defined(_WIN32)
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 

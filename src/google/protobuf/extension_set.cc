@@ -20,10 +20,12 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -36,6 +38,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // must be last.
 #include "google/protobuf/port_def.inc"
@@ -1398,6 +1401,132 @@ size_t ExtensionSet::ByteSize() const {
       Prefetch{});
   return total_size;
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+size_t ExtensionSet::ByteSizeV2() const {
+  static constexpr int8_t kFieldSizes[] = {
+      -1,
+      sizeof(double),    // TYPE_DOUBLE
+      sizeof(float),     // TYPE_FLOAT
+      sizeof(int64_t),   // TYPE_INT64
+      sizeof(uint64_t),  // TYPE_UINT64
+      sizeof(int32_t),   // TYPE_INT32
+      sizeof(uint64_t),  // TYPE_FIXED64
+      sizeof(uint32_t),  // TYPE_FIXED32
+      sizeof(bool),      // TYPE_BOOL
+      -1,                // TYPE_STRING
+      -1,                // TYPE_GROUP
+      -1,                // TYPE_MESSAGE
+      -1,                // TYPE_BYTES
+      sizeof(uint32_t),  // TYPE_UINT32
+      sizeof(int),       // TYPE_ENUM
+      sizeof(uint32_t),  // TYPE_SFIXED32
+      sizeof(uint64_t),  // TYPE_SFIXED64
+      sizeof(int32_t),   // TYPE_SINT32
+      sizeof(int64_t),   // TYPE_SINT64
+  };
+
+  size_t total_size = 0;
+  ForEach(
+      [&total_size](int /* number */, const ExtensionSet::Extension& ext) {
+        // We assume that (singular) message extensions are common cases.
+        if (ABSL_PREDICT_TRUE(ext.type == WireFormatLite::TYPE_MESSAGE ||
+                              ext.type == WireFormatLite::TYPE_GROUP)) {
+          if (ABSL_PREDICT_FALSE(ext.is_repeated)) {
+            const auto* rep = ext.ptr.repeated_message_value;
+            if (rep->empty()) return;
+            size_t size = 0;
+            for (const auto& each : *rep) {
+              size += each.ByteSizeV2();
+            }
+            total_size += v2::kRepeatedFieldTagSize +
+                          v2::kLengthSize * rep->size() + size;
+          } else if (ABSL_PREDICT_TRUE(ext.is_lazy)) {
+            total_size += std::visit(
+                absl::Overload{
+                    [&](const MessageLite* ptr) {
+                      return WireFormatLite::LengthPrefixedByteSizeV2(
+                          ptr->ByteSizeV2());
+                    },
+                    [](size_t unparsed_size) {
+                      return WireFormatLite::LengthPrefixedByteSizeV2(
+                          unparsed_size);
+                    }},
+                ext.ptr.lazymessage_value->UnparsedSizeOrMessage());
+          } else {
+            total_size += WireFormatLite::LengthPrefixedByteSizeV2(
+                ext.ptr.message_value->ByteSizeV2());
+          }
+          return;
+        }
+
+        // Handle string fields as numerics are fixed widths.
+        if (ext.type == WireFormatLite::TYPE_STRING ||
+            ext.type == WireFormatLite::TYPE_BYTES) {
+          if (ext.is_repeated) {
+            total_size += WireFormatLite::RepeatedStringByteSizeV2(
+                *ext.ptr.repeated_string_value);
+          } else {
+            total_size += WireFormatLite::LengthPrefixedByteSizeV2(
+                ext.ptr.string_value->size());
+          }
+          return;
+        }
+
+        // The rest of the types are numeric fields with fixed widths for v2.
+        if (ext.is_repeated) {
+          switch (ext.type) {
+            case WireFormatLite::TYPE_DOUBLE:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_double_value);
+              break;
+            case WireFormatLite::TYPE_FLOAT:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_float_value);
+              break;
+            case WireFormatLite::TYPE_ENUM:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_enum_value);
+              break;
+            case WireFormatLite::TYPE_INT32:
+            case WireFormatLite::TYPE_SFIXED32:
+            case WireFormatLite::TYPE_SINT32:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_int32_t_value);
+              break;
+            case WireFormatLite::TYPE_INT64:
+            case WireFormatLite::TYPE_SFIXED64:
+            case WireFormatLite::TYPE_SINT64:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_int64_t_value);
+              break;
+            case WireFormatLite::TYPE_FIXED32:
+            case WireFormatLite::TYPE_UINT32:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_uint32_t_value);
+              break;
+            case WireFormatLite::TYPE_FIXED64:
+            case WireFormatLite::TYPE_UINT64:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_uint64_t_value);
+              break;
+            case WireFormatLite::TYPE_BOOL:
+              total_size += WireFormatLite::RepeatedNumericByteSizeV2(
+                  *ext.ptr.repeated_bool_value);
+              break;
+            default:
+              Unreachable();
+          }
+        } else {
+          auto field_size = kFieldSizes[ext.type];
+          ABSL_DCHECK_NE(field_size, -1);
+          total_size += v2::kSingularFieldTagSize + field_size;
+        }
+      },
+      ExtensionSet::Prefetch{});
+  return total_size;
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::SpaceUsedExcludingSelf() const

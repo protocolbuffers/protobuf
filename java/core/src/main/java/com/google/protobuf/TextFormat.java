@@ -189,7 +189,7 @@ public final class TextFormat {
         new ThreadLocal<FieldReporterLevel>() {
           @Override
           protected FieldReporterLevel initialValue() {
-            return FieldReporterLevel.REPORT_NONE;
+            return FieldReporterLevel.ABSTRACT_TO_STRING;
           }
         };
 

@@ -73,9 +73,6 @@
 #undef PROTOBUF_FUTURE_REMOVE_CREATEMESSAGE
 #endif
 
-#undef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
-#undef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME
-
 // Restore macros that may have been #undef'd in port_def.inc.
 
 #ifdef PROTOBUF_DID_UNDEF_noreturn

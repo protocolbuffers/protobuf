@@ -18,6 +18,7 @@
 
 pub use crate::{
     proto, AsMut as ProtoAsMut, AsView as ProtoAsView, Clear as ProtoClear,
-    ClearAndParse as ProtoClearAndParse, IntoMut as ProtoIntoMut, IntoView as ProtoIntoView,
-    MergeFrom as ProtoMergeFrom, Parse as ProtoParse, Serialize as ProtoSerialize,
+    ClearAndParse as ProtoClearAndParse, CopyFrom as ProtoCopyFrom, IntoMut as ProtoIntoMut,
+    IntoView as ProtoIntoView, MergeFrom as ProtoMergeFrom, Parse as ProtoParse,
+    Serialize as ProtoSerialize, TakeFrom as ProtoTakeFrom,
 };

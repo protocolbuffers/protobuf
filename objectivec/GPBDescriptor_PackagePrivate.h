@@ -300,10 +300,6 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionPacked) != 0;
 }
 
-GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
-  return (description->options & GPBExtensionSetWireFormat) != 0;
-}
-
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
 #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)

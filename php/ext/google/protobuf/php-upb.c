@@ -7401,7 +7401,8 @@ static const char* upb_Decoder_DecodeMessageSetItem(
 static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
                                                         const upb_MiniTable* t,
                                                         uint32_t field_number,
-                                                        int* last_field_index) {
+                                                        int* last_field_index,
+                                                        int wire_type) {
   static upb_MiniTableField none = {
       0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
   if (t == NULL) return &none;
@@ -7430,20 +7431,22 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
   }
 
   if (d->extreg) {
-    switch (t->UPB_PRIVATE(ext)) {
-      case kUpb_ExtMode_Extendable: {
-        const upb_MiniTableExtension* ext =
-            upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-        if (ext) return &ext->UPB_PRIVATE(field);
-        break;
+    int ext_mode = t->UPB_PRIVATE(ext);
+    // Treat a message set as an extendable message if it is a delimited field.
+    // This provides compatibility with encoders that are unaware of message
+    // sets and serialize them as normal extensions.
+    if (ext_mode == kUpb_ExtMode_Extendable ||
+        (ext_mode == kUpb_ExtMode_IsMessageSet &&
+         wire_type == kUpb_WireType_Delimited)) {
+      const upb_MiniTableExtension* ext =
+          upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
+      if (ext) return &ext->UPB_PRIVATE(field);
+    } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
+      if (field_number == kUpb_MsgSet_Item) {
+        static upb_MiniTableField item = {
+            0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
+        return &item;
       }
-      case kUpb_ExtMode_IsMessageSet:
-        if (field_number == kUpb_MsgSet_Item) {
-          static upb_MiniTableField item = {
-              0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
-          return &item;
-        }
-        break;
     }
   }
 
@@ -7544,7 +7547,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kUpb_FieldType_SFixed64] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_SInt32] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_SInt64] = kUpb_DecodeOp_UnknownField,
-      [kUpb_FakeFieldType_MessageSetItem] = kUpb_DecodeOp_UnknownField,
+      [kUpb_FakeFieldType_MessageSetItem] = kUpb_DecodeOp_SubMessage,
       // For repeated field type.
       [kRepeatedBase + kUpb_FieldType_Double] = OP_FIXPCK_LG2(3),
       [kRepeatedBase + kUpb_FieldType_Float] = OP_FIXPCK_LG2(2),
@@ -7791,7 +7794,8 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
       return ptr;
     }
 
-    field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index);
+    field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index,
+                                   wire_type);
     ptr = _upb_Decoder_DecodeWireValue(d, ptr, layout, field, wire_type, &val,
                                        &op);
 
@@ -9547,8 +9551,8 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   upb_Message** dst;                                                      \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_MiniTable* tablep = decode_totablep(table);                   \
-  const upb_MiniTable* subtablep = upb_MiniTableSub_Message(              \
-      *UPB_PRIVATE(_upb_MiniTable_GetSubByIndex)(tablep, submsg_idx));    \
+  const upb_MiniTable* subtablep =                                        \
+      UPB_PRIVATE(_upb_MiniTable_GetSubTableByIndex)(tablep, submsg_idx); \
   fastdecode_submsgdata submsg = {decode_totable(subtablep)};             \
   fastdecode_arr farr;                                                    \
                                                                           \
@@ -11676,7 +11680,7 @@ static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
 
-static bool upb_arrhas(upb_tabval key) { return key.val != (uint64_t)-1; }
+static bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
 
 static bool isfull(upb_table* t) { return t->count == t->max_count; }
 
@@ -11996,9 +12000,14 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
   return Wyhash(p, n, seed, kWyhashSalt);
 }
 
-// Returns a seed for upb's hash function. For now this is just a hard-coded
-// constant, but we are going to randomize it soon.
-static uint64_t _upb_Seed(void) { return 0x69835f69597ec1cc; }
+static const void* const _upb_seed;
+
+// Returns a random seed for upb's hash function. This does not provide
+// high-quality randomness, but it should be enough to prevent unit tests from
+// relying on a deterministic map ordering. By returning the address of a
+// variable, we are able to get some randomness for free provided that ASLR is
+// enabled.
+static uint64_t _upb_Seed(void) { return (uint64_t)&_upb_seed; }
 
 static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
   return _upb_Hash(p, n, _upb_Seed());
@@ -15420,7 +15429,7 @@ bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
   return false;
 }
 
-static char* strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
+static char* _strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
   char* ret = upb_strdup2(view.data, view.size, _upb_DefBuilder_Arena(ctx));
   if (!ret) _upb_DefBuilder_OomErr(ctx);
   return ret;
@@ -15549,7 +15558,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   upb_StringView name = UPB_DESC(FileDescriptorProto_name)(file_proto);
-  file->name = strviewdup(ctx, name);
+  file->name = _strviewdup(ctx, name);
   if (strlen(file->name) != name.size) {
     _upb_DefBuilder_Errf(ctx, "File name contained embedded NULL");
   }
@@ -15558,7 +15567,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (package.size) {
     _upb_DefBuilder_CheckIdentFull(ctx, package);
-    file->package = strviewdup(ctx, package);
+    file->package = _strviewdup(ctx, package);
   } else {
     file->package = NULL;
   }

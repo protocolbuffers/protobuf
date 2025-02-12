@@ -252,10 +252,10 @@ enum FieldType : uint16_t {
 }  // namespace field_layout
 
 #ifndef NDEBUG
-PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 4>,
-                               std::uintptr_t address);
-PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
-                               std::uintptr_t address);
+[[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 4>,
+                                            std::uintptr_t address);
+[[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
+                                            std::uintptr_t address);
 inline void AlignFail(std::integral_constant<size_t, 1>,
                       std::uintptr_t address) {}
 #endif
@@ -720,8 +720,6 @@ class PROTOBUF_EXPORT TcParser final {
                            0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
-      // Explicit abort to let compilers know this code-path does not return
-      abort();
     }
 #endif
     return *target;
@@ -738,8 +736,6 @@ class PROTOBUF_EXPORT TcParser final {
                            0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
                 reinterpret_cast<uintptr_t>(target));
-      // Explicit abort to let compilers know this code-path does not return
-      abort();
     }
 #endif
     return *target;
@@ -800,25 +796,19 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 
   // For `map` mini parsing generate a type card for the key/value.
-  template <typename MapField>
   static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
                                             bool log_debug_utf8_failure,
                                             bool validated_enum_value,
-                                            int key_type, int value_type) {
-    using MapType = typename MapField::MapType;
-    using Node = typename MapType::Node;
-    static_assert(alignof(Node) == alignof(NodeBase), "");
-    // Verify the assumption made in MpMap, guaranteed by Map<>.
-    assert(PROTOBUF_FIELD_OFFSET(Node, kv.first) == sizeof(NodeBase));
+                                            int key_type, int value_type,
+                                            bool is_lite) {
     return {
-        MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(key_type)),
-        MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(value_type)),
+        MakeMapTypeCard(1, static_cast<WireFormatLite::FieldType>(key_type)),
+        MakeMapTypeCard(2, static_cast<WireFormatLite::FieldType>(value_type)),
         true,
-        !std::is_base_of<MapFieldBaseForParse, MapField>::value,
+        is_lite,
         fail_on_utf8_failure,
         log_debug_utf8_failure,
         validated_enum_value,
-        Node::size_info(),
     };
   }
 
@@ -1015,7 +1005,7 @@ class PROTOBUF_EXPORT TcParser final {
                                       const TcParseTableBase::FieldAux* aux,
                                       const TcParseTableBase* table,
                                       const TcParseTableBase::FieldEntry& entry,
-                                      Arena* arena);
+                                      UntypedMapBase& map);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(

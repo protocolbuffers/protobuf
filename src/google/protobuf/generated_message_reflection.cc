@@ -1974,11 +1974,9 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
-absl::string_view Reflection::GetStringView(const Message& message,
-                                            const FieldDescriptor* field,
-                                            ScratchSpace& scratch) const {
-  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
-
+absl::string_view Reflection::GetStringViewImpl(const Message& message,
+                                                const FieldDescriptor* field,
+                                                ScratchSpace* scratch) const {
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(
         field->number(), internal::DefaultValueStringAsString(field));
@@ -1992,12 +1990,20 @@ absl::string_view Reflection::GetStringView(const Message& message,
       const auto& cord = schema_.InRealOneof(field)
                              ? *GetField<absl::Cord*>(message, field)
                              : GetField<absl::Cord>(message, field);
-      return scratch.CopyFromCord(cord);
+      ABSL_DCHECK(scratch);
+      return scratch->CopyFromCord(cord);
     }
     default:
       auto str = GetField<ArenaStringPtr>(message, field);
       return str.IsDefault() ? field->default_value_string() : str.Get();
   }
+}
+
+absl::string_view Reflection::GetStringView(const Message& message,
+                                            const FieldDescriptor* field,
+                                            ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
+  return GetStringViewImpl(message, field, &scratch);
 }
 
 
@@ -2143,12 +2149,9 @@ const std::string& Reflection::GetRepeatedStringReference(
 }
 
 // See GetStringView(), above.
-absl::string_view Reflection::GetRepeatedStringView(
+absl::string_view Reflection::GetRepeatedStringViewImpl(
     const Message& message, const FieldDescriptor* field, int index,
-    ScratchSpace& scratch) const {
-  (void)scratch;
-  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
-
+    ScratchSpace* scratch) const {
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   }
@@ -2156,13 +2159,21 @@ absl::string_view Reflection::GetRepeatedStringView(
   switch (field->cpp_string_type()) {
     case FieldDescriptor::CppStringType::kCord: {
       auto& cord = GetRepeatedField<absl::Cord>(message, field, index);
-      return scratch.CopyFromCord(cord);
+      ABSL_DCHECK(scratch);
+      return scratch->CopyFromCord(cord);
     }
     case FieldDescriptor::CppStringType::kView:
     case FieldDescriptor::CppStringType::kString:
       return GetRepeatedPtrField<std::string>(message, field, index);
   }
   internal::Unreachable();
+}
+
+absl::string_view Reflection::GetRepeatedStringView(
+    const Message& message, const FieldDescriptor* field, int index,
+    ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
+  return GetRepeatedStringViewImpl(message, field, index, &scratch);
 }
 
 

@@ -13,8 +13,8 @@ cc_library(
     deps = [
         ":interop_test_cc_proto",
         "//rust/cpp_kernel:cpp_api",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

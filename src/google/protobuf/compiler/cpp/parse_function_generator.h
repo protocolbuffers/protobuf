@@ -44,6 +44,8 @@ class ParseFunctionGenerator {
   void GenerateDataDefinitions(io::Printer* printer);
 
  private:
+  friend class TailCallTableInfoTest;
+
   class GeneratedOptionProvider;
 
   // Generates the tail-call table definition.

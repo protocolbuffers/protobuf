@@ -160,18 +160,6 @@ struct TransparentSupport<std::string> {
   }
 };
 
-enum class MapNodeSizeInfoT : uint32_t;
-inline uint16_t SizeFromInfo(MapNodeSizeInfoT node_size_info) {
-  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 16);
-}
-inline constexpr uint16_t ValueOffsetFromInfo(MapNodeSizeInfoT node_size_info) {
-  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 0);
-}
-constexpr MapNodeSizeInfoT MakeNodeInfo(uint16_t size, uint16_t value_offset) {
-  return static_cast<MapNodeSizeInfoT>((static_cast<uint32_t>(size) << 16) |
-                                       value_offset);
-}
-
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
   // This way sizeof(NodeBase) contains any possible padding it was going to
@@ -180,10 +168,6 @@ struct NodeBase {
 
   void* GetVoidKey() { return this + 1; }
   const void* GetVoidKey() const { return this + 1; }
-
-  void* GetVoidValue(MapNodeSizeInfoT size_info) {
-    return reinterpret_cast<char*>(this) + ValueOffsetFromInfo(size_info);
-  }
 };
 
 constexpr size_t kGlobalEmptyTableSize = 1;
@@ -310,8 +294,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
     uint16_t node_size;
     // Equivalent to `offsetof(Node, kv.second)` in the derived type.
     uint8_t value_offset;
-    TypeKind key_type : 4;
-    TypeKind value_type : 4;
+    uint8_t key_type : 4;
+    uint8_t value_type : 4;
+
+    TypeKind key_type_kind() const { return static_cast<TypeKind>(key_type); }
+    TypeKind value_type_kind() const {
+      return static_cast<TypeKind>(value_type);
+    }
   };
   static_assert(sizeof(TypeInfo) == 4);
 
@@ -490,7 +479,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
 template <typename F>
 auto UntypedMapBase::VisitKeyType(F f) const {
-  switch (type_info_.key_type) {
+  switch (type_info_.key_type_kind()) {
     case TypeKind::kBool:
       return f(std::enable_if<true, bool>{});
     case TypeKind::kU32:
@@ -510,7 +499,7 @@ auto UntypedMapBase::VisitKeyType(F f) const {
 
 template <typename F>
 auto UntypedMapBase::VisitValueType(F f) const {
-  switch (type_info_.value_type) {
+  switch (type_info_.value_type_kind()) {
     case TypeKind::kBool:
       return f(std::enable_if<true, bool>{});
     case TypeKind::kU32:
@@ -1455,10 +1444,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   struct Node : Base::KeyNode {
     using key_type = Key;
     using mapped_type = T;
-    static constexpr internal::MapNodeSizeInfoT size_info() {
-      return internal::MakeNodeInfo(sizeof(Node),
-                                    PROTOBUF_FIELD_OFFSET(Node, kv.second));
-    }
     value_type kv;
   };
 
@@ -1466,8 +1451,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     return internal::UntypedMapBase::TypeInfo{
         sizeof(Node),
         PROTOBUF_FIELD_OFFSET(Node, kv.second),
-        internal::UntypedMapBase::StaticTypeKind<Key>(),
-        internal::UntypedMapBase::StaticTypeKind<T>(),
+        static_cast<uint8_t>(internal::UntypedMapBase::StaticTypeKind<Key>()),
+        static_cast<uint8_t>(internal::UntypedMapBase::StaticTypeKind<T>()),
     };
   }
 

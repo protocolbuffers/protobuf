@@ -82,7 +82,7 @@ static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
 
-static bool upb_arrhas(upb_tabval key) { return key.val != (uint64_t)-1; }
+static bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
 
 static bool isfull(upb_table* t) { return t->count == t->max_count; }
 
@@ -402,9 +402,14 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
   return Wyhash(p, n, seed, kWyhashSalt);
 }
 
-// Returns a seed for upb's hash function. For now this is just a hard-coded
-// constant, but we are going to randomize it soon.
-static uint64_t _upb_Seed(void) { return 0x69835f69597ec1cc; }
+static const void* const _upb_seed;
+
+// Returns a random seed for upb's hash function. This does not provide
+// high-quality randomness, but it should be enough to prevent unit tests from
+// relying on a deterministic map ordering. By returning the address of a
+// variable, we are able to get some randomness for free provided that ASLR is
+// enabled.
+static uint64_t _upb_Seed(void) { return (uint64_t)&_upb_seed; }
 
 static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
   return _upb_Hash(p, n, _upb_Seed());

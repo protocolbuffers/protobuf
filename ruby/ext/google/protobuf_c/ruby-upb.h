@@ -2222,7 +2222,7 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#ifdef UPB_FASTTABLE_ENABLED
+#ifdef UPB_FASTTABLE
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
   // of flexible array members is a GNU extension, not in C99 unfortunately.
@@ -15808,6 +15808,41 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
+
+#ifndef UPB_UTIL_DEF_TO_PROTO_H_
+#define UPB_UTIL_DEF_TO_PROTO_H_
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Functions for converting defs back to the equivalent descriptor proto.
+// Ultimately the goal is that a round-trip proto->def->proto is lossless.  Each
+// function returns a new proto created in arena `a`, or NULL if memory
+// allocation failed.
+google_protobuf_DescriptorProto* upb_MessageDef_ToProto(const upb_MessageDef* m,
+                                                        upb_Arena* a);
+google_protobuf_EnumDescriptorProto* upb_EnumDef_ToProto(const upb_EnumDef* e,
+                                                         upb_Arena* a);
+google_protobuf_EnumValueDescriptorProto* upb_EnumValueDef_ToProto(
+    const upb_EnumValueDef* e, upb_Arena* a);
+google_protobuf_FieldDescriptorProto* upb_FieldDef_ToProto(
+    const upb_FieldDef* f, upb_Arena* a);
+google_protobuf_OneofDescriptorProto* upb_OneofDef_ToProto(
+    const upb_OneofDef* o, upb_Arena* a);
+google_protobuf_FileDescriptorProto* upb_FileDef_ToProto(const upb_FileDef* f,
+                                                         upb_Arena* a);
+google_protobuf_MethodDescriptorProto* upb_MethodDef_ToProto(
+    const upb_MethodDef* m, upb_Arena* a);
+google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
+    const upb_ServiceDef* s, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* UPB_UTIL_DEF_TO_PROTO_H_ */
 
 // This should #undef all macros #defined in def.inc
 

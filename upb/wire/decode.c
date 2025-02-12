@@ -930,7 +930,8 @@ static const char* upb_Decoder_DecodeMessageSetItem(
 static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
                                                         const upb_MiniTable* t,
                                                         uint32_t field_number,
-                                                        int* last_field_index) {
+                                                        int* last_field_index,
+                                                        int wire_type) {
   static upb_MiniTableField none = {
       0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
   if (t == NULL) return &none;
@@ -959,20 +960,22 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
   }
 
   if (d->extreg) {
-    switch (t->UPB_PRIVATE(ext)) {
-      case kUpb_ExtMode_Extendable: {
-        const upb_MiniTableExtension* ext =
-            upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-        if (ext) return &ext->UPB_PRIVATE(field);
-        break;
+    int ext_mode = t->UPB_PRIVATE(ext);
+    // Treat a message set as an extendable message if it is a delimited field.
+    // This provides compatibility with encoders that are unaware of message
+    // sets and serialize them as normal extensions.
+    if (ext_mode == kUpb_ExtMode_Extendable ||
+        (ext_mode == kUpb_ExtMode_IsMessageSet &&
+         wire_type == kUpb_WireType_Delimited)) {
+      const upb_MiniTableExtension* ext =
+          upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
+      if (ext) return &ext->UPB_PRIVATE(field);
+    } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
+      if (field_number == kUpb_MsgSet_Item) {
+        static upb_MiniTableField item = {
+            0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
+        return &item;
       }
-      case kUpb_ExtMode_IsMessageSet:
-        if (field_number == kUpb_MsgSet_Item) {
-          static upb_MiniTableField item = {
-              0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
-          return &item;
-        }
-        break;
     }
   }
 
@@ -1073,7 +1076,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kUpb_FieldType_SFixed64] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_SInt32] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_SInt64] = kUpb_DecodeOp_UnknownField,
-      [kUpb_FakeFieldType_MessageSetItem] = kUpb_DecodeOp_UnknownField,
+      [kUpb_FakeFieldType_MessageSetItem] = kUpb_DecodeOp_SubMessage,
       // For repeated field type.
       [kRepeatedBase + kUpb_FieldType_Double] = OP_FIXPCK_LG2(3),
       [kRepeatedBase + kUpb_FieldType_Float] = OP_FIXPCK_LG2(2),
@@ -1320,7 +1323,8 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
       return ptr;
     }
 
-    field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index);
+    field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index,
+                                   wire_type);
     ptr = _upb_Decoder_DecodeWireValue(d, ptr, layout, field, wire_type, &val,
                                        &op);
 

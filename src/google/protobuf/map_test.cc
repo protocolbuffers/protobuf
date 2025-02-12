@@ -309,16 +309,6 @@ TEST(MapTest, SizeTypeIsSizeT) {
   (void)x;
 }
 
-template <typename F, typename... Key, typename... Value>
-void TestAllKeyValueTypes(void (*)(Key...), void (*)(Value...), F f) {
-  (
-      [f]() {
-        using K = Key;
-        (f(K{}, Value{}), ...);
-      }(),
-      ...);
-}
-
 using KeyTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t,
                           std::string);
 // Some arbitrary proto enum.
@@ -327,24 +317,6 @@ using ValueTypes = void (*)(bool, int32_t, uint32_t, int64_t, uint64_t, float,
                             double, std::string, SomeEnum,
                             proto2_unittest::TestEmptyMessage,
                             proto2_unittest::TestAllTypes);
-
-TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
-  TestAllKeyValueTypes(KeyTypes(), ValueTypes(), [](auto key, auto value) {
-    using Key = decltype(key);
-    using Value = decltype(value);
-    const MessageLite* value_prototype = nullptr;
-    if constexpr (std::is_base_of_v<MessageLite, Value>) {
-      value_prototype = &Value::default_instance();
-    }
-    const auto type_info = MapTestPeer::GetTypeInfo<Map<Key, Value>>();
-    const auto dyn_type_info = internal::UntypedMapBase::GetTypeInfoDynamic(
-        type_info.key_type, type_info.value_type, value_prototype);
-    EXPECT_EQ(dyn_type_info.node_size, type_info.node_size);
-    EXPECT_EQ(dyn_type_info.value_offset, type_info.value_offset);
-    EXPECT_EQ(dyn_type_info.key_type, type_info.key_type);
-    EXPECT_EQ(dyn_type_info.value_type, type_info.value_type);
-  });
-}
 
 TEST(MapTest, StaticTypeKindWorks) {
   using UMB = UntypedMapBase;
@@ -357,6 +329,39 @@ TEST(MapTest, StaticTypeKindWorks) {
   EXPECT_EQ(UMB::TypeKind::kString, UMB::StaticTypeKind<std::string>());
   EXPECT_EQ(UMB::TypeKind::kMessage,
             UMB::StaticTypeKind<proto2_unittest::TestAllTypes>());
+}
+
+#if !defined(__GNUC__) || defined(__clang__) || PROTOBUF_GNUC_MIN(9, 4)
+// Parameter pack expansion bug before GCC 8.2:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85305
+
+template <typename F, typename... Key, typename... Value>
+void TestAllKeyValueTypes(void (*)(Key...), void (*)(Value...), F f) {
+  (
+      [f]() {
+        using K = Key;
+        (f(K{}, Value{}), ...);
+      }(),
+      ...);
+}
+
+TEST(MapTest, StaticTypeInfoMatchesDynamicOne) {
+  TestAllKeyValueTypes(KeyTypes(), ValueTypes(), [](auto key, auto value) {
+    using Key = decltype(key);
+    using Value = decltype(value);
+    const MessageLite* value_prototype = nullptr;
+    if constexpr (std::is_base_of_v<MessageLite, Value>) {
+      value_prototype = &Value::default_instance();
+    }
+    const auto type_info = MapTestPeer::GetTypeInfo<Map<Key, Value>>();
+    const auto dyn_type_info = internal::UntypedMapBase::GetTypeInfoDynamic(
+        type_info.key_type_kind(), type_info.value_type_kind(),
+        value_prototype);
+    EXPECT_EQ(dyn_type_info.node_size, type_info.node_size);
+    EXPECT_EQ(dyn_type_info.value_offset, type_info.value_offset);
+    EXPECT_EQ(dyn_type_info.key_type, type_info.key_type);
+    EXPECT_EQ(dyn_type_info.value_type, type_info.value_type);
+  });
 }
 
 template <typename LHS, typename RHS>
@@ -427,6 +432,8 @@ TEST(MapTest, VisitAllNodesUsesTheRightTypesOnAllNodes) {
     EXPECT_TRUE(it == map.end());
   });
 }
+
+#endif
 
 TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
   Map<int, int> map;

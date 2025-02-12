@@ -48,7 +48,7 @@ cc_binary(
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

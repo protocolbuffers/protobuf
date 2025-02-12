@@ -95,8 +95,8 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -120,10 +120,10 @@ cc_test(
         ":mini_table",
         "//upb:mini_table_compat",
         "//upb:port",
+        "@abseil-cpp//absl/random",
         "@com_github_google_benchmark//:benchmark_main",
-        "@com_google_absl//absl/random",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

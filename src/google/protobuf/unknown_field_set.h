@@ -53,11 +53,6 @@ class MessageSetFieldSkipperUsingCord;
 class UnknownFieldParserHelper;
 struct UnknownFieldSetTestPeer;
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-using UFSStringView = absl::string_view;
-#else
-using UFSStringView = const std::string&;
-#endif
 }  // namespace internal
 
 class Message;       // message.h
@@ -85,7 +80,7 @@ class PROTOBUF_EXPORT UnknownField {
   inline uint64_t varint() const;
   inline uint32_t fixed32() const;
   inline uint64_t fixed64() const;
-  inline internal::UFSStringView length_delimited() const;
+  inline absl::string_view length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64_t value);
@@ -96,9 +91,6 @@ class PROTOBUF_EXPORT UnknownField {
   template <int&...>
   inline void set_length_delimited(std::string&& value);
   inline void set_length_delimited(const absl::Cord& value);
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-  inline std::string* mutable_length_delimited();
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   inline UnknownFieldSet* mutable_group();
 
   inline size_t GetLengthDelimitedSize() const;
@@ -207,9 +199,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void AddLengthDelimited(int number, std::string&& value);
   void AddLengthDelimited(int number, const absl::Cord& value);
 
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-  std::string* AddLengthDelimited(int number);
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   UnknownFieldSet* AddGroup(int number);
 
   // Adds an unknown field from another set.
@@ -255,9 +244,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
   std::string* AddLengthDelimited(int number);
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -377,7 +364,7 @@ inline uint64_t UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
   return data_.fixed64;
 }
-inline internal::UFSStringView UnknownField::length_delimited() const {
+inline absl::string_view UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return *data_.string_value;
 }
@@ -411,12 +398,6 @@ inline void UnknownField::set_length_delimited(const absl::Cord& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
   absl::CopyCordToString(value, data_.string_value);
 }
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-inline std::string* UnknownField::mutable_length_delimited() {
-  assert(type() == TYPE_LENGTH_DELIMITED);
-  return data_.string_value;
-}
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
   return data_.group;

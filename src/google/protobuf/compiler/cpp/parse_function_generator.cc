@@ -437,19 +437,18 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
               !internal::cpp::HasPreservingUnknownEnumSemantics(map_value);
           p->Emit(
               {
-                  {"field",
-                   FieldMemberName(aux_entry.field,
-                                   ShouldSplit(aux_entry.field, options_))},
                   {"strict", utf8_check == Utf8CheckMode::kStrict},
                   {"verify", utf8_check == Utf8CheckMode::kVerify},
                   {"validate", validated_enum},
                   {"key_wire", map_key->type()},
                   {"value_wire", map_value->type()},
+                  {"is_lite",
+                   !HasDescriptorMethods(aux_entry.field->file(), options_)},
               },
               R"cc(
-                {::_pbi::TcParser::GetMapAuxInfo<
-                    decltype($classname$().$field$)>(
-                    $strict$, $verify$, $validate$, $key_wire$, $value_wire$)},
+                {::_pbi::TcParser::GetMapAuxInfo($strict$, $verify$, $validate$,
+                                                 $key_wire$, $value_wire$,
+                                                 $is_lite$)},
               )cc");
           break;
         }

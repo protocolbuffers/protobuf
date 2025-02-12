@@ -39,6 +39,11 @@ LINK_OPTS = select({
         "-lm",
         "-framework CoreFoundation",
     ],
+    "@platforms//os:windows": [
+        "-ldbghelp",
+        "-lpthread",
+        "-lm",
+    ],
     "//conditions:default": [
         "-lpthread",
         "-lm",

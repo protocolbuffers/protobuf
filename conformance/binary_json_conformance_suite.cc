@@ -363,6 +363,9 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       this, /*run_proto3_tests=*/true);
   BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2>(
       this, /*run_proto3_tests=*/false);
+  if (!this->performance_) {
+    RunMessageSetTests();
+  }
   if (maximum_edition_ >= Edition::EDITION_2023) {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3Editions>(
         this, /*run_proto3_tests=*/true);
@@ -424,6 +427,92 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding"), REQUIRED,
+      len(500,
+          group(1, absl::StrCat(field(2, WireFormatLite::WIRETYPE_VARINT,
+                                      varint(4135312)),
+                                len(3, field(9, WireFormatLite::WIRETYPE_VARINT,
+                                             varint(99)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+           })pb"
+      // clang-format on
+  );
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.OutOfOrderGroupsEntries"), REQUIRED,
+      len(500,
+          group(1, absl::StrCat(len(3, field(9, WireFormatLite::WIRETYPE_VARINT,
+                                             varint(99))),
+                                field(2, WireFormatLite::WIRETYPE_VARINT,
+                                      varint(4135312))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+           })pb"
+      // clang-format on
+  );
+
+  // Test that an unknown message set extension always goes to unknown fields.
+  // This is done by poisoning the extension payload with an entry for field 0.
+  RunValidRoundtripProtobufTest<TestAllTypesProto2>(
+      "MessageSetEncoding.UnknownExtension", REQUIRED,
+      len(500,
+          group(1, absl::StrCat(field(2, WireFormatLite::WIRETYPE_VARINT,
+                                      varint(4135300)),
+                                len(3, field(0, WireFormatLite::WIRETYPE_VARINT,
+                                             varint(99)))))));
+
+  // If an encoder is unaware of the message_set_wire_format option it will be
+  // encoded like any other extension submessage. Decoders should be able to
+  // tolerate this format as well.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.SubmessageEncoding"), RECOMMENDED,
+      len(500,
+          len(4135312, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99)))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+           })pb"
+      // clang-format on
+  );
+
+  // Test again, but this time we'll try to detect if the implementation put the
+  // submessage encoded entry into the unknown field set. We'll do this by using
+  // conflicting oneof entries where order matters when the messages are merged.
+  //
+  // In a non-compliant implementation submessage encoded messageset entry will
+  // be moved to unknown fields and then tacked onto the end of the payload.
+  // Thus we'll see field b set first, and then field a.
+  //
+  // In a compliant implementation we expect the submessage encoded messageset
+  // to be read first with field a set, and then the normal message set entry
+  // will be read with field b will be set -- thus field b will win.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.SubmessageEncoding.NotUnknown"),
+      RECOMMENDED,
+      len(500, absl::StrCat(
+                   len(123456789,
+                       field(1, WireFormatLite::WIRETYPE_VARINT, varint(42))),
+                   group(1, absl::StrCat(
+                                field(2, WireFormatLite::WIRETYPE_VARINT,
+                                      varint(123456789)),
+                                len(3, field(2, WireFormatLite::WIRETYPE_VARINT,
+                                             varint(99))))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.ExtensionWithOneof]: { b: 99 }
+           })pb"
+      // clang-format on
+  );
 }
 
 template <typename MessageType>
@@ -543,6 +632,18 @@ void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST, prototype, test_name, input_protobuf);
   RunValidInputTest(binary_to_binary, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidRoundtripProtobufTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf) {
+  MessageType prototype;
+
+  ConformanceRequestSetting binary_to_binary(
+      level, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST, prototype, test_name, input_protobuf);
+  RunValidBinaryInputTest(binary_to_binary, input_protobuf);
 }
 
 template <typename MessageType>

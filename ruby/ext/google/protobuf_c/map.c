@@ -650,8 +650,8 @@ VALUE Map_hash(VALUE _self) {
   TypeInfo key_info = {self->key_type};
   upb_MessageValue key, val;
   while (upb_Map_Next(self->map, &key, &val, &iter)) {
-    hash = Msgval_GetHash(key, key_info, hash);
-    hash = Msgval_GetHash(val, self->value_type_info, hash);
+    hash += Msgval_GetHash(key, key_info, 0);
+    hash += Msgval_GetHash(val, self->value_type_info, 0);
   }
 
   return LL2NUM(hash);

@@ -44,8 +44,8 @@ cc_test(
     srcs = ["string_view_test.cc"],
     deps = [
         ":base",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

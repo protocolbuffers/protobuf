@@ -64,7 +64,6 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
