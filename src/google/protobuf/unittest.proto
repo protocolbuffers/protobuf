@@ -507,6 +507,9 @@ extend TestAllExtensions {
   repeated string repeated_utf8_string_extension = 116 [
     features.utf8_validation = VERIFY
   ];
+
+  // Singular message containing required fields; used to test initialization.
+  TestRequired required_message_extension = 117;
 }
 
 message OptionalGroup_extension {
