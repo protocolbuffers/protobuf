@@ -47,11 +47,12 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/MessageBuilderContext.php",
     "src/Google/Protobuf/Internal/OneofDescriptor.php",
     "src/Google/Protobuf/Internal/OneofField.php",
-    "src/Google/Protobuf/PrintOptions.php",
     "src/Google/Protobuf/Internal/RawInputStream.php",
+    "src/Google/Protobuf/Internal/RepeatedField.php",
     "src/Google/Protobuf/Internal/RepeatedFieldIter.php",
     "src/Google/Protobuf/Internal/TimestampBase.php",
     "src/Google/Protobuf/OneofDescriptor.php",
+    "src/Google/Protobuf/PrintOptions.php",
     "src/Google/Protobuf/RepeatedField.php",
 ]
 
