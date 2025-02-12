@@ -3,6 +3,8 @@
 require_once('test_base.php');
 require_once('test_util.php');
 
+use Google\Protobuf\Internal\CodedOutputStream;
+use Google\Protobuf\PrintOptions;
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\EmptyAnySerialization;
@@ -1618,5 +1620,91 @@ class EncodeDecodeTest extends TestBase
         $m = $any->unpack();
         $this->assertInstanceOf(EmptyAnySerialization::class, $m);
         $this->assertEquals('', $m->getA());
+    }
+
+    public function testSerializeToJsonStringNoOption()
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString();
+        $this->assertSame('{"oneofEnum":"ONE"}', $data);
+
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+    }
+
+    /**
+     * @dataProvider serializeToJsonStringOptionsProvider
+     */
+    public function testSerializeToJsonStringWithOptions(int|bool|null $flags, string $expected)
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString($flags);
+        $this->assertSame($expected, $data);
+
+        $n = new TestMessage();
+        $n->mergeFromJsonString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ONE, $n->getOneofEnum());
+    }
+
+    public static function serializeToJsonStringOptionsProvider(): array
+    {
+        return [
+            'null' => [
+                null,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'boolean false (BC)' => [
+                false,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'boolean true (BC)' => [
+                true,
+                '{"oneof_enum":"ONE"}',
+            ],
+            'default int' => [
+                0,
+                '{"oneofEnum":"ONE"}',
+            ],
+            'as int' => [
+                PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS,
+                '{"oneofEnum":1}',
+            ],
+            'preserve' => [
+                PrintOptions::PRESERVE_PROTO_FIELD_NAMES,
+                '{"oneof_enum":"ONE"}',
+            ],
+            'as int + preserve' => [
+                PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS | PrintOptions::PRESERVE_PROTO_FIELD_NAMES,
+                '{"oneof_enum":1}',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider preserveProtoFieldNamesProvider
+     * Backwards Compatibility test for boolean parameter to serializeToJsonString
+     */
+    public function testJsonStringBCPreserveProtoFieldNames(bool $value, $expected)
+    {
+        $m = new TestMessage();
+
+        $m->setOneofEnum(TestEnum::ONE);
+        $data = $m->serializeToJsonString($value);
+        $this->assertSame($expected, $data);
+    }
+
+    public static function preserveProtoFieldNamesProvider(): array
+    {
+        return [
+            [true, '{"oneof_enum":"ONE"}'],
+            [false, '{"oneofEnum":"ONE"}'],
+        ];
     }
 }

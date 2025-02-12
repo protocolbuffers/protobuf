@@ -21,6 +21,7 @@
 #include "def.h"
 #include "map.h"
 #include "php-upb.h"
+#include "print_options.h"
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
@@ -754,16 +755,24 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool preserve_proto_fieldnames = false;
+  zval* flags = NULL;
   upb_Status status;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
-                            &preserve_proto_fieldnames) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z", &flags) == FAILURE) {
     return;
   }
 
-  if (preserve_proto_fieldnames) {
+  if (flags == NULL || Z_TYPE_P(flags) == IS_FALSE) {
+    // do nothing
+  } else if (Z_TYPE_P(flags) == IS_TRUE) {
     options |= upb_JsonEncode_UseProtoNames;
+  } else if (Z_TYPE_P(flags) == IS_LONG) {
+    if (Z_LVAL_P(flags) & ALWAYS_PRINT_ENUMS_AS_INTS) {
+      options |= upb_JsonEncode_FormatEnumsAsIntegers;
+    }
+    if (Z_LVAL_P(flags) & PRESERVE_PROTO_FIELD_NAMES) {
+      options |= upb_JsonEncode_UseProtoNames;
+    }
   }
 
   upb_Status_Clear(&status);
