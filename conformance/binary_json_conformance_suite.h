@@ -158,6 +158,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
+  void TestValidEncodedEmptyString();
   void TestValidDataForRepeatedScalarMessage();
   void TestValidDataForMapType(google::protobuf::FieldDescriptor::Type,
                                google::protobuf::FieldDescriptor::Type);
