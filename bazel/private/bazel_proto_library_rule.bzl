@@ -62,7 +62,7 @@ def _proto_library_impl(ctx):
     # Verifies attributes.
     _check_srcs_package(ctx.label.package, ctx.attr.srcs)
     srcs = ctx.files.srcs
-    deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
+    deps = [dep[ProtoInfo] for dep in ctx.attr.deps + ctx.attr.option_deps]
     exports = [dep[ProtoInfo] for dep in ctx.attr.exports]
     import_prefix = _get_import_prefix(ctx)
     strip_import_prefix = _get_strip_import_prefix(ctx)
@@ -282,6 +282,13 @@ This pattern can be used to e.g. export a public api under a persistent name."""
             providers = [ProtoInfo],
             doc = """
 The list of other <code>proto_library</code> rules that the target depends upon.
+A <code>proto_library</code> may only depend on other <code>proto_library</code>
+targets. It may not depend on language-specific libraries.""",
+        ),
+        "option_deps": attr.label_list(
+            providers = [ProtoInfo],
+            doc = """
+The list of other <code>proto_library</code> rules that the target depends upon for options only.
 A <code>proto_library</code> may only depend on other <code>proto_library</code>
 targets. It may not depend on language-specific libraries.""",
         ),

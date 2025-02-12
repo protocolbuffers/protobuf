@@ -1434,6 +1434,34 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, ImportOptions) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("options.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional TestOptions opt = 99990;
+    }
+    message TestOptions {
+      repeated int32 a = 1;
+    })schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    import option "options.proto";
+    
+    option (test.opt).a = 1;
+    option (.test.opt).a = 2;
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
+      "--experimental_editions");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(

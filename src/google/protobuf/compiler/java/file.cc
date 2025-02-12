@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -70,7 +71,9 @@ using FieldDescriptorSet =
 // appended in to the extensions parameter.
 // Returns false when there are unknown fields, in which case the data in the
 // extensions output parameter is not reliable and should be discarded.
-bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
+bool CollectExtensions(
+    const Message& message, FieldDescriptorSet* extensions,
+    const absl::flat_hash_set<absl::string_view>& dependencies) {
   const Reflection* reflection = message.GetReflection();
 
   // There are unknown fields that could be extensions, thus this call fails.
@@ -80,7 +83,8 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
-    if (fields[i]->is_extension()) {
+    if (fields[i]->is_extension() &&
+        dependencies.contains(fields[i]->file()->name())) {
       extensions->insert(fields[i]);
     }
 
@@ -90,11 +94,13 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
         for (int j = 0; j < size; j++) {
           const Message& sub_message =
               reflection->GetRepeatedMessage(message, fields[i], j);
-          if (!CollectExtensions(sub_message, extensions)) return false;
+          if (!CollectExtensions(sub_message, extensions, dependencies))
+            return false;
         }
       } else {
         const Message& sub_message = reflection->GetMessage(message, fields[i]);
-        if (!CollectExtensions(sub_message, extensions)) return false;
+        if (!CollectExtensions(sub_message, extensions, dependencies))
+          return false;
       }
     }
   }
@@ -469,6 +475,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   if (options_.strip_nonfunctional_codegen) {
     // Skip feature extensions, which are a visible (but non-functional)
     // deviation between editions and legacy syntax.
+    // Note: we can delete this after import option has rolled out.
     absl::erase_if(extensions, [](const FieldDescriptor* field) {
       return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
     });

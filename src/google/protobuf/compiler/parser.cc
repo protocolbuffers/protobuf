@@ -724,6 +724,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
         FileDescriptorProto::kMessageTypeFieldNumber, location, file);
   } else if (LookingAt("import")) {
     return ParseImport(file->mutable_dependency(),
+                       file->mutable_option_dependency(),
                        file->mutable_public_dependency(),
                        file->mutable_weak_dependency(), root_location, file);
   } else if (LookingAt("package")) {
@@ -2474,6 +2475,7 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
 }
 
 bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
+                         RepeatedPtrField<std::string>* option_dependency,
                          RepeatedField<int32_t>* public_dependency,
                          RepeatedField<int32_t>* weak_dependency,
                          const LocationRecorder& root_location,
@@ -2483,6 +2485,8 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
                             dependency->size());
 
   DO(Consume("import"));
+
+  RepeatedPtrField<std::string>* dependency_list = dependency;
 
   if (LookingAt("public")) {
     LocationRecorder public_location(
@@ -2497,12 +2501,15 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     weak_location.RecordLegacyImportLocation(containing_file, "weak");
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
+  } else if (LookingAt("option") && edition_ >= Edition::EDITION_2024) {
+    DO(Consume("option"));
+    dependency_list = option_dependency;
   }
 
   std::string import_file;
   DO(ConsumeString(&import_file,
                    "Expected a string naming the file to import."));
-  *dependency->Add() = import_file;
+  *dependency_list->Add() = import_file;
   location.RecordLegacyImportLocation(containing_file, import_file);
 
   DO(ConsumeEndOfDeclaration(";", &location));

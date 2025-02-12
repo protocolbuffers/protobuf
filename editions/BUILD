@@ -296,6 +296,22 @@ proto_library(
     srcs = ["proto/test_editions_default_features.proto"],
 )
 
+proto_library(
+    name = "import_option_proto",
+    srcs = ["import_option.proto"],
+    option_deps = ["//src/google/protobuf:cpp_features_proto"],
+)
+
+java_proto_library(
+    name = "import_option_java_proto",
+    deps = [":import_option_proto"],
+)
+
+cc_proto_library(
+    name = "import_option_cc_proto",
+    deps = [":import_option_proto"],
+)
+
 cc_proto_library(
     name = "test_editions_default_features_cc_proto",
     testonly = True,
