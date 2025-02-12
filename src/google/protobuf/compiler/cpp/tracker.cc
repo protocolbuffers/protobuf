@@ -219,13 +219,16 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
   return getters;
 }
 
+bool IsArenaStringPtr(const FieldDescriptor* field) {
+  return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
+         field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
+}
+
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string =
-      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   Getters getters;
-  if (is_std_string && !field->default_value_string().empty()) {
+  if (IsArenaStringPtr(field) && !field->default_value_string().empty()) {
     getters.base =
         absl::Substitute("$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()",
                          member, MakeDefaultFieldName(field));
@@ -242,11 +245,9 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   ABSL_CHECK(oneof != nullptr);
 
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string =
-      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   std::string field_ptr = member;
-  if (is_std_string) {
+  if (IsArenaStringPtr(field)) {
     field_ptr = absl::Substitute("$0.UnsafeGetPointer()", member);
   }
 
@@ -255,7 +256,7 @@ Getters StringOneofGetters(const FieldDescriptor* field,
                        UnderscoresToCamelCase(field->name(), true));
 
   std::string default_field = MakeDefaultFieldName(field);
-  if (is_std_string) {
+  if (IsArenaStringPtr(field)) {
     absl::StrAppend(&default_field, ".get()");
   }
 
