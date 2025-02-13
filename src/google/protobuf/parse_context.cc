@@ -419,6 +419,7 @@ bool VerifyUTF8(absl::string_view str, const char* field_name) {
 const char* InlineGreedyStringParser(std::string* s, const char* ptr,
                                      ParseContext* ctx) {
   int size = ReadSize(&ptr);
+  if (size == 0) return nullptr;
   if (!ptr) return nullptr;
   return ctx->ReadString(ptr, size, s);
 }
