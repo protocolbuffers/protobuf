@@ -95,6 +95,14 @@ struct ArenaOffsetHelper {
 PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
 PROTOBUF_EXPORT std::string* CloneSlow(Arena* arena, const std::string& value);
 
+// A utility function for logging that doesn't need any template types.
+PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
+
+// A utility function for logging that doesn't need any template types. Same as
+// LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
+// instead of DFATAL.
+[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
+                                                              int size);
 // Defined further below.
 template <typename Type>
 class GenericTypeHandler;
@@ -184,8 +192,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
+#ifdef ABORT_ON_BOUNDS_CHECK_FAIL
+    if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
+      LogIndexOutOfBoundsAndAbort(index, current_size_);
+    }
+#else
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
+#endif
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -251,8 +265,27 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   const Value<TypeHandler>& Get(int index) const {
+#if defined(RETURN_DEFAULT_VALUE) || defined(ABORT_ON_BOUNDS_CHECK_FAIL)
+    if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
+#ifdef RETURN_DEFAULT_VALUE
+      // `default_instance()` is not supported for MessageLite and Message.
+      if constexpr (std::is_same_v<TypeHandler,
+                                   GenericTypeHandler<google::protobuf::MessageLite>> ||
+                    std::is_same_v<TypeHandler,
+                                   GenericTypeHandler<google::protobuf::Message>>) {
+        return *cast<TypeHandler>(element_at(index));
+      } else {
+        LogIndexOutOfBounds(index, current_size_);
+        return TypeHandler::default_instance();
+      }
+#elif defined(ABORT_ON_BOUNDS_CHECK_FAIL)
+      LogIndexOutOfBoundsAndAbort(index, current_size_);
+#endif
+    }
+#else
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
+#endif
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -1981,14 +2014,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
   RepeatedPtrField<T>* field_;
 };
 
-// A utility function for logging that doesn't need any template types.
-PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
-
-// A utility function for logging that doesn't need any template types. Same as
-// LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
-// instead of DFATAL.
-[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
-                                                              int size);
 
 template <typename T>
 const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
