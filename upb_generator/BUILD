@@ -19,22 +19,13 @@ licenses(["notice"])
 bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
     bootstrap_hdr = "plugin_bootstrap.h",
-    google3_src_files = [
-        "net/proto2/compiler/proto/profile.proto",
-        "third_party/protobuf/compiler/plugin.proto",
-    ],
-    google3_src_rules = [
-        "//net/proto2/proto:descriptor_proto_source",
-        "//net/proto2/compiler/proto:profile.proto",
-        "//src/google/protobuf/compiler:plugin_proto_source",
-    ],
-    oss_src_files = ["google/protobuf/compiler/plugin.proto"],
-    oss_src_rules = [
+    proto_lib_deps = ["//:compiler_plugin_proto"],
+    src_files = ["google/protobuf/compiler/plugin.proto"],
+    src_rules = [
         "//:descriptor_proto_srcs",
         "//src/google/protobuf/compiler:plugin_proto_src",
     ],
-    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["//:compiler_plugin_proto"],
+    strip_prefix = "third_party/protobuf/github/bootstrap/src",
     deps = ["//upb/reflection:descriptor_upb_proto"],
 )
 

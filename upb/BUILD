@@ -23,7 +23,6 @@ exports_files(["LICENSE"])
 exports_files(
     [
         "BUILD",
-        "WORKSPACE",
     ],
     visibility = ["//upb/cmake:__pkg__"],
 )
