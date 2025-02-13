@@ -37,6 +37,7 @@ using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
+// Function comment DO NOT SUBMIT
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   auto trivial_default =
       absl::StrCat("::", ProtobufNamespace(opts),
