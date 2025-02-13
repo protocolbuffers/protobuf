@@ -37,7 +37,6 @@ jobs:
             version: 8.1.14-dbg
             version-short: "8.1"
             command: composer test && composer test_c
-            continuous-only: true
           - name: 8.1 Memory Leak
             version: 8.1.14-dbg
             version-short: "8.1"
