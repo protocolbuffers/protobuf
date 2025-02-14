@@ -44,6 +44,8 @@ class MessageLite;
 
 namespace internal {
 
+PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
+
 struct MessageTraitsImpl;
 
 template <typename T>

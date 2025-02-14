@@ -2067,6 +2067,7 @@ cc_test(
     deps = [
         ":cc_lite_test_protos",
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/io",
