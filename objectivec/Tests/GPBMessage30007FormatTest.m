@@ -14,7 +14,11 @@
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBTestUtilities.h"
 
-@interface MessageClassNameTests : GPBTestCase
+#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
+#error "Time to remove this test."
+#else
+
+@interface Message30007FormatTest : GPBTestCase
 @end
 
 // clang-format off
@@ -432,7 +436,7 @@ typedef struct Message30007_SubMessage__storage_ {
 
 // -------------------------------------------------------------------------------------------------
 
-@implementation MessageClassNameTests
+@implementation Message30007FormatTest
 
 - (void)test30007MessageFormat {
   // This doesn't test everything, just exists to ensure the code compiles/links and seems
@@ -443,3 +447,5 @@ typedef struct Message30007_SubMessage__storage_ {
 }
 
 @end
+
+#endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
