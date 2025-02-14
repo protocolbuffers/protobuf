@@ -2,7 +2,7 @@ bcr_test_module:
   module_path: examples
   matrix:
     platform: ["debian10", "macos", "ubuntu2004", "windows"]
-    bazel: [7.x]
+    bazel: [7.x, 8.x]
 
   tasks:
     verify_targets:
