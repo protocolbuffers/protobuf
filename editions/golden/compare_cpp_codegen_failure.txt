@@ -33,15 +33,6 @@
      cached_has_bits = this_._impl_._has_bits_[0];
      if ((cached_has_bits & 0x00000001u) != 0) {
        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-@@ @@
-   (void)cached_has_bits;
- 
-    {
--    // optional int32 int32_field = 1;
-+    // int32 int32_field = 1;
-     cached_has_bits = this_._impl_._has_bits_[0];
-     if ((cached_has_bits & 0x00000001u) != 0) {
-       total_size += 9;
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@
