@@ -1432,7 +1432,6 @@ set(common_test_hdrs
 
 # @//pkg:lite_test_util
 set(lite_test_util_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.cc
 )
