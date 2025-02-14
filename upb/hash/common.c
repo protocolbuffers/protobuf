@@ -533,6 +533,50 @@ bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
   return i1->t == i2->t && i1->index == i2->index;
 }
 
+bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
+                        upb_value* val, intptr_t* iter) {
+  size_t tab_idx = next(&t->t, *iter);
+  if (tab_idx < upb_table_size(&t->t)) {
+    upb_tabent* ent = &t->t.entries[tab_idx];
+    uint32_t len;
+    key->data = upb_tabstr(ent->key, &len);
+    key->size = len;
+    *val = _upb_value_val(ent->val.val);
+    *iter = tab_idx;
+    return true;
+  }
+
+  return false;
+}
+
+void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
+  intptr_t i = *iter;
+  upb_tabent* ent = &t->t.entries[i];
+  upb_tabent* prev = NULL;
+
+  // Linear search, not great.
+  upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
+  for (upb_tabent* e = t->t.entries; e != end; e++) {
+    if (e->next == ent) {
+      prev = e;
+      break;
+    }
+  }
+
+  if (prev) {
+    prev->next = ent->next;
+  }
+
+  t->t.count--;
+  ent->key = 0;
+  ent->next = NULL;
+}
+
+void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
+  upb_tabent* ent = &t->t.entries[iter];
+  ent->val.val = v.val;
+}
+
 /* upb_inttable ***************************************************************/
 
 /* For inttables we use a hybrid structure where small keys are kept in an
@@ -742,6 +786,18 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
   *t = new_t;
 }
 
+void upb_inttable_clear(upb_inttable* t) {
+  // Clear the array part.
+  size_t array_bytes = t->array_size * sizeof(upb_tabval);
+  t->array_count = 0;
+  memset(mutable_array(t), 0, array_bytes);
+
+  // Clear the table part.
+  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  t->t.count = 0;
+  memset((char*)t->t.entries, 0, bytes);
+}
+
 // Iteration.
 
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
@@ -761,11 +817,13 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
   }
 
   size_t tab_idx = next(&t->t, i - t->array_size);
+  // We should set the iterator any way. When we are done, the iterator value is
+  // invalid.
+  *iter = tab_idx + t->array_size;
   if (tab_idx < upb_table_size(&t->t)) {
     upb_tabent* ent = &t->t.entries[tab_idx];
     *key = ent->key;
     *val = _upb_value_val(ent->val.val);
-    *iter = tab_idx + t->array_size;
     return true;
   }
 
@@ -800,46 +858,34 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
   }
 }
 
-bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
-                        upb_value* val, intptr_t* iter) {
-  size_t tab_idx = next(&t->t, *iter);
-  if (tab_idx < upb_table_size(&t->t)) {
-    upb_tabent* ent = &t->t.entries[tab_idx];
-    uint32_t len;
-    key->data = upb_tabstr(ent->key, &len);
-    key->size = len;
-    *val = _upb_value_val(ent->val.val);
-    *iter = tab_idx;
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v) {
+  if ((size_t)iter < t->array_size) {
+    mutable_array(t)[iter].val = v.val;
+  } else {
+    upb_tabent* ent = &t->t.entries[iter - t->array_size];
+    ent->val.val = v.val;
+  }
+}
+
+bool upb_inttable_done(const upb_inttable* t, intptr_t iter) {
+  if ((size_t)iter >= t->array_size + upb_table_size(&t->t)) {
     return true;
+  } else if ((size_t)iter < t->array_size) {
+    return !upb_arrhas(t->array[iter]);
+  } else {
+    return upb_tabent_isempty(&t->t.entries[iter - t->array_size]);
   }
-
-  return false;
 }
 
-void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
-  intptr_t i = *iter;
-  upb_tabent* ent = &t->t.entries[i];
-  upb_tabent* prev = NULL;
-
-  // Linear search, not great.
-  upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
-  for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (e->next == ent) {
-      prev = e;
-      break;
-    }
-  }
-
-  if (prev) {
-    prev->next = ent->next;
-  }
-
-  t->t.count--;
-  ent->key = 0;
-  ent->next = NULL;
+uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter) {
+  UPB_ASSERT(!upb_inttable_done(t, iter));
+  return (size_t)iter < t->array_size ? iter
+                                      : t->t.entries[iter - t->array_size].key;
 }
 
-void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
-  upb_tabent* ent = &t->t.entries[iter];
-  ent->val.val = v.val;
+upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter) {
+  UPB_ASSERT(!upb_inttable_done(t, iter));
+  return (size_t)iter < t->array_size
+             ? _upb_value_val(t->array[iter].val)
+             : _upb_value_val(t->t.entries[iter - t->array_size].val.val);
 }
