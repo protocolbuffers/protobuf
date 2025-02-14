@@ -163,3 +163,21 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}
+  # Only run on continuous runs as execution takes ~ 40 minutes.
+  full-mac-build:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: ${{ inputs.continuous-prefix }} Full Mac Build
+    runs-on: macos-13
+    steps:
+      - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run full mac build
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bash@v4
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: ./objectivec/DevTools/full_mac_build.sh
