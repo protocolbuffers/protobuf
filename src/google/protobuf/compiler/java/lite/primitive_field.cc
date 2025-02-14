@@ -244,7 +244,8 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void set$capitalized_name$($type$ value) {\n"
                  "$null_check$"
@@ -253,7 +254,8 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
                  "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $clear_has_field_bit_message$\n");
@@ -384,7 +386,8 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void set$capitalized_name$($type$ value) {\n"
                  "$null_check$"
@@ -393,7 +396,8 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
                  "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -549,7 +553,8 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
       "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
@@ -558,7 +563,8 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
                  "  $repeated_set$(index, value);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void add$capitalized_name$($type$ value) {\n"
                  "$null_check$"
@@ -566,7 +572,8 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
                  "  $repeated_add$(value);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
@@ -575,7 +582,8 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
                  "      values, $name$_);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $name$_ = $empty_list$;\n"
