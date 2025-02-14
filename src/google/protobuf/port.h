@@ -456,6 +456,8 @@ constexpr bool EnableCustomNewFor() {
 
 constexpr bool IsOss() { return true; }
 
+PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
+
 // Counter library for debugging internal protobuf logic.
 // It allows instrumenting code that has different options (eg fast vs slow
 // path) to get visibility into how much we are hitting each path.

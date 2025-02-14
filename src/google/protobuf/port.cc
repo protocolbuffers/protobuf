@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "absl/strings/numbers.h"
@@ -25,6 +26,18 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
+  const void* start = &str;
+  const void* end = &str + 1;
+  if (start <= str.data() && str.data() < end) {
+    // The string's data is stored inside the string object itself.
+    return 0;
+  } else {
+    // DO NOT SUBMIT: Add test for this
+    return str.capacity() + 1;
+  }
+}
 
 // protobuf_assumption_failed() is declared and used in port_def.inc to assert
 // PROTOBUF_ASSUME conditions in debug mode. This function avoids having

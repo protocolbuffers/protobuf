@@ -644,9 +644,8 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
     result += shadow_vector.SpaceUsedExcludingSelfLong();
     result += shadow_vector_group.SpaceUsedExcludingSelfLong();
     if (str != nullptr) {
-      result += sizeof(std::string);
-      static const size_t sso_capacity = std::string().capacity();
-      if (str->capacity() > sso_capacity) result += str->capacity();
+      result += sizeof(std::string) +
+                internal::StringSpaceUsedExcludingSelfLong(*str);
     }
     if (group != nullptr) {
       result += sizeof(UnknownFieldSet);
