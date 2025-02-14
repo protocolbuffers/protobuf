@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal\SourceCodeInfo;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Generated from protobuf message <code>google.protobuf.SourceCodeInfo.Location</code>
@@ -108,7 +108,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<int>|\Google\Protobuf\Internal\RepeatedField $path
+     *     @type int[] $path
      *           Identifies which part of the FileDescriptorProto was defined at this
      *           location.
      *           Each element is a field number or an index.  They form a path from
@@ -130,7 +130,7 @@ class Location extends \Google\Protobuf\Internal\Message
      *             [ 4, 3, 2, 7 ]
      *           this path refers to the whole field declaration (from the beginning
      *           of the label to the terminating semicolon).
-     *     @type array<int>|\Google\Protobuf\Internal\RepeatedField $span
+     *     @type int[] $span
      *           Always has exactly three or four elements: start line, start column,
      *           end line (optional, otherwise assumed same as start line), end column.
      *           These are packed into a single field for efficiency.  Note that line
@@ -174,7 +174,7 @@ class Location extends \Google\Protobuf\Internal\Message
      *             optional int32 grault = 6;
      *             // ignored detached comments.
      *     @type string $trailing_comments
-     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $leading_detached_comments
+     *     @type string[] $leading_detached_comments
      * }
      */
     public function __construct($data = NULL) {
@@ -206,7 +206,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * of the label to the terminating semicolon).
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<int>
      */
     public function getPath()
     {
@@ -237,7 +237,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * of the label to the terminating semicolon).
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
-     * @param array<int>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[] $var
      * @return $this
      */
     public function setPath($var)
@@ -256,7 +256,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * 1 to each before displaying to a user.
      *
      * Generated from protobuf field <code>repeated int32 span = 2 [packed = true];</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<int>
      */
     public function getSpan()
     {
@@ -271,7 +271,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * 1 to each before displaying to a user.
      *
      * Generated from protobuf field <code>repeated int32 span = 2 [packed = true];</code>
-     * @param array<int>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[] $var
      * @return $this
      */
     public function setSpan($var)
@@ -422,7 +422,7 @@ class Location extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated string leading_detached_comments = 6;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<string>
      */
     public function getLeadingDetachedComments()
     {
@@ -431,7 +431,7 @@ class Location extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated string leading_detached_comments = 6;</code>
-     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param string[] $var
      * @return $this
      */
     public function setLeadingDetachedComments($var)
