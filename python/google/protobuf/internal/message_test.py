@@ -30,10 +30,12 @@ import warnings
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import self_recursive_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
