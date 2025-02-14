@@ -56,22 +56,6 @@ CleanupGrowthInfo CleanupGrowth(Arena& arena, Func f) {
   return res;
 }
 
-class NoHeapChecker {
- public:
-  NoHeapChecker() { capture_alloc.Hook(); }
-  ~NoHeapChecker();
-
- private:
-  class NewDeleteCapture {
-   public:
-    // TODO: Implement this for opensource protobuf.
-    void Hook() {}
-    void Unhook() {}
-    int alloc_count() { return 0; }
-    int free_count() { return 0; }
-  } capture_alloc;
-};
-
 // Owns the internal T only if it's not owned by an arena.
 // T needs to be arena constructible and destructor skippable.
 template <typename T>
