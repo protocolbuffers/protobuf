@@ -97,9 +97,11 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
-load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
 
 rules_cc_dependencies()
+
+rules_cc_toolchains()
 
 # For `kt_jvm_library`
 load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
