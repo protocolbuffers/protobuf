@@ -12135,6 +12135,27 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
   }
 }
 
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionInsertionRace) {
+  auto name_lambda = [](const FieldDescriptor* field) {
+    return field->full_name();
+  };
+  proto2_unittest::TestAllTypes message;
+  const Descriptor* descriptor = message.GetDescriptor();
+  std::vector<std::thread> threads;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    for (int j = 0; j < 3; ++j) {
+      threads.emplace_back([this, name_lambda, descriptor, i]() {
+        auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+            descriptor->file()->pool(), descriptor->field(i), name_lambda);
+        ASSERT_THAT(name, HasSubstr("proto2_unittest.TestAllTypes"));
+      });
+    }
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
+}
+
 
 
 
