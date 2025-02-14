@@ -1184,7 +1184,8 @@ public abstract class CodedInputStream {
       }
       byteLimit += getTotalBytesRead();
       if (byteLimit < 0) {
-        throw InvalidProtocolBufferException.parseFailure();
+        // This is checking for integer overflow in byteLimit
+        throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
       final int oldLimit = currentLimit;
       if (byteLimit > oldLimit) {
@@ -2679,7 +2680,9 @@ public abstract class CodedInputStream {
       }
       byteLimit += totalBytesRetired + pos;
       if (byteLimit < 0) {
-        throw InvalidProtocolBufferException.parseFailure();
+        // Check for integer overflow in byteLimit if too many bytes have been read without
+        // resetting the counter.
+        throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
       final int oldLimit = currentLimit;
       if (byteLimit > oldLimit) {
