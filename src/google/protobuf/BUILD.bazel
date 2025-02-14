@@ -1247,7 +1247,6 @@ cc_library(
     name = "lite_test_util",
     testonly = 1,
     srcs = [
-        "arena_test_util.cc",
         "map_lite_test_util.cc",
         "test_util_lite.cc",
     ],
