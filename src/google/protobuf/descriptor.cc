@@ -784,8 +784,8 @@ class Symbol {
       case FULL_PACKAGE:
         return file_descriptor()->package();
       case SUB_PACKAGE:
-        return absl::string_view(sub_package_file_descriptor()->file->package())
-            .substr(0, sub_package_file_descriptor()->name_size);
+        return sub_package_file_descriptor()->file->package().substr(
+            0, sub_package_file_descriptor()->name_size);
       default:
         ABSL_CHECK(false);
     }
