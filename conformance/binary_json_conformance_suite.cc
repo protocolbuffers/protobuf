@@ -1154,6 +1154,44 @@ void BinaryAndJsonConformanceSuiteImpl<
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::TestValidEncodedEmptyString() {
+  std::vector<std::string> values = {
+      delim(absl::StrCat(
+          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(tag(14, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                             delim("hello"),
+                             tag(15, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                             delim("world"))))),
+      delim(absl::StrCat(
+          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(
+              tag(14, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), varint(0),
+              tag(15, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), varint(0))))),
+  };
+
+  const std::string expected =
+      R"({
+        corecursive: {
+          optional_string: "",
+          optional_bytes: "",
+        }
+      })";
+
+  std::string proto;
+  const FieldDescriptor* field =
+      GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false);
+  for (size_t i = 0; i < values.size(); i++) {
+    absl::StrAppend(
+        &proto, tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+        values[i]);
+  }
+
+  RunValidProtobufTest("EncodedEmptyStringOnWire", REQUIRED, proto,
+                       absl::StrCat(field->name(), ": ", expected));
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     FieldDescriptor::Type key_type, FieldDescriptor::Type value_type) {
   const std::string key_type_name =
@@ -1853,6 +1891,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
                              {varint(kInt64Min + 1), varint(1)},
                          });
     TestValidDataForRepeatedScalarMessage();
+    TestValidEncodedEmptyString();
     TestValidDataForType(
         FieldDescriptor::TYPE_MESSAGE,
         {
