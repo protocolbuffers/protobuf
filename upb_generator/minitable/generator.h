@@ -28,5 +28,30 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
                           const MiniTableOptions& options, Output& output);
 
+class MiniTableGenerator : public google::protobuf::compiler::CodeGenerator {
+  bool Generate(const google::protobuf::FileDescriptor* file,
+                const std::string& parameter,
+                google::protobuf::compiler::GeneratorContext* generator_context,
+                std::string* error) const override {
+    std::vector<const google::protobuf::FileDescriptor*> files{file};
+    return GenerateAll(files, parameter, generator_context, error);
+  }
+
+  bool GenerateAll(const std::vector<const google::protobuf::FileDescriptor*>& files,
+                   const std::string& parameter,
+                   google::protobuf::compiler::GeneratorContext* generator_context,
+                   std::string* error) const override;
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
+  }
+  google::protobuf::Edition GetMinimumEdition() const override {
+    return google::protobuf::Edition::EDITION_PROTO2;
+  }
+  google::protobuf::Edition GetMaximumEdition() const override {
+    return google::protobuf::Edition::EDITION_2023;
+  }
+};
+
 }  // namespace generator
 }  // namespace upb

@@ -17,6 +17,7 @@
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
+#include "upb_generator/minitable/generator.h"
 
 #ifdef DISABLE_PROTOC_CONFIG
 #include "google/protobuf/compiler/allowlists/allowlist.h"
@@ -106,6 +107,11 @@ int ProtobufMain(int argc, char* argv[]) {
   rust::RustGenerator rust_generator;
   cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
+
+  // upb minitables
+  upb::generator::MiniTableGenerator minitable_generator;
+  cli.RegisterGenerator("--upb_minitable_out", "--upb_minitable_opt",
+                        &minitable_generator, "Generate upb minitables");
 #ifdef DISABLE_PROTOC_CONFIG
   auto cleanup = internal::DisableAllowlistInternalOnly();
 #endif  // DISABLE_PROTOC_CONFIG
