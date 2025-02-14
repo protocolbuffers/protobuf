@@ -64,12 +64,16 @@ def _py_proto_aspect_impl(target, ctx):
     proto_root = proto_info.proto_source_root
     if proto_info.direct_sources:
         # Generate py files
-        generated_sources = proto_common.declare_generated_files(
-            actions = ctx.actions,
-            proto_info = proto_info,
-            extension = "_pb2.py",
-            name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
-        )
+        generated_sources = []
+        for extension in ["_pb2.py", "_pb2.pyi"]:
+            generated_sources.extend(
+                proto_common.declare_generated_files(
+                    actions = ctx.actions,
+                    proto_info = proto_info,
+                    extension = extension,
+                    name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+                ),
+            )
 
         # Handles multiple repository and virtual import cases
         if proto_root.startswith(ctx.bin_dir.path):
