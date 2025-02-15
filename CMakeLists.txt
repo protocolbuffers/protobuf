@@ -139,6 +139,15 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map
   local:
     *;
 };")
+
+# Create notices.h from notices.txt
+function(notices_as_header input_file output_header)
+  file(READ "${input_file}" notice_contents)
+  file(WRITE "${output_header}" "const char* notices_text = R\"(${notice_contents})\";\n")
+endfunction()
+
+notices_as_header("${CMAKE_SOURCE_DIR}/src/google/protobuf/compiler/notices.txt" "${CMAKE_SOURCE_DIR}/src/google/protobuf/compiler/notices.h")
+
 # CheckLinkerFlag module available in CMake >=3.18.
 if(${CMAKE_VERSION} VERSION_GREATER 3.18 OR ${CMAKE_VERSION} VERSION_EQUAL 3.18)
   include(CheckLinkerFlag)
