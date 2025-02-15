@@ -19,6 +19,7 @@
 #include "upb/base/internal/endian.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
+#include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
@@ -456,14 +457,25 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
-    intptr_t iter = UPB_STRTABLE_BEGIN;
-    upb_StringView key;
     upb_value val;
-    while (upb_strtable_next2(&map->t.strtable, &key, &val, &iter)) {
-      upb_MapEntry ent;
-      _upb_map_fromkey(key, &ent.k, map->key_size);
-      _upb_map_fromvalue(val, &ent.v, map->val_size);
-      encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+    if (map->UPB_PRIVATE(is_strtable)) {
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView strkey;
+      while (upb_strtable_next2(&map->t.strtable, &strkey, &val, &iter)) {
+        upb_MapEntry ent;
+        _upb_map_fromkey(strkey, &ent.k, map->key_size);
+        _upb_map_fromvalue(val, &ent.v, map->val_size);
+        encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+      }
+    } else {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t intkey;
+      while (upb_inttable_next(&map->t.inttable, &intkey, &val, &iter)) {
+        upb_MapEntry ent;
+        memcpy(&ent.k, &intkey, map->key_size);
+        _upb_map_fromvalue(val, &ent.v, map->val_size);
+        encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+      }
     }
   }
 }
