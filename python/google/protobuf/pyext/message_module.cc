@@ -275,9 +275,21 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
       PyObject* desc) const override {
     return google::protobuf::python::PyMessageDescriptor_AsDescriptor(desc);
   }
+  const google::protobuf::FieldDescriptor* FieldDescriptor_AsDescriptor(
+      PyObject* filed_desc) const override {
+    return google::protobuf::python::PyFieldDescriptor_AsDescriptor(filed_desc);
+  }
   const google::protobuf::EnumDescriptor* EnumDescriptor_AsDescriptor(
       PyObject* enum_desc) const override {
     return google::protobuf::python::PyEnumDescriptor_AsDescriptor(enum_desc);
+  }
+  const google::protobuf::FileDescriptor* FileDescriptor_AsDescriptor(
+      PyObject* file_desc) const override {
+    return google::protobuf::python::PyFileDescriptor_AsDescriptor(file_desc);
+  }
+  const google::protobuf::ServiceDescriptor* ServiceDescriptor_AsDescriptor(
+      PyObject* service_desc) const override {
+    return google::protobuf::python::PyServiceDescriptor_AsDescriptor(service_desc);
   }
 
   const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {

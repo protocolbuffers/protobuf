@@ -99,11 +99,29 @@ struct PyProto_API {
   virtual const Descriptor* MessageDescriptor_AsDescriptor(
       PyObject* desc) const = 0;
 
+  // If the passed object is a Python Field Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const FieldDescriptor* FieldDescriptor_AsDescriptor(
+      PyObject* desc) const = 0;
+
   // If the passed object is a Python Enum Descriptor, returns its internal
   // pointer.
   // Otherwise, returns NULL with an exception set.
   virtual const EnumDescriptor* EnumDescriptor_AsDescriptor(
       PyObject* enum_desc) const = 0;
+
+  // If the passed object is a Python File Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const FileDescriptor* FileDescriptor_AsDescriptor(
+      PyObject* file_desc) const = 0;
+
+  // If the passed object is a Python Service Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const ServiceDescriptor* ServiceDescriptor_AsDescriptor(
+      PyObject* service_desc) const = 0;
 
   // Expose the underlying DescriptorPool and MessageFactory to enable C++ code
   // to create Python-compatible message.
