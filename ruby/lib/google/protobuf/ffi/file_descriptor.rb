@@ -18,6 +18,32 @@ module Google
     class FileDescriptor
       attr :descriptor_pool, :file_def
 
+      # FFI Interface methods and setup
+      extend ::FFI::DataConverter
+      native_type ::FFI::Type::POINTER
+
+      class << self
+        prepend Google::Protobuf::Internal::TypeSafety
+        include Google::Protobuf::Internal::PointerHelper
+
+        # @param value [FileDescriptor] FileDescriptor to convert to an FFI native type
+        # @param _ [Object] Unused
+        def to_native(value, _)
+          file_def_ptr = value.nil? ? nil : value.instance_variable_get(:@file_def)
+          return ::FFI::Pointer::NULL if file_def_ptr.nil?
+          raise "Underlying file_def was null!" if file_def_ptr.null?
+          file_def_ptr
+        end
+
+        ##
+        # @param file_def [::FFI::Pointer] FileDef pointer to be wrapped
+        # @param _ [Object] Unused
+        def from_native(file_def, _ = nil)
+          return nil if file_def.nil? or file_def.null?
+          descriptor_from_file_def(file_def)
+        end
+      end
+
       def initialize(file_def, descriptor_pool)
         @descriptor_pool = descriptor_pool
         @file_def = file_def

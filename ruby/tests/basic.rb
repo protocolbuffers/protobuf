@@ -560,6 +560,13 @@ module BasicTest
       assert_equal "basic_test.proto", file_descriptor.name
     end
 
+    def test_lookup_filename
+      file_descriptor = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.proto'
+      refute_nil file_descriptor
+      assert_kind_of Google::Protobuf::FileDescriptor, file_descriptor
+      assert_equal "basic_test.proto", file_descriptor.name
+    end
+
     def test_map_freeze
       m = proto_module::MapMessage.new
       m.map_string_int32['a'] = 5
