@@ -27,6 +27,7 @@
 #ifndef UPB_HASH_COMMON_H_
 #define UPB_HASH_COMMON_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/base/string_view.h"
@@ -162,6 +163,14 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) {
 // Internal-only functions, in .h file only out of necessity.
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
+
+UPB_INLINE bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
+
+UPB_INLINE upb_value _upb_value_val(uint64_t val) {
+  upb_value ret;
+  _upb_value_setval(&ret, val);
+  return ret;
+}
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
