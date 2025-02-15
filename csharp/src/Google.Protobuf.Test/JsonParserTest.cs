@@ -979,6 +979,27 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void DuplicateField_IgnoreDuplicateFields([Values(false, true, null)] bool? ignoreDuplicateFields)
+        {
+            string json = "{ \"singleString\": \"x\", \"single_string\": \"y\" }";
+            var jsonParserSettings = JsonParser.Settings.Default;
+            if (ignoreDuplicateFields.HasValue)
+            {
+                jsonParserSettings = jsonParserSettings.WithIgnoreDuplicateFields(ignoreDuplicateFields.Value);
+            }
+            var jsonParser = new JsonParser(jsonParserSettings);
+            TestDelegate act = () => jsonParser.Parse<TestAllTypes>(json);
+            if (!ignoreDuplicateFields.HasValue || ignoreDuplicateFields.Value)
+            {
+                Assert.DoesNotThrow(act);
+            }
+            else
+            {
+                Assert.Throws<InvalidProtocolBufferException>(act);
+            }
+        }
+
+        [Test]
         public void UnknownField_NotIgnored()
         {
             string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
