@@ -571,15 +571,46 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
 #endif
 
+#ifdef PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY
+#error PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY was previously defined
+#endif
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#if defined(NDEBUG)
+#define PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(ptr, offset, locality) \
+  { \
+    const char* char_ptr = reinterpret_cast<const char*>(ptr); \
+    __builtin_prefetch(char_ptr + offset, 0, locality); \
+  }
+#else
+// NOTE: Using __builtin_trap() i/o CHECKs for lean implementation.
+#define PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(ptr, offset, locality) \
+  { \
+    const char* char_ptr = reinterpret_cast<const char*>(ptr); \
+    if (char_ptr > char_ptr + offset) __builtin_trap(); \
+    __builtin_prefetch(char_ptr + offset, 0, locality); \
+  }
+#endif
+#else
+#define PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(base, offset, locality)
+#endif
+
 #ifdef PROTOBUF_PREFETCH_WITH_OFFSET
 #error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
 #endif
-#if defined(__x86_64__) && defined(__GNUC__)
-#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset) \
-  asm("prefetcht0 " #offset "(%0)" : : "r"(base));
-#else
-#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset)
+#define PROTOBUF_PREFETCH_WITH_OFFSET(ptr, offset) \
+  PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(ptr, offset, 3);
+
+#ifdef PROTOBUF_PREFETCH_WITH_LOCALITY
+#error PROTOBUF_PREFETCH_WITH_LOCALITY was previously defined
 #endif
+#define PROTOBUF_PREFETCH_WITH_LOCALITY(ptr, locality) \
+  PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(ptr, 0, locality);
+
+#ifdef PROTOBUF_PREFETCH
+#error PROTOBUF_PREFETCH was previously defined
+#endif
+#define PROTOBUF_PREFETCH(ptr) \
+  PROTOBUF_PREFETCH_WITH_OFFSET_AND_LOCALITY(ptr, 0, 0);
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
