@@ -1169,7 +1169,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   }
 
   if (!message_generators_.empty()) {
-    std::vector<std::pair<size_t, size_t>> offsets;
+    std::vector<size_t> offsets;
     offsets.reserve(message_generators_.size());
 
     p->Emit(
@@ -1184,9 +1184,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              [&] {
                int offset = 0;
                for (size_t i = 0; i < message_generators_.size(); ++i) {
-                 message_generators_[i]->GenerateSchema(p, offset,
-                                                        offsets[i].second);
-                 offset += offsets[i].first;
+                 message_generators_[i]->GenerateSchema(p, offset);
+                 offset += offsets[i];
                }
              }},
         },

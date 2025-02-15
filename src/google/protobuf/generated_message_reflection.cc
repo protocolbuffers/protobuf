@@ -3672,23 +3672,41 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ = *default_instance;
-  // First 8 offsets are offsets to the special fields. The following offsets
-  // are the proto fields.
+  int index = migration_schema.offsets_index;
+
+  // First values are offsets to the special fields, but they are optional.
+  // The first value is a bitmap marking which fields are present.
+  // The order of the fields must match MessageGenerator::GenerateOffsets
   //
-  // TODO: Find a way to not encode sizeof_split_ in offsets.
-  result.offsets_ = offsets + migration_schema.offsets_index + 7;
-  result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
-  result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
-  result.extensions_offset_ = offsets[migration_schema.offsets_index + 1];
-  result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 2];
+  // To add new fields, we add them at the end and since they are optional the
+  // bootstrap files will automatically look as if those fields are not present.
+  const uint32_t bits = offsets[index++];
+
+  int bit = 0;
+  const auto next = [&] {
+    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
+  };
+  const auto next_pointer = [&]() -> const uint32_t* {
+    const uint32_t n = next();
+    if (n == ~uint32_t{}) {
+      return nullptr;
+    }
+    return offsets + migration_schema.offsets_index + n;
+  };
+  result.has_bits_offset_ = next();
+  result.extensions_offset_ = next();
+  result.oneof_case_offset_ = next();
+  result.weak_field_map_offset_ = next();
+  result.inlined_string_donated_offset_ = next();
+  result.split_offset_ = next();
+  result.sizeof_split_ = next();
+
+  result.has_bit_indices_ = next_pointer();
+  result.inlined_string_indices_ = next_pointer();
+
+  result.offsets_ = offsets + index;
   result.object_size_ = migration_schema.object_size;
-  result.weak_field_map_offset_ = offsets[migration_schema.offsets_index + 3];
-  result.inlined_string_donated_offset_ =
-      offsets[migration_schema.offsets_index + 4];
-  result.split_offset_ = offsets[migration_schema.offsets_index + 5];
-  result.sizeof_split_ = offsets[migration_schema.offsets_index + 6];
-  result.inlined_string_indices_ =
-      offsets + migration_schema.inlined_string_indices_index;
+
   return result;
 }
 

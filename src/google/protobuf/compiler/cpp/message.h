@@ -75,11 +75,11 @@ class MessageGenerator {
   // default instance.
   void GenerateConstexprConstructor(io::Printer* p);
 
-  void GenerateSchema(io::Printer* p, int offset, int has_offset);
+  void GenerateSchema(io::Printer* p, int offset);
 
-  // Generate the field offsets array.  Returns the a pair of the total number
-  // of entries generated and the index of the first has_bit entry.
-  std::pair<size_t, size_t> GenerateOffsets(io::Printer* p);
+  // Generate the field offsets array.  Returns the total number of entries
+  // generated.
+  size_t GenerateOffsets(io::Printer* p);
 
   const Descriptor* descriptor() const { return descriptor_; }
 
