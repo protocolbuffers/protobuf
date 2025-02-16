@@ -13,9 +13,17 @@
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+
+namespace {
+std::string EscapeTrigraphs(absl::string_view to_escape) {
+  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
+}
+}  // namespace
 
 namespace google::protobuf::hpb_generator {
 
@@ -151,6 +159,10 @@ std::string DefaultValue(const FieldDescriptor* field) {
       return field->default_value_bool() ? "true" : "false";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "::std::false_type()";
+    case FieldDescriptor::CPPTYPE_STRING:
+      return absl::StrCat(
+          "\"", EscapeTrigraphs(absl::CEscape(field->default_value_string())),
+          "\"");
     default:
       // TODO: b/375460289 - implement rest of scalars
       ABSL_LOG(WARNING) << "Unsupported default value type (in-progress): <"
