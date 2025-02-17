@@ -42,14 +42,14 @@ upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
     visibility = ["//visibility:private"],
-    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
     visibility = ["//visibility:private"],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//:test_messages_proto3_proto"],
 )
 
 cc_binary(

@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 
 #include <stdarg.h>
 
@@ -29,7 +29,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
-#include "failure_list_trie_node.h"
+#include "conformance/failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"

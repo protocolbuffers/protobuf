@@ -133,7 +133,7 @@ proto_library(
 cc_proto_library(
     name = "test_messages_proto2_editions_cc_proto",
     testonly = True,
-    visibility = ["//conformance:__pkg__"],
+    visibility = ["//conformance:__subpackages__"],
     deps = [":test_messages_proto2_editions_proto"],
 )
 
@@ -198,7 +198,7 @@ proto_library(
 cc_proto_library(
     name = "test_messages_proto3_editions_cc_proto",
     testonly = True,
-    visibility = ["//conformance:__pkg__"],
+    visibility = ["//conformance:__subpackages__"],
     deps = [":test_messages_proto3_editions_proto"],
 )
 
