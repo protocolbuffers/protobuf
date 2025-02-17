@@ -228,7 +228,7 @@ proto_library(
     name = "message_test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//:test_messages_proto3_proto"],
 )
 
 upb_minitable_proto_library(

@@ -396,8 +396,8 @@ filegroup(
 filegroup(
     name = "test_protos",
     srcs = [
-        "//src/google/protobuf:test_messages_proto2.proto",
-        "//src/google/protobuf:test_messages_proto3.proto",
+        "//:test_messages_proto2.proto",
+        "//:test_messages_proto3.proto",
         "//src/google/protobuf:well_known_type_protos",
         "//upb/json:test_protos",
         "//upb/message:test_protos",

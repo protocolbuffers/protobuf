@@ -115,6 +115,8 @@ message ConformanceRequest {
   // This can be used in json and text format. If true, testee should print
   // unknown fields instead of ignore. This feature is optional.
   bool print_unknown_fields = 9;
+
+  string internal_test_name = 10;
 }
 
 // Represents a single test case's output.

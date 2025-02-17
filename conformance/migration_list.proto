@@ -1,0 +1,9 @@
+edition = "2023";
+
+package conformance;
+
+import "google/protobuf/conformance/conformance.proto";
+
+message MigrationList {
+  repeated ConformanceRequest requests = 1;
+}
