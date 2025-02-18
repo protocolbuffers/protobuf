@@ -111,7 +111,7 @@ void MessageMutClear(Context& ctx, const Descriptor& msg) {
   }
 }
 
-void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
+void MessageMutClearAndParse(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({},
@@ -132,7 +132,7 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
-        let mut msg = Self::new();
+        $pb$::Clear::clear(self);
 
         // SAFETY:
         // - `data.as_ptr()` is valid to read for `data.len()`
@@ -141,19 +141,13 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         let status = unsafe {
           $pbr$::wire::decode(
               data,
-              msg.raw_msg(),
+              self.raw_msg(),
               <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-              msg.arena())
+              self.arena())
         };
         match status {
-          Ok(_) => {
-            //~ This swap causes the old self.inner.arena to be moved into `msg`
-            //~ which we immediately drop, which will release any previous
-            //~ message that was held here.
-            $std$::mem::swap(self, &mut msg);
-            Ok(())
-          }
-          Err(_) => Err($pb$::ParseError)
+          Ok(_) => Ok(()),
+          Err(e) => Err($pb$::ParseError),
         }
       )rs");
       return;
@@ -662,7 +656,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
           {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
-          {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
+          {"MsgMut::clear_and_parse",
+           [&] { MessageMutClearAndParse(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
           {"MsgMut::take_copy_merge_from",
@@ -836,7 +831,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::ClearAndParse for $Msg$ {
           fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            $Msg::clear_and_parse$
+            let mut m = self.as_mut();
+            $pb$::ClearAndParse::clear_and_parse(&mut m, data)
           }
         }
 
@@ -968,6 +964,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::Clear for $Msg$Mut<'_> {
           fn clear(&mut self) {
             $MsgMut::clear$
+          }
+        }
+
+        impl $pb$::ClearAndParse for $Msg$Mut<'_> {
+          fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
+            $MsgMut::clear_and_parse$
           }
         }
 
