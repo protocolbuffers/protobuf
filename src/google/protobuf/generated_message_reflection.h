@@ -284,8 +284,6 @@ struct ReflectionSchema {
 // or merge with ReflectionSchema.
 struct MigrationSchema {
   int32_t offsets_index;
-  int32_t has_bit_indices_index;
-  int32_t inlined_string_indices_index;
   int object_size;
 };
 
