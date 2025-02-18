@@ -225,6 +225,10 @@ std::string MapValueCType(upb::FieldDefPtr map_field) {
   return CType(map_field.message_type().map_value());
 }
 
+std::string MapValueCTypeConst(upb::FieldDefPtr map_field) {
+  return CTypeConst(map_field.message_type().map_value());
+}
+
 std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
   return ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes
              ? "0"
@@ -481,14 +485,20 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       MapValueSize(field, "*val"));
   output(
       R"cc(
-        UPB_INLINE $0 $1_$2_next(const $1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
+        UPB_INLINE bool $0_$1_next(const $0* msg, $2* key, $3* val,
+                                   size_t* iter) {
+          const upb_MiniTableField field = $4;
           const upb_Map* map = upb_Message_GetMap(UPB_UPCAST(msg), &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
+          if (!map) return false;
+          upb_MessageValue k;
+          upb_MessageValue v;
+          if (!upb_Map_Next(map, &k, &v, iter)) return false;
+          memcpy(key, &k, sizeof(*key));
+          memcpy(val, &v, sizeof(*val));
+          return true;
         }
       )cc",
-      CTypeConst(field), msg_name, resolved_name,
+      msg_name, resolved_name, MapKeyCType(field), MapValueCTypeConst(field),
       FieldInitializerStrong(pools, field, options));
   // Generate private getter returning a upb_Map or NULL for immutable and
   // a upb_Map for mutable.
