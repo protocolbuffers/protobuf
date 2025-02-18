@@ -1229,8 +1229,6 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     p->Emit(R"cc(
       const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* $nullable$ schemas = nullptr;
-      static constexpr ::_pb::Message* $nonnull$ const* $nullable$
-          file_default_instances = nullptr;
     )cc");
   }
 
@@ -1339,26 +1337,22 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           {"file_proto_len",
            options_.strip_nonfunctional_codegen ? 0 : file_data.size()},
           {"proto_name", desc_name},
-          {"deps_ptr", num_deps == 0
-                           ? "nullptr"
-                           : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
-          {"num_deps", num_deps},
-          {"num_msgs", message_generators_.size()},
+          {"deps", num_deps == 0
+                       ? "{}"
+                       : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
+          {"file_default_instances",
+           message_generators_.empty() ? "{}" : "file_default_instances"},
       },
       R"cc(
-        static ::absl::once_flag $desc_table$_once;
-        PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable $desc_table$ = {
-            false,
+        PROTOBUF_CONSTINIT
+        PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+        const ::_pbi::DescriptorTable $desc_table$ = {
             $eager$,
-            $file_proto_len$,
-            $proto_name$,
+            ::absl::string_view($proto_name$, $file_proto_len$),
             "$filename$",
-            &$desc_table$_once,
-            $deps_ptr$,
-            $num_deps$,
-            $num_msgs$,
+            $deps$,
             schemas,
-            file_default_instances,
+            $file_default_instances$,
             $tablename$::offsets,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,

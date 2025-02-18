@@ -3794,7 +3794,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     for (int i = 0; i < num_deps; i++) {
       // In case of weak fields deps[i] could be null.
       if (table->deps[i]) {
-        absl::call_once(*table->deps[i]->once, AssignDescriptorsImpl,
+        absl::call_once(table->deps[i]->once, AssignDescriptorsImpl,
                         table->deps[i],
                         /*eager=*/true);
       }
@@ -3873,7 +3873,7 @@ void AssignDescriptorsOnceInnerCall(const DescriptorTable* table) {
 }
 
 void AssignDescriptors(const DescriptorTable* table) {
-  absl::call_once(*table->once, [=] { AssignDescriptorsOnceInnerCall(table); });
+  absl::call_once(table->once, [=] { AssignDescriptorsOnceInnerCall(table); });
 }
 
 AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {

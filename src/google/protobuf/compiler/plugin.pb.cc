@@ -257,17 +257,13 @@ static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] = {
         &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
 };
-static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once;
-PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
-    false,
-    952,
-    descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+    ::absl::string_view(descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 952),
     "google/protobuf/compiler/plugin.proto",
-    &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
     descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps,
-    1,
-    4,
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets,

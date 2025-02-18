@@ -2019,17 +2019,13 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "ang.org/protobuf/types/descriptorpb\370\001\001\242\002"
     "\003GPB\252\002\032Google.Protobuf.Reflection"
 };
-static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
-PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
-    false,
-    10353,
-    descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
+    ::absl::string_view(descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto, 10353),
     "google/protobuf/descriptor.proto",
-    &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
-    nullptr,
-    0,
-    33,
+    {},
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,

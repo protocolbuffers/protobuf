@@ -291,12 +291,34 @@ struct MigrationSchema {
 // The num_xxx might not be close to their respective pointer, but this saves
 // padding.
 struct PROTOBUF_EXPORT DescriptorTable {
+  constexpr DescriptorTable(
+      bool is_eager, absl::string_view descriptor, const char* filename,
+      absl::Span<const DescriptorTable* const> deps,
+      const MigrationSchema* schemas,
+      absl::Span<const Message* const> default_instances,
+      const uint32_t* offsets,
+      const EnumDescriptor** file_level_enum_descriptors,
+      const ServiceDescriptor** file_level_service_descriptors)
+      : is_initialized(false),
+        is_eager(is_eager),
+        size(descriptor.size()),
+        descriptor(descriptor.data()),
+        filename(filename),
+        deps(deps.data()),
+        num_deps(deps.size()),
+        num_messages(default_instances.size()),
+        schemas(schemas),
+        default_instances(default_instances.data()),
+        offsets(offsets),
+        file_level_enum_descriptors(file_level_enum_descriptors),
+        file_level_service_descriptors(file_level_service_descriptors) {}
+
   mutable bool is_initialized;
   bool is_eager;
   int size;  // of serialized descriptor
   const char* descriptor;
   const char* filename;
-  absl::once_flag* once;
+  mutable absl::once_flag once;
   const DescriptorTable* const* deps;
   int num_deps;
   int num_messages;

@@ -164,7 +164,7 @@ Metadata Message::GetMetadataImpl(const internal::ClassDataFull& data) {
     if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
       data.get_metadata_tracker();
     }
-    absl::call_once(*table->once, [table] {
+    absl::call_once(table->once, [table] {
       internal::AssignDescriptorsOnceInnerCall(table);
     });
   }
