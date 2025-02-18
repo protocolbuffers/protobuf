@@ -218,11 +218,11 @@ std::string CTypeConst(upb::FieldDefPtr field) {
 }
 
 std::string MapKeyCType(upb::FieldDefPtr map_field) {
-  return CType(map_field.message_type().map_key());
+  return CTypeConst(map_field.message_type().map_key());
 }
 
 std::string MapValueCType(upb::FieldDefPtr map_field) {
-  return CType(map_field.message_type().map_value());
+  return CTypeConst(map_field.message_type().map_value());
 }
 
 std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
