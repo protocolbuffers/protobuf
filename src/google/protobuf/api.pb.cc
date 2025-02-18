@@ -137,13 +137,9 @@ static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULL
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_._has_bits_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        10, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.name_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_),
@@ -158,13 +154,9 @@ const ::uint32_t
         2,
         ~0u,
         3,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_._has_bits_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        10, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.name_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_type_url_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_streaming_),
@@ -179,13 +171,9 @@ const ::uint32_t
         4,
         ~0u,
         5,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_._has_bits_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        5, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.name_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.root_),
         0,
@@ -194,9 +182,9 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 14, -1, sizeof(::google::protobuf::Api)},
-        {21, 35, -1, sizeof(::google::protobuf::Method)},
-        {42, 51, -1, sizeof(::google::protobuf::Mixin)},
+        {0, sizeof(::google::protobuf::Api)},
+        {17, sizeof(::google::protobuf::Method)},
+        {34, sizeof(::google::protobuf::Mixin)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Api_default_instance_._instance,
