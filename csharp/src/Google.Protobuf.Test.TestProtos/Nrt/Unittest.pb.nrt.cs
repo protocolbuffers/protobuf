@@ -2729,7 +2729,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage? OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -21059,7 +21059,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes FooMessage {
+    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes? FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) foo_ : null; }
       set {
         foo_ = value;
@@ -21071,7 +21071,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooGroupFieldNumber = 4;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup FooGroup {
+    public global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup? FooGroup {
       get { return HasFooGroup ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup) foo_ : null; }
       set {
         foo_ = value;
@@ -22541,7 +22541,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 7;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage FooMessage {
+    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage? FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
@@ -22553,7 +22553,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooGroupFieldNumber = 8;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup FooGroup {
+    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup? FooGroup {
       get { return HasFooGroup ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup) foo_ : null; }
       set {
         foo_ = value;
@@ -22579,7 +22579,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooLazyMessageFieldNumber = 11;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage FooLazyMessage {
+    public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage? FooLazyMessage {
       get { return fooCase_ == FooOneofCase.FooLazyMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
@@ -24064,7 +24064,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage FooMessage {
+    public global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage? FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
@@ -31083,7 +31083,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int OneofTestAllTypesFieldNumber = 536870012;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes OneofTestAllTypes {
+    public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes? OneofTestAllTypes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) oneofField_ : null; }
       set {
         oneofField_ = value;

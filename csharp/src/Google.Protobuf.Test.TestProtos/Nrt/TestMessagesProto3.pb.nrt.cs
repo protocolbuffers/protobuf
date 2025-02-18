@@ -1553,7 +1553,7 @@ namespace ProtobufTestMessages.Proto3 {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage OneofNestedMessage {
+    public global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage? OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;

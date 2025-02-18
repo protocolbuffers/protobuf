@@ -1918,7 +1918,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types.NestedMessage OneofNestedMessage {
+    public global::ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types.NestedMessage? OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -12935,7 +12935,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int A1FieldNumber = 1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A1 A1 {
+    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A1? A1 {
       get { return largeOneofCase_ == LargeOneofOneofCase.A1 ? (global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A1) largeOneof_ : null; }
       set {
         largeOneof_ = value;
@@ -12947,7 +12947,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int A2FieldNumber = 2;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A2 A2 {
+    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A2? A2 {
       get { return largeOneofCase_ == LargeOneofOneofCase.A2 ? (global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A2) largeOneof_ : null; }
       set {
         largeOneof_ = value;
@@ -12959,7 +12959,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int A3FieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A3 A3 {
+    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A3? A3 {
       get { return largeOneofCase_ == LargeOneofOneofCase.A3 ? (global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A3) largeOneof_ : null; }
       set {
         largeOneof_ = value;
@@ -12971,7 +12971,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int A4FieldNumber = 4;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A4 A4 {
+    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A4? A4 {
       get { return largeOneofCase_ == LargeOneofOneofCase.A4 ? (global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A4) largeOneof_ : null; }
       set {
         largeOneof_ = value;
@@ -12983,7 +12983,7 @@ namespace ProtobufTestMessages.Editions.Proto2 {
     public const int A5FieldNumber = 5;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A5 A5 {
+    public global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A5? A5 {
       get { return largeOneofCase_ == LargeOneofOneofCase.A5 ? (global::ProtobufTestMessages.Editions.Proto2.TestLargeOneof.Types.A5) largeOneof_ : null; }
       set {
         largeOneof_ = value;

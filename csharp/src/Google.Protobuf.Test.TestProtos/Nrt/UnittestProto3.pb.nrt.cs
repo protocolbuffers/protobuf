@@ -907,7 +907,7 @@ namespace Google.Protobuf.TestProtos {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+    public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage? OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -7629,7 +7629,7 @@ namespace Google.Protobuf.TestProtos {
     public const int FooMessageFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.TestProtos.TestAllTypes FooMessage {
+    public global::Google.Protobuf.TestProtos.TestAllTypes? FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes) foo_ : null; }
       set {
         foo_ = value;

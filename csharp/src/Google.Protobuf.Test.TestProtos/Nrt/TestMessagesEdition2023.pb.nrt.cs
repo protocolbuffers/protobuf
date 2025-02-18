@@ -1954,7 +1954,7 @@ namespace ProtobufTestMessages.Editions {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage OneofNestedMessage {
+    public global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage? OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;

@@ -2887,7 +2887,7 @@ namespace UnitTest.Issues.TestProtos {
     public const int NestedFieldNumber = 2;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested Nested {
+    public global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested? Nested {
       get { return valueCase_ == ValueOneofCase.Nested ? (global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested) value_ : null; }
       set {
         value_ = value;

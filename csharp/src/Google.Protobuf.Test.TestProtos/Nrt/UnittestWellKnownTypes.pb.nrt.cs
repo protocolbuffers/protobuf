@@ -1948,7 +1948,7 @@ namespace Google.Protobuf.TestProtos {
     public const int AnyFieldFieldNumber = 1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Any AnyField {
+    public global::Google.Protobuf.WellKnownTypes.Any? AnyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.AnyField ? (global::Google.Protobuf.WellKnownTypes.Any) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -1960,7 +1960,7 @@ namespace Google.Protobuf.TestProtos {
     public const int ApiFieldFieldNumber = 2;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Api ApiField {
+    public global::Google.Protobuf.WellKnownTypes.Api? ApiField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.ApiField ? (global::Google.Protobuf.WellKnownTypes.Api) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -1972,7 +1972,7 @@ namespace Google.Protobuf.TestProtos {
     public const int DurationFieldFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Duration DurationField {
+    public global::Google.Protobuf.WellKnownTypes.Duration? DurationField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.DurationField ? (global::Google.Protobuf.WellKnownTypes.Duration) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -1984,7 +1984,7 @@ namespace Google.Protobuf.TestProtos {
     public const int EmptyFieldFieldNumber = 4;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Empty EmptyField {
+    public global::Google.Protobuf.WellKnownTypes.Empty? EmptyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.EmptyField ? (global::Google.Protobuf.WellKnownTypes.Empty) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -1996,7 +1996,7 @@ namespace Google.Protobuf.TestProtos {
     public const int FieldMaskFieldFieldNumber = 5;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.FieldMask FieldMaskField {
+    public global::Google.Protobuf.WellKnownTypes.FieldMask? FieldMaskField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField ? (global::Google.Protobuf.WellKnownTypes.FieldMask) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -2008,7 +2008,7 @@ namespace Google.Protobuf.TestProtos {
     public const int SourceContextFieldFieldNumber = 6;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContextField {
+    public global::Google.Protobuf.WellKnownTypes.SourceContext? SourceContextField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.SourceContextField ? (global::Google.Protobuf.WellKnownTypes.SourceContext) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -2020,7 +2020,7 @@ namespace Google.Protobuf.TestProtos {
     public const int StructFieldFieldNumber = 7;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Struct StructField {
+    public global::Google.Protobuf.WellKnownTypes.Struct? StructField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.StructField ? (global::Google.Protobuf.WellKnownTypes.Struct) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -2032,7 +2032,7 @@ namespace Google.Protobuf.TestProtos {
     public const int TimestampFieldFieldNumber = 8;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Timestamp TimestampField {
+    public global::Google.Protobuf.WellKnownTypes.Timestamp? TimestampField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TimestampField ? (global::Google.Protobuf.WellKnownTypes.Timestamp) oneofField_ : null; }
       set {
         oneofField_ = value;
@@ -2044,7 +2044,7 @@ namespace Google.Protobuf.TestProtos {
     public const int TypeFieldFieldNumber = 9;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Type TypeField {
+    public global::Google.Protobuf.WellKnownTypes.Type? TypeField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TypeField ? (global::Google.Protobuf.WellKnownTypes.Type) oneofField_ : null; }
       set {
         oneofField_ = value;
