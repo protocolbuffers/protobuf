@@ -48,9 +48,22 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
   return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
 }
 
+UPB_API_INLINE const struct upb_MiniTableEnum*
+upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
+  if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
+    return NULL;
+  }
+  return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
+}
+
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+}
+
+UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTableEnum* en) {
+  e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
 }
 
 UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
