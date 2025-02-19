@@ -399,15 +399,11 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
                                        upb_SubCounts sub_counts) {
   uint32_t total_count = sub_counts.submsg_count + sub_counts.subenum_count;
   size_t subs_bytes = sizeof(*d->table->UPB_PRIVATE(subs)) * total_count;
-  size_t ptrs_bytes = sizeof(upb_MiniTable*) * sub_counts.submsg_count;
   upb_MiniTableSubInternal* subs = upb_Arena_Malloc(d->arena, subs_bytes);
-  const upb_MiniTable** subs_ptrs = upb_Arena_Malloc(d->arena, ptrs_bytes);
   upb_MdDecoder_CheckOutOfMemory(&d->base, subs);
-  upb_MdDecoder_CheckOutOfMemory(&d->base, subs_ptrs);
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs_ptrs[i] = UPB_PRIVATE(_upb_MiniTable_Empty)();
-    subs[i].UPB_PRIVATE(submsg) = &subs_ptrs[i];
+    subs[i].UPB_PRIVATE(submsg) = UPB_PRIVATE(_upb_MiniTable_Empty)();
   }
   if (sub_counts.subenum_count) {
     upb_MiniTableField* f = d->fields;
@@ -417,7 +413,7 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
         f->UPB_PRIVATE(submsg_index) += sub_counts.submsg_count;
       }
     }
-    for (; i < sub_counts.submsg_count + sub_counts.subenum_count; i++) {
+    for (; i < total_count; i++) {
       subs[i].UPB_PRIVATE(subenum) = NULL;
     }
   }

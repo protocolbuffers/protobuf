@@ -49,7 +49,7 @@
 // from an array of MiniTableSubs.
 static const upb_MiniTable* _upb_Encoder_GetSubMiniTable(
     const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return *subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
+  return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
 }
 
 #define UPB_PB_VARINT_MAX_LEN 10
@@ -546,7 +546,7 @@ static void encode_ext(upb_encstate* e, const upb_MiniTableExtension* ext,
   } else {
     upb_MiniTableSubInternal sub;
     if (upb_MiniTableField_IsSubMessage(&ext->UPB_PRIVATE(field))) {
-      sub.UPB_PRIVATE(submsg) = &ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
+      sub.UPB_PRIVATE(submsg) = ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
     } else {
       sub.UPB_PRIVATE(subenum) = ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
     }

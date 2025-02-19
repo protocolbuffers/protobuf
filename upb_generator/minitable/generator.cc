@@ -1,4 +1,4 @@
-// Protocol Buffers - Google's data interrdchange format
+// Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
@@ -83,11 +83,10 @@ void WriteMessageField(upb::FieldDefPtr field,
   output("  $0,\n", upb::generator::FieldInitializer(field, field64, field32));
 }
 
-std::string GetSub(upb::FieldDefPtr field, bool is_extension) {
+std::string GetSub(upb::FieldDefPtr field) {
   if (auto message_def = field.message_type()) {
     return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
-                            is_extension ? MessageVarName(message_def)
-                                         : MessagePtrVarName(message_def));
+                            MessageVarName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
@@ -122,7 +121,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     if (index != kUpb_NoSub) {
       const int f_number = upb_MiniTableField_Number(f);
       upb::FieldDefPtr field = message.FindFieldByNumber(f_number);
-      auto pair = subs.emplace(index, GetSub(field, false));
+      auto pair = subs.emplace(index, GetSub(field));
       ABSL_CHECK(pair.second);
       if (options.one_output_per_message && field.IsSubMessage() &&
           IsCrossFile(field) && !upb_MiniTableField_IsMap(f)) {
@@ -242,7 +241,7 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output("const upb_MiniTableExtension $0 = {\n  ", ExtensionVarName(ext));
   output("$0,\n", FieldInitializer(pools, ext));
   output("  &$0,\n", MessageVarName(ext.containing_type()));
-  output("  $0,\n", GetSub(ext, true));
+  output("  $0,\n", GetSub(ext));
   output("\n};\n");
 }
 
