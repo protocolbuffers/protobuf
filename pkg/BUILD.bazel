@@ -194,6 +194,7 @@ cc_dist_library(
     dist_deps = [
         ":protobuf",
         ":protobuf_lite",
+        ":upb",
     ],
     tags = ["manual"],
     deps = [
@@ -207,6 +208,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+        "//upb_generator/minitable:generator",
     ],
 )
 

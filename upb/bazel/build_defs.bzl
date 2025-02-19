@@ -11,6 +11,9 @@ _DEFAULT_CPPOPTS = []
 _DEFAULT_COPTS = [
     # this is a compile error in C++ clang and GNU C, but not clang C by default
     "-Werror=incompatible-pointer-types",
+    # GCC does not seem to suppport the no_sanitize attribute in some places
+    # where we use it.
+    "-Wno-error=attributes",
 ]
 
 _DEFAULT_CPPOPTS.extend([

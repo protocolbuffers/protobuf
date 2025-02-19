@@ -238,6 +238,7 @@ cc_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+        "//upb_generator/minitable:generator_stage0",
         "@abseil-cpp//absl/log:initialize",
     ],
 )
