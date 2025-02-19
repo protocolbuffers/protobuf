@@ -13,7 +13,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
@@ -217,11 +216,6 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
   }
 
   return getters;
-}
-
-bool IsArenaStringPtr(const FieldDescriptor* field) {
-  return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
 }
 
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
