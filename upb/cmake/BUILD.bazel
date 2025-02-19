@@ -7,10 +7,6 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load(
-    "//upb/bazel:build_defs.bzl",
-    "make_shell_script",
-)
-load(
     ":build_defs.bzl",
     "staleness_test",
 )

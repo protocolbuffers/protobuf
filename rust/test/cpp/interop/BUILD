@@ -2,6 +2,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",

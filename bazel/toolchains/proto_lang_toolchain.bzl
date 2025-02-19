@@ -35,7 +35,7 @@ def proto_lang_toolchain(*, name, toolchain_type = None, exec_compatible_with = 
         _proto_lang_toolchain_rule(name = name, **attrs)
     else:
         # On older Bazel versions keep using native rules, so that mismatch in ProtoInfo doesn't happen
-        native.proto_lang_toolchain(name = name, **attrs)
+        native.proto_lang_toolchain(name = name, **attrs)  # buildifier: disable=native-proto-lang-toolchain
 
     if toolchain_type:
         native.toolchain(

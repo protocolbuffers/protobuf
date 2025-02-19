@@ -4,7 +4,6 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//rust:dist.bzl", "pkg_cross_compiled_binaries")
 
 licenses(["notice"])
 

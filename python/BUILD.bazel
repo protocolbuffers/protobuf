@@ -7,7 +7,6 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:py_extension.bzl", "py_extension")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")

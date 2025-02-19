@@ -89,6 +89,12 @@ def _rust_proto_library_impl(ctx):
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
 
+    proto_common.check_collocated(
+        ctx.label,
+        dep[ProtoInfo],
+        ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo],
+    )
+
     if len(rust_proto_info.dep_variant_infos) != 1:
         fail(
             "{}: rust_proto_library does not support src-less proto_library targets."

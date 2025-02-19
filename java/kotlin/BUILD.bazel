@@ -1,3 +1,4 @@
+load("@rules_java//java:java_test.bzl", "java_test")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
