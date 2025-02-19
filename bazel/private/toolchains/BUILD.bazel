@@ -1,4 +1,3 @@
-load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//bazel/toolchains:proto_toolchain.bzl", "proto_toolchain")
 
 # Keep this file as small as possible and free of any unnecessary loads

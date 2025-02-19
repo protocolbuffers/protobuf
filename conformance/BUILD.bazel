@@ -8,6 +8,7 @@
 # Conformance testing for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_filegroup",
