@@ -472,9 +472,14 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/fasttable.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.cc
 )
 
 # @//pkg:protoc
@@ -608,13 +613,14 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
-  ${protobuf_SOURCE_DIR}/upb/port/atomic.h
-  ${protobuf_SOURCE_DIR}/upb/port/def.inc
-  ${protobuf_SOURCE_DIR}/upb/port/undef.inc
-  ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
+  ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.h
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
 )
 
 # @//pkg:upb
