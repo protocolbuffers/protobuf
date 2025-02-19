@@ -311,6 +311,13 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
               StrEq("222222222222"));
 }
 
+TEST(StringViewFieldTest, MergeAndClearEmptyImplicitPresence) {
+  TestStringView message, other;
+  other.set_implicit_presence("");
+  message.MergeFrom(other);
+  message.Clear();
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
