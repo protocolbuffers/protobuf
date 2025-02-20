@@ -594,7 +594,7 @@ class _Parser(object):
                   [f.json_name for f in message_descriptor.fields],
               )
           )
-        if name in names:
+        if field.name in names:
           raise ParseError(
               'Message type "{0}" should not have multiple '
               '"{1}" fields at "{2}".'.format(

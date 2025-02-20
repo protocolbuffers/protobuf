@@ -1739,5 +1739,21 @@ class JsonFormatTest(JsonFormatBase):
     with self.assertRaises(json_format.ParseError):
       json_format.Parse(text, json_format_proto3_pb2.TestMessage())
 
+  def testParseDuplicateJsonFields(self):
+    data = json.dumps({"self_": 1, "self_underscore": 2})
+
+    with self.assertRaises():
+      json_format.Parse(
+          data, test_proto2_pb2.MessageWithSelfAndSelfUnderscoreField()
+      )
+
+  def testParseDictDuplicateJsonFields(self):
+    data = {"self_": 1, "self_underscore": 2}
+
+    with self.assertRaises():
+      json_format.ParseDict(
+          data, test_proto2_pb2.MessageWithSelfAndSelfUnderscoreField()
+      )
+
 if __name__ == '__main__':
   unittest.main()
