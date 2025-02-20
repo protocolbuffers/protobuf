@@ -1,4 +1,5 @@
 load("@rules_buf//buf:defs.bzl", "buf_breaking_test")
+load("@rules_java//java:java_library.bzl", "java_library")
 
 # Simple build tests for compatibility of gencode from previous major versions
 # with the current runtime.

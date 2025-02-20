@@ -13,4 +13,4 @@ def java_lite_proto_library(**kwattrs):
     if not hasattr(native, "java_lite_proto_library"):
         _java_lite_proto_library(**kwattrs)
     else:
-        native.java_lite_proto_library(**kwattrs)
+        native.java_lite_proto_library(**kwattrs)  # buildifier: disable=native-java-lite-proto
