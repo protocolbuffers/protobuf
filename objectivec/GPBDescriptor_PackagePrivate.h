@@ -64,6 +64,16 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
 // their size. This directly impacts the size of apps since these exist per
 // field/extension.
 
+// This is the current version of GPBFileDescription. It must maintain field alignment with the
+// previous structure.
+typedef struct GPBFilePackageAndPrefix {
+  // The proto package for the file.
+  const char *package;
+  // The objc_class_prefix option if present.
+  const char *prefix;
+} GPBFilePackageAndPrefix;
+
+// This is used by older code generation.
 typedef struct GPBFileDescription {
   // The proto package for the file.
   const char *package;
@@ -168,7 +178,7 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 + (instancetype)allocDescriptorForClass:(Class)messageClass
                             messageName:(NSString *)messageName
                          runtimeSupport:(const int32_t *)runtimeSupport
-                        fileDescription:(GPBFileDescription *)fileDescription
+                        fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
@@ -324,5 +334,13 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
 GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
                              (sizeof(GPBGenericValue) + sizeof(GPBMessageFieldDescription)),
                          DescriptionsWithDefault_different_size_than_expected);
+
+// Sanity check that the file description structures old and new work.
+GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, package) ==
+                             offsetof(GPBFileDescription, package),
+                         FileDescription_package_offsets_dont_match);
+GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, prefix) ==
+                             offsetof(GPBFileDescription, prefix),
+                         FileDescription_prefix_offsets_dont_match);
 
 CF_EXTERN_C_END

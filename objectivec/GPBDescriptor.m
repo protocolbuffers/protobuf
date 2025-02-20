@@ -30,7 +30,7 @@
 @interface GPBDescriptor ()
 - (instancetype)initWithClass:(Class)messageClass
                   messageName:(NSString *)messageName
-              fileDescription:(GPBFileDescription *)fileDescription
+              fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storage
                    wireFormat:(BOOL)wireFormat;
@@ -80,7 +80,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 @implementation GPBDescriptor {
   Class messageClass_;
   NSString *messageName_;
-  const GPBFileDescription *fileDescription_;
+  const GPBFilePackageAndPrefix *fileDescription_;
   BOOL wireFormat_;
 }
 
@@ -94,7 +94,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 + (instancetype)allocDescriptorForClass:(Class)messageClass
                             messageName:(NSString *)messageName
                          runtimeSupport:(const int32_t *)runtimeSupport
-                        fileDescription:(GPBFileDescription *)fileDescription
+                        fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                                  fields:(void *)fieldDescriptions
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
@@ -228,7 +228,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return [self allocDescriptorForClass:messageClass
                            messageName:messageName
                         runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
-                       fileDescription:fileDescription
+                       fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                                 fields:fieldDescriptions
                             fieldCount:fieldCount
                            storageSize:storageSize
@@ -239,7 +239,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
 - (instancetype)initWithClass:(Class)messageClass
                   messageName:(NSString *)messageName
-              fileDescription:(GPBFileDescription *)fileDescription
+              fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storageSize
                    wireFormat:(BOOL)wireFormat {
