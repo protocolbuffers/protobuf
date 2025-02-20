@@ -29,8 +29,7 @@ class PaddingOptimizer : public MessageLayoutHelper {
   PaddingOptimizer() {}
   ~PaddingOptimizer() override {}
 
-  void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
-                      const Options& options,
+  void OptimizeLayout(FieldDescriptorArray& fields, const Options& options,
                       MessageSCCAnalyzer* scc_analyzer) override;
 };
 

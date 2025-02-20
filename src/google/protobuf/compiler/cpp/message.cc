@@ -707,7 +707,7 @@ MessageGenerator::MessageGenerator(
   }
 
   const size_t initial_size = optimized_order_.size();
-  message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
+  message_layout_helper_->OptimizeLayout(optimized_order_, options_,
                                          scc_analyzer_);
   ABSL_CHECK_EQ(initial_size, optimized_order_.size());
 

@@ -9,9 +9,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -45,7 +49,7 @@ class FieldGroup {
   }
 
   void SetPreferredLocation(double location) { preferred_location_ = location; }
-  const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
+  const FieldDescriptorArray& fields() const { return fields_; }
 
   // FieldGroup objects sort by their preferred location.
   bool operator<(const FieldGroup& other) const {
@@ -59,17 +63,14 @@ class FieldGroup {
   // approximate, but should put this group close to where its member fields
   // originally went.
   double preferred_location_;
-  std::vector<const FieldDescriptor*> fields_;
+  FieldDescriptorArray fields_;
   // We rely on the default copy constructor and operator= so this type can be
   // used in a vector.
 };
 
-}  // namespace
-
-static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
-                                 const Options& options,
-                                 MessageSCCAnalyzer* scc_analyzer) {
-  if (fields->empty()) return;
+void OptimizeLayoutHelper(FieldDescriptorArray& fields, const Options& options,
+                          MessageSCCAnalyzer* scc_analyzer) {
+  if (fields.empty()) return;
 
   // The sorted numeric order of Family determines the declaration order in the
   // memory layout.
@@ -86,9 +87,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   std::vector<FieldGroup> aligned_to_1[kMaxFamily];
   std::vector<FieldGroup> aligned_to_4[kMaxFamily];
   std::vector<FieldGroup> aligned_to_8[kMaxFamily];
-  for (size_t i = 0; i < fields->size(); ++i) {
-    const FieldDescriptor* field = (*fields)[i];
-
+  for (const auto* field : fields) {
     Family f = OTHER;
     if (field->is_repeated()) {
       f = REPEATED;
@@ -159,14 +158,16 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   }
 
   // Now pull out all the FieldDescriptors in order.
-  fields->clear();
+  fields.clear();
   for (int f = 0; f < kMaxFamily; ++f) {
     for (size_t i = 0; i < aligned_to_8[f].size(); ++i) {
-      fields->insert(fields->end(), aligned_to_8[f][i].fields().begin(),
-                     aligned_to_8[f][i].fields().end());
+      fields.insert(fields.end(), aligned_to_8[f][i].fields().begin(),
+                    aligned_to_8[f][i].fields().end());
     }
   }
 }
+
+}  // namespace
 
 // Reorder 'fields' so that if the fields are output into a c++ class in the new
 // order, fields of similar family (see below) are together and within each
@@ -201,23 +202,23 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 // If there are split fields in `fields`, they will be placed at the end. The
 // order within split fields follows the same rule, aka classify and order by
 // "family".
-void PaddingOptimizer::OptimizeLayout(
-    std::vector<const FieldDescriptor*>* fields, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
-  std::vector<const FieldDescriptor*> normal;
-  std::vector<const FieldDescriptor*> split;
-  for (const auto* field : *fields) {
+void PaddingOptimizer::OptimizeLayout(FieldDescriptorArray& fields,
+                                      const Options& options,
+                                      MessageSCCAnalyzer* scc_analyzer) {
+  FieldDescriptorArray normal;
+  FieldDescriptorArray split;
+  for (const auto* field : fields) {
     if (ShouldSplit(field, options)) {
       split.push_back(field);
     } else {
       normal.push_back(field);
     }
   }
-  OptimizeLayoutHelper(&normal, options, scc_analyzer);
-  OptimizeLayoutHelper(&split, options, scc_analyzer);
-  fields->clear();
-  fields->insert(fields->end(), normal.begin(), normal.end());
-  fields->insert(fields->end(), split.begin(), split.end());
+  OptimizeLayoutHelper(normal, options, scc_analyzer);
+  OptimizeLayoutHelper(split, options, scc_analyzer);
+  fields.clear();
+  fields.insert(fields.end(), normal.begin(), normal.end());
+  fields.insert(fields.end(), split.begin(), split.end());
 }
 
 }  // namespace cpp

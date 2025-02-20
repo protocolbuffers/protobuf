@@ -12,6 +12,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 
+#include <vector>
+
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -22,13 +24,15 @@ namespace cpp {
 
 class MessageSCCAnalyzer;
 
+using FieldDescriptorArray = std::vector<const FieldDescriptor*>;
+
 // Provides an abstract interface to optimize message layout
 // by rearranging the fields of a message.
 class MessageLayoutHelper {
  public:
   virtual ~MessageLayoutHelper() {}
 
-  virtual void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
+  virtual void OptimizeLayout(FieldDescriptorArray& fields,
                               const Options& options,
                               MessageSCCAnalyzer* scc_analyzer) = 0;
 };
