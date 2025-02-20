@@ -70,6 +70,10 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                                             table->UPB_PRIVATE(field_count)));
   UPB_ASSERT(sub);
 
+  if (field->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Enum) {
+    return false;
+  }
+
   upb_MiniTableSub* table_sub =
       (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
   *table_sub = upb_MiniTableSub_FromEnum(sub);
