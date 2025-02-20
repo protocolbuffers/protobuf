@@ -195,6 +195,10 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 
 const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310 = 40310;
 
+#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
+#error "Time to remove this and GPB_DEBUG_CHECK_RUNTIME_VERSIONS()"
+#else
+
 void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   // NOTE: This is passing the value captured in the compiled code to check
   // against the values captured when the runtime support was compiled. This
@@ -216,6 +220,8 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
                        objcRuntimeVersion, GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
   }
 }
+
+#endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
 
 void GPBRuntimeMatchFailure(void) {
   [NSException raise:NSInternalInconsistencyException
