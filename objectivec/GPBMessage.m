@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBMessage.h"
+#import "GPBBootstrap.h"
 #import "GPBMessage_PackagePrivate.h"
 
 #import <Foundation/Foundation.h>
@@ -1113,19 +1114,17 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 + (GPBDescriptor *)descriptor {
   // This is thread safe because it is called from +initialize.
   static GPBDescriptor *descriptor = NULL;
-  static GPBFileDescription fileDescription = {
-      .package = "internal", .prefix = "", .syntax = GPBFileSyntaxProto2};
+  static GPBFilePackageAndPrefix fileDescription = {.package = "internal", .prefix = ""};
   if (!descriptor) {
-    descriptor = [GPBDescriptor
-        allocDescriptorForClass:[GPBMessage class]
-                    messageName:@"GPBMessage"
-                fileDescription:&fileDescription
-                         fields:NULL
-                     fieldCount:0
-                    storageSize:0
-                          flags:(GPBDescriptorInitializationFlag_UsesClassRefs |
-                                 GPBDescriptorInitializationFlag_Proto3OptionalKnown |
-                                 GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
+    descriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBMessage class]
+                                   messageName:@"GPBMessage"
+                                runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                               fileDescription:&fileDescription
+                                        fields:NULL
+                                    fieldCount:0
+                                   storageSize:0
+                                         flags:GPBDescriptorInitializationFlag_None];
   }
   return descriptor;
 }

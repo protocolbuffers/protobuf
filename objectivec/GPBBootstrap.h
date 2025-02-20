@@ -114,7 +114,7 @@
 // Current library runtime version.
 // - Gets bumped when the runtime makes changes to the interfaces between the
 //   generated code and runtime (things added/removed, etc).
-#define GOOGLE_PROTOBUF_OBJC_VERSION 30007
+#define GOOGLE_PROTOBUF_OBJC_VERSION 40310
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
