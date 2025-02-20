@@ -204,6 +204,12 @@ alias(
 )
 
 alias(
+    name = "wire_byte_size",
+    actual = "//upb/wire:byte_size",
+    visibility = ["//upb:friends"],
+)
+
+alias(
     name = "wire_reader",
     actual = "//upb/wire:reader",
     visibility = ["//visibility:public"],
