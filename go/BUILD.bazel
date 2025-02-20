@@ -10,8 +10,6 @@ proto_library(
     name = "go_features_proto",
     srcs = ["google/protobuf/go_features.proto"],
     strip_import_prefix = "/go",
-    visibility = [
-        "//pkg:__pkg__",
-    ],
+    visibility = ["//:__subpackages__"],
     deps = ["//:descriptor_proto"],
 )
