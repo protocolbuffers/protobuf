@@ -13132,7 +13132,7 @@ UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
 const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
                                                       const char* sym);
 
-const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
+UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                               const char* name);
 
 const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
