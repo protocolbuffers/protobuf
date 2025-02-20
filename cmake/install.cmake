@@ -61,7 +61,7 @@ if (protobuf_BUILD_PROTOC_BINARIES)
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
   if (protobuf_BUILD_LIBUPB)
-    foreach (generator upb upbdefs upb_minitable)
+    foreach (generator upb upbdefs)
       list(APPEND _protobuf_binaries protoc-gen-${generator})
       install(TARGETS protoc-gen-${generator} EXPORT protobuf-targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT upb-generators

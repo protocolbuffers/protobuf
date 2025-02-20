@@ -66,9 +66,8 @@ WELL_KNOWN_TYPES_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobu
 echo "Expanding protobuf_well_known_types crate tar"
 tar -xvf $WELL_KNOWN_TYPES_TAR -C $WELL_KNOWN_TYPES_ROOT
 
-# Put the Bazel-built protoc and plugin at the beginning of $PATH
+# Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
-PATH=$(dirname $(rlocation com_google_protobuf/upb_generator/minitable/protoc-gen-upb_minitable)):$PATH
 
 cd $CRATE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test

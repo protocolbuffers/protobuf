@@ -178,7 +178,7 @@ add_test(NAME full-test
 if (protobuf_BUILD_LIBUPB)
   set(upb_test_proto_genfiles)
   foreach(proto_file ${upb_test_protos_files} ${descriptor_proto_proto_srcs})
-    foreach(generator upb upbdefs upb_minitable)
+    foreach(generator upb upbdefs)
       protobuf_generate(
         PROTOS ${proto_file}
         LANGUAGE ${generator}
@@ -191,6 +191,18 @@ if (protobuf_BUILD_LIBUPB)
       )
       set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
     endforeach()
+
+    # The minitable generator has a slightly different setup from the other upb
+    # generators, since it is built into protoc.
+    protobuf_generate(
+      PROTOS ${proto_file}
+      LANGUAGE upb_minitable
+      GENERATE_EXTENSIONS .upb_minitable.h .upb_minitable.c
+      OUT_VAR pb_generated_files
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}
+    )
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
   endforeach(proto_file)
 
   add_executable(upb-test

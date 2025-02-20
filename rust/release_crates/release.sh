@@ -56,9 +56,8 @@ EXAMPLE_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_example
 echo "Expanding protobuf_example crate tar"
 tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT 
 
-# Put the Bazel-built protoc and plugin at the beginning of $PATH
+# Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
-PATH=$(dirname $(rlocation com_google_protobuf/upb_generator/minitable/protoc-gen-upb_minitable)):$PATH
 
 cd $CRATE_ROOT
 CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
