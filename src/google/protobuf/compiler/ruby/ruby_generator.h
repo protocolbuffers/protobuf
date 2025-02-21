@@ -10,6 +10,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"

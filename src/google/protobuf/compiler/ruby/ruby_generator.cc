@@ -7,15 +7,18 @@
 
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 
-#include <iomanip>
+#include <cstddef>
 #include <memory>
 #include <sstream>
+#include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
-#include "google/protobuf/compiler/plugin.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -27,7 +30,7 @@ namespace protobuf {
 namespace compiler {
 namespace ruby {
 
-// Forward decls.
+// Forward declarations.
 template <class numeric_type>
 std::string NumberToString(numeric_type value);
 std::string GetRequireName(absl::string_view proto_file);
@@ -73,7 +76,7 @@ std::string PackageToModule(absl::string_view name) {
   std::string result;
   result.reserve(name.size());
 
-  for (int i = 0; i < name.size(); i++) {
+  for (size_t i = 0; i < name.size(); i++) {
     if (name[i] == '_') {
       next_upper = true;
     } else {
@@ -163,9 +166,9 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     //    -> A::B::C
     // otherwise, use the dot separator
     //    -> A.B.C
-    if (package_name.find("::") != std::string::npos) {
+    if (absl::StrContains(package_name, "::")) {
       need_change_to_module = false;
-    } else if (package_name.find('.') != std::string::npos) {
+    } else if (absl::StrContains(package_name, '.')) {
       ABSL_LOG(WARNING) << "ruby_package option should be in the form of:"
                         << " 'A::B::C' and not 'A.B.C'";
     }
@@ -175,7 +178,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
 
   // Use the appropriate delimiter
   std::string delimiter = need_change_to_module ? "." : "::";
-  int delimiter_size = need_change_to_module ? 1 : 2;
+  size_t delimiter_size = need_change_to_module ? 1 : 2;
 
   // Extract each module name and indent
   while (!package_name.empty()) {
