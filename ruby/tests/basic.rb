@@ -37,10 +37,7 @@ module BasicTest
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
 
-      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-      if cruby_or_jruby_9_3_or_higher?
-        GC.start(full_mark: true, immediate_sweep: true)
-      end
+      GC.start(full_mark: true, immediate_sweep: true)
       TestMessage.encode(msg)
     end
 
