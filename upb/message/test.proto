@@ -206,3 +206,11 @@ extend TestFreeze {
 extend TestFreeze {
   repeated Proto2EnumMessage rep_msg = 101;
 }
+
+message TestOneOfAlignment {
+  optional fixed32 pad = 6;
+  oneof value {
+    string str = 10;
+    fixed64 should_be_sixty_four_aligned = 11;
+  }
+}
