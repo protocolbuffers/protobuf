@@ -414,9 +414,14 @@ void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
           return ($0_oneofcases)upb_Message_WhichOneofFieldNumber(
               UPB_UPCAST(msg), &field);
         }
+        UPB_INLINE void $1_clear_$2($1* msg) {
+          const upb_MiniTableField field = $3;
+          upb_Message_ClearOneof(UPB_UPCAST(msg), $4, &field);
+        }
       )cc",
       fullname, msg_name, oneof.name(),
-      FieldInitializer(pools, oneof.field(0), options));
+      FieldInitializer(pools, oneof.field(0), options),
+      MessageMiniTableRef(oneof.containing_type(), options));
 }
 
 void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
