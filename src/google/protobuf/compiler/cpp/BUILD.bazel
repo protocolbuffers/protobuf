@@ -67,6 +67,7 @@ cc_library(
         "enum.cc",
         "extension.cc",
         "field.cc",
+        "field_chunk.cc",
         "field_generators/cord_field.cc",
         "field_generators/enum_field.cc",
         "field_generators/map_field.cc",
@@ -88,6 +89,7 @@ cc_library(
         "enum.h",
         "extension.h",
         "field.h",
+        "field_chunk.h",
         "field_generators/generators.h",
         "file.h",
         "generator.h",
@@ -243,6 +245,22 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "field_chunk_test",
+    srcs = ["field_chunk_test.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

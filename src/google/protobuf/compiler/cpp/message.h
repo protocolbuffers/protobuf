@@ -208,6 +208,14 @@ class MessageGenerator {
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 
+  void MaybeEmitUpdateCachedHasbits(const FieldDescriptor* field,
+                                    io::Printer* p,
+                                    int& cached_has_word_index) const;
+
+  void EmitUpdateByteSizeV2ForNumerics(
+      size_t field_size, io::Printer* p, int& cached_has_word_index,
+      std::vector<const FieldDescriptor*>&& fields) const;
+
   const Descriptor* descriptor_;
   int index_in_file_messages_;
   Options options_;
