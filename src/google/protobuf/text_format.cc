@@ -29,6 +29,7 @@
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
@@ -1914,6 +1915,8 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
 
 /* static */ bool TextFormat::ParseFromString(absl::string_view input,
                                               Message* output) {
+  // DO_NOT_SUBMIT: removeme
+  LOG(INFO) << "FIZZBUZZ_ParseFromString: " << input;
   return Parser().ParseFromString(input, output);
 }
 
