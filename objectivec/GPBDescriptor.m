@@ -232,7 +232,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 }
 
 #endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
-
 - (instancetype)initWithClass:(Class)messageClass
                   messageName:(NSString *)messageName
               fileDescription:(GPBFilePackageAndPrefix *)fileDescription
