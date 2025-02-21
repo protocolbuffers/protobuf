@@ -104,16 +104,14 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                 format:@"Proto generation source appears to have been from a version newer than "
                        @"this runtime."];
   }
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
   // added incorrectly to the runtime or some sorta corruption has happened.
   GPBDescriptorInitializationFlags unknownFlags =
       (GPBDescriptorInitializationFlags)(~(GPBDescriptorInitializationFlag_FieldsWithDefault |
                                            GPBDescriptorInitializationFlag_WireFormat));
-  if ((flags & unknownFlags) != 0) {
-    GPBRuntimeMatchFailure();
-  }
+  NSAssert((flags & unknownFlags) == 0, @"Internal error: unknown descriptor flags set");
   GPBFieldFlags mergedFieldFlags = GPBFieldNone;
 #endif  // defined(DEBUG) && DEBUG
 
@@ -126,13 +124,13 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     // Need correctly typed pointer for array indexing below to work.
     if (fieldsIncludeDefault) {
       desc = &(((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]);
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
       mergedFieldFlags |=
           (((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]).core.flags;
 #endif
     } else {
       desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
       mergedFieldFlags |= (((GPBMessageFieldDescription *)fieldDescriptions)[i]).flags;
 #endif
     }
@@ -141,16 +139,14 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // No real value in checking all the fields individually, just check the combined flags at the
   // end.
   GPBFieldFlags unknownFieldFlags =
       (GPBFieldFlags)(~(GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
                         GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero |
                         GPBFieldTextFormatNameCustom | GPBFieldMapKeyMask));
-  if ((mergedFieldFlags & unknownFieldFlags) != 0) {
-    GPBRuntimeMatchFailure();
-  }
+  NSAssert((mergedFieldFlags & unknownFieldFlags) == 0, @"Internal error: unknown field flags set");
 #endif  // defined(DEBUG) && DEBUG
 
   BOOL wireFormat = (flags & GPBDescriptorInitializationFlag_WireFormat) != 0;
@@ -787,16 +783,14 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                 format:@"Proto generation source appears to have been from a version newer than "
                        @"this runtime."];
   }
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
   // added incorrectly to the runtime or some sorta corruption has happened.
   GPBEnumDescriptorInitializationFlags unknownFlags =
       (GPBEnumDescriptorInitializationFlags)(~(GPBEnumDescriptorInitializationFlag_IsClosed));
-  if ((flags & unknownFlags) != 0) {
-    GPBRuntimeMatchFailure();
-  }
-#endif  // defined(DEBUG) && DEBUG
+  NSAssert((flags & unknownFlags) == 0, @"Internal error: unknown enum flags set");
+#endif  // defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   GPBEnumDescriptor *descriptor = [[self alloc] initWithName:name
                                                   valueNames:valueNames
                                                       values:values
@@ -1054,16 +1048,14 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                 format:@"Proto generation source appears to have been from a version newer than "
                        @"this runtime."];
   }
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
   // added incorrectly to the runtime or some sorta corruption has happened.
   GPBExtensionOptions unknownOptions =
       (GPBExtensionOptions)(~(GPBExtensionRepeated | GPBExtensionPacked));
-  if ((desc->options & unknownOptions) != 0) {
-    GPBRuntimeMatchFailure();
-  }
-#endif  // defined(DEBUG) && DEBUG
+  NSAssert((desc->options & unknownOptions) == 0, @"Internal error: unknown extension flags set");
+#endif  // defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   if ((self = [super init])) {
     description_ = desc;
 

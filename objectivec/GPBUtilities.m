@@ -223,13 +223,6 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
 
 #endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
 
-void GPBRuntimeMatchFailure(void) {
-  [NSException raise:NSInternalInconsistencyException
-              format:@"Proto generation source appears to have been from a"
-                     @" version newer that this runtime (%d).",
-                     GOOGLE_PROTOBUF_OBJC_VERSION];
-}
-
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
   GPBDescriptor *descriptor = [self descriptor];
   GPBFieldDescriptor *field = [descriptor fieldWithNumber:fieldNumber];
