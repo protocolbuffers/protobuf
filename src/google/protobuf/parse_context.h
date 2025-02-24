@@ -1173,19 +1173,25 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+
+  int old_entries = out->size();
+  int num_total = size / sizeof(T);
+
+  out->Reserve(old_entries + num_total);
+  auto dst = out->AddNAlreadyReserved(num_total);
+
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
       dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
 #endif
+    dst += num;
+
     size -= block_size;
     if (limit_ <= kSlopBytes) return nullptr;
     ptr = Next();
@@ -1196,9 +1202,6 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int num = size / sizeof(T);
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
-  int old_entries = out->size();
-  out->Reserve(old_entries + num);
-  auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
