@@ -83,6 +83,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   std::string ModuleLevelName(const DescriptorT& descriptor) const;
   std::string PublicPackage() const;
   std::string InternalPackage() const;
+  std::string ExtraInitTypes(const Descriptor& msg_des) const;
 
   bool opensource_runtime_ = true;
 
