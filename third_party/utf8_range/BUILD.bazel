@@ -9,7 +9,7 @@ load("@rules_license//rules:license.bzl", "license")
 DEFAULT_VISIBILITY = [
     "//src/google/protobuf:__subpackages__",
     "//third_party/utf8_range:__subpackages__",
-    "//util/utf8/internal:__subpackages__",
+    "//util/utf8/public:__subpackages__",
 ]
 
 package(
