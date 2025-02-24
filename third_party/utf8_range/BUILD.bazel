@@ -56,7 +56,6 @@ cc_library(
 
 cc_library(
     name = "utf8_validity",
-    srcs = ["utf8_validity.cc"],
     hdrs = ["utf8_validity.h"],
     strip_include_prefix = "/third_party/utf8_range",
     deps = [
