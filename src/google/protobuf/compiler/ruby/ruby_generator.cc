@@ -250,6 +250,33 @@ std::string DumpImportList(const FileDescriptor* file) {
   return ret;
 }
 
+namespace {
+
+// Escape a string for use in a Ruby string literal. This is a superset of
+// absl::CHexEscape() that also includes handling of the following characters:
+//   - # (hashmark)
+//
+// This is needed because Ruby double-quoted string literals interpolate the
+// contents of the string, and the hashmark character is used in the
+// interpolation syntax. Informed by MRI Ruby's implementation of String#dump.
+std::string RubyEscape(absl::string_view s) {
+  std::string c_escaped = absl::CHexEscape(s);
+  std::string result;
+  result.reserve(c_escaped.length());
+  for (size_t i = 0; i < c_escaped.length(); ++i) {
+    if (c_escaped[i] == '#' &&
+        (i + 1 < c_escaped.length() &&
+         (c_escaped[i + 1] == '{' || c_escaped[i + 1] == '$' ||
+          c_escaped[i + 1] == '@'))) {
+      absl::StrAppend(&result, "\\");
+    }
+    absl::StrAppend(&result, c_escaped.substr(i, 1));
+  }
+  return result;
+}
+
+}  // namespace
+
 void GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
                               std::string* error) {
   printer->Print(R"(
@@ -259,9 +286,8 @@ pool = Google::Protobuf::DescriptorPool.generated_pool
 pool.add_serialized_file(descriptor_data)
 
 )",
-                 "descriptor_data",
-                 absl::CHexEscape(SerializedDescriptor(file)), "imports",
-                 DumpImportList(file));
+                 "descriptor_data", RubyEscape(SerializedDescriptor(file)),
+                 "imports", DumpImportList(file));
 }
 
 bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
