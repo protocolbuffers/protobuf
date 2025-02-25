@@ -676,17 +676,6 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       )cc",
       msg_name, resolved_name, MapKeyCType(field),
       FieldInitializer(pools, field, options), MapKeySize(field, "key"));
-  output(
-      R"cc(
-        UPB_INLINE $0 $1_$2_nextmutable($1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(UPB_UPCAST(msg), &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
-        }
-      )cc",
-      CType(field), msg_name, resolved_name,
-      FieldInitializerStrong(pools, field, options));
 }
 
 void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
