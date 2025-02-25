@@ -66,7 +66,7 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
   }
 
   auto mapping_arg = absl::c_find_if(
-      args, [](auto& arg) { return arg.first == "bazel_crate_mapping"; });
+      args, [](auto& arg) { return arg.first == "crate_mapping"; });
   if (mapping_arg != args.end()) {
     opts.mapping_file_path = mapping_arg->second;
   }
