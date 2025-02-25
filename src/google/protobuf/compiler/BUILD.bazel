@@ -177,6 +177,7 @@ cc_library(
     ],
     hdrs = [
         "command_line_interface.h",
+        "notices.h",
         "subprocess.h",
         "zip_writer.h",
     ],
