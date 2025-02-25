@@ -191,55 +191,49 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(nested,
                                                                        0);
   upb_Arena_Free(source_arena);
-  size_t iter = kUpb_Map_Begin;
-  // Test map<int32, int32>.
-  const protobuf_test_messages_proto2_TestAllTypesProto2_MapInt32DoubleEntry*
-      int32_double_entry =
-          protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_double_next(
-              clone, &iter);
-  ASSERT_NE(int32_double_entry, nullptr);
-  EXPECT_EQ(
-      protobuf_test_messages_proto2_TestAllTypesProto2_MapInt32DoubleEntry_key(
-          int32_double_entry),
-      12);
-  EXPECT_EQ(
-      protobuf_test_messages_proto2_TestAllTypesProto2_MapInt32DoubleEntry_value(
-          int32_double_entry),
-      1200.5);
+  // Test map<int32, double>.
+  {
+    int32_t key;
+    double value;
+    size_t iter = kUpb_Map_Begin;
+
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_double_next(
+            clone, &key, &value, &iter));
+    EXPECT_EQ(key, 12);
+    EXPECT_EQ(value, 1200.5);
+  }
+
   // Test map<string, string>.
-  iter = kUpb_Map_Begin;
-  const protobuf_test_messages_proto2_TestAllTypesProto2_MapStringStringEntry*
-      string_string_entry =
-          protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_next(
-              clone, &iter);
-  ASSERT_NE(string_string_entry, nullptr);
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      protobuf_test_messages_proto2_TestAllTypesProto2_MapStringStringEntry_key(
-          string_string_entry),
-      upb_StringView_FromString("key1")));
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      protobuf_test_messages_proto2_TestAllTypesProto2_MapStringStringEntry_value(
-          string_string_entry),
-      upb_StringView_FromString("value1")));
+  {
+    upb_StringView key;
+    upb_StringView value;
+    size_t iter = kUpb_Map_Begin;
+
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_next(
+            clone, &key, &value, &iter));
+    EXPECT_TRUE(upb_StringView_IsEqual(key, upb_StringView_FromString("key1")));
+    EXPECT_TRUE(
+        upb_StringView_IsEqual(value, upb_StringView_FromString("value1")));
+  }
+
   // Test map<string, NestedMessage>.
-  iter = kUpb_Map_Begin;
-  const protobuf_test_messages_proto2_TestAllTypesProto2_MapStringNestedMessageEntry*
-      nested_message_entry =
-          protobuf_test_messages_proto2_TestAllTypesProto2_map_string_nested_message_next(
-              clone, &iter);
-  ASSERT_NE(nested_message_entry, nullptr);
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      protobuf_test_messages_proto2_TestAllTypesProto2_MapStringNestedMessageEntry_key(
-          nested_message_entry),
-      upb_StringView_FromString("nestedkey1")));
-  const protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*
-      cloned_nested =
-          protobuf_test_messages_proto2_TestAllTypesProto2_MapStringNestedMessageEntry_value(
-              nested_message_entry);
-  ASSERT_NE(cloned_nested, nullptr);
-  EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(
-                cloned_nested),
-            kTestNestedInt32);
+  {
+    upb_StringView key;
+    const protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage* value;
+    size_t iter = kUpb_Map_Begin;
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_string_nested_message_next(
+            clone, &key, &value, &iter));
+    EXPECT_TRUE(
+        upb_StringView_IsEqual(key, upb_StringView_FromString("nestedkey1")));
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(
+        protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(value),
+        kTestNestedInt32);
+  }
+
   upb_Arena_Free(arena);
 }
 
