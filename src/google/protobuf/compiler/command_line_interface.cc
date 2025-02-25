@@ -92,6 +92,7 @@
 #endif
 
 #include "google/protobuf/stubs/platform_macros.h"
+#include "google/protobuf/compiler/notices.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -2001,6 +2002,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--retain_options" || *name == "--version" ||
       *name == "--decode_raw" ||
+      *name == "--notices" ||
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
@@ -2328,6 +2330,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #else
     ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
 #endif
+  } else if (name == "--notices") {
+    std::cout << notices_text << std::endl;
+    return PARSE_ARGUMENT_DONE_AND_EXIT;
   } else if (name == "--experimental_editions") {
     // If you're reading this, you're probably wondering what
     // --experimental_editions is for and thinking of turning it on. This is an
@@ -2503,6 +2508,8 @@ Parse PROTO_FILES and generate output based on the options given:
   --enable_codegen_trace      Enables tracing which parts of protoc are
                               responsible for what codegen output. Not supported
                               by all backends or on all platforms.)";
+  std::cout << R"(
+  --notices                   Show notice file and exit.)";
   if (!plugin_prefix_.empty()) {
     std::cout << R"(
   --plugin=EXECUTABLE         Specifies a plugin executable to use.

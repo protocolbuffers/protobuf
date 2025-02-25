@@ -12,12 +12,26 @@ module(
 # Bzlmod follows MVS:
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
-bazel_dep(name = "abseil-cpp", version = "20250127.0")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "jsoncpp", version = "1.9.6")
+
+# These dependencies must be declared before the other rules dependencies.
 bazel_dep(name = "rules_apple", version = "3.13.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
+
+#ifndef PROTO2_OPENSOURCE
+# LINT.IfChange
+#endif // PROTO2_OPENSOURCE
+# protoc dependencies
+bazel_dep(name = "abseil-cpp", version = "20250127.0")
 bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
+#ifndef PROTO2_OPENSOURCE
+# LINT.ThenChange(//depot/google3/third_party/protobuf/compiler/notices.h)
+#endif // PROTO2_OPENSOURCE
+
+# other dependencies
+bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "jsoncpp", version = "1.9.6")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.3")
@@ -26,13 +40,8 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
+bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
-bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
-bazel_dep(
-    name = "rules_shell",
-    version = "0.2.0",
-)
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
