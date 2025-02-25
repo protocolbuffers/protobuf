@@ -1,10 +1,28 @@
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone)]
+pub struct Dependency {
+    pub crate_name: String,
+    pub import_paths: Vec<PathBuf>,
+    pub include_paths: Vec<PathBuf>,
+    pub proto_files: Vec<String>,
+}
 
 #[derive(Debug)]
 pub struct CodeGen {
     inputs: Vec<PathBuf>,
     output_dir: PathBuf,
     includes: Vec<PathBuf>,
+    dependencies: Vec<Dependency>,
+}
+
+#[macro_export]
+macro_rules! proto_dep {
+    ($c:ident) => {
+        $c::get_dependency(stringify!($c))
+    }
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -62,6 +80,7 @@ impl CodeGen {
             inputs: Vec::new(),
             output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             includes: Vec::new(),
+            dependencies: Vec::new(),
         }
     }
 
@@ -87,6 +106,11 @@ impl CodeGen {
 
     pub fn includes(&mut self, includes: impl Iterator<Item = impl AsRef<Path>>) -> &mut Self {
         self.includes.extend(includes.into_iter().map(|include| include.as_ref().to_owned()));
+        self
+    }
+
+    pub fn dependency(&mut self, dep: Dependency) -> &mut Self {
+        self.dependencies.push(dep.clone());
         self
     }
 
@@ -147,6 +171,23 @@ impl CodeGen {
         for include in &self.includes {
             println!("cargo:rerun-if-changed={}", include.display());
         }
+        for dep in &self.dependencies {
+            for path in &dep.import_paths {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+        }
+
+        let crate_mapping_path = self.output_dir.join("crate_mapping.txt");
+        {
+            let mut file = File::create(crate_mapping_path.clone()).unwrap();
+            for dep in &self.dependencies {
+                file.write_all(format!("{}\n", dep.crate_name).as_bytes()).expect("");
+                file.write_all(format!("{}\n", dep.proto_files.len()).as_bytes()).expect("");
+                for f in &dep.proto_files {
+                    file.write_all(format!("{}\n", f).as_bytes()).expect("");
+                }
+            }
+        }
 
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
             .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
@@ -154,6 +195,12 @@ impl CodeGen {
         for include in &self.includes {
             cmd.arg(format!("--proto_path={}", include.display()));
         }
+        for dep in &self.dependencies {
+            for path in &dep.import_paths {
+                cmd.arg(format!("--proto_path={}", path.display()));
+            }
+        }
+        cmd.arg(format!("--rust_opt=crate_mapping={}", crate_mapping_path.display()));
         let output = cmd.output().map_err(|e| format!("failed to run protoc: {}", e))?;
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
@@ -171,6 +218,12 @@ impl CodeGen {
             )
             .include(self.output_dir.clone())
             .flag("-std=c99");
+
+        for dep in &self.dependencies {
+            for path in &dep.include_paths {
+                cc_build.include(path);
+            }
+        }
 
         for path in &self.expected_generated_rs_files() {
             if !path.exists() {
