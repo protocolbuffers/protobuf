@@ -147,7 +147,7 @@ void MessageMutClearAndParse(Context& ctx, const Descriptor& msg) {
         };
         match status {
           Ok(_) => Ok(()),
-          Err(e) => Err($pb$::ParseError),
+          Err(_) => Err($pb$::ParseError),
         }
       )rs");
       return;
