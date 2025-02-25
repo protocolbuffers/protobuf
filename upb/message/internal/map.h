@@ -95,14 +95,13 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
+UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
   upb_strtable_iter it;
   it.t = &map->table;
   it.index = *iter;
   upb_strtable_next(&it);
   *iter = it.index;
-  if (upb_strtable_done(&it)) return NULL;
-  return (void*)str_tabent(&it);
+  return !upb_strtable_done(&it);
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
