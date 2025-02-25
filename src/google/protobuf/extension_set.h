@@ -674,6 +674,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
     virtual size_t ByteSizeLongV2() const = 0;
+    virtual uint8_t* WriteMessageToArrayV2(uint8_t* target) const = 0;
 #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
    private:
