@@ -487,7 +487,6 @@ cc_library(
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/synchronization",
         "@abseil-cpp//absl/types:span",
-        "@abseil-cpp//absl/utility:if_constexpr",
     ],
 )
 
@@ -614,7 +613,6 @@ cc_library(
         "@abseil-cpp//absl/time",
         "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
-        "@abseil-cpp//absl/utility:if_constexpr",
     ],
 )
 
