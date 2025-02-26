@@ -100,7 +100,9 @@ TEST(ArenaTest, SizedFree) {
   alloc.delegate_alloc = &upb_alloc_global;
   alloc.sizes = &sizes;
 
-  upb_Arena* arena = upb_Arena_Init(nullptr, 0, &alloc.alloc);
+  char initial_block[1000];
+
+  upb_Arena* arena = upb_Arena_Init(initial_block, 1000, &alloc.alloc);
   (void)upb_Arena_Malloc(arena, 500);
   void* to_resize = upb_Arena_Malloc(arena, 2000);
   void* resized = upb_Arena_Realloc(arena, to_resize, 2000, 4000);
@@ -190,11 +192,11 @@ TEST(OverheadTest, SingleMassiveBlockThenLittle) {
   }
   if (!UPB_ASAN) {
 #ifdef __ANDROID__
-    EXPECT_NEAR(test.WastePct(), 0.21, 0.025);
-    EXPECT_NEAR(test.AmortizedAlloc(), 0.05, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.075, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #else
-    EXPECT_NEAR(test.WastePct(), 0.6, 0.025);
-    EXPECT_NEAR(test.AmortizedAlloc(), 0.05, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.08, 0.025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #endif
   }
 }
@@ -206,8 +208,8 @@ TEST(OverheadTest, Overhead_AlternatingSmallLargeBlocks) {
     test.Alloc(64);
   }
   if (!UPB_ASAN) {
-    EXPECT_NEAR(test.WastePct(), 0.45, 0.025);
-    EXPECT_NEAR(test.AmortizedAlloc(), 1, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.007, 0.0025);
+    EXPECT_NEAR(test.AmortizedAlloc(), 0.52, 0.025);
   }
 }
 
@@ -217,7 +219,7 @@ TEST(OverheadTest, PartialMaxBlocks) {
     test.Alloc(2096 + i);
   }
   if (!UPB_ASAN) {
-    EXPECT_NEAR(test.WastePct(), 0.47, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.16, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 1.1, 0.25);
   }
 }
@@ -245,7 +247,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
     EXPECT_NEAR(test.WastePct(), 0.09, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.12, 0.025);
 #else
-    EXPECT_NEAR(test.WastePct(), 0.14, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.12, 0.03);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.08, 0.025);
 #endif
   }
@@ -257,7 +259,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
     EXPECT_NEAR(test.WastePct(), 0.05, 0.03);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.08, 0.025);
 #else
-    EXPECT_NEAR(test.WastePct(), 0.03, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.04, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.05, 0.025);
 #endif
   }
