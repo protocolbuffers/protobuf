@@ -161,7 +161,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:7.1.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
-          bazel: build --noenable_bzlmod --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg --incompatible_enable_cc_toolchain_resolution=false //python/dist //python/dist:test_wheel //python/dist:source_wheel
+          bazel: build --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg --incompatible_enable_cc_toolchain_resolution=false //python/dist //python/dist:test_wheel //python/dist:binary_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0

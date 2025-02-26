@@ -9,6 +9,7 @@
 #define PYUPB_CONVERT_H__
 
 #include "protobuf.h"
+#include "python/python_api.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 
