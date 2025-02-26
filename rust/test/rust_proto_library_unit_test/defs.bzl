@@ -1,7 +1,7 @@
 """Support for rust_proto_library_aspect unit-tests."""
 
 load(
-    "//rust:aspects.bzl",
+    "//rust/bazel:aspects.bzl",
     "RustProtoInfo",
     "rust_cc_proto_library_aspect",
     "rust_upb_proto_library_aspect",

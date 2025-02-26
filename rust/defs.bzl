@@ -4,7 +4,7 @@ load("@rules_rust//rust:defs.bzl", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
-    "//rust:aspects.bzl",
+    "//rust/bazel:aspects.bzl",
     "RustProtoInfo",
     "label_to_crate_name",
     "proto_rust_toolchain_label",
