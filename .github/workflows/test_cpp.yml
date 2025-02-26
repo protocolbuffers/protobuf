@@ -52,7 +52,7 @@ jobs:
             cache_key: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:7.1.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
             targets: "//src/... //third_party/utf8_range/..."
-          - config: { name: "aarch64" }
+          - config: { name: "aarch64", flags: "--platforms=//build_defs:aarch64_linux" }
             cache_key: aarch64-bazel7
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8"
