@@ -531,9 +531,6 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   size_t ByteSize() const;
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  size_t ByteSizeV2() const;
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   // Like ByteSize() but uses MessageSet format.
   size_t MessageSetByteSize() const;
@@ -672,10 +669,6 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-    virtual size_t ByteSizeLongV2() const = 0;
-    virtual uint8_t* WriteMessageToArrayV2(uint8_t* target) const = 0;
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.

@@ -760,45 +760,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   // wire if we encode the data as a length delimited field.
   static inline size_t LengthDelimitedSize(size_t length);
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  // v2 wireformat helpers for ByteSize.
-  template <typename T>
-  static size_t RepeatedNumericByteSizeV2(const RepeatedField<T>& value) {
-    return value.empty() ? 0
-                         : v2::kRepeatedFieldTagSize + value.size() * sizeof(T);
-  }
-
-  template <typename RepeatedT>
-  static size_t RepeatedStringByteSizeV2(const RepeatedT& value) {
-    if (value.empty()) return 0;
-
-    size_t total_bytes = 0;
-    for (const auto& each : value) {
-      total_bytes += each.size();
-    }
-    // Add size for length (sizeof(uint32_t)) per element.
-    return v2::kRepeatedFieldTagSize + v2::kLengthSize * value.size() +
-           total_bytes;
-  }
-
-  template <typename RepeatedT>
-  static size_t RepeatedMessageByteSizeV2(const RepeatedT& value) {
-    if (value.empty()) return 0;
-
-    size_t total_bytes = 0;
-    for (const auto& each : value) {
-      total_bytes += each.ByteSizeV2();
-    }
-    // Add size for length (sizeof(uint32_t)) per element.
-    return v2::kRepeatedFieldTagSize + v2::kLengthSize * value.size() +
-           total_bytes;
-  }
-
-  static inline size_t LengthPrefixedByteSizeV2(size_t field_size) {
-    // <tag> <field_number> <length> <payload>
-    return v2::kSingularFieldTagSize + v2::kLengthSize + field_size;
-  }
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
  private:
   // A helper method for the repeated primitive reader. This method has
