@@ -109,15 +109,16 @@ void InitializeFileDescriptorDefaultInstances() {
 void InitializeLazyExtensionSet() {
 }
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
-                    int* value) {
+bool ParseNamedEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
+                    absl::string_view name, int* PROTOBUF_NONNULL value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;
   *value = d->number();
   return true;
 }
 
-const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
+const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
+                              int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == nullptr ? GetEmptyString() : internal::NameOfEnumAsString(d));
 }
