@@ -15,6 +15,7 @@ load(
     "pkg_files",
     "strip_prefix",
 )
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")

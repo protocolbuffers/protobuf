@@ -3,7 +3,9 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
