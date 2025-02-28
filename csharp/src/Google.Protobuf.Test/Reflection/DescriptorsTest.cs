@@ -13,6 +13,7 @@ using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
 using static Google.Protobuf.Reflection.FeatureSet.Types;
@@ -33,6 +34,39 @@ namespace Google.Protobuf.Reflection
                 UnittestProto3Reflection.Descriptor,
                 UnittestImportProto3Reflection.Descriptor,
                 UnittestImportPublicProto3Reflection.Descriptor);
+        }
+
+        [Test]
+        public void FileDescriptor_CreateMessageWithDeepDependencies_BuildFromByteString()
+        {
+            Console.WriteLine("Running performance test for extension registry caching: With caching");
+
+            // uncomment below to find how much slower it is without caching
+            //FileDescriptor.DisableExtensionCaching();
+
+            var stopwatchCached = Stopwatch.StartNew();
+
+            var exampleCached = new UnittestDeepDependencies.Example();
+            Console.WriteLine(exampleCached.ToString());
+
+            stopwatchCached.Stop();
+
+            FileDescriptor.WriteBenchmark(Console.Out);
+            Console.WriteLine($"w/ cache elapsed: {stopwatchCached.Elapsed}");
+
+#if DEBUG
+            // For performance reaons, benachmarking is only enabled in Debug builds
+            Assert.AreEqual(402, FileDescriptor.GetAllExtensionsCount);
+            Assert.AreEqual(573, FileDescriptor.GetAllGeneratedExtensionsCount);
+            Assert.AreEqual(399, FileDescriptor.GetAllDependedExtensionsCount);
+            Assert.AreEqual(39, FileDescriptor.GetAllDependedExtensionsFromMessageCount);
+            Assert.AreEqual(118, FileDescriptor.TotalReturnedExtensionsCount);
+#else
+            Console.WriteLine("Benchmarking is only enabled for Debug build: Cannot verify expected method call and returned Extension count");
+#endif
+
+            // actually test that the performance increase is significant
+            Assert.Less(stopwatchCached.Elapsed, TimeSpan.FromSeconds(2), "Extension performance was not as low as expected - please improve performance of extension resolution");
         }
 
         [Test]
