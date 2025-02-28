@@ -114,37 +114,27 @@ kt_register_toolchains()
 
 http_archive(
     name = "rules_ruby",
-    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
-    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
-    urls = [
-        "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip",
-    ],
+    sha256 = "971b86974e5698abf3aa0a5dc285d378af19c7f2e1f1de33d2d08405460c370f",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
 )
 
-load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
+load("@rules_ruby//ruby:deps.bzl", "rb_register_toolchains", "rb_bundle_fetch")
 
-ruby_runtime("system_ruby")
+rb_register_toolchains(
+    version = "system",
+)
 
-register_toolchains("@system_ruby//:toolchain")
+rb_register_toolchains(
+    version = "jruby-9.4.6.0",
+)
 
-# Uncomment pairs of ruby_runtime() + register_toolchain() calls below to enable
-# local JRuby testing. Do not submit the changes (due to impact on test duration
-# for non JRuby builds due to downloading JRuby SDKs).
-#ruby_runtime("jruby-9.2")
-#
-#register_toolchains("@jruby-9.2//:toolchain")
-#
-#ruby_runtime("jruby-9.3")
-#
-#register_toolchains("@jruby-9.3//:toolchain")
-
-load("@system_ruby//:bundle.bzl", "ruby_bundle")
-
-ruby_bundle(
+rb_bundle_fetch(
     name = "protobuf_bundle",
-    srcs = ["//ruby:google-protobuf.gemspec"],
+    gem_checksums = {},
     bundler_version = "2.4.22",
     gemfile = "//ruby:Gemfile",
+    gemfile_lock = "//ruby:Gemfile.lock",
 )
 
 http_archive(
