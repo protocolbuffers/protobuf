@@ -244,7 +244,7 @@ struct SooRep {
 // We have to specialize several methods in the Cord case to get the memory
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
-class RepeatedField final
+class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
     : private internal::RepeatedFieldDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
