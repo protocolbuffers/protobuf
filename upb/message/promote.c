@@ -86,7 +86,6 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   int depth_limit = 100;
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_StringView data;
-  uintptr_t last_found_iter;
   while (upb_Message_NextUnknown(msg, &data, &iter)) {
     const char* ptr = data.data;
     upb_EpsCopyInputStream stream;
@@ -97,7 +96,6 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
       ptr = upb_WireReader_ReadTag(ptr, &tag);
       if (!ptr) return kUpb_GetExtension_ParseError;
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-        last_found_iter = iter;
         found_count++;
         const char* start =
             upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
@@ -130,15 +128,14 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     return kUpb_GetExtension_NotPresent;
   }
 
-  upb_Extension* ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
-  ext->ext = ext_table;
   ext->data.msg_val = extension_msg;
 
-  upb_Message_ReplaceUnknownWithExtension(msg, last_found_iter, ext);
-  while (found_count > 1) {
+  while (found_count > 0) {
     upb_FindUnknownRet found = upb_Message_FindUnknown(msg, field_number, 0);
     UPB_ASSERT(found.status == kUpb_FindUnknown_Ok);
     upb_StringView view = {.data = found.ptr, .size = found.len};
