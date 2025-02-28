@@ -251,6 +251,11 @@ message TestAllTypes {
     NestedMessage oneof_lazy_nested_message = 117 [
       lazy = true
     ];
+    bool oneof_bool = 118;
+    int64 oneof_int64 = 119;
+    string oneof_utf8_string = 120 [
+      features.utf8_validation = VERIFY
+    ];
   }
 }
 

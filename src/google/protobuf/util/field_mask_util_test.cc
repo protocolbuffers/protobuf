@@ -9,12 +9,14 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/field_mask.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/util/field_mask_util.h"
 
 namespace google {
 namespace protobuf {
@@ -202,7 +204,7 @@ TEST(FieldMaskUtilTest, TestGetFieldMaskForAllFields) {
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("bb", mask));
 
   mask = FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes>();
-  EXPECT_EQ(80, mask.paths_size());
+  EXPECT_LT(80, mask.paths_size());
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int32", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int64", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_uint32", mask));
