@@ -359,6 +359,7 @@ cc_test(
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
