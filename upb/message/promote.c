@@ -139,7 +139,10 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_FindUnknownRet found = upb_Message_FindUnknown(msg, field_number, 0);
     UPB_ASSERT(found.status == kUpb_FindUnknown_Ok);
     upb_StringView view = {.data = found.ptr, .size = found.len};
-    upb_Message_DeleteUnknown(msg, &view, &found.iter);
+    if (upb_Message_DeleteUnknown(msg, &view, &found.iter, arena) ==
+        kUpb_DeleteUnknown_AllocFail) {
+      return kUpb_GetExtension_OutOfMemory;
+    }
     found_count--;
   }
   value->msg_val = extension_msg;
@@ -303,7 +306,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
           message = ret.message;
           upb_StringView del =
               upb_StringView_FromDataAndSize(unknown_data, unknown_size);
-          upb_Message_DeleteUnknown(msg, &del, &(unknown.iter));
+          upb_Message_DeleteUnknown(msg, &del, &(unknown.iter), arena);
         }
       } break;
       case kUpb_FindUnknown_ParseError:
@@ -361,7 +364,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         }
         upb_StringView del =
             upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
-        upb_Message_DeleteUnknown(msg, &del, &unknown.iter);
+        upb_Message_DeleteUnknown(msg, &del, &unknown.iter, arena);
       } else {
         return ret.status;
       }
@@ -399,7 +402,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_StringView del =
         upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
-    upb_Message_DeleteUnknown(msg, &del, &unknown.iter);
+    upb_Message_DeleteUnknown(msg, &del, &unknown.iter, arena);
   }
   return kUpb_UnknownToMessage_Ok;
 }
