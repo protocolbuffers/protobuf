@@ -20,10 +20,12 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -36,6 +38,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // must be last.
 #include "google/protobuf/port_def.inc"
@@ -1398,6 +1401,7 @@ size_t ExtensionSet::ByteSize() const {
       Prefetch{});
   return total_size;
 }
+
 
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::SpaceUsedExcludingSelf() const

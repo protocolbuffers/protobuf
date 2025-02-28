@@ -7,12 +7,15 @@
 
 """Contains the Any helper APIs."""
 
-from typing import Optional
+from typing import Optional, TypeVar
 
 from google.protobuf import descriptor
 from google.protobuf.message import Message
 
 from google.protobuf.any_pb2 import Any
+
+
+_MessageT = TypeVar('_MessageT', bound=Message)
 
 
 def pack(
@@ -29,6 +32,17 @@ def pack(
 
 def unpack(any_msg: Any, msg: Message) -> bool:
   return any_msg.Unpack(msg=msg)
+
+
+def unpack_as(any_msg: Any, message_type: type[_MessageT]) -> _MessageT:
+  unpacked = message_type()
+  if unpack(any_msg, unpacked):
+    return unpacked
+  else:
+    raise TypeError(
+        f'Attempted to unpack {type_name(any_msg)} to'
+        f' {message_type.__qualname__}'
+    )
 
 
 def type_name(any_msg: Any) -> str:

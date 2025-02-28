@@ -23,7 +23,6 @@ STALENESS_TESTS=(
   "php:test_amalgamation_staleness"
   "php:proto_staleness_test"
   "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
-  "upb/cmake:test_generated_files"
   "upb/reflection:descriptor_upb_proto_staleness_test"
   "upb_generator:plugin_upb_proto_staleness_test"
 )

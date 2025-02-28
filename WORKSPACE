@@ -42,7 +42,7 @@ http_archive(
 )
 
 http_archive(
-    name = "com_google_googletest",
+    name = "googletest",
     sha256 = "7315acb6bf10e99f332c8a43f00d5fbb1ee6ca48c52f6b936991b216c586aaad",
     strip_prefix = "googletest-1.15.0",
     urls = [
@@ -50,7 +50,7 @@ http_archive(
     ],
 )
 
-load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
+load("@googletest//:googletest_deps.bzl", "googletest_deps")
 
 googletest_deps()
 
@@ -97,9 +97,11 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
-load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
 
 rules_cc_dependencies()
+
+rules_cc_toolchains()
 
 # For `kt_jvm_library`
 load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")

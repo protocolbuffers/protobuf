@@ -18,7 +18,7 @@ cc_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -54,9 +54,9 @@ cc_library(
         "//src/google/protobuf/compiler/java/lite:field_generators",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
     ],
 )

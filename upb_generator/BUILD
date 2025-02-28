@@ -19,22 +19,13 @@ licenses(["notice"])
 bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
     bootstrap_hdr = "plugin_bootstrap.h",
-    google3_src_files = [
-        "net/proto2/compiler/proto/profile.proto",
-        "third_party/protobuf/compiler/plugin.proto",
-    ],
-    google3_src_rules = [
-        "//net/proto2/proto:descriptor_proto_source",
-        "//net/proto2/compiler/proto:profile.proto",
-        "//src/google/protobuf/compiler:plugin_proto_source",
-    ],
-    oss_src_files = ["google/protobuf/compiler/plugin.proto"],
-    oss_src_rules = [
+    proto_lib_deps = ["//:compiler_plugin_proto"],
+    src_files = ["google/protobuf/compiler/plugin.proto"],
+    src_rules = [
         "//:descriptor_proto_srcs",
         "//src/google/protobuf/compiler:plugin_proto_src",
     ],
-    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["//:compiler_plugin_proto"],
+    strip_prefix = "third_party/protobuf/github/bootstrap/src",
     deps = ["//upb/reflection:descriptor_upb_proto"],
 )
 
@@ -55,7 +46,7 @@ bootstrap_cc_library(
         "//src/google/protobuf:port",
         "//upb:mini_table",
         "//upb:port",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -79,8 +70,8 @@ bootstrap_cc_library(
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -106,11 +97,11 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:port",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

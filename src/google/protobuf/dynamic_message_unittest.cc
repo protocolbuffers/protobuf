@@ -32,6 +32,8 @@
 #include "google/protobuf/unittest_no_field_presence.pb.h"
 
 
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -342,3 +344,5 @@ INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

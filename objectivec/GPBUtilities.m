@@ -177,7 +177,7 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 }
 
 // -- About Version Checks --
-// There's actually 3 places these checks all come into play:
+// There's actually a few places these checks all come into play:
 // 1. When the generated source is compile into .o files, the header check
 //    happens. This is checking the protoc used matches the library being used
 //    when making the .o.
@@ -185,10 +185,19 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 //    the header check comes into play again. But this time it is checking that
 //    the current library headers being used still support/match the ones for
 //    the generated code.
-// 3. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
+// 3. The generated code references an exported
+//    GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_*, thus ensuring at
+//    link/runtime that a matching version of the runtime is still being used.
+// 4. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
 //    called from the generated code passing in values captured when the
 //    generated code's .o was made. This checks that at runtime the generated
 //    code and runtime library match.
+
+const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310 = 40310;
+
+#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
+#error "Time to remove this and GPB_DEBUG_CHECK_RUNTIME_VERSIONS()"
+#else
 
 void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   // NOTE: This is passing the value captured in the compiled code to check
@@ -212,12 +221,7 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   }
 }
 
-void GPBRuntimeMatchFailure(void) {
-  [NSException raise:NSInternalInconsistencyException
-              format:@"Proto generation source appears to have been from a"
-                     @" version newer that this runtime (%d).",
-                     GOOGLE_PROTOBUF_OBJC_VERSION];
-}
+#endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
 
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
   GPBDescriptor *descriptor = [self descriptor];

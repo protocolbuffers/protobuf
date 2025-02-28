@@ -4,7 +4,7 @@ load("@rules_rust//rust:defs.bzl", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
-    "//rust:aspects.bzl",
+    "//rust/bazel:aspects.bzl",
     "RustProtoInfo",
     "label_to_crate_name",
     "proto_rust_toolchain_label",
@@ -88,6 +88,12 @@ def _rust_proto_library_impl(ctx):
 
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
+
+    proto_common.check_collocated(
+        ctx.label,
+        dep[ProtoInfo],
+        ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo],
+    )
 
     if len(rust_proto_info.dep_variant_infos) != 1:
         fail(

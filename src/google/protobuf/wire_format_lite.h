@@ -34,6 +34,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 
+
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif
@@ -758,6 +759,7 @@ class PROTOBUF_EXPORT WireFormatLite {
   // Given the length of data, calculate the byte size of the data on the
   // wire if we encode the data as a length delimited field.
   static inline size_t LengthDelimitedSize(size_t length);
+
 
  private:
   // A helper method for the repeated primitive reader. This method has
@@ -1827,7 +1829,7 @@ inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 inline size_t WireFormatLite::BytesSize(const std::string& value) {
-  return LengthDelimitedSize(value.size());
+  return StringSize(value);
 }
 
 inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {

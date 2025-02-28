@@ -3,7 +3,7 @@
 load("//:protobuf_version.bzl", "PROTOBUF_RUST_VERSION")
 
 # Temporarily append a prerelease suffix to our versions until we consider the release stable.
-PROTOBUF_RUST_VERSION_WITH_BETA_SUFFIX = PROTOBUF_RUST_VERSION + "-beta2"
+PROTOBUF_RUST_VERSION_WITH_BETA_SUFFIX = PROTOBUF_RUST_VERSION + "-beta1"
 
 def substitute_rust_release_version(src, out, name = None):
     version = PROTOBUF_RUST_VERSION_WITH_BETA_SUFFIX

@@ -81,6 +81,7 @@
 		F4487C811AAF62FC00531423 /* GPBMessageTests+Serialization.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C801AAF62FC00531423 /* GPBMessageTests+Serialization.m */; };
 		F4487C851AAF6AC500531423 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */; };
 		F4584D831ECCB53600803AB6 /* GPBExtensionRegistryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */; };
+		F45BFEDA2D67ADCD00D2224A /* GPBMessage40310FormatTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F45BFED92D67ADCD00D2224A /* GPBMessage40310FormatTest.m */; };
 		F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */; };
 		F45E57C91AE6DC98000B7D99 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */; };
 		F4629E4F2D35AB6200C1E352 /* GPBMessage30007FormatTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4629E4E2D35AB6200C1E352 /* GPBMessage30007FormatTest.m */; };
@@ -244,6 +245,7 @@
 		F44FEAF628B5472700EC57B3 /* map_unittest.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = map_unittest.proto; sourceTree = "<group>"; };
 		F451D3F61A8AAEA600B8A22C /* GPBProtocolBuffers_RuntimeSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBProtocolBuffers_RuntimeSupport.h; sourceTree = "<group>"; };
 		F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBExtensionRegistryTest.m; path = Tests/GPBExtensionRegistryTest.m; sourceTree = SOURCE_ROOT; };
+		F45BFED92D67ADCD00D2224A /* GPBMessage40310FormatTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPBMessage40310FormatTest.m; sourceTree = "<group>"; };
 		F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBExtensionInternals.m; sourceTree = "<group>"; };
 		F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_map_unittest_data.txt; sourceTree = "<group>"; };
 		F4629E4E2D35AB6200C1E352 /* GPBMessage30007FormatTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPBMessage30007FormatTest.m; sourceTree = "<group>"; };
@@ -508,6 +510,7 @@
 				F4487C761AADF84900531423 /* GPBMessageTests+Runtime.m */,
 				F4487C801AAF62FC00531423 /* GPBMessageTests+Serialization.m */,
 				F4629E4E2D35AB6200C1E352 /* GPBMessage30007FormatTest.m */,
+				F45BFED92D67ADCD00D2224A /* GPBMessage40310FormatTest.m */,
 				F4B51B1B1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm */,
 				F41C175C1833D3310064ED4D /* GPBPerfTests.m */,
 				8B4248B31A8BD96E00BC1EC6 /* GPBSwiftTests.swift */,
@@ -770,6 +773,7 @@
 				8BBEA4AA147C727D00C4ADB7 /* GPBCodedOutputStreamTests.m in Sources */,
 				F40EE506206BF91E0071091A /* GPBCompileTest23.m in Sources */,
 				8BBEA4AC147C727D00C4ADB7 /* GPBMessageTests.m in Sources */,
+				F45BFEDA2D67ADCD00D2224A /* GPBMessage40310FormatTest.m in Sources */,
 				F4487C811AAF62FC00531423 /* GPBMessageTests+Serialization.m in Sources */,
 				F40EE502206BF91E0071091A /* GPBCompileTest19.m in Sources */,
 				F40EE4F5206BF91E0071091A /* GPBCompileTest06.m in Sources */,

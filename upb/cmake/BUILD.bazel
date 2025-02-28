@@ -6,14 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load(
-    "//upb/bazel:build_defs.bzl",
-    "make_shell_script",
-)
-load(
-    ":build_defs.bzl",
-    "staleness_test",
-)
 
 licenses(["notice"])
 
@@ -40,17 +32,6 @@ genrule(
         "generated-in/google/protobuf/descriptor.upb_minitable.h",
     ],
     cmd = "cp $(SRCS) $(@D)/generated-in/google/protobuf",
-)
-
-staleness_test(
-    name = "test_generated_files",
-    outs = [
-        "google/protobuf/descriptor.upb.h",
-        "google/protobuf/descriptor.upb_minitable.c",
-        "google/protobuf/descriptor.upb_minitable.h",
-    ],
-    generated_pattern = "generated-in/%s",
-    tags = ["manual"],
 )
 
 pkg_files(

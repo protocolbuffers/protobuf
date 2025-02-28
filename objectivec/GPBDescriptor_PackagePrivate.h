@@ -29,7 +29,10 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   // Indicates the field needs custom handling for the TextFormat name, if not
   // set, the name can be derived from the ObjC name.
   GPBFieldTextFormatNameCustom = 1 << 6,
-  // This flag has never had any meaning, it was set on all enum fields.
+
+  // Legacy Flag. This is set for all enum fields in the older generated code but should no longer
+  // be used in new generated code. It can not be reused until the 30007 generated format is no
+  // longer supported.
   GPBFieldHasEnumDescriptor = 1 << 7,
 
   // These are not standard protobuf concepts, they are specific to the
@@ -51,16 +54,9 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   GPBFieldMapKeyBool = 11 << 8,
   GPBFieldMapKeyString = 12 << 8,
 
-  // If the enum for this field is "closed", meaning that it:
-  // - Has a fixed set of named values.
-  // - Encountering values not in this set causes them to be treated as unknown
-  //   fields.
-  // - The first value (i.e., the default) may be nonzero.
-  // NOTE: This could be tracked just on the GPBEnumDescriptor, but to support
-  // previously generated code, there would be not data to get the behavior
-  // correct, so instead it is tracked on the field. If old source compatibility
-  // is removed, this could be removed and the GPBEnumDescription fetched from
-  // the GPBFieldDescriptor instead.
+  // Legacy Flag. This is set for as needed enum fields in the older generated code but should no
+  // longer be used in new generated code. It can not be reused until the 30007 generated format is
+  // no longer supported.
   GPBFieldClosedEnum = 1 << 12,
 };
 
@@ -68,6 +64,16 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
 // their size. This directly impacts the size of apps since these exist per
 // field/extension.
 
+// This is the current version of GPBFileDescription. It must maintain field alignment with the
+// previous structure.
+typedef struct GPBFilePackageAndPrefix {
+  // The proto package for the file.
+  const char *package;
+  // The objc_class_prefix option if present.
+  const char *prefix;
+} GPBFilePackageAndPrefix;
+
+// This is used by older code generation.
 typedef struct GPBFileDescription {
   // The proto package for the file.
   const char *package;
@@ -122,6 +128,9 @@ typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
   // These map to standard protobuf concepts.
   GPBExtensionRepeated = 1 << 0,
   GPBExtensionPacked = 1 << 1,
+
+  // Legacy Flag. This was used by older versions of the runtime, but not it only needs the value
+  // set on the message that has the option enabled.
   GPBExtensionSetWireFormat = 1 << 2,
 };
 
@@ -150,21 +159,11 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
   GPBDescriptorInitializationFlag_WireFormat = 1 << 1,
 
-  // This is used as a stopgap as we move from using class names to class
-  // references. The runtime needs to support both until we allow a
-  // breaking change in the runtime.
+  // Legacy Flags. These are always set in older generated code but should not be used in new
+  // generated code. The bits can not be reused until the 30007 generated format is no longer
+  // supported.
   GPBDescriptorInitializationFlag_UsesClassRefs = 1 << 2,
-
-  // This flag is used to indicate that the generated sources already contain
-  // the `GPBFieldClearHasIvarOnZero` flag and it doesn't have to be computed
-  // at startup. This allows older generated code to still work with the
-  // current runtime library.
   GPBDescriptorInitializationFlag_Proto3OptionalKnown = 1 << 3,
-
-  // This flag is used to indicate that the generated sources already contain
-  // the `GPBFieldCloseEnum` flag and it doesn't have to be computed at startup.
-  // This allows the older generated code to still work with the current runtime
-  // library.
   GPBDescriptorInitializationFlag_ClosedEnumSupportKnown = 1 << 4,
 };
 
@@ -176,6 +175,14 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 }
 
 // fieldDescriptions and fileDescription have to be long lived, they are held as raw pointers.
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                            messageName:(NSString *)messageName
+                         runtimeSupport:(const int32_t *)runtimeSupport
+                        fileDescription:(GPBFilePackageAndPrefix *)fileDescription
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags;
 + (instancetype)allocDescriptorForClass:(Class)messageClass
                             messageName:(NSString *)messageName
                         fileDescription:(GPBFileDescription *)fileDescription
@@ -223,6 +230,21 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
 // valueNames, values and extraTextFormatInfo have to be long lived, they are
 // held as raw pointers.
 + (instancetype)allocDescriptorForName:(NSString *)name
+                        runtimeSupport:(const int32_t *)runtimeSupport
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags;
++ (instancetype)allocDescriptorForName:(NSString *)name
+                        runtimeSupport:(const int32_t *)runtimeSupport
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                                 flags:(GPBEnumDescriptorInitializationFlags)flags
+                   extraTextFormatInfo:(const char *)extraTextFormatInfo;
++ (instancetype)allocDescriptorForName:(NSString *)name
                             valueNames:(const char *)valueNames
                                 values:(const int32_t *)values
                                  count:(uint32_t)valueCount
@@ -252,6 +274,8 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
 @property(nonatomic, readonly) GPBWireFormat alternateWireType;
 
 // description has to be long lived, it is held as a raw pointer.
+- (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
+                              runtimeSupport:(const int32_t *)runtimeSupport;
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
                                usesClassRefs:(BOOL)usesClassRefs;
 
@@ -300,10 +324,6 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionPacked) != 0;
 }
 
-GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
-  return (description->options & GPBExtensionSetWireFormat) != 0;
-}
-
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
 #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
@@ -314,5 +334,13 @@ GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
 GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
                              (sizeof(GPBGenericValue) + sizeof(GPBMessageFieldDescription)),
                          DescriptionsWithDefault_different_size_than_expected);
+
+// Sanity check that the file description structures old and new work.
+GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, package) ==
+                             offsetof(GPBFileDescription, package),
+                         FileDescription_package_offsets_dont_match);
+GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, prefix) ==
+                             offsetof(GPBFileDescription, prefix),
+                         FileDescription_prefix_offsets_dont_match);
 
 CF_EXTERN_C_END

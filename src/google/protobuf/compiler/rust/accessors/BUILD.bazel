@@ -42,9 +42,9 @@ cc_library(
         "//src/google/protobuf/compiler/rust:rust_field_type",
         "//src/google/protobuf/compiler/rust:upb_helpers",
         "//src/google/protobuf/io:tokenizer",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
     ],
 )

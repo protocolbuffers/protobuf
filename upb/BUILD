@@ -23,7 +23,6 @@ exports_files(["LICENSE"])
 exports_files(
     [
         "BUILD",
-        "WORKSPACE",
     ],
     visibility = ["//upb/cmake:__pkg__"],
 )
@@ -202,6 +201,12 @@ alias(
     name = "wire",
     actual = "//upb/wire",
     visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wire_byte_size",
+    actual = "//upb/wire:byte_size",
+    visibility = ["//upb:friends"],
 )
 
 alias(

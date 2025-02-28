@@ -27,6 +27,7 @@
 #include <string>
 #include <thread>  // NOLINT
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -853,14 +854,14 @@ TEST_F(DescriptorTest, ContainingType) {
   EXPECT_TRUE(message2_->containing_type() == nullptr);
 }
 
-TEST_F(DescriptorTest, FieldNamesDedup) {
+TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
   const auto collect_unique_names = [](const FieldDescriptor* field) {
     absl::btree_set<absl::string_view> names{
         field->name(), field->lowercase_name(), field->camelcase_name(),
         field->json_name()};
-    // Verify that we have the same number of string objects as we have string
-    // values. That is, duplicate names use the same std::string object.
-    // This is for memory efficiency.
+    // For names following the style guide, verify that we have the same number
+    // of string objects as we have string values. That is, duplicate names use
+    // the same std::string object. This is for memory efficiency.
     EXPECT_EQ(names.size(),
               (absl::flat_hash_set<const void*>{
                   field->name().data(), field->lowercase_name().data(),
@@ -873,25 +874,74 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
   // field_name1
   EXPECT_THAT(collect_unique_names(message4_->field(0)),
               ElementsAre("fieldName1", "field_name1"));
-  // fieldName2
-  EXPECT_THAT(collect_unique_names(message4_->field(1)),
-              ElementsAre("fieldName2", "fieldname2"));
-  // FieldName3
-  EXPECT_THAT(collect_unique_names(message4_->field(2)),
-              ElementsAre("FieldName3", "fieldName3", "fieldname3"));
-  // _field_name4
-  EXPECT_THAT(collect_unique_names(message4_->field(3)),
-              ElementsAre("FieldName4", "_field_name4", "fieldName4"));
-  // FIELD_NAME5
-  EXPECT_THAT(
-      collect_unique_names(message4_->field(4)),
-      ElementsAre("FIELDNAME5", "FIELD_NAME5", "fIELDNAME5", "field_name5"));
-  // field_name6, with json name @type
-  EXPECT_THAT(collect_unique_names(message4_->field(5)),
-              ElementsAre("@type", "fieldName6", "field_name6"));
   // fieldname7
   EXPECT_THAT(collect_unique_names(message4_->field(6)),
               ElementsAre("fieldname7"));
+}
+
+TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
+  // Name accessors where migrated from std::string to absl::string_view.
+  // Some callers were taking the C-String out of the std::string via `.data()`
+  // and that code kept working when the type was changed.
+  // We want to keep that working for now to prevent breaking these users
+  // dynamically.
+  const auto check_nul_terminated = [](absl::string_view view) {
+    EXPECT_EQ(view.data()[view.size()], '\0');
+  };
+  const auto check_nul_names = [&](auto* entity) {
+    check_nul_terminated(entity->name());
+    check_nul_terminated(entity->full_name());
+  };
+
+  const auto check_nul_field_names = [&](auto* field) {
+    check_nul_terminated(field->name());
+    check_nul_terminated(field->full_name());
+    check_nul_terminated(field->lowercase_name());
+    check_nul_terminated(field->camelcase_name());
+    check_nul_terminated(field->json_name());
+  };
+
+  check_nul_names(message4_);
+  check_nul_names(enum_);
+  for (int i = 0; i < message4_->field_count(); ++i) {
+    check_nul_field_names(message4_->field(i));
+  }
+}
+
+TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
+  const auto names = [&](auto* field) {
+    return std::vector<absl::string_view>{
+        field->name(), field->lowercase_name(), field->camelcase_name(),
+        field->json_name()};
+  };
+
+  // field_name1
+  EXPECT_THAT(
+      names(message4_->field(0)),
+      ElementsAre("field_name1", "field_name1", "fieldName1", "fieldName1"));
+  // fieldName2
+  EXPECT_THAT(
+      names(message4_->field(1)),
+      ElementsAre("fieldName2", "fieldname2", "fieldName2", "fieldName2"));
+  // FieldName3
+  EXPECT_THAT(
+      names(message4_->field(2)),
+      ElementsAre("FieldName3", "fieldname3", "fieldName3", "FieldName3"));
+  // _field_name4
+  EXPECT_THAT(
+      names(message4_->field(3)),
+      ElementsAre("_field_name4", "_field_name4", "fieldName4", "FieldName4"));
+  // FIELD_NAME5
+  EXPECT_THAT(
+      names(message4_->field(4)),
+      ElementsAre("FIELD_NAME5", "field_name5", "fIELDNAME5", "FIELDNAME5"));
+  // field_name6, with json name @type
+  EXPECT_THAT(names(message4_->field(5)),
+              ElementsAre("field_name6", "field_name6", "fieldName6", "@type"));
+  // fieldname7
+  EXPECT_THAT(
+      names(message4_->field(6)),
+      ElementsAre("fieldname7", "fieldname7", "fieldname7", "fieldname7"));
 }
 
 TEST_F(DescriptorTest, FieldNameDedupJsonEqFull) {
@@ -4461,6 +4511,15 @@ class ValidationErrorTest : public testing::Test {
     EXPECT_EQ(expected_errors, error_collector.text_);
   }
 
+  void ParseAndBuildFileWithErrorSubstr(absl::string_view file_name,
+                                        absl::string_view file_text,
+                                        absl::string_view expected_errors) {
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
+                                                &error_collector) == nullptr);
+    EXPECT_THAT(error_collector.text_, HasSubstr(expected_errors));
+  }
+
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given warning text.
@@ -5939,6 +5998,16 @@ TEST_F(ValidationErrorTest, InputTypeNotDefined) {
       "}",
 
       "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n");
+}
+
+TEST_F(ValidationErrorTest, ServiceWithEmptyName) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        service { name: "" }
+      )pb",
+      "foo.proto: : NAME: Missing name.\n");
 }
 
 TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
@@ -9323,11 +9392,197 @@ TEST_F(FeaturesTest, MapFieldFeaturesExplicitPresence) {
   validate_maps(proto2);
 }
 
+TEST_F(FeaturesTest, NoNamingStyleViolationsUnlessPoolOptIn) {
+  BuildDescriptorMessagesInTestPool();
+
+  // By default, the pool does not enforce naming style violations.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message bad_message_name {}
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  // Proto2 will have the name enforcement feature off.
+  ASSERT_THAT(ParseAndBuildFile("naming1.proto", R"schema(
+    syntax = "proto2";
+    package naming1;
+    message bad_message_name {}
+  )schema"),
+              NotNull());
+
+  // Edition 2024 with good names.
+  ASSERT_THAT(ParseAndBuildFile("naming2.proto", R"schema(
+    edition = "2024";
+    package naming2.good_package;
+    message GoodMessageName { int32 good_field_name = 1; }
+    enum GoodEnumName { GOOD_ENUM_VALUE = 0; }
+    service GoodServiceName {
+      rpc GoodMethodName(GoodMessageName) returns (GoodMessageName) {}
+    }
+  )schema"),
+              NotNull());
+
+  // Edition 2024 with bad names but out-out feature.
+  ASSERT_THAT(ParseAndBuildFile("naming3.proto", R"schema(
+    edition = "2024";
+    package naming3;
+    option features.enforce_naming_style = STYLE_LEGACY;
+    message bad_message { oneof BadOneof { int32 BadFieldName = 1;  } }
+    enum _bad_enum_ { bAd_eNuM_vAlUE = 0; }
+    service BadServiceName__1 {
+      rpc BadMethodName(bad_message) returns (bad_message) {}
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, BadPackageName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+      edition = "2024";
+      package bad.Package.name;
+      )schema",
+      "Package name bad.Package.name should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package bad_____underscores;
+      )schema",
+      "Package name bad_____underscores contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadMessageName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    message GoodMessageName { message badmessagename {} }
+  )schema",
+      "Message name badmessagename should begin with a capital letter");
+}
+
+TEST_F(FeaturesTest, BadOneofName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message GoodMessageName { oneof BadOneofName { int32 x = 1; } }
+  )schema",
+      "Oneof name BadOneofName should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package naming2;
+      message GoodMessageName { oneof o_ { int32 x = 1; } }
+      )schema",
+      "Oneof name o_ contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadFieldName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message GoodMessageName { int32 BadFieldName = 1; }
+  )schema",
+      "Field name BadFieldName should be lower_snake_case");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming2.proto", R"schema(
+      edition = "2024";
+      package naming2;
+      message GoodMessageName { int32 f_1 = 1; }
+      )schema",
+      "Field name f_1 contains style violating underscores");
+}
+
+TEST_F(FeaturesTest, BadEnumName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    enum bad_enum { UNKNOWN = 0;}
+  )schema",
+                                   "Enum name bad_enum should be TitleCase");
+}
+
+TEST_F(FeaturesTest, BadEnumValueName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+    enum GoodEnum { unknown = 0; }
+  )schema",
+      "Enum value name unknown should be UPPER_SNAKE_CASE");
+}
+
+TEST_F(FeaturesTest, BadServiceName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message M {}
+    service badService { rpc GoodMethodName(M) returns (M) {} }
+  )schema",
+      "Service name badService should begin with a capital letter");
+}
+
+TEST_F(FeaturesTest, BadMethodName) {
+  BuildDescriptorMessagesInTestPool();
+
+  pool_.EnforceNamingStyle(true);
+
+  ParseAndBuildFileWithErrorSubstr(
+      "naming1.proto", R"schema(
+    edition = "2024";
+    package naming1;
+    message M {}
+    service GoodService { rpc badMethodName(M) returns (M) {} }
+  )schema",
+      "Method name badMethodName should begin with a capital letter");
+}
+
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
     edition = "2023";
-    
+
     option features.message_encoding = DELIMITED;
 
     message Foo {
@@ -11819,8 +12074,8 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
   template <typename Func>
-  auto MemoizeProjection(const DescriptorPool* pool,
-                         const FieldDescriptor* field, Func func) {
+  const auto& MemoizeProjection(const DescriptorPool* pool,
+                                const FieldDescriptor* field, Func func) {
     return pool->MemoizeProjection(field, func);
   };
 };
@@ -11834,14 +12089,19 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
   proto2_unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
 
-  auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
+  const auto& name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(0), name_lambda);
-  auto dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
+  const auto& dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(0), name_lambda);
 
   ASSERT_EQ(counter, 1);
   ASSERT_EQ(name, "proto2_unittest.TestAllTypes.optional_int32");
   ASSERT_EQ(dupe_name, "proto2_unittest.TestAllTypes.optional_int32");
+
+  // Check that they are references aliasing the same object.
+  EXPECT_TRUE(
+      (std::is_same_v<decltype(name), const decltype(descriptor->name()) &>));
+  EXPECT_EQ(&name, &dupe_name);
 
   auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
       descriptor->file()->pool(), descriptor->field(1), name_lambda);

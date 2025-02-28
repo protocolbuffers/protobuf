@@ -17,6 +17,9 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -46,15 +49,16 @@ bool EndsWithTypeName(absl::string_view type_url, absl::string_view type_name) {
 
 bool InternalPackFromLite(const MessageLite& message,
                           absl::string_view type_url_prefix,
-                          absl::string_view type_name, UrlType* dst_url,
-                          ValueType* dst_value) {
+                          absl::string_view type_name,
+                          UrlType* PROTOBUF_NONNULL dst_url,
+                          ValueType* PROTOBUF_NONNULL dst_value) {
   *dst_url = GetTypeUrl(type_name, type_url_prefix);
   return message.SerializeToString(dst_value);
 }
 
 bool InternalUnpackToLite(absl::string_view type_name,
                           absl::string_view type_url, const ValueType& value,
-                          MessageLite* dst_message) {
+                          MessageLite* PROTOBUF_NONNULL dst_message) {
   if (!InternalIsLite(type_name, type_url)) {
     return false;
   }
@@ -65,8 +69,9 @@ bool InternalIsLite(absl::string_view type_name, absl::string_view type_url) {
   return EndsWithTypeName(type_url, type_name);
 }
 
-bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,
-                     std::string* full_type_name) {
+bool ParseAnyTypeUrl(absl::string_view type_url,
+                     std::string* PROTOBUF_NULLABLE url_prefix,
+                     std::string* PROTOBUF_NONNULL full_type_name) {
   size_t pos = type_url.find_last_of('/');
   if (pos == std::string::npos || pos + 1 == type_url.size()) {
     return false;
@@ -78,10 +83,13 @@ bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,
   return true;
 }
 
-bool ParseAnyTypeUrl(absl::string_view type_url, std::string* full_type_name) {
+bool ParseAnyTypeUrl(absl::string_view type_url,
+                     std::string* PROTOBUF_NONNULL full_type_name) {
   return ParseAnyTypeUrl(type_url, nullptr, full_type_name);
 }
 
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

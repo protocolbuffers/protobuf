@@ -115,7 +115,6 @@ gen_file_lists(
         ":upb": "libupb",
         ":protoc-gen-upb": "protoc-gen-upb",
         ":protoc-gen-upbdefs": "protoc-gen-upbdefs",
-        ":protoc-gen-upb_minitable": "protoc-gen-upb_minitable",
         # Protos:
         "//src/google/protobuf:well_known_type_protos": "wkt_protos",
         "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
@@ -194,6 +193,7 @@ cc_dist_library(
     dist_deps = [
         ":protobuf",
         ":protobuf_lite",
+        ":upb",
     ],
     tags = ["manual"],
     deps = [
@@ -207,6 +207,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+        "//upb_generator/minitable:generator",
     ],
 )
 
@@ -224,6 +225,8 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
+        # TODO Make this private once gRPC migrates off it.
+        "//src/google/protobuf/compiler/php",
     ],
 )
 
@@ -262,17 +265,6 @@ cc_dist_library(
     tags = ["manual"],
     deps = [
         "//upb_generator/reflection:generator_with_main",
-    ],
-)
-
-cc_dist_library(
-    name = "protoc-gen-upb_minitable",
-    dist_deps = [
-        ":upb",
-    ],
-    tags = ["manual"],
-    deps = [
-        "//upb_generator/minitable:generator_with_main",
     ],
 )
 

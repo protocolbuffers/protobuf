@@ -43,7 +43,6 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/message.h"
@@ -2389,7 +2388,10 @@ class MyMapEntry
   constexpr MyMapEntry()
       : MyMapEntry::MapEntry(static_cast<ClassData*>(nullptr)) {}
   MyMapEntry(Arena* arena) : MyMapEntry::MapEntry(arena, nullptr) {}
-  const ClassData* GetClassData() const { ABSL_CHECK(false); }
+  const ClassData* GetClassData() const {
+    ABSL_CHECK(false);
+    return nullptr;
+  }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };

@@ -923,33 +923,9 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
 template <typename FieldType, typename TagType, bool zigzag>
 PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
     PROTOBUF_TC_PARAM_DECL) {
-  // For some reason clang wants to save 5 registers to the stack here,
-  // but we only need four for this code, so save the data we don't need
-  // to the stack.  Happily, saving them this way uses regular store
-  // instructions rather than PUSH/POP, which saves time at the cost of greater
-  // code size, but for this heavily-used piece of code, that's fine.
-  struct Spill {
-    uint64_t field_data;
-    ::google::protobuf::MessageLite* msg;
-    const ::google::protobuf::internal::TcParseTableBase* table;
-    uint64_t hasbits;
-  };
-  Spill spill = {data.data, msg, table, hasbits};
-#if defined(__GNUC__)
-  // This empty asm block convinces the compiler that the contents of spill may
-  // have changed, and thus can't be cached in registers.  It's similar to, but
-  // more optimal than, the effect of declaring it "volatile".
-  asm("" : "+m"(spill));
-#endif
-
   uint64_t tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
-
-  data.data = spill.field_data;
-  msg = spill.msg;
-  table = spill.table;
-  hasbits = spill.hasbits;
 
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1768,16 +1744,10 @@ PROTOBUF_NOINLINE const char* TcParser::FastUR2(PROTOBUF_TC_PARAM_DECL) {
 //////////////////////////////////////////////////////////////////////////////
 
 namespace {
-// TODO: revisit the use of inline assembly and consider
-// benchmarking as bts isn't short latency either.
 inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
-#if defined(__x86_64__) && defined(__GNUC__)
-  asm("bts %1, %0\n" : "+m"(*reinterpret_cast<char*>(msg)) : "r"(has_idx));
-#else
   auto& hasblock = TcParser::RefAt<uint32_t>(msg, has_idx / 32 * 4);
   hasblock |= uint32_t{1} << (has_idx % 32);
-#endif
 }
 }  // namespace
 
@@ -2713,11 +2683,11 @@ const char* TcParser::ParseOneMapEntry(
     void* obj;
     if (inner_tag == key_tag) {
       type_card = map_info.key_type_card;
-      type_kind = map.type_info().key_type;
+      type_kind = map.type_info().key_type_kind();
       obj = node->GetVoidKey();
     } else {
       type_card = map_info.value_type_card;
-      type_kind = map.type_info().value_type;
+      type_kind = map.type_info().value_type_kind();
       obj = map.GetVoidValue(node);
     }
 
@@ -2866,7 +2836,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
       WriteMapEntryAsUnknown(msg, table, map, saved_tag, node, map_info);
     } else {
       // Done parsing the node, insert it.
-      switch (map.type_info().key_type) {
+      switch (map.type_info().key_type_kind()) {
         case UntypedMapBase::TypeKind::kBool:
           static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
               static_cast<KeyMapBase<bool>::KeyNode*>(node));

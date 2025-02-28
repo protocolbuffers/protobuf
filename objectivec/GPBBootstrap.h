@@ -114,8 +114,25 @@
 // Current library runtime version.
 // - Gets bumped when the runtime makes changes to the interfaces between the
 //   generated code and runtime (things added/removed, etc).
-#define GOOGLE_PROTOBUF_OBJC_VERSION 30007
+#define GOOGLE_PROTOBUF_OBJC_VERSION 40310
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
 #define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30007
+
+// ----------------------------------------------------------------------------
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+// Exported linker symbols that the generated code expects to be present. They
+// serve to ensure at link time (whether statically or dynamically) that the
+// protoc generated sources are being linked with a library that supports them.
+// The values are only removed when GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION
+// is updated to make them no longer valid.
+extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310;  // NOLINT
+
+#if defined(__cplusplus)
+}  // extern "C"
+#endif

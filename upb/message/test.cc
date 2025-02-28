@@ -15,8 +15,11 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/cleanup/cleanup.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/escaping.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
+#include "upb/base/status.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
@@ -32,8 +35,10 @@
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
@@ -44,6 +49,9 @@
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
+
+// Must be last
+#include "upb/port/def.inc"
 
 void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
@@ -333,6 +341,38 @@ TEST(MessageTest, UnknownMessageSet) {
   EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknowngroup(items[0]));
 }
 
+TEST(MessageTest, MessageSetSubmessageEncoding) {
+  upb::Arena arena;
+
+  // Create a normal extension message and use the set the doppelgänger message
+  // set member extension on it. This will allow us to serialize as a normal
+  // extension and then attempt to parse it as a message set.
+  // This mimics the behavior of an encoder that is message set unaware.
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_MessageSetMember* ext_member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  upb_test_MessageSetMember_set_optional_int32(ext_member, 234);
+  upb_test_MessageSetMember_set_doppelganger_message_set_extension(
+      ext_msg, ext_member, arena.ptr());
+
+  size_t size;
+  char* serialized =
+      upb_test_TestExtensions_serialize(ext_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_GE(size, 0);
+
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  upb_test_TestMessageSet* message_set = upb_test_TestMessageSet_parse_ex(
+      serialized, size, upb_DefPool_ExtensionRegistry(defpool.ptr()), 0,
+      arena.ptr());
+  ASSERT_TRUE(message_set != nullptr);
+
+  VerifyMessageSet(message_set);
+}
+
 TEST(MessageTest, Proto2Enum) {
   upb::Arena arena;
   upb_test_Proto2FakeEnumMessage* fake_msg =
@@ -407,6 +447,37 @@ TEST(MessageTest, TestBadUTF8) {
   std::string serialized("r\x03\xed\xa0\x81");
   EXPECT_EQ(nullptr, protobuf_test_messages_proto3_TestAllTypesProto3_parse(
                          serialized.data(), serialized.size(), arena.ptr()));
+}
+
+// On a 32 bit platform, upb_StringView has the same size as an int64 field, but
+// lower alignment requirements - when selecting the representation for oneof,
+// both size and alignment need to be considered.
+TEST(MessageTest, OneOf32BitStringViewInt64Alignment) {
+  upb::Arena arena;
+  upb_StringView md = {nullptr, 0};
+  uint32_t field_tag;
+  {
+    upb_DefPool* d = upb_DefPool_New();
+    auto free = absl::MakeCleanup([d]() { upb_DefPool_Free(d); });
+    const upb_MessageDef* def = upb_test_TestOneOfAlignment_getmsgdef(d);
+    const upb_FieldDef* field_def =
+        upb_MessageDef_FindFieldByName(def, "should_be_sixty_four_aligned");
+    field_tag = upb_FieldDef_Number(field_def);
+    EXPECT_TRUE(upb_MessageDef_MiniDescriptorEncode(def, arena.ptr(), &md));
+  }
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTable* table = _upb_MiniTable_Build(
+      md.data, md.size, kUpb_MiniTablePlatform_32Bit, arena.ptr(), &status);
+  if (!status.ok) {
+    FAIL() << "Could not build minitable: " << status.msg;
+  }
+  const upb_MiniTableField* mtfield =
+      upb_MiniTable_FindFieldByNumber(table, field_tag);
+  uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(mtfield);
+  size_t alignment = 1 << absl::countr_zero(offset);
+  // Must align to at least 64 bit
+  EXPECT_GE(alignment, 8);
 }
 
 TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {

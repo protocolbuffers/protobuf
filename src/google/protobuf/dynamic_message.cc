@@ -64,7 +64,6 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -917,7 +916,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->offsets.get(),
       type_info->has_bits_indices.get(),
       type_info->has_bits_offset,
-      PROTOBUF_FIELD_OFFSET(DynamicMessage, _internal_metadata_),
       type_info->extensions_offset,
       type_info->oneof_case_offset,
       static_cast<int>(type_info->class_data.allocation_size()),

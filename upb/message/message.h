@@ -55,9 +55,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
 
 UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 
-// Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
-
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
 // chunk.

@@ -25,6 +25,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -117,6 +120,7 @@ class SingularEnum : public FieldGeneratorBase {
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
     )cc");
   }
+
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -576,3 +580,5 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

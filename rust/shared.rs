@@ -18,7 +18,7 @@ pub use crate::codegen_traits::{
     create::Parse,
     interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
     read::Serialize,
-    write::{Clear, ClearAndParse, MergeFrom},
+    write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
     Message, MessageMut, MessageView,
 };
 pub use crate::cord::{ProtoBytesCow, ProtoStringCow};

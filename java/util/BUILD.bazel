@@ -1,3 +1,4 @@
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_proto_library.bzl", "java_proto_library")

@@ -233,7 +233,6 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
         GPBEnumDescriptor *$name$_EnumDescriptor(void) {
           static _Atomic(GPBEnumDescriptor*) descriptor = nil;
           if (!descriptor) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
             static const char *valueNames =
                 $values_name_blob$
             static const int32_t values[] = {
@@ -242,6 +241,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
             $maybe_extra_text_format_decl$
             GPBEnumDescriptor *worker =
                 [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)
+                                           runtimeSupport:&$google_protobuf_runtime_support$
                                                valueNames:valueNames
                                                    values:values
                                                     count:(uint32_t)(sizeof(values) / sizeof(int32_t))

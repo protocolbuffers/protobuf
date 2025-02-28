@@ -30,13 +30,17 @@ bootstrap_cc_library(
         "//upb_generator:file_layout",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:reflection",
+        "//upb_generator:plugin",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//pkg:__pkg__"],
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler:plugin",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -44,13 +48,13 @@ bootstrap_cc_library(
         "//upb:wire_reader",
         "//upb/mini_table:internal",
         "//upb_generator/common:names",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
     ],
 )
 
@@ -67,7 +71,7 @@ cc_library(
     deps = [
         ":names_internal",
         "//upb:port",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -81,7 +85,7 @@ cc_library(
     ],
     deps = [
         "//upb_generator/common:names",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -123,12 +127,12 @@ bootstrap_cc_library(
         "//upb:mem",
         "//upb:port",
         "//upb_generator/common:names",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
     ],
 )
 

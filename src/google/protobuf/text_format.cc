@@ -3136,8 +3136,7 @@ class TextMarkerGenerator final {
 
  private:
   static constexpr absl::string_view kRedactionMarkers[] = {
-      "goo.gle/debugonly ", "goo.gle/nodeserialize ", "goo.gle/debugstr ",
-      "goo.gle/debugproto "};
+      "goo.gle/debugonly ", "goo.gle/debugstr ", "goo.gle/debugproto "};
 
   static constexpr absl::string_view kRandomMarker = "   ";
 

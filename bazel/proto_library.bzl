@@ -17,4 +17,4 @@ def proto_library(**kwattrs):
         _proto_library(**kwattrs)
     else:
         # On older Bazel versions keep using native rules, so that mismatch in ProtoInfo doesn't happen
-        native.proto_library(**kwattrs)
+        native.proto_library(**kwattrs)  # buildifier: disable=native-proto

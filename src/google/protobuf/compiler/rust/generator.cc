@@ -177,7 +177,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   });
 
   std::string expected_runtime_version = absl::StrCat(
-      absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"), "-beta2");
+      absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"), "-beta1");
 
   ctx.Emit({{"expected_runtime_version", expected_runtime_version}},
            R"rs(

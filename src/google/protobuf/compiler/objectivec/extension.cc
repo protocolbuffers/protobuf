@@ -73,9 +73,6 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
   if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
-  if (descriptor_->containing_type()->options().message_set_wire_format()) {
-    options.push_back("GPBExtensionSetWireFormat");
-  }
 
   printer->Emit(
       {{"default",

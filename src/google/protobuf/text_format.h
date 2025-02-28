@@ -51,7 +51,7 @@ PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 // formats. A higher-level API must correspond to a greater number than any
 // lower-level APIs it calls under the hood (e.g kDebugString >
 // kMemberPrintToString > kPrintWithStream).
-PROTOBUF_EXPORT enum class FieldReporterLevel {
+enum class PROTOBUF_EXPORT FieldReporterLevel {
   kNoReport = 0,
   kPrintMessage = 1,
   kPrintWithGenerator = 2,

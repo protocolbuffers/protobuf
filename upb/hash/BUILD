@@ -36,9 +36,9 @@ cc_test(
         ":hash",
         "//upb:mem",
         "//upb:port",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

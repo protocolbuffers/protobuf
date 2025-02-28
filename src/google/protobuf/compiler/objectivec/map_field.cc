@@ -60,12 +60,6 @@ MapFieldGenerator::MapFieldGenerator(
   if (absl::StrContains(value_field_flags, "GPBFieldHasDefaultValue")) {
     field_flags.push_back("GPBFieldHasDefaultValue");
   }
-  if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
-    field_flags.push_back("GPBFieldHasEnumDescriptor");
-    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
-      field_flags.push_back("GPBFieldClosedEnum");
-    }
-  }
 
   variables_.Set("fieldflags", BuildFlagsString(FLAGTYPE_FIELD, field_flags));
 

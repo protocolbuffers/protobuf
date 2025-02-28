@@ -13,7 +13,8 @@ module Google
         # the pool, and either retrieve the wrapper object for the given pointer
         # or create one. Assumes that the caller is the wrapper class for the
         # given pointer and that it implements `private_constructor`.
-        def descriptor_from_file_def(file_def, pointer)
+        def descriptor_from_file_def(file_def, pointer = nil)
+          pointer = file_def if pointer.nil?
           raise RuntimeError.new "FileDef is nil" if file_def.nil?
           raise RuntimeError.new "FileDef is null" if file_def.null?
           pool_def = Google::Protobuf::FFI.file_def_pool file_def

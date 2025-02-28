@@ -156,6 +156,7 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   const upb_EnumDef* enumdef;
   const upb_FieldDef* fielddef;
   const upb_ServiceDef* servicedef;
+  const upb_FileDef* filedef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
@@ -175,6 +176,11 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   servicedef = upb_DefPool_FindServiceByName(self->symtab, name_str);
   if (servicedef) {
     return get_servicedef_obj(_self, servicedef);
+  }
+
+  filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
+  if (filedef) {
+    return get_filedef_obj(_self, filedef);
   }
 
   return Qnil;

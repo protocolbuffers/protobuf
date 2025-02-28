@@ -429,10 +429,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
                     : "GPBMessageFieldDescription");
 
   std::vector<std::string> init_flags;
-  init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
-  init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
-  init_flags.push_back(
-      "GPBDescriptorInitializationFlag_ClosedEnumSupportKnown");
   if (need_defaults) {
     init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
   }
@@ -488,10 +484,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
               // Start up the root class to support the scoped extensions.
               __unused Class rootStartup = [$root_class_name$ class];
             )objc");
-          } else {
-            // The Root class has a debug runtime check, so if not
-            // starting that up, add the check.
-            printer->Emit("GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
           }
         }},
        {"field_description_type", field_description_type},
@@ -627,6 +619,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
             GPBDescriptor *localDescriptor =
                 [GPBDescriptor allocDescriptorForClass:$class_reference$
                                            messageName:@"$message_name$"
+                                        runtimeSupport:&$google_protobuf_runtime_support$
                                        fileDescription:&$file_description_name$
                                                 fields:$fields$
                                             fieldCount:$fields_count$

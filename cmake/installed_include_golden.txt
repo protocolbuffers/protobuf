@@ -25,11 +25,13 @@ google/protobuf/compiler/java/java_features.pb.h
 google/protobuf/compiler/java/name_resolver.h
 google/protobuf/compiler/java/names.h
 google/protobuf/compiler/java/options.h
+google/protobuf/compiler/notices.h
 google/protobuf/compiler/objectivec/line_consumer.h
 google/protobuf/compiler/objectivec/names.h
 google/protobuf/compiler/objectivec/nsobject_methods.h
 google/protobuf/compiler/parser.h
 google/protobuf/compiler/php/names.h
+google/protobuf/compiler/php/php_generator.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
@@ -90,7 +92,6 @@ google/protobuf/json/json.h
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
-google/protobuf/map_field_inl.h
 google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
 google/protobuf/message.h

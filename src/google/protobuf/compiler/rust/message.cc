@@ -111,7 +111,7 @@ void MessageMutClear(Context& ctx, const Descriptor& msg) {
   }
 }
 
-void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
+void MessageMutClearAndParse(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({},
@@ -132,7 +132,7 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
-        let mut msg = Self::new();
+        $pb$::Clear::clear(self);
 
         // SAFETY:
         // - `data.as_ptr()` is valid to read for `data.len()`
@@ -141,19 +141,13 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         let status = unsafe {
           $pbr$::wire::decode(
               data,
-              msg.raw_msg(),
+              self.raw_msg(),
               <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-              msg.arena())
+              self.arena())
         };
         match status {
-          Ok(_) => {
-            //~ This swap causes the old self.inner.arena to be moved into `msg`
-            //~ which we immediately drop, which will release any previous
-            //~ message that was held here.
-            $std$::mem::swap(self, &mut msg);
-            Ok(())
-          }
-          Err(_) => Err($pb$::ParseError)
+          Ok(_) => Ok(()),
+          Err(_) => Err($pb$::ParseError),
         }
       )rs");
       return;
@@ -300,11 +294,25 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   }
 }
 
-void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
+void MessageMutTakeCopyMergeFrom(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      ctx.Emit({},
-               R"rs(
+      ctx.Emit(R"rs(
+          impl $pb$::TakeFrom for $Msg$Mut<'_> {
+            fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = $Msg$>) {
+              //~ TODO: b/393559271 - Optimize this copy out.
+              let mut src = src.as_mut();
+              $pb$::CopyFrom::copy_from(self, $pb$::AsView::as_view(&src));
+              $pb$::Clear::clear(&mut src);
+            }
+          }
+
+          impl $pb$::CopyFrom for $Msg$Mut<'_> {
+            fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              unsafe { $pbr$::proto2_rust_Message_copy_from(self.raw_msg(), src.as_view().raw_msg()) };
+            }
+          }
+
           impl $pb$::MergeFrom for $Msg$Mut<'_> {
             fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
               // SAFETY: self and src are both valid `$Msg$`s.
@@ -318,6 +326,31 @@ void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
+          impl $pb$::TakeFrom for $Msg$Mut<'_> {
+            fn take_from(&mut self, mut src: impl $pb$::AsMut<MutProxied = $Msg$>) {
+              let mut src = src.as_mut();
+              //~ TODO: b/393559271 - Optimize this copy out.
+              $pb$::CopyFrom::copy_from(self, $pb$::AsView::as_view(&src));
+              $pb$::Clear::clear(&mut src);
+            }
+          }
+
+          impl $pb$::CopyFrom for $Msg$Mut<'_> {
+            fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              // SAFETY: self and src are both valid `$Msg$`s associated with
+              // `Self::mini_table()`.
+              unsafe {
+                assert!(
+                  $pbr$::upb_Message_DeepCopy(
+                    self.raw_msg(),
+                    src.as_view().raw_msg(),
+                    <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                    self.arena().raw())
+                );
+              }
+            }
+          }
+
           impl $pb$::MergeFrom for $Msg$Mut<'_> {
             fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
               // SAFETY: self and src are both valid `$Msg$`s.
@@ -623,10 +656,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
           {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
-          {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
+          {"MsgMut::clear_and_parse",
+           [&] { MessageMutClearAndParse(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
-          {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
+          {"MsgMut::take_copy_merge_from",
+           [&] { MessageMutTakeCopyMergeFrom(ctx, msg); }},
           {"default_instance_impl",
            [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
           {"accessor_fns",
@@ -760,6 +795,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pb$::TakeFrom for $Msg$ {
+          fn take_from(&mut self, src: impl $pb$::AsMut<MutProxied = Self>) {
+            let mut m = self.as_mut();
+            $pb$::TakeFrom::take_from(&mut m, src)
+          }
+        }
+
+        impl $pb$::CopyFrom for $Msg$ {
+          fn copy_from(&mut self, src: impl $pb$::AsView<Proxied = Self>) {
+            let mut m = self.as_mut();
+            $pb$::CopyFrom::copy_from(&mut m, src)
+          }
+        }
+
         impl $pb$::MergeFrom for $Msg$ {
           fn merge_from<'src>(&mut self, src: impl $pb$::AsView<Proxied = Self>) {
             let mut m = self.as_mut();
@@ -782,7 +831,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::ClearAndParse for $Msg$ {
           fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            $Msg::clear_and_parse$
+            let mut m = self.as_mut();
+            $pb$::ClearAndParse::clear_and_parse(&mut m, data)
           }
         }
 
@@ -917,7 +967,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
-        $MsgMut::merge_from$
+        impl $pb$::ClearAndParse for $Msg$Mut<'_> {
+          fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
+            $MsgMut::clear_and_parse$
+          }
+        }
+
+        $MsgMut::take_copy_merge_from$
 
         #[allow(dead_code)]
         impl<'msg> $Msg$Mut<'msg> {

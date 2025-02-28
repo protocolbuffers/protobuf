@@ -19,7 +19,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"

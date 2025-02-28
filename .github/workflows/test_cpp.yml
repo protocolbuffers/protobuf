@@ -52,6 +52,10 @@ jobs:
             cache_key: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:7.1.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
             targets: "//src/... //third_party/utf8_range/..."
+          - config: { name: "aarch64", flags: "--platforms=//build_defs:aarch64_linux" }
+            cache_key: aarch64-bazel7
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-2920199ab0090ed427413a8e422e62695c8392a8"
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -74,18 +78,25 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['9.5', '13.1']
-    name: Linux GCC ${{ matrix.version }}
+        version: ['7.5', '9.1', '9.5', '13.1']
+        include:
+          - version: 9.1
+            continuous-only: true
+          - version: 9.5
+            continuous-only: true
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v4
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-${{ matrix.version }}-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
@@ -94,9 +105,9 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        arch: [x86_64]
+        arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch }}
-    runs-on: ubuntu-20-4core
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v4
@@ -124,7 +135,7 @@ jobs:
             -c "set -ex;
             sccache -z;
             cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
-            -Dprotobuf_BUILD_LIBUPB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=17
+            -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=17
             -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
             ctest --parallel 20;
@@ -352,7 +363,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-

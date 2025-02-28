@@ -109,15 +109,16 @@ void InitializeFileDescriptorDefaultInstances() {
 void InitializeLazyExtensionSet() {
 }
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
-                    int* value) {
+bool ParseNamedEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
+                    absl::string_view name, int* PROTOBUF_NONNULL value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;
   *value = d->number();
   return true;
 }
 
-const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
+const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
+                              int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == nullptr ? GetEmptyString() : internal::NameOfEnumAsString(d));
 }
@@ -2149,12 +2150,9 @@ const std::string& Reflection::GetRepeatedStringReference(
 }
 
 // See GetStringView(), above.
-absl::string_view Reflection::GetRepeatedStringView(
+absl::string_view Reflection::GetRepeatedStringViewImpl(
     const Message& message, const FieldDescriptor* field, int index,
-    ScratchSpace& scratch) const {
-  (void)scratch;
-  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
-
+    ScratchSpace* scratch) const {
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   }
@@ -2162,13 +2160,21 @@ absl::string_view Reflection::GetRepeatedStringView(
   switch (field->cpp_string_type()) {
     case FieldDescriptor::CppStringType::kCord: {
       auto& cord = GetRepeatedField<absl::Cord>(message, field, index);
-      return scratch.CopyFromCord(cord);
+      ABSL_DCHECK(scratch);
+      return scratch->CopyFromCord(cord);
     }
     case FieldDescriptor::CppStringType::kView:
     case FieldDescriptor::CppStringType::kString:
       return GetRepeatedPtrField<std::string>(message, field, index);
   }
   internal::Unreachable();
+}
+
+absl::string_view Reflection::GetRepeatedStringView(
+    const Message& message, const FieldDescriptor* field, int index,
+    ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
+  return GetRepeatedStringViewImpl(message, field, index, &scratch);
 }
 
 
@@ -2945,17 +2951,6 @@ ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
                                           schema_.GetExtensionSetOffset());
 }
 
-const InternalMetadata& Reflection::GetInternalMetadata(
-    const Message& message) const {
-  return GetConstRefAtOffset<InternalMetadata>(message,
-                                               schema_.GetMetadataOffset());
-}
-
-InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
-  return GetPointerAtOffset<InternalMetadata>(message,
-                                              schema_.GetMetadataOffset());
-}
-
 const uint32_t* Reflection::GetInlinedStringDonatedArray(
     const Message& message) const {
   ABSL_DCHECK(schema_.HasInlinedString());
@@ -3678,24 +3673,41 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ = *default_instance;
-  // First 9 offsets are offsets to the special fields. The following offsets
-  // are the proto fields.
+  int index = migration_schema.offsets_index;
+
+  // First values are offsets to the special fields, but they are optional.
+  // The first value is a bitmap marking which fields are present.
+  // The order of the fields must match MessageGenerator::GenerateOffsets
   //
-  // TODO: Find a way to not encode sizeof_split_ in offsets.
-  result.offsets_ = offsets + migration_schema.offsets_index + 8;
-  result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
-  result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
-  result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
-  result.extensions_offset_ = offsets[migration_schema.offsets_index + 2];
-  result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
+  // To add new fields, we add them at the end and since they are optional the
+  // bootstrap files will automatically look as if those fields are not present.
+  const uint32_t bits = offsets[index++];
+
+  int bit = 0;
+  const auto next = [&] {
+    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
+  };
+  const auto next_pointer = [&]() -> const uint32_t* {
+    const uint32_t n = next();
+    if (n == ~uint32_t{}) {
+      return nullptr;
+    }
+    return offsets + migration_schema.offsets_index + n;
+  };
+  result.has_bits_offset_ = next();
+  result.extensions_offset_ = next();
+  result.oneof_case_offset_ = next();
+  result.weak_field_map_offset_ = next();
+  result.inlined_string_donated_offset_ = next();
+  result.split_offset_ = next();
+  result.sizeof_split_ = next();
+
+  result.has_bit_indices_ = next_pointer();
+  result.inlined_string_indices_ = next_pointer();
+
+  result.offsets_ = offsets + index;
   result.object_size_ = migration_schema.object_size;
-  result.weak_field_map_offset_ = offsets[migration_schema.offsets_index + 4];
-  result.inlined_string_donated_offset_ =
-      offsets[migration_schema.offsets_index + 5];
-  result.split_offset_ = offsets[migration_schema.offsets_index + 6];
-  result.sizeof_split_ = offsets[migration_schema.offsets_index + 7];
-  result.inlined_string_indices_ =
-      offsets + migration_schema.inlined_string_indices_index;
+
   return result;
 }
 
