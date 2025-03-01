@@ -20,6 +20,11 @@ local_repository(
     path = "..",
 )
 
+local_repository(
+    name = "com_google_protobuf-examples-with-hyphen",
+    path = "examples_with_hyphen",
+)
+
 # Similar to com_google_protobuf but for Java lite. If you are building
 # for Android, the lite version should be preferred because it has a much
 # smaller code size.
