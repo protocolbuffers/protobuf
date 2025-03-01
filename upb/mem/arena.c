@@ -30,8 +30,12 @@ void upb_Arena_SetMaxBlockSize(size_t max) {
 typedef struct upb_MemBlock {
   struct upb_MemBlock* next;
   // If this block is the head of the list, tracks a growing hint of what the
-  // *next* block should be; otherwise tracks the size of the actual allocation.
-  size_t size_or_hint;
+  // *next* block should be; otherwise tracks the cumulative size of this blocks
+  // and the ones reachable through `next`.
+  union {
+    size_t size_hint;
+    uintptr_t cumulative_size;
+  };
   // Data follows.
 } upb_MemBlock;
 
@@ -89,12 +93,6 @@ static const size_t kUpb_MemblockReserve =
 // Extracts the (upb_ArenaInternal*) from a (upb_Arena*)
 static upb_ArenaInternal* upb_Arena_Internal(const upb_Arena* a) {
   return &((upb_ArenaState*)a)->body;
-}
-
-// Extracts the (upb_Arena*) from a (upb_ArenaInternal*)
-static upb_Arena* upb_Arena_FromInternal(const upb_ArenaInternal* ai) {
-  ptrdiff_t offset = -offsetof(upb_ArenaState, body);
-  return UPB_PTR_AT(ai, offset, upb_Arena);
 }
 
 static bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
@@ -297,14 +295,16 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ptr;
 
-  block->size_or_hint = block_size;
   UPB_ASSERT(offset >= kUpb_MemblockReserve);
   char* start = UPB_PTR_AT(block, offset, char);
   upb_MemBlock* head = ai->blocks;
-  if (head && head->next) {
-    // Fix up size to match actual allocation size
-    head->size_or_hint = a->UPB_PRIVATE(end) - (char*)head;
+  if (head) {
+    // Populate cumulative size as this node will no longer be the head
+    head->cumulative_size =
+        upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed) -
+        block_size;
   }
+  block->size_hint = block_size;
   block->next = head;
   ai->blocks = block;
   a->UPB_PRIVATE(ptr) = start;
@@ -313,17 +313,37 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
   UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= block_size - offset);
 }
 
+static void* _upb_Arena_AddFullBlock(upb_Arena* a, upb_MemBlock* block,
+                                     size_t block_size,
+                                     uintptr_t old_space_allocated,
+                                     size_t max_block_size,
+                                     size_t target_size) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  upb_MemBlock* last_block = ai->blocks;
+  uintptr_t previous_cumulative_size = 0;
+  upb_MemBlock* next = last_block->next;
+  if (next) {
+    previous_cumulative_size = next->cumulative_size;
+  }
+  block->cumulative_size = previous_cumulative_size + block_size;
+  block->next = last_block->next;
+  last_block->next = block;
+  return UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+}
+
 // Fulfills the allocation request by allocating a new block. Returns NULL on
 // allocation failure.
 void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!ai->block_alloc) return NULL;
   size_t last_size = 128;
-  size_t current_free = 0;
+  size_t current_free = a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr);
   upb_MemBlock* last_block = ai->blocks;
+  uintptr_t old_space_allocated =
+      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
   if (last_block) {
-    last_size = a->UPB_PRIVATE(end) - (char*)last_block;
-    current_free = a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr);
+    last_size = old_space_allocated -
+                (last_block->next ? last_block->next->cumulative_size : 0);
   }
 
   // Relaxed order is safe here as we don't need any ordering with the setter.
@@ -339,27 +359,26 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   // allocations, allocate blocks that would net reduce free space behind it.
   if (last_block && current_free > future_free &&
       target_size < max_block_size) {
-    last_size = last_block->size_or_hint;
+    last_size = last_block->size_hint;
     // Recalculate sizes with possibly larger last_size
     target_size = UPB_MIN(last_size * 2, max_block_size);
     future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
   }
   bool insert_after_head = false;
-  // Only insert after head if an allocated block is present; we don't want to
-  // continue allocating out of the initial block because we'll have no way of
-  // restoring the size of our allocated block if we add another.
+  // Only insert after head if an allocated block is present, so that the head
+  // block always matches the allocation region.
   if (last_block && current_free >= future_free) {
     // If we're still going to net reduce free space with this new block, then
-    // only allocate the precise size requested and keep the current last block
-    // as the active block for future allocations.
+    // only allocate the precise size requested and keep the current region as
+    // active or future allocations.
     insert_after_head = true;
     target_size = size + kUpb_MemblockReserve;
     // Add something to our previous size each time, so that eventually we
     // will reach the max block size. Allocations larger than the max block size
     // will always get their own backing allocation, so don't include them.
     if (target_size <= max_block_size) {
-      last_block->size_or_hint =
-          UPB_MIN(last_block->size_or_hint + (size >> 1), max_block_size >> 1);
+      last_block->size_hint =
+          UPB_MIN(last_block->size_hint + (size >> 1), max_block_size >> 1);
     }
   }
   // We may need to exceed the max block size if the user requested a large
@@ -374,19 +393,11 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   // atomic fetch-add is slower than load/add/store on arm devices compiled
   // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
   // size allocated.
-
-  uintptr_t old_space_allocated =
-      upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
   upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block_size,
                    memory_order_relaxed);
   if (UPB_UNLIKELY(insert_after_head)) {
-    upb_ArenaInternal* ai = upb_Arena_Internal(a);
-    block->size_or_hint = block_size;
-    upb_MemBlock* head = ai->blocks;
-    block->next = head->next;
-    head->next = block;
-
-    char* allocated = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+    char* allocated = _upb_Arena_AddFullBlock(
+        a, block, block_size, old_space_allocated, max_block_size, target_size);
     UPB_POISON_MEMORY_REGION(allocated + size, UPB_ASAN_GUARD_SIZE);
     return allocated;
   } else {
@@ -479,16 +490,16 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     }
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
     upb_MemBlock* block = ai->blocks;
-    if (block && block->next) {
-      block->size_or_hint =
-          upb_Arena_FromInternal(ai)->UPB_PRIVATE(end) - (char*)block;
-    }
+    uintptr_t total_size =
+        upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
     upb_AllocCleanupFunc* alloc_cleanup = *ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
       upb_MemBlock* next_block = block->next;
-      upb_free_sized(block_alloc, block, block->size_or_hint);
+      uintptr_t next_total_size = next_block ? next_block->cumulative_size : 0;
+      upb_free_sized(block_alloc, block, total_size - next_total_size);
       block = next_block;
+      total_size = next_total_size;
     }
     if (alloc_cleanup != NULL) {
       alloc_cleanup(block_alloc);
@@ -784,8 +795,17 @@ bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ai->blocks;
   if (block == NULL) return false;
-  block = block->next;
-  if (block == NULL) return false;
-  char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
-  return ptr == start && oldsize == block->size_or_hint - kUpb_MemblockReserve;
+
+  upb_MemBlock* next = block->next;
+  char* block_start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+  // Last block is the currently allocating region; if this was inserted
+  // behind head, it could have been a whole allocation.
+  if (!next) return false;
+  block = next;
+  next = block->next;
+  // Check second behind head
+  block_start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+  size_t size = block->cumulative_size - (next ? next->cumulative_size : 0) -
+                kUpb_MemblockReserve;
+  return block_start == ptr && size == oldsize;
 }
