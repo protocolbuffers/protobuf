@@ -134,6 +134,7 @@ class MessageReflection {
   private static String subMessagePrefix(
       final String prefix, final Descriptors.FieldDescriptor field, final int index) {
     final StringBuilder result = new StringBuilder(prefix);
+    System.err.println("mmp field name" + field.getName());
     if (field.isExtension()) {
       result.append('(').append(field.getFullName()).append(')');
     } else {
@@ -146,8 +147,29 @@ class MessageReflection {
     return result.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private static void findMissingFields(
       final MessageOrBuilder message, final String prefix, final List<String> results) {
+
+    try {
+      Class<?> messageSetClass = Class.forName("com.google.io.protocol.MessageSet");
+      if (messageSetClass.isInstance(message)) {
+        List<String> errors =
+            (List<String>)
+                messageSetClass
+                    .getMethod("findInitializationErrors", String.class)
+                    .invoke(message, prefix);
+        if (errors != null) {
+          results.addAll(errors);
+        }
+        return;
+      }
+    } catch (ClassNotFoundException e) {
+      // Do nothing.
+    } catch (ReflectiveOperationException e) {
+      throw new IllegalStateException(e);
+    }
+
     for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
       if (field.isRequired() && !message.hasField(field)) {
         results.add(prefix + field.getName());
@@ -175,6 +197,36 @@ class MessageReflection {
       }
     }
   }
+
+  // private static void FindMissingFieldProto1MessageSet(
+  //     final MessageOrBuilder message, final String prefix, final List<String> results) {
+  //   for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
+  //     if (field.isRequired() && !message.hasField(field)) {
+  //       results.add(prefix + field.getName());
+  //     }
+  //   }
+
+  //   for (final Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+  //       message.getAllFields().entrySet()) {
+  //     final Descriptors.FieldDescriptor field = entry.getKey();
+  //     final Object value = entry.getValue();
+
+  //     if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+  //       if (field.isRepeated()) {
+  //         int i = 0;
+  //         for (final Object element : (List) value) {
+  //           findMissingFields(
+  //               (MessageOrBuilder) element, subMessagePrefix(prefix, field, i++), results);
+  //         }
+  //       } else {
+  //         if (message.hasField(field)) {
+  //           findMissingFields(
+  //               (MessageOrBuilder) value, subMessagePrefix(prefix, field, -1), results);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   /**
    * Populates {@code this.missingFields} with the full "path" of each missing required field in the
