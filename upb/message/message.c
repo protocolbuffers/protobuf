@@ -38,6 +38,22 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
                                           size_t len, upb_Arena* arena,
                                           bool alias) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  if (alias) {
+    // Fast path if the field we're adding is immediately after the last added
+    // unknown field.
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in && in->size) {
+      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
+        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+        if (existing->data + existing->size == data) {
+          existing->size += len;
+          return true;
+        }
+      }
+    }
+  }
+
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
