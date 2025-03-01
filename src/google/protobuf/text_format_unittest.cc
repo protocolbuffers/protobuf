@@ -211,6 +211,7 @@ TEST_F(TextFormatTest, ShortFormat) {
   unredacted_message_2->set_optional_unredacted_nested_string("8");
   (*proto.mutable_map_redacted_string())["abc"] = "def";
   (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+  proto.set_optional_redacted_false_string("foo-3");
 
   std::string value_replacement = "\\[REDACTED\\]";
   EXPECT_THAT(google::protobuf::ShortFormat(proto),
@@ -231,7 +232,8 @@ TEST_F(TextFormatTest, ShortFormat) {
                   "repeated_unredacted_message "
                   "\\{ optional_unredacted_nested_string: \"8\" \\} "
                   "map_redacted_string: $0 "
-                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
+                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}"
+                  "optional_redacted_false_string: \"foo-3\"\n",
                   value_replacement, kTextMarkerRegex)));
 }
 
