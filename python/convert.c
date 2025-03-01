@@ -7,9 +7,10 @@
 
 #include "python/convert.h"
 
+#include "python.h"
+
 #include "python/message.h"
 #include "python/protobuf.h"
-#include "python/python_api.h"
 #include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/reflection/def.h"
