@@ -36,12 +36,6 @@ static const double MIN_DENSITY = 0.1;
 
 static bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
 
-static upb_value _upb_value_val(uint64_t val) {
-  upb_value ret;
-  _upb_value_setval(&ret, val);
-  return ret;
-}
-
 static int log2ceil(uint64_t v) {
   int ret = 0;
   bool pow2 = is_pow2(v);
@@ -89,8 +83,6 @@ static uint32_t upb_inthash(uintptr_t key) {
 static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
-
-static bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
 
 static bool isfull(upb_table* t) { return t->count == t->max_count; }
 
@@ -797,6 +789,7 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
 void upb_inttable_clear(upb_inttable* t) {
   // Clear the array part.
   size_t array_bytes = t->array_size * sizeof(upb_tabval);
+  t->array_size = 0;
   t->array_count = 0;
   memset(mutable_array(t), 0, array_bytes);
 

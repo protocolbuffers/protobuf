@@ -192,6 +192,30 @@ TEST_P(IntTableTest, TestIntTable) {
   upb_inttable_clear(&t);
 }
 
+TEST(IntTableTest, EmptyTable) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+
+  // Insert a value.
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  iter = UPB_INTTABLE_BEGIN;
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Clear the table.
+  upb_inttable_clear(&t);
+  iter = UPB_INTTABLE_BEGIN;
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+}
+
 TEST(IntTableTest, Iteration) {
   upb::Arena arena;
   upb_inttable t;
