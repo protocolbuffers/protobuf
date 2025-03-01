@@ -1173,19 +1173,25 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+
+  int old_entries = out->size();
+  int num_total = size / sizeof(T);
+
+  out->Reserve(old_entries + num_total);
+  auto dst = out->AddNAlreadyReserved(num_total);
+
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
       dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
 #endif
+    dst += num;
+
     size -= block_size;
     if (limit_ <= kSlopBytes) return nullptr;
     ptr = Next();
@@ -1196,9 +1202,6 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int num = size / sizeof(T);
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
-  int old_entries = out->size();
-  out->Reserve(old_entries + num);
-  auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
@@ -1209,6 +1212,49 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   if (size != block_size) return nullptr;
   return ptr;
 }
+
+// template <typename T>
+// const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
+//                                                 RepeatedField<T>* out) {
+//   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+
+//   int nbytes = BytesAvailable(ptr);
+//   while (size > nbytes) {
+//     int num = nbytes / sizeof(T);
+//     int old_entries = out->size();
+//     out->Reserve(old_entries + num);
+//     int block_size = num * sizeof(T);
+//     auto dst = out->AddNAlreadyReserved(num);
+// #ifdef ABSL_IS_LITTLE_ENDIAN
+//     std::memcpy(dst, ptr, block_size);
+// #else
+//     for (int i = 0; i < num; i++)
+//       dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+// #endif
+//     size -= block_size;
+//     if (limit_ <= kSlopBytes) return nullptr;
+//     ptr = Next();
+//     if (ptr == nullptr) return nullptr;
+//     ptr += kSlopBytes - (nbytes - block_size);
+//     nbytes = BytesAvailable(ptr);
+//   }
+//   int num = size / sizeof(T);
+//   int block_size = num * sizeof(T);
+//   if (num == 0) return size == block_size ? ptr : nullptr;
+//   int old_entries = out->size();
+//   out->Reserve(old_entries + num);
+//   auto dst = out->AddNAlreadyReserved(num);
+// #ifdef ABSL_IS_LITTLE_ENDIAN
+//   ABSL_CHECK(dst != nullptr) << out << "," << num;
+//   std::memcpy(dst, ptr, block_size);
+// #else
+//   for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i *
+//   sizeof(T));
+// #endif
+//   ptr += block_size;
+//   if (size != block_size) return nullptr;
+//   return ptr;
+// }
 
 template <typename Add>
 const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
