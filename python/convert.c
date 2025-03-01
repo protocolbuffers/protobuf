@@ -7,7 +7,7 @@
 
 #include "python/convert.h"
 
-#include "python.h"
+#include "Python.h"
 
 #include "python/message.h"
 #include "python/protobuf.h"
