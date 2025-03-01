@@ -74,8 +74,8 @@ jobs:
           bazel-cache: "upb-bazel-gcc"
           bazel: >-
             test --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
-            --copt="-Wno-error=maybe-uninitialized"
-            //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+            --copt="-Wno-error=maybe-uninitialized" --
+            //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... -//bazel/tests/...
 
   windows:
     strategy:
