@@ -1,8 +1,3 @@
-google3::import! {
-    "//third_party/rust/quote/v1:quote";
-    "//third_party/rust/syn/v2:syn";
-}
-
 extern crate proc_macro;
 
 use quote::{format_ident, quote, ToTokens};

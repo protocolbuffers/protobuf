@@ -68,3 +68,4 @@ CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 cd $EXAMPLE_ROOT
 CARGO_HOME=$CARGO_HOME CARGO_REGISTRY_TOKEN=$AUTH_TOKEN cargo publish
 
+# TODO: Add protobuf_macros to release script.
