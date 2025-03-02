@@ -1681,7 +1681,9 @@ static PyObject* InternalSerializeToString(CMessage* self, PyObject* args,
   if (deterministic_obj != Py_None) {
     coded_out.SetSerializationDeterministic(deterministic);
   }
+  Py_BEGIN_ALLOW_THREADS;
   self->message->SerializeWithCachedSizes(&coded_out);
+  Py_END_ALLOW_THREADS;
   ABSL_CHECK(!coded_out.HadError());
   return result;
 }
