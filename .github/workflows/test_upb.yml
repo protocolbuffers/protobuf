@@ -76,6 +76,7 @@ jobs:
             test --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
             --copt="-Wno-error=maybe-uninitialized"
             //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+          exclude-targets: -//bazel/tests:java_proto_library_test_suite # Needs Java setup
 
   windows:
     strategy:
