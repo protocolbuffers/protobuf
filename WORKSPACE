@@ -114,37 +114,34 @@ kt_register_toolchains()
 
 http_archive(
     name = "rules_ruby",
-    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
-    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
-    urls = [
-        "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip",
-    ],
+    sha256 = "005da20827bee6b33d8ece7dc9973da293d7f8bb2ca07beaac43c31acaadbd31",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
 )
 
-load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
+load("@rules_ruby//ruby:deps.bzl", "rb_register_toolchains", "rb_bundle_fetch")
 
-ruby_runtime("system_ruby")
+rb_register_toolchains(
+    version = "system",
+)
 
-register_toolchains("@system_ruby//:toolchain")
-
-# Uncomment pairs of ruby_runtime() + register_toolchain() calls below to enable
-# local JRuby testing. Do not submit the changes (due to impact on test duration
-# for non JRuby builds due to downloading JRuby SDKs).
-#ruby_runtime("jruby-9.2")
-#
-#register_toolchains("@jruby-9.2//:toolchain")
-#
-#ruby_runtime("jruby-9.3")
-#
-#register_toolchains("@jruby-9.3//:toolchain")
-
-load("@system_ruby//:bundle.bzl", "ruby_bundle")
-
-ruby_bundle(
+rb_bundle_fetch(
     name = "protobuf_bundle",
-    srcs = ["//ruby:google-protobuf.gemspec"],
-    bundler_version = "2.4.22",
+    srcs = [
+        "//ruby:google-protobuf.gemspec",
+    ],
+    gem_checksums = {
+        "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",
+        "ffi-1.17.1": "26f6b0dbd1101e6ffc09d3ca640b2a21840cc52731ad8a7ded9fb89e5fb0fc39",
+        "ffi-compiler-1.3.2": "a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0",
+        "power_assert-2.0.5": "63b511b85bb8ea57336d25156864498644f5bbf028699ceda27949e0125bc323",
+        "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
+        "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
+        "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221"
+    },
     gemfile = "//ruby:Gemfile",
+    gemfile_lock = "//ruby:Gemfile.lock",
 )
 
 http_archive(

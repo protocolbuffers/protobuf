@@ -49,12 +49,12 @@ cc_library(
     ],
     linkstatic = True,
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
+        "@ruby//engine:jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [
         "//third_party/utf8_range",
-        "@rules_ruby//ruby/runtime:headers",
+        "@ruby//:headers",
     ],
     alwayslink = True,
 )
