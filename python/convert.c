@@ -190,16 +190,13 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_EnumDef* e,
 }
 
 bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
-  PyObject* type_name_obj =
-      PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__name__");
   bool is_ndarray = false;
-  if (!strcmp(PyUpb_GetStrData(type_name_obj), "ndarray")) {
+  if (!strcmp(obj->ob_type->tp_name, "numpy.ndarray")) {
     PyErr_Format(PyExc_TypeError,
                  "%S has type ndarray, but expected one of: %s", obj,
                  upb_FieldDef_TypeString(f));
     is_ndarray = true;
   }
-  Py_DECREF(type_name_obj);
   return is_ndarray;
 }
 
