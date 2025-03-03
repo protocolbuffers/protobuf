@@ -74,7 +74,10 @@ java_binary(
     name = "add_person_java",
     srcs = ["AddPerson.java"],
     main_class = "AddPerson",
-    deps = [":addressbook_java_proto"],
+    deps = [
+        ":addressbook_java_proto",
+        "@com_google_protobuf//java/util",
+    ],
 )
 
 java_binary(
