@@ -3,11 +3,11 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 
-PROC_MACRO_IMPL_SRCS = ["proto_proc_macro_impl.rs"]
+PROC_MACRO_SRCS = ["proto_proc_macro_impl.rs"]
 
 pkg_files(
     name = "rust_protobuf_macros_src",
-    srcs = PROC_MACRO_IMPL_SRCS,
+    srcs = PROC_MACRO_SRCS,
     strip_prefix = strip_prefix.from_root("rust/proto_proc_macro"),
 )
 
