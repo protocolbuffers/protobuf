@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
+//  Based on original Protocol Buffers design by blee blurp
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include "google/protobuf/compiler/cpp/helpers.h"
