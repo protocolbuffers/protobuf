@@ -35,19 +35,11 @@ load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_sourc
 load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
-    "com.google.caliper:caliper:1.0-beta-3",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.5.1",
     "com.google.j2objc:j2objc-annotations:2.8",
     "com.google.guava:guava:32.0.1-jre",
-    "com.google.guava:guava-testlib:32.0.1-jre",
-    "com.google.testparameterinjector:test-parameter-injector:1.18",
-    "com.google.truth:truth:1.1.2",
-    "junit:junit:4.13.2",
-    "org.mockito:mockito-core:4.3.1",
-    "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
-    "info.picocli:picocli:4.6.3",
 ]
 
 def _github_archive(repo, commit, **kwargs):
