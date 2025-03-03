@@ -92,7 +92,7 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     name = "protobuf_maven",
     artifacts = [
