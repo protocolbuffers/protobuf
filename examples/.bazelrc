@@ -6,7 +6,7 @@ build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//:x64_windows-clang-cl
 common:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 --enable_runfiles
 
-build --java_runtime_version=local_jdk_11 --tool_java_runtime_version=local_jdk_11 --java_language_version=11
+build --java_runtime_version=remotejdk_11 --tool_java_runtime_version=remotejdk_11 --java_language_version=11
 
 build --experimental_remote_cache_eviction_retries=5
 build --remote_download_outputs=all
