@@ -126,7 +126,6 @@ maven.install(
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
     ],
-    resolver = "maven",
 )
 use_repo(maven, "maven")
 
