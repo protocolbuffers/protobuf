@@ -23,10 +23,13 @@ using ::google::protobuf::json::BinaryToJsonStream;
 using ::google::protobuf::json::BinaryToJsonString;
 
 using ::google::protobuf::json::JsonStringToMessage;
-using ::google::protobuf::json::JsonToBinaryStream;
+using ::google::protobuf::json::JsonStreamToMessage;
 
+using ::google::protobuf::json::JsonToBinaryStream;
 using ::google::protobuf::json::JsonToBinaryString;
+
 using ::google::protobuf::json::MessageToJsonString;
+using ::google::protobuf::json::MessageToJsonStream;
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
