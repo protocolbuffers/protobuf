@@ -96,6 +96,9 @@ class ModuleFileFunctions(object):
   def local_path_override(self, *args, **kwargs):
     pass
 
+  def git_override(self, *args, **kwargs):
+    pass
+
 
 class Converter(object):
 

@@ -44,6 +44,8 @@ class MessageLite;
 
 namespace internal {
 
+PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
+
 struct MessageTraitsImpl;
 
 template <typename T>
@@ -521,6 +523,19 @@ class alignas(8) GlobalEmptyString {
 };
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 #endif
+
+enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
+
+PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
+#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+  return BoundsCheckMode::kAbort;
+#elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
+  return BoundsCheckMode::kReturnDefault;
+#else
+  return BoundsCheckMode::kNoEnforcement;
+#endif
+}
+
 
 }  // namespace internal
 }  // namespace protobuf

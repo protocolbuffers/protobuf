@@ -35,19 +35,11 @@ load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_sourc
 load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
-    "com.google.caliper:caliper:1.0-beta-3",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.5.1",
     "com.google.j2objc:j2objc-annotations:2.8",
     "com.google.guava:guava:32.0.1-jre",
-    "com.google.guava:guava-testlib:32.0.1-jre",
-    "com.google.testparameterinjector:test-parameter-injector:1.18",
-    "com.google.truth:truth:1.1.2",
-    "junit:junit:4.13.2",
-    "org.mockito:mockito-core:4.3.1",
-    "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
-    "info.picocli:picocli:4.6.3",
 ]
 
 def _github_archive(repo, commit, **kwargs):
@@ -79,12 +71,12 @@ def protobuf_deps():
             ],
         )
 
-    if not native.existing_rule("com_google_absl"):
+    if not native.existing_rule("abseil-cpp"):
         _github_archive(
-            name = "com_google_absl",
+            name = "abseil-cpp",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "4447c7562e3bc702ade25105912dce503f0c4010",  # Abseil LTS 20240722.0
-            sha256 = "d8342ad77aa9e16103c486b615460c24a695a1f04cdb760eb02fef780df99759",
+            commit = "9ac7062b1860d895fb5a8cbf58c3e9ef8f674b5f",  # Abseil LTS 20250127
+            sha256 = "d8ae9aa794a571ee39c77085ee69f1d4ac276212a7d99734974d95df7baa8d13",
         )
 
     if not native.existing_rule("zlib"):

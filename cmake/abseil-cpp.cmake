@@ -72,7 +72,6 @@ else()
     absl::flat_hash_set
     absl::function_ref
     absl::hash
-    absl::if_constexpr
     absl::layout
     absl::log_initialize
     absl::log_globals

@@ -58,6 +58,9 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // inserting more entries is legal, but will likely require a table resize.
 void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 
+// Clears the table.
+void upb_inttable_clear(upb_inttable* t);
+
 // Iteration over inttable:
 //
 //   intptr_t iter = UPB_INTTABLE_BEGIN;
@@ -72,6 +75,10 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter);
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
+bool upb_inttable_done(const upb_inttable* t, intptr_t i);
+uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
+upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
 
 #ifdef __cplusplus
 } /* extern "C" */

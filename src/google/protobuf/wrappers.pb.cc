@@ -264,109 +264,64 @@ static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULL
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::DoubleValue, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FloatValue, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Int64Value, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt64Value, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Int32Value, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::UInt32Value, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::BoolValue, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::StringValue, _impl_.value_),
         0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::BytesValue, _impl_.value_),
         0,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 9, -1, sizeof(::google::protobuf::DoubleValue)},
-        {10, 19, -1, sizeof(::google::protobuf::FloatValue)},
-        {20, 29, -1, sizeof(::google::protobuf::Int64Value)},
-        {30, 39, -1, sizeof(::google::protobuf::UInt64Value)},
-        {40, 49, -1, sizeof(::google::protobuf::Int32Value)},
-        {50, 59, -1, sizeof(::google::protobuf::UInt32Value)},
-        {60, 69, -1, sizeof(::google::protobuf::BoolValue)},
-        {70, 79, -1, sizeof(::google::protobuf::StringValue)},
-        {80, 89, -1, sizeof(::google::protobuf::BytesValue)},
+        {0, sizeof(::google::protobuf::DoubleValue)},
+        {5, sizeof(::google::protobuf::FloatValue)},
+        {10, sizeof(::google::protobuf::Int64Value)},
+        {15, sizeof(::google::protobuf::UInt64Value)},
+        {20, sizeof(::google::protobuf::Int32Value)},
+        {25, sizeof(::google::protobuf::UInt32Value)},
+        {30, sizeof(::google::protobuf::BoolValue)},
+        {35, sizeof(::google::protobuf::StringValue)},
+        {40, sizeof(::google::protobuf::BytesValue)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_DoubleValue_default_instance_._instance,

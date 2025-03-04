@@ -341,9 +341,17 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
 
   // Oneof storage must be large enough to accommodate the largest member.
   int rep = f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift;
-  if (upb_MtDecoder_SizeOfRep(rep, d->platform) >
-      upb_MtDecoder_SizeOfRep(item->rep, d->platform)) {
+  size_t new_size = upb_MtDecoder_SizeOfRep(rep, d->platform);
+  size_t new_align = upb_MtDecoder_AlignOfRep(rep, d->platform);
+  size_t current_size = upb_MtDecoder_SizeOfRep(item->rep, d->platform);
+  size_t current_align = upb_MtDecoder_AlignOfRep(item->rep, d->platform);
+
+  if (new_size > current_size ||
+      (new_size == current_size && new_align > current_align)) {
+    UPB_ASSERT(new_align >= current_align);
     item->rep = rep;
+  } else {
+    UPB_ASSERT(current_align >= new_align);
   }
   // Prepend this field to the linked list.
   f->UPB_PRIVATE(offset) = item->field_index;
@@ -779,6 +787,11 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
     upb_MtDecoder* decoder, const char* data, size_t len,
     upb_MiniTableExtension* ext, const upb_MiniTable* extendee,
     upb_MiniTableSub sub) {
+  if (!(extendee->UPB_PRIVATE(ext) &
+        (kUpb_ExtMode_Extendable | kUpb_ExtMode_IsMessageSet))) {
+    upb_MdDecoder_ErrorJmp(&decoder->base, "Extendee is not extendable");
+  }
+
   // If the string is non-empty then it must begin with a version tag.
   if (len) {
     if (*data != kUpb_EncodedVersion_ExtensionV1) {

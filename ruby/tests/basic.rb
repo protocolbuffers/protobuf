@@ -37,10 +37,7 @@ module BasicTest
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
 
-      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-      if cruby_or_jruby_9_3_or_higher?
-        GC.start(full_mark: true, immediate_sweep: true)
-      end
+      GC.start(full_mark: true, immediate_sweep: true)
       TestMessage.encode(msg)
     end
 
@@ -557,6 +554,13 @@ module BasicTest
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
+      assert_equal "basic_test.proto", file_descriptor.name
+    end
+
+    def test_lookup_filename
+      file_descriptor = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.proto'
+      refute_nil file_descriptor
+      assert_kind_of Google::Protobuf::FileDescriptor, file_descriptor
       assert_equal "basic_test.proto", file_descriptor.name
     end
 

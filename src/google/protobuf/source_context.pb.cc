@@ -62,21 +62,16 @@ static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULL
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
+        4, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceContext, _impl_.file_name_),
         0,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 9, -1, sizeof(::google::protobuf::SourceContext)},
+        {0, sizeof(::google::protobuf::SourceContext)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_SourceContext_default_instance_._instance,

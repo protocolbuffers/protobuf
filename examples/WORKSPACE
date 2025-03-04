@@ -38,7 +38,7 @@ http_archive(
     ],
 )
 
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps", "PROTOBUF_MAVEN_ARTIFACTS")
 
 protobuf_deps()
 
@@ -59,3 +59,19 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolch
 rules_cc_dependencies()
 
 rules_cc_toolchains()
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+rules_jvm_external_setup()
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+maven_install(
+    name = "maven",
+    artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)

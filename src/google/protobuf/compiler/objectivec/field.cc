@@ -86,12 +86,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   if (descriptor->has_default_value())
     field_flags.push_back("GPBFieldHasDefaultValue");
   if (needs_custom_name) field_flags.push_back("GPBFieldTextFormatNameCustom");
-  if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
-    field_flags.push_back("GPBFieldHasEnumDescriptor");
-    if (descriptor->enum_type()->is_closed()) {
-      field_flags.push_back("GPBFieldClosedEnum");
-    }
-  }
   // It will clear on a zero value if...
   //  - not repeated/map
   //  - doesn't have presence

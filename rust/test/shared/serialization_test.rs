@@ -76,16 +76,35 @@ macro_rules! generate_parameterized_serialization_test {
             fn [< deserialize_on_previously_allocated_message_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
-                msg.set_optional_bool(true);
                 msg.set_optional_bytes(b"serialize deserialize test");
 
                 let serialized = msg.serialize().unwrap();
 
                 let mut msg2 = Box::new([< $type >]::new());
+                msg2.set_optional_bool(true);
+
                 assert!(msg2.clear_and_parse(&serialized).is_ok());
-                assert_that!(msg.optional_int64(), eq(msg2.optional_int64()));
-                assert_that!(msg.optional_bool(), eq(msg2.optional_bool()));
-                assert_that!(msg.optional_bytes(), eq(msg2.optional_bytes()));
+                assert_that!(msg2.optional_int64(), eq(msg.optional_int64()));
+                assert_that!(msg2.optional_bytes(), eq(msg.optional_bytes()));
+                assert_that!(msg2.optional_bool(), eq(false));
+            }
+
+            #[gtest]
+            fn [< deserialize_on_previously_allocated_message_mut_ $name_ext>]() {
+                let mut msg = [< $type >]::new();
+                msg.set_optional_int64(42);
+                msg.set_optional_bytes(b"serialize deserialize test");
+
+                let serialized = msg.serialize().unwrap();
+
+                let mut msg2 = Box::new([< $type >]::new());
+                let msg2_mut = msg2.as_mut();
+                msg2_mut.set_optional_bool(true);
+
+                assert!(msg2_mut.clear_and_parse(&serialized).is_ok());
+                assert_that!(msg2.optional_int64(), eq(msg.optional_int64()));
+                assert_that!(msg2.optional_bytes(), eq(msg.optional_bytes()));
+                assert_that!(msg2.optional_bool(), eq(false));
             }
 
         )* }

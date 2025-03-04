@@ -2,7 +2,6 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
@@ -162,6 +161,44 @@ alias(
 alias(
     name = "wrappers_cc_proto",
     actual = "//src/google/protobuf:wrappers_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+# upb targets for some of the well-known types
+
+alias(
+    name = "any_upb_proto",
+    actual = "//src/google/protobuf:any_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "duration_upb_proto",
+    actual = "//src/google/protobuf:duration_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "empty_upb_proto",
+    actual = "//src/google/protobuf:empty_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_upb_proto",
+    actual = "//src/google/protobuf:field_mask_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "struct_upb_proto",
+    actual = "//src/google/protobuf:struct_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wrappers_upb_proto",
+    actual = "//src/google/protobuf:wrappers_upb_proto",
     visibility = ["//visibility:public"],
 )
 
@@ -466,6 +503,16 @@ alias(
 alias(
     name = "protobuf_rust",
     actual = "//rust:protobuf",
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Go support
+################################################################################
+
+alias(
+    name = "go_features_proto",
+    actual = "//go:go_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 

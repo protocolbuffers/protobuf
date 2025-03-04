@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Describes a complete .proto file.
@@ -111,18 +111,18 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *           file name, relative to root of source tree
      *     @type string $package
      *           e.g. "foo", "foo.bar", etc.
-     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $dependency
+     *     @type string[] $dependency
      *           Names of files imported by this file.
-     *     @type array<int>|\Google\Protobuf\Internal\RepeatedField $public_dependency
+     *     @type int[] $public_dependency
      *           Indexes of the public imported files in the dependency list above.
-     *     @type array<int>|\Google\Protobuf\Internal\RepeatedField $weak_dependency
+     *     @type int[] $weak_dependency
      *           Indexes of the weak imported files in the dependency list.
      *           For Google-internal migration only. Do not use.
-     *     @type array<\Google\Protobuf\Internal\DescriptorProto>|\Google\Protobuf\Internal\RepeatedField $message_type
+     *     @type \Google\Protobuf\Internal\DescriptorProto[] $message_type
      *           All top-level definitions in this file.
-     *     @type array<\Google\Protobuf\Internal\EnumDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $enum_type
-     *     @type array<\Google\Protobuf\Internal\ServiceDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $service
-     *     @type array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $extension
+     *     @type \Google\Protobuf\Internal\EnumDescriptorProto[] $enum_type
+     *     @type \Google\Protobuf\Internal\ServiceDescriptorProto[] $service
+     *     @type \Google\Protobuf\Internal\FieldDescriptorProto[] $extension
      *     @type \Google\Protobuf\Internal\FileOptions $options
      *     @type \Google\Protobuf\Internal\SourceCodeInfo $source_code_info
      *           This field contains optional information about the original source code.
@@ -224,7 +224,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * Names of files imported by this file.
      *
      * Generated from protobuf field <code>repeated string dependency = 3;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<string>
      */
     public function getDependency()
     {
@@ -235,7 +235,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * Names of files imported by this file.
      *
      * Generated from protobuf field <code>repeated string dependency = 3;</code>
-     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param string[] $var
      * @return $this
      */
     public function setDependency($var)
@@ -250,7 +250,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * Indexes of the public imported files in the dependency list above.
      *
      * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<int>
      */
     public function getPublicDependency()
     {
@@ -261,7 +261,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * Indexes of the public imported files in the dependency list above.
      *
      * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
-     * @param array<int>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[] $var
      * @return $this
      */
     public function setPublicDependency($var)
@@ -277,7 +277,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * For Google-internal migration only. Do not use.
      *
      * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<int>
      */
     public function getWeakDependency()
     {
@@ -289,7 +289,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * For Google-internal migration only. Do not use.
      *
      * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
-     * @param array<int>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[] $var
      * @return $this
      */
     public function setWeakDependency($var)
@@ -304,7 +304,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * All top-level definitions in this file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\DescriptorProto>
      */
     public function getMessageType()
     {
@@ -315,7 +315,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * All top-level definitions in this file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
-     * @param array<\Google\Protobuf\Internal\DescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\DescriptorProto[] $var
      * @return $this
      */
     public function setMessageType($var)
@@ -328,7 +328,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\EnumDescriptorProto>
      */
     public function getEnumType()
     {
@@ -337,7 +337,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
-     * @param array<\Google\Protobuf\Internal\EnumDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\EnumDescriptorProto[] $var
      * @return $this
      */
     public function setEnumType($var)
@@ -350,7 +350,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\ServiceDescriptorProto>
      */
     public function getService()
     {
@@ -359,7 +359,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
-     * @param array<\Google\Protobuf\Internal\ServiceDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\ServiceDescriptorProto[] $var
      * @return $this
      */
     public function setService($var)
@@ -372,7 +372,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\FieldDescriptorProto>
      */
     public function getExtension()
     {
@@ -381,7 +381,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
-     * @param array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\FieldDescriptorProto[] $var
      * @return $this
      */
     public function setExtension($var)

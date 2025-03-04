@@ -58,6 +58,14 @@ EXAMPLE_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_example
 echo "Expanding protobuf_example crate tar"
 tar -xvf $EXAMPLE_TAR -C $EXAMPLE_ROOT
 
+MACROS_ROOT=$TMP_DIR/protobuf_macros
+mkdir $MACROS_ROOT
+
+MACROS_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_macros/protobuf_macros_crate.tar)
+
+echo "Expanding protobuf_macros crate tar"
+tar -xvf $MACROS_TAR -C $MACROS_ROOT
+
 WELL_KNOWN_TYPES_ROOT=$TMP_DIR/protobuf_well_known_types
 mkdir $WELL_KNOWN_TYPES_ROOT
 
@@ -66,9 +74,8 @@ WELL_KNOWN_TYPES_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobu
 echo "Expanding protobuf_well_known_types crate tar"
 tar -xvf $WELL_KNOWN_TYPES_TAR -C $WELL_KNOWN_TYPES_ROOT
 
-# Put the Bazel-built protoc and plugin at the beginning of $PATH
+# Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
-PATH=$(dirname $(rlocation com_google_protobuf/upb_generator/minitable/protoc-gen-upb_minitable)):$PATH
 
 cd $CRATE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
@@ -81,10 +88,15 @@ CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 cd $EXAMPLE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
 
+cd $MACROS_ROOT
+# Macros should be tested by the main protobuf test suite.
+CARGO_HOME=$CARGO_HOME cargo publish --dry-run
+
 cd $WELL_KNOWN_TYPES_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
 
 # TODO: Cannot enable this dry-run yet because it checks that the versions of
 # its dependencies are published on crates.io, which they are definitely not
 # in this case.
+# See also https://github.com/rust-lang/cargo/issues/1169.
 # CARGO_HOME=$CARGO_HOME cargo publish --dry-run

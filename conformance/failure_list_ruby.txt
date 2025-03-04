@@ -1,3 +1,2 @@
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.SubmessageEncoding.NotUnknown.ProtobufOutput # Output was not equivalent to reference message: added: message_set_correct.(protobuf_test_messages.proto2.TestAllTypesProto2.Ext
 Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.
 Required.*.JsonInput.AnyWithNoType.*

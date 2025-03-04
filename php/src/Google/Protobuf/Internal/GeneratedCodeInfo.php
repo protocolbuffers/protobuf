@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Describes the relationship between generated code and its original source
@@ -34,7 +34,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type array<\Google\Protobuf\Internal\GeneratedCodeInfo\Annotation>|\Google\Protobuf\Internal\RepeatedField $annotation
+     *     @type \Google\Protobuf\Internal\GeneratedCodeInfo\Annotation[] $annotation
      *           An Annotation connects some span of text in generated code to an element
      *           of its generating .proto file.
      * }
@@ -49,7 +49,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * of its generating .proto file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
+     * @return RepeatedField<\Google\Protobuf\Internal\GeneratedCodeInfo\Annotation>
      */
     public function getAnnotation()
     {
@@ -61,7 +61,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * of its generating .proto file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
-     * @param array<\Google\Protobuf\Internal\GeneratedCodeInfo\Annotation>|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\GeneratedCodeInfo\Annotation[] $var
      * @return $this
      */
     public function setAnnotation($var)

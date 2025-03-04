@@ -8,10 +8,6 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_python//python:defs.bzl", "py_binary")
 
-package(default_applicable_licenses = ["//:license"])
-
-licenses(["notice"])
-
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],

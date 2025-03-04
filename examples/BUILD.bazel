@@ -5,11 +5,13 @@
 # example.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("@com_google_protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 
@@ -72,7 +74,10 @@ java_binary(
     name = "add_person_java",
     srcs = ["AddPerson.java"],
     main_class = "AddPerson",
-    deps = [":addressbook_java_proto"],
+    deps = [
+        ":addressbook_java_proto",
+        "@com_google_protobuf//java/util",
+    ],
 )
 
 java_binary(
@@ -110,7 +115,10 @@ java_binary(
     name = "add_person_java_lite",
     srcs = ["AddPerson.java"],
     main_class = "AddPerson",
-    deps = [":addressbook_java_lite_proto"],
+    deps = [
+        ":addressbook_java_lite_proto",
+        "@com_google_protobuf//java/util",
+    ],
 )
 
 java_binary(

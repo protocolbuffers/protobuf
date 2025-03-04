@@ -28,12 +28,10 @@ package(default_applicable_licenses = ["//:license"])
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
     bootstrap_hdr = "descriptor_bootstrap.h",
-    google3_src_files = ["net/proto2/proto/descriptor.proto"],
-    google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
-    oss_src_files = ["google/protobuf/descriptor.proto"],
-    oss_src_rules = ["//:descriptor_proto_srcs"],
-    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
     proto_lib_deps = ["//:descriptor_proto"],
+    src_files = ["google/protobuf/descriptor.proto"],
+    src_rules = ["//:descriptor_proto_srcs"],
+    strip_prefix = "third_party/protobuf/github/bootstrap/src",
 )
 
 upb_proto_reflection_library(
@@ -181,9 +179,9 @@ cc_test(
         "//upb:port",
         "//upb:reflection",
         "//upb/hash",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

@@ -95,13 +95,26 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
-  oldsize = UPB_ALIGN_MALLOC(oldsize);
-  size = UPB_ALIGN_MALLOC(size);
-  // Must be the last alloc.
-  UPB_ASSERT((char*)ptr + oldsize ==
-             a->UPB_ONLYBITS(ptr) - UPB_ASAN_GUARD_SIZE);
   UPB_ASSERT(size <= oldsize);
-  a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+  size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
+  oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
+  if (size == oldsize) {
+    return;
+  }
+  char* arena_ptr = a->UPB_ONLYBITS(ptr);
+  // If it's the last alloc in the last block, we can resize.
+  if ((char*)ptr + oldsize == arena_ptr) {
+    a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+  } else {
+    // If not, verify that it could have been a full-block alloc that did not
+    // replace the last block.
+#ifndef NDEBUG
+    bool _upb_Arena_WasLastAlloc(struct upb_Arena * a, void* ptr,
+                                 size_t oldsize);
+    UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
+#endif
+  }
+  UPB_POISON_MEMORY_REGION((char*)ptr + size, oldsize - size);
 }
 
 #ifdef __cplusplus

@@ -85,7 +85,7 @@ namespace internal {
 class InternalMetadata;
 
 namespace v2 {
-class TableDriven;
+class TableDrivenMessage;
 }  // namespace v2
 
 // Used to store values of type WireFormatLite::FieldType without having to
@@ -531,9 +531,6 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   size_t ByteSize() const;
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  size_t ByteSizeV2() const;
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   // Like ByteSize() but uses MessageSet format.
   size_t MessageSetByteSize() const;
@@ -575,7 +572,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
-  friend class google::protobuf::internal::v2::TableDriven;
+  friend class google::protobuf::internal::v2::TableDrivenMessage;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -672,9 +669,6 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-    virtual size_t ByteSizeLongV2() const = 0;
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.

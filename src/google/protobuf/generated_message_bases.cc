@@ -48,13 +48,6 @@ size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);
 }
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-size_t ZeroFieldsBase::ByteSizeV2Impl(const MessageLite& base) {
-  auto& msg = static_cast<const ZeroFieldsBase&>(base);
-  return msg.MaybeComputeUnknownFieldsSize(v2::kPoisonV2HeaderSize,
-                                           &msg._impl_._cached_size_);
-}
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(const MessageLite& msg,
                                               ::uint8_t* target,

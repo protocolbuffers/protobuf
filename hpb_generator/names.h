@@ -24,7 +24,6 @@ std::string QualifiedClassName(const protobuf::Descriptor* descriptor);
 std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor);
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file);
-std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file);
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file);
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file);
 

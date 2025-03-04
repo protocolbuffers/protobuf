@@ -55,9 +55,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
 
 UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 
-// Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
-
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
 // chunk.
@@ -71,16 +68,28 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 //     // Iterate within a chunk, deleting ranges
 //     while (ShouldDeleteSubSegment(&data)) {
 //       // Data now points to the region to be deleted
-//       if (!upb_Message_DeleteUnknown(msg, &data, &iter)) return;
-//       // If DeleteUnknown returned true, then data now points to the
-//       // remaining unknown fields after the region that was just deleted.
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
 //     }
 //   }
 //
 // The range given in `data` must be contained inside the most recently
 // returned region.
-bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
-                               uintptr_t* iter);
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
+                                                          upb_StringView* data,
+                                                          uintptr_t* iter,
+                                                          upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);

@@ -15,6 +15,7 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/requires.h"
 
 namespace {
@@ -260,6 +261,52 @@ TEST(CppGeneratedCode, SetExtensionOnMutableChild) {
                                       extension1)
                       .ok());
   EXPECT_EQ(true, ::hpb::HasExtension(model.mutable_recursive_child(), theme));
+}
+
+TEST(CppGeneratedCode, SetAliasExtensionOnMutableChild) {
+  hpb::Arena arena;
+  hpb::Ptr<TestModel> model = hpb::CreateMessage<TestModel>(arena);
+  hpb::Ptr<ThemeExtension> extension1 =
+      hpb::CreateMessage<ThemeExtension>(arena);
+  extension1->set_ext_name("Hello World");
+  EXPECT_EQ(false,
+            ::hpb::HasExtension(model->mutable_recursive_child(), theme));
+  ::hpb::SetAliasExtension(model->mutable_recursive_child(), theme, extension1);
+  EXPECT_EQ(true, ::hpb::HasExtension(model->mutable_recursive_child(), theme));
+}
+
+TEST(CppGeneratedCode, SetAliasExtensionOnTwoParents) {
+  hpb::Arena arena;
+  hpb::Ptr<TestModel> model1 = hpb::CreateMessage<TestModel>(arena);
+  hpb::Ptr<TestModel> model2 = hpb::CreateMessage<TestModel>(arena);
+  hpb::Ptr<ThemeExtension> extension1 =
+      hpb::CreateMessage<ThemeExtension>(arena);
+  extension1->set_ext_name("Hello World");
+  ::hpb::SetAliasExtension(model1->mutable_recursive_child(), theme,
+                           extension1);
+  ::hpb::SetAliasExtension(model2->mutable_recursive_child(), theme,
+                           extension1);
+  extension1->set_ext_name("Goodbye");
+  EXPECT_EQ("Goodbye",
+            hpb::GetExtension(model1->mutable_recursive_child(), theme)
+                .value()
+                ->ext_name());
+  EXPECT_EQ("Goodbye",
+            hpb::GetExtension(model2->mutable_recursive_child(), theme)
+                .value()
+                ->ext_name());
+}
+
+TEST(CppGeneratedCode, SetAliasExtensionOnDifferentArenaShouldCrash) {
+  hpb::Arena arena1;
+  hpb::Arena arena2;
+  hpb::Ptr<TestModel> model = hpb::CreateMessage<TestModel>(arena1);
+  hpb::Ptr<ThemeExtension> extension1 =
+      hpb::CreateMessage<ThemeExtension>(arena2);
+  extension1->set_ext_name("Hello World");
+  EXPECT_DEATH(::hpb::SetAliasExtension(model->mutable_recursive_child(), theme,
+                                        extension1),
+               "");
 }
 
 TEST(CppGeneratedCode, GetExtension) {

@@ -22,11 +22,6 @@ substitute_rust_release_version(
     out = "Cargo.toml",
 )
 
-substitute_rust_release_version(
-    src = "README-template.md",
-    out = "README.md",
-)
-
 filegroup(
     name = "srcs",
     srcs = [

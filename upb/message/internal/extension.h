@@ -63,10 +63,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
   UPB_UNREACHABLE();
 }
 
-// Replaces the unknown field at iter with the provided extension.
-void upb_Message_ReplaceUnknownWithExtension(struct upb_Message* msg,
-                                             uintptr_t iter,
-                                             const upb_Extension* ext);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

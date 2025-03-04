@@ -43,7 +43,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 40310;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -607,6 +607,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
        // then honor the directives within the generators sources.
        "clangfmt", "clang-format"},
       {"root_class_name", root_class_name_},
+      {"google_protobuf_runtime_support",
+       absl::StrCat("GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_",
+                    GOOGLE_PROTOBUF_OBJC_VERSION)},
   });
 
   p->Emit(
@@ -740,7 +743,7 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
                    for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
                      GPBExtensionDescriptor *extension =
                          [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]
-                                                                        usesClassRefs:YES];
+                                                                       runtimeSupport:&$google_protobuf_runtime_support$];
                      [registry addExtension:extension];
                      [self globallyRegisterExtension:extension];
                      [extension release];
@@ -773,7 +776,6 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
           // about thread safety and initialization of registry.
           static GPBExtensionRegistry* registry = nil;
           if (!registry) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
             registry = [[GPBExtensionRegistry alloc] init];
             $register_local_extensions$;
             $register_imports$
@@ -819,13 +821,11 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
            {"prefix_value",
             objc_prefix.empty() && !file_->options().has_objc_class_prefix()
                 ? "NULL"
-                : absl::StrCat("\"", objc_prefix, "\"")},
-           {"syntax", syntax}},
+                : absl::StrCat("\"", objc_prefix, "\"")}},
           R"objc(
-            static GPBFileDescription $file_description_name$ = {
+            static GPBFilePackageAndPrefix $file_description_name$ = {
               .package = $package_value$,
-              .prefix = $prefix_value$,
-              .syntax = $syntax$
+              .prefix = $prefix_value$
             };
           )objc");
   p->Emit("\n");

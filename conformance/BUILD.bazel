@@ -8,12 +8,14 @@
 # Conformance testing for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -160,14 +162,14 @@ cc_library(
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/types:optional",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -176,12 +178,12 @@ cc_test(
     srcs = ["failure_list_trie_node_test.cc"],
     deps = [
         ":conformance_test",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -208,12 +210,12 @@ cc_library(
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/json",
         "//src/google/protobuf/util:type_resolver",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/log:die_if_null",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
         "@jsoncpp",
     ],
 )
@@ -231,10 +233,10 @@ cc_library(
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/log:die_if_null",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
@@ -247,7 +249,7 @@ cc_binary(
         ":binary_json_conformance_suite",
         ":conformance_test",
         ":text_format_conformance_suite",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
@@ -271,11 +273,11 @@ cc_binary(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

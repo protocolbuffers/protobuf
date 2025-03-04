@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")

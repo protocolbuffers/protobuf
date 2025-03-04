@@ -95,6 +95,20 @@ struct ArenaOffsetHelper {
 PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
 PROTOBUF_EXPORT std::string* CloneSlow(Arena* arena, const std::string& value);
 
+// A utility function for logging that doesn't need any template types.
+PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
+
+// A utility function for logging that doesn't need any template types. Same as
+// LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
+// instead of DFATAL.
+[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
+                                                              int size);
+PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
+    LogIndexOutOfBoundsAndAbort(index, size);
+  }
+}
+
 // Defined further below.
 template <typename Type>
 class GenericTypeHandler;
@@ -184,8 +198,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-    ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
+    if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
+      RuntimeAssertInBounds(index, current_size_);
+    } else {
+      ABSL_DCHECK_GE(index, 0);
+      ABSL_DCHECK_LT(index, current_size_);
+    }
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -251,8 +269,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   const Value<TypeHandler>& Get(int index) const {
-    ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
+    if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kReturnDefault) {
+      if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
+        // `default_instance()` is not supported for MessageLite and Message.
+        if constexpr (TypeHandler::has_default_instance()) {
+          LogIndexOutOfBounds(index, current_size_);
+          return TypeHandler::default_instance();
+        }
+      }
+    } else if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
+      // We refactor this to a separate function instead of inlining it so we
+      // can measure the performance impact more easily.
+      RuntimeAssertInBounds(index, current_size_);
+    } else {
+      ABSL_DCHECK_GE(index, 0);
+      ABSL_DCHECK_LT(index, current_size_);
+    }
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -847,6 +879,8 @@ class GenericTypeHandler {
     return *static_cast<const GenericType*>(
         MessageTraits<Type>::default_instance());
   }
+
+  static constexpr bool has_default_instance() { return true; }
 };
 
 template <>
@@ -854,11 +888,21 @@ inline Arena* GenericTypeHandler<MessageLite>::GetArena(MessageLite* value) {
   return value->GetArena();
 }
 
+template <>
+inline constexpr bool GenericTypeHandler<MessageLite>::has_default_instance() {
+  return false;
+}
+
 // Message specialization bodies defined in message.cc. This split is necessary
 // to allow proto2-lite (which includes this header) to be independent of
 // Message.
 template <>
 PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetArena(Message* value);
+
+template <>
+inline constexpr bool GenericTypeHandler<Message>::has_default_instance() {
+  return false;
+}
 
 PROTOBUF_EXPORT void* NewStringElement(Arena* arena);
 
@@ -887,6 +931,8 @@ class GenericTypeHandler<std::string> {
   static const Type& default_instance() {
     return GetEmptyStringAlreadyInited();
   }
+
+  static constexpr bool has_default_instance() { return true; }
 };
 
 }  // namespace internal
@@ -1981,14 +2027,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
   RepeatedPtrField<T>* field_;
 };
 
-// A utility function for logging that doesn't need any template types.
-PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
-
-// A utility function for logging that doesn't need any template types. Same as
-// LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
-// instead of DFATAL.
-[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
-                                                              int size);
 
 template <typename T>
 const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {

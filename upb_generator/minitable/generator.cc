@@ -21,6 +21,8 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
+#include "upb/mem/arena.hpp"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
@@ -32,6 +34,7 @@
 #include "upb_generator/minitable/fasttable.h"
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/minitable/names_internal.h"
+#include "upb_generator/plugin.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -466,6 +469,73 @@ void WriteMiniTableMultipleSources(
         context->Open(MultipleSourceFilename(file, ext.full_name(), &i)));
     ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
+}
+
+std::string SourceFilename(upb::FileDefPtr file) {
+  return StripExtension(file.name()) + ".upb_minitable.c";
+}
+
+void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
+                  const MiniTableOptions& options,
+                  google::protobuf::compiler::GeneratorContext* context) {
+  Output h_output;
+  WriteMiniTableHeader(pools, file, options, h_output);
+  {
+    auto stream = absl::WrapUnique(
+        context->Open(MiniTableHeaderFilename(file.name(), false)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(h_output.output())));
+  }
+
+  Output c_output;
+  WriteMiniTableSource(pools, file, options, c_output);
+  {
+    auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(c_output.output())));
+  }
+
+  if (options.one_output_per_message) {
+    WriteMiniTableMultipleSources(pools, file, options, context);
+  }
+}
+
+bool ParseOptions(MiniTableOptions* options, absl::string_view parameter,
+                  std::string* error) {
+  for (const auto& pair : ParseGeneratorParameter(parameter)) {
+    if (pair.first == "bootstrap_stage") {
+      options->bootstrap = true;
+    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
+      options->strip_nonfunctional_codegen = true;
+    } else if (pair.first == "one_output_per_message") {
+      options->one_output_per_message = true;
+    } else {
+      *error = absl::Substitute("Unknown parameter: $0", pair.first);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool MiniTableGenerator::GenerateAll(
+    const std::vector<const google::protobuf::FileDescriptor*>& files,
+    const std::string& parameter,
+    google::protobuf::compiler::GeneratorContext* generator_context,
+    std::string* error) const {
+  MiniTableOptions options;
+  if (!ParseOptions(&options, parameter, error)) {
+    return false;
+  }
+
+  upb::Arena arena;
+  DefPoolPair pools;
+  absl::flat_hash_set<std::string> files_seen;
+  for (const auto* file : files) {
+    PopulateDefPool(file, &arena, &pools, &files_seen);
+    upb::FileDefPtr upb_file = pools.GetFile(file->name());
+    GenerateFile(pools, upb_file, options, generator_context);
+  }
+
+  return true;
 }
 
 }  // namespace generator

@@ -10,10 +10,8 @@
 
 #include <cstdint>
 #include <type_traits>
-#include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
@@ -46,6 +44,10 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
 
+void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
+                       const upb_MiniTableExtension* ext,
+                       upb_Message* extension, upb_Arena* extension_arena);
+
 /**
  * Trait that maps upb extension types to the corresponding
  * return value: ubp_MessageValue.
@@ -71,20 +73,26 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
   }
 };
 
-#define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                                 \
-  template <>                                                               \
-  struct UpbExtensionTrait<CppType> {                                       \
-    using DefaultType = CppType;                                            \
-    using ReturnType = CppType;                                             \
-    static constexpr auto kSetter = upb_Message_SetExtension##UpbFunc;      \
-                                                                            \
-    template <typename Msg, typename Id>                                    \
-    static constexpr ReturnType Get(Msg message, const Id& id) {            \
-      auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id); \
-      return upb_Message_GetExtension##UpbFunc(                             \
-          hpb::interop::upb::GetMessage(message), id.mini_table_ext(),      \
-          default_val);                                                     \
-    }                                                                       \
+#define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                              \
+  template <>                                                            \
+  struct UpbExtensionTrait<CppType> {                                    \
+    using DefaultType = CppType;                                         \
+    using ReturnType = CppType;                                          \
+                                                                         \
+    template <typename Msg, typename Id>                                 \
+    static constexpr ReturnType Get(Msg message, const Id& id) {         \
+      auto default_val = internal::PrivateAccess::GetDefaultValue(id);   \
+      return upb_Message_GetExtension##UpbFunc(                          \
+          interop::upb::GetMessage(message), id.mini_table_ext(),        \
+          default_val);                                                  \
+    }                                                                    \
+    template <typename Msg, typename Id>                                 \
+    static absl::Status Set(Msg message, const Id& id, CppType value) {  \
+      bool res = upb_Message_SetExtension##UpbFunc(                      \
+          interop::upb::GetMessage(message), id.mini_table_ext(), value, \
+          interop::upb::GetArena(message));                              \
+      return res ? absl::OkStatus() : MessageAllocationError();          \
+    }                                                                    \
   };
 
 UPB_EXT_PRIMITIVE(bool, Bool);
@@ -106,15 +114,36 @@ struct UpbExtensionTrait<T> {
   template <typename Msg, typename Id>
   static constexpr absl::StatusOr<ReturnType> Get(Msg message, const Id& id) {
     upb_MessageValue value;
-    const bool ok = ::hpb::internal::GetOrPromoteExtension(
-        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
-        hpb::interop::upb::GetArena(message), &value);
+    const bool ok = internal::GetOrPromoteExtension(
+        interop::upb::GetMessage(message), id.mini_table_ext(),
+        interop::upb::GetArena(message), &value);
     if (!ok) {
       return ExtensionNotFoundError(
           upb_MiniTableExtension_Number(id.mini_table_ext()));
     }
-    return Ptr<const T>(::hpb::interop::upb::MakeCHandle<T>(
+    return Ptr<const T>(interop::upb::MakeCHandle<T>(
         value.msg_val, hpb::interop::upb::GetArena(message)));
+  }
+
+  template <typename Msg, typename Id>
+  static absl::Status Set(Msg message, const Id& id, const T& value) {
+    return Set(message, id, &value);
+  }
+
+  template <typename Msg, typename Id>
+  static absl::Status Set(Msg message, const Id& id, T&& value) {
+    T local = std::move(value);
+    return internal::MoveExtension(
+        interop::upb::GetMessage(message), interop::upb::GetArena(message),
+        id.mini_table_ext(), interop::upb::GetMessage(&local),
+        interop::upb::GetArena(&local));
+  }
+
+  template <typename Msg, typename Id>
+  static absl::Status Set(Msg message, const Id& id, Ptr<const T> value) {
+    return hpb::internal::SetExtension(
+        interop::upb::GetMessage(message), interop::upb::GetArena(message),
+        id.mini_table_ext(), interop::upb::GetMessage(value));
   }
 };
 
@@ -245,87 +274,45 @@ void ClearExtension(
   ClearExtension(Ptr(message), id);
 }
 
-template <typename T, typename Extension,
-          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
-          typename = hpb::internal::EnableIfMutableProto<T>>
-absl::Status SetExtension(
-    Ptr<T> message,
-    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
-    const Extension& value) {
-  if constexpr (std::is_arithmetic_v<Extension>) {
-    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
-        hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
-        hpb::interop::upb::GetArena(message));
-    return res ? absl::OkStatus() : MessageAllocationError();
-  } else {
-    static_assert(!std::is_const_v<T>);
-    auto* message_arena = hpb::interop::upb::GetArena(message);
-    return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
-                                         message_arena, id.mini_table_ext(),
-                                         hpb::interop::upb::GetMessage(&value));
-  }
+/**
+ * Sets the extension to provided value.
+ *
+ * `message` is the model and may be passed in as a `T*` or a `Ptr<T>`.
+ *
+ * `id` is the ExtensionIdentifier provided by hpb gencode.
+ *
+ * `value` is the value to set the extension to.
+ *  For message extension it can bind to `const Input&`, `Input&&`,
+ *  or `Ptr<const Input>`.
+ *  For rvalue references, if the arenas match, the extension is moved.
+ *  If the arenas differ, a deep copy is performed.
+ */
+template <int&... DeductionBlocker, typename T, typename Extension,
+          typename Input>
+auto SetExtension(
+    hpb::internal::PtrOrRawMutable<T> message,
+    const internal::ExtensionIdentifier<internal::RemovePtrT<T>, Extension>& id,
+    Input&& value)
+    -> decltype(internal::UpbExtensionTrait<Extension>::Set(
+        message, id, std::forward<Input>(value))) {
+  return internal::UpbExtensionTrait<Extension>::Set(
+      message, id, std::forward<Input>(value));
 }
 
 template <typename T, typename Extension,
           typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
           typename = hpb::internal::EnableIfMutableProto<T>>
-absl::Status SetExtension(
+void SetAliasExtension(
     Ptr<T> message,
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
   static_assert(!std::is_const_v<T>);
   auto* message_arena = hpb::interop::upb::GetArena(message);
-  return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
-                                       message_arena, id.mini_table_ext(),
-                                       hpb::interop::upb::GetMessage(value));
-}
-
-template <typename T, typename Extension,
-          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
-          typename = hpb::internal::EnableIfMutableProto<T>>
-absl::Status SetExtension(
-    Ptr<T> message,
-    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
-    Extension&& value) {
-  if constexpr (std::is_integral_v<Extension>) {
-    bool res = hpb::internal::UpbExtensionTrait<Extension>::kSetter(
-        hpb::interop::upb::GetMessage(message), id.mini_table_ext(), value,
-        hpb::interop::upb::GetArena(message));
-    return res ? absl::OkStatus() : MessageAllocationError();
-  } else {
-    Extension ext = std::forward<Extension>(value);
-    static_assert(!std::is_const_v<T>);
-    auto* message_arena = hpb::interop::upb::GetArena(message);
-    auto* extension_arena = hpb::interop::upb::GetArena(&ext);
-    return ::hpb::internal::MoveExtension(
-        hpb::interop::upb::GetMessage(message), message_arena,
-        id.mini_table_ext(), hpb::interop::upb::GetMessage(&ext),
-        extension_arena);
-  }
-}
-
-template <typename T, typename Extension,
-          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>>
-absl::Status SetExtension(
-    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
-    const Extension& value) {
-  return ::hpb::SetExtension(Ptr(message), id, value);
-}
-
-template <typename T, typename Extension,
-          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>>
-absl::Status SetExtension(
-    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
-    Extension&& value) {
-  return ::hpb::SetExtension(Ptr(message), id, std::forward<Extension>(value));
-}
-
-template <typename T, typename Extension,
-          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>>
-absl::Status SetExtension(
-    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
-    Ptr<Extension> value) {
-  return ::hpb::SetExtension(Ptr(message), id, value);
+  auto* extension_arena = hpb::interop::upb::GetArena(value);
+  return ::hpb::internal::SetAliasExtension(
+      hpb::interop::upb::GetMessage(message), message_arena,
+      id.mini_table_ext(), hpb::interop::upb::GetMessage(value),
+      extension_arena);
 }
 
 template <typename T, typename Extendee, typename Extension,

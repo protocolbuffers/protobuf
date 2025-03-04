@@ -442,6 +442,10 @@ Error, UINTPTR_MAX is undefined
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
+#elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
+    UPB_BOOTSTRAP_STAGE == 0
+#define UPB_DESC(sym) proto2_##sym
+#define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
 #define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
@@ -766,13 +770,26 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
-  oldsize = UPB_ALIGN_MALLOC(oldsize);
-  size = UPB_ALIGN_MALLOC(size);
-  // Must be the last alloc.
-  UPB_ASSERT((char*)ptr + oldsize ==
-             a->UPB_ONLYBITS(ptr) - UPB_ASAN_GUARD_SIZE);
   UPB_ASSERT(size <= oldsize);
-  a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+  size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
+  oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
+  if (size == oldsize) {
+    return;
+  }
+  char* arena_ptr = a->UPB_ONLYBITS(ptr);
+  // If it's the last alloc in the last block, we can resize.
+  if ((char*)ptr + oldsize == arena_ptr) {
+    a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+  } else {
+    // If not, verify that it could have been a full-block alloc that did not
+    // replace the last block.
+#ifndef NDEBUG
+    bool _upb_Arena_WasLastAlloc(struct upb_Arena * a, void* ptr,
+                                 size_t oldsize);
+    UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
+#endif
+  }
+  UPB_POISON_MEMORY_REGION((char*)ptr + size, oldsize - size);
 }
 
 #ifdef __cplusplus
@@ -2524,8 +2541,8 @@ UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr);
 #include <string.h>
 
 
-#ifndef UPB_HASH_STR_TABLE_H_
-#define UPB_HASH_STR_TABLE_H_
+#ifndef UPB_HASH_INT_TABLE_H_
+#define UPB_HASH_INT_TABLE_H_
 
 
 /*
@@ -2695,6 +2712,86 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 // Must be last.
 
 typedef struct {
+  upb_table t;              // For entries that don't fit in the array part.
+  const upb_tabval* array;  // Array part of the table. See const note above.
+  size_t array_size;        // Array part size.
+  size_t array_count;       // Array part number of elements.
+} upb_inttable;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Initialize a table. If memory allocation failed, false is returned and
+// the table is uninitialized.
+bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
+
+// Returns the number of values in the table.
+size_t upb_inttable_count(const upb_inttable* t);
+
+// Inserts the given key into the hashtable with the given value.
+// The key must not already exist in the hash table.
+// The value must not be UINTPTR_MAX.
+//
+// If a table resize was required but memory allocation failed, false is
+// returned and the table is unchanged.
+bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
+                         upb_Arena* a);
+
+// Looks up key in this table, returning "true" if the key was found.
+// If v is non-NULL, copies the value for this key into *v.
+bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
+
+// Removes an item from the table. Returns true if the remove was successful,
+// and stores the removed item in *val if non-NULL.
+bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val);
+
+// Updates an existing entry in an inttable.
+// If the entry does not exist, returns false and does nothing.
+// Unlike insert/remove, this does not invalidate iterators.
+bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
+
+// Optimizes the table for the current set of entries, for both memory use and
+// lookup time. Client should call this after all entries have been inserted;
+// inserting more entries is legal, but will likely require a table resize.
+void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+
+// Clears the table.
+void upb_inttable_clear(upb_inttable* t);
+
+// Iteration over inttable:
+//
+//   intptr_t iter = UPB_INTTABLE_BEGIN;
+//   uintptr_t key;
+//   upb_value val;
+//   while (upb_inttable_next(t, &key, &val, &iter)) {
+//      // ...
+//   }
+
+#define UPB_INTTABLE_BEGIN -1
+
+bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
+                       intptr_t* iter);
+void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
+bool upb_inttable_done(const upb_inttable* t, intptr_t i);
+uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
+upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_HASH_INT_TABLE_H_ */
+
+#ifndef UPB_HASH_STR_TABLE_H_
+#define UPB_HASH_STR_TABLE_H_
+
+
+// Must be last.
+
+typedef struct {
   upb_table t;
 } upb_strtable;
 
@@ -2831,14 +2928,20 @@ typedef enum {
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
+union upb_Map_Table {
+  upb_strtable strtable;
+  upb_inttable inttable;
+};
+
 struct upb_Map {
   // Size of key and val, based on the map type.
   // Strings are represented as '0' because they must be handled specially.
   char key_size;
   char val_size;
   bool UPB_PRIVATE(is_frozen);
+  bool UPB_PRIVATE(is_strtable);
 
-  upb_strtable table;
+  union upb_Map_Table t;
 };
 
 #ifdef __cplusplus
@@ -2899,20 +3002,19 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
+UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
   upb_strtable_iter it;
-  it.t = &map->table;
+  it.t = &map->t.strtable;
   it.index = *iter;
   upb_strtable_next(&it);
   *iter = it.index;
-  if (upb_strtable_done(&it)) return NULL;
-  return (void*)str_tabent(&it);
+  return !upb_strtable_done(&it);
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  upb_strtable_clear(&map->table);
+  upb_strtable_clear(&map->t.strtable);
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
@@ -2920,14 +3022,14 @@ UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_StringView k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove2(&map->table, k.data, k.size, val);
+  return upb_strtable_remove2(&map->t.strtable, k.data, k.size, val);
 }
 
 UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
                              size_t key_size, void* val, size_t val_size) {
   upb_value tabval;
   upb_StringView k = _upb_map_tokey(key, key_size);
-  bool ret = upb_strtable_lookup2(&map->table, k.data, k.size, &tabval);
+  bool ret = upb_strtable_lookup2(&map->t.strtable, k.data, k.size, &tabval);
   if (ret && val) {
     _upb_map_fromvalue(tabval, val, val_size);
   }
@@ -2948,8 +3050,9 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
 
   // TODO: add overwrite operation to minimize number of lookups.
   bool removed =
-      upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
-  if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
+      upb_strtable_remove2(&map->t.strtable, strkey.data, strkey.size, NULL);
+  if (!upb_strtable_insert(&map->t.strtable, strkey.data, strkey.size, tabval,
+                           a)) {
     return kUpb_MapInsertStatus_OutOfMemory;
   }
   return removed ? kUpb_MapInsertStatus_Replaced
@@ -2957,7 +3060,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
 }
 
 UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
-  return map->table.t.count;
+  return map->t.strtable.t.count;
 }
 
 // Strings/bytes are special-cased in maps.
@@ -3022,9 +3125,22 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
   return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
 }
 
+UPB_API_INLINE const struct upb_MiniTableEnum*
+upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
+  if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
+    return NULL;
+  }
+  return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
+}
+
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+}
+
+UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTableEnum* en) {
+  e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
 }
 
 UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
@@ -3056,8 +3172,14 @@ upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const upb_MiniTableExtension* e);
 
+UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableExtension_GetSubEnum(
+    const upb_MiniTableExtension* e);
+
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     upb_MiniTableExtension* e, const upb_MiniTable* m);
+
+UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+    upb_MiniTableExtension* e, const upb_MiniTableEnum* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3110,10 +3232,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
   UPB_UNREACHABLE();
 }
 
-// Replaces the unknown field at iter with the provided extension.
-void upb_Message_ReplaceUnknownWithExtension(struct upb_Message* msg,
-                                             uintptr_t iter,
-                                             const upb_Extension* ext);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -3368,9 +3486,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
 
 UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 
-// Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
-
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
 // chunk.
@@ -3384,16 +3499,28 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 //     // Iterate within a chunk, deleting ranges
 //     while (ShouldDeleteSubSegment(&data)) {
 //       // Data now points to the region to be deleted
-//       if (!upb_Message_DeleteUnknown(msg, &data, &iter)) return;
-//       // If DeleteUnknown returned true, then data now points to the
-//       // remaining unknown fields after the region that was just deleted.
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
 //     }
 //   }
 //
 // The range given in `data` must be contained inside the most recently
 // returned region.
-bool upb_Message_DeleteUnknown(upb_Message* msg, upb_StringView* data,
-                               uintptr_t* iter);
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
+                                                          upb_StringView* data,
+                                                          uintptr_t* iter,
+                                                          upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
@@ -5065,48 +5192,9 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
 #ifndef UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 #define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Message map operations, these get the map from the message first.
-
-UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
-  const upb_tabent* ent = (const upb_tabent*)msg;
-  uint32_t u32len;
-  upb_StringView k;
-  k.data = upb_tabstr(ent->key, &u32len);
-  k.size = u32len;
-  _upb_map_fromkey(k, key, size);
-}
-
-UPB_INLINE void _upb_msg_map_value(const void* msg, void* val, size_t size) {
-  const upb_tabent* ent = (const upb_tabent*)msg;
-  upb_value v = {ent->val.val};
-  _upb_map_fromvalue(v, val, size);
-}
-
-UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
-                                       size_t size) {
-  upb_tabent* ent = (upb_tabent*)msg;
-  // This is like _upb_map_tovalue() except the entry already exists
-  // so we can reuse the allocated upb_StringView for string fields.
-  if (size == UPB_MAPTYPE_STRING) {
-    upb_StringView* strp = (upb_StringView*)(uintptr_t)ent->val.val;
-    memcpy(strp, val, sizeof(*strp));
-  } else {
-    memcpy(&ent->val.val, val, size);
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
+// This header file is referenced by multiple files. Leave it empty.
+// TODO: b/399481227 - Remove this header file, after all the references are
+// cleaned up.
 #endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
 
 #ifndef UPB_MINI_TABLE_DECODE_H_
@@ -13026,8 +13114,8 @@ UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
 const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
                                                       const char* sym);
 
-const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
-                                              const char* name);
+UPB_API const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
+                                                      const char* name);
 
 const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
                                                       const char* name,
@@ -14863,79 +14951,6 @@ upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
 
 
 #endif /* UPB_MINI_TABLE_COMPAT_H_ */
-
-#ifndef UPB_HASH_INT_TABLE_H_
-#define UPB_HASH_INT_TABLE_H_
-
-
-// Must be last.
-
-typedef struct {
-  upb_table t;              // For entries that don't fit in the array part.
-  const upb_tabval* array;  // Array part of the table. See const note above.
-  size_t array_size;        // Array part size.
-  size_t array_count;       // Array part number of elements.
-} upb_inttable;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Initialize a table. If memory allocation failed, false is returned and
-// the table is uninitialized.
-bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
-
-// Returns the number of values in the table.
-size_t upb_inttable_count(const upb_inttable* t);
-
-// Inserts the given key into the hashtable with the given value.
-// The key must not already exist in the hash table.
-// The value must not be UINTPTR_MAX.
-//
-// If a table resize was required but memory allocation failed, false is
-// returned and the table is unchanged.
-bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
-                         upb_Arena* a);
-
-// Looks up key in this table, returning "true" if the key was found.
-// If v is non-NULL, copies the value for this key into *v.
-bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
-
-// Removes an item from the table. Returns true if the remove was successful,
-// and stores the removed item in *val if non-NULL.
-bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val);
-
-// Updates an existing entry in an inttable.
-// If the entry does not exist, returns false and does nothing.
-// Unlike insert/remove, this does not invalidate iterators.
-bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
-
-// Optimizes the table for the current set of entries, for both memory use and
-// lookup time. Client should call this after all entries have been inserted;
-// inserting more entries is legal, but will likely require a table resize.
-void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
-
-// Iteration over inttable:
-//
-//   intptr_t iter = UPB_INTTABLE_BEGIN;
-//   uintptr_t key;
-//   upb_value val;
-//   while (upb_inttable_next(t, &key, &val, &iter)) {
-//      // ...
-//   }
-
-#define UPB_INTTABLE_BEGIN -1
-
-bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
-                       intptr_t* iter);
-void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_HASH_INT_TABLE_H_ */
 
 #ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
 #define UPB_WIRE_INTERNAL_CONSTANTS_H_

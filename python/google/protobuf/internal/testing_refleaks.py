@@ -62,11 +62,13 @@ class ReferenceLeakCheckerMixin(object):
     super(ReferenceLeakCheckerMixin, self).run(result=result)
     super(ReferenceLeakCheckerMixin, self).run(result=result)
 
-    oldrefcount = 0  # pylint: disable=unused-variable but needed for refcounts.
     local_result = LocalTestResult(result)
     num_flakes = 0
-
     refcount_deltas = []
+
+    # Observe the refcount, then create oldrefcount which actually makes the
+    # refcount 1 higher than the recorded value immediately
+    oldrefcount = self._getRefcounts()
     while len(refcount_deltas) < self.NB_RUNS:
       oldrefcount = self._getRefcounts()
       super(ReferenceLeakCheckerMixin, self).run(result=local_result)

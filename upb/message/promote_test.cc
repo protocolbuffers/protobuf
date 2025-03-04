@@ -20,6 +20,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
@@ -29,7 +30,6 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -39,6 +39,7 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
@@ -90,6 +91,54 @@ TEST(GeneratedCode, FindUnknown) {
       upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, PromoteFromMultiple) {
+  int options = kUpb_DecodeOption_AliasString;
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+
+  upb_test_ModelExtension1* extension1 = upb_test_ModelExtension1_new(arena);
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("World"));
+
+  upb_test_ModelExtension1_set_model_ext(msg, extension1, arena);
+
+  size_t serialized_size;
+  char* serialized1 =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
+
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("Everyone"));
+  size_t serialized_size2;
+  char* serialized2 =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size2);
+  char* concat =
+      (char*)upb_Arena_Malloc(arena, serialized_size + serialized_size2);
+  memcpy(concat, serialized1, serialized_size);
+  memcpy(concat + serialized_size, serialized2, serialized_size2);
+
+  upb_test_ModelWithExtensions* parsed = upb_test_ModelWithExtensions_parse_ex(
+      concat, serialized_size + serialized_size2,
+      upb_ExtensionRegistry_New(arena), options, arena);
+
+  upb_MessageValue value;
+  upb_GetExtension_Status result = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(parsed), &upb_test_ModelExtension1_model_ext_ext, options,
+      arena, &value);
+  ASSERT_EQ(result, kUpb_GetExtension_Ok);
+  upb_test_ModelExtension1* parsed_ex =
+      (upb_test_ModelExtension1*)value.msg_val;
+  upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
+  EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
+
+  upb_FindUnknownRet found = upb_Message_FindUnknown(
+      UPB_UPCAST(parsed),
+      upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
+      0);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 
   upb_Arena_Free(arena);
 }

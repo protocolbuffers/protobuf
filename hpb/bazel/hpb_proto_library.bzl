@@ -61,11 +61,6 @@ def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
         extension = ".upb.proto.h",
         proto_info = proto_info,
     )
-    hdrs += proto_common.declare_generated_files(
-        ctx.actions,
-        extension = ".upb.fwd.h",
-        proto_info = proto_info,
-    )
 
     proto_common.compile(
         actions = ctx.actions,
@@ -156,9 +151,9 @@ _upb_cc_proto_library_aspect = aspect(
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
                 "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
                 "//hpb:generated_hpb_support",
-                "@com_google_absl//absl/log:absl_check",
-                "@com_google_absl//absl/strings",
-                "@com_google_absl//absl/status:statusor",
+                "@abseil-cpp//absl/log:absl_check",
+                "@abseil-cpp//absl/strings",
+                "@abseil-cpp//absl/status:statusor",
                 "//hpb:repeated_field",
             ],
         ),

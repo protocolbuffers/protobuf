@@ -59,6 +59,11 @@ class TimestampTest(unittest.TestCase):
         naive_utc_epoch, timestamp.to_datetime(message.optional_timestamp)  # pytype: disable=wrong-arg-types
     )
 
+  def test_timstamp_construction(self):
+    message = well_known_types_test_pb2.WKTMessage(
+        optional_timestamp=datetime.datetime.today()
+    )
+
 
 if __name__ == '__main__':
   unittest.main()

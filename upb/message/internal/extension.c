@@ -52,15 +52,3 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext);
   return ext;
 }
-
-void upb_Message_ReplaceUnknownWithExtension(struct upb_Message* msg,
-                                             uintptr_t iter,
-                                             const upb_Extension* ext) {
-  UPB_ASSERT(iter != 0);
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  UPB_ASSERT(in);
-  size_t index = iter - 1;
-  upb_TaggedAuxPtr tagged_ptr = in->aux_data[index];
-  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(tagged_ptr));
-  in->aux_data[index] = upb_TaggedAuxPtr_MakeExtension(ext);
-}

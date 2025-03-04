@@ -27,8 +27,8 @@ cc_library(
     visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
     deps = [
         ":names_internal",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -38,7 +38,7 @@ cc_library(
     hdrs = ["names_internal.h"],
     deps = [
         "//upb_generator/common:names",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -80,14 +80,14 @@ bootstrap_cc_library(
         "//upb_generator/common:names",
         "//upb_generator/minitable:names",
         "//upb_generator/minitable:names_internal",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
     ],
 )
 

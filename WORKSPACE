@@ -42,7 +42,7 @@ http_archive(
 )
 
 http_archive(
-    name = "com_google_googletest",
+    name = "googletest",
     sha256 = "7315acb6bf10e99f332c8a43f00d5fbb1ee6ca48c52f6b936991b216c586aaad",
     strip_prefix = "googletest-1.15.0",
     urls = [
@@ -50,7 +50,7 @@ http_archive(
     ],
 )
 
-load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
+load("@googletest//:googletest_deps.bzl", "googletest_deps")
 
 googletest_deps()
 
@@ -65,7 +65,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
-    name = "protobuf_maven",
+    name = "maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     # For updating instructions, see:
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
@@ -76,9 +76,33 @@ maven_install(
     ],
 )
 
-load("@protobuf_maven//:defs.bzl", "pinned_maven_install")
-
+load("@maven//:defs.bzl", "pinned_maven_install")
 pinned_maven_install()
+
+maven_install(
+    name = "protobuf_maven",
+    artifacts = [
+        "com.google.caliper:caliper:1.0-beta-3",
+        "com.google.guava:guava-testlib:32.0.1-jre",
+        "com.google.testparameterinjector:test-parameter-injector:1.18",
+        "com.google.truth:truth:1.1.2",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:4.3.1",
+        "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
+        "info.picocli:picocli:4.6.3",
+    ],
+    # For updating instructions, see:
+    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
+    maven_install_json = "//:maven_dev_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+
+load("@protobuf_maven//:defs.bzl", pinned_protobuf_maven_install = "pinned_maven_install")
+pinned_protobuf_maven_install()
+
 
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
@@ -97,9 +121,11 @@ load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependen
 
 apple_support_dependencies()
 
-load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
 
 rules_cc_dependencies()
+
+rules_cc_toolchains()
 
 # For `kt_jvm_library`
 load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")

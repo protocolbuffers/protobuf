@@ -29,6 +29,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
@@ -81,6 +82,7 @@ namespace internal {
 
 namespace v2 {
 class TableDriven;
+class TableDrivenMessage;
 class TableDrivenParse;
 }  // namespace v2
 
@@ -335,8 +337,6 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
-PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
-
 struct ClassDataFull;
 
 // Note: The order of arguments in the functions is chosen so that it has
@@ -369,11 +369,6 @@ struct PROTOBUF_EXPORT ClassData {
   // char[] just beyond the ClassData.
   bool is_lite;
   bool is_dynamic = false;
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  const void* v2_message_table = nullptr;
-  const void* v2_parse_table = nullptr;
-  size_t (*byte_size_v2)(const MessageLite&) = nullptr;
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   // In normal mode we have the small constructor to avoid the cost in
   // codegen.
@@ -385,12 +380,6 @@ struct PROTOBUF_EXPORT ClassData {
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator, uint32_t cached_size_offset,
       bool is_lite
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-      ,
-      const void* v2_message_table = nullptr,
-      const void* v2_parse_table = nullptr,
-      size_t (*byte_size_v2)(const MessageLite&) = nullptr
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       )
       : prototype(prototype),
         tc_table(tc_table),
@@ -400,12 +389,6 @@ struct PROTOBUF_EXPORT ClassData {
         message_creator(message_creator),
         cached_size_offset(cached_size_offset),
         is_lite(is_lite)
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-        ,
-        v2_message_table(v2_message_table),
-        v2_parse_table(v2_parse_table),
-        byte_size_v2(byte_size_v2)
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   {
   }
 #endif  // !PROTOBUF_CUSTOM_VTABLE
@@ -424,12 +407,6 @@ struct PROTOBUF_EXPORT ClassData {
       uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                             io::EpsCopyOutputStream* stream),
       uint32_t cached_size_offset, bool is_lite
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-      ,
-      const void* v2_message_table = nullptr,
-      const void* v2_parse_table = nullptr,
-      size_t (*byte_size_v2)(const MessageLite&) = nullptr
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       )
       : prototype(prototype),
         tc_table(tc_table),
@@ -445,12 +422,6 @@ struct PROTOBUF_EXPORT ClassData {
 #endif  // PROTOBUF_CUSTOM_VTABLE
         cached_size_offset(cached_size_offset),
         is_lite(is_lite)
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-        ,
-        v2_message_table(v2_message_table),
-        v2_parse_table(v2_parse_table),
-        byte_size_v2(byte_size_v2)
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
   {
   }
 
@@ -851,9 +822,6 @@ class PROTOBUF_EXPORT MessageLite {
   virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  size_t ByteSizeV2() const { return GetClassData()->byte_size_v2(*this); }
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   // Legacy ByteSize() API.
   [[deprecated("Please use ByteSizeLong() instead")]] int ByteSize() const {
@@ -969,26 +937,6 @@ class PROTOBUF_EXPORT MessageLite {
     return tc_table;
   }
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  // TODO: b/393403510 - For now, we return a void* to avoid taking a dependency
-  // to the V2 parse table header. This will require an additional
-  // reinterpret_cast in the V2 parse loop. When we start feeling confident in
-  // the V2 implementation, we can work on making this function return the
-  // proper type (should be internal::v2::ParseTableBase*).
-  const void* GetV2ParseTable() const {
-    auto* data = GetClassData();
-    ABSL_DCHECK_NE(data, nullptr);
-
-    auto* table = data->v2_parse_table;
-    // TODO: b/393403284 - The V1 implementation has a descriptor method that
-    // can get the parse table for dynamic messages:
-    // http://google3/third_party/protobuf/message_lite.h;l=490;rcl=718025165
-    //
-    // Eventually, we should also support that for V2 parse.
-    ABSL_DCHECK_NE(table, nullptr);
-    return table;
-  }
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
@@ -1105,6 +1053,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
   friend class internal::v2::TableDriven;
+  friend class internal::v2::TableDrivenMessage;
   friend class internal::v2::TableDrivenParse;
   friend internal::MessageCreator;
 
@@ -1307,7 +1256,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
   static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
                 "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
+  if (ABSL_PREDICT_FALSE(kMustBeFunc || (int8_t)as_tag < 0)) {
     PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
     return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
   }

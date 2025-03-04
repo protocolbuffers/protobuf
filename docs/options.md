@@ -255,7 +255,7 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/bufbuild/protoc-gen-validate
     *   Extensions: 1071
 
-1.  Protokt
+1.  Protokt (pre 1.0.0)
 
     *   Website: https://github.com/open-toast/protokt
     *   Extensions: 1072
@@ -531,3 +531,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/jaiarobotics/jaiabot
     *   Extensions: 1252
+
+1.  Protokt (1.0.0 and up)
+
+    *   Website: https://github.com/open-toast/protokt
+    *   Extensions: 1253-1263

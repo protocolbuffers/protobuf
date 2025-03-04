@@ -105,12 +105,14 @@ bool PythonConstMessagePointer::NotChanged() {
   google::protobuf::io::CodedOutputStream output_other(&stream_other);
   output_other.SetSerializationDeterministic(true);
   parsed_msg->SerializeToCodedStream(&output_other);
+  output_other.Trim();
 
   std::string wire;
   google::protobuf::io::StringOutputStream stream(&wire);
   google::protobuf::io::CodedOutputStream output(&stream);
   output.SetSerializationDeterministic(true);
   owned_msg_->SerializeToCodedStream(&output);
+  output.Trim();
 
   if (wire == wire_other) {
     Py_DECREF(py_serialized_pb);

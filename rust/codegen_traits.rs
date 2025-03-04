@@ -55,8 +55,7 @@ pub trait MessageMut<'msg>: SealedInternal
     // Read traits:
     + Debug + Serialize
     // Write traits:
-    // TODO: MsgMut should impl ClearAndParse.
-    + Clear + TakeFrom + CopyFrom + MergeFrom
+    + Clear + ClearAndParse + TakeFrom + CopyFrom + MergeFrom
     // Thread safety:
     + Sync
     // Copy/Clone:

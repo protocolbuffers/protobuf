@@ -64,6 +64,7 @@ using ::testing::ElementsAreArray;
 namespace google {
 namespace protobuf {
 
+
 class Notifier {
  public:
   Notifier() : count_(0) {}

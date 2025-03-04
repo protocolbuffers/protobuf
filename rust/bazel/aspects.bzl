@@ -12,7 +12,7 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
 
-visibility(["//rust/..."])
+visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/..."])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
@@ -123,7 +123,7 @@ def _generate_rust_gencode(
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={},generated_entry_point_rs_file_name={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
             entry_point_rs_output.basename,
@@ -296,6 +296,9 @@ def get_import_path(f):
 
 def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
+        return []
+
+    if ProtoInfo not in target:
         return []
 
     proto_srcs = target[ProtoInfo].direct_sources
