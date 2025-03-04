@@ -39,6 +39,10 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
+      # rules_jvm_external doesn't support Java 8, which is the default version
+      # on some github runners.  When this is selected, it results in some
+      # opaque errors about coursier (see
+      # https://github.com/bazel-contrib/rules_jvm_external/issues/1337).
       - name: Pin to Java 11
         uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
