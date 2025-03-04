@@ -9,6 +9,7 @@ filegroup(
         "//rust/release_crates/protobuf_macros:protobuf_macros_crate",
         "//rust/release_crates/protobuf_well_known_types:crate",
     ],
+    visibility = ["//rust:__pkg__"],
 )
 
 # Run the cargo test with only a bundled linux-x86_64 protoc.
@@ -24,8 +25,8 @@ sh_binary(
 )
 
 sh_binary(
-    name = "release",
-    srcs = ["release.sh"],
+    name = "publish_release",
+    srcs = ["publish_release.sh"],
     data = [
         ":crates",
         "//:protoc",

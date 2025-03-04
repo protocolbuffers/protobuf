@@ -290,3 +290,8 @@ pkg_filegroup(
     prefix = "libupb",
     visibility = ["//rust/release_crates:__subpackages__"],
 )
+
+alias(
+    name = "release",
+    actual = "//rust/release_crates:crates",
+)
