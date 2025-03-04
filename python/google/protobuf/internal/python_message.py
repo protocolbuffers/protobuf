@@ -1197,7 +1197,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
   fields_by_tag = cls._fields_by_tag
   message_set_decoders_by_tag = cls._message_set_decoders_by_tag
 
-  def InternalParse(self, buffer, pos, end):
+  def InternalParse(self, buffer, pos, end, current_depth=0):
     """Create a message from serialized bytes.
 
     Args:
@@ -1247,10 +1247,13 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       else:
         _MaybeAddDecoder(cls, field_des)
         field_decoder = field_des._decoders[is_packed]
-        pos = field_decoder(buffer, new_pos, end, self, field_dict)
+        pos = field_decoder(
+            buffer, new_pos, end, self, field_dict, current_depth
+        )
         if field_des.containing_oneof:
           self._UpdateOneofState(field_des)
     return pos
+
   cls._InternalParse = InternalParse
 
 
