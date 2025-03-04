@@ -92,16 +92,11 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
-maven.install(
+protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+protobuf_maven.install(
     name = "protobuf_maven",
     artifacts = [
         "com.google.caliper:caliper:1.0-beta-3",
-        "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.8.9",
-        "com.google.errorprone:error_prone_annotations:2.5.1",
-        "com.google.j2objc:j2objc-annotations:2.8",
-        "com.google.guava:guava:32.0.1-jre",
         "com.google.guava:guava-testlib:32.0.1-jre",
         "com.google.testparameterinjector:test-parameter-injector:1.18",
         "com.google.truth:truth:1.1.2",
@@ -115,7 +110,24 @@ maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(maven, "protobuf_maven")
+use_repo(protobuf_maven, "protobuf_maven")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "maven",
+    artifacts = [
+        "com.google.code.findbugs:jsr305:3.0.2",
+        "com.google.code.gson:gson:2.8.9",
+        "com.google.errorprone:error_prone_annotations:2.5.1",
+        "com.google.j2objc:j2objc-annotations:2.8",
+        "com.google.guava:guava:32.0.1-jre",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
 
 # Development dependencies
 bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)
