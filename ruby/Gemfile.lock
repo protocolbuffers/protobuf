@@ -1,8 +1,10 @@
 PATH
   remote: .
   specs:
-    google-protobuf (4.31.0)
+    google-protobuf (4.31.0-java)
       bigdecimal
+      ffi (~> 1)
+      ffi-compiler (~> 1)
       rake (>= 13)
 
 GEM
