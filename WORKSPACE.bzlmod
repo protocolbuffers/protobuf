@@ -55,29 +55,6 @@ http_archive(
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
 )
 
-# Ruby
-#ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
-#ruby.toolchain(
-#    name = "ruby",
-#    version = "system",
-#)
-#use_repo(ruby, "ruby")
-#
-#ruby.bundle_fetch(
-#    name = "protobuf_bundle",
-#    gemfile = "//:Gemfile",
-#    gemfile_lock = "//:Gemfile.lock",
-#)
-#use_repo(ruby, "bundle", "ruby_toolchains")
-#register_toolchains("@ruby_toolchains//:all")
-
-http_archive(
-    name = "rules_ruby",
-    sha256 = "005da20827bee6b33d8ece7dc9973da293d7f8bb2ca07beaac43c31acaadbd31",
-    strip_prefix = "rules_ruby-0.17.3",
-    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
-)
-
 load("@rules_ruby//ruby:deps.bzl", "rb_register_toolchains", "rb_bundle_fetch")
 
 rb_register_toolchains(

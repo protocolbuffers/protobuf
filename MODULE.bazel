@@ -8,6 +8,8 @@ module(
     repo_name = "com_google_protobuf",
 )
 
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # LOWER BOUND dependency versions.
 # Bzlmod follows MVS:
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
@@ -40,7 +42,21 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
-bazel_dep(name = "rules_ruby", version = "0.17.3")
+# Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
+# bazel_dep(name = "rules_ruby", version = "0.17.3")
+# Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
+# uncomment the line above and delete Disable_bundle_install.patch and the use
+# of http_archive below.
+http_archive(
+    name = "rules_ruby",
+    patch_args = ["-p1"],
+    patches = [
+        "@com_google_protobuf//:Disable_bundle_install.patch",
+    ],
+    sha256 = "005da20827bee6b33d8ece7dc9973da293d7f8bb2ca07beaac43c31acaadbd31",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
+)
 bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 
