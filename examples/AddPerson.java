@@ -1,13 +1,13 @@
 // See README.md for information and build instructions.
-
 import com.example.tutorial.protos.AddressBook;
 import com.example.tutorial.protos.Person;
+import com.google.protobuf.util.Timestamps;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 class AddPerson {
@@ -51,6 +51,7 @@ class AddPerson {
       }
 
       person.addPhones(phoneNumber);
+      person.setLastUpdated(Timestamps.now());
     }
 
     return person.build();
