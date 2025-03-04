@@ -193,9 +193,9 @@ http_archive(
     name = "com_google_googleapis",
     build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
-    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
-    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
-    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
+    sha256 = "f5d1f45a03e608632084811a5870b4ebdf0b95edbe899e6448d337427d8f38dc",
+    strip_prefix = "googleapis-c414002bae922fc4577637a542e11fb9700af10f",
+    urls = ["https://github.com/googleapis/googleapis/archive/c414002bae922fc4577637a542e11fb9700af10f.zip"],
 )
 
 load("@system_python//:pip.bzl", "pip_parse")
