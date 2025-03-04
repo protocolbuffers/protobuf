@@ -4041,7 +4041,9 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
-  upb_strtable_init(&map->t.strtable, 4, a);
+  if (!upb_strtable_init(&map->t.strtable, 4, a)) {
+    return NULL;
+  }
   map->key_size = key_size;
   map->val_size = value_size;
   map->UPB_PRIVATE(is_frozen) = false;
