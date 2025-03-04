@@ -8,19 +8,25 @@
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
+#include "google/protobuf/compiler/csharp/csharp_source_generator_base.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -32,10 +38,11 @@ namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  // Note: this will be valid even though the tag emitted for packed and unpacked versions of
-  // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
-  // never effects the tag size.
-  int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
+  // Note: this will be valid even though the tag emitted for packed and
+  // unpacked versions of repeated fields varies by wire format. The wire format
+  // is encoded in the bottom 3 bits, which never effects the tag size.
+  int tag_size =
+      internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
   int part_tag_size = tag_size;
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     part_tag_size /= 2;
@@ -130,7 +137,8 @@ void FieldGeneratorBase::SetCommonOneofFieldVariables(
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
-                                       int presenceIndex, const Options* options)
+                                       int presenceIndex,
+                                       const Options* options)
     : SourceGeneratorBase(options),
       descriptor_(descriptor),
       presenceIndex_(presenceIndex) {
@@ -151,17 +159,19 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 }
 
 void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
-  // No-op: only message fields, enum fields, primitives, 
+  // No-op: only message fields, enum fields, primitives,
   // and repeated fields need this default is to not generate any code
 }
 
-void FieldGeneratorBase::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
+void FieldGeneratorBase::GenerateParsingCode(io::Printer* printer,
+                                             bool use_parse_context) {
   // for some field types the value of "use_parse_context" doesn't matter,
   // so we fallback to the default implementation.
   GenerateParsingCode(printer);
 }
 
-void FieldGeneratorBase::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
+void FieldGeneratorBase::GenerateSerializationCode(io::Printer* printer,
+                                                   bool use_write_context) {
   // for some field types the value of "use_write_context" doesn't matter,
   // so we fallback to the default implementation.
   GenerateSerializationCode(printer);
@@ -215,10 +225,11 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
         const FieldDescriptor* wrapped_field =
             descriptor->message_type()->field(0);
         std::string wrapped_field_type_name = type_name(wrapped_field);
-        // String and ByteString go to the same type; other wrapped types
-        // go to the nullable equivalent.
-        if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||
-            wrapped_field->type() == FieldDescriptor::TYPE_BYTES) {
+        // String and ByteString depend on enable_nullable_reference_types;
+        // other wrapped types go to the nullable equivalent.
+        if (!options()->enable_nullable_reference_types &&
+            (wrapped_field->type() == FieldDescriptor::TYPE_BYTES ||
+             wrapped_field->type() == FieldDescriptor::TYPE_STRING)) {
           return wrapped_field_type_name;
         } else {
           return absl::StrCat(wrapped_field_type_name, "?");
@@ -304,7 +315,7 @@ bool FieldGeneratorBase::has_default_value() {
 }
 
 bool AllPrintableAscii(absl::string_view text) {
-  for(int i = 0; i < text.size(); i++) {
+  for (size_t i = 0; i < text.size(); i++) {
     if (text[i] < 0x20 || text[i] > 0x7e) {
       return false;
     }
@@ -312,29 +323,30 @@ bool AllPrintableAscii(absl::string_view text) {
   return true;
 }
 
-std::string FieldGeneratorBase::GetStringDefaultValueInternal(const FieldDescriptor* descriptor) {
-    if (descriptor->default_value_string().empty())
-        return "\"\"";
-    return absl::StrCat(
-        "global::System.Text.Encoding.UTF8.GetString(global::System."
-        "Convert.FromBase64String(\"",
-        StringToBase64(descriptor->default_value_string()), "\"), 0, ",
-        descriptor->default_value_string().length(), ")");
+std::string FieldGeneratorBase::GetStringDefaultValueInternal(
+    const FieldDescriptor* descriptor) {
+  if (descriptor->default_value_string().empty()) return "\"\"";
+  return absl::StrCat(
+      "global::System.Text.Encoding.UTF8.GetString(global::System."
+      "Convert.FromBase64String(\"",
+      StringToBase64(descriptor->default_value_string()), "\"), 0, ",
+      descriptor->default_value_string().length(), ")");
 }
 
-std::string FieldGeneratorBase::GetBytesDefaultValueInternal(const FieldDescriptor* descriptor) {
-    if (descriptor->default_value_string().empty())
-        return "pb::ByteString.Empty";
-    return absl::StrCat("pb::ByteString.FromBase64(\"",
-                        StringToBase64(descriptor->default_value_string()),
-                        "\")");
+std::string FieldGeneratorBase::GetBytesDefaultValueInternal(
+    const FieldDescriptor* descriptor) {
+  if (descriptor->default_value_string().empty()) return "pb::ByteString.Empty";
+  return absl::StrCat("pb::ByteString.FromBase64(\"",
+                      StringToBase64(descriptor->default_value_string()),
+                      "\")");
 }
 
 std::string FieldGeneratorBase::default_value() {
     return default_value(descriptor_);
 }
 
-std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
+std::string FieldGeneratorBase::default_value(
+    const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
       return absl::StrCat(
@@ -344,7 +356,8 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {
-        const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
+        const FieldDescriptor* wrapped_field =
+            descriptor->message_type()->field(0);
         return default_value(wrapped_field);
       } else {
         return "null";

@@ -35,7 +35,8 @@ jobs:
             cd csharp &&
             dotnet restore src/Google.Protobuf.sln &&
             dotnet build -c Release src/Google.Protobuf.sln &&
-            dotnet test -c Release -f net6.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
+            dotnet test -c Release -f net6.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj &&
+            dotnet test -c Release -f net8.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
 
       - name: Clear bazel between docker instances
         run: sudo rm -rf _build .repository-cache
@@ -60,7 +61,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
 
       # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
@@ -94,15 +95,15 @@ jobs:
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
-          image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim
+          image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
             DOTNET_CLI_TELEMETRY_OPTOUT=true
             DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
-            dotnet publish -c Release -f net6.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
+            dotnet publish -c Release /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
 
-      - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator
+      - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator (.NET 6)
         # "dotnet vstest" allows running tests from a pre-built project.
         # * mount the protobuf root as /work to be able to access the crosscompiled files
         # * to avoid running the process inside docker as root (which can pollute the workspace with files owned by root), we force
@@ -119,3 +120,21 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT=true
             DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
             dotnet vstest /workspace/csharp/src/Google.Protobuf.Test/bin/Release/net6.0/publish/Google.Protobuf.Test.dll'
+
+      - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator (.NET 8)
+        # "dotnet vstest" allows running tests from a pre-built project.
+        # * mount the protobuf root as /work to be able to access the crosscompiled files
+        # * to avoid running the process inside docker as root (which can pollute the workspace with files owned by root), we force
+        #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
+        #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
+        #   we just run map the user's home to a throwaway temporary directory
+        uses: protocolbuffers/protobuf-ci/docker@v4
+        with:
+          image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim-arm64v8
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            DOTNET_CLI_TELEMETRY_OPTOUT=true
+            DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+            dotnet vstest /workspace/csharp/src/Google.Protobuf.Test/bin/Release/net8.0/publish/Google.Protobuf.Test.dll'

@@ -17,4 +17,4 @@ Invoke-WebRequest -Uri $InstallScriptUrl -OutFile $InstallScriptPath
 # The SDK versions to install should be kept in sync with versions
 # installed by kokoro/linux/dockerfile/test/csharp/Dockerfile
 &$InstallScriptPath -Version 3.1.415
-&$InstallScriptPath -Version 6.0.100
+&$InstallScriptPath -Version 8.0.100

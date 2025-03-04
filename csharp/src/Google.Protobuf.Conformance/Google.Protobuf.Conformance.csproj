@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
@@ -9,6 +9,19 @@
   <ItemGroup>
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
     <ProjectReference Include="..\Google.Protobuf.Test\Google.Protobuf.Test.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/*.pb*.cs" />
+    <None Include="**/*.pb*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
+    <Compile Include="**/*.pb.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <Compile Include="**/*.pb.nrt.cs" />
   </ItemGroup>
 
 </Project>

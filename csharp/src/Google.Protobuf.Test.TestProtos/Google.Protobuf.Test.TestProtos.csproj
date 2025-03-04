@@ -4,9 +4,10 @@
     This TestProtos project is kept separate from the original test project for many reasons.
     It allows us to make sure code can compile on a separate compiler version, different frameworks,
     and without the internal visibility from the test project (all of which have caused issues in the past).
+    The .NET 8 variant will be generated with NRTs enabled while .NET Framework 4.6.2 and .NET Standard 2.0 won't.
   -->
   <PropertyGroup>
-    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0;net8.0</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -20,6 +21,19 @@
   
   <ItemGroup>
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/*.pb*.cs" />
+    <None Include="**/*.pb*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
+    <Compile Include="**/*.pb.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <Compile Include="**/*.pb.nrt.cs" />
   </ItemGroup>
 
 </Project>
