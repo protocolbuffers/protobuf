@@ -8,9 +8,6 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 
-#include <algorithm>
-#include <cstdint>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>

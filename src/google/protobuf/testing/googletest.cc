@@ -29,10 +29,8 @@
 #else
 #include <unistd.h>
 #endif
-#include <stdio.h>
 #include <fcntl.h>
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
 
 namespace google {
 namespace protobuf {
