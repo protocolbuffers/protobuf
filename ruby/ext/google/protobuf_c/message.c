@@ -675,11 +675,16 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
 
   if (argc == 0) {
     return Qnil;
+  } else if (argc == 1) {
+    Message_InitFromValue((upb_Message*)self->msg, self->msgdef, argv[0], arena);
+  } else {
+    for (long i = 0; i < argc; i++) {
+      const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
+
+      Message_InitFieldFromValue(msg, f, argv[i], arena);
+    }
   }
-  if (argc != 1) {
-    rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
-  }
-  Message_InitFromValue((upb_Message*)self->msg, self->msgdef, argv[0], arena);
+
   return Qnil;
 }
 

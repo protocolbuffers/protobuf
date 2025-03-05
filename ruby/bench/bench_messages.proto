@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message BenchMessage {
+  string field_1 = 1;
+  int32 field_2 = 2;
+}
