@@ -1,5 +1,6 @@
 # Protobuf Rust runtime packages.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
@@ -273,6 +274,19 @@ pkg_filegroup(
     ],
     prefix = "src",
     visibility = ["//rust/release_crates:__subpackages__"],
+)
+
+bzl_library(
+    name = "defs_bzl",
+    srcs = ["defs.bzl"],
+    parse_tests = False,
+    visibility = ["//third_party/crubit/cc_bindings_from_rs/bazel_support:__pkg__"],
+    deps = [
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//rust/bazel:aspects_bzl",
+        "@rules_rust//rust:bzl_lib",
+    ],
 )
 
 pkg_files(
