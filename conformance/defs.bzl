@@ -22,13 +22,13 @@ def conformance_test(
           for the text format conformance suite.
       **kwargs: common arguments to pass to sh_test.
     """
-    args = ["--testee %s" % _strip_bazel(testee)]
+    args = ["--testee $(location %s)" % testee]
     failure_lists = []
     if failure_list:
-        args = args + ["--failure_list %s" % _strip_bazel(failure_list)]
+        args = args + ["--failure_list $(location %s)" % failure_list]
         failure_lists = failure_lists + [failure_list]
     if text_format_failure_list:
-        args = args + ["--text_format_failure_list %s" % _strip_bazel(text_format_failure_list)]
+        args = args + ["--text_format_failure_list $(location %s)" % text_format_failure_list]
         failure_lists = failure_lists + [text_format_failure_list]
     if maximum_edition:
         args = args + ["--maximum_edition %s" % maximum_edition]
@@ -46,8 +46,3 @@ def conformance_test(
         tags = ["conformance"],
         **kwargs
     )
-
-def _strip_bazel(testee):
-    if testee.startswith("//"):
-        testee = testee.replace("//", "com_google_protobuf/")
-    return testee.replace(":", "/")

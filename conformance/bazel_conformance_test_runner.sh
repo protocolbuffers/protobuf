@@ -46,15 +46,15 @@ while [[ -n "$@" ]]; do
 done
 
 conformance_test_runner=$(rlocation com_google_protobuf/conformance/conformance_test_runner)
-conformance_testee=$(rlocation $TESTEE)
+conformance_testee=$TESTEE
 args=(--enforce_recommended)
 
-failure_list=$(rlocation $FAILURE_LIST) || unset
+failure_list=$FAILURE_LIST || unset
 if [ -n "$failure_list" ] ; then
   args+=(--failure_list $failure_list)
 fi
 
-text_format_failure_list=$(rlocation $TEXT_FORMAT_FAILURE_LIST) || unset
+text_format_failure_list=$TEXT_FORMAT_FAILURE_LIST || unset
 if [ -n "$text_format_failure_list" ]; then
   args+=(--text_format_failure_list $text_format_failure_list)
 fi
