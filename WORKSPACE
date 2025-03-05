@@ -136,6 +136,47 @@ load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
+# Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
+# Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
+# delete Disable_bundle_install.patch and remove the patch related attributes
+http_archive(
+    name = "rules_ruby",
+    patch_args = ["-p1"],
+    patches = [
+        "@com_google_protobuf//:Disable_bundle_install.patch",
+    ],
+    sha256 = "005da20827bee6b33d8ece7dc9973da293d7f8bb2ca07beaac43c31acaadbd31",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
+)
+
+load("@rules_ruby//ruby:deps.bzl", "rb_register_toolchains", "rb_bundle_fetch")
+
+rb_register_toolchains(
+    version = "system",
+)
+
+rb_bundle_fetch(
+    name = "protobuf_bundle",
+    srcs = [
+        "//ruby:google-protobuf.gemspec",
+    ],
+    gem_checksums = {
+        "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",
+        "bigdecimal-3.1.9-java": "dd9b8f7c870664cd9538a1325ce385ba57a6627969177258c4f0e661a7be4456",
+        "ffi-1.17.1": "26f6b0dbd1101e6ffc09d3ca640b2a21840cc52731ad8a7ded9fb89e5fb0fc39",
+        "ffi-1.17.1-java": "2546e11f9592e2b9b6de49eb96d2a378da47b0bb8469d5cbc9881a55c0d55da7",
+        "ffi-compiler-1.3.2": "a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0",
+        "power_assert-2.0.5": "63b511b85bb8ea57336d25156864498644f5bbf028699ceda27949e0125bc323",
+        "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
+        "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
+        "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221"
+    },
+    gemfile = "//ruby:Gemfile",
+    gemfile_lock = "//ruby:Gemfile.lock",
+)
+
 http_archive(
     name = "lua",
     build_file = "//python/dist:lua.BUILD",

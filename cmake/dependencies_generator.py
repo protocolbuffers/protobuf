@@ -90,6 +90,9 @@ class ModuleFileFunctions(object):
   def use_repo(self, *args, **kwargs):
     pass
 
+  def single_version_override(self, *args, **kwargs):
+    pass
+
   def use_extension(self, *args, **kwargs):
     return ExtensionFunctions()
 
