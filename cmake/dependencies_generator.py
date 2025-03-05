@@ -63,6 +63,9 @@ class ExtensionFunctions(object):
   def install(self, *args, **kwargs):
     pass
 
+  def bundle_fetch(self, *args, **kwargs):
+    pass
+
 
 class ModuleFileFunctions(object):
   """A fake MODULE file that we can exec() to get the functions we need."""
