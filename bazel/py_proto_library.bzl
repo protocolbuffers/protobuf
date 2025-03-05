@@ -44,8 +44,9 @@ def _py_proto_aspect_impl(target, ctx):
 
     # Check Proto file names
     for proto in target[ProtoInfo].direct_sources:
-        if proto.is_source and "-" in proto.dirname:
-            fail("Cannot generate Python code for a .proto whose path contains '-' ({}).".format(
+        import_path = proto_common.get_import_path(proto)
+        if proto.is_source and "-" in import_path:
+            fail("Cannot generate Python code for a .proto whose python import path contains '-' ({}).".format(
                 proto.path,
             ))
 

@@ -69,4 +69,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples
           version: ${{ matrix.bazelversion }}
-          bash: cd examples && bazel build //... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
+          bash: >
+            cd examples;
+            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
