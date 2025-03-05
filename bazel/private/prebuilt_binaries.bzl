@@ -37,7 +37,7 @@ PREBUILT_BINARIES = {
     ),
     "com_google_protobuf_protoc_windows_x86_64": struct(
         build_file = ":BUILD.windows_protoc",
-        integrity = "ssha256-4HRmaW+0ZEUBTSF5LlGr4Jvnr45uZyY38i9N1iI3CGU=",
+        integrity = "sha256-4HRmaW+0ZEUBTSF5LlGr4Jvnr45uZyY38i9N1iI3CGU=",
         url = "https://github.com/protocolbuffers/protobuf/releases/download/v30.0-rc2/protoc-30.0-rc-2-win64.zip",
     ),
 }
