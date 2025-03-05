@@ -479,8 +479,17 @@ std::string Generator::GetResolvedFeatures(
     // Assume these are all enums.  If we add non-enum global features or any
     // python-specific features, we will need to come back and improve this
     // logic.
-    ABSL_CHECK(field->enum_type() != nullptr)
-        << "Unexpected non-enum field found!";
+    if (field->type() != FieldDescriptor::TYPE_ENUM) {
+      ABSL_CHECK(field->is_extension())
+          << "Unsupported non-enum global feature found: "
+          << field->full_name();
+      // Placeholder for python-specific features.
+      ABSL_CHECK(field->number() != 1003)
+          << "Unsupported python-specific feature found: "
+          << field->full_name();
+      // Skip any non-python language-specific features.
+      continue;
+    }
     if (field->options().retention() == FieldOptions::RETENTION_SOURCE) {
       // Skip any source-retention features.
       continue;

@@ -1136,6 +1136,11 @@ message FeatureSet {
     },
     declaration = { number: 1002, full_name: ".pb.go", type: ".pb.GoFeatures" },
     declaration = {
+      number: 1003,
+      full_name: ".pb.python",
+      type: ".pb.PythonFeatures"
+    },
+    declaration = {
       number: 9990,
       full_name: ".pb.proto1",
       type: ".pb.Proto1Features"
