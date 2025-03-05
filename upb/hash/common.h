@@ -27,6 +27,7 @@
 #ifndef UPB_HASH_COMMON_H_
 #define UPB_HASH_COMMON_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/base/string_view.h"
@@ -57,7 +58,7 @@ UPB_INLINE void _upb_value_setval(upb_value* v, uint64_t val) { v->val = val; }
  * upb_value upb_value_int32(int32_t val); */
 #define FUNCS(name, membername, type_t, converter)                   \
   UPB_INLINE void upb_value_set##name(upb_value* val, type_t cval) { \
-    val->val = (converter)cval;                                      \
+    val->val = (uint64_t)cval;                                       \
   }                                                                  \
   UPB_INLINE upb_value upb_value_##name(type_t val) {                \
     upb_value ret;                                                   \
