@@ -3973,21 +3973,36 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                   upb_MessageValue* val, size_t* iter) {
-  upb_StringView k;
   upb_value v;
-  const bool ok = upb_strtable_next2(&map->t.strtable, &k, &v, (intptr_t*)iter);
-  if (ok) {
-    _upb_map_fromkey(k, key, map->key_size);
+  bool ret;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView strkey;
+    ret = upb_strtable_next2(&map->t.strtable, &strkey, &v, (intptr_t*)iter);
+    if (ret) {
+      _upb_map_fromkey(strkey, key, map->key_size);
+    }
+  } else {
+    uintptr_t intkey;
+    ret = upb_inttable_next(&map->t.inttable, &intkey, &v, (intptr_t*)iter);
+    if (ret) {
+      memcpy(key, &intkey, map->key_size);
+    }
+  }
+  if (ret) {
     _upb_map_fromvalue(v, val, map->val_size);
   }
-  return ok;
+  return ret;
 }
 
 UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
                                    upb_MessageValue val) {
   upb_value v;
   _upb_map_tovalue(&val, map->val_size, &v, NULL);
-  upb_strtable_setentryvalue(&map->t.strtable, iter, v);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_setentryvalue(&map->t.strtable, iter, v);
+  } else {
+    upb_inttable_setentryvalue(&map->t.inttable, iter, v);
+  }
 }
 
 bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
@@ -3995,29 +4010,45 @@ bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
 }
 
 bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
   UPB_ASSERT(iter != kUpb_Map_Begin);
-  i.t = &map->t.strtable;
-  i.index = iter;
-  return upb_strtable_done(&i);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_iter i;
+    i.t = &map->t.strtable;
+    i.index = iter;
+    return upb_strtable_done(&i);
+  } else {
+    return upb_inttable_done(&map->t.inttable, iter);
+  }
 }
 
 // Returns the key and value for this entry of the map.
 upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
   upb_MessageValue ret;
-  i.t = &map->t.strtable;
-  i.index = iter;
-  _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_iter i;
+    i.t = &map->t.strtable;
+    i.index = iter;
+    _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
+  } else {
+    uintptr_t intkey = upb_inttable_iter_key(&map->t.inttable, iter);
+    memcpy(&ret, &intkey, map->key_size);
+  }
   return ret;
 }
 
 upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
+  upb_value v;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_iter i;
+    i.t = &map->t.strtable;
+    i.index = iter;
+    v = upb_strtable_iter_value(&i);
+  } else {
+    v = upb_inttable_iter_value(&map->t.inttable, iter);
+  }
+
   upb_MessageValue ret;
-  i.t = &map->t.strtable;
-  i.index = iter;
-  _upb_map_fromvalue(upb_strtable_iter_value(&i), &ret, map->val_size);
+  _upb_map_fromvalue(v, &ret, map->val_size);
   return ret;
 }
 
@@ -4041,6 +4072,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
+  // TODO: Actually use the inttable after we fix sorting.
   if (!upb_strtable_init(&map->t.strtable, 4, a)) {
     return NULL;
   }
@@ -4158,8 +4190,17 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   // Copy non-empty entries from the table to s->entries.
   const void** dst = &s->entries[sorted->start];
-  const upb_tabent* src = map->t.strtable.t.entries;
-  const upb_tabent* end = src + upb_table_size(&map->t.strtable.t);
+  const upb_tabent* src;
+  const upb_tabent* end;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    src = map->t.strtable.t.entries;
+    end = src + upb_table_size(&map->t.strtable.t);
+  } else {
+    // For the inttable, only sort the table entries, since the array part is
+    // already in a sorted order.
+    src = map->t.inttable.t.entries;
+    end = src + upb_table_size(&map->t.inttable.t);
+  }
   for (; src < end; src++) {
     if (!upb_tabent_isempty(src)) {
       *dst = src;
@@ -8517,14 +8558,25 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
-    intptr_t iter = UPB_STRTABLE_BEGIN;
-    upb_StringView key;
     upb_value val;
-    while (upb_strtable_next2(&map->t.strtable, &key, &val, &iter)) {
-      upb_MapEntry ent;
-      _upb_map_fromkey(key, &ent.k, map->key_size);
-      _upb_map_fromvalue(val, &ent.v, map->val_size);
-      encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+    if (map->UPB_PRIVATE(is_strtable)) {
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView strkey;
+      while (upb_strtable_next2(&map->t.strtable, &strkey, &val, &iter)) {
+        upb_MapEntry ent;
+        _upb_map_fromkey(strkey, &ent.k, map->key_size);
+        _upb_map_fromvalue(val, &ent.v, map->val_size);
+        encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+      }
+    } else {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t intkey = 0;
+      while (upb_inttable_next(&map->t.inttable, &intkey, &val, &iter)) {
+        upb_MapEntry ent;
+        memcpy(&ent.k, &intkey, map->key_size);
+        _upb_map_fromvalue(val, &ent.v, map->val_size);
+        encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+      }
     }
   }
 }
