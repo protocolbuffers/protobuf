@@ -5610,7 +5610,7 @@ static void InferLegacyProtoFeatures(const ProtoT& proto,
 static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
                                      const FieldOptions& options,
                                      Edition edition, FeatureSet& features) {
-  if (!features.MutableExtension(pb::cpp)->has_string_type()) {
+  if (!features.GetExtension(pb::cpp).has_string_type()) {
     if (options.ctype() == FieldOptions::CORD) {
       features.MutableExtension(pb::cpp)->set_string_type(
           pb::CppFeatures::CORD);

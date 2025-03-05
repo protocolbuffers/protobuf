@@ -12053,6 +12053,49 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
               )pb"));
 }
 
+TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_PROTO2
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE_LEGACY
+      }
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2023
+  )pb");
+  EXPECT_OK(pool_.SetFeatureSetDefaults(std::move(defaults)));
+
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_PROTO3
+    message_type {
+      name: "Foo"
+      field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT64 }
+    }
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  const FieldDescriptor* field = file->message_type(0)->field(0);
+  EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: CLOSED
+                repeated_field_encoding: EXPANDED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE_LEGACY
+              )pb"));
+}
+
 TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesForCppDefault) {
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::test));
   EXPECT_FALSE(pool_.ResolvesFeaturesFor(pb::TestMessage::test_message));
