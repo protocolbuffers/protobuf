@@ -1,0 +1,14 @@
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["empty.proto"],
+)
+
+# py_proto_library rule with hyphen in @com_google_protobuf-examples-with-hyphen module name.
+py_proto_library(
+    name = "empty_py_pb2",
+    visibility = ["//visibility:public"],
+    deps = [":empty_proto"],
+)
