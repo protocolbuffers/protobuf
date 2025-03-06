@@ -87,7 +87,7 @@ class ModuleFileFunctions(object):
         }
     )
 
-  def register_toolchains(self, *args):
+  def register_toolchains(self, *args, **kwargs):
     pass
 
   def use_repo(self, *args, **kwargs):
