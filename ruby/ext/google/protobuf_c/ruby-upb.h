@@ -3209,14 +3209,24 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
   return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
 }
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
+  if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+      kUpb_FieldType_Message) {
+    return false;
+  }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+  return true;
 }
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
     struct upb_MiniTableExtension* e, const struct upb_MiniTableEnum* en) {
+  if (e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
+      kUpb_FieldType_Enum) {
+    return false;
+  }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
+  return true;
 }
 
 UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
@@ -3251,10 +3261,10 @@ UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableExtension_GetSubEnum(
     const upb_MiniTableExtension* e);
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     upb_MiniTableExtension* e, const upb_MiniTable* m);
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
     upb_MiniTableExtension* e, const upb_MiniTableEnum* m);
 
 #ifdef __cplusplus
