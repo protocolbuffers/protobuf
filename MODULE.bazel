@@ -56,7 +56,7 @@ bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 
 # Ruby toolchains
-ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency=True)
 ruby.toolchain(
     name = "ruby",
     version = "system",
