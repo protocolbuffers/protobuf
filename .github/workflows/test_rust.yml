@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2.2.1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

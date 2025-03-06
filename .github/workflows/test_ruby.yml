@@ -32,11 +32,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2.2.1
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -48,20 +48,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2.2.1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v4
+        uses: protocolbuffers/protobuf-ci/docker@v2.2.1
         with:
           image: i386/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -80,20 +80,20 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2.2.1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v4
+        uses: protocolbuffers/protobuf-ci/docker@v2.2.1
         with:
           image: arm64v8/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -128,7 +128,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -141,7 +141,7 @@ jobs:
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v2.2.1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
@@ -166,11 +166,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2.2.1
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

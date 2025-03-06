@@ -34,18 +34,18 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v4
+        uses: protocolbuffers/protobuf-ci/ccache@v2.2.1
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v4
+        uses: protocolbuffers/protobuf-ci/bash@v2.2.1
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -77,11 +77,11 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bash@v4
+        uses: protocolbuffers/protobuf-ci/bash@v2.2.1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -118,11 +118,11 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v2.2.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v2.2.1
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
