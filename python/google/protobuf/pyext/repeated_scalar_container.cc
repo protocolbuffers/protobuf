@@ -599,6 +599,17 @@ static PyObject* Reverse(PyObject* pself) {
   Py_RETURN_NONE;
 }
 
+static PyObject* Clear(PyObject* pself) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+  CMessage* cmessage = self->parent;
+  cmessage::AssureWritable(cmessage);
+  Message* message = cmessage->message;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  message->GetReflection()->ClearField(message, field_descriptor);
+  Py_RETURN_NONE;
+}
+
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {
@@ -693,6 +704,8 @@ static PyMethodDef Methods[] = {
      "Sorts the repeated container."},
     {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", reinterpret_cast<PyCFunction>(Clear), METH_NOARGS,
+     "Clears the repeated container."},
     {"MergeFrom", static_cast<PyCFunction>(MergeFrom), METH_O,
      "Merges a repeated container into the current container."},
     {nullptr, nullptr}};
