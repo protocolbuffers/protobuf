@@ -12,7 +12,7 @@
     "ext-protobuf": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": ">=5.0.0 <8.5.27"
+    "phpunit/phpunit": "~10.5"
   },
   "suggest": {
     "ext-bcmath": "Need to support JSON deserialization"
