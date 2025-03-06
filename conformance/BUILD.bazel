@@ -427,6 +427,7 @@ cc_binary(
 
 rb_binary(
     name = "conformance_ruby",
+    main = "conformance_ruby.rb",
     testonly = True,
     srcs = ["conformance_ruby.rb"],
     visibility = ["//ruby:__subpackages__"],
