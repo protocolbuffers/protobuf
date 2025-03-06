@@ -19,7 +19,7 @@ GEM
 PLATFORMS
   aarch64-linux
   arm-linux
-  arm64-darwin-24
+  arm64-darwin
   arm64-linux
   java
   ruby
