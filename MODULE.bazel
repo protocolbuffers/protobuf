@@ -80,7 +80,7 @@ ruby.bundle_fetch(
     gemfile_lock = "//ruby:Gemfile.lock",
 )
 use_repo(ruby, "protobuf_bundle", "ruby_toolchains")
-register_toolchains("@ruby_toolchains//:all")
+register_toolchains("@ruby_toolchains//:all", dev_dependency=True)
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
