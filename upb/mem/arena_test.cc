@@ -125,6 +125,17 @@ TEST(ArenaTest, TryExtend) {
   upb_Arena_Free(arena);
 }
 
+TEST(ArenaTest, ReallocFastPath) {
+  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+  void* initial = upb_Arena_Malloc(arena, 512);
+  uintptr_t initial_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+  void* extend = upb_Arena_Realloc(arena, initial, 512, 1024);
+  uintptr_t extend_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_EQ(initial, extend);
+  EXPECT_EQ(initial_allocated, extend_allocated);
+  upb_Arena_Free(arena);
+}
+
 TEST(ArenaTest, SizeHint) {
   absl::flat_hash_map<void*, size_t> sizes;
   SizeTracker alloc;
