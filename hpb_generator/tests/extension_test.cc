@@ -12,6 +12,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
@@ -35,6 +36,8 @@ using ::hpb_unittest::someotherpackage::protos::int64_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_int32_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_int64_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_string_ext;
+using ::hpb_unittest::someotherpackage::protos::string_ext;
+using ::hpb_unittest::someotherpackage::protos::string_trigraph_ext;
 using ::hpb_unittest::someotherpackage::protos::uint32_ext;
 using ::hpb_unittest::someotherpackage::protos::uint64_ext;
 
@@ -124,6 +127,15 @@ TEST(CppGeneratedCode, GetSetExtensionBool) {
   auto x = hpb::SetExtension(&model, bool_ext, true);
   EXPECT_EQ(true, hpb::HasExtension(&model, bool_ext));
   EXPECT_THAT(hpb::GetExtension(&model, bool_ext), IsOkAndHolds(true));
+}
+
+TEST(CppGeneratedCode, GetSetExtensionString) {
+  TestModel model;
+  EXPECT_EQ(false, hpb::HasExtension(&model, string_ext));
+  absl::string_view val = "Hello World";
+  auto x = hpb::SetExtension(&model, string_ext, val);
+  EXPECT_EQ(true, hpb::HasExtension(&model, string_ext));
+  EXPECT_THAT(hpb::GetExtension(&model, string_ext), IsOkAndHolds(val));
 }
 
 TEST(CppGeneratedCode, SetExtension) {
@@ -366,6 +378,20 @@ TEST(CppGeneratedCode, GetExtensionBoolWithDefault) {
   EXPECT_THAT(res, IsOkAndHolds(true));
 }
 
+TEST(CppGeneratedCode, GetExtensionStringWithDefault) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, string_ext);
+  EXPECT_TRUE(res.ok());
+  EXPECT_THAT(res, IsOkAndHolds("mishpacha"));
+}
+
+TEST(CppGeneratedCode, GetExtensionStringWithDefaultAndTrigraph) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, string_trigraph_ext);
+  EXPECT_TRUE(res.ok());
+  EXPECT_THAT(res, IsOkAndHolds("bseder??!bseder"));
+}
+
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
   TestModel model;
   ThemeExtension extension1;
@@ -565,6 +591,18 @@ TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
   EXPECT_EQ(true, res.ok());
   EXPECT_EQ(res->size(), 1);
   EXPECT_EQ((*res)[0], 322);
+}
+
+TEST(CppGeneratedCode, GetExtensionSingularString) {
+  TestModel model;
+  hpb::Arena arena;
+  hpb::ExtensionRegistry extensions(arena);
+  extensions.AddExtension(string_ext);
+  // These bytes represent a singular string field: "todaraba" @index 13012.
+  auto bytes = "\242\255\006\010todaraba";
+  auto parsed_model = hpb::Parse<TestModel>(bytes, extensions).value();
+  auto res = hpb::GetExtension(&parsed_model, string_ext);
+  EXPECT_THAT(res, IsOkAndHolds("todaraba"));
 }
 
 TEST(CppGeneratedCode, GetExtensionRepeatedString) {

@@ -14,11 +14,13 @@
 #include "absl/base/attributes.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
@@ -72,7 +74,6 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
     return ReturnType(upb_arr, hpb::interop::upb::GetArena(message));
   }
 };
-
 #define UPB_EXT_PRIMITIVE(CppType, UpbFunc)                              \
   template <>                                                            \
   struct UpbExtensionTrait<CppType> {                                    \
@@ -93,7 +94,7 @@ struct UpbExtensionTrait<hpb::RepeatedField<T>> {
           interop::upb::GetArena(message));                              \
       return res ? absl::OkStatus() : MessageAllocationError();          \
     }                                                                    \
-  };
+  }
 
 UPB_EXT_PRIMITIVE(bool, Bool);
 UPB_EXT_PRIMITIVE(int32_t, Int32);
@@ -104,6 +105,30 @@ UPB_EXT_PRIMITIVE(float, Float);
 UPB_EXT_PRIMITIVE(double, Double);
 
 #undef UPB_EXT_PRIMITIVE
+
+template <>
+struct UpbExtensionTrait<absl::string_view> {
+  using DefaultType = absl::string_view;
+  using ReturnType = absl::string_view;
+
+  template <typename Msg, typename Id>
+  static constexpr ReturnType Get(Msg message, const Id& id) {
+    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
+    upb_StringView result = upb_Message_GetExtensionString(
+        hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+        upb_StringView_FromDataAndSize(default_val.data(), default_val.size()));
+    return absl::string_view(result.data, result.size);
+  }
+
+  template <typename Msg, typename Id>
+  static absl::Status Set(Msg message, const Id& id, absl::string_view value) {
+    auto upb_value = upb_StringView_FromDataAndSize(value.data(), value.size());
+    bool res = upb_Message_SetExtensionString(interop::upb::GetMessage(message),
+                                              id.mini_table_ext(), upb_value,
+                                              interop::upb::GetArena(message));
+    return res ? absl::OkStatus() : MessageAllocationError();
+  }
+};
 
 // TODO: b/375460289 - flesh out non-promotional msg support that does
 // not return an error if missing but the default msg
