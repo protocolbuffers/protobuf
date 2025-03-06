@@ -940,7 +940,8 @@ class GenericTypeHandler<std::string> {
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
 // Messages.
 template <typename Element>
-class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
+class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
+    : private internal::RepeatedPtrFieldBase {
   static_assert(!std::is_const<Element>::value,
                 "We do not support const value types.");
   static_assert(!std::is_volatile<Element>::value,
