@@ -29,7 +29,6 @@ Gem::Specification.new do |s|
       ext/google/protobuf_c/extconf.rb
       ext/google/protobuf_c/Rakefile
     ]
-    s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   end
   s.required_ruby_version = '>= 3.0'
   # bigdecimal must be used as a non-built in gem as of ruby-3.4
@@ -42,5 +41,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "ffi", "~>1"
   s.add_development_dependency "ffi-compiler", "~>1"
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
+  s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
 end

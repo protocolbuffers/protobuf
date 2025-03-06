@@ -4,32 +4,6 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# TODO: either replace rules_ruby with a maintained version on BCR
-# or use bzlmod extensions to depend on this specific repo
-http_archive(
-    name = "rules_ruby",
-    urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip"
-    ],
-    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
-    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
-)
-
-load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
-
-ruby_runtime("system_ruby")
-
-register_toolchains("@system_ruby//:toolchain")
-
-load("@system_ruby//:bundle.bzl", "ruby_bundle")
-
-ruby_bundle(
-    name = "protobuf_bundle",
-    srcs = ["//ruby:google-protobuf.gemspec"],
-    bundler_version = "2.4.22",
-    gemfile = "//ruby:Gemfile",
-)
-
 # For testing UPB.
 http_archive(
     name = "lua",
@@ -63,9 +37,9 @@ http_archive(
 # For testing runtime against old gencode from a previous major version.
 http_archive(
     name = "com_google_protobuf_v25.0",
-    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
-    strip_prefix = "protobuf-25.0",
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+    integrity = "sha256-aYl601ZjGPYtu0Nc2Nsl58qiPgSXqT9e20mQM5FcxXk=",
+    strip_prefix = "protobuf-d8756a62c8ae40686b75fee9ad9c876ac892d043",
+    url = "https://github.com/protocolbuffers/protobuf/archive/d8756a62c8ae40686b75fee9ad9c876ac892d043.tar.gz",
 )
 
 # Needed as a dependency of @com_google_protobuf_v25.0

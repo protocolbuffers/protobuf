@@ -40,8 +40,47 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
+bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency=True)
+# Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
+# Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
+# delete Disable_bundle_install.patch and single_version_override() below.
+single_version_override(
+    module_name = "rules_ruby",
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:Disable_bundle_install.patch",
+    ],
+    version = "0.17.3",
+)
 bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
+
+# Ruby toolchains
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency=True)
+ruby.toolchain(
+    name = "ruby",
+    version = "system",
+)
+use_repo(ruby, "ruby")
+ruby.bundle_fetch(
+    name = "protobuf_bundle",
+    gem_checksums = {
+        "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",
+        "bigdecimal-3.1.9-java": "dd9b8f7c870664cd9538a1325ce385ba57a6627969177258c4f0e661a7be4456",
+        "ffi-1.17.1": "26f6b0dbd1101e6ffc09d3ca640b2a21840cc52731ad8a7ded9fb89e5fb0fc39",
+        "ffi-1.17.1-java": "2546e11f9592e2b9b6de49eb96d2a378da47b0bb8469d5cbc9881a55c0d55da7",
+        "ffi-compiler-1.3.2": "a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0",
+        "power_assert-2.0.5": "63b511b85bb8ea57336d25156864498644f5bbf028699ceda27949e0125bc323",
+        "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
+        "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
+        "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221"
+    },
+    gemfile = "//ruby:Gemfile",
+    gemfile_lock = "//ruby:Gemfile.lock",
+)
+use_repo(ruby, "protobuf_bundle", "ruby_toolchains")
+register_toolchains("@ruby_toolchains//:all", dev_dependency=True)
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
@@ -130,7 +169,7 @@ maven.install(
 use_repo(maven, "maven")
 
 # Development dependencies
-bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)
+bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(
@@ -145,4 +184,4 @@ cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_exten
 use_repo(cc_configure, "local_config_cc")
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)
+bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)
