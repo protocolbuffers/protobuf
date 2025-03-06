@@ -2530,8 +2530,8 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto key = std::pair<const void*, const void*>(field, &type_key);
     {
       absl::ReaderMutexLock lock(&field_memo_table_mutex_);
-      auto it = field_memo_table_.find(key);
-      if (it != field_memo_table_.end()) {
+      auto it = field_memo_table_->find(key);
+      if (it != field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
       }
     }
@@ -2539,13 +2539,9 @@ class PROTOBUF_EXPORT DescriptorPool {
     result->value = func(field);
     {
       absl::MutexLock lock(&field_memo_table_mutex_);
-      auto& res = field_memo_table_[key];
-      // Only initialize the first time. We don't want to invalidate old
-      // references.
-      if (res == nullptr) {
-        res = std::move(result);
-      }
-      return internal::DownCast<const MemoData<ResultT>&>(*res).value;
+      auto insert_result = field_memo_table_->insert({key, std::move(result)});
+      auto it = insert_result.first;
+      return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
     }
   }
   // Return true if the given name is a sub-symbol of any non-package
@@ -2608,9 +2604,12 @@ class PROTOBUF_EXPORT DescriptorPool {
 
 #ifndef SWIG
   mutable absl::Mutex field_memo_table_mutex_;
-  mutable absl::flat_hash_map<std::pair<const void*, const void*>,
-                              std::unique_ptr<MemoBase>>
-      field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_);
+  mutable std::unique_ptr<absl::flat_hash_map<
+      std::pair<const void*, const void*>, std::unique_ptr<MemoBase>>>
+      field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_) =
+          std::make_unique<
+              absl::flat_hash_map<std::pair<const void*, const void*>,
+                                  std::unique_ptr<MemoBase>>>();
 #endif  // SWIG
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
