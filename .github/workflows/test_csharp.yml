@@ -101,7 +101,8 @@ jobs:
             /bin/bash -cex '
             DOTNET_CLI_TELEMETRY_OPTOUT=true
             DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
-            dotnet publish -c Release /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
+            dotnet publish -c Release -f net6.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
+            dotnet publish -c Release -f net8.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
 
       - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator (.NET 6)
         # "dotnet vstest" allows running tests from a pre-built project.
