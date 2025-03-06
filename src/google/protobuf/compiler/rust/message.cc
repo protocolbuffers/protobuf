@@ -1307,50 +1307,39 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
     return;
   }
 
+  // Approaches to put the extern "C" in any R"cc()cc" badly confuse either
+  // clang-format or VSCode highlighting. Emit this as a vanilla raw string to
+  // avoid any issues.
+  ctx.Emit(R"(extern "C" {
+  )");
+
   ctx.Emit(
-      {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-       {"Msg", RsSafeName(msg.name())},
-       {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
+      {{"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
-       {"nested_msg_thunks",
-        [&] {
-          for (int i = 0; i < msg.nested_type_count(); ++i) {
-            GenerateThunksCc(ctx, *msg.nested_type(i));
-          }
-        }},
-       {"accessor_thunks",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorThunkCc(ctx, *msg.field(i));
-          }
-        }},
-       {"oneof_thunks",
-        [&] {
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
-          }
-        }}},
+       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
       R"cc(
-        //~ $abi$ is a workaround for a syntax highlight bug in VSCode.
-        // However, ~ that confuses clang-format (it refuses to keep the
-        // newline after ~ `$abi${`). Disabling clang-format for the block.
-        // clang-format off
-        extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
 
         const google::protobuf::MessageLite* $default_instance_thunk$() {
           return &$QualifiedMsg$::default_instance();
         }
-
-        $accessor_thunks$
-
-            $oneof_thunks$
-        }  // extern $abi$
-        // clang-format on
-
-        $nested_msg_thunks$
       )cc");
+
+  for (int i = 0; i < msg.field_count(); ++i) {
+    GenerateAccessorThunkCc(ctx, *msg.field(i));
+  }
+
+  for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+    GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
+  }
+
+  ctx.Emit(R"(}  //extern "C"
+  )");
+
+  // Recursively generate the thunks for any nested messages.
+  for (int i = 0; i < msg.nested_type_count(); ++i) {
+    GenerateThunksCc(ctx, *msg.nested_type(i));
+  }
 }
 
 }  // namespace rust
