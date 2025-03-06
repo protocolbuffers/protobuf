@@ -82,6 +82,15 @@ load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
+http_archive(
+    name = "rules_ruby",
+    urls = [
+      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+    ],
+    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
+    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+)
+
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
 
 ruby_runtime("system_ruby")
