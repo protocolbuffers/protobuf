@@ -253,6 +253,7 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
                                      upb_test_ModelExtension1_str(ext1)));
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -261,6 +262,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(2, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -269,6 +271,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(3, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -277,6 +280,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(4, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -285,6 +289,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(5, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -293,6 +298,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(6, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   size_t end_len = GetUnknownLength(UPB_UPCAST(base_msg));
   EXPECT_LT(end_len, start_len);

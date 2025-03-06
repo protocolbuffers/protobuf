@@ -112,6 +112,19 @@ TEST(ArenaTest, SizedFree) {
   EXPECT_EQ(sizes.size(), 0);
 }
 
+TEST(ArenaTest, TryExtend) {
+  upb_Arena* arena = upb_Arena_Init(nullptr, 1024, &upb_alloc_global);
+  void* alloc = upb_Arena_Malloc(arena, 512);
+  ASSERT_TRUE(upb_Arena_TryExtend(arena, alloc, 512, 700));
+  ASSERT_TRUE(upb_Arena_TryExtend(arena, alloc, 700, 750));
+  // If no room in block, should return false
+  ASSERT_FALSE(upb_Arena_TryExtend(arena, alloc, 750, 10000));
+  (void)upb_Arena_Malloc(arena, 1);
+  // Can't extend past a previous alloc
+  ASSERT_FALSE(upb_Arena_TryExtend(arena, alloc, 750, 900));
+  upb_Arena_Free(arena);
+}
+
 TEST(ArenaTest, SizeHint) {
   absl::flat_hash_map<void*, size_t> sizes;
   SizeTracker alloc;

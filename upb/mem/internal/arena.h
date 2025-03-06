@@ -114,7 +114,28 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
     UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
 #endif
   }
-  UPB_POISON_MEMORY_REGION((char*)ptr + size, oldsize - size);
+  UPB_POISON_MEMORY_REGION((char*)ptr + (size - UPB_ASAN_GUARD_SIZE),
+                           oldsize - size);
+}
+
+UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
+                                        size_t oldsize, size_t size) {
+  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_ASSERT(size > oldsize);
+  size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
+  oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
+  if (size == oldsize) {
+    return true;
+  }
+  size_t extend = size - oldsize;
+  if ((char*)ptr + oldsize == a->UPB_ONLYBITS(ptr) &&
+      UPB_PRIVATE(_upb_ArenaHas)(a) >= extend) {
+    a->UPB_ONLYBITS(ptr) += extend;
+    UPB_UNPOISON_MEMORY_REGION((char*)ptr + (oldsize - UPB_ASAN_GUARD_SIZE),
+                               extend);
+    return true;
+  }
+  return false;
 }
 
 #ifdef __cplusplus
