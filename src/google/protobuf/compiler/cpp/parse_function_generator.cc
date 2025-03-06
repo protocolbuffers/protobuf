@@ -20,6 +20,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -52,8 +53,8 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, int max_has_bit_index,
-    const std::vector<int>& has_bit_indices,
-    const std::vector<int>& inlined_string_indices, const Options& options,
+    absl::Span<const int> has_bit_indices,
+    absl::Span<const int> inlined_string_indices, const Options& options,
     MessageSCCAnalyzer* scc_analyzer,
     const absl::flat_hash_map<absl::string_view, std::string>& vars,
     int index_in_file_messages)
@@ -61,7 +62,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       scc_analyzer_(scc_analyzer),
       options_(options),
       variables_(vars),
-      inlined_string_indices_(inlined_string_indices),
+      // Copy the absl::Span into a vector owned by the class.
+      inlined_string_indices_(inlined_string_indices.begin(),
+                              inlined_string_indices.end()),
       ordered_fields_(GetOrderedFields(descriptor_)),
       num_hasbits_(max_has_bit_index),
       index_in_file_messages_(index_in_file_messages) {
@@ -122,9 +125,9 @@ struct NumToEntryTable {
 };
 
 static NumToEntryTable MakeNumToEntryTable(
-    const std::vector<const FieldDescriptor*>& field_descriptors);
+    absl::Span<const FieldDescriptor* const> field_descriptors);
 
-static int FieldNameDataSize(const std::vector<uint8_t>& data) {
+static int FieldNameDataSize(absl::Span<const uint8_t> data) {
   // We add a +1 here to allow for a NUL termination character. It makes the
   // codegen nicer.
   return data.empty() ? 0 : static_cast<int>(data.size()) + 1;
@@ -178,7 +181,7 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
 }
 
 static NumToEntryTable MakeNumToEntryTable(
-    const std::vector<const FieldDescriptor*>& field_descriptors) {
+    absl::Span<const FieldDescriptor* const> field_descriptors) {
   NumToEntryTable num_to_entry_table;
   num_to_entry_table.skipmap32 = static_cast<uint32_t>(-1);
 
