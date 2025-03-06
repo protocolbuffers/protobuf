@@ -12918,7 +12918,7 @@ class DatabaseBackedPoolTest : public testing::Test {
     ~ErrorDescriptorDatabase() override = default;
 
     // implements DescriptorDatabase ---------------------------------
-    bool FindFileByName(const std::string& filename,
+    bool FindFileByName(StringViewArg filename,
                         FileDescriptorProto* output) override {
       // error.proto and error2.proto cyclically import each other.
       if (filename == "error.proto") {
@@ -12935,11 +12935,11 @@ class DatabaseBackedPoolTest : public testing::Test {
         return false;
       }
     }
-    bool FindFileContainingSymbol(const std::string& symbol_name,
+    bool FindFileContainingSymbol(StringViewArg symbol_name,
                                   FileDescriptorProto* output) override {
       return false;
     }
-    bool FindFileContainingExtension(const std::string& containing_type,
+    bool FindFileContainingExtension(StringViewArg containing_type,
                                      int field_number,
                                      FileDescriptorProto* output) override {
       return false;
@@ -12963,17 +12963,17 @@ class DatabaseBackedPoolTest : public testing::Test {
     void Clear() { call_count_ = 0; }
 
     // implements DescriptorDatabase ---------------------------------
-    bool FindFileByName(const std::string& filename,
+    bool FindFileByName(StringViewArg filename,
                         FileDescriptorProto* output) override {
       ++call_count_;
       return wrapped_db_->FindFileByName(filename, output);
     }
-    bool FindFileContainingSymbol(const std::string& symbol_name,
+    bool FindFileContainingSymbol(StringViewArg symbol_name,
                                   FileDescriptorProto* output) override {
       ++call_count_;
       return wrapped_db_->FindFileContainingSymbol(symbol_name, output);
     }
-    bool FindFileContainingExtension(const std::string& containing_type,
+    bool FindFileContainingExtension(StringViewArg containing_type,
                                      int field_number,
                                      FileDescriptorProto* output) override {
       ++call_count_;
@@ -12994,15 +12994,15 @@ class DatabaseBackedPoolTest : public testing::Test {
     DescriptorDatabase* wrapped_db_;
 
     // implements DescriptorDatabase ---------------------------------
-    bool FindFileByName(const std::string& filename,
+    bool FindFileByName(StringViewArg filename,
                         FileDescriptorProto* output) override {
       return wrapped_db_->FindFileByName(filename, output);
     }
-    bool FindFileContainingSymbol(const std::string& symbol_name,
+    bool FindFileContainingSymbol(StringViewArg symbol_name,
                                   FileDescriptorProto* output) override {
       return FindFileByName("foo.proto", output);
     }
-    bool FindFileContainingExtension(const std::string& containing_type,
+    bool FindFileContainingExtension(StringViewArg containing_type,
                                      int field_number,
                                      FileDescriptorProto* output) override {
       return FindFileByName("foo.proto", output);
@@ -13443,7 +13443,7 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
   ~ExponentialErrorDatabase() override = default;
 
   // implements DescriptorDatabase ---------------------------------
-  bool FindFileByName(const std::string& filename,
+  bool FindFileByName(StringViewArg filename,
                       FileDescriptorProto* output) override {
     int file_num = -1;
     FullMatch(filename, "file", ".proto", &file_num);
@@ -13453,7 +13453,7 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
       return false;
     }
   }
-  bool FindFileContainingSymbol(const std::string& symbol_name,
+  bool FindFileContainingSymbol(StringViewArg symbol_name,
                                 FileDescriptorProto* output) override {
     int file_num = -1;
     FullMatch(symbol_name, "Message", "", &file_num);
@@ -13463,7 +13463,7 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
       return false;
     }
   }
-  bool FindFileContainingExtension(const std::string& containing_type,
+  bool FindFileContainingExtension(StringViewArg containing_type,
                                    int field_number,
                                    FileDescriptorProto* output) override {
     return false;
