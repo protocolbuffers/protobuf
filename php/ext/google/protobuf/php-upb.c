@@ -8264,7 +8264,8 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
 UPB_NOINLINE
 static void encode_growbuffer(upb_encstate* e, size_t bytes) {
   size_t old_size = e->limit - e->buf;
-  size_t new_size = upb_roundup_pow2(bytes + (e->limit - e->ptr));
+  size_t needed_size = bytes + (e->limit - e->ptr);
+  size_t new_size = upb_roundup_pow2(needed_size);
   char* new_buf = upb_Arena_Realloc(e->arena, e->buf, old_size, new_size);
 
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
@@ -8273,14 +8274,12 @@ static void encode_growbuffer(upb_encstate* e, size_t bytes) {
   // TODO: This is somewhat inefficient since we are copying twice.
   // Maybe create a realloc() that copies to the end of the new buffer?
   if (old_size > 0) {
-    memmove(new_buf + new_size - old_size, e->buf, old_size);
+    memmove(new_buf + new_size - old_size, new_buf, old_size);
   }
 
-  e->ptr = new_buf + new_size - (e->limit - e->ptr);
-  e->limit = new_buf + new_size;
   e->buf = new_buf;
-
-  e->ptr -= bytes;
+  e->limit = new_buf + new_size;
+  e->ptr = new_buf + new_size - needed_size;
 }
 
 /* Call to ensure that at least "bytes" bytes are available for writing at
