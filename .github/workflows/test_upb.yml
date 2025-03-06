@@ -74,7 +74,7 @@ jobs:
           bazel-cache: "upb-bazel-gcc"
           bazel: >-
             test --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
-            --copt="-Wno-error=maybe-uninitialized"
+            --copt="-Wno-error=maybe-uninitialized" --java_runtime_version=remotejdk_11
             //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
 
   windows:
