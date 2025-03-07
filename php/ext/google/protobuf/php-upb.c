@@ -3753,10 +3753,12 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* m,
       upb_MiniTable_MapValue(map_entry_mini_table);
   // Map key/value cannot have explicit defaults,
   // hence assuming a zero default is valid.
+  upb_MessageValue default_key;
+  memset(&default_key, 0, map->key_size);
   upb_MessageValue default_val;
-  memset(&default_val, 0, sizeof(upb_MessageValue));
+  memset(&default_val, 0, map->val_size);
   upb_MessageValue map_entry_key =
-      upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
+      upb_Message_GetField(map_entry_message, map_entry_key_field, default_key);
   upb_MessageValue map_entry_value = upb_Message_GetField(
       map_entry_message, map_entry_value_field, default_val);
   return upb_Map_Set(map, map_entry_key, map_entry_value, arena);
@@ -4092,6 +4094,14 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 
 // Must be last.
 
+static int _upb_mapsorter_intkeys(const void* _a, const void* _b) {
+  const upb_tabent* const* a = _a;
+  const upb_tabent* const* b = _b;
+  uintptr_t a_key = (*a)->key;
+  uintptr_t b_key = (*b)->key;
+  return a_key < b_key ? -1 : a_key > b_key;
+}
+
 static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
                                    void* b_key, size_t size) {
   const upb_tabent* const* a = _a;
@@ -4183,8 +4193,14 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size = _upb_Map_Size(map);
-  UPB_ASSERT(map_size);
+  int map_size;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    map_size = _upb_Map_Size(map);
+  } else {
+    // For inttable, only sort the table entries, since the array part is
+    // already in a sorted order.
+    map_size = map->t.inttable.t.count;
+  }
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
@@ -4196,7 +4212,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
     src = map->t.strtable.t.entries;
     end = src + upb_table_size(&map->t.strtable.t);
   } else {
-    // For the inttable, only sort the table entries, since the array part is
+    // For inttable, only sort the table entries, since the array part is
     // already in a sorted order.
     src = map->t.inttable.t.entries;
     end = src + upb_table_size(&map->t.inttable.t);
@@ -4211,7 +4227,8 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   // Sort entries according to the key type.
   qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
-        compar[key_type]);
+        map->UPB_PRIVATE(is_strtable) ? compar[key_type]
+                                      : _upb_mapsorter_intkeys);
   return true;
 }
 
@@ -8609,6 +8626,20 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
   if (!map || !upb_Map_Size(map)) return;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
+    if (!map->UPB_PRIVATE(is_strtable)) {
+      // For inttable, first encode the array part, then sort the table entries.
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      while ((size_t)++iter < map->t.inttable.array_size) {
+        upb_tabval value = map->t.inttable.array[iter];
+        if (upb_arrhas(value)) {
+          upb_MapEntry ent;
+          memcpy(&ent.k, &iter, sizeof(iter));
+          upb_value val = _upb_value_val(value.val);
+          _upb_map_fromvalue(val, &ent.v, map->val_size);
+          encode_mapentry(e, upb_MiniTableField_Number(f), layout, &ent);
+        }
+      }
+    }
     _upb_sortedmap sorted;
     _upb_mapsorter_pushmap(
         &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
@@ -11915,12 +11946,6 @@ UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
 
 static bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
 
-static upb_value _upb_value_val(uint64_t val) {
-  upb_value ret;
-  _upb_value_setval(&ret, val);
-  return ret;
-}
-
 static int log2ceil(uint64_t v) {
   int ret = 0;
   bool pow2 = is_pow2(v);
@@ -11968,8 +11993,6 @@ static uint32_t upb_inthash(uintptr_t key) {
 static const upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
   return t->entries + (hash & t->mask);
 }
-
-static bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
 
 static bool isfull(upb_table* t) {
   uint32_t size = upb_table_size(t);
@@ -12550,17 +12573,18 @@ bool upb_inttable_sizedinit(upb_inttable* t, size_t asize, int hsize_lg2,
 }
 
 bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
-  return upb_inttable_sizedinit(t, 0, 4, a);
+  // The init size of the table part to match that of strtable.
+  return upb_inttable_sizedinit(t, 0, 3, a);
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
-  upb_tabval tabval;
-  tabval.val = val.val;
-  UPB_ASSERT(
-      upb_arrhas(tabval)); /* This will reject (uint64_t)-1.  Fix this. */
-
   if (key < t->array_size) {
+    upb_tabval tabval;
+    tabval.val = val.val;
+    // TODO: This will reject (uint64_t)-1.
+    // Fix this by potentially using a bit field to track presence in the array.
+    UPB_ASSERT(upb_arrhas(tabval));
     UPB_ASSERT(!upb_arrhas(t->array[key]));
     t->array_count++;
     mutable_array(t)[key].val = val.val;
@@ -12693,7 +12717,9 @@ void upb_inttable_clear(upb_inttable* t) {
   // Clear the array part.
   size_t array_bytes = t->array_size * sizeof(upb_tabval);
   t->array_count = 0;
-  memset(mutable_array(t), 0, array_bytes);
+  // Clear the array by setting all bits to 1, as UINT64_MAX is the sentinel
+  // value for an empty array.
+  memset(mutable_array(t), 0xff, array_bytes);
 
   // Clear the table part.
   size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
@@ -12720,19 +12746,20 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
   }
 
   size_t tab_idx = next(&t->t, i - t->array_size);
-  // We should set the iterator any way. When we are done, the iterator value is
-  // invalidated.
-  // `upb_inttable_done` will check on the iterator value to determine if the
-  // iteration is done.
-  *iter = tab_idx + t->array_size;
   if (tab_idx < upb_table_size(&t->t)) {
     upb_tabent* ent = &t->t.entries[tab_idx];
     *key = ent->key;
     *val = _upb_value_val(ent->val.val);
+    *iter = tab_idx + t->array_size;
     return true;
+  } else {
+    // We should set the iterator any way. When we are done, the iterator value
+    // is invalidated. `upb_inttable_done` will check on the iterator value to
+    // determine if the iteration is done.
+    *iter = INTPTR_MAX - 1;  // To disambiguate from UPB_INTTABLE_BEGIN, to
+                             // match the behavior of `upb_strtable_iter`.
+    return false;
   }
-
-  return false;
 }
 
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
