@@ -19,6 +19,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -27,6 +28,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -918,6 +921,66 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
 }
 
 
+namespace {
+
+// Gets the value of `nest_in_file_class` feature and returns whether the
+// generated class should be nested in the generated proto file Java class.
+template <typename Descriptor>
+inline bool NestInFileClass(const Descriptor& descriptor) {
+  auto nest_in_file_class = JavaGenerator::GetResolvedSourceFeatures(descriptor)
+                                .GetExtension(pb::java)
+                                .nest_in_file_class();
+  ABSL_CHECK(
+      nest_in_file_class !=
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN)
+      << "Unknown value for nest_in_file_class feature. Try populating the "
+         "Java feature set defaults in your generator plugin or custom "
+         "descriptor pool.";
+
+  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
+}
+
+// Returns whether the type should be nested in the file class for the given
+// descriptor, depending on different Protobuf Java API versions.
+// TODO: b/372482046 - Implement `nest_in_file_class` feature for mutable API.
+template <typename Descriptor>
+bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
+  (void)immutable;
+  return NestInFileClass(descriptor);
+}
+}  // namespace
+
+template <typename Descriptor>
+absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
+  if (descriptor.containing_type() != nullptr) {
+    const pb::JavaFeatures& unresolved_features =
+        JavaGenerator::GetUnresolvedSourceFeatures(descriptor, pb::java);
+    if (unresolved_features.has_nest_in_file_class()) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "Feature next_in_file_class only applies to top-level types and is "
+          "not allowed to be set on the nexted type: ",
+          descriptor.full_name()));
+    }
+  }
+  return absl::OkStatus();
+}
+
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
+  return NestInFileClass(descriptor, immutable);
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
