@@ -26,7 +26,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-        "//java/lite",
+        "//java/core:lite_runtime_only",
     ],
 )
 
@@ -40,7 +40,7 @@ kt_jvm_library(
     name = "bytestring_lib",
     srcs = ["src/main/kotlin/com/google/protobuf/ByteStrings.kt"],
     visibility = ["//java:__subpackages__"],
-    deps = ["//java/lite"],
+    deps = ["//java/core:lite_runtime_only"],
 )
 
 kt_jvm_library(
@@ -116,7 +116,7 @@ kt_jvm_library(
     srcs = ["src/test/kotlin/com/google/protobuf/ByteStringsTest.kt"],
     deps = [
         ":bytestring_lib",
-        "//java/lite",
+        "//java/core:lite_runtime_only",
         "@protobuf_maven//:com_google_truth_truth",
         "@protobuf_maven//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
