@@ -500,7 +500,16 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   upb_StringView key;
   upb_value val;
   while (upb_strtable_next2(t, &key, &val, &iter)) {
-    upb_strtable_insert(&new_table, key.data, key.size, val, a);
+    // Unlike normal insert, does not copy string data or possibly reallocate
+    // the table
+    lookupkey_t lookupkey = strkey2(key.data, key.size);
+    upb_tabkey tabkey = (uintptr_t)(key.data - sizeof(uint32_t));
+
+    UPB_ASSERT(upb_tabstrview(tabkey).data == key.data);
+    UPB_ASSERT(upb_tabstrview(tabkey).size == key.size);
+
+    uint32_t hash = _upb_Hash_NoSeed(key.data, key.size);
+    insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
   }
   *t = new_table;
   return true;
@@ -508,10 +517,6 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
 
 bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
                          upb_value v, upb_Arena* a) {
-  lookupkey_t key;
-  upb_tabkey tabkey;
-  uint32_t hash;
-
   if (isfull(&t->t)) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     if (!upb_strtable_resize(t, _upb_log2_table_size(&t->t) + 1, a)) {
@@ -519,11 +524,12 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
     }
   }
 
-  key = strkey2(k, len);
-  tabkey = strcopy(key, a);
+  lookupkey_t key = strkey2(k, len);
+  upb_tabkey tabkey = strcopy(key, a);
+
   if (tabkey == 0) return false;
 
-  hash = _upb_Hash_NoSeed(key.str.str, key.str.len);
+  uint32_t hash = _upb_Hash_NoSeed(key.str.str, key.str.len);
   insert(&t->t, key, tabkey, v, hash, &strhash, &streql);
   return true;
 }
