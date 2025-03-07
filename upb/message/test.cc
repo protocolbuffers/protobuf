@@ -646,6 +646,32 @@ TEST(MessageTest, MaxRequiredFields) {
   ASSERT_TRUE(serialized != nullptr);
 }
 
+TEST(MessageTest, ZeroIdField) {
+  upb::Arena arena;
+
+  // ID of zero with wire type of VARINT
+  const char zero[] = { 0x00, 0x00 };
+
+  // Should return parse error, not valid proto
+  EXPECT_EQ(nullptr, upb_test_EmptyMessage_parse(
+                         zero, sizeof(zero), arena.ptr()));
+
+  upb_test_EmptyMessage* decoded = upb_test_EmptyMessage_parse_ex(
+      zero, sizeof(zero), nullptr,
+      kUpb_DecodeOption_AllowZeroIdFields, arena.ptr());
+
+  // Should parse, allowing unknown zero id field
+  ASSERT_TRUE(decoded != nullptr);
+
+  // Should serialize identically to input
+  size_t len;
+  char* serialized = upb_test_EmptyMessage_serialize(decoded, arena.ptr(), &len);
+
+  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_TRUE(len == 2);
+  ASSERT_TRUE(serialized[0] == 0 && serialized[1] == 0);
+}
+
 TEST(MessageTest, MapField) {
   upb::Arena arena;
   upb_test_TestMapFieldExtra* test_msg_extra =

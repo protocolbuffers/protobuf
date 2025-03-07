@@ -93,6 +93,12 @@ enum {
    * as non-UTF-8 proto3 string fields.
    */
   kUpb_DecodeOption_AlwaysValidateUtf8 = 8,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, decoding will allow unknown fields with an id of 0.
+   */
+  kUpb_DecodeOption_AllowZeroIdFields = 16,
 };
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
@@ -129,6 +135,10 @@ typedef enum {
   // kUpb_DecodeOptions_ExperimentalAllowUnlinked was not specified in the list
   // of options.
   kUpb_DecodeStatus_UnlinkedSubMessage = 6,
+
+  // An unknown field with an id of zero was present, but
+  // kUpb_DecodeOption_AllowZeroId was not specified in the list of options.
+  kUpb_DecodeStatus_ZeroIdField = 7,
 } upb_DecodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 

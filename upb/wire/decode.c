@@ -1224,7 +1224,8 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
                                                    upb_Message* msg,
                                                    int field_number,
                                                    int wire_type, wireval val) {
-  if (field_number == 0) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  if (field_number == 0 && !(d->options & kUpb_DecodeOption_AllowZeroIdFields))
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_ZeroIdField);
 
   // Since unknown fields are the uncommon case, we do a little extra work here
   // to walk backwards through the buffer to find the field start.  This frees
@@ -1475,6 +1476,8 @@ const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
       return "Missing required field";
     case kUpb_DecodeStatus_UnlinkedSubMessage:
       return "Unlinked sub-message field was present";
+    case kUpb_DecodeStatus_ZeroIdField:
+      return "Field with an id of zero was present";
     default:
       return "Unknown decode status";
   }
