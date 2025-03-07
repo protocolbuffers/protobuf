@@ -10,6 +10,7 @@
 #include <limits.h>
 
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
@@ -192,6 +193,30 @@ TEST_P(IntTableTest, TestIntTable) {
   upb_inttable_clear(&t);
 }
 
+TEST(IntTableTest, EmptyTable) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+
+  // Insert a value.
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  iter = UPB_INTTABLE_BEGIN;
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Clear the table.
+  upb_inttable_clear(&t);
+  iter = UPB_INTTABLE_BEGIN;
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+}
+
 TEST(IntTableTest, Iteration) {
   upb::Arena arena;
   upb_inttable t;
@@ -289,6 +314,42 @@ TEST(IntTableTest, IterationWithArrayOnly) {
   EXPECT_EQ(upb_inttable_iter_key(&t, iter), 0);
   EXPECT_EQ(val.val, true);
   EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, true);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Done with the iteration.
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+
+  upb_inttable_clear(&t);
+}
+
+TEST(IntTableTest, BoolKeys) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, false, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, true, upb_value_bool(false), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  // First element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  bool key_bool;
+  memcpy(&key_bool, &key, sizeof(key_bool));
+  EXPECT_EQ(key_bool, false);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), false);
+  EXPECT_EQ(val.val, true);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, true);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Second element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  memcpy(&key_bool, &key, sizeof(key_bool));
+  EXPECT_EQ(key_bool, true);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), true);
+  EXPECT_EQ(val.val, false);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, false);
   EXPECT_FALSE(upb_inttable_done(&t, iter));
 
   // Done with the iteration.

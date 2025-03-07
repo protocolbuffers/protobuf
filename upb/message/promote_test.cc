@@ -641,6 +641,9 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
   upb_test_ModelWithMaps* input_msg = upb_test_ModelWithMaps_new(arena.ptr());
   upb_test_ModelWithMaps_set_id(input_msg, 123);
 
+  upb_test_ModelWithExtensions* submsg0 =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions_set_random_int32(submsg0, 100);
   upb_test_ModelWithExtensions* submsg1 =
       upb_test_ModelWithExtensions_new(arena.ptr());
   upb_test_ModelWithExtensions_set_random_int32(submsg1, 123);
@@ -648,7 +651,8 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
       upb_test_ModelWithExtensions_new(arena.ptr());
   upb_test_ModelWithExtensions_set_random_int32(submsg2, 456);
 
-  // Add 2 map entries.
+  // Add 3 map entries.
+  upb_test_ModelWithMaps_map_im_set(input_msg, 0, submsg0, arena.ptr());
   upb_test_ModelWithMaps_map_im_set(input_msg, 111, submsg1, arena.ptr());
   upb_test_ModelWithMaps_map_im_set(input_msg, 222, submsg2, arena.ptr());
 
@@ -681,8 +685,8 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
 
   upb_Map* map = upb_Message_GetMutableMap(msg, map_field);
 
-  // Map size is 2 even though messages are unlinked.
-  EXPECT_EQ(2, upb_Map_Size(map));
+  // Map size is 3 even though messages are unlinked.
+  EXPECT_EQ(3, upb_Map_Size(map));
 
   // Update mini table and promote unknown to a message.
   upb_MiniTable* entry = const_cast<upb_MiniTable*>(
@@ -697,6 +701,12 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
 
   upb_MessageValue key;
   upb_MessageValue val;
+  key.int32_val = 0;
+  EXPECT_TRUE(upb_Map_Get(map, key, &val));
+  EXPECT_EQ(100, upb_test_ModelWithExtensions_random_int32(
+                     static_cast<const upb_test_ModelWithExtensions*>(
+                         (void*)(val.msg_val))));
+
   key.int32_val = 111;
   EXPECT_TRUE(upb_Map_Get(map, key, &val));
   EXPECT_EQ(123, upb_test_ModelWithExtensions_random_int32(

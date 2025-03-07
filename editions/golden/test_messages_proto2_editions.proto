@@ -188,8 +188,10 @@ message TestAllTypesProto2 {
   map<fixed64, fixed64> map_fixed64_fixed64 = 63;
   map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 64;
   map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 65;
+  map<int32, bool> map_int32_bool = 104;
   map<int32, float> map_int32_float = 66;
   map<int32, double> map_int32_double = 67;
+  map<int32, NestedMessage> map_int32_nested_message = 103;
   map<bool, bool> map_bool_bool = 68;
   map<string, string> map_string_string = 69;
   map<string, bytes> map_string_bytes = 70;

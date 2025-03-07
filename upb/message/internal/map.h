@@ -154,7 +154,7 @@ UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
 
 UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
                              size_t key_size, void* val, size_t val_size) {
-  upb_value tabval;
+  upb_value tabval = {0};
   bool ret;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_StringView k = _upb_map_tokey(key, key_size);

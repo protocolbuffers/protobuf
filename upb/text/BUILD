@@ -27,6 +27,7 @@ cc_library(
         "//upb:message",
         "//upb:port",
         "//upb:reflection",
+        "//upb/hash",
         "//upb/lex",
         "//upb/message:internal",
         "//upb/message:types",

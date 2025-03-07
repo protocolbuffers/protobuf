@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -674,6 +675,56 @@ TEST(MessageTest, MapField) {
   ASSERT_NE(nullptr, test_msg_extra2);
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
+}
+
+TEST(MessageTest, MapFieldDeterministicEncoding) {
+  upb::Arena arena1;
+  upb_test_TestMapField* test_msg1 = upb_test_TestMapField_new(arena1.ptr());
+  for (int i = 0; i <= 1000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_ZERO, arena1.ptr()));
+  }
+  for (int i = 1001; i <= 2000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_ONE, arena1.ptr()));
+  }
+  for (int i = 2001; i <= 3000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_TWO, arena1.ptr()));
+  }
+  size_t size1;
+  char* serialized1;
+  upb_EncodeStatus status1 = upb_Encode(
+      UPB_UPCAST(test_msg1), &upb_0test__TestMapField_msg_init,
+      kUpb_EncodeOption_Deterministic, arena1.ptr(), &serialized1, &size1);
+  ASSERT_EQ(status1, kUpb_EncodeStatus_Ok);
+  ASSERT_NE(nullptr, serialized1);
+
+  upb::Arena arena2;
+  upb_test_TestMapField* test_msg2 = upb_test_TestMapField_new(arena2.ptr());
+  // Add the same values in reverse order.
+  for (int i = 3000; i >= 2001; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_TWO, arena2.ptr()));
+  }
+  for (int i = 2000; i >= 1001; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_ONE, arena2.ptr()));
+  }
+  for (int i = 1000; i >= 0; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_ZERO, arena2.ptr()));
+  }
+  size_t size2;
+  char* serialized2;
+  upb_EncodeStatus status2 = upb_Encode(
+      UPB_UPCAST(test_msg2), &upb_0test__TestMapField_msg_init,
+      kUpb_EncodeOption_Deterministic, arena2.ptr(), &serialized2, &size2);
+  ASSERT_EQ(status2, kUpb_EncodeStatus_Ok);
+  ASSERT_NE(nullptr, serialized2);
+
+  EXPECT_EQ(size1, size2);
+  EXPECT_EQ(0, memcmp(serialized1, serialized2, size1));
 }
 
 TEST(MessageTest, Freeze) {
