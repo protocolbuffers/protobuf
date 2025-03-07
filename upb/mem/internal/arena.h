@@ -101,7 +101,7 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
     return true;
   }
   size_t extend = size - oldsize;
-  if ((char*)ptr + oldsize == a->UPB_ONLYBITS(ptr) &&
+  if (ptr && (char*)ptr + oldsize == a->UPB_ONLYBITS(ptr) &&
       UPB_PRIVATE(_upb_ArenaHas)(a) >= extend) {
     a->UPB_ONLYBITS(ptr) += extend;
     UPB_UNPOISON_MEMORY_REGION((char*)ptr + (oldsize - UPB_ASAN_GUARD_SIZE),
