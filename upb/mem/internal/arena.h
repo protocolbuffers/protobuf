@@ -68,6 +68,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_ASSERT(ptr);
   UPB_ASSERT(size <= oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
   oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
@@ -94,6 +95,7 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
 UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
                                         size_t oldsize, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
   oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
@@ -114,15 +116,21 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
 UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
                                        size_t oldsize, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
-  if (size == oldsize) {
-    return ptr;
-  }
-  if (size > oldsize) {
-    if (upb_Arena_TryExtend(a, ptr, oldsize, size)) return ptr;
-  } else if ((char*)ptr + (UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE) ==
-             a->UPB_ONLYBITS(ptr)) {
-    upb_Arena_ShrinkLast(a, ptr, oldsize, size);
-    return ptr;
+  if (ptr) {
+    if (size == oldsize) {
+      return ptr;
+    }
+    if (size > oldsize) {
+      if (upb_Arena_TryExtend(a, ptr, oldsize, size)) return ptr;
+    } else {
+      if ((char*)ptr + (UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE) ==
+          a->UPB_ONLYBITS(ptr)) {
+        upb_Arena_ShrinkLast(a, ptr, oldsize, size);
+      } else {
+        UPB_POISON_MEMORY_REGION((char*)ptr + size, oldsize - size);
+      }
+      return ptr;
+    }
   }
   void* ret = upb_Arena_Malloc(a, size);
 
