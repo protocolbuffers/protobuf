@@ -136,8 +136,8 @@ typedef struct upb_tabval {
 /* upb_table ******************************************************************/
 
 typedef struct _upb_tabent {
-  upb_tabkey key;
   upb_tabval val;
+  upb_tabkey key;
 
   /* Internal chaining.  This is const so we can create static initializers for
    * tables.  We cast away const sometimes, but *only* when the containing
