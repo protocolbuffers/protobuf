@@ -8,7 +8,11 @@
 #ifndef UPB_HASH_INT_TABLE_H_
 #define UPB_HASH_INT_TABLE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/hash/common.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"
