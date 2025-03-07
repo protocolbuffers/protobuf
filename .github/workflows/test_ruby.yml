@@ -180,25 +180,25 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby.
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82'}
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82'}
-          - { name: Ruby 3.1, ruby: ruby-3.1.6}
-          - { name: Ruby 3.2, ruby: ruby-3.2.6}
-          - { name: Ruby 3.3, ruby: ruby-3.3.6}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82', continuous-only: true}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82', continuous-only: true}
+          - { name: Ruby 3.1, ruby: ruby-3.1.6, continuous-only: true}
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true}
+          - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true}
           - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI }
+          - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: FFI, continuous-only: true }
           - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI }
-    name: ${{ inputs.continuous-prefix }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+          - { name: JRuby 9.4, ruby: jruby-9.4.9.0, ffi: FFI, continuous-only: true }
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        if: ${{ inputs.continuous-run }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        if: ${{ inputs.continuous-run }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-{0}-90d207f4e749b54c8792bbe974dfc70323b6566e', matrix.ruby) }}

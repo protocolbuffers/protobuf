@@ -227,7 +227,7 @@ genrule(
     """,
     tags = ["manual"],
     target_compatible_with = select({
-        "@ruby//engine:jruby": [],
+        "@ruby//engine:ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
