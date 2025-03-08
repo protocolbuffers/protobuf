@@ -37,8 +37,8 @@ static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
                                    void* b_key, size_t size) {
   const upb_tabent* const* a = _a;
   const upb_tabent* const* b = _b;
-  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
-  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
+  upb_StringView a_tabkey = upb_key_strview((*a)->key);
+  upb_StringView b_tabkey = upb_key_strview((*b)->key);
   _upb_map_fromkey(a_tabkey, a_key, size);
   _upb_map_fromkey(b_tabkey, b_key, size);
 }
@@ -168,7 +168,7 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Extension* const* b = _b;
   uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
   uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
-  assert(a_num != b_num);
+  UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
 

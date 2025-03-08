@@ -151,12 +151,11 @@ static void _upb_TextEncode_Map(txtenc* e, const upb_Map* map,
       // For inttable, first encode the array part, then sort the table entries.
       intptr_t iter = UPB_INTTABLE_BEGIN;
       while ((size_t)++iter < map->t.inttable.array_size) {
-        upb_tabval value = map->t.inttable.array[iter];
-        if (upb_arrhas(value)) {
-          upb_value upb_val = _upb_value_val(value.val);
+        upb_value value = map->t.inttable.array[iter];
+        if (!upb_inttable_is_sentinel(value)) {
           upb_MessageValue key, val;
           memcpy(&key, &iter, sizeof(iter));
-          _upb_map_fromvalue(upb_val, &val, map->val_size);
+          _upb_map_fromvalue(value, &val, map->val_size);
           _upb_TextEncode_MapEntry(e, key, val, f);
         }
       }

@@ -62,7 +62,7 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
   if (map->UPB_PRIVATE(is_strtable)) {
-    upb_StringView key = upb_tabstrview(tabent->key);
+    upb_StringView key = upb_key_strview(tabent->key);
     _upb_map_fromkey(key, &ent->k, map->key_size);
   } else {
     uintptr_t key = tabent->key;
