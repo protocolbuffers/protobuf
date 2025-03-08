@@ -1682,6 +1682,9 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     if (HasStringPieceFields(file_, options_)) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
+    if (HasRegularStringFields(file_, options_)) {
+      IncludeFileAndExport("third_party/protobuf/string_view_migration.h", p);
+    }
   }
   if (HasCordFields(file_, options_)) {
     p->Emit(R"(
