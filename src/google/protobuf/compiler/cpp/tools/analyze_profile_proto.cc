@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <memory>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,11 +36,16 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "third_party/re2/re2.h"
+#include "thread/threadpool.h"
 
 namespace google {
 namespace protobuf {
@@ -484,25 +490,85 @@ absl::Status AnalyzeProfileProtoToText(
 absl::Status AnalyzeAndAggregateProfileProtosToText(
     std::ostream& stream, absl::string_view root,
     const AnalyzeProfileProtoOptions& options) {
-  FileYielder yielder;
-  int errors = 0;
-  yielder.Start({file::JoinPath(root, "*")}, file::MATCH_DEFAULT,
-                /*recursively_expand=*/true, &errors);
-  if (errors > 0) {
-    return absl::InternalError(absl::StrCat("Failed to traverse path: ", root));
-  }
-  Stats merged;
-  for (; !yielder.Done(); yielder.Next()) {
-    const std::string& full_path = yielder.FullPathName();
-    if (!absl::EndsWith(full_path, "proto.profile")) {
-      continue;
+  // Find files.
+
+  std::vector<std::string> file_paths;
+  {
+    FileYielder yielder;
+    int errors = 0;
+    yielder.Start({file::JoinPath(root, "*")}, file::MATCH_DEFAULT,
+                  /*recursively_expand=*/true, &errors);
+    if (errors > 0) {
+      return absl::InternalError(
+          absl::StrCat("Failed to traverse path: ", root));
     }
-    stream << full_path << std::endl;
-    auto stats = *AnalyzeProfileProto(stream, full_path, options);
-    Aggregate(stats, merged);
+    for (; !yielder.Done(); yielder.Next()) {
+      const std::string& full_path = yielder.FullPathName();
+      if (absl::EndsWith(full_path, "proto.profile")) {
+        file_paths.push_back(full_path);
+      }
+    }
   }
-  stream << merged;
-  return absl::OkStatus();
+
+  // Process files in parallel.
+
+  absl::Mutex mu;
+  const size_t num_all = file_paths.size();
+  size_t num_done = 0;
+  size_t num_succeeded = 0;
+  size_t num_failed = 0;
+  std::vector<std::stringstream> file_streams{num_all};
+  Stats merged_stats;
+  absl::Status all_status = absl::OkStatus();
+  {
+    ThreadPool pool{std::min(options.parallelism, static_cast<int>(num_all))};
+    pool.StartWorkers();
+    for (size_t i = 0; i < file_paths.size(); ++i) {
+      const auto& file_path = file_paths[i];
+      auto& file_stream = file_streams[i];
+      const std::string_view rel_file_path =
+          absl::StripPrefix(file_path, file::AddSlash(root));
+      pool.Schedule([&]() {
+        // Async section.
+        absl::Time start = absl::Now();
+        ABSL_LOG(INFO) << "STARTING: " << rel_file_path << "...";
+        file_stream << file_path << "\n";
+        const auto file_stats_or =
+            AnalyzeProfileProto(file_stream, file_path, options);
+        // Sync section.
+        absl::MutexLock lock(&mu);
+        if (file_stats_or.ok()) {
+          ++num_succeeded;
+          Aggregate(*file_stats_or, merged_stats);
+        } else {
+          ++num_failed;
+          all_status.Update(file_stats_or.status());
+        }
+        if (!options.sort_output) {
+          stream << file_stream.str() << std::endl;
+          file_stream.clear();
+        }
+        ABSL_LOG(INFO) << "FINISHED " << ++num_done << " OF " << num_all << " ("
+                       << (file_stats_or.ok() ? "SUCCESS" : "FAILURE") << " IN "
+                       << (absl::Now() - start) << "): " << rel_file_path;
+      });
+    }
+  }
+
+  // Print the results.
+
+  if (options.sort_output) {
+    for (size_t i = 0; i < num_all; ++i) {
+      stream << file_streams[i].str() << std::endl;
+      file_streams[i].clear();
+    }
+  }
+  stream << merged_stats;
+
+  ABSL_LOG(INFO) << "TOTAL SUCCEEDED: " << num_succeeded;
+  ABSL_LOG(INFO) << "TOTAL FAILED: " << num_failed;
+
+  return all_status;
 }
 
 }  // namespace tools
