@@ -2615,8 +2615,6 @@ typedef struct {
   uint64_t val;
 } upb_value;
 
-UPB_INLINE void _upb_value_setval(upb_value* v, uint64_t val) { v->val = val; }
-
 /* For each value ctype, define the following set of functions:
  *
  * // Get/set an int32 from a upb_value.
@@ -2670,7 +2668,7 @@ UPB_INLINE upb_value upb_value_double(double cval) {
   return ret;
 }
 
-/* upb_tabkey *****************************************************************/
+/* upb_key *****************************************************************/
 
 /* Either:
  *   1. an actual integer key, or
@@ -2679,35 +2677,27 @@ UPB_INLINE upb_value upb_value_double(double cval) {
  * ...depending on whether this is a string table or an int table.  We would
  * make this a union of those two types, but C89 doesn't support statically
  * initializing a non-first union member. */
-typedef uintptr_t upb_tabkey;
+typedef uintptr_t upb_key;
 
-UPB_INLINE char* upb_tabstr(upb_tabkey key, uint32_t* len) {
+UPB_INLINE char* upb_key_cstr(upb_key key, uint32_t* len) {
   char* mem = (char*)key;
   if (len) memcpy(len, mem, sizeof(*len));
   return mem + sizeof(*len);
 }
 
-UPB_INLINE upb_StringView upb_tabstrview(upb_tabkey key) {
+UPB_INLINE upb_StringView upb_key_strview(upb_key key) {
   upb_StringView ret;
   uint32_t len;
-  ret.data = upb_tabstr(key, &len);
+  ret.data = upb_key_cstr(key, &len);
   ret.size = len;
   return ret;
 }
 
-/* upb_tabval *****************************************************************/
-
-typedef struct upb_tabval {
-  uint64_t val;
-} upb_tabval;
-
-#define UPB_TABVALUE_EMPTY_INIT {-1}
-
 /* upb_table ******************************************************************/
 
 typedef struct _upb_tabent {
-  upb_tabval val;
-  upb_tabkey key;
+  upb_value val;
+  upb_key key;
 
   /* Internal chaining.  This is const so we can create static initializers for
    * tables.  We cast away const sometimes, but *only* when the containing
@@ -2731,14 +2721,6 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
 
-UPB_INLINE bool upb_arrhas(upb_tabval val) { return val.val != (uint64_t)-1; }
-
-UPB_INLINE upb_value _upb_value_val(uint64_t val) {
-  upb_value ret;
-  _upb_value_setval(&ret, val);
-  return ret;
-}
-
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
 #ifdef __cplusplus
@@ -2759,7 +2741,7 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
 typedef struct {
   upb_table t;              // For entries that don't fit in the array part.
-  const upb_tabval* array;  // Array part of the table. See const note above.
+  const upb_value* array;   // Array part of the table. See const note above.
   size_t array_size;        // Array part size.
   size_t array_count;       // Array part number of elements.
 } upb_inttable;
@@ -2823,6 +2805,10 @@ void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
 bool upb_inttable_done(const upb_inttable* t, intptr_t i);
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
+
+UPB_INLINE bool upb_inttable_is_sentinel(upb_value v) {
+  return v.val == UINT64_MAX;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -14378,7 +14364,7 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
   if (map->UPB_PRIVATE(is_strtable)) {
-    upb_StringView key = upb_tabstrview(tabent->key);
+    upb_StringView key = upb_key_strview(tabent->key);
     _upb_map_fromkey(key, &ent->k, map->key_size);
   } else {
     uintptr_t key = tabent->key;
