@@ -52,10 +52,16 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffe
   static const ::uint32_t offsets[];
 };
 extern "C" {
-PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
+PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
+    descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 }  // extern "C"
 namespace pb {
+enum JavaFeatures_NestInFileClass : int;
+PROTOC_EXPORT bool JavaFeatures_NestInFileClass_IsValid(int value);
+PROTOC_EXPORT extern const uint32_t
+    JavaFeatures_NestInFileClass_internal_data_[];
 enum JavaFeatures_Utf8Validation : int;
+PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
 struct JavaFeaturesDefaultTypeInternal;
@@ -64,6 +70,9 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::EnumTraitsT<::pb::JavaFeatures_NestInFileClass_internal_data_>
+    internal::EnumTraitsImpl::value<::pb::JavaFeatures_NestInFileClass>;
 template <>
 internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
     internal::EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
@@ -77,16 +86,15 @@ enum JavaFeatures_Utf8Validation : int {
   JavaFeatures_Utf8Validation_VERIFY = 2,
 };
 
+PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MIN =
     static_cast<JavaFeatures_Utf8Validation>(0);
 inline constexpr JavaFeatures_Utf8Validation JavaFeatures_Utf8Validation_Utf8Validation_MAX =
     static_cast<JavaFeatures_Utf8Validation>(2);
-inline bool JavaFeatures_Utf8Validation_IsValid(int value) {
-  return 0 <= value && value <= 2;
-}
 inline constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
-PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor();
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
+JavaFeatures_Utf8Validation_descriptor();
 template <typename T>
 const std::string& JavaFeatures_Utf8Validation_Name(T value) {
   static_assert(std::is_same<T, JavaFeatures_Utf8Validation>::value ||
@@ -96,13 +104,54 @@ const std::string& JavaFeatures_Utf8Validation_Name(T value) {
 }
 template <>
 inline const std::string& JavaFeatures_Utf8Validation_Name(JavaFeatures_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfDenseEnum<
+      JavaFeatures_Utf8Validation_descriptor, 0, 2>(static_cast<int>(value));
 }
 inline bool JavaFeatures_Utf8Validation_Parse(
-    absl::string_view name, JavaFeatures_Utf8Validation* PROTOBUF_NONNULL value) {
-  return ::google::protobuf::internal::ParseNamedEnum<JavaFeatures_Utf8Validation>(JavaFeatures_Utf8Validation_descriptor(), name,
-                                           value);
+    absl::string_view name, JavaFeatures_Utf8Validation* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<
+      JavaFeatures_Utf8Validation>(JavaFeatures_Utf8Validation_descriptor(),
+                                   name, value);
+}
+enum JavaFeatures_NestInFileClass : int {
+  JavaFeatures_NestInFileClass_NEST_IN_FILE_CLASS_UNKNOWN = 0,
+  JavaFeatures_NestInFileClass_NO = 1,
+  JavaFeatures_NestInFileClass_YES = 2,
+  JavaFeatures_NestInFileClass_LEGACY = 3,
+};
+
+PROTOC_EXPORT bool JavaFeatures_NestInFileClass_IsValid(int value);
+PROTOC_EXPORT extern const uint32_t
+    JavaFeatures_NestInFileClass_internal_data_[];
+inline constexpr JavaFeatures_NestInFileClass
+    JavaFeatures_NestInFileClass_NestInFileClass_MIN =
+        static_cast<JavaFeatures_NestInFileClass>(0);
+inline constexpr JavaFeatures_NestInFileClass
+    JavaFeatures_NestInFileClass_NestInFileClass_MAX =
+        static_cast<JavaFeatures_NestInFileClass>(3);
+inline constexpr int JavaFeatures_NestInFileClass_NestInFileClass_ARRAYSIZE =
+    3 + 1;
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
+JavaFeatures_NestInFileClass_descriptor();
+template <typename T>
+const std::string& JavaFeatures_NestInFileClass_Name(T value) {
+  static_assert(std::is_same<T, JavaFeatures_NestInFileClass>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to NestInFileClass_Name().");
+  return JavaFeatures_NestInFileClass_Name(
+      static_cast<JavaFeatures_NestInFileClass>(value));
+}
+template <>
+inline const std::string& JavaFeatures_NestInFileClass_Name(
+    JavaFeatures_NestInFileClass value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<
+      JavaFeatures_NestInFileClass_descriptor, 0, 3>(static_cast<int>(value));
+}
+inline bool JavaFeatures_NestInFileClass_Parse(
+    absl::string_view name, JavaFeatures_NestInFileClass* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<
+      JavaFeatures_NestInFileClass>(JavaFeatures_NestInFileClass_descriptor(),
+                                    name, value);
 }
 
 // ===================================================================
@@ -117,14 +166,15 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   ~JavaFeatures() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(JavaFeatures* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(JavaFeatures* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR JavaFeatures(::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR JavaFeatures(
+      ::google::protobuf::internal::ConstantInitialized);
 
   inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
   inline JavaFeatures(JavaFeatures&& from) noexcept
@@ -147,18 +197,18 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  static const ::google::protobuf::Descriptor* descriptor() {
     return GetDescriptor();
   }
-  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+  static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
   static const JavaFeatures& default_instance() {
@@ -167,7 +217,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(JavaFeatures& a, JavaFeatures& b) { a.Swap(&b); }
-  inline void Swap(JavaFeatures* PROTOBUF_NONNULL other) {
+  inline void Swap(JavaFeatures* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -175,7 +225,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(JavaFeatures* PROTOBUF_NONNULL other) {
+  void UnsafeArenaSwap(JavaFeatures* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -183,7 +233,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  JavaFeatures* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  JavaFeatures* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<JavaFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -192,8 +242,8 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   void MergeFrom(const JavaFeatures& from) { JavaFeatures::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
-                        const ::google::protobuf::MessageLite& from_msg);
+   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
   bool IsInitialized() const {
@@ -203,73 +253,104 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-  public:
+ public:
   ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ::size_t ByteSizeLong() const final;
-  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+#endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
- private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
+   void SharedCtor(::google::protobuf::Arena* arena);
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(JavaFeatures* other);
 
- protected:
-  explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
-  JavaFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
-      : JavaFeatures(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
+  private:
+   template <typename T>
+   friend ::absl::string_view(
+       ::google::protobuf::internal::GetAnyMessageName)();
+   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
- public:
-  static constexpr auto InternalGenerateClassData_();
+  protected:
+   explicit JavaFeatures(::google::protobuf::Arena* arena);
+   JavaFeatures(::google::protobuf::Arena* arena, const JavaFeatures& from);
+   JavaFeatures(::google::protobuf::Arena* arena, JavaFeatures&& from) noexcept
+       : JavaFeatures(arena) {
+     *this = ::std::move(from);
+   }
+   const ::google::protobuf::internal::ClassData* GetClassData() const
+       PROTOBUF_FINAL;
+   static void* PlacementNew_(const void*, void* mem,
+                              ::google::protobuf::Arena* arena);
+   static constexpr auto InternalNewImpl_();
 
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-  using Utf8Validation = JavaFeatures_Utf8Validation;
-  static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = JavaFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
-  static constexpr Utf8Validation DEFAULT = JavaFeatures_Utf8Validation_DEFAULT;
-  static constexpr Utf8Validation VERIFY = JavaFeatures_Utf8Validation_VERIFY;
-  static inline bool Utf8Validation_IsValid(int value) {
-    return JavaFeatures_Utf8Validation_IsValid(value);
-  }
+  public:
+   static constexpr auto InternalGenerateClassData_();
+
+   ::google::protobuf::Metadata GetMetadata() const;
+   // nested types ----------------------------------------------------
+   using Utf8Validation = JavaFeatures_Utf8Validation;
+   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN =
+       JavaFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
+   static constexpr Utf8Validation DEFAULT =
+       JavaFeatures_Utf8Validation_DEFAULT;
+   static constexpr Utf8Validation VERIFY = JavaFeatures_Utf8Validation_VERIFY;
+   static inline bool Utf8Validation_IsValid(int value) {
+     return JavaFeatures_Utf8Validation_IsValid(value);
+   }
   static constexpr Utf8Validation Utf8Validation_MIN = JavaFeatures_Utf8Validation_Utf8Validation_MIN;
   static constexpr Utf8Validation Utf8Validation_MAX = JavaFeatures_Utf8Validation_Utf8Validation_MAX;
   static constexpr int Utf8Validation_ARRAYSIZE = JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Utf8Validation_descriptor() {
+  static inline const ::google::protobuf::EnumDescriptor*
+  Utf8Validation_descriptor() {
     return JavaFeatures_Utf8Validation_descriptor();
   }
   template <typename T>
   static inline const std::string& Utf8Validation_Name(T value) {
     return JavaFeatures_Utf8Validation_Name(value);
   }
-  static inline bool Utf8Validation_Parse(
-      absl::string_view name, Utf8Validation* PROTOBUF_NONNULL value) {
+  static inline bool Utf8Validation_Parse(absl::string_view name,
+                                          Utf8Validation* value) {
     return JavaFeatures_Utf8Validation_Parse(name, value);
+  }
+  using NestInFileClass = JavaFeatures_NestInFileClass;
+  static constexpr NestInFileClass NEST_IN_FILE_CLASS_UNKNOWN =
+      JavaFeatures_NestInFileClass_NEST_IN_FILE_CLASS_UNKNOWN;
+  static constexpr NestInFileClass NO = JavaFeatures_NestInFileClass_NO;
+  static constexpr NestInFileClass YES = JavaFeatures_NestInFileClass_YES;
+  static constexpr NestInFileClass LEGACY = JavaFeatures_NestInFileClass_LEGACY;
+  static inline bool NestInFileClass_IsValid(int value) {
+    return JavaFeatures_NestInFileClass_IsValid(value);
+  }
+  static constexpr NestInFileClass NestInFileClass_MIN =
+      JavaFeatures_NestInFileClass_NestInFileClass_MIN;
+  static constexpr NestInFileClass NestInFileClass_MAX =
+      JavaFeatures_NestInFileClass_NestInFileClass_MAX;
+  static constexpr int NestInFileClass_ARRAYSIZE =
+      JavaFeatures_NestInFileClass_NestInFileClass_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  NestInFileClass_descriptor() {
+    return JavaFeatures_NestInFileClass_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& NestInFileClass_Name(T value) {
+    return JavaFeatures_NestInFileClass_Name(value);
+  }
+  static inline bool NestInFileClass_Parse(absl::string_view name,
+                                           NestInFileClass* value) {
+    return JavaFeatures_NestInFileClass_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
@@ -277,6 +358,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
     kUtf8ValidationFieldNumber = 2,
     kLegacyClosedEnumFieldNumber = 1,
     kUseOldOuterClassnameDefaultFieldNumber = 4,
+    kNestInFileClassFieldNumber = 5,
   };
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_utf8_validation() const;
@@ -310,14 +392,27 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   bool _internal_use_old_outer_classname_default() const;
   void _internal_set_use_old_outer_classname_default(bool value);
 
-  public:
+ public:
+  // optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5 [retention
+  // = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, targets =
+  // TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets =
+  // TARGET_TYPE_SERVICE, edition_defaults = {
+  bool has_nest_in_file_class() const;
+  void clear_nest_in_file_class();
+  ::pb::JavaFeatures_NestInFileClass nest_in_file_class() const;
+  void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClass value);
+
+ private:
+  ::pb::JavaFeatures_NestInFileClass _internal_nest_in_file_class() const;
+  void _internal_set_nest_in_file_class(
+      ::pb::JavaFeatures_NestInFileClass value);
+
+ public:
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3,
-                                   1, 0,
-                                   2>
+  static const ::google::protobuf::internal::TcParseTable<3, 4, 2, 0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -327,19 +422,21 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
-        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+        ::google::protobuf::Arena* arena);
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
-        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        ::google::protobuf::Arena* arena, const Impl_& from,
         const JavaFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     int utf8_validation_;
     bool legacy_closed_enum_;
     bool use_old_outer_classname_default_;
+    int nest_in_file_class_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -355,7 +452,9 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 inline constexpr int kJavaFieldNumber =
     1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
-    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
+    ::google::protobuf::FeatureSet,
+    ::google::protobuf::internal::MessageTypeTraits<::pb::JavaFeatures>, 11,
+    false>
     java;
 
 // ===================================================================
@@ -422,10 +521,8 @@ inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation
 }
 inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-
-                                          assert(::google::protobuf::internal::ValidateEnum(
-                                              value, ::pb::JavaFeatures_Utf8Validation_internal_data_));
-                                          _impl_.utf8_validation_ = value;
+  assert(::pb::JavaFeatures_Utf8Validation_IsValid(value));
+  _impl_.utf8_validation_ = value;
 }
 
 // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -456,6 +553,43 @@ inline void JavaFeatures::_internal_set_use_old_outer_classname_default(bool val
   _impl_.use_old_outer_classname_default_ = value;
 }
 
+// optional .pb.JavaFeatures.NestInFileClass nest_in_file_class = 5 [retention =
+// RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_MESSAGE,
+// targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults =
+// {
+inline bool JavaFeatures::has_nest_in_file_class() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline void JavaFeatures::clear_nest_in_file_class() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.nest_in_file_class_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline ::pb::JavaFeatures_NestInFileClass JavaFeatures::nest_in_file_class()
+    const {
+  // @@protoc_insertion_point(field_get:pb.JavaFeatures.nest_in_file_class)
+  return _internal_nest_in_file_class();
+}
+inline void JavaFeatures::set_nest_in_file_class(
+    ::pb::JavaFeatures_NestInFileClass value) {
+  _internal_set_nest_in_file_class(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
+  // @@protoc_insertion_point(field_set:pb.JavaFeatures.nest_in_file_class)
+}
+inline ::pb::JavaFeatures_NestInFileClass
+JavaFeatures::_internal_nest_in_file_class() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::pb::JavaFeatures_NestInFileClass>(
+      _impl_.nest_in_file_class_);
+}
+inline void JavaFeatures::_internal_set_nest_in_file_class(
+    ::pb::JavaFeatures_NestInFileClass value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  assert(::pb::JavaFeatures_NestInFileClass_IsValid(value));
+  _impl_.nest_in_file_class_ = value;
+}
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
@@ -470,8 +604,16 @@ namespace protobuf {
 template <>
 struct is_proto_enum<::pb::JavaFeatures_Utf8Validation> : std::true_type {};
 template <>
-inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::JavaFeatures_Utf8Validation>() {
+inline const EnumDescriptor*
+GetEnumDescriptor<::pb::JavaFeatures_Utf8Validation>() {
   return ::pb::JavaFeatures_Utf8Validation_descriptor();
+}
+template <>
+struct is_proto_enum<::pb::JavaFeatures_NestInFileClass> : std::true_type {};
+template <>
+inline const EnumDescriptor*
+GetEnumDescriptor<::pb::JavaFeatures_NestInFileClass>() {
+  return ::pb::JavaFeatures_NestInFileClass_descriptor();
 }
 
 }  // namespace protobuf
