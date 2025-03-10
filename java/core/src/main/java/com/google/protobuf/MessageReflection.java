@@ -146,8 +146,38 @@ class MessageReflection {
     return result.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private static void findMissingFields(
       final MessageOrBuilder message, final String prefix, final List<String> results) {
+
+    try {
+      // Proto1 MessageSet does not support reflection, so we just let it handle the missing fields
+      // itself, and append the errors to the results.
+      Class<?> messageSetClass = Class.forName("com.google.io.protocol.MessageSet");
+      if (messageSetClass.isInstance(message)) {
+        List<String> errors =
+            (List<String>)
+                messageSetClass
+                    .getMethod("findInitializationErrors", String.class)
+                    .invoke(message, prefix);
+        if (errors != null) {
+          results.addAll(errors);
+        }
+        return;
+      }
+
+      // Since RawMessage's isInitialized() method is always true, and getDescriptorForType() is not
+      // supported for RawMessage, catch it here and return no init errors.
+      Class<?> rawMessageClass = Class.forName("com.google.io.protocol.RawMessage");
+      if (rawMessageClass.isInstance(message)) {
+        return;
+      }
+    } catch (ClassNotFoundException e) {
+      // Do nothing.
+    } catch (ReflectiveOperationException e) {
+      throw new IllegalStateException(e);
+    }
+
     for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
       if (field.isRequired() && !message.hasField(field)) {
         results.add(prefix + field.getName());
