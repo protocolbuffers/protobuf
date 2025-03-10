@@ -128,6 +128,27 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
         response.set_parse_error("parse error (no more details available)");
         return response;
       }
+      if (descriptor == TestAllTypesEdition2023::descriptor() &&
+          static_cast<const TestAllTypesEdition2023*>(test_message.get())
+                  ->optional_nested_message()
+                  .a() == 99) {
+        response.set_skipped("skipped");
+        return response;
+      }
+      if (descriptor == TestAllTypesEdition2023::descriptor() &&
+          static_cast<const TestAllTypesEdition2023*>(test_message.get())
+                  ->optional_nested_message()
+                  .a() == 87) {
+        response.set_parse_error("parse error");
+        return response;
+      }
+      if (descriptor == TestAllTypesEdition2023::descriptor() &&
+          static_cast<const TestAllTypesEdition2023*>(test_message.get())
+                  ->optional_nested_message()
+                  .a() == 666) {
+        response.set_protobuf_payload("\016");
+        return response;
+      }
       break;
     }
 

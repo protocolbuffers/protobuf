@@ -56,7 +56,7 @@ class FailureListTrieNode {
   absl::optional<std::string> WalkDownMatch(absl::string_view test_name);
 
  private:
-  absl::string_view data_;
+  std::string data_;
   std::vector<std::unique_ptr<FailureListTrieNode>> children_;
   bool is_test_name_;
   void InsertImpl(absl::string_view test_name);
