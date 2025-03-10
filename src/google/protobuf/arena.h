@@ -319,7 +319,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                   // Max rounded down to the 8 byte alignment.
                   (std::numeric_limits<size_t>::max() & ~7) / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+    if (ABSL_PREDICT_FALSE(num_elements == 0)) {
+      // For zero-sized arrays, `new` returns non-null, but
+      // `AllocateAlignedForArray()` returns null. Normalize to the latter.
+      return nullptr;
+    } else if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T[num_elements];
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
