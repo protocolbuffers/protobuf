@@ -1349,13 +1349,54 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void writeUInt32NoTag(int value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        while (true) {
+        if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT32_SIZE) {
+          final long address = UnsafeUtil.addressOffset(buffer) + position;
+          if ((value & (0xFFFFFFFF << 7)) == 0) {
+            UnsafeUtil.putByte(address, (byte) value);
+            position++;
+          } else if ((value & (0xFFFFFFFF << 14)) == 0) {
+            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
+            UnsafeUtil.putShort(address, (short) w);
+            position += 2;
+          } else if ((value & (0xFFFFFFFF << 21)) == 0) {
+            int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
+            UnsafeUtil.putByte(address, (byte) (w >>> 16));
+            UnsafeUtil.putShort(address + 1L, (short) w);
+            position += 3;
+          } else if ((value & (0xFFFFFFFF << 28)) == 0) {
+            int w = (value & 0x7F | 0x80) << 24 | (((value >>> 7) & 0x7F | 0x80) << 16)
+                | ((value >>> 14) & 0x7F | 0x80) << 8 | (value >>> 21);
+            UnsafeUtil.putInt(address, w);
+            position += 4;
+          } else {
+            int w = (value & 0x7F | 0x80) << 24 | ((value >>> 7) & 0x7F | 0x80) << 16 | ((value >>> 14) & 0x7F | 0x80) << 8
+                | ((value >>> 21) & 0x7F | 0x80);
+            UnsafeUtil.putInt(address, w);
+            UnsafeUtil.putByte(address + 4L, (byte) (value >>> 28));
+            position += 5;
+          }
+        } else {
+          // Fallback implementation (using regular array access)
           if ((value & ~0x7F) == 0) {
             buffer[position++] = (byte) value;
-            break;
+          } else if ((value & ~0x3FFF) == 0) {
+            buffer[position++] = (byte) (value | 0x80);
+            buffer[position++] = (byte) (value >>> 7);
+          } else if ((value & ~0x1FFFFF) == 0) {
+            buffer[position++] = (byte) (value | 0x80);
+            buffer[position++] = (byte) ((value >>> 7) | 0x80);
+            buffer[position++] = (byte) (value >>> 14);
+          } else if ((value & ~0xFFFFFFF) == 0) {
+            buffer[position++] = (byte) (value | 0x80);
+            buffer[position++] = (byte) ((value >>> 7) | 0x80);
+            buffer[position++] = (byte) ((value >>> 14) | 0x80);
+            buffer[position++] = (byte) (value >>> 21);
           } else {
             buffer[position++] = (byte) (value | 0x80);
-            value >>>= 7;
+            buffer[position++] = (byte) ((value >>> 7) | 0x80);
+            buffer[position++] = (byte) ((value >>> 14) | 0x80);
+            buffer[position++] = (byte) ((value >>> 21) | 0x80);
+            buffer[position++] = (byte) (value >>> 28);
           }
         }
       } catch (IndexOutOfBoundsException e) {
