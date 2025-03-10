@@ -40,7 +40,9 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_rust", version = "0.51.0")
-bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency=True)
+
+bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
+
 # Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
 # Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
 # delete Disable_bundle_install.patch and single_version_override() below.
@@ -52,11 +54,12 @@ single_version_override(
     ],
     version = "0.17.3",
 )
+
 bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 
 # Ruby toolchains
-ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency=True)
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency = True)
 ruby.toolchain(
     name = "ruby",
     version = "system",
@@ -74,13 +77,17 @@ ruby.bundle_fetch(
         "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
         "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
         "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
-        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221"
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221",
     },
     gemfile = "//ruby:Gemfile",
     gemfile_lock = "//ruby:Gemfile.lock",
 )
 use_repo(ruby, "protobuf_bundle", "ruby_toolchains")
-register_toolchains("@ruby_toolchains//:all", dev_dependency=True)
+
+register_toolchains(
+    "@ruby_toolchains//:all",
+    dev_dependency = True,
+)
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
@@ -105,6 +112,11 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
+
+use_repo(
+    python,
+    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+)
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
