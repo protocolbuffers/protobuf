@@ -184,6 +184,7 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
 
 void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit(
       {{"new_thunk", ThunkName(ctx, msg, "new")},
        {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
@@ -1155,7 +1156,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
+
+    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+             R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
             msg: &'a mut *mut $std$::ffi::c_void) -> Self {
