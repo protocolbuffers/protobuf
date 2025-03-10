@@ -1847,6 +1847,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -1863,6 +1864,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -1879,6 +1881,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       }
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] {}
       }
     }
@@ -1892,6 +1895,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
         [pb.test] { file_feature: VALUE2 }
       }
       fixed_features {
@@ -1908,6 +1912,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
         [pb.test] { file_feature: VALUE3 }
       }
       fixed_features {
