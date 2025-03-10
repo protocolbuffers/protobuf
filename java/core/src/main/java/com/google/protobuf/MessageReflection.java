@@ -100,6 +100,18 @@ class MessageReflection {
 
   @SuppressWarnings("unchecked")
   static boolean isInitialized(MessageOrBuilder message) {
+
+    // Java proto1 does not check required fields for ExtendableProtocolMessage.
+    try {
+      Class<?> extendableProtocolMessageClass =
+          Class.forName("com.google.io.protocol.ExtendableProtocolMessage");
+      if (extendableProtocolMessageClass.isInstance(message)) {
+        return true;
+      }
+    } catch (ClassNotFoundException e) {
+      // Do nothing.
+    }
+
     // Check that all required fields are present.
     for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
       if (field.isRequired()) {
@@ -146,8 +158,39 @@ class MessageReflection {
     return result.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private static void findMissingFields(
       final MessageOrBuilder message, final String prefix, final List<String> results) {
+
+    try {
+      // Proto1 MessageSet does not support reflection, so we just let it handle the missing fields
+      // itself, and append the errors to the results.
+      Class<?> messageSetClass = Class.forName("com.google.io.protocol.MessageSet");
+      if (messageSetClass.isInstance(message)) {
+        List<String> errors = message.findInitializationErrors();
+        for (String error : errors) {
+          results.add(prefix + error);
+        }
+        return;
+      }
+
+      // Java proto1 does not check required fields for ExtendableProtocolMessage.
+      Class<?> extendableProtocolMessageClass =
+          Class.forName("com.google.io.protocol.ExtendableProtocolMessage");
+      if (extendableProtocolMessageClass.isInstance(message)) {
+        return;
+      }
+
+      // Since RawMessage's isInitialized() method is always true, and getDescriptorForType() is not
+      // supported for RawMessage, catch it here and return no init errors.
+      Class<?> rawMessageClass = Class.forName("com.google.io.protocol.RawMessage");
+      if (rawMessageClass.isInstance(message)) {
+        return;
+      }
+    } catch (ClassNotFoundException e) {
+      // Do nothing.
+    }
+
     for (final Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
       if (field.isRequired() && !message.hasField(field)) {
         results.add(prefix + field.getName());
