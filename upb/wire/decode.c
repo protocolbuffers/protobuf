@@ -1208,17 +1208,6 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_ReverseSkipVarint(const char* ptr,
-                                                  uint32_t val) {
-  uint32_t seen = 0;
-  do {
-    ptr--;
-    seen <<= 7;
-    seen |= *ptr & 0x7f;
-  } while (seen != val);
-  return ptr;
-}
-
 static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
                                                    const char* ptr,
                                                    upb_Message* msg,
@@ -1238,7 +1227,9 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
     switch (wire_type) {
       case kUpb_WireType_Varint:
       case kUpb_WireType_Delimited:
+        // Skip the last byte
         start--;
+        // Skip bytes until we encounter the final byte of the tag varint.
         while (start[-1] & 0x80) start--;
         break;
       case kUpb_WireType_32Bit:
@@ -1252,8 +1243,23 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
     }
 
     assert(start == d->debug_valstart);
-    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-    start = _upb_Decoder_ReverseSkipVarint(start, tag);
+    {
+      // The varint parser does not enforce that integers are encoded with their
+      // minimum size; for example the value 1 could be encoded with three
+      // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
+      // cannot skip backwards by the minimum encoded size of the tag; and
+      // unlike the loop for delimited or varint fields, we can't stop at a
+      // sentinel value because anything can precede a tag. Instead, parse back
+      // one byte at a time until we read the same tag value that was parsed
+      // earlier.
+      uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
+      uint32_t seen = 0;
+      do {
+        start--;
+        seen <<= 7;
+        seen |= *start & 0x7f;
+      } while (seen != tag);
+    }
     assert(start == d->debug_tagstart);
 
     const char* input_start =
