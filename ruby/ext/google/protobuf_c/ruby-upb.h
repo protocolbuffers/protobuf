@@ -68,6 +68,10 @@ Error, UINTPTR_MAX is undefined
 #define UPB_SIZEOF_FLEX(type, member, count) \
   UPB_MAX(sizeof(type), offsetof(type, member[count]))
 
+#define UPB_SIZEOF_FLEX_WOULD_OVERFLOW(type, member, count) \
+  (((SIZE_MAX - offsetof(type, member[0])) /                \
+    (offsetof(type, member[1]) - offsetof(type, member[0]))) < (size_t)count)
+
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.
@@ -15982,6 +15986,7 @@ google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
 #undef UPB_SIZE
 #undef UPB_PTR_AT
 #undef UPB_SIZEOF_FLEX
+#undef UPB_SIZEOF_FLEX_WOULD_OVERFLOW
 #undef UPB_MAPTYPE_STRING
 #undef UPB_EXPORT
 #undef UPB_INLINE
