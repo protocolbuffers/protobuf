@@ -1199,7 +1199,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 - (void)dealloc {
   [self internalClear:NO];
   NSCAssert(!autocreator_, @"Autocreator was not cleared before dealloc.");
-  [super dealloc];
 }
 
 - (void)copyFieldsInto:(GPBMessage *)message
@@ -1320,80 +1319,82 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 }
 
 - (void)internalClear:(BOOL)zeroStorage {
-  GPBDescriptor *descriptor = [self descriptor];
-  for (GPBFieldDescriptor *field in descriptor->fields_) {
-    if (GPBFieldIsMapOrArray(field)) {
-      id arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-      if (arrayOrMap) {
-        if (field.fieldType == GPBFieldTypeRepeated) {
-          if (GPBFieldDataTypeIsObject(field)) {
-            if ([arrayOrMap isKindOfClass:[GPBAutocreatedArray class]]) {
-              GPBAutocreatedArray *autoArray = arrayOrMap;
-              if (autoArray->_autocreator == self) {
-                autoArray->_autocreator = nil;
+  @synchronized(self) {
+    GPBDescriptor *descriptor = [self descriptor];
+    for (GPBFieldDescriptor *field in descriptor->fields_) {
+      if (GPBFieldIsMapOrArray(field)) {
+        id arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        if (arrayOrMap) {
+          if (field.fieldType == GPBFieldTypeRepeated) {
+            if (GPBFieldDataTypeIsObject(field)) {
+              if ([arrayOrMap isKindOfClass:[GPBAutocreatedArray class]]) {
+                GPBAutocreatedArray *autoArray = arrayOrMap;
+                if (autoArray->_autocreator == self) {
+                  autoArray->_autocreator = nil;
+                }
+              }
+            } else {
+              // Type doesn't matter, it is a GPB*Array.
+              GPBInt32Array *gpbArray = arrayOrMap;
+              if (gpbArray->_autocreator == self) {
+                gpbArray->_autocreator = nil;
               }
             }
           } else {
-            // Type doesn't matter, it is a GPB*Array.
-            GPBInt32Array *gpbArray = arrayOrMap;
-            if (gpbArray->_autocreator == self) {
-              gpbArray->_autocreator = nil;
-            }
-          }
-        } else {
-          if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
-            if ([arrayOrMap isKindOfClass:[GPBAutocreatedDictionary class]]) {
-              GPBAutocreatedDictionary *autoDict = arrayOrMap;
-              if (autoDict->_autocreator == self) {
-                autoDict->_autocreator = nil;
+            if ((field.mapKeyDataType == GPBDataTypeString) && GPBFieldDataTypeIsObject(field)) {
+              if ([arrayOrMap isKindOfClass:[GPBAutocreatedDictionary class]]) {
+                GPBAutocreatedDictionary *autoDict = arrayOrMap;
+                if (autoDict->_autocreator == self) {
+                  autoDict->_autocreator = nil;
+                }
+              }
+            } else {
+              // Type doesn't matter, it is a GPB*Dictionary.
+              GPBInt32Int32Dictionary *gpbDict = arrayOrMap;
+              if (gpbDict->_autocreator == self) {
+                gpbDict->_autocreator = nil;
               }
             }
-          } else {
-            // Type doesn't matter, it is a GPB*Dictionary.
-            GPBInt32Int32Dictionary *gpbDict = arrayOrMap;
-            if (gpbDict->_autocreator == self) {
-              gpbDict->_autocreator = nil;
-            }
           }
+          [arrayOrMap release];
         }
-        [arrayOrMap release];
+      } else if (GPBFieldDataTypeIsMessage(field)) {
+        GPBClearAutocreatedMessageIvarWithField(self, field);
+        GPBMessage *value = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+        [value release];
+      } else if (GPBFieldDataTypeIsObject(field) && GPBGetHasIvarField(self, field)) {
+        id value = GPBGetObjectIvarWithField(self, field);
+        [value release];
       }
-    } else if (GPBFieldDataTypeIsMessage(field)) {
-      GPBClearAutocreatedMessageIvarWithField(self, field);
-      GPBMessage *value = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-      [value release];
-    } else if (GPBFieldDataTypeIsObject(field) && GPBGetHasIvarField(self, field)) {
-      id value = GPBGetObjectIvarWithField(self, field);
-      [value release];
     }
-  }
 
-  // GPBClearMessageAutocreator() expects that its caller has already been
-  // removed from autocreatedExtensionMap_ so we set to nil first.
-  NSArray *autocreatedValues = [autocreatedExtensionMap_ allValues];
-  [autocreatedExtensionMap_ release];
-  autocreatedExtensionMap_ = nil;
+    // GPBClearMessageAutocreator() expects that its caller has already been
+    // removed from autocreatedExtensionMap_ so we set to nil first.
+    NSArray *autocreatedValues = [autocreatedExtensionMap_ allValues];
+    [autocreatedExtensionMap_ release];
+    autocreatedExtensionMap_ = nil;
 
-  // Since we're clearing all of our extensions, make sure that we clear the
-  // autocreator on any that we've created so they no longer refer to us.
-  for (GPBMessage *value in autocreatedValues) {
-    NSCAssert(GPBWasMessageAutocreatedBy(value, self),
-              @"Autocreated extension does not refer back to self.");
-    GPBClearMessageAutocreator(value);
-  }
+    // Since we're clearing all of our extensions, make sure that we clear the
+    // autocreator on any that we've created so they no longer refer to us.
+    for (GPBMessage *value in autocreatedValues) {
+      NSCAssert(GPBWasMessageAutocreatedBy(value, self),
+                @"Autocreated extension does not refer back to self.");
+      GPBClearMessageAutocreator(value);
+    }
 
-  [extensionMap_ release];
-  extensionMap_ = nil;
-  [unknownFieldData_ release];
-  unknownFieldData_ = nil;
+    [extensionMap_ release];
+    extensionMap_ = nil;
+    [unknownFieldData_ release];
+    unknownFieldData_ = nil;
 
-  // Note that clearing does not affect autocreator_. If we are being cleared
-  // because of a dealloc, then autocreator_ should be nil anyway. If we are
-  // being cleared because someone explicitly clears us, we don't want to
-  // sever our relationship with our autocreator.
+    // Note that clearing does not affect autocreator_. If we are being cleared
+    // because of a dealloc, then autocreator_ should be nil anyway. If we are
+    // being cleared because someone explicitly clears us, we don't want to
+    // sever our relationship with our autocreator.
 
-  if (zeroStorage) {
-    memset(messageStorage_, 0, descriptor->storageSize_);
+    if (zeroStorage) {
+      memset(messageStorage_, 0, descriptor->storageSize_);
+    }
   }
 }
 
