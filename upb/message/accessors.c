@@ -7,15 +7,12 @@
 
 #include "upb/message/accessors.h"
 
-#include <string.h>
-
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -33,12 +30,9 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* m,
       upb_MiniTable_MapValue(map_entry_mini_table);
   // Map key/value cannot have explicit defaults,
   // hence assuming a zero default is valid.
-  upb_MessageValue default_key;
-  memset(&default_key, 0, map->key_size);
-  upb_MessageValue default_val;
-  memset(&default_val, 0, map->val_size);
+  upb_MessageValue default_val = upb_MessageValue_Zero();
   upb_MessageValue map_entry_key =
-      upb_Message_GetField(map_entry_message, map_entry_key_field, default_key);
+      upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
   upb_MessageValue map_entry_value = upb_Message_GetField(
       map_entry_message, map_entry_value_field, default_val);
   return upb_Map_Set(map, map_entry_key, map_entry_value, arena);
