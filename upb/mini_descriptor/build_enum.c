@@ -30,7 +30,7 @@ typedef struct {
   uint32_t enum_data_capacity;
 } upb_MdEnumDecoder;
 
-static size_t upb_MiniTableEnum_Size(size_t count) {
+static size_t upb_MiniTableEnum_Size(uint32_t count) {
   return UPB_SIZEOF_FLEX(upb_MiniTableEnum, UPB_PRIVATE(data), count);
 }
 
@@ -38,10 +38,18 @@ static upb_MiniTableEnum* _upb_MiniTable_AddEnumDataMember(upb_MdEnumDecoder* d,
                                                            uint32_t val) {
   if (d->enum_data_count == d->enum_data_capacity) {
     size_t old_sz = upb_MiniTableEnum_Size(d->enum_data_capacity);
-    d->enum_data_capacity = UPB_MAX(2, d->enum_data_capacity * 2);
-    size_t new_sz = upb_MiniTableEnum_Size(d->enum_data_capacity);
+    if (d->enum_data_capacity > UINT32_MAX / 2) {
+      upb_MdDecoder_ErrorJmp(&d->base, "Out of memory");
+    }
+    uint32_t new_capacity = UPB_MAX(2, d->enum_data_capacity * 2);
+    if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_MiniTableEnum, UPB_PRIVATE(data),
+                                       new_capacity)) {
+      upb_MdDecoder_ErrorJmp(&d->base, "Out of memory");
+    }
+    size_t new_sz = upb_MiniTableEnum_Size(new_capacity);
     d->enum_table = upb_Arena_Realloc(d->arena, d->enum_table, old_sz, new_sz);
     upb_MdDecoder_CheckOutOfMemory(&d->base, d->enum_table);
+    d->enum_data_capacity = new_capacity;
   }
   d->enum_table->UPB_PRIVATE(data)[d->enum_data_count++] = val;
   return d->enum_table;
@@ -122,6 +130,7 @@ static upb_MiniTableEnum* upb_MtDecoder_BuildMiniTableEnum(
 upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
                                            upb_Arena* arena,
                                            upb_Status* status) {
+  uint32_t initial_capacity = 2;
   upb_MdEnumDecoder decoder = {
       .base =
           {
@@ -129,10 +138,11 @@ upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
               .status = status,
           },
       .arena = arena,
-      .enum_table = upb_Arena_Malloc(arena, upb_MiniTableEnum_Size(2)),
+      .enum_table =
+          upb_Arena_Malloc(arena, upb_MiniTableEnum_Size(initial_capacity)),
       .enum_value_count = 0,
       .enum_data_count = 0,
-      .enum_data_capacity = 1,
+      .enum_data_capacity = initial_capacity,
   };
 
   return upb_MtDecoder_BuildMiniTableEnum(&decoder, data, len);
