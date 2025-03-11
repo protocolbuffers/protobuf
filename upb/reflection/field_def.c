@@ -290,7 +290,8 @@ uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
     out |= kUpb_FieldModifier_IsRepeated;
   } else if (upb_FieldDef_IsRequired(f)) {
     out |= kUpb_FieldModifier_IsRequired;
-  } else if (!upb_FieldDef_HasPresence(f)) {
+  } else if (!upb_MessageDef_IsMapEntry(f->msgdef) &&
+             !upb_FieldDef_HasPresence(f)) {
     out |= kUpb_FieldModifier_IsProto3Singular;
   }
 
@@ -723,7 +724,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   }
 
   f->has_presence =
-      (!upb_FieldDef_IsRepeated(f)) &&
+      !upb_FieldDef_IsRepeated(f) && !(m && upb_MessageDef_IsMapEntry(m)) &&
       (f->is_extension ||
        (f->type_ == kUpb_FieldType_Message ||
         f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
@@ -848,13 +849,14 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
           f->type_ = kUpb_FieldType_Message;
           // TODO: remove once we can deprecate
           // kUpb_FieldType_Group.
-          if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-                  UPB_DESC(FeatureSet_DELIMITED) &&
-              !upb_MessageDef_IsMapEntry(def) &&
-              !(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
-            f->type_ = kUpb_FieldType_Group;
+          if (!(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
+            if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+                    UPB_DESC(FeatureSet_DELIMITED) &&
+                !upb_MessageDef_IsMapEntry(def)) {
+              f->type_ = kUpb_FieldType_Group;
+            }
+            f->has_presence = !upb_FieldDef_IsRepeated(f);
           }
-          f->has_presence = !upb_FieldDef_IsRepeated(f);
           break;
         default:
           _upb_DefBuilder_Errf(ctx, "Couldn't resolve type name for field %s",
