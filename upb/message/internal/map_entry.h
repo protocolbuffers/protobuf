@@ -23,9 +23,7 @@
 
 typedef struct {
   struct upb_Message message;
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
+  // No hasbits
   union {
     upb_StringView str;  // For str/bytes.
     upb_value val;       // For all other types.

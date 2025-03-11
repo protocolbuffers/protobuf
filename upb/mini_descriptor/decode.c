@@ -660,12 +660,9 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
 static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
                                    size_t len) {
   upb_MtDecoder_ParseMessage(d, data, len);
-  upb_MtDecoder_AssignHasbits(d);
-
   if (UPB_UNLIKELY(d->table->UPB_PRIVATE(field_count) != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
                            d->table->UPB_PRIVATE(field_count));
-    UPB_UNREACHABLE();
   }
 
   if (d->oneofs.size != 0) {
@@ -674,10 +671,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
 
   upb_MtDecoder_ValidateEntryField(d, &d->table->UPB_PRIVATE(fields)[0], 1);
   upb_MtDecoder_ValidateEntryField(d, &d->table->UPB_PRIVATE(fields)[1], 2);
-
+  // Drop has bits, map entries don't need them
+  d->fields[0].presence = 0;
+  d->fields[1].presence = 0;
   d->fields[0].UPB_PRIVATE(offset) = offsetof(upb_MapEntry, k);
   d->fields[1].UPB_PRIVATE(offset) = offsetof(upb_MapEntry, v);
   d->table->UPB_PRIVATE(size) = sizeof(upb_MapEntry);
+  d->table->UPB_PRIVATE(required_count) = 0;
 
   // Map entries have a special bit set to signal it's a map entry, used in
   // upb_MiniTable_SetSubMessage() below.
