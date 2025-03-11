@@ -1859,7 +1859,7 @@ struct upb_MiniTableField {
   uint8_t UPB_ONLYBITS(mode);
 };
 
-#define kUpb_NoSub ((uint16_t) - 1)
+#define kUpb_NoSub ((uint16_t)-1)
 
 typedef enum {
   kUpb_FieldMode_Map = 0,
@@ -1964,14 +1964,14 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
 UPB_INLINE char UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const size_t index = f->presence;
+  const uint16_t index = f->presence;
   return 1 << (index % 8);
 }
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
+UPB_INLINE uint16_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const size_t index = f->presence;
+  const uint16_t index = f->presence;
   return index / 8;
 }
 
@@ -3864,7 +3864,7 @@ extern "C" {
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
   return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
@@ -3872,7 +3872,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
   (*UPB_PTR_AT(msg, offset, char)) |= mask;
@@ -3880,7 +3880,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
   (*UPB_PTR_AT(msg, offset, char)) &= ~mask;
