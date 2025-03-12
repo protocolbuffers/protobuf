@@ -305,6 +305,7 @@ class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
 
+
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
 // if the total size was > INT_MAX, it is not important what this function
