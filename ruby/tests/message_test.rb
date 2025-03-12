@@ -10,10 +10,10 @@ class MessageTest < Test::Unit::TestCase
     sub_message = X::Y::Z::MyOtherMessage.create(1, 2)
     message = X::Y::Z::MyMessage.create(
       123,
-      nil,
-      nil,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
       456,
-      nil,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
       sub_message,
       ["hello", "world"],
       { "key" => 321 },
@@ -30,5 +30,30 @@ class MessageTest < Test::Unit::TestCase
     assert_equal 1, message.sub_messages.first.b
     assert_equal 1, message.sub_messages.last.a
     assert_equal 2, message.sub_messages.last.b
+  end
+
+  def test_not_provided
+    message = X::Y::Z::MyMessage.create(
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+      ::Google::Protobuf::VALUE_NOT_PROVIDED,
+    )
+
+    assert_equal 0, message.optional_int32
+    assert_equal "", message.a
+    assert_equal 0, message.b
+    assert_equal 0, message.c
+    assert_equal 0.0, message.d
+
+    assert_nil message.sub_message
+    assert_equal [], message.strings
+    assert_equal({}, message.a_map.to_h)
+    assert_equal [], message.sub_messages
   end
 end

@@ -17,6 +17,7 @@
 static VALUE cParseError = Qnil;
 static VALUE cAbstractMessage = Qnil;
 static ID descriptor_instancevar_interned;
+static VALUE not_provided = Qnil;
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
   return rb_funcall(klass, rb_intern("new"), 0);
@@ -715,6 +716,10 @@ static VALUE Message_create(int argc, VALUE* argv, VALUE klass_rb) {
   Message_InitPtr(message_rb, message_upb, arena_rb);
 
   for (int i = 0; i < argc; i++) {
+    if(argv[i] == not_provided) {
+      continue;
+    }
+
     const upb_FieldDef* f = upb_MessageDef_Field(message->msgdef, i);
 
     Message_InitFieldFromValue(message_upb, f, argv[i], arena);
@@ -1457,6 +1462,11 @@ void Message_register(VALUE protobuf) {
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
   cAbstractMessage =
       rb_define_class_under(protobuf, "AbstractMessage", rb_cObject);
+
+  not_provided = rb_class_new_instance(0, NULL, rb_cObject);
+
+  rb_const_set(protobuf, rb_intern("VALUE_NOT_PROVIDED"), not_provided);
+
   Message_define_class(cAbstractMessage);
   rb_gc_register_address(&cAbstractMessage);
 
