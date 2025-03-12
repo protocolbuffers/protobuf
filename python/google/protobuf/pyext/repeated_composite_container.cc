@@ -418,6 +418,17 @@ static PyObject* Reverse(PyObject* pself) {
 }
 
 // ---------------------------------------------------------------------
+static PyObject* Clear(PyObject* pself) {
+  RepeatedCompositeContainer* self =
+      reinterpret_cast<RepeatedCompositeContainer*>(pself);
+  CMessage* cmessage = self->parent;
+  Message* message = cmessage->message;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  const Reflection* reflection = message->GetReflection();
+  Py_ssize_t length = reflection->FieldSize(*message, field_descriptor);
+  cmessage::DeleteLastRepeatedWithSize(cmessage, field_descriptor, length);
+  Py_RETURN_NONE;
+}
 
 static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   RepeatedCompositeContainer* self =
@@ -511,6 +522,8 @@ static PyMethodDef Methods[] = {
      "Sorts the repeated container."},
     {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", reinterpret_cast<PyCFunction>(Clear), METH_NOARGS,
+     "Clears the repeated container."},
     {"MergeFrom", MergeFromMethod, METH_O,
      "Adds objects to the repeated container."},
     {nullptr, nullptr}};

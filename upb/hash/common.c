@@ -684,16 +684,17 @@ static void check(upb_inttable* t) {
 #endif
 }
 
-bool upb_inttable_sizedinit(upb_inttable* t, size_t asize, int hsize_lg2,
+bool upb_inttable_sizedinit(upb_inttable* t, uint32_t asize, int hsize_lg2,
                             upb_Arena* a) {
-  size_t array_bytes;
-
   if (!init(&t->t, hsize_lg2, a)) return false;
   /* Always make the array part at least 1 long, so that we know key 0
    * won't be in the hash part, which simplifies things. */
   t->array_size = UPB_MAX(1, asize);
   t->array_count = 0;
-  array_bytes = t->array_size * sizeof(upb_value);
+  if (SIZE_MAX / sizeof(upb_value) < t->array_size) {
+    return false;
+  }
+  size_t array_bytes = t->array_size * sizeof(upb_value);
   t->array = upb_Arena_Malloc(a, array_bytes);
   if (!t->array) {
     return false;
@@ -779,7 +780,7 @@ bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
   return success;
 }
 
-void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
+bool upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
   /* A power-of-two histogram of the table keys. */
   size_t counts[UPB_MAXARRSIZE + 1] = {0};
 
@@ -823,7 +824,9 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
     size_t hash_size = hash_count ? _upb_entries_needed_for(hash_count) : 0;
     int hashsize_lg2 = log2ceil(hash_size);
 
-    upb_inttable_sizedinit(&new_t, arr_size, hashsize_lg2, a);
+    if (!upb_inttable_sizedinit(&new_t, arr_size, hashsize_lg2, a)) {
+      return false;
+    }
 
     {
       intptr_t iter = UPB_INTTABLE_BEGIN;
@@ -837,6 +840,7 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
     UPB_ASSERT(new_t.array_size == arr_size);
   }
   *t = new_t;
+  return true;
 }
 
 void upb_inttable_clear(upb_inttable* t) {

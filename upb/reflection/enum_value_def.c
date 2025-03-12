@@ -7,12 +7,16 @@
 
 #include "upb/reflection/internal/enum_value_def.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/enum_def.h"
 #include "upb/reflection/enum_value_def.h"
-#include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/enum_def.h"
 
@@ -41,7 +45,8 @@ static int _upb_EnumValueDef_Compare(const void* p1, const void* p2) {
 }
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
-                                                   int n, upb_Arena* a) {
+                                                   size_t n, upb_Arena* a) {
+  if (SIZE_MAX / sizeof(void*) < n) return NULL;
   // TODO: Try to replace this arena alloc with a persistent scratch buffer.
   upb_EnumValueDef** out =
       (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
