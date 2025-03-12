@@ -6000,6 +6000,9 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                                        size_t len) {
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
+  if (SIZE_MAX / sizeof(*d->fields) < len) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Out of memory");
+  }
   d->fields = upb_Arena_Malloc(d->arena, sizeof(*d->fields) * len);
   upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
 
@@ -13944,7 +13947,9 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 }
 
 
+#include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 
 // Must be last.
@@ -13971,7 +13976,8 @@ static int _upb_EnumValueDef_Compare(const void* p1, const void* p2) {
 }
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
-                                                   int n, upb_Arena* a) {
+                                                   size_t n, upb_Arena* a) {
+  if (SIZE_MAX / sizeof(void*) < n) return NULL;
   // TODO: Try to replace this arena alloc with a persistent scratch buffer.
   upb_EnumValueDef** out =
       (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
