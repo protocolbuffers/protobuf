@@ -2746,10 +2746,10 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 // Must be last.
 
 typedef struct {
-  upb_table t;              // For entries that don't fit in the array part.
-  const upb_value* array;   // Array part of the table. See const note above.
-  size_t array_size;        // Array part size.
-  size_t array_count;       // Array part number of elements.
+  upb_table t;             // For entries that don't fit in the array part.
+  const upb_value* array;  // Array part of the table. See const note above.
+  uint32_t array_size;     // Array part size.
+  uint32_t array_count;    // Array part number of elements.
 } upb_inttable;
 
 #ifdef __cplusplus
