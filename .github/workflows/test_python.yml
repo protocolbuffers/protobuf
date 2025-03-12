@@ -29,15 +29,17 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        # TODO: Enable bzlmod once python headers are supported for python dist.
-        bzlmod: [--noenable_bzlmod]
+        # TODO: Enable bzlmod once python headers are supported for python dist and C++
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
-            flags: --define=use_fast_cpp_protos=false
+            # Exclude//python/dist/... which breaks due to python headers for upb / C++ and doesn't benefit from extra coverage with flags for different impls.
+            flags: --define=use_fast_cpp_protos=false --build_tag_filters=-//python/dist/...
+            bzlmod: --enable_bzlmod
           - type: C++
-            targets: //python/... //python:python_version_test
+            targets: //python/...  //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
+            bzlmod: --noenable_bzlmod
           - version: "3.9"
           - version: "3.10"
             continuous-only: true
