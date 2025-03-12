@@ -285,7 +285,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
-  upb_inttable_compact(&e->iton, ctx->arena);
+  if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {

@@ -60,7 +60,8 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // Optimizes the table for the current set of entries, for both memory use and
 // lookup time. Client should call this after all entries have been inserted;
 // inserting more entries is legal, but will likely require a table resize.
-void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+// Returns false if reallocation fails.
+bool upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 
 // Clears the table.
 void upb_inttable_clear(upb_inttable* t);
