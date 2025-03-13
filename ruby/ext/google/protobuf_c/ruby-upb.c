@@ -7374,6 +7374,32 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   return ret;
 }
 
+UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
+    upb_Decoder* d, upb_Message* msg, const upb_MiniTableField* field,
+    upb_Message* ent_msg, const upb_MiniTable* entry) {
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      upb_Encode(ent_msg, entry, 0, &d->arena, &buf, &size);
+  if (status != kUpb_EncodeStatus_Ok) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+  char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
+  char* delim_end = delim_buf;
+  uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
+  delim_end = upb_Decoder_EncodeVarint32(tag, delim_end);
+  delim_end = upb_Decoder_EncodeVarint32(size, delim_end);
+  upb_StringView unknown[] = {
+      {delim_buf, delim_end - delim_buf},
+      {buf, size},
+  };
+
+  if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 2)) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+}
+
 static const char* _upb_Decoder_DecodeToMap(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field,
@@ -7411,27 +7437,7 @@ static const char* _upb_Decoder_DecodeToMap(
   ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, subs, field,
                                       val->size);
   if (upb_Message_HasUnknown(&ent.message)) {
-    char* buf;
-    size_t size;
-    uint32_t tag =
-        ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
-    upb_EncodeStatus status =
-        upb_Encode(&ent.message, entry, 0, &d->arena, &buf, &size);
-    if (status != kUpb_EncodeStatus_Ok) {
-      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    }
-    char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-    char* delim_end = delim_buf;
-    delim_end = upb_Decoder_EncodeVarint32(tag, delim_end);
-    delim_end = upb_Decoder_EncodeVarint32(size, delim_end);
-    upb_StringView unknown[] = {
-        {delim_buf, delim_end - delim_buf},
-        {buf, size},
-    };
-
-    if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 2)) {
-      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    }
+    _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
   } else {
     if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
                         &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
