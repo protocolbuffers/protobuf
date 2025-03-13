@@ -10,8 +10,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,11 +37,17 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "third_party/re2/re2.h"
+#include "thread/threadpool.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 namespace google {
 namespace protobuf {
@@ -481,9 +489,11 @@ absl::Status AnalyzeProfileProtoToText(
   return AnalyzeProfileProto(stream, proto_profile, options).status();
 }
 
-absl::Status AnalyzeAndAggregateProfileProtosToText(
-    std::ostream& stream, absl::string_view root,
-    const AnalyzeProfileProtoOptions& options) {
+namespace {
+
+absl::StatusOr<std::vector<std::string>> FindProtoProfileFiles(
+    absl::string_view root) {
+  std::vector<std::string> paths;
   FileYielder yielder;
   int errors = 0;
   yielder.Start({file::JoinPath(root, "*")}, file::MATCH_DEFAULT,
@@ -491,18 +501,107 @@ absl::Status AnalyzeAndAggregateProfileProtosToText(
   if (errors > 0) {
     return absl::InternalError(absl::StrCat("Failed to traverse path: ", root));
   }
-  Stats merged;
   for (; !yielder.Done(); yielder.Next()) {
     const std::string& full_path = yielder.FullPathName();
-    if (!absl::EndsWith(full_path, "proto.profile")) {
-      continue;
+    if (absl::EndsWith(full_path, "proto.profile")) {
+      paths.push_back(full_path);
     }
-    stream << full_path << std::endl;
-    auto stats = *AnalyzeProfileProto(stream, full_path, options);
-    Aggregate(stats, merged);
   }
-  stream << merged;
-  return absl::OkStatus();
+  return paths;
+}
+
+struct ParallelRunResults {
+  size_t num_done = 0;
+  size_t num_succeeded = 0;
+  size_t num_failed = 0;
+  absl::Status status = absl::OkStatus();
+};
+
+ParallelRunResults RunInParallel(
+    size_t num_runs, size_t num_workers,
+    const std::function<std::string(size_t i)>& get_run_id,
+    const std::function<absl::Status(size_t i)>& do_work) {
+  absl::Mutex mu;
+  ParallelRunResults results;
+  {
+    ThreadPool threads{static_cast<int>(std::min(num_runs, num_workers))};
+    threads.StartWorkers();
+    for (size_t i = 0; i < num_runs; ++i) {
+      threads.Schedule([i, num_runs, get_run_id, do_work, &results, &mu]() {
+        // Asynchronous section.
+        const auto run_id = get_run_id(i);
+        ABSL_LOG(INFO) << "STARTING: " << run_id << " ...";
+        const absl::Time start = absl::Now();
+        const auto status = do_work(i);
+        const absl::Duration duration = absl::Now() - start;
+
+        // Synchronous section.
+        absl::MutexLock lock(&mu);
+        ++results.num_done;
+        ++(status.ok() ? results.num_succeeded : results.num_failed);
+        results.status.Update(status);
+        ABSL_LOG(INFO) << "FINISHED " << results.num_done << " OF " << num_runs
+                       << " (" << (status.ok() ? "SUCCESS IN " : "FAILURE IN ")
+                       << duration << "): " << run_id;
+      });
+    }
+  }  // Threads joins here.
+
+  ABSL_LOG(INFO) << "TOTAL SUCCEEDED: " << results.num_succeeded << " OF "
+                 << num_runs;
+  ABSL_LOG(INFO) << "TOTAL FAILED: " << results.num_failed << " OF "
+                 << num_runs;
+
+  return results;
+}
+
+}  // namespace
+
+absl::Status AnalyzeAndAggregateProfileProtosToText(
+    std::ostream& stream, absl::string_view root,
+    const AnalyzeProfileProtoOptions& options) {
+  // Find files.
+  ASSIGN_OR_RETURN(const auto paths, FindProtoProfileFiles(root));
+
+  // Process files in parallel.
+  absl::Mutex mu;
+  std::vector<std::stringstream> substreams{paths.size()};
+  Stats merged_stats;
+  const auto results = RunInParallel(
+      /*num_runs=*/paths.size(),
+      /*num_workers=*/static_cast<size_t>(options.parallelism),
+      /*get_run_id=*/
+      [&paths, &root](size_t i) {
+        return std::string{absl::StripPrefix(paths[i], root)};
+      },
+      /*do_work=*/
+      [&paths, &substreams, &stream, &merged_stats, &options, &mu](size_t i) {
+        const auto& path = paths[i];
+        auto& substream = substreams[i];
+        // Asynchronous section.
+        substream << "PROFILE " << path << ":\n";
+        ASSIGN_OR_RETURN(const auto stats,
+                         AnalyzeProfileProto(substream, path, options));
+
+        // Synchronous section.
+        absl::MutexLock lock(&mu);
+        Aggregate(stats, merged_stats);
+        if (!options.sort_output_by_file_name) {
+          stream << substream.str() << std::endl;
+          substream.clear();
+        }
+        return absl::OkStatus();
+      });
+
+  // Print the results, unless already printed asynchronously.
+  if (options.sort_output_by_file_name) {
+    for (auto& substream : substreams) {
+      stream << substream.str() << std::endl;
+    }
+  }
+  stream << merged_stats;
+
+  return results.status;
 }
 
 }  // namespace tools
