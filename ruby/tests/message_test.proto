@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package x.y.z;
+
+message MyOtherMessage {
+  int32 a = 1;
+  int64 b = 2;
+}
+
+message MyMessage {
+  int32 optional_int32 = 1;
+
+  oneof my_oneof {
+    string a = 2;
+    int32 b = 3;
+    int64 c = 4;
+    double d = 5;
+  }
+
+  MyOtherMessage sub_message = 6;
+  repeated string strings = 7;
+  map<string, int32> a_map = 8;
+  repeated MyOtherMessage sub_messages = 9;
+}
