@@ -282,7 +282,7 @@ void GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
   printer->Print(R"(
 descriptor_data = "$descriptor_data$"
 
-pool = Google::Protobuf::DescriptorPool.generated_pool
+pool = ::Google::Protobuf::DescriptorPool.generated_pool
 pool.add_serialized_file(descriptor_data)
 
 )",
