@@ -938,6 +938,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   CppType cpp_type() const;  // C++ type of this field.
   // Name of the C++ type.
   absl::string_view cpp_type_name() const;
+
+  // This should never be called directly. Use is_required() and is_repeated
+  // helper methods instead.
+  ABSL_DEPRECATED("Use is_required() or is_repeated() instead.")
   Label label() const;  // optional/required/repeated
 
 #ifndef SWIG
@@ -945,6 +949,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 #endif
 
   bool is_required() const;  // shorthand for label() == LABEL_REQUIRED
+  ABSL_DEPRECATED("Use !is_required() && !is_repeated() instead.")
   bool is_optional() const;  // shorthand for label() == LABEL_OPTIONAL
   bool is_repeated() const;  // shorthand for label() == LABEL_REPEATED
   bool is_packable() const;  // shorthand for is_repeated() &&

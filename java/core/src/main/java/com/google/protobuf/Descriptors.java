@@ -1347,7 +1347,12 @@ public final class Descriptors {
           == DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED;
     }
 
-    /** Is this field declared optional? */
+    /**
+     * Is this field declared optional? *
+     *
+     * <p>This method is deprecated. Use !isRequired() && !isRepeated() instead.
+     */
+    @Deprecated
     public boolean isOptional() {
       return proto.getLabel() == FieldDescriptorProto.Label.LABEL_OPTIONAL
           && getFeatures().getFieldPresence()
@@ -1446,7 +1451,8 @@ public final class Descriptors {
     boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getEdition() == Edition.EDITION_PROTO2
-              && isOptional()
+              && !isRequired()
+              && !isRepeated()
               && getContainingOneof() == null);
     }
 
@@ -1880,7 +1886,7 @@ public final class Descriptors {
         return features.build();
       }
 
-      if (proto.getLabel() == FieldDescriptorProto.Label.LABEL_REQUIRED) {
+      if (isRequired()) {
         features.setFieldPresence(FeatureSet.FieldPresence.LEGACY_REQUIRED);
       }
 
@@ -1907,7 +1913,7 @@ public final class Descriptors {
         return false;
       }
 
-      if (proto.getLabel() == FieldDescriptorProto.Label.LABEL_REQUIRED) {
+      if (isRequired()) {
         return true;
       }
 
@@ -1933,7 +1939,7 @@ public final class Descriptors {
       if (containingType != null
           && containingType.toProto().getOptions().getMessageSetWireFormat()) {
         if (isExtension()) {
-          if (!isOptional() || getType() != Type.MESSAGE) {
+          if (isRequired() || isRepeated() || getType() != Type.MESSAGE) {
             throw new DescriptorValidationException(
                 this, "Extensions of MessageSets must be optional messages.");
           }
