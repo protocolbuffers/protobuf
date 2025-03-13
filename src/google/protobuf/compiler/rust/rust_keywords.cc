@@ -19,24 +19,34 @@ namespace rust {
 
 bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix) {
   // These keywords cannot be used even with an r# prefix.
-  // https://doc.rust-lang.org/reference/identifiers.html
-  static const auto* illegal_raw_identifiers =
-      new absl::flat_hash_set<std::string>{"crate", "self", "super", "Self"};
+  static const auto* illegal_raw_identifiers = new absl::flat_hash_set<
+      std::string>{
+      // https://doc.rust-lang.org/reference/identifiers.html#r-ident.syntax
+      "crate", "self", "super", "Self",
+      // https://doc.rust-lang.org/reference/identifiers.html#r-ident.raw.reserved
+      "_"};
   return !illegal_raw_identifiers->contains(str_without_r_prefix);
 }
 
 bool IsRustKeyword(absl::string_view str) {
-  // https://doc.rust-lang.org/reference/keywords.html#reserved-keywords
+  // https://doc.rust-lang.org/reference/keywords.html
   static const auto* rust_keywords = new absl::flat_hash_set<std::string>{
-      "as",     "async",   "await",   "break",    "const",  "continue",
-      "crate",  "dyn",     "else",    "enum",     "extern", "false",
-      "fn",     "for",     "if",      "impl",     "in",     "let",
-      "loop",   "match",   "mod",     "move",     "mut",    "pub",
-      "ref",    "return",  "Self",    "self",     "static", "struct",
-      "super",  "trait",   "true",    "type",     "union",  "unsafe",
-      "use",    "where",   "while",   "abstract", "become", "box",
-      "do",     "final",   "macro",   "override", "priv",   "try",
-      "typeof", "unsized", "virtual", "yield"};
+      // strict keywords
+      "as", "break", "const", "continue", "else", "enum", "extern", "false",
+      "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move",
+      "mut", "pub", "ref", "return", "static", "struct", "super", "trait",
+      "true", "type", "unsafe", "use", "where", "while",
+      // Strict keywords 2018+
+      "async", "await", "dyn",
+      // Reserved keywords
+      "abstract", "become", "box", "do", "final", "macro", "override", "priv",
+      "typeof", "unsized", "virtual", "yield",
+      // Reserved 2018+
+      "try",
+      // Reserved 2024+
+      "gen",
+      // Weak keywords
+      "macro_rules", "union", "safe", "raw"};
   return rust_keywords->contains(str);
 }
 
