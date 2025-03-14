@@ -676,13 +676,25 @@ void MessageBuilderGenerator::GenerateBuilderFieldParsingCases(
     if (field->is_packable()) {
       GenerateBuilderPackedFieldParsingCase(printer, field);
     }
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !field->is_map() &&
+        // TODO: figure out a better opt-out for protos with code size
+        // issues.
+        !internal::cpp::ShouldUseLengthDelimitedEncoding(field)) {
+      GenerateBuilderDelimitedFieldParsingCase(printer, field);
+    }
   }
 }
 
 void MessageBuilderGenerator::GenerateBuilderFieldParsingCase(
     io::Printer* printer, const FieldDescriptor* field) {
-  uint32_t tag = WireFormatLite::MakeTag(
-      field->number(), WireFormat::WireTypeForFieldType(field->type()));
+  WireFormatLite::WireType wire_type =
+      WireFormat::WireTypeForFieldType(field->type());
+  if (wire_type == WireFormatLite::WIRETYPE_START_GROUP &&
+      !internal::cpp::ShouldUseLengthDelimitedEncoding(field)) {
+    wire_type = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+  }
+  uint32_t tag = WireFormatLite::MakeTag(field->number(), wire_type);
   std::string tagString = absl::StrCat(static_cast<int32_t>(tag));
   printer->Print("case $tag$: {\n", "tag", tagString);
   printer->Indent();
@@ -707,6 +719,23 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
   printer->Indent();
 
   field_generators_.get(field).GenerateBuilderParsingCodeFromPacked(printer);
+
+  printer->Outdent();
+  printer->Print(
+      "  break;\n"
+      "} // case $tag$\n",
+      "tag", tagString);
+}
+
+void MessageBuilderGenerator::GenerateBuilderDelimitedFieldParsingCase(
+    io::Printer* printer, const FieldDescriptor* field) {
+  uint32_t tag = WireFormatLite::MakeTag(field->number(),
+                                         WireFormatLite::WIRETYPE_START_GROUP);
+  std::string tagString = absl::StrCat(static_cast<int32_t>(tag));
+  printer->Print("case $tag$: {\n", "tag", tagString);
+  printer->Indent();
+
+  field_generators_.get(field).GenerateBuilderParsingCodeFromDelimited(printer);
 
   printer->Outdent();
   printer->Print(

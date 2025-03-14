@@ -1319,7 +1319,7 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
         tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<std::string>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      number, tag & 7, was_packed_on_wire, extension, metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(

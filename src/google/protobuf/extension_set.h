@@ -1022,6 +1022,12 @@ class PROTOBUF_EXPORT ExtensionSet {
       *was_packed_on_wire = true;
       return true;
     }
+    if ((wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED &&
+         real_type == WireFormatLite::TYPE_GROUP) ||
+        (wire_type == WireFormatLite::WIRETYPE_START_GROUP &&
+         real_type == WireFormatLite::TYPE_MESSAGE)) {
+      return true;
+    }
     // Otherwise the wire type must match.
     return expected_wire_type == wire_type;
   }
@@ -1075,7 +1081,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Implemented in extension_set_inl.h to keep code out of the header file.
   template <typename T>
-  const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
+  const char* ParseFieldWithExtensionInfo(int number, int wire_type,
+                                          bool was_packed_on_wire,
                                           const ExtensionInfo& info,
                                           internal::InternalMetadata* metadata,
                                           const char* ptr,

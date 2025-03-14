@@ -62,6 +62,8 @@ message TestAllTypesEdition2023 {
 
   TestAllTypesEdition2023 recursive_message = 27
       [features.message_encoding = LENGTH_PREFIXED];
+  repeated TestAllTypesEdition2023 repeated_recursive_message = 204
+      [features.message_encoding = LENGTH_PREFIXED];
 
   // Repeated
   repeated int32 repeated_int32 = 31;
@@ -179,6 +181,9 @@ message TestAllTypesEdition2023 {
     float oneof_float = 117;
     double oneof_double = 118;
     NestedEnum oneof_enum = 119;
+    TestAllTypesEdition2023 oneof_recursive_message = 206
+        [features.message_encoding = LENGTH_PREFIXED];
+    TestAllTypesEdition2023 oneof_recursive_group = 207;
   }
 
   // extensions
@@ -191,6 +196,8 @@ message TestAllTypesEdition2023 {
   }
   GroupLikeType groupliketype = 201;
   GroupLikeType delimited_field = 202;
+  TestAllTypesEdition2023 recursive_group = 203;
+  repeated TestAllTypesEdition2023 repeated_recursive_group = 205;
 }
 
 message ForeignMessageEdition2023 {
@@ -214,4 +221,10 @@ message GroupLikeType {
 extend TestAllTypesEdition2023 {
   GroupLikeType groupliketype = 121;
   GroupLikeType delimited_ext = 122;
+  TestAllTypesEdition2023 recursive_message = 123
+      [features.message_encoding = LENGTH_PREFIXED];
+  TestAllTypesEdition2023 recursive_group = 124;
+  repeated TestAllTypesEdition2023 repeated_recursive_message = 125
+      [features.message_encoding = LENGTH_PREFIXED];
+  repeated TestAllTypesEdition2023 repeated_recursive_group = 126;
 }

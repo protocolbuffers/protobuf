@@ -81,6 +81,12 @@ inline void ReportUnexpectedPackedFieldsCall() {
                   << "called on field generator that does not support packing.";
 }
 
+inline void ReportUnexpectedDelimitedFieldsCall() {
+  ABSL_LOG(FATAL)
+      << "GenerateBuilderParsingCodeFromDelimited() "
+      << "called on field generator that does not support delimited encoding.";
+}
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

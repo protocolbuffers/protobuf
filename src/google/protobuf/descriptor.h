@@ -3217,6 +3217,10 @@ auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
 PROTOBUF_EXPORT bool IsStringFieldWithPrivatizedAccessors(
     const FieldDescriptor& field);
 
+// Returns whether fields in a file should be serialized with length-delimited
+// encoding.
+bool ShouldUseLengthDelimitedEncoding(const FieldDescriptor* field);
+
 }  // namespace cpp
 }  // namespace internal
 

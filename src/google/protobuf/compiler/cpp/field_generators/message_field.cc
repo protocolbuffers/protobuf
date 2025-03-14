@@ -25,6 +25,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -36,6 +37,7 @@ namespace cpp {
 namespace {
 
 using ::google::protobuf::internal::cpp::HasHasbit;
+using ::google::protobuf::internal::cpp::ShouldUseLengthDelimitedEncoding;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -65,6 +67,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                           ? absl::Substitute("reinterpret_cast<$0*>($1)",
                                              qualified_type, field_name)
                           : field_name},
+      {"modified_tag_size", internal::WireFormat::TagSize(
+                                field->number(), FieldDescriptor::TYPE_GROUP)},
       {"Weak", is_weak ? "Weak" : ""},
       {".weak", is_weak ? ".weak" : ""},
       {"_weak", is_weak ? "_weak" : ""},
@@ -388,7 +392,8 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  if (!is_group()) {
+  if (ShouldUseLengthDelimitedEncoding(field_) &&
+      field_->type() == FieldDescriptor::TYPE_MESSAGE) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
           $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
@@ -397,17 +402,24 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
-      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+      target = $pbi$::WireFormatLite::InternalWriteGroup(
           $number$, *this_.$field_$, target, stream);
     )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(R"cc(
-    total_size += $tag_size$ +
-                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
-  )cc");
+  if (ShouldUseLengthDelimitedEncoding(field_)) {
+    p->Emit(R"cc(
+      total_size += $tag_size$ +
+                    $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      total_size += $modified_tag_size$ +
+                    $pbi$::WireFormatLite::GroupSize(*this_.$field_$);
+    )cc");
+  }
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
@@ -952,7 +964,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
   if (is_weak()) {
     p->Emit({{"serialize_field",
               [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+                if (ShouldUseLengthDelimitedEncoding(field_) &&
+                    field_->type() == FieldDescriptor::TYPE_MESSAGE) {
                   p->Emit(
                       R"cc(
                         target =
@@ -964,9 +977,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                   p->Emit(
                       R"cc(
                         target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, **it, target, stream);
+                        target = $pbi$::WireFormatLite::InternalWriteGroup(
+                            $number$, **it, target, stream);
                       )cc");
                 }
               }}},
@@ -980,7 +992,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
   } else {
     p->Emit({{"serialize_field",
               [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+                if (ShouldUseLengthDelimitedEncoding(field_) &&
+                    field_->type() == FieldDescriptor::TYPE_MESSAGE) {
                   p->Emit(
                       R"cc(
                         const auto& repfield = this_._internal_$name$().Get(i);
@@ -993,10 +1006,9 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                   p->Emit(
                       R"cc(
                         target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, this_._internal_$name$().Get(i),
-                                target, stream);
+                        target = $pbi$::WireFormatLite::InternalWriteGroup(
+                            $number$, this_._internal_$name$().Get(i), target,
+                            stream);
                       )cc");
                 }
               }}},
@@ -1011,13 +1023,24 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      R"cc(
-        total_size += $tag_size$UL * this_._internal_$name$_size();
-        for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
-        }
-      )cc");
+  if (ShouldUseLengthDelimitedEncoding(field_) &&
+      field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+    p->Emit(
+        R"cc(
+          total_size += $tag_size$UL * this_._internal_$name$_size();
+          for (const auto& msg : this_._internal$_weak$_$name$()) {
+            total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
+          }
+        )cc");
+  } else {
+    p->Emit(
+        R"cc(
+          total_size += $modified_tag_size$UL * this_._internal_$name$_size();
+          for (const auto& msg : this_._internal$_weak$_$name$()) {
+            total_size += $pbi$::WireFormatLite::GroupSize(msg);
+          }
+        )cc");
+  }
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

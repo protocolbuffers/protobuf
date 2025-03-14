@@ -44,6 +44,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+using cpp::ShouldUseLengthDelimitedEncoding;
+
 // Forward declare static functions
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);
@@ -555,33 +557,33 @@ bool WireFormat::ParseAndMergeField(
         break;
       }
 
-      case FieldDescriptor::TYPE_GROUP: {
-        Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
-
-        if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
-                                       input, sub_message))
-          return false;
-        break;
-      }
-
+      case FieldDescriptor::TYPE_GROUP:
       case FieldDescriptor::TYPE_MESSAGE: {
         Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
+        if (WireFormatLite::GetTagWireType(tag) ==
+            WireFormatLite::WIRETYPE_START_GROUP) {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
 
-        if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+          if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
+                                         input, sub_message))
+            return false;
+        } else {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
+
+          if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+        }
         break;
       }
     }
@@ -888,6 +890,13 @@ const char* WireFormat::_InternalParseAndMergeField(
           ABSL_LOG(FATAL) << "Can't reach";
           return nullptr;
       }
+    } else if ((field->type() == FieldDescriptor::TYPE_GROUP &&
+                WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_LENGTH_DELIMITED) ||
+               (field->type() == FieldDescriptor::TYPE_MESSAGE &&
+                WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_START_GROUP)) {
+      return HandleMessage(msg, ptr, ctx, tag, reflection, field);
     } else {
       // mismatched wiretype;
       return internal::UnknownFieldParse(
@@ -1359,17 +1368,37 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       HANDLE_PRIMITIVE_TYPE(BOOL, bool, Bool, Bool)
 #undef HANDLE_PRIMITIVE_TYPE
 
-      case FieldDescriptor::TYPE_GROUP: {
-        auto* msg = get_message_from_field(field, j);
-        target = WireFormatLite::InternalWriteGroup(field->number(), *msg,
-                                                    target, stream);
-      } break;
+        /*
+    case FieldDescriptor::TYPE_GROUP: {
+      auto* msg = get_message_from_field(field, j);
+      target = WireFormatLite::InternalWriteGroup(field->number(), *msg,
+                                                  target, stream);
+    } break;
 
-      case FieldDescriptor::TYPE_MESSAGE: {
-        auto* msg = get_message_from_field(field, j);
-        target = WireFormatLite::InternalWriteMessage(
-            field->number(), *msg, msg->GetCachedSize(), target, stream);
-      } break;
+    case FieldDescriptor::TYPE_MESSAGE: {
+      auto* msg = get_message_from_field(field, j);
+      target = WireFormatLite::InternalWriteMessage(
+          field->number(), *msg, msg->GetCachedSize(), target, stream);
+    } break;
+      */
+
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE:
+        /*
+        if ((ShouldUseLengthDelimitedEncoding(field) &&
+             field->type() == FieldDescriptor::TYPE_MESSAGE) ||
+            message_reflection->IsLazyField(field) || field->is_extension() ||
+            field->is_map()) {*/
+        if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
+          auto* msg = get_message_from_field(field, j);
+          target = WireFormatLite::InternalWriteMessage(
+              field->number(), *msg, msg->GetCachedSize(), target, stream);
+        } else {
+          auto* msg = get_message_from_field(field, j);
+          target = WireFormatLite::InternalWriteGroup(field->number(), *msg,
+                                                      target, stream);
+        }
+        break;
 
       case FieldDescriptor::TYPE_ENUM: {
         const EnumValueDescriptor* value =
@@ -1525,7 +1554,14 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
       our_size += io::CodedOutputStream::VarintSize32(data_size);
     }
   } else {
-    our_size += count * TagSize(field->number(), field->type());
+    auto type = field->type();
+    /*
+    if (!ShouldUseLengthDelimitedEncoding(field) &&
+        !message_reflection->IsLazyField(field) && !field->is_map() &&
+        !field->is_extension() && type == FieldDescriptor::TYPE_MESSAGE) {
+      type = FieldDescriptor::TYPE_GROUP;
+    }*/
+    our_size += count * TagSize(field->number(), type);
   }
   return our_size;
 }

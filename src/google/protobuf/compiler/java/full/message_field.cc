@@ -391,23 +391,24 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
   printer->Print("}\n");
 }
 
+void ImmutableMessageFieldGenerator::GenerateBuilderParsingCodeFromDelimited(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "input.readGroup($number$,\n"
+                 "    "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+                 "    extensionRegistry);\n"
+                 "$set_has_field_bit_builder$\n");
+}
+
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(variables_,
-                   "input.readGroup($number$,\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_has_field_bit_builder$\n");
-  } else {
-    printer->Print(variables_,
-                   "input.readMessage(\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_has_field_bit_builder$\n");
-  }
+  printer->Print(variables_,
+                 "input.readMessage(\n"
+                 "    "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+                 "    extensionRegistry);\n"
+                 "$set_has_field_bit_builder$\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateSerializationCode(
@@ -696,23 +697,24 @@ void ImmutableMessageOneofFieldGenerator::GenerateMergingCode(
                  "merge$capitalized_name$(other.get$capitalized_name$());\n");
 }
 
+void ImmutableMessageOneofFieldGenerator::
+    GenerateBuilderParsingCodeFromDelimited(io::Printer* printer) const {
+  printer->Print(variables_,
+                 "input.readGroup($number$,\n"
+                 "    "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+                 "    extensionRegistry);\n"
+                 "$set_oneof_case_message$;\n");
+}
+
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(variables_,
-                   "input.readGroup($number$,\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
-  } else {
-    printer->Print(variables_,
-                   "input.readMessage(\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
-  }
+  printer->Print(variables_,
+                 "input.readMessage(\n"
+                 "    "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+                 "    extensionRegistry);\n"
+                 "$set_oneof_case_message$;\n");
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateSerializationCode(
@@ -1244,21 +1246,26 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuildingCode(
       "result.$name$_ = $name$Builder_.build();\n");
 }
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderParsingCodeFromDelimited(io::Printer* printer) const {
+  printer->Print(variables_,
+                 "$type$ m =\n"
+                 "    input.readGroup($number$,\n"
+                 "        $type$.$get_parser$,\n"
+                 "        extensionRegistry);\n");
+  PrintNestedBuilderCondition(printer,
+                              "ensure$capitalized_name$IsMutable();\n"
+                              "$name$_.add(m);\n",
+                              "$name$Builder_.addMessage(m);\n");
+}
+
 void RepeatedImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(variables_,
-                   "$type$ m =\n"
-                   "    input.readGroup($number$,\n"
-                   "        $type$.$get_parser$,\n"
-                   "        extensionRegistry);\n");
-  } else {
-    printer->Print(variables_,
-                   "$type$ m =\n"
-                   "    input.readMessage(\n"
-                   "        $type$.$get_parser$,\n"
-                   "        extensionRegistry);\n");
-  }
+  printer->Print(variables_,
+                 "$type$ m =\n"
+                 "    input.readMessage(\n"
+                 "        $type$.$get_parser$,\n"
+                 "        extensionRegistry);\n");
   PrintNestedBuilderCondition(printer,
                               "ensure$capitalized_name$IsMutable();\n"
                               "$name$_.add(m);\n",

@@ -184,6 +184,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
         // This is also different from full-runtime where we store EnumValueDescriptor.
         value = number;
       } else {
+        final int wireType = reader.getTag() & 0x7;
         switch (extension.getLiteType()) {
           case DOUBLE:
             value = reader.readDouble();
@@ -231,50 +232,52 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
           case STRING:
             value = reader.readString();
             break;
-          case GROUP:
-            // Special case handling for non-repeated sub-messages: merge in-place rather than
-            // building up new sub-messages and merging those, which is too slow.
-            // TODO: clean this up
-            if (!extension.isRepeated()) {
-              Object oldValue = extensions.getField(extension.descriptor);
-              if (oldValue instanceof GeneratedMessageLite) {
-                Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
-                if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
-                  Object newValue = extSchema.newInstance();
-                  extSchema.mergeFrom(newValue, oldValue);
-                  extensions.setField(extension.descriptor, newValue);
-                  oldValue = newValue;
-                }
-                reader.mergeGroupField(oldValue, extSchema, extensionRegistry);
-                return unknownFields;
-              }
-            }
-            value =
-                reader.readGroup(
-                    extension.getMessageDefaultInstance().getClass(), extensionRegistry);
-            break;
 
           case MESSAGE:
-            // Special case handling for non-repeated sub-messages: merge in-place rather than
-            // building up new sub-messages and merging those, which is too slow.
-            // TODO: clean this up
-            if (!extension.isRepeated()) {
-              Object oldValue = extensions.getField(extension.descriptor);
-              if (oldValue instanceof GeneratedMessageLite) {
-                Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
-                if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
-                  Object newValue = extSchema.newInstance();
-                  extSchema.mergeFrom(newValue, oldValue);
-                  extensions.setField(extension.descriptor, newValue);
-                  oldValue = newValue;
+          case GROUP:
+            if (wireType == WireFormat.WIRETYPE_START_GROUP) {
+              // Special case handling for non-repeated sub-messages: merge in-place rather than
+              // building up new sub-messages and merging those, which is too slow.
+              // TODO: clean this up
+              if (!extension.isRepeated()) {
+                Object oldValue = extensions.getField(extension.descriptor);
+                if (oldValue instanceof GeneratedMessageLite) {
+                  Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
+                  if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
+                    Object newValue = extSchema.newInstance();
+                    extSchema.mergeFrom(newValue, oldValue);
+                    extensions.setField(extension.descriptor, newValue);
+                    oldValue = newValue;
+                  }
+                  reader.mergeGroupField(oldValue, extSchema, extensionRegistry);
+                  return unknownFields;
                 }
-                reader.mergeMessageField(oldValue, extSchema, extensionRegistry);
-                return unknownFields;
               }
+              value =
+                  reader.readGroup(
+                      extension.getMessageDefaultInstance().getClass(), extensionRegistry);
+            } else {
+              // Special case handling for non-repeated sub-messages: merge in-place rather than
+              // building up new sub-messages and merging those, which is too slow.
+              // TODO: clean this up
+              if (!extension.isRepeated()) {
+                Object oldValue = extensions.getField(extension.descriptor);
+                if (oldValue instanceof GeneratedMessageLite) {
+                  Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
+                  if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
+                    Object newValue = extSchema.newInstance();
+                    extSchema.mergeFrom(newValue, oldValue);
+                    extensions.setField(extension.descriptor, newValue);
+                    oldValue = newValue;
+                  }
+                  reader.mergeMessageField(oldValue, extSchema, extensionRegistry);
+                  return unknownFields;
+                }
+              }
+              value =
+                  reader.readMessage(
+                      extension.getMessageDefaultInstance().getClass(), extensionRegistry);
             }
-            value =
-                reader.readMessage(
-                    extension.getMessageDefaultInstance().getClass(), extensionRegistry);
             break;
 
           case ENUM:

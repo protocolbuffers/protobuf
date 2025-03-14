@@ -815,6 +815,7 @@ final class ArrayDecoders {
       throws IOException {
     final FieldSet<GeneratedMessageLite.ExtensionDescriptor> extensions = message.extensions;
     final int fieldNumber = tag >>> 3;
+    final int wireType = tag & 7;
     if (extension.descriptor.isRepeated() && extension.descriptor.isPacked()) {
       switch (extension.getLiteType()) {
         case DOUBLE:
@@ -967,7 +968,8 @@ final class ArrayDecoders {
             value = registers.object1;
             break;
           case GROUP:
-            {
+          case MESSAGE:
+            if (wireType == WireFormat.WIRETYPE_START_GROUP) {
               final int endTag = (fieldNumber << 3) | WireFormat.WIRETYPE_END_GROUP;
               final Schema<?> fieldSchema =
                   Protobuf.getInstance()
@@ -986,9 +988,7 @@ final class ArrayDecoders {
                         oldValue, fieldSchema, data, position, limit, endTag, registers);
               }
               return position;
-            }
-          case MESSAGE:
-            {
+            } else {
               final Schema<?> fieldSchema =
                   Protobuf.getInstance()
                       .schemaFor(extension.getMessageDefaultInstance().getClass());

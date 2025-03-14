@@ -39,6 +39,11 @@ class ImmutableFieldGenerator : public FieldGenerator {
     ReportUnexpectedPackedFieldsCall();
   }
 
+  virtual void GenerateBuilderParsingCodeFromDelimited(
+      io::Printer* printer) const {
+    ReportUnexpectedDelimitedFieldsCall();
+  }
+
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 

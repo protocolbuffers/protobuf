@@ -273,20 +273,26 @@ def _AttachFieldHelpers(cls, field_descriptor):
       field_descriptor
   )
 
-  def AddFieldByTag(wiretype, is_packed):
+  def AddFieldByTag(wiretype, is_packed, is_delimited):
     tag_bytes = encoder.TagBytes(field_descriptor.number, wiretype)
-    cls._fields_by_tag[tag_bytes] = (field_descriptor, is_packed)
+    cls._fields_by_tag[tag_bytes] = (field_descriptor, is_packed, is_delimited)
 
-  AddFieldByTag(
-      type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type], False
-  )
+  if field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
+    AddFieldByTag(wire_format.WIRETYPE_START_GROUP, False, True)
+    AddFieldByTag(wire_format.WIRETYPE_LENGTH_DELIMITED, False, False)
+  else:
+    AddFieldByTag(
+        type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type],
+        False,
+        False,
+    )
 
   if field_descriptor.is_repeated and wire_format.IsTypePackable(
       field_descriptor.type
   ):
     # To support wire compatibility of adding packed = true, add a decoder for
     # packed values regardless of the field's options.
-    AddFieldByTag(wire_format.WIRETYPE_LENGTH_DELIMITED, True)
+    AddFieldByTag(wire_format.WIRETYPE_LENGTH_DELIMITED, True, False)
 
 
 def _MaybeAddEncoder(cls, field_descriptor):
@@ -321,7 +327,7 @@ def _MaybeAddDecoder(cls, field_descriptor):
   is_map_entry = _IsMapField(field_descriptor)
   helper_decoders = {}
 
-  def AddDecoder(is_packed):
+  def AddDecoder(is_packed, is_delimited):
     decode_type = field_descriptor.type
     if (decode_type == _FieldDescriptor.TYPE_ENUM and
         not field_descriptor.enum_type.is_closed):
@@ -343,9 +349,17 @@ def _MaybeAddDecoder(cls, field_descriptor):
           field_descriptor, field_descriptor._default_constructor,
           not field_descriptor.has_presence)
     elif field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-      field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
-          field_descriptor.number, is_repeated, is_packed,
-          field_descriptor, field_descriptor._default_constructor)
+      field_decoder = type_checkers.TYPE_TO_DECODER[
+          _FieldDescriptor.TYPE_GROUP
+          if is_delimited
+          else _FieldDescriptor.TYPE_MESSAGE
+      ](
+          field_descriptor.number,
+          is_repeated,
+          is_packed,
+          field_descriptor,
+          field_descriptor._default_constructor,
+      )
     else:
       field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
           field_descriptor.number, is_repeated, is_packed,
@@ -353,14 +367,17 @@ def _MaybeAddDecoder(cls, field_descriptor):
           field_descriptor, field_descriptor._default_constructor,
           not field_descriptor.has_presence)
 
-    helper_decoders[is_packed] = field_decoder
+    helper_decoders[(is_packed, is_delimited)] = field_decoder
 
-  AddDecoder(False)
+  AddDecoder(False, False)
+
+  if field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
+    AddDecoder(False, True)
 
   if is_repeated and wire_format.IsTypePackable(field_descriptor.type):
     # To support wire compatibility of adding packed = true, add a decoder for
     # packed values regardless of the field's options.
-    AddDecoder(True)
+    AddDecoder(True, False)
 
   field_descriptor._decoders = helper_decoders
 
@@ -1226,7 +1243,9 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       if field_decoder:
         pos = field_decoder(buffer, new_pos, end, self, field_dict)
         continue
-      field_des, is_packed = fields_by_tag.get(tag_bytes, (None, None))
+      field_des, is_packed, is_delimited = fields_by_tag.get(
+          tag_bytes, (None, None, None)
+      )
       if field_des is None:
         if not self._unknown_fields:   # pylint: disable=protected-access
           self._unknown_fields = []    # pylint: disable=protected-access
@@ -1244,7 +1263,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
         pos = new_pos
       else:
         _MaybeAddDecoder(cls, field_des)
-        field_decoder = field_des._decoders[is_packed]
+        field_decoder = field_des._decoders[(is_packed, is_delimited)]
         pos = field_decoder(
             buffer, new_pos, end, self, field_dict, current_depth
         )

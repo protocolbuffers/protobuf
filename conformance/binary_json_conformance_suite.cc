@@ -427,6 +427,113 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+
+  // Tag-delimited data should be accepted on a length-prefixed message field,
+  // instead of going into unknown fields.  This is tested by sending both
+  // delimited and length-prefixed, and expecting the order to remain unchanged
+  // on roundtrip.
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("DelimitedDataLengthPrefixedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          group(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(recursive_message { repeated_int32: [ 99, 87, 1 ] })pb");
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("LengthPrefixedDataDelimitedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          len(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(recursive_group { repeated_int32: [ 99, 87, 1 ] })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("RepeatedDelimitedDataLengthPrefixedFieldNotUnknown"),
+      REQUIRED,
+      absl::StrCat(
+          group(204, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(204, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(204, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(repeated_recursive_message { repeated_int32: 99 }
+           repeated_recursive_message { repeated_int32: 87 }
+           repeated_recursive_message { repeated_int32: 1 })pb");
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("RepeatedLengthPrefixedDataDelimitedFieldNotUnknown"),
+      REQUIRED,
+      absl::StrCat(
+          len(205, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(205, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(205, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(repeated_recursive_group { repeated_int32: 99 }
+           repeated_recursive_group { repeated_int32: 87 }
+           repeated_recursive_group { repeated_int32: 1 })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("OneofDelimitedDataLengthPrefixedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          group(206, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(206, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(206, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(oneof_recursive_message { repeated_int32: [ 99, 87, 1 ] })pb");
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("OneofLengthPrefixedDataDelimitedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          len(207, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(207, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(207, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(oneof_recursive_group { repeated_int32: [ 99, 87, 1 ] })pb");
+
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ExtDelimitedDataLengthPrefixedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          group(123, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(123, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(123, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb([protobuf_test_messages.editions.recursive_message] {
+             repeated_int32: [ 99, 87, 1 ]
+           })pb");
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ExtLengthPrefixedDataDelimitedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          len(124, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(124, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(124, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb([protobuf_test_messages.editions.recursive_group] {
+             repeated_int32: [ 99, 87, 1 ]
+           })pb");
+
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("RepeatedExtDelimitedDataLengthPrefixedFieldNotUnknown"),
+      REQUIRED,
+      absl::StrCat(
+          group(125, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(125, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(125, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb([protobuf_test_messages.editions.repeated_recursive_message] {
+             repeated_int32: 99
+           }
+           [protobuf_test_messages.editions.repeated_recursive_message] {
+             repeated_int32: 87
+           }
+           [protobuf_test_messages.editions.repeated_recursive_message] {
+             repeated_int32: 1
+           })pb");
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("RepeatedExtLengthPrefixedDataDelimitedFieldNotUnknown"),
+      REQUIRED,
+      absl::StrCat(
+          len(126, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(126, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(126, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb([protobuf_test_messages.editions.repeated_recursive_group] {
+             repeated_int32: 99
+           }
+           [protobuf_test_messages.editions.repeated_recursive_group] {
+             repeated_int32: 87
+           }
+           [protobuf_test_messages.editions.repeated_recursive_group] {
+             repeated_int32: 1
+           })pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
