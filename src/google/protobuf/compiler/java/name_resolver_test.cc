@@ -54,10 +54,13 @@ class NameResolverTest : public testing::Test {
     BuildFileAndPopulatePool(
         "google/protobuf/descriptor.proto",
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+    BuildFileAndPopulatePool(
+        "third_party/java/protobuf/java_features.proto",
+        pb::JavaFeatures::descriptor()->file()->DebugString());
   }
 
   void BuildFileAndPopulatePool(absl::string_view filename,
-                                absl::string_view contents) {
+                                                 absl::string_view contents) {
     io::ArrayInputStream input_stream(contents.data(), contents.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
@@ -77,10 +80,10 @@ class NameResolverTest : public testing::Test {
 
 TEST_F(NameResolverTest, FileImmutableClassNameEdition2024) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                            R"schema(
       edition = "2024";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       message TestFileName2024 {
         int32 field = 1;
@@ -100,10 +103,10 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2024) {
 
 TEST_F(NameResolverTest, FileImmutableClassNameDefaultOverriddenEdition2024) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                       R"schema(
       edition = "2024";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       option java_outer_classname = "BarBuz";
 
@@ -120,10 +123,10 @@ TEST_F(NameResolverTest, FileImmutableClassNameDefaultOverriddenEdition2024) {
 
 TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
   BuildFileAndPopulatePool("conflicting_file_class_name.proto",
-                           R"schema(
+                                       R"schema(
       edition = "2023";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       message ConflictingFileClassName {
         int32 field = 1;
@@ -138,15 +141,39 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
             "ConflictingFileClassNameOuterClass");
 }
 
-TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
+TEST_F(NameResolverTest, JavaMultipleFilesService) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                                        R"schema(
       edition = "2023";
 
       option java_generic_services = true;
       option java_multiple_files = true;
 
-      package proto2_unittest;
+      package protobuf_unittest;
+
+      message Dummy {}
+      service FooService {
+        rpc FooMethod(Dummy) returns (Dummy) {}
+      }
+                )schema");
+  
+  auto file = pool_.FindFileByName("foo.proto");
+  auto service_descriptor = file->FindServiceByName("FooService");
+  ClassNameResolver resolver;
+  EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.FooService");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
+            PACKAGE_PREFIX "protobuf_unittest.FooService");
+}
+
+TEST_F(NameResolverTest, JavaMultipleFilesFalseService) {
+  BuildFileAndPopulatePool("foo.proto",
+                                       R"schema(
+      edition = "2023";
+
+      option java_generic_services = true;
+
+      package protobuf_unittest;
 
       message Dummy {}
       service FooService {
@@ -154,87 +181,129 @@ TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
       }
                 )schema");
 
-  auto service_descriptor =
-      pool_.FindServiceByName("proto2_unittest.FooService");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto service_descriptor = file->FindServiceByName("FooService");
   ClassNameResolver resolver;
   EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.FooService");
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooService");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.FooService");
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooService");
 }
-
-TEST_F(NameResolverTest, SingleFileServiceEdition2023) {
+TEST_F(NameResolverTest, NestInFileClassService) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
-      edition = "2023";
-
+                                       R"schema(
+      edition = "2024";
+      import "third_party/java/protobuf/java_features.proto";
+      package protobuf_unittest;
       option java_generic_services = true;
-
-      package proto2_unittest;
-
       message Dummy {}
-      service FooService {
-        rpc FooMethod(Dummy) returns (Dummy) {}
+      service NestedInFileClassService {
+        option features.(pb.java).nest_in_file_class = YES;
+        rpc Method(Dummy) returns (Dummy) {}
+      }
+      service UnnestedService {
+        rpc Method(Dummy) returns (Dummy) {}
       }
                 )schema");
-
-  auto service_descriptor =
-      pool_.FindServiceByName("proto2_unittest.FooService");
   ClassNameResolver resolver;
-  EXPECT_EQ(resolver.GetClassName(service_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.Foo.FooService");
-  EXPECT_EQ(resolver.GetJavaImmutableClassName(service_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.Foo$FooService");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto nested_service = file->FindServiceByName("NestedInFileClassService");
+  auto unnested_service = file->FindServiceByName("UnnestedService");
+
+  EXPECT_EQ(resolver.GetClassName(unnested_service,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedService");
+  EXPECT_EQ(resolver.GetClassName(nested_service,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX
+            "protobuf_unittest.FooProto.NestedInFileClassService");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(unnested_service),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedService");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(nested_service), PACKAGE_PREFIX
+            "protobuf_unittest.FooProto$NestedInFileClassService");
 }
 
-TEST_F(NameResolverTest, MultipleFilesMessageEdition2023) {
+TEST_F(NameResolverTest, JavaMultipleFilesMessage) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                       R"schema(
       edition = "2023";
 
       option java_multiple_files = true;
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       message FooMessage {}
                 )schema");
 
-  auto message_descriptor =
-      pool_.FindMessageTypeByName("proto2_unittest.FooMessage");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto message_descriptor = file->FindMessageTypeByName("FooMessage");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.FooMessage");
+            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.FooMessage");
+            PACKAGE_PREFIX "protobuf_unittest.FooMessage");
 }
 
-TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
+TEST_F(NameResolverTest, JavaMultipleFilesFalseMessage) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                       R"schema(
       edition = "2023";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       message FooMessage {}
                 )schema");
 
-  auto message_descriptor =
-      pool_.FindMessageTypeByName("proto2_unittest.FooMessage");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto message_descriptor = file->FindMessageTypeByName("FooMessage");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(message_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.Foo.FooMessage");
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.Foo$FooMessage");
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooMessage");
 }
 
-TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
+TEST_F(NameResolverTest, NestInFileClassMessage) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                       R"schema(
+      edition = "2024";
+      import "third_party/java/protobuf/java_features.proto";
+      package protobuf_unittest;
+      message NestedInFileClassMessage {
+        option features.(pb.java).nest_in_file_class = YES;
+        int32 unused = 1;
+      }
+      message UnnestedMessage {
+        int32 unused = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  auto nested_message = file->FindMessageTypeByName("NestedInFileClassMessage");
+  auto unnested_message = file->FindMessageTypeByName("UnnestedMessage");
+
+  EXPECT_EQ(resolver.GetClassName(unnested_message,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedMessage");
+  EXPECT_EQ(resolver.GetClassName(nested_message,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX
+            "protobuf_unittest.FooProto.NestedInFileClassMessage");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(unnested_message),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedMessage");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(nested_message), PACKAGE_PREFIX
+            "protobuf_unittest.FooProto$NestedInFileClassMessage");
+}
+
+TEST_F(NameResolverTest, JavaMultipleFilesEnum) {
+  BuildFileAndPopulatePool("foo.proto",
+                                       R"schema(
       edition = "2023";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       option java_multiple_files = true;
 
@@ -243,34 +312,72 @@ TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {
       }
                 )schema");
 
-  auto enum_descriptor = pool_.FindEnumTypeByName("proto2_unittest.FooEnum");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto enum_descriptor = file->FindEnumTypeByName("FooEnum");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.FooEnum");
+            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.FooEnum");
+            PACKAGE_PREFIX "protobuf_unittest.FooEnum");
 }
 
-TEST_F(NameResolverTest, SingleFileEnumEdition2023) {
+TEST_F(NameResolverTest, JavaMultipleFilesFalseEnum) {
   BuildFileAndPopulatePool("foo.proto",
-                           R"schema(
+                                       R"schema(
       edition = "2023";
 
-      package proto2_unittest;
+      package protobuf_unittest;
 
       enum FooEnum {
         FOO_ENUM_UNSPECIFIED = 0;
       }
                 )schema");
 
-  auto enum_descriptor = pool_.FindEnumTypeByName("proto2_unittest.FooEnum");
+  auto file = pool_.FindFileByName("foo.proto");
+  auto enum_descriptor = file->FindEnumTypeByName("FooEnum");
   ClassNameResolver resolver;
 
   EXPECT_EQ(resolver.GetClassName(enum_descriptor, /* immutable = */ true),
-            PACKAGE_PREFIX "proto2_unittest.Foo.FooEnum");
+            PACKAGE_PREFIX "protobuf_unittest.Foo.FooEnum");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(enum_descriptor),
-            PACKAGE_PREFIX "proto2_unittest.Foo$FooEnum");
+            PACKAGE_PREFIX "protobuf_unittest.Foo$FooEnum");
+}
+
+TEST_F(NameResolverTest, NestInFileClassEnum) {
+  BuildFileAndPopulatePool("foo.proto",
+                                       R"schema(
+      edition = "2024";
+      import "third_party/java/protobuf/java_features.proto";
+      package protobuf_unittest;
+      enum NestedInFileClassEnum {
+        option features.(pb.java).nest_in_file_class = YES;
+
+        FOO_DEFAULT = 0;
+        FOO_VALUE = 1;
+      }
+
+      enum UnnestedEnum {
+        BAR_DEFAULT = 0;
+        BAR_VALUE = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  auto nested_enum = file->FindEnumTypeByName("NestedInFileClassEnum");
+  auto unnested_enum = file->FindEnumTypeByName("UnnestedEnum");
+
+  EXPECT_EQ(resolver.GetClassName(unnested_enum,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedEnum");
+  EXPECT_EQ(resolver.GetClassName(nested_enum,
+                                  /* immutable = */ true),
+            PACKAGE_PREFIX "protobuf_unittest.FooProto.NestedInFileClassEnum");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(unnested_enum),
+            PACKAGE_PREFIX "protobuf_unittest.UnnestedEnum");
+  EXPECT_EQ(resolver.GetJavaImmutableClassName(nested_enum),
+            PACKAGE_PREFIX "protobuf_unittest.FooProto$NestedInFileClassEnum");
 }
 
 }  // namespace
