@@ -293,7 +293,8 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         RETURN_IF_ERROR(DecodeDelimited(stream, *field));
         break;
       case WireFormatLite::WIRETYPE_START_GROUP: {
-        if (field->proto().kind() != Field::TYPE_GROUP) {
+        if (field->proto().kind() != Field::TYPE_GROUP &&
+            field->proto().kind() != Field::TYPE_MESSAGE) {
           return MakeFieldNotGroupError(field->proto().number());
         }
         auto group_desc = field->MessageType();

@@ -427,6 +427,25 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+
+  // Tag-delimited data should be accepted on a length-prefixed message field,
+  // instead of going into unknown fields.  This is tested by sending both
+  // delimited and length-prefixed, and expecting the order to remain unchanged
+  // on roundtrip.
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("DelimitedDataLengthPrefixedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          group(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          len(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          group(27, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(recursive_message { repeated_int32: [ 99, 87, 1 ] })pb");
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("LengthPrefixedDataDelimitedFieldNotUnknown"), REQUIRED,
+      absl::StrCat(
+          len(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+          group(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(87))),
+          len(203, field(31, WireFormatLite::WIRETYPE_VARINT, varint(1)))),
+      R"pb(recursive_group { repeated_int32: [ 99, 87, 1 ] })pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
