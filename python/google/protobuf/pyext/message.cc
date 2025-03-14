@@ -1043,7 +1043,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           return -1;
         }
       }
-    } else if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+    } else if (descriptor->is_repeated()) {
       ScopedPyObjectPtr container(GetFieldValue(self, descriptor));
       if (container == nullptr) {
         return -1;
@@ -1315,7 +1315,7 @@ int HasFieldByDescriptor(CMessage* self,
   if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return -1;
   }
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_SetString(PyExc_KeyError,
                     "Field is repeated. A singular method is required.");
     return -1;
@@ -1344,7 +1344,7 @@ const FieldDescriptor* FindFieldWithOneofs(const Message* message,
 
 bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
   auto message_name = std::string(field_descriptor->containing_type()->name());
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_Format(
         PyExc_ValueError, "Protocol message %s has no singular \"%s\" field.",
         message_name.c_str(), std::string(field_descriptor->name()).c_str());
@@ -2632,7 +2632,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                  std::string(field_descriptor->full_name()).c_str(),
                  Py_TYPE(self)->tp_name);
     return -1;
-  } else if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  } else if (field_descriptor->is_repeated()) {
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to repeated "
                  "field \"%s\" in protocol message object.",

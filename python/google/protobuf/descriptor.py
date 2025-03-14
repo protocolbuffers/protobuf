@@ -719,6 +719,7 @@ class FieldDescriptor(DescriptorBase):
   def type(self, val):
     self._type = val
 
+  # Deprecated. Please use is_required() or is_repeated() methods instead.
   @property
   def label(self):
     if (
@@ -727,6 +728,19 @@ class FieldDescriptor(DescriptorBase):
     ):
       return FieldDescriptor.LABEL_REQUIRED
     return self._label
+
+  @property
+  def is_required(self):
+    """Returns if the field is required."""
+    return (
+        self._GetFeatures().field_presence
+        == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED
+    )
+
+  @property
+  def is_repeated(self):
+    """Returns if the field is repeated."""
+    return self._label == FieldDescriptor.LABEL_REPEATED
 
   @property
   def camelcase_name(self):
@@ -746,7 +760,7 @@ class FieldDescriptor(DescriptorBase):
     Raises:
       RuntimeError: singular field that is not linked with message nor file.
     """
-    if self.label == FieldDescriptor.LABEL_REPEATED:
+    if self.is_repeated:
       return False
     if (
         self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
@@ -763,7 +777,7 @@ class FieldDescriptor(DescriptorBase):
   @property
   def is_packed(self):
     """Returns if the field is packed."""
-    if self.label != FieldDescriptor.LABEL_REPEATED:
+    if not self.is_repeated:
       return False
     field_type = self.type
     if (field_type == FieldDescriptor.TYPE_STRING or

@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
@@ -833,8 +834,17 @@ static PyObject* GetCppType(PyBaseDescriptor *self, void *closure) {
   return PyLong_FromLong(_GetDescriptor(self)->cpp_type());
 }
 
+ABSL_DEPRECATED("Use IsRequired() or IsRepeated() instead.")
 static PyObject* GetLabel(PyBaseDescriptor *self, void *closure) {
   return PyLong_FromLong(_GetDescriptor(self)->label());
+}
+
+static PyObject* IsRequired(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_required());
+}
+
+static PyObject* IsRepeated(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_repeated());
 }
 
 static PyObject* GetNumber(PyBaseDescriptor *self, void *closure) {
@@ -1049,6 +1059,8 @@ static PyGetSetDef Getters[] = {
     {"type", (getter)GetType, nullptr, "C++ Type"},
     {"cpp_type", (getter)GetCppType, nullptr, "C++ Type"},
     {"label", (getter)GetLabel, nullptr, "Label"},
+    {"is_required", (getter)IsRequired, nullptr, "Is Required"},
+    {"is_repeated", (getter)IsRepeated, nullptr, "Is Repeated"},
     {"number", (getter)GetNumber, nullptr, "Number"},
     {"index", (getter)GetIndex, nullptr, "Index"},
     {"default_value", (getter)GetDefaultValue, nullptr, "Default Value"},
