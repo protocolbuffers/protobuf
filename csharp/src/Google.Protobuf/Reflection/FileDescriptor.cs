@@ -72,7 +72,7 @@ namespace Google.Protobuf.Reflection
         private static bool extensionCachingEnabled = true;
 
         /// <summary>
-        /// Enables caching of discovered extensions. Greatly improves performance at the tradeoff of memory usage.
+        /// Disables caching of discovered extensions. Greatly reduces performance in highly nested protos but lowers the memory usage.
         /// </summary>
         public static void DisableExtensionCaching()
         {
@@ -80,6 +80,19 @@ namespace Google.Protobuf.Reflection
         }
 
 #if WITH_BENCHMARKING
+
+        /// <summary>
+        /// Resets the benchmarking counters.
+        /// </summary>
+        public static void ResetCounters()
+        {
+            GetAllExtensionsCount = 0;
+            TotalReturnedExtensionsCount = 0;
+            GetAllGeneratedExtensionsCount = 0;
+            GetAllDependedExtensionsCount = 0;
+            GetAllDependedExtensionsFromMessageCount = 0;
+        }
+
         internal static long GetAllExtensionsCount { get; private set; }
         internal static long TotalReturnedExtensionsCount { get; private set;}
         internal static long GetAllGeneratedExtensionsCount { get; private set; }
