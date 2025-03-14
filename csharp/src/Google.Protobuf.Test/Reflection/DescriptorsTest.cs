@@ -43,6 +43,9 @@ namespace Google.Protobuf.Reflection
 
             // uncomment below to find how much slower it is without caching
             //FileDescriptor.DisableExtensionCaching();
+#if DEBUG
+            FileDescriptor.ResetCounters();
+#endif
 
             var stopwatchCached = Stopwatch.StartNew();
 
@@ -56,17 +59,17 @@ namespace Google.Protobuf.Reflection
 
 #if DEBUG
             // For performance reaons, benachmarking is only enabled in Debug builds
-            Assert.AreEqual(402, FileDescriptor.GetAllExtensionsCount);
-            Assert.AreEqual(573, FileDescriptor.GetAllGeneratedExtensionsCount);
-            Assert.AreEqual(399, FileDescriptor.GetAllDependedExtensionsCount);
-            Assert.AreEqual(39, FileDescriptor.GetAllDependedExtensionsFromMessageCount);
-            Assert.AreEqual(118, FileDescriptor.TotalReturnedExtensionsCount);
+            Assert.AreEqual(393, FileDescriptor.GetAllExtensionsCount);
+            Assert.AreEqual(394, FileDescriptor.GetAllGeneratedExtensionsCount);
+            Assert.AreEqual(392, FileDescriptor.GetAllDependedExtensionsCount);
+            Assert.AreEqual(0, FileDescriptor.GetAllDependedExtensionsFromMessageCount);
+            Assert.AreEqual(0, FileDescriptor.TotalReturnedExtensionsCount);
 #else
             Console.WriteLine("Benchmarking is only enabled for Debug build: Cannot verify expected method call and returned Extension count");
 #endif
 
             // actually test that the performance increase is significant
-            Assert.Less(stopwatchCached.Elapsed, TimeSpan.FromSeconds(2), "Extension performance was not as low as expected - please improve performance of extension resolution");
+            Assert.Less(stopwatchCached.Elapsed, TimeSpan.FromSeconds(1), "Extension performance was not as low as expected - please improve performance of extension resolution");
         }
 
         [Test]
