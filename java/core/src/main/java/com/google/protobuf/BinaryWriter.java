@@ -670,7 +670,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  static void writeMapEntryField(
+  static final void writeMapEntryField(
       Writer writer, int fieldNumber, WireFormat.FieldType fieldType, Object object)
       throws IOException {
     switch (fieldType) {
