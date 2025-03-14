@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -48,7 +48,6 @@ namespace Google.Protobuf
         /// <summary>
         /// Constructs a new <see cref="ByteString" /> from the given bytes. The bytes are not copied,
         /// and must not be modified while the <see cref="ByteString" /> is in use.
-        /// This API is experimental and subject to change.
         /// </summary>
         public static ByteString UnsafeWrap(ReadOnlyMemory<byte> bytes)
         {

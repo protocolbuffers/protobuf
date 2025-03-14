@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -15,7 +15,7 @@ using System.Linq;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Provides extensions to messages while parsing. This API is experimental and subject to change.
+    /// Provides extensions to messages while parsing.
     /// </summary>
     public sealed class ExtensionRegistry : ICollection<Extension>, IDeepCloneable<ExtensionRegistry>
     {
