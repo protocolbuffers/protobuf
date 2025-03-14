@@ -2973,6 +2973,7 @@ final class MessageSchema<T> implements Schema<T> {
     try {
       while (true) {
         final int number = reader.getFieldNumber();
+        final int wireType = reader.getTag() & 0x7;
         final int pos = positionForFieldNumber(number);
         if (pos < 0) {
           if (number == Reader.READ_DONE) {
@@ -3056,14 +3057,6 @@ final class MessageSchema<T> implements Schema<T> {
               readString(message, typeAndOffset, reader);
               setFieldPresent(message, pos);
               break;
-            case 9:
-              { // MESSAGE:
-                final MessageLite current = (MessageLite) mutableMessageFieldForMerge(message, pos);
-                reader.mergeMessageField(
-                    current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
-                storeMessageField(message, pos, current);
-                break;
-              }
             case 10: // BYTES:
               UnsafeUtil.putObject(message, offset(typeAndOffset), reader.readBytes());
               setFieldPresent(message, pos);
@@ -3102,14 +3095,20 @@ final class MessageSchema<T> implements Schema<T> {
               UnsafeUtil.putLong(message, offset(typeAndOffset), reader.readSInt64());
               setFieldPresent(message, pos);
               break;
-            case 17:
-              { // GROUP:
+            case 17: // GROUP:
+            case 9: // MESSAGE:
+              if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+                final MessageLite current = (MessageLite) mutableMessageFieldForMerge(message, pos);
+                reader.mergeMessageField(
+                    current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
+                storeMessageField(message, pos, current);
+              } else {
                 final MessageLite current = (MessageLite) mutableMessageFieldForMerge(message, pos);
                 reader.mergeGroupField(
                     current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
                 storeMessageField(message, pos, current);
-                break;
               }
+              break;
             case 18: // DOUBLE_LIST:
               reader.readDoubleList(
                   listFieldSchema.<Double>mutableListAt(message, offset(typeAndOffset)));
@@ -3145,16 +3144,6 @@ final class MessageSchema<T> implements Schema<T> {
             case 26: // STRING_LIST:
               readStringList(message, typeAndOffset, reader);
               break;
-            case 27:
-              { // MESSAGE_LIST:
-                readMessageList(
-                    message,
-                    typeAndOffset,
-                    reader,
-                    (Schema<T>) getMessageFieldSchema(pos),
-                    extensionRegistry);
-                break;
-              }
             case 28: // BYTES_LIST:
               reader.readBytesList(
                   listFieldSchema.<ByteString>mutableListAt(message, offset(typeAndOffset)));
@@ -3261,16 +3250,24 @@ final class MessageSchema<T> implements Schema<T> {
               reader.readSInt64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
               break;
-            case 49:
-              { // GROUP_LIST:
+            case 49: // GROUP_LIST:
+            case 27: // MESSAGE_LIST:
+              if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+                readMessageList(
+                    message,
+                    typeAndOffset,
+                    reader,
+                    (Schema<T>) getMessageFieldSchema(pos),
+                    extensionRegistry);
+              } else {
                 readGroupList(
                     message,
                     offset(typeAndOffset),
                     reader,
                     (Schema<T>) getMessageFieldSchema(pos),
                     extensionRegistry);
-                break;
               }
+              break;
             case 50: // MAP:
               mergeMap(message, pos, getMapFieldDefaultEntry(pos), extensionRegistry, reader);
               break;
@@ -3318,15 +3315,6 @@ final class MessageSchema<T> implements Schema<T> {
               readString(message, typeAndOffset, reader);
               setOneofPresent(message, number, pos);
               break;
-            case 60:
-              { // ONEOF_MESSAGE:
-                final MessageLite current =
-                    (MessageLite) mutableOneofMessageFieldForMerge(message, number, pos);
-                reader.mergeMessageField(
-                    current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
-                storeOneofMessageField(message, number, pos, current);
-                break;
-              }
             case 61: // ONEOF_BYTES:
               UnsafeUtil.putObject(message, offset(typeAndOffset), reader.readBytes());
               setOneofPresent(message, number, pos);
@@ -3370,15 +3358,22 @@ final class MessageSchema<T> implements Schema<T> {
                   message, offset(typeAndOffset), Long.valueOf(reader.readSInt64()));
               setOneofPresent(message, number, pos);
               break;
-            case 68:
-              { // ONEOF_GROUP:
+            case 68: // ONEOF_GROUP:
+            case 60: // ONEOF_MESSAGE:
+              if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+                final MessageLite current =
+                    (MessageLite) mutableOneofMessageFieldForMerge(message, number, pos);
+                reader.mergeMessageField(
+                    current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
+                storeOneofMessageField(message, number, pos, current);
+              } else {
                 final MessageLite current =
                     (MessageLite) mutableOneofMessageFieldForMerge(message, number, pos);
                 reader.mergeGroupField(
                     current, (Schema<MessageLite>) getMessageFieldSchema(pos), extensionRegistry);
                 storeOneofMessageField(message, number, pos, current);
-                break;
               }
+              break;
             default:
               // Assume we've landed on an empty entry. Treat it as an unknown field.
               if (unknownFields == null) {
@@ -3655,19 +3650,6 @@ final class MessageSchema<T> implements Schema<T> {
           }
         }
         break;
-      case 27: // MESSAGE_LIST:
-        if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-          position =
-              decodeMessageList(
-                  getMessageFieldSchema(bufferPosition),
-                  tag,
-                  data,
-                  position,
-                  limit,
-                  list,
-                  registers);
-        }
-        break;
       case 28: // BYTES_LIST:
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
           position = decodeBytesList(tag, data, position, limit, list, registers);
@@ -3706,8 +3688,19 @@ final class MessageSchema<T> implements Schema<T> {
           position = decodeSInt64List(tag, data, position, limit, list, registers);
         }
         break;
+      case 27: // MESSAGE_LIST:
       case 49: // GROUP_LIST:
-        if (wireType == WireFormat.WIRETYPE_START_GROUP) {
+        if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+          position =
+              decodeMessageList(
+                  getMessageFieldSchema(bufferPosition),
+                  tag,
+                  data,
+                  position,
+                  limit,
+                  list,
+                  registers);
+        } else if (wireType == WireFormat.WIRETYPE_START_GROUP) {
           position =
               decodeGroupList(
                   getMessageFieldSchema(bufferPosition),
@@ -3840,15 +3833,6 @@ final class MessageSchema<T> implements Schema<T> {
           unsafe.putInt(message, oneofCaseOffset, number);
         }
         break;
-      case 60: // ONEOF_MESSAGE:
-        if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-          final Object current = mutableOneofMessageFieldForMerge(message, number, bufferPosition);
-          position =
-              mergeMessageField(
-                  current, getMessageFieldSchema(bufferPosition), data, position, limit, registers);
-          storeOneofMessageField(message, number, bufferPosition, current);
-        }
-        break;
       case 61: // ONEOF_BYTES:
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
           position = decodeBytes(data, position, registers);
@@ -3885,7 +3869,14 @@ final class MessageSchema<T> implements Schema<T> {
         }
         break;
       case 68: // ONEOF_GROUP:
-        if (wireType == WireFormat.WIRETYPE_START_GROUP) {
+      case 60: // ONEOF_MESSAGE:
+        if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+          final Object current = mutableOneofMessageFieldForMerge(message, number, bufferPosition);
+          position =
+              mergeMessageField(
+                  current, getMessageFieldSchema(bufferPosition), data, position, limit, registers);
+          storeOneofMessageField(message, number, bufferPosition, current);
+        } else if (wireType == WireFormat.WIRETYPE_START_GROUP) {
           final Object current = mutableOneofMessageFieldForMerge(message, number, bufferPosition);
           final int endTag = (tag & ~0x7) | WireFormat.WIRETYPE_END_GROUP;
           position =
@@ -4055,17 +4046,6 @@ final class MessageSchema<T> implements Schema<T> {
                 continue;
               }
               break;
-            case 9: // MESSAGE
-              if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-                final Object current = mutableMessageFieldForMerge(message, pos);
-                position =
-                    mergeMessageField(
-                        current, getMessageFieldSchema(pos), data, position, limit, registers);
-                storeMessageField(message, pos, current);
-                currentPresenceField |= presenceMask;
-                continue;
-              }
-              break;
             case 10: // BYTES
               if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
                 position = decodeBytes(data, position, registers);
@@ -4113,7 +4093,16 @@ final class MessageSchema<T> implements Schema<T> {
               }
               break;
             case 17: // GROUP
-              if (wireType == WireFormat.WIRETYPE_START_GROUP) {
+            case 9: // MESSAGE
+              if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+                final Object current = mutableMessageFieldForMerge(message, pos);
+                position =
+                    mergeMessageField(
+                        current, getMessageFieldSchema(pos), data, position, limit, registers);
+                storeMessageField(message, pos, current);
+                currentPresenceField |= presenceMask;
+                continue;
+              } else if (wireType == WireFormat.WIRETYPE_START_GROUP) {
                 final Object current = mutableMessageFieldForMerge(message, pos);
                 final int endTag = (number << 3) | WireFormat.WIRETYPE_END_GROUP;
                 position =
@@ -4132,22 +4121,6 @@ final class MessageSchema<T> implements Schema<T> {
               break;
             default:
               break;
-          }
-        } else if (fieldType == 27) {
-          // Handle repeated message field.
-          if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-            ProtobufList<?> list = (ProtobufList<?>) unsafe.getObject(message, fieldOffset);
-            if (!list.isModifiable()) {
-              final int size = list.size();
-              list =
-                  list.mutableCopyWithCapacity(
-                      size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
-              unsafe.putObject(message, fieldOffset, list);
-            }
-            position =
-                decodeMessageList(
-                    getMessageFieldSchema(pos), tag, data, position, limit, list, registers);
-            continue;
           }
         } else if (fieldType <= 49) {
           // Handle all other repeated fields.

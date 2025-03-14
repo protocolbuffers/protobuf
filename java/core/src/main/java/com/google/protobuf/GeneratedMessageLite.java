@@ -692,7 +692,7 @@ public abstract class GeneratedMessageLite<
               if (subBuilder == null) {
                 subBuilder = extension.getMessageDefaultInstance().newBuilderForType();
               }
-              if (extension.descriptor.getLiteType() == WireFormat.FieldType.GROUP) {
+              if (wireType == WireFormat.WIRETYPE_START_GROUP) {
                 input.readGroup(extension.getNumber(), subBuilder, extensionRegistry);
               } else {
                 input.readMessage(subBuilder, extensionRegistry);

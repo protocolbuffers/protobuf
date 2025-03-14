@@ -555,33 +555,33 @@ bool WireFormat::ParseAndMergeField(
         break;
       }
 
-      case FieldDescriptor::TYPE_GROUP: {
-        Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
-
-        if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
-                                       input, sub_message))
-          return false;
-        break;
-      }
-
+      case FieldDescriptor::TYPE_GROUP:
       case FieldDescriptor::TYPE_MESSAGE: {
         Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
+        if (WireFormatLite::GetTagWireType(tag) ==
+            WireFormatLite::WIRETYPE_START_GROUP) {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
 
-        if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+          if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
+                                         input, sub_message))
+            return false;
+        } else {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
+
+          if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+        }
         break;
       }
     }
@@ -888,6 +888,13 @@ const char* WireFormat::_InternalParseAndMergeField(
           ABSL_LOG(FATAL) << "Can't reach";
           return nullptr;
       }
+    } else if ((field->type() == FieldDescriptor::TYPE_GROUP &&
+                WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_LENGTH_DELIMITED) ||
+               (field->type() == FieldDescriptor::TYPE_MESSAGE &&
+                WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_START_GROUP)) {
+      HandleMessage(msg, ptr, ctx, tag, reflection, field);
     } else {
       // mismatched wiretype;
       return internal::UnknownFieldParse(
