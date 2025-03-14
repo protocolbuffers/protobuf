@@ -98,6 +98,7 @@ google/protobuf/message.h
 google/protobuf/message_lite.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
+google/protobuf/micro_string.h
 google/protobuf/parse_context.h
 google/protobuf/port.h
 google/protobuf/port_def.inc
