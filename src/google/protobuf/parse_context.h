@@ -535,6 +535,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     });
   }
 
+
   [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
                                                               const char* ptr,
                                                               uint32_t tag) {
@@ -1144,6 +1145,7 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   --depth_;
   return ptr;
 }
+
 
 template <typename Tag, typename T>
 const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
