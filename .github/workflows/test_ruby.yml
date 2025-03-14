@@ -96,37 +96,36 @@ jobs:
             rake clobber_package gem;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
-  # TODO: Re-enable once aarch64 is fixed.
-  # linux-aarch64:
-  #   name: Linux aarch64
-  #   runs-on: ubuntu-22-4core
-  #   steps:
-  #     - name: Checkout pending changes
-  #       uses: protocolbuffers/protobuf-ci/checkout@v4
-  #       with:
-  #         ref: ${{ inputs.safe-checkout }}
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
 
-  #     - name: Cross compile protoc for aarch64
-  #       id: cross-compile
-  #       uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
-  #       with:
-  #         image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
-  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-  #         architecture: linux-aarch64
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
 
-  #     - name: Run tests
-  #       uses: protocolbuffers/protobuf-ci/docker@v4
-  #       with:
-  #         image: arm64v8/ruby:3.0.2-buster
-  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-  #         command: >-
-  #           /bin/bash -cex '
-  #           gem install bundler -v 2.5.13;
-  #           cd /workspace/ruby;
-  #           bundle;
-  #           PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
-  #           rake clobber_package gem;
-  #           PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v4
+        with:
+          image: arm64v8/ruby:3.0.2-buster
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            gem install bundler -v 2.5.13;
+            cd /workspace/ruby;
+            bundle;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
+            rake clobber_package gem;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
   macos:
     strategy:
