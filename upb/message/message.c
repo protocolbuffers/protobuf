@@ -34,10 +34,11 @@ upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
   return _upb_Message_New(m, a);
 }
 
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
-                                          size_t len, upb_Arena* arena,
-                                          bool alias) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
+                                                               const char* data,
+                                                               size_t len,
+                                                               upb_Arena* arena,
+                                                               bool alias) {
   {
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
     if (in && in->size) {
@@ -74,7 +75,6 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
       }
     }
   }
-
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
