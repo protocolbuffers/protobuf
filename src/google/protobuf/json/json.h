@@ -79,8 +79,8 @@ PROTOBUF_EXPORT absl::Status MessageToJsonStream(const Message& message,
                                                  io::ZeroCopyOutputStream* json_output,
                                                  const PrintOptions& options);
 
-absl::Status MessageToJsonStream(const Message& message, 
-                                io::ZeroCopyOutputStream* json_output) {
+inline absl::Status MessageToJsonStream(const Message& message, 
+                                        io::ZeroCopyOutputStream* json_output) {
   return MessageToJsonStream(message, json_output, PrintOptions());
 }
 
