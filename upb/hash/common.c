@@ -629,6 +629,10 @@ void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
 // to avoid sign-extending into this value).
 static const upb_value kInttableSentinel = {.val = UINT64_MAX};
 
+static uint32_t presence_mask_arr_size(uint32_t array_size) {
+  return (array_size + 7) / 8;  // sizeof(uint8_t) is always 1.
+}
+
 static uint32_t inthash(upb_key key) { return upb_inthash(key); }
 
 static bool inteql(upb_key k1, lookupkey_t k2) { return k1 == k2.num; }
@@ -641,7 +645,7 @@ static const upb_value* inttable_array_get(const upb_inttable* t,
                                            uintptr_t key) {
   UPB_ASSERT(key < t->array_size);
   const upb_value* val = &t->array[key];
-  return upb_inttable_is_sentinel(*val) ? NULL : val;
+  return upb_inttable_is_sentinel(t, key, *val) ? NULL : val;
 }
 
 static bool inttable_array_has(const upb_inttable* t, uintptr_t key) {
@@ -702,6 +706,19 @@ bool upb_inttable_sizedinit(upb_inttable* t, uint32_t asize, int hsize_lg2,
     return false;
   }
   memset(mutable_array(t), 0xff, array_bytes);
+
+  // Set up the presence mask array.
+  // If the array size is 1, we just check the array count to determine if the
+  // element is present.
+  if (t->array_size > 1) {
+    uint32_t presence_bytes = presence_mask_arr_size(t->array_size);
+    t->presence_mask = upb_Arena_Malloc(a, presence_bytes);
+    if (!t->presence_mask) {
+      return false;
+    }
+    memset((uint8_t*)t->presence_mask, false, presence_bytes);
+  }
+
   check(t);
   return true;
 }
@@ -714,13 +731,12 @@ bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
   if (key < t->array_size) {
-    // TODO: This will reject in-bounds values which are
-    // (uint64_t)-1.
-    // Fix this by potentially using a bit field to track presence in the array.
-    UPB_ASSERT(!upb_inttable_is_sentinel(val));
     UPB_ASSERT(!inttable_array_has(t, key));
     t->array_count++;
     mutable_array(t)[key] = val;
+    if (t->array_size > 1) {
+      ((uint8_t*)t->presence_mask)[key / 8] |= (1 << (key % 8));
+    }
   } else {
     if (isfull(&t->t)) {
       /* Need to resize the hash part, but we re-use the array part. */
@@ -771,6 +787,9 @@ bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
         *val = t->array[key];
       }
       mutable_array(t)[key] = kInttableSentinel;
+      if (t->array_size > 1) {
+        ((uint8_t*)t->presence_mask)[key / 8] &= ~(1 << (key % 8));
+      }
       success = true;
     } else {
       success = false;
@@ -853,7 +872,11 @@ void upb_inttable_clear(upb_inttable* t) {
   // Clear the array by setting all bits to 1, as UINT64_MAX is the sentinel
   // value for an empty array.
   memset(mutable_array(t), 0xff, array_bytes);
-
+  // Clear the presence mask array.
+  if (t->array_size > 1) {
+    memset((uint8_t*)t->presence_mask, 0,
+           presence_mask_arr_size(t->array_size));
+  }
   // Clear the table part.
   size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
   t->t.count = 0;

@@ -133,6 +133,8 @@ Error, UINTPTR_MAX is undefined
 #ifdef _MSC_VER
 // Some versions of our Windows compiler don't support the C11 syntax.
 #define UPB_ALIGN_AS(x) __declspec(align(x))
+#elif defined(__GNUC__)
+#define UPB_ALIGN_AS(x) __attribute__((aligned(x)))
 #else
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
