@@ -251,8 +251,8 @@ def build_targets(name):
         name = "copied_conformance_test_files",
         testonly = 1,
         srcs = [
-            "//src/google/protobuf:test_messages_proto2.proto",
-            "//src/google/protobuf:test_messages_proto3.proto",
+            "//:test_messages_proto2.proto",
+            "//:test_messages_proto3.proto",
         ],
         strip_prefix = "src",
     )

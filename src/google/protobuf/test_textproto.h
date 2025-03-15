@@ -8,22 +8,62 @@
 #ifndef GOOGLE_PROTOBUF_TEST_TEXTPROTO_H__
 #define GOOGLE_PROTOBUF_TEST_TEXTPROTO_H__
 
+#include <memory>
+#include <string>
+
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/util/field_comparator.h"
+#include "google/protobuf/util/message_differencer.h"
 
 // This file contains private helpers for dealing with textprotos in our
 // tests.  We make no guarantees about the behavior in real-world situations,
 // and these are only meant for basic unit-tests of protobuf internals.
 namespace google {
 namespace protobuf {
+namespace internal {
 
-MATCHER_P(EqualsProto, textproto, "") {
+inline bool EqualsProtoImpl(const Message& actual, const Message& expected,
+                            ::testing::MatchResultListener* result_listener) {
+  util::MessageDifferencer differencer;
+  util::DefaultFieldComparator field_comparator;
+  field_comparator.set_treat_nan_as_equal(true);
+  differencer.set_field_comparator(&field_comparator);
+  std::string differences;
+  differencer.ReportDifferencesToString(&differences);
+
+  differencer.Compare(actual, expected);
+  if (!differences.empty()) {
+    *result_listener << "protos were not equivalent:\n" << differences;
+    return false;
+  }
+  return true;
+}
+
+MATCHER_P(EqualsTextProto, textproto, "") {
   auto msg = absl::WrapUnique(arg.New());
-  return TextFormat::ParseFromString(textproto, msg.get()) &&
-         msg->DebugString() == arg.DebugString();
+  if (!TextFormat::ParseFromString(textproto, msg.get())) {
+    *result_listener << "failed to parse textproto";
+    return false;
+  }
+  return EqualsProtoImpl(arg, *msg, result_listener);
+}
+
+MATCHER_P(EqualsMessage, message, "") {
+  return EqualsProtoImpl(arg, *message, result_listener);
+}
+}  // namespace internal
+
+inline auto EqualsProto(absl::string_view textproto) {
+  return internal::EqualsTextProto(textproto);
+}
+inline auto EqualsProto(const Message& message) {
+  return internal::EqualsMessage(&message);
 }
 
 MATCHER_P3(EqualsProtoSerialized, pool, type, textproto, "") {

@@ -54,8 +54,9 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/endian.h"
 
 using google::protobuf::ConformanceTestSuite;
@@ -171,13 +172,13 @@ void UsageError() {
   exit(1);
 }
 
-void ForkPipeRunner::RunTest(const std::string &test_name, uint32_t len,
+void ForkPipeRunner::RunTest(absl::string_view test_name, uint32_t len,
                              const std::string &request,
                              std::string *response) {
   if (child_pid_ < 0) {
     SpawnTestProgram();
   }
-  current_test_name_ = test_name;
+  current_test_name_ = std::string(test_name);
 
   CheckedWrite(write_fd_, &len, sizeof(uint32_t));
   CheckedWrite(write_fd_, request.c_str(), request.size());
@@ -391,10 +392,8 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
-    ABSL_LOG(INFO) << argv[0];
     for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
-      ABSL_LOG(INFO) << executable_args_[i];
     }
     argv.push_back(nullptr);
     // Never returns.

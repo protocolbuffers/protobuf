@@ -16,7 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "json/json.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
 

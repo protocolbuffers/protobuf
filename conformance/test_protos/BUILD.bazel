@@ -7,7 +7,7 @@ load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 package(
     default_testonly = True,
-    default_visibility = ["//conformance:__pkg__"],
+    default_visibility = ["//conformance:__subpackages__"],
 )
 
 proto_library(

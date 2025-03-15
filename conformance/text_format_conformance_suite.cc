@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "text_format_conformance_suite.h"
+#include "conformance/text_format_conformance_suite.h"
 
 #include <cstddef>
 #include <string>
@@ -16,7 +16,7 @@
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
