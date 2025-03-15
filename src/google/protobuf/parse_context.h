@@ -935,7 +935,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 }
 #endif
 
-// Helper function for preventing inlining
+// Helper function to prevent inlining
 template <typename T>
 ABSL_ATTRIBUTE_COLD
 PROTOBUF_NOINLINE
