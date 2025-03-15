@@ -169,10 +169,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
-  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING &&
-      value_size <= 4) {
-    // Use the inttable for primitive keys with small values, as inttable
-    // currently does not support UINT64_MAX in the array part.
+  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
     if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {
