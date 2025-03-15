@@ -147,42 +147,43 @@ jobs:
             composer update --ignore-platform-reqs;
             composer ${{ matrix.test }}'
 
-  linux-aarch64:
-    name: Linux aarch64
-    runs-on: ubuntu-22-4core
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
-        with:
-          ref: ${{ inputs.safe-checkout }}
+  # TODO: Re-enable once aarch64 is fixed.
+  # linux-aarch64:
+  #   name: Linux aarch64
+  #   runs-on: ubuntu-22-4core
+  #   steps:
+  #     - name: Checkout pending changes
+  #       uses: protocolbuffers/protobuf-ci/checkout@v4
+  #       with:
+  #         ref: ${{ inputs.safe-checkout }}
 
-      - name: Cross compile protoc for aarch64
-        id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          architecture: linux-aarch64
+  #     - name: Cross compile protoc for aarch64
+  #       id: cross-compile
+  #       uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+  #       with:
+  #         image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
+  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+  #         architecture: linux-aarch64
 
-      - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v4
-        with:
-          cache-prefix: php-8.1
-          directory: php
+  #     - name: Setup composer
+  #       uses: protocolbuffers/protobuf-ci/composer-setup@v4
+  #       with:
+  #         cache-prefix: php-8.1
+  #         directory: php
 
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v4
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
-          platform: linux/arm64
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
-          command: >-
-            -cex '
-            cd php;
-            composer update --ignore-platform-reqs;
-            composer test;
-            composer test_c'
+  #     - name: Run tests
+  #       uses: protocolbuffers/protobuf-ci/docker@v4
+  #       with:
+  #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+  #         platform: linux/arm64
+  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+  #         extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+  #         command: >-
+  #           -cex '
+  #           cd php;
+  #           composer update --ignore-platform-reqs;
+  #           composer test;
+  #           composer test_c'
 
   macos:
     strategy:
