@@ -984,12 +984,7 @@ template <typename T>
   // 3 byte: ?000_000 1000_000 0000_000 0000_000
   // 4 byte: 1000_000 0000_000 0000_000 0000_000
   // ? byte: 0000_000 0000_000 0000_000 0000_000
-  uint32_t mask = ~value;
-
-  // Fix clang
-  asm("" : "+r"(mask));
-
-  mask &= 0x8080'8080;
+  uint32_t mask = ValueBarrier(~value) & 0x8080'8080;
 
   if ABSL_PREDICT_FALSE(mask == 0) {
     // All continuation bits set, fall back to default implementation
