@@ -984,10 +984,13 @@ template <typename T>
   // 3 byte: ?000_000 1000_000 0000_000 0000_000
   // 4 byte: 1000_000 0000_000 0000_000 0000_000
   // ? byte: 0000_000 0000_000 0000_000 0000_000
-  uint32_t mask = (~value) & 0x8080'8080;
+  uint32_t mask = ~value;
 
-  // This has weird codegen on x86_64 clang 19
-  // For details, see https://godbolt.org/z/rPvKePY9a
+  // Fix clang
+  asm("" : "+r"(mask));
+
+  mask &= 0x8080'8080;
+
   if ABSL_PREDICT_FALSE(mask == 0) {
     // All continuation bits set, fall back to default implementation
     return VarintParseCold(p, out);
