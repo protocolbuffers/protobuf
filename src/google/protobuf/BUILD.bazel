@@ -491,6 +491,39 @@ cc_library(
 )
 
 cc_library(
+    name = "micro_string",
+    srcs = ["micro_string.cc"],
+    hdrs = ["micro_string.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena",
+        ":arena_align",
+        ":port",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "micro_string_test",
+    srcs = ["micro_string_test.cc"],
+    deps = [
+        ":arena",
+        ":arena_align",
+        ":micro_string",
+        ":port",
+        ":protobuf_lite",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "internal_visibility",
     hdrs = ["internal_visibility.h"],
     copts = COPTS,
@@ -585,6 +618,7 @@ cc_library(
         ":arena_cleanup",
         ":endian",
         ":internal_visibility",
+        ":micro_string",
         ":port",
         ":string_block",
         ":varint_shuffle",
