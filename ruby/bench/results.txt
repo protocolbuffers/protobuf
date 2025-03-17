@@ -1,0 +1,11 @@
+ruby 3.4.1 (2024-12-25 revision 48d4efcb85) +PRISM [arm64-darwin23]
+Warming up --------------------------------------
+          Message#[]    97.492k i/100ms
+         Message#get   100.486k i/100ms
+Calculating -------------------------------------
+          Message#[]    973.887k (± 1.5%) i/s    (1.03 μs/i) -      4.875M in   5.006575s
+         Message#get      1.015M (± 1.4%) i/s  (985.51 ns/i) -      5.125M in   5.051518s
+
+Comparison:
+         Message#get:  1014707.7 i/s
+          Message#[]:   973886.7 i/s - 1.04x  slower

@@ -63,6 +63,8 @@ static inline TypeInfo TypeInfo_from_type(upb_CType type) {
 
 VALUE Descriptor_DefToClass(const upb_MessageDef* m);
 
+st_table* field_cache_for_RubyDescriptor(VALUE descriptor_rb);
+
 // Returns the underlying msgdef, enumdef, or symtab (respectively) for the
 // given Descriptor, EnumDescriptor, or DescriptorPool Ruby object.
 const upb_EnumDef* EnumDescriptor_GetEnumDef(VALUE enum_desc_rb);

@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <ruby.h>
+#include <ruby/st.h>
+
 #include "message.h"
 
 #include "convert.h"
@@ -50,7 +53,7 @@ static rb_data_type_t Message_type = {
     "Google::Protobuf::Message",
     {Message_mark, RUBY_DEFAULT_FREE, Message_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
-};
+};// RTYPED_DATA(whatever)
 
 static Message* ruby_to_Message(VALUE msg_rb) {
   Message* msg;
@@ -907,6 +910,32 @@ static VALUE Message_index(VALUE _self, VALUE field_name) {
   return Message_getfield(_self, field);
 }
 
+static VALUE Message_index_alt(VALUE _self, VALUE field_name) {
+  Message* self = ruby_to_Message(_self);
+  const upb_FieldDef* field;
+
+  //  Check_Type(field_name, T_STRING | T_SYMBOL);
+
+  ID field_name_id;
+
+  if (TYPE(field_name) == T_STRING) {
+    field_name_id = SYM2ID(rb_str_intern(field_name));
+  } else {
+    field_name_id = SYM2ID(field_name);
+  }
+
+  VALUE klass = rb_class_of(_self);
+  VALUE descriptor_rb = rb_ivar_get(klass, descriptor_instancevar_interned);
+
+  st_table* field_cache = field_cache_for_RubyDescriptor(descriptor_rb);
+
+  if(!st_lookup(field_cache, field_name_id, &field)) {
+    return Qnil;
+  }
+
+  return Message_getfield(_self, field);
+}
+
 /*
  * ruby-doc: AbstractMessage#[]=
  *
@@ -1441,6 +1470,7 @@ static void Message_define_class(VALUE klass) {
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
+  rb_define_method(klass, "get", Message_index_alt, 1);
   rb_define_singleton_method(klass, "decode", Message_decode, -1);
   rb_define_singleton_method(klass, "encode", Message_encode, -1);
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);

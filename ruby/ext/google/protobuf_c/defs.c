@@ -239,6 +239,7 @@ typedef struct {
   // macro to update VALUE references, as to trigger write barriers.
   VALUE klass;
   VALUE descriptor_pool;
+  st_table* field_cache;
 } Descriptor;
 
 VALUE cDescriptor = Qnil;
@@ -323,6 +324,7 @@ static VALUE Descriptor_alloc(VALUE klass) {
   self->msgdef = NULL;
   self->klass = Qnil;
   self->descriptor_pool = Qnil;
+  self->field_cache = st_init_numtable(); // TODO I think this is a memory leak
   return ret;
 }
 
@@ -342,7 +344,19 @@ static VALUE Descriptor_initialize(VALUE _self, VALUE cookie,
   }
 
   RB_OBJ_WRITE(_self, &self->descriptor_pool, descriptor_pool);
-  self->msgdef = (const upb_MessageDef*)NUM2ULL(ptr);
+
+  upb_MessageDef* msgdef = (upb_MessageDef*)NUM2ULL(ptr);
+
+  self->msgdef = msgdef;
+
+  int field_count = upb_MessageDef_FieldCount(msgdef);
+
+  for(int i = 0; i < field_count; i++) {
+    const upb_FieldDef* field = upb_MessageDef_Field(msgdef, i);
+    const char* field_name = upb_FieldDef_Name(field);
+    ID field_name_id = rb_intern(field_name);
+    st_insert(self->field_cache, (st_data_t)field_name_id, (st_data_t)field);
+  }
 
   return Qnil;
 }
@@ -2010,6 +2024,11 @@ VALUE Descriptor_DefToClass(const upb_MessageDef* m) {
   VALUE desc_rb = get_msgdef_obj(pool, m);
   const Descriptor* desc = ruby_to_Descriptor(desc_rb);
   return desc->klass;
+}
+
+st_table* field_cache_for_RubyDescriptor(VALUE descriptor_rb) {
+  const Descriptor* desc = ruby_to_Descriptor(descriptor_rb);
+  return desc->field_cache;
 }
 
 const upb_MessageDef* Descriptor_GetMsgDef(VALUE desc_rb) {
