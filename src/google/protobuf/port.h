@@ -496,20 +496,27 @@ class NoopDebugCounter {
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
-#if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
+
 // Take advantage of C++20 constexpr support in std::string.
-class alignas(8) GlobalEmptyString {
+class alignas(8) GlobalEmptyStringConstexpr {
  public:
   const std::string& get() const { return value_; }
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
+  template <typename T = std::string, bool = (T(), true)>
+  static constexpr std::true_type HasConstexprDefaultConstructor(int) {
+    return {};
+  }
+  static constexpr std::false_type HasConstexprDefaultConstructor(char) {
+    return {};
+  }
+
  private:
   std::string value_;
 };
-PROTOBUF_EXPORT extern const GlobalEmptyString fixed_address_empty_string;
-#else
-class alignas(8) GlobalEmptyString {
+
+class alignas(8) GlobalEmptyStringDynamicInit {
  public:
   const std::string& get() const {
     return *reinterpret_cast<const std::string*>(internal::Launder(buffer_));
@@ -521,8 +528,12 @@ class alignas(8) GlobalEmptyString {
  private:
   alignas(std::string) char buffer_[sizeof(std::string)];
 };
+
+using GlobalEmptyString = std::conditional_t<
+    GlobalEmptyStringConstexpr::HasConstexprDefaultConstructor(0),
+    const GlobalEmptyStringConstexpr, GlobalEmptyStringDynamicInit>;
+
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
-#endif
 
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
