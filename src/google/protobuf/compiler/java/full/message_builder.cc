@@ -55,24 +55,6 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
   ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
 }
-
-bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
-  if (!descriptor->is_repeated() || IsMapField(descriptor)) {
-    return false;
-  }
-  // TODO: update this to migrate repeated fields to use
-  // ProtobufList (which tracks immutability internally). That allows us to use
-  // the presence bit to skip work on the repeated field if it is not populated.
-  // Once all repeated fields are held in ProtobufLists, this method shouldn't
-  // be needed.
-  switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_MESSAGE:
-      return true;
-    default:
-      return false;
-  }
-}
 }  // namespace
 
 MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
@@ -478,16 +460,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
 
   printer->Indent();
 
-  // Handle the repeated fields first so that the "mutable bits" are cleared.
-  bool has_repeated_fields = false;
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    if (BitfieldTracksMutability(descriptor_->field(i))) {
-      has_repeated_fields = true;
-      printer->Print("buildPartialRepeatedFields(result);\n");
-      break;
-    }
-  }
-
   // One buildPartial#() per from_bit_field
   int totalBuilderInts = (descriptor_->field_count() + 31) / 32;
   if (totalBuilderInts > 0) {
@@ -509,23 +481,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
-  // Build Repeated Fields
-  if (has_repeated_fields) {
-    printer->Print(
-        "private void buildPartialRepeatedFields($classname$ result) {\n",
-        "classname", name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      if (BitfieldTracksMutability(descriptor_->field(i))) {
-        const ImmutableFieldGenerator& field =
-            field_generators_.get(descriptor_->field(i));
-        field.GenerateBuildingCode(printer);
-      }
-    }
-    printer->Outdent();
-    printer->Print("}\n\n");
-  }
 
   // Build non-oneof fields
   int start_field = 0;
@@ -581,11 +536,6 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
       continue;
     }
 
-    // Skip repeated fields because they are currently handled
-    // in separate buildPartial sub-methods.
-    if (BitfieldTracksMutability(descriptor_->field(next))) {
-      continue;
-    }
     // Skip fields without presence bits in the builder
     if (field.GetNumBitsForBuilder() == 0) {
       continue;
