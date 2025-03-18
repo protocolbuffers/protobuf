@@ -129,6 +129,8 @@ Error, UINTPTR_MAX is undefined
 #ifdef _MSC_VER
 // Some versions of our Windows compiler don't support the C11 syntax.
 #define UPB_ALIGN_AS(x) __declspec(align(x))
+#elif defined(__GNUC__)
+#define UPB_ALIGN_AS(x) __attribute__((aligned(x)))
 #else
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
@@ -4073,10 +4075,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
-  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING &&
-      value_size <= 4) {
-    // Use the inttable for primitive keys with small values, as inttable
-    // currently does not support UINT64_MAX in the array part.
+  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
     if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {
@@ -8654,7 +8653,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
       intptr_t iter = UPB_INTTABLE_BEGIN;
       while ((size_t)++iter < map->t.inttable.array_size) {
         upb_value value = map->t.inttable.array[iter];
-        if (!upb_inttable_is_sentinel(value)) {
+        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
           upb_MapEntry ent;
           memcpy(&ent.k, &iter, sizeof(iter));
           _upb_map_fromvalue(value, &ent.v, map->val_size);
@@ -12006,6 +12005,10 @@ void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
 // to avoid sign-extending into this value).
 static const upb_value kInttableSentinel = {.val = UINT64_MAX};
 
+static uint32_t presence_mask_arr_size(uint32_t array_size) {
+  return (array_size + 7) / 8;  // sizeof(uint8_t) is always 1.
+}
+
 static uint32_t inthash(upb_key key) { return upb_inthash(key); }
 
 static bool inteql(upb_key k1, lookupkey_t k2) { return k1 == k2.num; }
@@ -12018,11 +12021,7 @@ static const upb_value* inttable_array_get(const upb_inttable* t,
                                            uintptr_t key) {
   UPB_ASSERT(key < t->array_size);
   const upb_value* val = &t->array[key];
-  return upb_inttable_is_sentinel(*val) ? NULL : val;
-}
-
-static bool inttable_array_has(const upb_inttable* t, uintptr_t key) {
-  return inttable_array_get(t, key) != NULL;
+  return upb_inttable_arrhas(t, key) ? val : NULL;
 }
 
 static upb_value* inttable_val(upb_inttable* t, uintptr_t key) {
@@ -12073,12 +12072,23 @@ bool upb_inttable_sizedinit(upb_inttable* t, uint32_t asize, int hsize_lg2,
     return false;
   }
 #endif
+
+  // Allocate the array part and the presence mask array in one allocation.
   size_t array_bytes = t->array_size * sizeof(upb_value);
-  t->array = upb_Arena_Malloc(a, array_bytes);
-  if (!t->array) {
+  uint32_t presence_bytes = presence_mask_arr_size(t->array_size);
+  uintptr_t total_bytes = array_bytes + presence_bytes;
+  if (UPB_UNLIKELY(total_bytes > SIZE_MAX)) {
     return false;
   }
+  void* alloc = upb_Arena_Malloc(a, total_bytes);
+  if (!alloc) {
+    return false;
+  }
+  t->array = alloc;
   memset(mutable_array(t), 0xff, array_bytes);
+  t->presence_mask = (uint8_t*)alloc + array_bytes;
+  memset((uint8_t*)t->presence_mask, 0, presence_bytes);
+
   check(t);
   return true;
 }
@@ -12091,13 +12101,10 @@ bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
   if (key < t->array_size) {
-    // TODO: This will reject in-bounds values which are
-    // (uint64_t)-1.
-    // Fix this by potentially using a bit field to track presence in the array.
-    UPB_ASSERT(!upb_inttable_is_sentinel(val));
-    UPB_ASSERT(!inttable_array_has(t, key));
+    UPB_ASSERT(!upb_inttable_arrhas(t, key));
     t->array_count++;
     mutable_array(t)[key] = val;
+    ((uint8_t*)t->presence_mask)[key / 8] |= (1 << (key % 8));
   } else {
     if (isfull(&t->t)) {
       /* Need to resize the hash part, but we re-use the array part. */
@@ -12142,12 +12149,13 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val) {
 bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
   bool success;
   if (key < t->array_size) {
-    if (inttable_array_has(t, key)) {
+    if (upb_inttable_arrhas(t, key)) {
       t->array_count--;
       if (val) {
         *val = t->array[key];
       }
       mutable_array(t)[key] = kInttableSentinel;
+      ((uint8_t*)t->presence_mask)[key / 8] &= ~(1 << (key % 8));
       success = true;
     } else {
       success = false;
@@ -12230,7 +12238,8 @@ void upb_inttable_clear(upb_inttable* t) {
   // Clear the array by setting all bits to 1, as UINT64_MAX is the sentinel
   // value for an empty array.
   memset(mutable_array(t), 0xff, array_bytes);
-
+  // Clear the presence mask array.
+  memset((uint8_t*)t->presence_mask, 0, presence_mask_arr_size(t->array_size));
   // Clear the table part.
   size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
   t->t.count = 0;
@@ -12313,7 +12322,7 @@ bool upb_inttable_done(const upb_inttable* t, intptr_t iter) {
   if ((uintptr_t)iter >= t->array_size + upb_table_size(&t->t)) {
     return true;
   } else if ((size_t)iter < t->array_size) {
-    return !inttable_array_has(t, iter);
+    return !upb_inttable_arrhas(t, iter);
   } else {
     return upb_tabent_isempty(&t->t.entries[iter - t->array_size]);
   }
@@ -13617,7 +13626,7 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
 // Must be last.
 
 struct upb_EnumDef {
-  const UPB_DESC(EnumOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(EnumOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;
@@ -13962,14 +13971,11 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 // Must be last.
 
 struct upb_EnumValueDef {
-  const UPB_DESC(EnumValueOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(EnumValueOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_EnumDef* parent;
   const char* full_name;
   int32_t number;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i) {
@@ -14180,7 +14186,7 @@ typedef struct {
 } str_t;
 
 struct upb_FieldDef {
-  const UPB_DESC(FieldOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(FieldOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_FileDef* file;
   const upb_MessageDef* msgdef;
@@ -16254,7 +16260,7 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 // Must be last.
 
 struct upb_MessageDef {
-  const UPB_DESC(MessageOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(MessageOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
@@ -16293,9 +16299,6 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -17149,7 +17152,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 // Must be last.
 
 struct upb_OneofDef {
-  const UPB_DESC(OneofOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(OneofOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MessageDef* parent;
   const char* full_name;
@@ -17348,16 +17351,13 @@ upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
 // Must be last.
 
 struct upb_ServiceDef {
-  const UPB_DESC(ServiceOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(ServiceOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_FileDef* file;
   const char* full_name;
   upb_MethodDef* methods;
   int method_count;
   int index;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
