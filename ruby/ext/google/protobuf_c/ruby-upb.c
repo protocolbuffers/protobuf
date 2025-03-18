@@ -13823,7 +13823,7 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
 
 static upb_StringView* _upb_EnumReservedNames_New(
     upb_DefBuilder* ctx, int n, const upb_StringView* protos) {
-  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  upb_StringView* sv = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_StringView, n);
   for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
@@ -13908,7 +13908,7 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
   const char* name = containing_type ? upb_MessageDef_FullName(containing_type)
                                      : _upb_FileDef_RawPackage(ctx->file);
 
-  upb_EnumDef* e = _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumDef) * n);
+  upb_EnumDef* e = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumDef, n);
   for (int i = 0; i < n; i++) {
     create_enumdef(ctx, name, protos[i], parent_features, &e[i]);
     e[i].containing_type = containing_type;
@@ -13942,7 +13942,7 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
     const UPB_DESC(EnumDescriptorProto_EnumReservedRange) * const* protos,
     const upb_EnumDef* e) {
   upb_EnumReservedRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumReservedRange) * n);
+      UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumReservedRange, n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =
@@ -14085,8 +14085,7 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
     bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumValueDef));
 
-  upb_EnumValueDef* v =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumValueDef) * n);
+  upb_EnumValueDef* v = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumValueDef, n);
 
   *is_sorted = true;
   uint32_t previous = 0;
@@ -14139,8 +14138,7 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
     const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
     const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m) {
-  upb_ExtensionRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_ExtensionRange) * n);
+  upb_ExtensionRange* r = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ExtensionRange, n);
 
   for (int i = 0; i < n; i++) {
     UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
@@ -14924,8 +14922,7 @@ upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
                                   const UPB_DESC(FeatureSet*) parent_features,
                                   const char* prefix, upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
-  upb_FieldDef* defs =
-      (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
+  upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
   for (int i = 0; i < n; i++) {
     upb_FieldDef* f = &defs[i];
@@ -14944,8 +14941,7 @@ upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
                                  const char* prefix, upb_MessageDef* m,
                                  bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
-  upb_FieldDef* defs =
-      (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
+  upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
   uint32_t previous = 0;
   for (int i = 0; i < n; i++) {
@@ -15447,7 +15443,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->ext_layouts = _upb_DefBuilder_Alloc(
         ctx, sizeof(*file->ext_layouts) * file->ext_count);
     upb_MiniTableExtension* ext =
-        _upb_DefBuilder_Alloc(ctx, sizeof(*ext) * file->ext_count);
+        UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MiniTableExtension, file->ext_count);
     for (int i = 0; i < file->ext_count; i++) {
       file->ext_layouts[i] = &ext[i];
     }
@@ -15506,7 +15502,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   // Verify dependencies.
   strs = UPB_DESC(FileDescriptorProto_dependency)(file_proto, &n);
   file->dep_count = n;
-  file->deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->deps) * n);
+  file->deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const upb_FileDef*, n);
 
   for (size_t i = 0; i < n; i++) {
     upb_StringView str = strs[i];
@@ -15522,8 +15518,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   public_deps = UPB_DESC(FileDescriptorProto_public_dependency)(file_proto, &n);
   file->public_dep_count = n;
-  file->public_deps =
-      _upb_DefBuilder_Alloc(ctx, sizeof(*file->public_deps) * n);
+  file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
   for (size_t i = 0; i < n; i++) {
     if (public_deps[i] >= file->dep_count) {
@@ -15535,7 +15530,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   weak_deps = UPB_DESC(FileDescriptorProto_weak_dependency)(file_proto, &n);
   file->weak_dep_count = n;
-  file->weak_deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->weak_deps) * n);
+  file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (size_t i = 0; i < n; i++) {
     if (weak_deps[i] >= file->dep_count) {
@@ -16870,7 +16865,7 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
 
 static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
                                               const upb_StringView* protos) {
-  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  upb_StringView* sv = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_StringView, n);
   for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
@@ -16987,7 +16982,7 @@ upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
   const char* name = containing_type ? containing_type->full_name
                                      : _upb_FileDef_RawPackage(ctx->file);
 
-  upb_MessageDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageDef) * n);
+  upb_MessageDef* m = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MessageDef, n);
   for (int i = 0; i < n; i++) {
     create_msgdef(ctx, name, protos[i], parent_features, containing_type,
                   &m[i]);
@@ -17020,7 +17015,7 @@ upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
     const upb_MessageDef* m) {
   upb_MessageReservedRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageReservedRange) * n);
+      UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MessageReservedRange, n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =
@@ -17141,7 +17136,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
                                        const* protos,
                                    const UPB_DESC(FeatureSet*) parent_features,
                                    upb_ServiceDef* s) {
-  upb_MethodDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MethodDef) * n);
+  upb_MethodDef* m = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MethodDef, n);
   for (int i = 0; i < n; i++) {
     create_method(ctx, protos[i], parent_features, s, &m[i]);
     m[i].index = i;
@@ -17289,7 +17284,7 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
     }
 
     o->fields =
-        _upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef*) * o->field_count);
+        UPB_DEFBUILDER_ALLOCARRAY(ctx, const upb_FieldDef*, o->field_count);
     o->field_count = 0;
   }
 
@@ -17345,7 +17340,7 @@ upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
                                  upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_OneofDef));
 
-  upb_OneofDef* o = _upb_DefBuilder_Alloc(ctx, sizeof(upb_OneofDef) * n);
+  upb_OneofDef* o = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_OneofDef, n);
   for (int i = 0; i < n; i++) {
     create_oneofdef(ctx, m, protos[i], parent_features, &o[i]);
   }
@@ -17450,7 +17445,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
                                          parent_features) {
   _upb_DefType_CheckPadding(sizeof(upb_ServiceDef));
 
-  upb_ServiceDef* s = _upb_DefBuilder_Alloc(ctx, sizeof(upb_ServiceDef) * n);
+  upb_ServiceDef* s = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ServiceDef, n);
   for (int i = 0; i < n; i++) {
     create_service(ctx, protos[i], parent_features, &s[i]);
     s[i].index = i;
