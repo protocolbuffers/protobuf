@@ -155,7 +155,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']

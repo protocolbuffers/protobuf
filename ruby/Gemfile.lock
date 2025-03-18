@@ -41,4 +41,4 @@ DEPENDENCIES
   test-unit (~> 3.0, >= 3.0.9)
 
 BUNDLED WITH
-   2.5.23
+   2.6.6

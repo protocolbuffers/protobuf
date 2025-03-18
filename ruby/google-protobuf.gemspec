@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
       ext/google/protobuf_c/Rakefile
     ]
   end
-  s.required_ruby_version = '>= 3.0'
+  s.required_ruby_version = '>= 3.1'
   # bigdecimal must be used as a non-built in gem as of ruby-3.4
   s.add_dependency "bigdecimal"
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
