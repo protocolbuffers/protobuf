@@ -25,18 +25,12 @@ cc_library(
 
 cc_binary(
     name = "protoc-gen-upbdefs",
-    linkopts = ["-lm"],
-    visibility = ["//net/proto2/contrib/protoc_explorer:__pkg__"],
-    deps = [":generator_with_main"],
-)
-
-# TODO: This wrapper lib is a hack that we need because of how CcInfo works in Bazel 6.
-# In Bazel 7, our cmake dependency scraping works fine with cc_binary.
-cc_library(
-    name = "generator_with_main",
     srcs = ["generator.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//pkg:__pkg__"],
+    linkopts = ["-lm"],
+    visibility = [
+        "//pkg:__pkg__",
+    ],
     # To work around the following link error from ABSL:
     # /usr/bin/x86_64-linux-gnu-ld: bazel-out/k8-opt-exec-2B5CBBC6-ST-c1776f9924ec/bin/external/com_google_absl/absl/time/libtime.a(duration.o): undefined reference to symbol 'floor@@GLIBC_2.2.5'
     # /usr/bin/x86_64-linux-gnu-ld: /opt/manylinux/2014/x86_64/lib64/libm.so.6: error adding symbols: DSO missing from command line

@@ -10,11 +10,7 @@ load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
-load(
-    "//upb_generator:bootstrap_compiler.bzl",
-    "bootstrap_cc_binary",
-    "bootstrap_cc_library",
-)
+load("//upb_generator:bootstrap_compiler.bzl", "bootstrap_cc_binary")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -44,19 +40,6 @@ cc_library(
 
 bootstrap_cc_binary(
     name = "protoc-gen-upb",
-    bootstrap_deps = [":generator_with_main"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = [
-        "//editions/codegen_tests:__pkg__",
-        "//net/proto2/contrib/protoc_explorer:__pkg__",
-        "//third_party/prototiller/transformer:__pkg__",
-    ],
-)
-
-# TODO: This wrapper lib is a hack that we need because of how CcInfo works in Bazel 6.
-# In Bazel 7, our cmake dependency scraping works fine with cc_binary.
-bootstrap_cc_library(
-    name = "generator_with_main",
     srcs = ["generator.cc"],
     bootstrap_deps = [
         "//upb_generator:common",
@@ -66,7 +49,9 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+    ],
     deps = [
         ":names",
         ":names_internal",
