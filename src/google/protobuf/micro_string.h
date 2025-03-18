@@ -87,6 +87,8 @@ class PROTOBUF_EXPORT MicroString {
   // Empty string.
   constexpr MicroString() : rep_() {}
 
+  explicit MicroString(Arena*) : MicroString() {}
+
   MicroString(Arena* arena, const MicroString& other)
       : MicroString(FromOtherTag{}, other, arena) {}
 
@@ -107,11 +109,32 @@ class PROTOBUF_EXPORT MicroString {
   explicit constexpr MicroString(const UnownedPayload& unowned)
       : rep_(const_cast<char*>(unowned.for_tag + kIsLargeRepTag)) {}
 
+  // Resets value to the default constructor state.
+  // Disregards initial value of rep_ (so this is the *ONLY* safe method to call
+  // after construction or when reinitializing after becoming the active field
+  // in a oneof union).
+  void InitDefault() { rep_ = nullptr; }
+
   // Destroys the payload.
   // REQUIRES: no arenas. Trying to destroy a string constructed with arenas is
   // invalid and there is no checking for it.
   void Destroy() {
     if (!is_inline()) DestroySlow();
+  }
+
+  // Resets the object to the empty string.
+  // Does not necessarily release any memory.
+  void Clear() {
+    if (is_inline()) {
+      if (kHasInlineRep) {
+        set_inline_size(0);
+      } else {
+        // Nothing to do. Already empty.
+        ABSL_DCHECK(Get().empty());
+      }
+      return;
+    }
+    ClearSlow();
   }
 
   // Sets the payload to `other`. Copy behavior depends on the kind of payload.
@@ -188,6 +211,18 @@ class PROTOBUF_EXPORT MicroString {
     return UnownedPayload{LargeRep{const_cast<char*>(data.data()),
                                    static_cast<uint32_t>(data.size()),
                                    kUnowned}};
+  }
+
+  void InternalSwap(MicroString* other,
+                    size_t inline_capacity = kInlineCapacity) {
+    if (kHasInlineRep) {
+      std::swap_ranges(reinterpret_cast<char*>(this),
+                       reinterpret_cast<char*>(this) + inline_capacity + 1,
+                       reinterpret_cast<char*>(other));
+    } else {
+      ABSL_DCHECK_EQ(inline_capacity, 0);
+      std::swap(rep_, other->rep_);
+    }
   }
 
  protected:
@@ -302,7 +337,7 @@ class PROTOBUF_EXPORT MicroString {
       return;
     }
     // Init as empty and run the slow path.
-    rep_ = nullptr;
+    InitDefault();
     SetFromOtherSlow(other, arena, Self::kInlineCapacity);
   }
 
@@ -325,6 +360,8 @@ class PROTOBUF_EXPORT MicroString {
 
   void SetFromOtherSlow(const MicroString& other, Arena* arena,
                         size_t inline_capacity);
+
+  void ClearSlow();
 
   template <typename Self>
   static void SetMaybeConstant(Self& self, absl::string_view data,
@@ -402,6 +439,10 @@ class MicroStringExtraImpl : private MicroString {
 
   size_t Capacity() const {
     return is_inline() ? kInlineCapacity : MicroString::Capacity();
+  }
+
+  void InternalSwap(MicroStringExtraImpl* other) {
+    MicroString::InternalSwap(other, kInlineCapacity);
   }
 
   using MicroString::SpaceUsedExcludingSelfLong;
