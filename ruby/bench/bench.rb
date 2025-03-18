@@ -21,11 +21,18 @@ Benchmark.ips do |x|
     assert_equal(456, message["field_4"]["field_1"])
   end
 
-  x.report("Message#get") do
+  x.report("Message#get (symbols)") do
     assert_equal("howdy", message.get(:field_1))
     assert_equal(123, message.get(:field_2))
     assert_equal({ "a" => "1", "b" => "2", "c" => "3" }, message.get(:field_3).to_h)
     assert_equal(456, message.get(:field_4).get(:field_1))
+  end
+
+  x.report("Message#get (strings)") do
+    assert_equal("howdy", message.get("field_1"))
+    assert_equal(123, message.get("field_2"))
+    assert_equal({ "a" => "1", "b" => "2", "c" => "3" }, message.get("field_3").to_h)
+    assert_equal(456, message.get("field_4").get("field_1"))
   end
 
   x.compare!
