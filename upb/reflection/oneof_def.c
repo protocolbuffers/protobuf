@@ -22,7 +22,7 @@
 #include "upb/port/def.inc"
 
 struct upb_OneofDef {
-  const UPB_DESC(OneofOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(OneofOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MessageDef* parent;
   const char* full_name;

@@ -37,7 +37,7 @@
 #include "upb/port/def.inc"
 
 struct upb_MessageDef {
-  const UPB_DESC(MessageOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(MessageOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
@@ -76,9 +76,6 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {

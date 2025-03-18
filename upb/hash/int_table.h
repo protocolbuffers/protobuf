@@ -18,10 +18,18 @@
 #include "upb/port/def.inc"
 
 typedef struct {
-  upb_table t;             // For entries that don't fit in the array part.
-  const upb_value* array;  // Array part of the table. See const note above.
-  uint32_t array_size;     // Array part size.
-  uint32_t array_count;    // Array part number of elements.
+  upb_table t;  // For entries that don't fit in the array part.
+  // Array part of the table.
+  // Pointers on this table are const so we can create static initializers for
+  // tables.  We cast away const sometimes, but *only* when the containing
+  // upb_table is known to be non-const.  This requires a bit of care, but
+  // the subtlety is confined to table.c.
+  const upb_value* array;
+  // Track presence in the array part. Each bit at index (key % 8) at the
+  // presence_mask[key/8] indicates if the element is present in the array part.
+  const uint8_t* presence_mask;
+  uint32_t array_size;   // Array part size.
+  uint32_t array_count;  // Array part number of elements.
 } upb_inttable;
 
 #ifdef __cplusplus
@@ -85,8 +93,8 @@ bool upb_inttable_done(const upb_inttable* t, intptr_t i);
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
 
-UPB_INLINE bool upb_inttable_is_sentinel(upb_value v) {
-  return v.val == UINT64_MAX;
+UPB_INLINE bool upb_inttable_arrhas(const upb_inttable* t, uintptr_t key) {
+  return (t->presence_mask[key / 8] & (1 << (key % 8))) != 0;
 }
 
 #ifdef __cplusplus

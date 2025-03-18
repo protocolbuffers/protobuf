@@ -34,7 +34,7 @@
 #include "upb/port/def.inc"
 
 struct upb_EnumDef {
-  const UPB_DESC(EnumOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(EnumOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;

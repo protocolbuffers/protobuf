@@ -49,7 +49,7 @@ typedef struct {
 } str_t;
 
 struct upb_FieldDef {
-  const UPB_DESC(FieldOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(FieldOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_FileDef* file;
   const upb_MessageDef* msgdef;

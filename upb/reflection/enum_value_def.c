@@ -24,14 +24,11 @@
 #include "upb/port/def.inc"
 
 struct upb_EnumValueDef {
-  const UPB_DESC(EnumValueOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(EnumValueOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_EnumDef* parent;
   const char* full_name;
   int32_t number;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i) {

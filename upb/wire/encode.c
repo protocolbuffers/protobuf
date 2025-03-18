@@ -451,7 +451,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
       intptr_t iter = UPB_INTTABLE_BEGIN;
       while ((size_t)++iter < map->t.inttable.array_size) {
         upb_value value = map->t.inttable.array[iter];
-        if (!upb_inttable_is_sentinel(value)) {
+        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
           upb_MapEntry ent;
           memcpy(&ent.k, &iter, sizeof(iter));
           _upb_map_fromvalue(value, &ent.v, map->val_size);
