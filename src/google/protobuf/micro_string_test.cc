@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -83,7 +84,7 @@ class MicroStringPrevTest
         static constexpr absl::string_view value =
             "This is a very long string too, which "
             "won't use std::string's inline rep.";
-        str.SetString(std::string(value), arena);
+        str.Set(std::string(value), arena);
         ABSL_CHECK_EQ(str.Get(), value);
         break;
       }
@@ -213,6 +214,52 @@ TEST(MicroStringTest, SetInlineFromClear) {
   TestInline<MicroString>();
   TestInline<MicroStringExtra<8>>();
   TestInline<MicroStringExtra<16>>();
+}
+
+template <typename T>
+std::string MakeControl(const T& t) {
+  return std::string(t);
+}
+template <typename T>
+std::string MakeControl(const std::reference_wrapper<T>& t) {
+  return std::string(t.get());
+}
+
+template <typename S, typename T>
+void SupportsExpectedInputType(T&& t) {
+  const std::string control = MakeControl(t);
+
+  Arena arena;
+  S str;
+  str.Set(std::forward<T>(t), &arena);
+  EXPECT_EQ(str.Get(), control);
+}
+
+template <typename S>
+void SupportsExpectedInputTypes() {
+  std::string str = "Foo";
+  absl::string_view view = "Foo";
+
+  SupportsExpectedInputType<S>(view);
+  // char array
+  SupportsExpectedInputType<S>("Foo");
+  // char pointer
+  SupportsExpectedInputType<S>(static_cast<const char*>("Foo"));
+  // string&&
+  SupportsExpectedInputType<S>(std::string("Foo"));
+  // string&
+  SupportsExpectedInputType<S>(str);
+  // const string&
+  SupportsExpectedInputType<S>(std::as_const(str));
+  // reference_wrappers
+  SupportsExpectedInputType<S>(std::cref(view));
+  SupportsExpectedInputType<S>(std::cref("Foo"));
+  SupportsExpectedInputType<S>(std::cref(str));
+}
+
+TEST(MicroStringTest, SupportsExpectedInputTypes) {
+  SupportsExpectedInputTypes<MicroString>();
+  SupportsExpectedInputTypes<MicroStringExtra<15>>();
 }
 
 template <int N>
@@ -364,7 +411,7 @@ TEST_P(MicroStringPrevTest, SetStringSmall) {
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= input.size();
-  str_.SetString(std::move(input), arena());
+  str_.Set(std::move(input), arena());
   // NOLINTNEXTLINE: We really didn't move from the input, so this is fine.
   EXPECT_EQ(str_.Get(), input);
 
@@ -376,7 +423,7 @@ TEST_P(MicroStringPrevTest, SetStringMedium) {
   std::string input(16, 'a');
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.SetString(std::move(input), arena());
+  str_.Set(std::move(input), arena());
   // NOLINTNEXTLINE: We really didn't move from the input, so this is fine.
   EXPECT_EQ(str_.Get(), input);
 
@@ -395,7 +442,7 @@ TEST_P(MicroStringPrevTest, SetStringLarge) {
   std::string copy = input;
   const char* copy_data = copy.data();
   const size_t used = arena_space_used();
-  str_.SetString(std::move(copy), arena());
+  str_.Set(std::move(copy), arena());
   EXPECT_EQ(str_.Get(), input);
 
   // Verify that the string was moved.
@@ -666,13 +713,13 @@ TEST(MicroStringExtraTest, SetStringUsesInlineSpace) {
 
   MicroStringExtra<40> str;
   const size_t used = arena.SpaceUsed();
-  str.SetString(std::string(40, 'x'), &arena);
+  str.Set(std::string(40, 'x'), &arena);
   // we can fit the chars in the inline space, so copy it.
   EXPECT_EQ(used, arena.SpaceUsed());
 
   std::string large(100, 'x');
   const size_t used_in_string = StringSpaceUsedExcludingSelfLong(large);
-  str.SetString(std::move(large), &arena);
+  str.Set(std::move(large), &arena);
   // This one is too big, so we move the whole std::string.
   EXPECT_EQ(kLargeRepSize + sizeof(std::string), arena.SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
