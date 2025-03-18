@@ -3,12 +3,12 @@ syntax = "proto3";
 package bench_messages;
 
 message SubMessage {
-  int32 field_1 = 1;
+  int32 bigger_fld_1 = 1;
 }
 
 message Message {
-  string field_1 = 1;
-  int32 field_2 = 2;
-  map<string, string> field_3 = 3;
-  SubMessage field_4 = 4;
+  string bigger_fld_1 = 1;
+  int32 bigger_fld_2 = 2;
+  map<string, string> bigger_fld_3 = 3;
+  SubMessage bigger_fld_4 = 4;
 }
