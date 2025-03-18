@@ -287,12 +287,18 @@ static size_t begin(const upb_table* t) { return next(t, -1); }
  */
 
 static upb_key strcopy(lookupkey_t k2, upb_Arena* a) {
+  // A 2GB string will fail at serialization time, but we can accept larger ones
+  // in memory.
+  if (k2.str.len > UINT32_MAX) {
+    return 0;
+  }
+
   uint32_t len = (uint32_t)k2.str.len;
-  char* str = upb_Arena_Malloc(a, k2.str.len + sizeof(uint32_t) + 1);
+  char* str = upb_Arena_Malloc(a, sizeof(uint32_t) + len + 1);
   if (str == NULL) return 0;
   memcpy(str, &len, sizeof(uint32_t));
-  if (k2.str.len) memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
-  str[sizeof(uint32_t) + k2.str.len] = '\0';
+  if (len) memcpy(str + sizeof(uint32_t), k2.str.str, len);
+  str[sizeof(uint32_t) + len] = '\0';
   return (uintptr_t)str;
 }
 
