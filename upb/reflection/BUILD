@@ -176,6 +176,8 @@ cc_test(
         ":internal",
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
         "//upb/hash",

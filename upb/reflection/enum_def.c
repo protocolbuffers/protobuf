@@ -225,7 +225,7 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
 
 static upb_StringView* _upb_EnumReservedNames_New(
     upb_DefBuilder* ctx, int n, const upb_StringView* protos) {
-  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  upb_StringView* sv = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_StringView, n);
   for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
@@ -310,7 +310,7 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
   const char* name = containing_type ? upb_MessageDef_FullName(containing_type)
                                      : _upb_FileDef_RawPackage(ctx->file);
 
-  upb_EnumDef* e = _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumDef) * n);
+  upb_EnumDef* e = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumDef, n);
   for (int i = 0; i < n; i++) {
     create_enumdef(ctx, name, protos[i], parent_features, &e[i]);
     e[i].containing_type = containing_type;

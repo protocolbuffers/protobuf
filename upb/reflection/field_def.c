@@ -781,8 +781,7 @@ upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
                                   const UPB_DESC(FeatureSet*) parent_features,
                                   const char* prefix, upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
-  upb_FieldDef* defs =
-      (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
+  upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
   for (int i = 0; i < n; i++) {
     upb_FieldDef* f = &defs[i];
@@ -801,8 +800,7 @@ upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
                                  const char* prefix, upb_MessageDef* m,
                                  bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_FieldDef));
-  upb_FieldDef* defs =
-      (upb_FieldDef*)_upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef) * n);
+  upb_FieldDef* defs = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_FieldDef, n);
 
   uint32_t previous = 0;
   for (int i = 0; i < n; i++) {

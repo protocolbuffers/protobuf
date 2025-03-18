@@ -109,7 +109,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
                                          parent_features) {
   _upb_DefType_CheckPadding(sizeof(upb_ServiceDef));
 
-  upb_ServiceDef* s = _upb_DefBuilder_Alloc(ctx, sizeof(upb_ServiceDef) * n);
+  upb_ServiceDef* s = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ServiceDef, n);
   for (int i = 0; i < n; i++) {
     create_service(ctx, protos[i], parent_features, &s[i]);
     s[i].index = i;

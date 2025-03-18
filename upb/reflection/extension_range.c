@@ -47,8 +47,7 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
     const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
     const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m) {
-  upb_ExtensionRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_ExtensionRange) * n);
+  upb_ExtensionRange* r = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ExtensionRange, n);
 
   for (int i = 0; i < n; i++) {
     UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,

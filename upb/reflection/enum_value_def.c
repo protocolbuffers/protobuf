@@ -132,8 +132,7 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
     bool* is_sorted) {
   _upb_DefType_CheckPadding(sizeof(upb_EnumValueDef));
 
-  upb_EnumValueDef* v =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumValueDef) * n);
+  upb_EnumValueDef* v = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumValueDef, n);
 
   *is_sorted = true;
   uint32_t previous = 0;
