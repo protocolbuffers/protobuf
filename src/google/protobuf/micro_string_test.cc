@@ -412,6 +412,60 @@ TEST_P(MicroStringPrevTest, SetStringLarge) {
             str_.SpaceUsedExcludingSelfLong());
 }
 
+TEST_P(MicroStringPrevTest, SelfSetView) {
+  const std::string control(str_.Get());
+
+  const size_t used = arena_space_used();
+  const bool will_reuse = str_.Capacity() != 0;
+  const size_t self_used = str_.SpaceUsedExcludingSelfLong();
+
+  str_.Set(str_.Get(), arena());
+  EXPECT_EQ(str_.Get(), control);
+
+  if (will_reuse) {
+    ExpectMemoryUsed(used, false, self_used);
+  }
+}
+
+TEST_P(MicroStringPrevTest, SelfSetSubstrView) {
+  const std::string control(str_.Get());
+  if (control.empty()) {
+    GTEST_SKIP() << "Can't substr an empty input.";
+  }
+
+  const size_t used = arena_space_used();
+  const bool will_reuse = str_.Capacity() != 0;
+  const size_t self_used = str_.SpaceUsedExcludingSelfLong();
+
+  str_.Set(str_.Get().substr(1), arena());
+  EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1));
+
+  if (will_reuse) {
+    ExpectMemoryUsed(used, false, self_used);
+  }
+}
+
+TEST_P(MicroStringPrevTest, SelfSetSubstrViewConstantSize) {
+  const std::string control(str_.Get());
+  if (control.size() < 3) {
+    GTEST_SKIP() << "Can't substr an empty input.";
+  }
+
+  const size_t used = arena_space_used();
+  const bool will_reuse = str_.Capacity() != 0;
+  const size_t self_used = str_.SpaceUsedExcludingSelfLong();
+
+  // Here we test the fastpath in SetMaybeConstant.
+  // The input is an aliasing substr that overlaps with the destination, but
+  // with constant size to trigger the fastpath.
+  str_.Set(str_.Get().substr(1, 2), arena());
+  EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1, 2));
+
+  if (will_reuse) {
+    ExpectMemoryUsed(used, false, self_used);
+  }
+}
+
 TEST_P(MicroStringPrevTest, CopyConstruct) {
   const size_t used = arena_space_used();
   MicroString copy(arena(), str_);

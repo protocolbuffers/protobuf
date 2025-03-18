@@ -65,7 +65,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
     auto* h = micro_rep();
     if (h->capacity >= data.size()) {
       h->size = data.size();
-      memcpy(h->data(), data.data(), data.size());
+      memmove(h->data(), data.data(), data.size());
       return;
     }
     if (arena == nullptr) {
@@ -77,7 +77,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
         auto* h = large_rep();
         if (h->capacity >= data.size()) {
           h->size = data.size();
-          memcpy(h->payload, data.data(), data.size());
+          memmove(h->payload, data.data(), data.size());
           return;
         }
         break;
@@ -105,7 +105,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   // If we fit in the inline space, use it.
   if (kHasInlineRep && data.size() <= inline_capacity) {
     set_inline_size(data.size());
-    memcpy(inline_head(), data.data(), data.size());
+    memmove(inline_head(), data.data(), data.size());
     return;
   }
 
