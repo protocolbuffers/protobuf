@@ -431,6 +431,6 @@ using MicroStringExtra =
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_MICRO_STRING_H__
-
 #include "google/protobuf/port_undef.inc"
+
+#endif  // GOOGLE_PROTOBUF_MICRO_STRING_H__
