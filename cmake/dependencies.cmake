@@ -31,7 +31,7 @@ set(rules_shell-version "0.2.0")
 set(platforms-version "0.0.10")
 set(googletest-version "1.15.2")
 set(rules_buf-version "0.3.0")
-set(rules_testing-version "0.6.0")
+set(rules_testing-version "0.8.0")
 set(abseil-py-version "2.1.0")
 set(rules_proto-version "7.0.2")
 
