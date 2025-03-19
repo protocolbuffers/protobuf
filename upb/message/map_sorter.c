@@ -28,8 +28,8 @@
 static int _upb_mapsorter_intkeys(const void* _a, const void* _b) {
   const upb_tabent* const* a = _a;
   const upb_tabent* const* b = _b;
-  uintptr_t a_key = (*a)->key;
-  uintptr_t b_key = (*b)->key;
+  uintptr_t a_key = (*a)->key.num;
+  uintptr_t b_key = (*b)->key.num;
   return a_key < b_key ? -1 : a_key > b_key;
 }
 

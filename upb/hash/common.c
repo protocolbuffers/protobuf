@@ -78,24 +78,14 @@ static int log2ceil(uint64_t v) {
 /* A type to represent the lookup key of either a strtable or an inttable. */
 typedef union {
   uintptr_t num;
-  struct {
-    const char* str;
-    size_t len;
-  } str;
+  upb_StringView str;
 } lookupkey_t;
 
 static lookupkey_t strkey2(const char* str, size_t len) {
-  lookupkey_t k;
-  k.str.str = str;
-  k.str.len = len;
-  return k;
+  return (lookupkey_t){.str = upb_StringView_FromDataAndSize(str, len)};
 }
 
-static lookupkey_t intkey(uintptr_t key) {
-  lookupkey_t k;
-  k.num = key;
-  return k;
-}
+static lookupkey_t intkey(uintptr_t key) { return (lookupkey_t){.num = key}; }
 
 typedef uint32_t hashfunc_t(upb_key key);
 typedef bool eqlfunc_t(upb_key k1, lookupkey_t k2);
@@ -245,9 +235,9 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
     if (chain->next) {
       upb_tabent* move = (upb_tabent*)chain->next;
       *chain = *move;
-      move->key = 0; /* Make the slot empty. */
+      move->key = upb_key_empty();
     } else {
-      chain->key = 0; /* Make the slot empty. */
+      chain->key = upb_key_empty();
     }
     return true;
   } else {
@@ -261,7 +251,7 @@ static bool rm(upb_table* t, lookupkey_t key, upb_value* val, uint32_t hash,
       upb_tabent* rm = (upb_tabent*)chain->next;
       t->count--;
       if (val) *val = chain->next->val;
-      rm->key = 0; /* Make the slot empty. */
+      rm->key = upb_key_empty();
       chain->next = rm->next;
       return true;
     } else {
@@ -283,23 +273,21 @@ static size_t begin(const upb_table* t) { return next(t, -1); }
 
 /* upb_strtable ***************************************************************/
 
-/* A simple "subclass" of upb_table that only adds a hash function for strings.
- */
+// A simple "subclass" of upb_table that only adds a hash function for strings.
 
-static upb_key strcopy(lookupkey_t k2, upb_Arena* a) {
-  // A 2GB string will fail at serialization time, but we can accept larger ones
-  // in memory.
-  if (k2.str.len > UINT32_MAX) {
-    return 0;
-  }
-
-  uint32_t len = (uint32_t)k2.str.len;
-  char* str = upb_Arena_Malloc(a, sizeof(uint32_t) + len + 1);
-  if (str == NULL) return 0;
-  memcpy(str, &len, sizeof(uint32_t));
-  if (len) memcpy(str + sizeof(uint32_t), k2.str.str, len);
-  str[sizeof(uint32_t) + len] = '\0';
-  return (uintptr_t)str;
+static upb_SizePrefixString* upb_SizePrefixString_Copy(upb_StringView s,
+                                                       upb_Arena* a) {
+  // A 2GB string will fail at serialization time, but we accept up to 4GB in
+  // memory here.
+  if (s.size > UINT32_MAX) return NULL;
+  upb_SizePrefixString* str =
+      upb_Arena_Malloc(a, sizeof(uint32_t) + s.size + 1);
+  if (str == NULL) return NULL;
+  str->size = s.size;
+  char* data = (char*)str->data;
+  if (s.size) memcpy(data, s.data, s.size);
+  data[s.size] = '\0';
+  return str;
 }
 
 /* Adapted from ABSL's wyhash. */
@@ -455,15 +443,14 @@ static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
 }
 
 static uint32_t strhash(upb_key key) {
-  uint32_t len;
-  char* str = upb_key_cstr(key, &len);
-  return _upb_Hash_NoSeed(str, len);
+  return _upb_Hash_NoSeed(key.str->data, key.str->size);
 }
 
 static bool streql(upb_key k1, lookupkey_t k2) {
-  uint32_t len;
-  char* str = upb_key_cstr(k1, &len);
-  return len == k2.str.len && (len == 0 || memcmp(str, k2.str.str, len) == 0);
+  const upb_SizePrefixString* k1s = k1.str;
+  const upb_StringView k2s = k2.str;
+  return k1s->size == k2s.size &&
+         (k1s->size == 0 || memcmp(k1s->data, k2s.data, k1s->size) == 0);
 }
 
 /** Calculates the number of entries required to hold an expected number of
@@ -490,18 +477,22 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   if (!init(&new_table.t, size_lg2, a)) return false;
 
   intptr_t iter = UPB_STRTABLE_BEGIN;
-  upb_StringView key;
+  upb_StringView sv;
   upb_value val;
-  while (upb_strtable_next2(t, &key, &val, &iter)) {
+  while (upb_strtable_next2(t, &sv, &val, &iter)) {
     // Unlike normal insert, does not copy string data or possibly reallocate
     // the table
-    lookupkey_t lookupkey = strkey2(key.data, key.size);
-    upb_key tabkey = (uintptr_t)(key.data - sizeof(uint32_t));
+    // The data pointer used in the table is guaranteed to point at a
+    // upb_SizePrefixString, we just need to back up by the size of the uint32_t
+    // length prefix.
+    const upb_SizePrefixString* keystr =
+        (const upb_SizePrefixString*)(sv.data - sizeof(uint32_t));
+    UPB_ASSERT(keystr->data == sv.data);
+    UPB_ASSERT(keystr->size == sv.size);
 
-    UPB_ASSERT(upb_key_strview(tabkey).data == key.data);
-    UPB_ASSERT(upb_key_strview(tabkey).size == key.size);
-
-    uint32_t hash = _upb_Hash_NoSeed(key.data, key.size);
+    lookupkey_t lookupkey = {.str = sv};
+    upb_key tabkey = {.str = keystr};
+    uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
     insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
   }
   *t = new_table;
@@ -517,13 +508,14 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
     }
   }
 
-  lookupkey_t key = strkey2(k, len);
-  upb_key tabkey = strcopy(key, a);
+  upb_StringView sv = upb_StringView_FromDataAndSize(k, len);
+  upb_SizePrefixString* size_prefix_string = upb_SizePrefixString_Copy(sv, a);
+  if (!size_prefix_string) return false;
 
-  if (tabkey == 0) return false;
-
-  uint32_t hash = _upb_Hash_NoSeed(key.str.str, key.str.len);
-  insert(&t->t, key, tabkey, v, hash, &strhash, &streql);
+  lookupkey_t lookupkey = {.str = sv};
+  upb_key key = {.str = size_prefix_string};
+  uint32_t hash = _upb_Hash_NoSeed(k, len);
+  insert(&t->t, lookupkey, key, v, hash, &strhash, &streql);
   return true;
 }
 
@@ -557,12 +549,8 @@ bool upb_strtable_done(const upb_strtable_iter* i) {
 }
 
 upb_StringView upb_strtable_iter_key(const upb_strtable_iter* i) {
-  upb_StringView key;
-  uint32_t len;
   UPB_ASSERT(!upb_strtable_done(i));
-  key.data = upb_key_cstr(str_tabent(i)->key, &len);
-  key.size = len;
-  return key;
+  return upb_key_strview(str_tabent(i)->key);
 }
 
 upb_value upb_strtable_iter_value(const upb_strtable_iter* i) {
@@ -586,9 +574,7 @@ bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
   size_t tab_idx = next(&t->t, *iter);
   if (tab_idx < upb_table_size(&t->t)) {
     upb_tabent* ent = &t->t.entries[tab_idx];
-    uint32_t len;
-    key->data = upb_key_cstr(ent->key, &len);
-    key->size = len;
+    *key = upb_key_strview(ent->key);
     *val = ent->val;
     *iter = tab_idx;
     return true;
@@ -616,7 +602,7 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   }
 
   t->t.count--;
-  ent->key = 0;
+  ent->key = upb_key_empty();
   ent->next = NULL;
 }
 
@@ -634,14 +620,13 @@ void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
 // (pointers and u32 values will never be; i32 needs to be handled carefully
 // to avoid sign-extending into this value).
 static const upb_value kInttableSentinel = {.val = UINT64_MAX};
-
 static uint32_t presence_mask_arr_size(uint32_t array_size) {
   return (array_size + 7) / 8;  // sizeof(uint8_t) is always 1.
 }
 
-static uint32_t inthash(upb_key key) { return upb_inthash(key); }
+static uint32_t inthash(upb_key key) { return upb_inthash(key.num); }
 
-static bool inteql(upb_key k1, lookupkey_t k2) { return k1 == k2.num; }
+static bool inteql(upb_key k1, lookupkey_t k2) { return k1.num == k2.num; }
 
 static upb_value* mutable_array(upb_inttable* t) {
   return (upb_value*)t->array;
@@ -747,16 +732,17 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
 
       for (i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
         const upb_tabent* e = &t->t.entries[i];
-        uint32_t hash = upb_inthash(e->key);
-        insert(&new_table, intkey(e->key), e->key, e->val, hash, &inthash,
-               &inteql);
+        insert(&new_table, intkey(e->key.num), e->key, e->val, inthash(e->key),
+               &inthash, &inteql);
       }
 
       UPB_ASSERT(t->t.count == new_table.count);
 
       t->t = new_table;
     }
-    insert(&t->t, intkey(key), key, val, upb_inthash(key), &inthash, &inteql);
+    upb_key tabkey = {.num = key};
+    insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash,
+           &inteql);
   }
   check(t);
   return true;
@@ -897,7 +883,7 @@ bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
   size_t tab_idx = next(&t->t, i - t->array_size);
   if (tab_idx < upb_table_size(&t->t)) {
     upb_tabent* ent = &t->t.entries[tab_idx];
-    *key = ent->key;
+    *key = ent->key.num;
     *val = ent->val;
     *iter = tab_idx + t->array_size;
     return true;
@@ -934,7 +920,7 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
     }
 
     t->t.count--;
-    ent->key = 0;
+    ent->key = upb_key_empty();
     ent->next = NULL;
   }
 }
@@ -960,8 +946,9 @@ bool upb_inttable_done(const upb_inttable* t, intptr_t iter) {
 
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter) {
   UPB_ASSERT(!upb_inttable_done(t, iter));
-  return (size_t)iter < t->array_size ? iter
-                                      : t->t.entries[iter - t->array_size].key;
+  return (size_t)iter < t->array_size
+             ? iter
+             : t->t.entries[iter - t->array_size].key.num;
 }
 
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter) {
