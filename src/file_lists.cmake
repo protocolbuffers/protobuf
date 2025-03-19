@@ -316,9 +316,11 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
@@ -328,7 +330,9 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/options.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/notices.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/nsobject_methods.h
@@ -336,7 +340,10 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
