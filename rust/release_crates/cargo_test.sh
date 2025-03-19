@@ -69,7 +69,7 @@ tar -xvf $MACROS_TAR -C $MACROS_ROOT
 WELL_KNOWN_TYPES_ROOT=$TMP_DIR/protobuf_well_known_types
 mkdir $WELL_KNOWN_TYPES_ROOT
 
-WELL_KNOWN_TYPES_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_well_known_types/crate.tar)
+WELL_KNOWN_TYPES_TAR=$(rlocation com_google_protobuf/rust/release_crates/protobuf_well_known_types/protobuf_well_known_types_crate.tar)
 
 echo "Expanding protobuf_well_known_types crate tar"
 tar -xvf $WELL_KNOWN_TYPES_TAR -C $WELL_KNOWN_TYPES_ROOT
