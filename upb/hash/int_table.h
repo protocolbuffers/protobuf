@@ -19,14 +19,14 @@
 
 typedef struct {
   upb_table t;  // For entries that don't fit in the array part.
-  // Array part of the table.
-  // Pointers on this table are const so we can create static initializers for
-  // tables.  We cast away const sometimes, but *only* when the containing
-  // upb_table is known to be non-const.  This requires a bit of care, but
-  // the subtlety is confined to table.c.
-  const upb_value* array;
-  // Track presence in the array part. Each bit at index (key % 8) at the
-  // presence_mask[key/8] indicates if the element is present in the array part.
+  union {
+    // Used if array_size is 1, holds the value for key 0. If array_count is 1,
+    // contains a value.
+    upb_value single_value;
+    // Contains an array indexed by the key, up to array_size. Only present if
+    // upb_inttable_compact was called.
+    const upb_value* ptr;
+  } array;
   const uint8_t* presence_mask;
   uint32_t array_size;   // Array part size.
   uint32_t array_count;  // Array part number of elements.
@@ -94,6 +94,12 @@ uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
 
 UPB_INLINE bool upb_inttable_arrhas(const upb_inttable* t, uintptr_t key) {
+  if (t->array_count == 0) {
+    return false;
+  }
+  if (t->array_size == 1) {
+    return true;
+  }
   return (t->presence_mask[key / 8] & (1 << (key % 8))) != 0;
 }
 
