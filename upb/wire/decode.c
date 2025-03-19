@@ -933,59 +933,75 @@ static const char* upb_Decoder_DecodeMessageSetItem(
   _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
 }
 
-static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
-                                                        const upb_MiniTable* t,
-                                                        uint32_t field_number,
-                                                        int* last_field_index,
-                                                        int wire_type) {
-  static upb_MiniTableField none = {
-      0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
-  if (t == NULL) return &none;
+static upb_MiniTableField upb_Decoder_FieldNotFoundField = {
+    0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
 
-  size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
+UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
+    upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number, int ext_mode,
+    int wire_type) {
+  // Treat a message set as an extendable message if it is a delimited field.
+  // This provides compatibility with encoders that are unaware of message
+  // sets and serialize them as normal extensions.
+  if (ext_mode == kUpb_ExtMode_Extendable ||
+      (ext_mode == kUpb_ExtMode_IsMessageSet &&
+       wire_type == kUpb_WireType_Delimited)) {
+    const upb_MiniTableExtension* ext =
+        upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
+    if (ext) return &ext->UPB_PRIVATE(field);
+  } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
+    if (field_number == kUpb_MsgSet_Item) {
+      static upb_MiniTableField item = {
+          0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
+      return &item;
+    }
+  }
+  return &upb_Decoder_FieldNotFoundField;
+}
+
+static const upb_MiniTableField* _upb_Decoder_FindField(
+    upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number,
+    uint32_t* last_field_index, int wire_type) {
+  if (t == NULL) return &upb_Decoder_FieldNotFoundField;
+
+  uint32_t idx = ((uint32_t)field_number) - 1;  // 0 wraps to UINT32_MAX
   if (idx < t->UPB_PRIVATE(dense_below)) {
-    // Fastest case: index into dense fields.
-    goto found;
+    // Fastest case: index into dense fields, and don't update last_field_index.
+    return &t->UPB_PRIVATE(fields)[idx];
   }
 
-  if (t->UPB_PRIVATE(dense_below) < t->UPB_PRIVATE(field_count)) {
+  uint32_t field_count = t->UPB_PRIVATE(field_count);
+  if (t->UPB_PRIVATE(dense_below) < field_count) {
     // Linear search non-dense fields. Resume scanning from last_field_index
     // since fields are usually in order.
-    size_t last = *last_field_index;
-    for (idx = last; idx < t->UPB_PRIVATE(field_count); idx++) {
-      if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
+    idx = *last_field_index;
+    uint32_t candidate;
+    do {
+      candidate = t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number);
+      if (candidate == field_number) {
         goto found;
       }
-    }
+    } while (++idx < field_count);
 
-    for (idx = t->UPB_PRIVATE(dense_below); idx < last; idx++) {
-      if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
-        goto found;
+    if (UPB_LIKELY(field_number > candidate)) {
+      // The field number we encountered is larger than any of our known fields,
+      // so it's likely that subsequent ones will be too.
+      *last_field_index = idx - 1;
+    } else {
+      // Fields not in tag order - scan from beginning
+      for (idx = t->UPB_PRIVATE(dense_below); idx < *last_field_index; idx++) {
+        if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
+          goto found;
+        }
       }
     }
   }
 
-  if (d->extreg) {
-    int ext_mode = t->UPB_PRIVATE(ext);
-    // Treat a message set as an extendable message if it is a delimited field.
-    // This provides compatibility with encoders that are unaware of message
-    // sets and serialize them as normal extensions.
-    if (ext_mode == kUpb_ExtMode_Extendable ||
-        (ext_mode == kUpb_ExtMode_IsMessageSet &&
-         wire_type == kUpb_WireType_Delimited)) {
-      const upb_MiniTableExtension* ext =
-          upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-      if (ext) return &ext->UPB_PRIVATE(field);
-    } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
-      if (field_number == kUpb_MsgSet_Item) {
-        static upb_MiniTableField item = {
-            0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
-        return &item;
-      }
-    }
+  if (d->extreg && t->UPB_PRIVATE(ext)) {
+    return _upb_Decoder_FindExtensionField(d, t, field_number,
+                                           t->UPB_PRIVATE(ext), wire_type);
   }
 
-  return &none;  // Unknown field.
+  return &upb_Decoder_FieldNotFoundField;  // Unknown field.
 
 found:
   UPB_ASSERT(t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number);
@@ -1295,7 +1311,7 @@ UPB_NOINLINE
 static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
                                               const upb_MiniTable* layout) {
-  int last_field_index = 0;
+  uint32_t last_field_index = 0;
 
 #if UPB_FASTTABLE
   // The first time we want to skip fast dispatch, because we may have just been
