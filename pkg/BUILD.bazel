@@ -225,8 +225,15 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
-        # TODO Make this private once gRPC migrates off it.
+        # TODO Make these private in the next breaking C++ release.
+        "//src/google/protobuf/compiler/cpp:generator_headers",
+        "//src/google/protobuf/compiler/csharp:generator_headers",
+        "//src/google/protobuf/compiler/java:generator_headers",
+        "//src/google/protobuf/compiler/kotlin:generator_headers",
+        "//src/google/protobuf/compiler/objectivec:generator_headers",
         "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python:generator_headers",
+        "//src/google/protobuf/compiler/ruby:generator_headers",
     ],
 )
 
