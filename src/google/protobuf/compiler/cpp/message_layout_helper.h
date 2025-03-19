@@ -12,6 +12,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 
+#include <array>
+#include <vector>
+
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -22,6 +25,18 @@ namespace cpp {
 
 class MessageSCCAnalyzer;
 
+enum FieldPartition {
+  kRepeated,  // Non-split repeated fields.
+  kHot,
+  kWarm,
+  kCold,
+  kSplit,
+  kMax,
+};
+
+using FieldPartitionArray =
+    std::array<std::vector<const FieldDescriptor*>, FieldPartition::kMax>;
+
 // Provides an abstract interface to optimize message layout
 // by rearranging the fields of a message.
 class MessageLayoutHelper {
@@ -31,6 +46,15 @@ class MessageLayoutHelper {
   virtual void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
                               const Options& options,
                               MessageSCCAnalyzer* scc_analyzer) = 0;
+
+ protected:
+  FieldPartitionArray PartitionFields(
+      const std::vector<const FieldDescriptor*>& fields, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer) const;
+
+  virtual FieldPartition FieldHotness(
+      const FieldDescriptor* field, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer) const = 0;
 };
 
 }  // namespace cpp
