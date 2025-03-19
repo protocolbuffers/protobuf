@@ -7,8 +7,8 @@
 
 package com.google.protobuf;
 
-import proto2_unittest.UnittestProto;
-import proto2_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
