@@ -12,6 +12,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 
+#include <array>
+#include <cstdint>
+#include <vector>
+
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -22,6 +26,45 @@ namespace cpp {
 
 class MessageSCCAnalyzer;
 
+enum FieldPartition {
+  kRepeated,  // Non-split repeated fields.
+  kHot,
+  kWarm,
+  kCold,
+  kSplit,
+  kMax,
+};
+
+using FieldPartitionArray =
+    std::array<std::vector<const FieldDescriptor*>, FieldPartition::kMax>;
+
+class FieldGroup {
+ public:
+  FieldGroup() : preferred_location_(0), num_accesses_(0) {}
+
+  // A group with a single field.
+  FieldGroup(float preferred_location, const FieldDescriptor* field)
+      : preferred_location_(preferred_location),
+        fields_(1, field) {
+  }
+
+  const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
+
+  void SetPreferredLocation(double location) { preferred_location_ = location; }
+
+  // Appends the fields in 'other' to this group. Access count is incremented.
+  void Append(const FieldGroup& other);
+
+  // Sorts by their preferred location.
+  bool operator<(const FieldGroup& other) const;
+
+ private:
+  bool UpdatePreferredLocationAndInsertOtherFields(const FieldGroup& other);
+
+  float preferred_location_;
+  std::vector<const FieldDescriptor*> fields_;
+};
+
 // Provides an abstract interface to optimize message layout
 // by rearranging the fields of a message.
 class MessageLayoutHelper {
@@ -31,6 +74,15 @@ class MessageLayoutHelper {
   virtual void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
                               const Options& options,
                               MessageSCCAnalyzer* scc_analyzer) = 0;
+
+ protected:
+  FieldPartitionArray PartitionFields(
+      const std::vector<const FieldDescriptor*>& fields, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer) const;
+
+  virtual FieldPartition FieldHotness(
+      const FieldDescriptor* field, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer) const = 0;
 };
 
 }  // namespace cpp

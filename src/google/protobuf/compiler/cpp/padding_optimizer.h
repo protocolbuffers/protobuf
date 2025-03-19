@@ -12,7 +12,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 
+#include <vector>
+
 #include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -26,12 +30,17 @@ namespace cpp {
 // comment for details.
 class PaddingOptimizer : public MessageLayoutHelper {
  public:
-  PaddingOptimizer() {}
-  ~PaddingOptimizer() override {}
+  PaddingOptimizer() = default;
+  ~PaddingOptimizer() override = default;
 
   void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
                       const Options& options,
                       MessageSCCAnalyzer* scc_analyzer) override;
+
+ protected:
+  FieldPartition FieldHotness(const FieldDescriptor* field,
+                              const Options& options,
+                              MessageSCCAnalyzer* scc_analyzer) const override;
 };
 
 }  // namespace cpp

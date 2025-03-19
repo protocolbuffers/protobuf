@@ -9,9 +9,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -20,65 +24,18 @@ namespace cpp {
 
 namespace {
 
-// FieldGroup is just a helper for PaddingOptimizer below. It holds a vector of
-// fields that are grouped together because they have compatible alignment, and
-// a preferred location in the final field ordering.
-class FieldGroup {
- public:
-  FieldGroup() : preferred_location_(0) {}
-
-  // A group with a single field.
-  FieldGroup(double preferred_location, const FieldDescriptor* field)
-      : preferred_location_(preferred_location), fields_(1, field) {}
-
-  // Append the fields in 'other' to this group.
-  void Append(const FieldGroup& other) {
-    if (other.fields_.empty()) {
-      return;
-    }
-    // Preferred location is the average among all the fields, so we weight by
-    // the number of fields on each FieldGroup object.
-    preferred_location_ = (preferred_location_ * fields_.size() +
-                           (other.preferred_location_ * other.fields_.size())) /
-                          (fields_.size() + other.fields_.size());
-    fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
-  }
-
-  void SetPreferredLocation(double location) { preferred_location_ = location; }
-  const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
-
-  // FieldGroup objects sort by their preferred location.
-  bool operator<(const FieldGroup& other) const {
-    return preferred_location_ < other.preferred_location_;
-  }
-
- private:
-  // "preferred_location_" is an estimate of where this group should go in the
-  // final list of fields.  We compute this by taking the average index of each
-  // field in this group in the original ordering of fields.  This is very
-  // approximate, but should put this group close to where its member fields
-  // originally went.
-  double preferred_location_;
-  std::vector<const FieldDescriptor*> fields_;
-  // We rely on the default copy constructor and operator= so this type can be
-  // used in a vector.
-};
-
-}  // namespace
-
-static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
-                                 const Options& options,
-                                 MessageSCCAnalyzer* scc_analyzer) {
+void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
+                          const Options& options,
+                          MessageSCCAnalyzer* scc_analyzer) {
   if (fields->empty()) return;
 
   // The sorted numeric order of Family determines the declaration order in the
   // memory layout.
   enum Family {
     REPEATED = 0,
-    STRING = 1,
-    MESSAGE = 2,
-    ZERO_INITIALIZABLE = 3,
-    OTHER = 4,
+    MESSAGE = 1,
+    ZERO_INITIALIZABLE = 2,
+    OTHER = 3,
     kMaxFamily
   };
 
@@ -91,9 +48,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 
     Family f = OTHER;
     if (field->is_repeated()) {
-      f = REPEATED;
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      f = STRING;
+      f = ShouldSplit(field, options) ? OTHER : REPEATED;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       f = MESSAGE;
     } else if (CanInitializeByZeroing(field, options, scc_analyzer)) {
@@ -120,6 +75,8 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 
   // For each family, group fields to optimize padding.
   for (int f = 0; f < kMaxFamily; f++) {
+    std::stable_sort(aligned_to_1[f].begin(), aligned_to_1[f].end());
+
     // Now group fields aligned to 1 byte into sets of 4, and treat those like a
     // single field aligned to 4 bytes.
     for (size_t i = 0; i < aligned_to_1[f].size(); i += 4) {
@@ -168,6 +125,8 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   }
 }
 
+}  // namespace
+
 // Reorder 'fields' so that if the fields are output into a c++ class in the new
 // order, fields of similar family (see below) are together and within each
 // family, alignment padding is minimized.
@@ -204,20 +163,20 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 void PaddingOptimizer::OptimizeLayout(
     std::vector<const FieldDescriptor*>* fields, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
-  std::vector<const FieldDescriptor*> normal;
-  std::vector<const FieldDescriptor*> split;
-  for (const auto* field : *fields) {
-    if (ShouldSplit(field, options)) {
-      split.push_back(field);
-    } else {
-      normal.push_back(field);
-    }
-  }
-  OptimizeLayoutHelper(&normal, options, scc_analyzer);
-  OptimizeLayoutHelper(&split, options, scc_analyzer);
+  auto field_partitions = PartitionFields(*fields, options, scc_analyzer);
+
   fields->clear();
-  fields->insert(fields->end(), normal.begin(), normal.end());
-  fields->insert(fields->end(), split.begin(), split.end());
+  for (auto& partition : field_partitions) {
+    OptimizeLayoutHelper(&partition, options, scc_analyzer);
+    fields->insert(fields->end(), partition.begin(), partition.end());
+  }
+}
+
+FieldPartition PaddingOptimizer::FieldHotness(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) const {
+  // Assume all fields are hot.
+  return kHot;
 }
 
 }  // namespace cpp
