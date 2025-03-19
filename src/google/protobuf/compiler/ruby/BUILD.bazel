@@ -7,6 +7,18 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "generator_headers",
+    hdrs = ["ruby_generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_library(
     name = "ruby",
     srcs = ["ruby_generator.cc"],
     hdrs = ["ruby_generator.h"],
