@@ -537,6 +537,7 @@ public final class Descriptors {
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
     private final DescriptorPool pool;
+    private boolean featuresResolved;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
@@ -547,6 +548,7 @@ public final class Descriptors {
       this.pool = pool;
       this.proto = proto;
       this.dependencies = dependencies.clone();
+      this.featuresResolved = false;
       HashMap<String, FileDescriptor> nameToFileMap = new HashMap<>();
       for (FileDescriptor file : dependencies) {
         nameToFileMap.put(file.getName(), file);
@@ -618,6 +620,7 @@ public final class Descriptors {
               .build();
       this.dependencies = new FileDescriptor[0];
       this.publicDependencies = new FileDescriptor[0];
+      this.featuresResolved = false;
 
       messageTypes = new Descriptor[] {message};
       enumTypes = EMPTY_ENUM_DESCRIPTORS;
@@ -641,12 +644,12 @@ public final class Descriptors {
      * and all of its children.
      */
     private void resolveAllFeaturesInternal() throws DescriptorValidationException {
-      if (this.features != null) {
+      if (this.featuresResolved) {
         return;
       }
 
       synchronized (this) {
-        if (this.features != null) {
+        if (this.featuresResolved) {
           return;
         }
         resolveFeatures(proto.getOptions().getFeatures());
@@ -666,6 +669,7 @@ public final class Descriptors {
         for (FieldDescriptor extension : extensions) {
           extension.resolveAllFeatures();
         }
+        this.featuresResolved = true;
       }
     }
 
@@ -2851,6 +2855,10 @@ public final class Descriptors {
           && (getFile().getEdition() == Edition.EDITION_PROTO2
               || getFile().getEdition() == Edition.EDITION_PROTO3)) {
         getFile().resolveAllFeaturesImmutable();
+      }
+      if (this.features == null) {
+        throw new NullPointerException(
+            String.format("Features not yet loaded for %s.", getFullName()));
       }
       return this.features;
     }
