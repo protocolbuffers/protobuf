@@ -183,7 +183,7 @@ use_repo(protobuf_maven_dev, "protobuf_maven_dev")
 
 bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
-bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.8.0", dev_dependency = True)
 bazel_dep(
     name = "abseil-py",
     version = "2.1.0",
