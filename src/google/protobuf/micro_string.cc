@@ -47,6 +47,40 @@ void MicroString::DestroySlow() {
   }
 }
 
+void MicroString::ClearSlow() {
+  if (is_micro_rep()) {
+    micro_rep()->size = 0;
+    return;
+  }
+
+  switch (large_rep_kind()) {
+    case kOwned:
+      large_rep()->size = 0;
+      return;
+    case kString: {
+      auto* rep = string_rep();
+      rep->str.clear();
+      rep->payload = rep->str.data();
+      rep->size = rep->str.size();
+      return;
+    }
+    case kAlias: {
+      // We have a large rep we can't really use much.
+      // Transform it into a micro rep to use the space for something.
+      MicroRep* rep = reinterpret_cast<MicroRep*>(large_rep());
+      rep->size = 0;
+      rep->capacity = sizeof(LargeRep) - sizeof(MicroRep);
+      rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(rep) +
+                                     kIsMicroRepTag);
+      return;
+    }
+    case kUnowned:
+      // We don't own any memory, so just reset to default.
+      InitDefault();
+      break;
+  }
+}
+
 void MicroString::SetFromOtherSlow(const MicroString& other, Arena* arena,
                                    size_t inline_capacity) {
   // Unowned property gets propagated, even if we have a rep already.
@@ -111,7 +145,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
 
   // Special case when no inline space and value is empty: rep is null
   if (!kHasInlineRep && data.empty()) {
-    rep_ = nullptr;
+    InitDefault();
     return;
   }
 

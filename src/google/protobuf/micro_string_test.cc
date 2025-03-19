@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -173,6 +174,27 @@ TEST(MicroStringTest, DefaultIsEmpty) {
   EXPECT_EQ(str.Get(), "");
 }
 
+TEST(MicroStringTest, ArenaConstructor) {
+  MicroString str(static_cast<Arena*>(nullptr));
+  EXPECT_EQ(str.Get(), "");
+
+  Arena arena;
+  MicroString str2(&arena);
+  EXPECT_EQ(str2.Get(), "");
+}
+
+TEST(MicroStringTest, InitDefault) {
+  alignas(MicroString) char buffer[sizeof(MicroString)];
+  // Scribble the memory.
+  memset(buffer, 0xCD, sizeof(buffer));
+  MicroString* str = reinterpret_cast<MicroString*>(buffer);
+  str->InitDefault();
+  EXPECT_EQ(str->Get(), "");
+  str->Set("Foo", nullptr);
+  EXPECT_EQ(str->Get(), "Foo");
+  str->Destroy();
+}
+
 TEST(MicroStringTest, HasConstexprDefaultConstructor) {
   constexpr MicroString str;
   EXPECT_EQ(str.Get(), "");
@@ -290,6 +312,48 @@ TEST(MicroStringTest, CapacityIsRoundedUp) {
   EXPECT_EQ(str.Capacity(), 16 - kMicroRepSize);
   str.Set("01234567890123", &arena);
   EXPECT_EQ(used, arena.SpaceUsed());
+}
+
+TEST_P(MicroStringPrevTest, Clear) {
+  const std::string control(str_.Get());
+
+  const size_t used = arena_space_used();
+
+  str_.Clear();
+  EXPECT_EQ(str_.Get(), "");
+
+  EXPECT_EQ(used, arena_space_used());
+
+  str_.Set(control, arena());
+  EXPECT_EQ(str_.Get(), control);
+
+  // Resetting to the original string should not use more memory.
+  // Except for the aliasing kinds.
+  if (prev_state() != kUnowned && prev_state() != kAlias) {
+    EXPECT_EQ(used, arena_space_used());
+  }
+}
+
+TEST(MicroStringTest, ClearOnAliasReusesSpace) {
+  Arena arena;
+  MicroString str;
+  str.SetAlias("Some arbitrary string to alias here.", &arena);
+  const size_t available_space = kLargeRepSize - kMicroRepSize;
+  const size_t used = arena.SpaceUsed();
+  str.Clear();
+  EXPECT_EQ(str.Get(), "");
+  EXPECT_EQ(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
+
+  std::string input(available_space, 'a');
+  // No new space.
+  str.Set(input, &arena);
+  EXPECT_EQ(used, arena.SpaceUsed());
+  EXPECT_EQ(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
+
+  // Now we have to realloc
+  str.Set(absl::StrCat(input, "A"), &arena);
+  EXPECT_LT(used, arena.SpaceUsed());
+  EXPECT_LT(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
 }
 
 TEST_P(MicroStringPrevTest, SetInline) {
@@ -511,6 +575,47 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrViewConstantSize) {
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
   }
+}
+
+TEST_P(MicroStringPrevTest, InternalSwap) {
+  MicroString other = MakeFromState(kOwned, arena());
+
+  const std::string control_lhs(str_.Get());
+  const std::string control_rhs(other.Get());
+
+  str_.InternalSwap(&other);
+  EXPECT_EQ(str_.Get(), control_rhs);
+  EXPECT_EQ(other.Get(), control_lhs);
+
+  if (!has_arena()) other.Destroy();
+}
+
+TEST(MicroStringExtraTest, InternalSwap) {
+  constexpr absl::string_view lhs_value =
+      "Very long string that is not SSO and unlikely to use the same capacity "
+      "as the other value.";
+  constexpr absl::string_view rhs_value = "123456789012345";
+
+  MicroStringExtra<15> lhs, rhs;
+  lhs.Set(lhs_value, nullptr);
+  rhs.Set(rhs_value, nullptr);
+
+  const size_t used_lhs = lhs.SpaceUsedExcludingSelfLong();
+  const size_t used_rhs = rhs.SpaceUsedExcludingSelfLong();
+
+  // Verify setup.
+  ASSERT_EQ(lhs.Get(), lhs_value);
+  ASSERT_EQ(rhs.Get(), rhs_value);
+
+  lhs.InternalSwap(&rhs);
+
+  EXPECT_EQ(lhs.Get(), rhs_value);
+  EXPECT_EQ(rhs.Get(), lhs_value);
+  EXPECT_EQ(used_rhs, lhs.SpaceUsedExcludingSelfLong());
+  EXPECT_EQ(used_lhs, rhs.SpaceUsedExcludingSelfLong());
+
+  lhs.Destroy();
+  rhs.Destroy();
 }
 
 TEST_P(MicroStringPrevTest, CopyConstruct) {
