@@ -273,6 +273,12 @@ crates_repository(
         "paste": crate.spec(
             version = ">=1",
         ),
+        "quote": crate.spec(
+            version = ">=1",
+        ),
+        "syn": crate.spec(
+            version = ">=2",
+        ),
     },
 )
 

@@ -485,6 +485,42 @@ rust_test(
 )
 
 rust_test(
+    name = "proto_proc_macro_cpp_test",
+    srcs = ["proto_proc_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    proc_macro_deps = [
+        "//rust/proto_proc_macro",
+    ],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:map_unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "proto_proc_macro_upb_test",
+    srcs = ["proto_proc_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
+    },
+    proc_macro_deps = [
+        "//rust/proto_proc_macro",
+    ],
+    deps = [
+        "//rust:protobuf_gtest_matchers_upb",
+        "//rust:protobuf_upb",
+        "//rust/test:map_unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
     name = "gtest_matchers_cpp_test",
     srcs = ["gtest_matchers_test.rs"],
     aliases = {

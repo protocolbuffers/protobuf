@@ -140,6 +140,14 @@ crate.spec(
     package = "paste",
     version = ">=1",
 )
+crate.spec(
+    package = "quote",
+    version = ">=1",
+)
+crate.spec(
+    package = "syn",
+    version = ">=2",
+)
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 

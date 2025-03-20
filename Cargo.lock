@@ -23,6 +23,8 @@ version = "0.0.1"
 dependencies = [
  "googletest",
  "paste",
+ "quote",
+ "syn"
 ]
 
 [[package]]
