@@ -783,6 +783,11 @@ TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
 }
 
 TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Might not be possible to allocate that much memory on "
+                    "this platform.";
+  }
+
   MicroString str;
   str.SetInChunks(1'000'000'000, nullptr, [](auto append) {
     append("first");
