@@ -722,7 +722,8 @@ const internal::ClassData* DynamicMessage::GetClassData() const {
 DynamicMessageFactory::DynamicMessageFactory()
     : pool_(nullptr), delegate_to_generated_factory_(false) {}
 
-DynamicMessageFactory::DynamicMessageFactory(const DescriptorPool* pool)
+DynamicMessageFactory::DynamicMessageFactory(
+    const DescriptorPool* PROTOBUF_NONNULL pool)
     : pool_(pool), delegate_to_generated_factory_(false) {}
 
 DynamicMessageFactory::~DynamicMessageFactory() {
@@ -731,14 +732,15 @@ DynamicMessageFactory::~DynamicMessageFactory() {
   }
 }
 
-const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
+const Message* PROTOBUF_NONNULL
+DynamicMessageFactory::GetPrototype(const Descriptor* PROTOBUF_NONNULL type) {
   ABSL_CHECK(type != nullptr);
   absl::MutexLock lock(&prototypes_mutex_);
   return GetPrototypeNoLock(type);
 }
 
 const Message* DynamicMessageFactory::GetPrototypeNoLock(
-    const Descriptor* type) {
+    const Descriptor* PROTOBUF_NONNULL type) {
   if (delegate_to_generated_factory_ &&
       type->file()->pool() == DescriptorPool::generated_pool()) {
     const Message* result = MessageFactory::TryGetGeneratedPrototype(type);

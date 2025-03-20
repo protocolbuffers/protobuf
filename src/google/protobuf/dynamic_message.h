@@ -79,7 +79,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 #ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   explicit
 #endif
-      DynamicMessageFactory(const DescriptorPool* pool);
+      DynamicMessageFactory(const DescriptorPool* PROTOBUF_NONNULL pool);
   DynamicMessageFactory(const DynamicMessageFactory&) = delete;
   DynamicMessageFactory& operator=(const DynamicMessageFactory&) = delete;
 
@@ -112,10 +112,11 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // hence must outlive the DynamicMessageFactory.
   //
   // The method is thread-safe.
-  const Message* GetPrototype(const Descriptor* type) override;
+  const Message* PROTOBUF_NONNULL
+  GetPrototype(const Descriptor* PROTOBUF_NONNULL type) override;
 
  private:
-  const DescriptorPool* pool_;
+  const DescriptorPool* PROTOBUF_NULLABLE pool_;
   bool delegate_to_generated_factory_;
 
   struct TypeInfo;
@@ -123,15 +124,17 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   mutable absl::Mutex prototypes_mutex_;
 
   friend class DynamicMessage;
-  const Message* GetPrototypeNoLock(const Descriptor* type);
+  const Message* PROTOBUF_NONNULL
+  GetPrototypeNoLock(const Descriptor* PROTOBUF_NONNULL type);
 };
 
 // Helper for computing a sorted list of map entries via reflection.
 class PROTOBUF_EXPORT DynamicMapSorter {
  public:
-  static std::vector<const Message*> Sort(const Message& message, int map_size,
-                                          const Reflection* reflection,
-                                          const FieldDescriptor* field) {
+  static std::vector<const Message*> Sort(
+      const Message& message, int map_size,
+      const Reflection* PROTOBUF_NONNULL reflection,
+      const FieldDescriptor* PROTOBUF_NONNULL field) {
     std::vector<const Message*> result;
     result.reserve(map_size);
     RepeatedFieldRef<Message> map_field =
@@ -157,10 +160,12 @@ class PROTOBUF_EXPORT DynamicMapSorter {
  private:
   class PROTOBUF_EXPORT MapEntryMessageComparator {
    public:
-    explicit MapEntryMessageComparator(const Descriptor* descriptor)
+    explicit MapEntryMessageComparator(
+        const Descriptor* PROTOBUF_NONNULL descriptor)
         : field_(descriptor->field(0)) {}
 
-    bool operator()(const Message* a, const Message* b) {
+    bool operator()(const Message* PROTOBUF_NONNULL a,
+                    const Message* PROTOBUF_NONNULL b) {
       const Reflection* reflection = a->GetReflection();
       switch (field_->cpp_type()) {
         case FieldDescriptor::CPPTYPE_BOOL: {
@@ -200,7 +205,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
     }
 
    private:
-    const FieldDescriptor* field_;
+    const FieldDescriptor* PROTOBUF_NONNULL field_;
   };
 };
 
