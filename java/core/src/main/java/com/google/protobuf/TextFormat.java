@@ -38,8 +38,6 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
-  private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
-
   private static final String REDACTED_MARKER = "[REDACTED]";
 
   /**
@@ -963,606 +961,6 @@ public final class TextFormat {
   // =================================================================
   // Parsing
 
-  /**
-   * Represents a stream of tokens parsed from a {@code String}.
-   *
-   * <p>The Java standard library provides many classes that you might think would be useful for
-   * implementing this, but aren't. For example:
-   *
-   * <ul>
-   *   <li>{@code java.io.StreamTokenizer}: This almost does what we want -- or, at least, something
-   *       that would get us close to what we want -- except for one fatal flaw: It automatically
-   *       un-escapes strings using Java escape sequences, which do not include all the escape
-   *       sequences we need to support (e.g. '\x').
-   *   <li>{@code java.util.Scanner}: This seems like a great way at least to parse regular
-   *       expressions out of a stream (so we wouldn't have to load the entire input into a single
-   *       string before parsing). Sadly, {@code Scanner} requires that tokens be delimited with
-   *       some delimiter. Thus, although the text "foo:" should parse to two tokens ("foo" and
-   *       ":"), {@code Scanner} would recognize it only as a single token. Furthermore, {@code
-   *       Scanner} provides no way to inspect the contents of delimiters, making it impossible to
-   *       keep track of line and column numbers.
-   * </ul>
-   */
-  private static final class Tokenizer {
-    private final CharSequence text;
-    private String currentToken;
-
-    // The character index within this.text at which the current token begins.
-    private int pos = 0;
-
-    // The line and column numbers of the current token.
-    private int line = 0;
-    private int column = 0;
-    private int lineInfoTrackingPos = 0;
-
-    // The line and column numbers of the previous token (allows throwing
-    // errors *after* consuming).
-    private int previousLine = 0;
-    private int previousColumn = 0;
-
-    /**
-     * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
-     * current token. This value is moved to {@link containsSilentMarkerAfterPrevToken} every time
-     * the next token is parsed.
-     */
-    private boolean containsSilentMarkerAfterCurrentToken = false;
-
-    private boolean containsSilentMarkerAfterPrevToken = false;
-
-    /** Construct a tokenizer that parses tokens from the given text. */
-    private Tokenizer(final CharSequence text) {
-      this.text = text;
-      skipWhitespace();
-      nextToken();
-    }
-
-    int getPreviousLine() {
-      return previousLine;
-    }
-
-    int getPreviousColumn() {
-      return previousColumn;
-    }
-
-    int getLine() {
-      return line;
-    }
-
-    int getColumn() {
-      return column;
-    }
-
-    boolean getContainsSilentMarkerAfterCurrentToken() {
-      return containsSilentMarkerAfterCurrentToken;
-    }
-
-    boolean getContainsSilentMarkerAfterPrevToken() {
-      return containsSilentMarkerAfterPrevToken;
-    }
-
-    /** Are we at the end of the input? */
-    boolean atEnd() {
-      return currentToken.length() == 0;
-    }
-
-    /** Advance to the next token. */
-    void nextToken() {
-      previousLine = line;
-      previousColumn = column;
-
-      // Advance the line counter to the current position.
-      while (lineInfoTrackingPos < pos) {
-        if (text.charAt(lineInfoTrackingPos) == '\n') {
-          ++line;
-          column = 0;
-        } else {
-          ++column;
-        }
-        ++lineInfoTrackingPos;
-      }
-
-      // Match the next token.
-      if (pos == text.length()) {
-        currentToken = ""; // EOF
-      } else {
-        currentToken = nextTokenInternal();
-        skipWhitespace();
-      }
-    }
-
-    private String nextTokenInternal() {
-      final int textLength = this.text.length();
-      final int startPos = this.pos;
-      final char startChar = this.text.charAt(startPos);
-
-      int endPos = pos;
-      if (isAlphaUnder(startChar)) { // Identifier
-        while (++endPos != textLength) {
-          char c = this.text.charAt(endPos);
-          if (!(isAlphaUnder(c) || isDigitPlusMinus(c))) {
-            break;
-          }
-        }
-      } else if (isDigitPlusMinus(startChar) || startChar == '.') { // Number
-        if (startChar == '.') { // Optional leading dot
-          if (++endPos == textLength) {
-            return nextTokenSingleChar();
-          }
-
-          if (!isDigitPlusMinus(this.text.charAt(endPos))) { // Mandatory first digit
-            return nextTokenSingleChar();
-          }
-        }
-
-        while (++endPos != textLength) {
-          char c = this.text.charAt(endPos);
-          if (!(isDigitPlusMinus(c) || isAlphaUnder(c) || c == '.')) {
-            break;
-          }
-        }
-      } else if (startChar == '"' || startChar == '\'') { // String
-        while (++endPos != textLength) {
-          char c = this.text.charAt(endPos);
-          if (c == startChar) {
-            ++endPos;
-            break; // Quote terminates
-          } else if (c == '\n') {
-            break; // Newline terminates (error during parsing) (not consumed)
-          } else if (c == '\\') {
-            if (++endPos == textLength) {
-              break; // Escape into end-of-text terminates (error during parsing)
-            } else if (this.text.charAt(endPos) == '\n') {
-              break; // Escape into newline terminates (error during parsing) (not consumed)
-            } else {
-              // Otherwise the escaped char is legal and consumed
-            }
-          } else {
-            // Otherwise the char is a legal and consumed
-          }
-        }
-      } else {
-        return nextTokenSingleChar(); // Unrecognized start character
-      }
-
-      this.pos = endPos;
-      return this.text.subSequence(startPos, endPos).toString();
-    }
-
-    private static boolean isAlphaUnder(char c) {
-      // Defining this char-class with numeric comparisons is much faster than using a regex.
-      return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_';
-    }
-
-    private static boolean isDigitPlusMinus(char c) {
-      // Defining this char-class with numeric comparisons is much faster than using a regex.
-      return ('0' <= c && c <= '9') || c == '+' || c == '-';
-    }
-
-    private static boolean isWhitespace(char c) {
-      // Defining this char-class with numeric comparisons is much faster than using a regex.
-      return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t';
-    }
-
-    /**
-     * Produce a token for the single char at the current position.
-     *
-     * <p>We hardcode the expected single-char tokens to avoid allocating a unique string every
-     * time, which is a GC risk. String-literals are always loaded from the class constant pool.
-     *
-     * <p>This method must not be called if the current position is after the end-of-text.
-     */
-    private String nextTokenSingleChar() {
-      final char c = this.text.charAt(this.pos++);
-      switch (c) {
-        case ':':
-          return ":";
-        case ',':
-          return ",";
-        case '[':
-          return "[";
-        case ']':
-          return "]";
-        case '{':
-          return "{";
-        case '}':
-          return "}";
-        case '<':
-          return "<";
-        case '>':
-          return ">";
-        default:
-          // If we don't recognize the char, create a string and let the parser report any errors
-          return String.valueOf(c);
-      }
-    }
-
-    /** Skip over any whitespace so that the matcher region starts at the next token. */
-    private void skipWhitespace() {
-      final int textLength = this.text.length();
-      final int startPos = this.pos;
-
-      int endPos = this.pos - 1;
-      while (++endPos != textLength) {
-        char c = this.text.charAt(endPos);
-        if (c == '#') {
-          while (++endPos != textLength) {
-            if (this.text.charAt(endPos) == '\n') {
-              break; // Consume the newline as whitespace.
-            }
-          }
-          if (endPos == textLength) {
-            break;
-          }
-        } else if (isWhitespace(c)) {
-          // OK
-        } else {
-          break;
-        }
-      }
-
-      this.pos = endPos;
-    }
-
-    /**
-     * If the next token exactly matches {@code token}, consume it and return {@code true}.
-     * Otherwise, return {@code false} without doing anything.
-     */
-    boolean tryConsume(final String token) {
-      if (currentToken.equals(token)) {
-        nextToken();
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token exactly matches {@code token}, consume it. Otherwise, throw a {@link
-     * ParseException}.
-     */
-    void consume(final String token) throws ParseException {
-      if (!tryConsume(token)) {
-        throw parseException("Expected \"" + token + "\".");
-      }
-    }
-
-    /** Returns {@code true} if the next token is an integer, but does not consume it. */
-    boolean lookingAtInteger() {
-      if (currentToken.length() == 0) {
-        return false;
-      }
-
-      return isDigitPlusMinus(currentToken.charAt(0));
-    }
-
-    /** Returns {@code true} if the current token's text is equal to that specified. */
-    boolean lookingAt(String text) {
-      return currentToken.equals(text);
-    }
-
-    /**
-     * If the next token is an identifier, consume it and return its value. Otherwise, throw a
-     * {@link ParseException}.
-     */
-    String consumeIdentifier() throws ParseException {
-      for (int i = 0; i < currentToken.length(); i++) {
-        final char c = currentToken.charAt(i);
-        if (isAlphaUnder(c) || ('0' <= c && c <= '9') || (c == '.')) {
-          // OK
-        } else {
-          throw parseException("Expected identifier. Found '" + currentToken + "'");
-        }
-      }
-
-      final String result = currentToken;
-      nextToken();
-      return result;
-    }
-
-    /**
-     * If the next token is an identifier, consume it and return {@code true}. Otherwise, return
-     * {@code false} without doing anything.
-     */
-    boolean tryConsumeIdentifier() {
-      try {
-        consumeIdentifier();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token is a 32-bit signed integer, consume it and return its value. Otherwise,
-     * throw a {@link ParseException}.
-     */
-    int consumeInt32() throws ParseException {
-      try {
-        final int result = parseInt32(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw integerParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a 32-bit unsigned integer, consume it and return its value. Otherwise,
-     * throw a {@link ParseException}.
-     */
-    int consumeUInt32() throws ParseException {
-      try {
-        final int result = parseUInt32(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw integerParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a 64-bit signed integer, consume it and return its value. Otherwise,
-     * throw a {@link ParseException}.
-     */
-    long consumeInt64() throws ParseException {
-      try {
-        final long result = parseInt64(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw integerParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a 64-bit signed integer, consume it and return {@code true}. Otherwise,
-     * return {@code false} without doing anything.
-     */
-    boolean tryConsumeInt64() {
-      try {
-        consumeInt64();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token is a 64-bit unsigned integer, consume it and return its value. Otherwise,
-     * throw a {@link ParseException}.
-     */
-    long consumeUInt64() throws ParseException {
-      try {
-        final long result = parseUInt64(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw integerParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a 64-bit unsigned integer, consume it and return {@code true}.
-     * Otherwise, return {@code false} without doing anything.
-     */
-    public boolean tryConsumeUInt64() {
-      try {
-        consumeUInt64();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token is a double, consume it and return its value. Otherwise, throw a {@link
-     * ParseException}.
-     */
-    public double consumeDouble() throws ParseException {
-      // We need to parse infinity and nan separately because
-      // Double.parseDouble() does not accept "inf", "infinity", or "nan".
-      switch (currentToken.toLowerCase(Locale.ROOT)) {
-        case "-inf":
-        case "-infinity":
-          nextToken();
-          return Double.NEGATIVE_INFINITY;
-        case "inf":
-        case "infinity":
-          nextToken();
-          return Double.POSITIVE_INFINITY;
-        case "nan":
-          nextToken();
-          return Double.NaN;
-        default:
-          // fall through
-      }
-
-      try {
-        final double result = Double.parseDouble(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw floatParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a double, consume it and return {@code true}. Otherwise, return {@code
-     * false} without doing anything.
-     */
-    public boolean tryConsumeDouble() {
-      try {
-        consumeDouble();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token is a float, consume it and return its value. Otherwise, throw a {@link
-     * ParseException}.
-     */
-    public float consumeFloat() throws ParseException {
-      // We need to parse infinity and nan separately because
-      // Float.parseFloat() does not accept "inf", "infinity", or "nan".
-      switch (currentToken.toLowerCase(Locale.ROOT)) {
-        case "-inf":
-        case "-inff":
-        case "-infinity":
-        case "-infinityf":
-          nextToken();
-          return Float.NEGATIVE_INFINITY;
-        case "inf":
-        case "inff":
-        case "infinity":
-        case "infinityf":
-          nextToken();
-          return Float.POSITIVE_INFINITY;
-        case "nan":
-        case "nanf":
-          nextToken();
-          return Float.NaN;
-        default:
-          // fall through
-      }
-
-      try {
-        final float result = Float.parseFloat(currentToken);
-        nextToken();
-        return result;
-      } catch (NumberFormatException e) {
-        throw floatParseException(e);
-      }
-    }
-
-    /**
-     * If the next token is a float, consume it and return {@code true}. Otherwise, return {@code
-     * false} without doing anything.
-     */
-    public boolean tryConsumeFloat() {
-      try {
-        consumeFloat();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * If the next token is a boolean, consume it and return its value. Otherwise, throw a {@link
-     * ParseException}.
-     */
-    public boolean consumeBoolean() throws ParseException {
-      if (currentToken.equals("true")
-          || currentToken.equals("True")
-          || currentToken.equals("t")
-          || currentToken.equals("1")) {
-        nextToken();
-        return true;
-      } else if (currentToken.equals("false")
-          || currentToken.equals("False")
-          || currentToken.equals("f")
-          || currentToken.equals("0")) {
-        nextToken();
-        return false;
-      } else {
-        throw parseException("Expected \"true\" or \"false\". Found \"" + currentToken + "\".");
-      }
-    }
-
-    /**
-     * If the next token is a string, consume it and return its (unescaped) value. Otherwise, throw
-     * a {@link ParseException}.
-     */
-    public String consumeString() throws ParseException {
-      return consumeByteString().toStringUtf8();
-    }
-
-    /**
-     * If the next token is a string, consume it, unescape it as a {@link ByteString}, and return
-     * it. Otherwise, throw a {@link ParseException}.
-     */
-    @CanIgnoreReturnValue
-    ByteString consumeByteString() throws ParseException {
-      List<ByteString> list = new ArrayList<ByteString>();
-      consumeByteString(list);
-      while (currentToken.startsWith("'") || currentToken.startsWith("\"")) {
-        consumeByteString(list);
-      }
-      return ByteString.copyFrom(list);
-    }
-
-    /** If the next token is a string, consume it and return true. Otherwise, return false. */
-    boolean tryConsumeByteString() {
-      try {
-        consumeByteString();
-        return true;
-      } catch (ParseException e) {
-        return false;
-      }
-    }
-
-    /**
-     * Like {@link #consumeByteString()} but adds each token of the string to the given list. String
-     * literals (whether bytes or text) may come in multiple adjacent tokens which are automatically
-     * concatenated, like in C or Python.
-     */
-    private void consumeByteString(List<ByteString> list) throws ParseException {
-      final char quote = currentToken.length() > 0 ? currentToken.charAt(0) : '\0';
-      if (quote != '\"' && quote != '\'') {
-        throw parseException("Expected string.");
-      }
-
-      if (currentToken.length() < 2 || currentToken.charAt(currentToken.length() - 1) != quote) {
-        throw parseException("String missing ending quote.");
-      }
-
-      try {
-        final String escaped = currentToken.substring(1, currentToken.length() - 1);
-        final ByteString result = unescapeBytes(escaped);
-        nextToken();
-        list.add(result);
-      } catch (InvalidEscapeSequenceException e) {
-        throw parseException(e.getMessage());
-      }
-    }
-
-    /**
-     * Returns a {@link ParseException} with the current line and column numbers in the description,
-     * suitable for throwing.
-     */
-    ParseException parseException(final String description) {
-      // Note:  People generally prefer one-based line and column numbers.
-      return new ParseException(line + 1, column + 1, description);
-    }
-
-    /**
-     * Returns a {@link ParseException} with the line and column numbers of the previous token in
-     * the description, suitable for throwing.
-     */
-    ParseException parseExceptionPreviousToken(final String description) {
-      // Note:  People generally prefer one-based line and column numbers.
-      return new ParseException(previousLine + 1, previousColumn + 1, description);
-    }
-
-    /**
-     * Constructs an appropriate {@link ParseException} for the given {@code NumberFormatException}
-     * when trying to parse an integer.
-     */
-    private ParseException integerParseException(final NumberFormatException e) {
-      return parseException("Couldn't parse integer: " + e.getMessage());
-    }
-
-    /**
-     * Constructs an appropriate {@link ParseException} for the given {@code NumberFormatException}
-     * when trying to parse a float or double.
-     */
-    private ParseException floatParseException(final NumberFormatException e) {
-      return parseException("Couldn't parse number: " + e.getMessage());
-    }
-  }
-
   /** Thrown when parsing an invalid text format message. */
   public static class ParseException extends IOException {
     private static final long serialVersionUID = 3196188060225107702L;
@@ -1738,7 +1136,7 @@ public final class TextFormat {
      * containsSilentMarkerAfterPrevToken.
      */
     private void detectSilentMarker(
-        Tokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
+        TxtpbTokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
     }
 
     /**
@@ -1984,7 +1382,7 @@ public final class TextFormat {
         final ExtensionRegistry extensionRegistry,
         final Message.Builder builder)
         throws ParseException {
-      final Tokenizer tokenizer = new Tokenizer(input);
+      final TxtpbTokenizer tokenizer = new TxtpbTokenizer(input);
       MessageReflection.BuilderAdapter target = new MessageReflection.BuilderAdapter(builder);
       List<UnknownField> unknownFields = new ArrayList<UnknownField>();
 
@@ -1996,7 +1394,7 @@ public final class TextFormat {
 
     /** Parse a single field from {@code tokenizer} and merge it into {@code builder}. */
     private void mergeField(
-        final Tokenizer tokenizer,
+        final TxtpbTokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         List<UnknownField> unknownFields,
@@ -2013,7 +1411,7 @@ public final class TextFormat {
 
     /** Parse a single field from {@code tokenizer} and merge it into {@code target}. */
     private void mergeField(
-        final Tokenizer tokenizer,
+        final TxtpbTokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         TextFormatParseInfoTree.Builder parseTreeBuilder,
@@ -2121,7 +1519,7 @@ public final class TextFormat {
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         detectSilentMarker(tokenizer, type, field.getFullName());
-        tokenizer.tryConsume(":"); // optional
+        boolean unused = tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
               parseTreeBuilder.getBuilderForSubMessageField(field);
@@ -2166,11 +1564,11 @@ public final class TextFormat {
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
       if (!tokenizer.tryConsume(";")) {
-        tokenizer.tryConsume(",");
+        boolean unused = tokenizer.tryConsume(",");
       }
     }
 
-    private String consumeFullTypeName(Tokenizer tokenizer) throws ParseException {
+    private String consumeFullTypeName(TxtpbTokenizer tokenizer) throws ParseException {
       // If there is not a leading `[`, this is just a type name.
       if (!tokenizer.tryConsume("[")) {
         return tokenizer.consumeIdentifier();
@@ -2196,7 +1594,7 @@ public final class TextFormat {
      * Parse a one or more field values from {@code tokenizer} and merge it into {@code builder}.
      */
     private void consumeFieldValues(
-        final Tokenizer tokenizer,
+        final TxtpbTokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         final FieldDescriptor field,
@@ -2241,7 +1639,7 @@ public final class TextFormat {
 
     /** Parse a single field value from {@code tokenizer} and merge it into {@code builder}. */
     private void consumeFieldValue(
-        final Tokenizer tokenizer,
+        final TxtpbTokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         final FieldDescriptor field,
@@ -2411,7 +1809,7 @@ public final class TextFormat {
     }
 
     private void mergeAnyFieldValue(
-        final Tokenizer tokenizer,
+        final TxtpbTokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
         MergeTarget target,
         final TextFormatParseInfoTree.Builder parseTreeBuilder,
@@ -2436,7 +1834,7 @@ public final class TextFormat {
         }
       }
       detectSilentMarker(tokenizer, anyDescriptor, typeUrlBuilder.toString());
-      tokenizer.tryConsume(":");
+      boolean unused = tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
         anyEndToken = ">";
@@ -2478,7 +1876,7 @@ public final class TextFormat {
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer, Descriptor type, int recursionLimit)
+    private void skipField(TxtpbTokenizer tokenizer, Descriptor type, int recursionLimit)
         throws ParseException {
       String name = consumeFullTypeName(tokenizer);
       detectSilentMarker(tokenizer, type, name);
@@ -2487,14 +1885,14 @@ public final class TextFormat {
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
       if (!tokenizer.tryConsume(";")) {
-        tokenizer.tryConsume(",");
+        boolean unused = tokenizer.tryConsume(",");
       }
     }
 
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer, Descriptor type, int recursionLimit)
+    private void skipFieldMessage(TxtpbTokenizer tokenizer, Descriptor type, int recursionLimit)
         throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
@@ -2510,14 +1908,14 @@ public final class TextFormat {
     }
 
     /** Skips a field value. */
-    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
+    private void skipFieldValue(TxtpbTokenizer tokenizer) throws ParseException {
       if (!tokenizer.tryConsumeByteString()
           && !tokenizer.tryConsumeIdentifier() // includes enum & boolean
           && !tokenizer.tryConsumeInt64() // includes int32
           && !tokenizer.tryConsumeUInt64() // includes uint32
           && !tokenizer.tryConsumeDouble()
           && !tokenizer.tryConsumeFloat()) {
-        throw tokenizer.parseException("Invalid field value: " + tokenizer.currentToken);
+        throw tokenizer.parseException("Invalid field value: " + tokenizer.getCurrentToken());
       }
     }
 
@@ -2530,7 +1928,7 @@ public final class TextFormat {
      * be a message or the input is ill-formed. For short-formed repeated fields (i.e. with "[]"),
      * if it is repeated scalar, there must be a ":" between the field name and the starting "[" .
      */
-    private void guessFieldTypeAndSkip(Tokenizer tokenizer, Descriptor type, int recursionLimit)
+    private void guessFieldTypeAndSkip(TxtpbTokenizer tokenizer, Descriptor type, int recursionLimit)
         throws ParseException {
       boolean semicolonConsumed = tokenizer.tryConsume(":");
       if (tokenizer.lookingAt("[")) {
@@ -2553,7 +1951,7 @@ public final class TextFormat {
      * <p>Reports an error if scalar type is not allowed but showing up inside "[]".
      */
     private void skipFieldShortFormedRepeated(
-        Tokenizer tokenizer, boolean scalarAllowed, Descriptor type, int recursionLimit)
+        TxtpbTokenizer tokenizer, boolean scalarAllowed, Descriptor type, int recursionLimit)
         throws ParseException {
       if (!tokenizer.tryConsume("[") || tokenizer.tryConsume("]")) {
         // Try skipping "[]".
