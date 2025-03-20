@@ -98,7 +98,7 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
         srcs = sources,
         public_hdrs = headers,
         compilation_contexts = [dep[CcInfo].compilation_context for dep in deps if CcInfo in dep],
-        name = ctx.label.name,
+        name = ctx.label.name + "_cc_support_proto",
         # Don't instrument the generated C++ files even when --collect_code_coverage is set.
         # If we actually start generating coverage instrumentation for .proto files based on coverage
         # data from the generated C++ files, this will have to be removed. Currently, the work done
