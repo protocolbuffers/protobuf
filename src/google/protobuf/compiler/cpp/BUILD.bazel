@@ -93,6 +93,7 @@ cc_library(
         "generator.cc",
         "ifndef_guard.cc",
         "message.cc",
+        "message_layout_helper.cc",
         "namespace_printer.cc",
         "padding_optimizer.cc",
         "parse_function_generator.cc",
@@ -125,8 +126,10 @@ cc_library(
         "@io_kythe//kythe/cxx/tools:__subpackages__",
     ],
     deps = [
+        ":helpers",
         ":names",
         ":names_internal",
+        ":options",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
