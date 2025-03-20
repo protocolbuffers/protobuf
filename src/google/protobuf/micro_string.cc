@@ -58,12 +58,75 @@ void MicroString::SetFromOtherSlow(const MicroString& other, Arena* arena,
   SetImpl(other.Get(), arena, inline_capacity);
 }
 
+MicroString::MicroRep* MicroString::AllocateMicroRep(size_t capacity,
+                                                     Arena* arena) {
+  MicroRep* h;
+  if (arena == nullptr) {
+    const internal::SizedPtr alloc = internal::AllocateAtLeast(
+        ArenaAlignDefault::Ceil(MicroRepSize(capacity)));
+    // Maybe we rounded up too much.
+    capacity = std::min(kMaxMicroRepCapacity, alloc.n - sizeof(MicroRep));
+    h = reinterpret_cast<MicroRep*>(alloc.p);
+  } else {
+    capacity =
+        ArenaAlignDefault::Ceil(capacity + sizeof(MicroRep)) - sizeof(MicroRep);
+    capacity = std::min(kMaxMicroRepCapacity, capacity);
+    auto* alloc = arena->AllocateAligned(MicroRepSize(capacity));
+    h = reinterpret_cast<MicroRep*>(alloc);
+  }
+  h->capacity = capacity;
+
+  rep_ =
+      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) + kIsMicroRepTag);
+  ABSL_DCHECK(is_micro_rep());
+
+  return h;
+}
+
+MicroString::LargeRep* MicroString::AllocateOwnedRep(size_t capacity,
+                                                     Arena* arena) {
+  LargeRep* h;
+  ABSL_DCHECK_GE(capacity, kOwned);
+  if (arena == nullptr) {
+    const internal::SizedPtr alloc = internal::AllocateAtLeast(
+        ArenaAlignDefault::Ceil(OwnedRepSize(capacity)));
+    capacity = alloc.n - sizeof(LargeRep);
+    h = reinterpret_cast<LargeRep*>(alloc.p);
+  } else {
+    size_t alloc_size = ArenaAlignDefault::Ceil(OwnedRepSize(capacity));
+    capacity = alloc_size - sizeof(LargeRep);
+    auto* alloc = arena->AllocateAligned(alloc_size);
+    h = reinterpret_cast<LargeRep*>(alloc);
+  }
+
+  rep_ =
+      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) | kIsLargeRepTag);
+  h->capacity = capacity;
+  h->payload = h->owned_head();
+
+  ABSL_DCHECK_EQ(+large_rep_kind(), +kOwned);
+
+  return h;
+}
+
+MicroString::StringRep* MicroString::AllocateStringRep(Arena* arena) {
+  StringRep* h = Arena::Create<StringRep>(arena);
+  h->capacity = kString;
+  rep_ =
+      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) | kIsLargeRepTag);
+  ABSL_DCHECK_EQ(+large_rep_kind(), +kString);
+  return h;
+}
+
 void MicroString::SetImpl(absl::string_view data, Arena* arena,
                           size_t inline_capacity) {
   // Reuse space if possible.
   if (is_micro_rep()) {
     auto* h = micro_rep();
-    if (h->capacity >= data.size()) {
+    if (data.empty()) {
+      h->size = 0;
+      return;
+    } else if (h->capacity >= data.size()) {
       h->size = data.size();
       memmove(h->data(), data.data(), data.size());
       return;
@@ -75,7 +138,10 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
     switch (large_rep_kind()) {
       case kOwned: {
         auto* h = large_rep();
-        if (h->capacity >= data.size()) {
+        if (data.empty()) {
+          h->size = 0;
+          return;
+        } else if (h->capacity >= data.size()) {
           h->size = data.size();
           memmove(h->payload, data.data(), data.size());
           return;
@@ -85,9 +151,8 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
       case kString: {
         auto* h = string_rep();
         if (h->str.capacity() >= data.size()) {
-          h->size = data.size();
           h->str.assign(data.data(), data.size());
-          h->payload = h->str.data();
+          h->ResetBase();
           return;
         }
         break;
@@ -105,7 +170,9 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   // If we fit in the inline space, use it.
   if (kHasInlineRep && data.size() <= inline_capacity) {
     set_inline_size(data.size());
-    memmove(inline_head(), data.data(), data.size());
+    if (!data.empty()) {
+      memmove(inline_head(), data.data(), data.size());
+    }
     return;
   }
 
@@ -116,57 +183,18 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   }
 
   // Try MicroString rep first.
-  size_t capacity = data.size();
-  if (capacity <= kMaxMicroRepCapacity) {
-    MicroRep* h;
-    if (arena == nullptr) {
-      const internal::SizedPtr alloc = internal::AllocateAtLeast(
-          ArenaAlignDefault::Ceil(MicroRepSize(capacity)));
-      // Maybe we rounded up too much.
-      capacity = std::min(kMaxMicroRepCapacity, alloc.n - sizeof(MicroRep));
-      h = reinterpret_cast<MicroRep*>(alloc.p);
-    } else {
-      capacity = ArenaAlignDefault::Ceil(capacity + sizeof(MicroRep)) -
-                 sizeof(MicroRep);
-      capacity = std::min(kMaxMicroRepCapacity, capacity);
-      auto* alloc = Arena::CreateArray<char>(arena, MicroRepSize(capacity));
-      h = reinterpret_cast<MicroRep*>(alloc);
-    }
-
-    rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) +
-                                   kIsMicroRepTag);
-    ABSL_DCHECK(is_micro_rep());
-
+  if (data.size() <= kMaxMicroRepCapacity) {
+    MicroRep* h = AllocateMicroRep(data.size(), arena);
     h->size = data.size();
-    h->capacity = capacity;
     memcpy(h->data(), data.data(), data.size());
 
     return;
   }
 
   // Input is too big for MicroString, use the large large_rep representation.
-  LargeRep* h;
-  ABSL_DCHECK_GE(capacity, kOwned);
-  if (arena == nullptr) {
-    const internal::SizedPtr alloc = internal::AllocateAtLeast(
-        ArenaAlignDefault::Ceil(OwnedRepSize(capacity)));
-    capacity = alloc.n - sizeof(LargeRep);
-    h = reinterpret_cast<LargeRep*>(alloc.p);
-  } else {
-    size_t alloc_size = ArenaAlignDefault::Ceil(OwnedRepSize(capacity));
-    capacity = alloc_size - sizeof(LargeRep);
-    auto* alloc = Arena::CreateArray<char>(arena, alloc_size);
-    h = reinterpret_cast<LargeRep*>(alloc);
-  }
-
-  rep_ =
-      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) | kIsLargeRepTag);
+  LargeRep* h = AllocateOwnedRep(data.size(), arena);
   h->size = data.size();
-  h->capacity = capacity;
-  h->payload = reinterpret_cast<char*>(h + 1);
   memcpy(h->payload, data.data(), data.size());
-
-  ABSL_DCHECK_EQ(+large_rep_kind(), +kOwned);
 }
 
 void MicroString::SetAlias(absl::string_view data, Arena* arena,
@@ -211,20 +239,13 @@ void MicroString::SetString(std::string&& data, Arena* arena,
   StringRep* h;
   if (!is_large_rep() || large_rep_kind() != kString) {
     if (arena == nullptr) Destroy();
-
-    h = Arena::Create<StringRep>(arena);
-    h->capacity = kString;
-    rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(h) |
-                                   kIsLargeRepTag);
+    h = AllocateStringRep(arena);
   } else {
     h = string_rep();
   }
 
   h->str = std::move(data);
-  h->payload = h->str.data();
-  h->size = h->str.size();
-
-  ABSL_DCHECK_EQ(+large_rep_kind(), +kString);
+  h->ResetBase();
 }
 
 void MicroString::SetUnowned(const UnownedPayload& unowned, Arena* arena) {

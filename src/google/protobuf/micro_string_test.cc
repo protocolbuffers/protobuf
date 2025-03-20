@@ -7,8 +7,10 @@
 
 #include "google/protobuf/micro_string.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <ctime>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -281,15 +283,80 @@ TEST(MicroStringTest, ExtraRequestedInlineSpace) {
   TestExtraCapacity<23>(24);
 }
 
-TEST(MicroStringTest, CapacityIsRoundedUp) {
+TEST(MicroStringTest, CapacityIsRoundedUpOnArena) {
   Arena arena;
   MicroString str;
 
   str.Set("0123456789", &arena);
-  const size_t used = arena.SpaceUsed();
+  size_t used = arena.SpaceUsed();
   EXPECT_EQ(str.Capacity(), 16 - kMicroRepSize);
   str.Set("01234567890123", &arena);
   EXPECT_EQ(used, arena.SpaceUsed());
+
+  std::string long_input(1001, 'x');
+  str.Set(long_input, &arena);
+  used = arena.SpaceUsed();
+  const size_t expected_capacity = 1008 - (kLargeRepSize % 8);
+  EXPECT_EQ(str.Capacity(), expected_capacity);
+  long_input = std::string(expected_capacity, 'x');
+  str.Set(long_input, &arena);
+  EXPECT_EQ(used, arena.SpaceUsed());
+}
+
+TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
+  MicroString str;
+
+  // We don't know the exact buffer size the allocator will give us so try a few
+  // and verify loosely.
+  const std::string very_long(1000, 'x');
+
+  // For MicroRep
+  for (size_t i = 10; i < 20; ++i) {
+    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    EXPECT_GE(str.Capacity(), i);
+    EXPECT_EQ((str.Capacity() + kMicroRepSize) % sizeof(void*), 0);
+  }
+
+  // For OwnedRep
+  for (size_t i = 300; i < 340; ++i) {
+    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    EXPECT_GE(str.Capacity(), i);
+    EXPECT_EQ((str.Capacity() + kLargeRepSize) % sizeof(void*), 0);
+  }
+
+  str.Destroy();
+}
+
+TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
+  Arena arena;
+  MicroString str;
+
+  std::string input = std::string(200, 'x');
+  str.Set(input, &arena);
+  EXPECT_EQ(str.Capacity(), 208 - kMicroRepSize);
+  EXPECT_EQ(str.Get(), input);
+
+  input = std::string(255, 'x');
+  str.Set(input, &arena);
+  // It caps at 255 even though the allocated block is larger.
+  EXPECT_EQ(str.Capacity(), 255);
+  EXPECT_EQ(str.Get(), input);
+}
+
+TEST_P(MicroStringPrevTest, SetNullView) {
+  const size_t used = arena_space_used();
+  const size_t self_used = str_.SpaceUsedExcludingSelfLong();
+  str_.Set(absl::string_view(), arena());
+  EXPECT_EQ(str_.Get(), "");
+  EXPECT_EQ(used, arena_space_used());
+  EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
+
+  // Again but with a non-constant size to avoid the CONSTANT_P path.
+  size_t zero = time(nullptr) == 0;
+  str_.Set(absl::string_view(nullptr, zero), arena());
+  EXPECT_EQ(str_.Get(), "");
+  EXPECT_EQ(used, arena_space_used());
+  EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
 }
 
 TEST_P(MicroStringPrevTest, SetInline) {
@@ -645,6 +712,108 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetAlias) {
   }
 
   if (!has_arena()) source.Destroy();
+}
+
+constexpr absl::string_view kPi =
+    "3."
+    "141592653589793238462643383279502884197169399375105820974944592307816406"
+    "286208998628034825342117067982148086513282306647093844609550582231725359"
+    "408128481117450284102701938521105559644622948954930381964428810975665933"
+    "446128475648233786783165271201909145648566923460348610454326648213393607"
+    "260249141273724587006606315588174881520920962829254091715364367892590360"
+    "011330530548820466521384146951941511609433057270365759591953092186117381"
+    "932611793105118548074462379962749567351885752724891227938183011949129833"
+    "673362440656643086021394946395224737190702179860943702770539217176293176"
+    "752384674818467669405132000568127145263560827785771342757789609173637178"
+    "721468440901224953430146549585371050792279689258923542019956112129021960"
+    "864034418159813629774771309960518707211349999998372978049951059731732816"
+    "096318595024459455346908302642522308253344685035261931188171010003137838"
+    "752886587533208381420617177669147303598253490428755468731159562863882353"
+    "787593751957781857780532171226806613001927876611195909216420198";
+
+void SetInChunksTest(size_t size) {
+  MicroString str;
+
+  const auto pi = kPi.substr(0, size);
+  const size_t chunk_size = std::max(size / 10, size_t{1});
+  str.SetInChunks(size, nullptr, [&](auto append) {
+    for (auto input = pi; !input.empty();) {
+      const auto chunk = input.substr(0, chunk_size);
+      input.remove_prefix(chunk.size());
+      append(chunk);
+    }
+  });
+  EXPECT_EQ(str.Get(), pi);
+
+  str.Destroy();
+}
+
+TEST(MicroStringTest, SetInChunksInline) {
+  if (!MicroString::kHasInlineRep) {
+    GTEST_SKIP() << "Inline is not active";
+  }
+  SetInChunksTest(5);
+}
+
+TEST(MicroStringTest, SetInChunksMicro) { SetInChunksTest(50); }
+
+TEST(MicroStringTest, SetInChunksOwned) { SetInChunksTest(500); }
+
+TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
+  str_.SetInChunks(5, arena(), [](auto append) {
+    append("C");
+    append("H");
+    append("U");
+    append("N");
+    append("K");
+  });
+  EXPECT_EQ(str_.Get(), "CHUNK");
+}
+
+TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
+  // Here we say 5 bytes, but only append 4.
+  // The final size should still be 4.
+  str_.SetInChunks(5, arena(), [](auto append) {
+    append("C");
+    append("H");
+    append("N");
+    append("K");
+  });
+  EXPECT_EQ(str_.Get(), "CHNK");
+}
+
+TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
+  MicroString str;
+  str.SetInChunks(1'000'000'000, nullptr, [](auto append) {
+    append("first");
+    append(" and ");
+    append("third");
+  });
+  EXPECT_EQ(str.Get(), "first and third");
+  EXPECT_LT(str.Capacity(), 1000);
+  EXPECT_LT(str.SpaceUsedExcludingSelfLong(), 1000);
+  str.Destroy();
+}
+
+TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
+  std::string total(1'000'000'000, 0);
+  // Fill with some "random" data.
+  unsigned char x = 17;
+  for (char& c : total) {
+    c = x;
+    x = x * 19 + 7;
+  }
+
+  MicroString str;
+  str.SetInChunks(total.size(), nullptr, [&](auto append) {
+    constexpr size_t kChunks = 1000;
+    const size_t kChunkSize = total.size() / kChunks;
+    for (size_t i = 0; i < kChunks; ++i) {
+      append(absl::string_view(total).substr(kChunkSize * i, kChunkSize));
+    }
+  });
+  EXPECT_EQ(str.Get(), total);
+  str.Destroy();
 }
 
 TEST(MicroStringExtraTest, SettersWithinInline) {
