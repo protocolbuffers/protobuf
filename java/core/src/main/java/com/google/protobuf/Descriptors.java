@@ -537,7 +537,7 @@ public final class Descriptors {
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
     private final DescriptorPool pool;
-    private boolean featuresResolved;
+    private volatile boolean featuresResolved;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
