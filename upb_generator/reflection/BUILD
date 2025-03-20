@@ -27,14 +27,9 @@ cc_binary(
     name = "protoc-gen-upbdefs",
     srcs = ["generator.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
-    linkopts = ["-lm"],
     visibility = [
         "//pkg:__pkg__",
     ],
-    # To work around the following link error from ABSL:
-    # /usr/bin/x86_64-linux-gnu-ld: bazel-out/k8-opt-exec-2B5CBBC6-ST-c1776f9924ec/bin/external/com_google_absl/absl/time/libtime.a(duration.o): undefined reference to symbol 'floor@@GLIBC_2.2.5'
-    # /usr/bin/x86_64-linux-gnu-ld: /opt/manylinux/2014/x86_64/lib64/libm.so.6: error adding symbols: DSO missing from command line
-    # clang-14: error: linker command failed with exit code 1 (use -v to see invocation)
     deps = [
         ":names",
         "//src/google/protobuf:descriptor_upb_c_proto",
