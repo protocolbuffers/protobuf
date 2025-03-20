@@ -1055,7 +1055,9 @@ set(protoc-gen-upbdefs_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.cc
   ${protobuf_SOURCE_DIR}/upb_generator/reflection/generator.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/reflection/header.cc
   ${protobuf_SOURCE_DIR}/upb_generator/reflection/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/reflection/source.cc
 )
 
 # @//pkg:protoc-gen-upbdefs

@@ -15262,6 +15262,8 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
+
+
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
 
@@ -15312,6 +15314,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
 
 
 #endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -15483,6 +15486,7 @@ UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_Annotation_ge
   _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_DefPool_FindMessageByName(s, "google.protobuf.GeneratedCodeInfo.Annotation");
 }
+
 
 #ifdef __cplusplus
 }  /* extern "C" */
