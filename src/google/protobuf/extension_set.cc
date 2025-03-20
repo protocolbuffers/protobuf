@@ -24,6 +24,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
@@ -1750,6 +1751,8 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
   // Iterating from the back to benefit the case where the keys are inserted in
   // increasing order.
   for (; i > 0; --i) {
+    absl::PrefetchToLocalCache(&flat[i - 2]);
+    absl::PrefetchToLocalCache(&flat[i - 3]);
     int map_key = flat[i - 1].first;
     if (map_key == key) {
       return {&flat[i - 1].second, false};
