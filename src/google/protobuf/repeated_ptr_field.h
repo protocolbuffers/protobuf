@@ -938,7 +938,9 @@ class GenericTypeHandler<std::string> {
 }  // namespace internal
 
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
-// Messages.
+// Messages. As the name suggests, it stores an array of pointers and is
+// analogous to a std::vector<std::unique_ptr<T>>. Elements are therefore
+// guaranteed to have stable addresses.
 template <typename Element>
 class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     : private internal::RepeatedPtrFieldBase {
