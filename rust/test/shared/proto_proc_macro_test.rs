@@ -217,22 +217,20 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().get("quux").unwrap(), eq("quuz"));
 }
 
-/*
-TODO: Re-enable this test once message maps work.
+// TODO: Re-enable this test once message maps work.
 #[gtest]
 fn test_message_maps() {
     let msg3 = proto_proc!(TestAllTypes { optional_int32: 3 });
-    let kv3 = ("quux", msg3);
-    let msg = proto_proc!(TestMapWithMessages {
-        map_string_all_types: [
-            ("foo", TestAllTypes { optional_int32: 1 }),
-            ("baz", __ { optional_int32: 2 }),
+    let kv3 = (2, msg3);
+    let msg = proto_proc!(TestMap {
+        map_int32_all_types: [
+            (4, TestAllTypes { optional_int32: 1 }),
+            (6, __ { optional_int32: 2 }),
             kv3
         ]
     });
-    assert_that!(msg.map_string_all_types().len(), eq(3));
-    assert_that!(msg.map_string_all_types().get("foo").unwrap().optional_int32(), eq(1));
-    assert_that!(msg.map_string_all_types().get("baz").unwrap().optional_int32(), eq(2));
-    assert_that!(msg.map_string_all_types().get("quux").unwrap().optional_int32(), eq(3));
+    assert_that!(msg.map_int32_all_types().len(), eq(3));
+    assert_that!(msg.map_int32_all_types().get(4).unwrap().optional_int32(), eq(1));
+    assert_that!(msg.map_int32_all_types().get(6).unwrap().optional_int32(), eq(2));
+    assert_that!(msg.map_int32_all_types().get(2).unwrap().optional_int32(), eq(3));
 }
-*/
