@@ -43,6 +43,22 @@ bazel_dep(name = "rules_rust", version = "0.51.0")
 bazel_dep(name = "rules_shell", version = "0.2.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 
+# Prebuilt binaries
+
+prebuilt_binaries = use_extension("//bazel/private:prebuilt_binaries.bzl", "prebuilt_binaries_ext")
+use_repo(
+    prebuilt_binaries,
+    "com_google_protobuf_protoc_linux_aarch64",
+    "com_google_protobuf_protoc_linux_ppc",
+    "com_google_protobuf_protoc_linux_s390_64",
+    "com_google_protobuf_protoc_linux_x86_32",
+    "com_google_protobuf_protoc_linux_x86_64",
+    "com_google_protobuf_protoc_macos_aarch64",
+    "com_google_protobuf_protoc_macos_x86_64",
+    "com_google_protobuf_protoc_windows_x86_32",
+    "com_google_protobuf_protoc_windows_x86_64"
+)
+    
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
 

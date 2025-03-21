@@ -233,12 +233,22 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-cc_binary(
+alias(
     name = "protoc",
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    # Select a prebuilt protoc based on the platform or fallback to the sources
+    actual = select({
+        "//build_defs:linux-aarch64": "@com_google_protobuf_protoc_linux_aarch64//:protoc",
+        "//build_defs:linux-ppc": "@com_google_protobuf_protoc_linux_ppc//:protoc",
+        "//build_defs:linux-s390x": "@com_google_protobuf_protoc_linux_s390_64//:protoc",
+        "//build_defs:linux-x86_32": "@com_google_protobuf_protoc_linux_x86_32//:protoc",
+        "//build_defs:linux-x86_64": "@com_google_protobuf_protoc_linux_x86_64//:protoc",
+        "//build_defs:macos-aarch64": "@com_google_protobuf_protoc_macos_aarch64//:protoc",
+        "//build_defs:macos-x86_64": "@com_google_protobuf_protoc_macos_x86_64//:protoc",
+        "//build_defs:windows-x86_32": "@com_google_protobuf_protoc_windows_x86_32//:protoc",
+        "//build_defs:windows-x86_64": "@com_google_protobuf_protoc_windows_x86_64//:protoc",
+        "//conditions:default": "//src/google/protobuf/compiler:protoc",
+    }),
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
 cc_binary(
