@@ -20,6 +20,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/generated_message_bases.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
@@ -73,6 +74,8 @@ enum FeatureSet_RepeatedFieldEncoding : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
 enum FeatureSet_Utf8Validation : int;
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
+enum FeatureSet_VisibilityFeature_DefaultSymbolVisibility : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_[];
 enum FieldDescriptorProto_Label : int;
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
 enum FieldDescriptorProto_Type : int;
@@ -91,6 +94,8 @@ enum GeneratedCodeInfo_Annotation_Semantic : int;
 PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
 enum MethodOptions_IdempotencyLevel : int;
 PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
+enum SymbolVisibility : int;
+PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
@@ -143,6 +148,10 @@ class FeatureSetDefaults_FeatureSetEditionDefault;
 struct FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_default_instance_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_;
+class FeatureSet_VisibilityFeature;
+struct FeatureSet_VisibilityFeatureDefaultTypeInternal;
+PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureDefaultTypeInternal _FeatureSet_VisibilityFeature_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
 class FieldDescriptorProto;
 struct FieldDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
@@ -251,6 +260,9 @@ template <>
 internal::EnumTraitsT<::google::protobuf::FeatureSet_Utf8Validation_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_Utf8Validation>;
 template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>;
+template <>
 internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Label_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Label>;
 template <>
@@ -277,6 +289,9 @@ internal::EnumTraitsT<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_
 template <>
 internal::EnumTraitsT<::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::MethodOptions_IdempotencyLevel>;
+template <>
+internal::EnumTraitsT<::google::protobuf::SymbolVisibility_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::SymbolVisibility>;
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
@@ -605,6 +620,41 @@ inline bool MethodOptions_IdempotencyLevel_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(MethodOptions_IdempotencyLevel_descriptor(), name,
                                            value);
 }
+enum FeatureSet_VisibilityFeature_DefaultSymbolVisibility : int {
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DEFAULT_SYMBOL_VISIBILITY_UNKNOWN = 0,
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_ALL = 1,
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_TOP_LEVEL = 2,
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_LOCAL_ALL = 3,
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_STRICT = 4,
+};
+
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_[];
+inline constexpr FeatureSet_VisibilityFeature_DefaultSymbolVisibility FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_MIN =
+    static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(0);
+inline constexpr FeatureSet_VisibilityFeature_DefaultSymbolVisibility FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_MAX =
+    static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(4);
+inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_IsValid(int value) {
+  return 0 <= value && value <= 4;
+}
+inline constexpr int FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_ARRAYSIZE = 4 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+template <typename T>
+const std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(T value) {
+  static_assert(std::is_same<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to DefaultSymbolVisibility_Name().");
+  return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(value));
+}
+template <>
+inline const std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor, 0, 4>(
+      static_cast<int>(value));
+}
+inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(
+    absl::string_view name, FeatureSet_VisibilityFeature_DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor(), name,
+                                           value);
+}
 enum FeatureSet_FieldPresence : int {
   FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN = 0,
   FeatureSet_FieldPresence_EXPLICIT = 1,
@@ -906,6 +956,39 @@ inline bool Edition_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<Edition>(Edition_descriptor(), name,
                                            value);
 }
+enum SymbolVisibility : int {
+  VISIBILITY_UNSET = 0,
+  VISIBILITY_LOCAL = 1,
+  VISIBILITY_EXPORT = 2,
+};
+
+PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
+inline constexpr SymbolVisibility SymbolVisibility_MIN =
+    static_cast<SymbolVisibility>(0);
+inline constexpr SymbolVisibility SymbolVisibility_MAX =
+    static_cast<SymbolVisibility>(2);
+inline bool SymbolVisibility_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+inline constexpr int SymbolVisibility_ARRAYSIZE = 2 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor();
+template <typename T>
+const std::string& SymbolVisibility_Name(T value) {
+  static_assert(std::is_same<T, SymbolVisibility>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to SymbolVisibility_Name().");
+  return SymbolVisibility_Name(static_cast<SymbolVisibility>(value));
+}
+template <>
+inline const std::string& SymbolVisibility_Name(SymbolVisibility value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<SymbolVisibility_descriptor, 0, 2>(
+      static_cast<int>(value));
+}
+inline bool SymbolVisibility_Parse(
+    absl::string_view name, SymbolVisibility* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SymbolVisibility>(SymbolVisibility_descriptor(), name,
+                                           value);
+}
 
 // ===================================================================
 
@@ -1182,7 +1265,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     return *reinterpret_cast<const SourceCodeInfo_Location*>(
         &_SourceCodeInfo_Location_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 29;
+  static constexpr int kIndexInFileMessages = 30;
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo_Location* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -1463,7 +1546,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     return *reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
         &_GeneratedCodeInfo_Annotation_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 31;
+  static constexpr int kIndexInFileMessages = 32;
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -2132,6 +2215,175 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_;
 // -------------------------------------------------------------------
 
+class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::protobuf::internal::ZeroFieldsBase
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet.VisibilityFeature) */ {
+ public:
+  inline FeatureSet_VisibilityFeature() : FeatureSet_VisibilityFeature(nullptr) {}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSet_VisibilityFeature));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSet_VisibilityFeature(::google::protobuf::internal::ConstantInitialized);
+
+  inline FeatureSet_VisibilityFeature(const FeatureSet_VisibilityFeature& from) : FeatureSet_VisibilityFeature(nullptr, from) {}
+  inline FeatureSet_VisibilityFeature(FeatureSet_VisibilityFeature&& from) noexcept
+      : FeatureSet_VisibilityFeature(nullptr, std::move(from)) {}
+  inline FeatureSet_VisibilityFeature& operator=(const FeatureSet_VisibilityFeature& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline FeatureSet_VisibilityFeature& operator=(FeatureSet_VisibilityFeature&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const FeatureSet_VisibilityFeature& default_instance() {
+    return *reinterpret_cast<const FeatureSet_VisibilityFeature*>(
+        &_FeatureSet_VisibilityFeature_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 26;
+  friend void swap(FeatureSet_VisibilityFeature& a, FeatureSet_VisibilityFeature& b) { a.Swap(&b); }
+  inline void Swap(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  FeatureSet_VisibilityFeature* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<FeatureSet_VisibilityFeature>(arena);
+  }
+  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
+  inline void CopyFrom(const FeatureSet_VisibilityFeature& from) {
+    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from);
+  }
+  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
+  void MergeFrom(const FeatureSet_VisibilityFeature& from) {
+    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from);
+  }
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+ private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.VisibilityFeature"; }
+
+ protected:
+  explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from);
+  FeatureSet_VisibilityFeature(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
+      : FeatureSet_VisibilityFeature(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto InternalNewImpl_();
+
+ public:
+  static constexpr auto InternalGenerateClassData_();
+
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+  using DefaultSymbolVisibility = FeatureSet_VisibilityFeature_DefaultSymbolVisibility;
+  static constexpr DefaultSymbolVisibility DEFAULT_SYMBOL_VISIBILITY_UNKNOWN = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DEFAULT_SYMBOL_VISIBILITY_UNKNOWN;
+  static constexpr DefaultSymbolVisibility EXPORT_ALL = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_ALL;
+  static constexpr DefaultSymbolVisibility EXPORT_TOP_LEVEL = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_TOP_LEVEL;
+  static constexpr DefaultSymbolVisibility LOCAL_ALL = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_LOCAL_ALL;
+  static constexpr DefaultSymbolVisibility STRICT = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_STRICT;
+  static inline bool DefaultSymbolVisibility_IsValid(int value) {
+    return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_IsValid(value);
+  }
+  static constexpr DefaultSymbolVisibility DefaultSymbolVisibility_MIN = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_MIN;
+  static constexpr DefaultSymbolVisibility DefaultSymbolVisibility_MAX = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_MAX;
+  static constexpr int DefaultSymbolVisibility_ARRAYSIZE = FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL DefaultSymbolVisibility_descriptor() {
+    return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& DefaultSymbolVisibility_Name(T value) {
+    return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(value);
+  }
+  static inline bool DefaultSymbolVisibility_Parse(
+      absl::string_view name, DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
+    return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+  // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet.VisibilityFeature)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<0, 0,
+                                   0, 0,
+                                   2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const FeatureSet_VisibilityFeature& from_msg);
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
+};
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FeatureSet_VisibilityFeature_class_data_;
+// -------------------------------------------------------------------
+
 class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
  public:
@@ -2187,7 +2439,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return *reinterpret_cast<const FeatureSet*>(
         &_FeatureSet_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 26;
+  static constexpr int kIndexInFileMessages = 27;
   friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
   inline void Swap(FeatureSet* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -2277,6 +2529,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
+  using VisibilityFeature = FeatureSet_VisibilityFeature;
   using FieldPresence = FeatureSet_FieldPresence;
   static constexpr FieldPresence FIELD_PRESENCE_UNKNOWN = FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN;
   static constexpr FieldPresence EXPLICIT = FeatureSet_FieldPresence_EXPLICIT;
@@ -2435,6 +2688,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     kMessageEncodingFieldNumber = 5,
     kJsonFormatFieldNumber = 6,
     kEnforceNamingStyleFieldNumber = 7,
+    kDefaultSymbolVisibilityFieldNumber = 8,
   };
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_field_presence() const;
@@ -2511,6 +2765,17 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   private:
   ::google::protobuf::FeatureSet_EnforceNamingStyle _internal_enforce_naming_style() const;
   void _internal_set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
+
+  public:
+  // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool has_default_symbol_visibility() const;
+  void clear_default_symbol_visibility() ;
+  ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility default_symbol_visibility() const;
+  void set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
+
+  private:
+  ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility _internal_default_symbol_visibility() const;
+  void _internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -2694,8 +2959,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7,
-                                   7, 0,
+  static const ::google::protobuf::internal::TcParseTable<3, 8,
+                                   8, 0,
                                    2>
       _table_;
 
@@ -2724,6 +2989,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     int message_encoding_;
     int json_format_;
     int enforce_naming_style_;
+    int default_symbol_visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -3749,7 +4015,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
     return *reinterpret_cast<const SourceCodeInfo*>(
         &_SourceCodeInfo_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 30;
+  static constexpr int kIndexInFileMessages = 31;
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -4130,7 +4396,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
     return *reinterpret_cast<const GeneratedCodeInfo*>(
         &_GeneratedCodeInfo_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 32;
+  static constexpr int kIndexInFileMessages = 33;
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -4328,7 +4594,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
     return *reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
         &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 27;
+  static constexpr int kIndexInFileMessages = 28;
   friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -7657,7 +7923,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
     return *reinterpret_cast<const FeatureSetDefaults*>(
         &_FeatureSetDefaults_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 28;
+  static constexpr int kIndexInFileMessages = 29;
   friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -20106,6 +20372,10 @@ inline void UninterpretedOption::set_allocated_aggregate_value(std::string* PROT
 
 // -------------------------------------------------------------------
 
+// FeatureSet_VisibilityFeature
+
+// -------------------------------------------------------------------
+
 // FeatureSet
 
 // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -20323,6 +20593,37 @@ inline void FeatureSet::_internal_set_enforce_naming_style(::google::protobuf::F
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_));
                                           _impl_.enforce_naming_style_ = value;
+}
+
+// optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+inline bool FeatureSet::has_default_symbol_visibility() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
+  return value;
+}
+inline void FeatureSet::clear_default_symbol_visibility() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.default_symbol_visibility_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000080u;
+}
+inline ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility FeatureSet::default_symbol_visibility() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.default_symbol_visibility)
+  return _internal_default_symbol_visibility();
+}
+inline void FeatureSet::set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
+  _internal_set_default_symbol_visibility(value);
+  _impl_._has_bits_[0] |= 0x00000080u;
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.default_symbol_visibility)
+}
+inline ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility FeatureSet::_internal_default_symbol_visibility() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(_impl_.default_symbol_visibility_);
+}
+inline void FeatureSet::_internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_));
+                                          _impl_.default_symbol_visibility_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21351,6 +21652,12 @@ inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protob
   return ::google::protobuf::MethodOptions_IdempotencyLevel_descriptor();
 }
 template <>
+struct is_proto_enum<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>() {
+  return ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+}
+template <>
 struct is_proto_enum<::google::protobuf::FeatureSet_FieldPresence> : std::true_type {};
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::FeatureSet_FieldPresence>() {
@@ -21403,6 +21710,12 @@ struct is_proto_enum<::google::protobuf::Edition> : std::true_type {};
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::Edition>() {
   return ::google::protobuf::Edition_descriptor();
+}
+template <>
+struct is_proto_enum<::google::protobuf::SymbolVisibility> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protobuf::SymbolVisibility>() {
+  return ::google::protobuf::SymbolVisibility_descriptor();
 }
 
 }  // namespace protobuf

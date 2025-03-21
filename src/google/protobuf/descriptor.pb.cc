@@ -204,6 +204,29 @@ struct FieldOptions_EditionDefaultDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
+template <typename>
+PROTOBUF_CONSTEXPR FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::internal::ZeroFieldsBase(FeatureSet_VisibilityFeature_class_data_.base()){}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::internal::ZeroFieldsBase() {
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+struct FeatureSet_VisibilityFeatureDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr FeatureSet_VisibilityFeatureDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  FeatureSet_VisibilityFeatureDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FeatureSet_VisibilityFeature(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~FeatureSet_VisibilityFeatureDefaultTypeInternal() {}
+  union {
+    FeatureSet_VisibilityFeature _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSet_VisibilityFeatureDefaultTypeInternal _FeatureSet_VisibilityFeature_default_instance_;
 
 inline constexpr FeatureSet::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -214,7 +237,8 @@ inline constexpr FeatureSet::Impl_::Impl_(
         utf8_validation_{static_cast< ::google::protobuf::FeatureSet_Utf8Validation >(0)},
         message_encoding_{static_cast< ::google::protobuf::FeatureSet_MessageEncoding >(0)},
         json_format_{static_cast< ::google::protobuf::FeatureSet_JsonFormat >(0)},
-        enforce_naming_style_{static_cast< ::google::protobuf::FeatureSet_EnforceNamingStyle >(0)} {}
+        enforce_naming_style_{static_cast< ::google::protobuf::FeatureSet_EnforceNamingStyle >(0)},
+        default_symbol_visibility_{static_cast< ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility >(0)} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
@@ -1234,7 +1258,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
-    file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[18];
+    file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[20];
 static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULLABLE
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 const ::uint32_t
@@ -1617,10 +1641,11 @@ const ::uint32_t
         5,
         1,
         2,
+        0x000, // bitmap
         0x083, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._extensions_),
-        11, // hasbit index offset
+        12, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.field_presence_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.enum_type_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.repeated_field_encoding_),
@@ -1628,6 +1653,7 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.message_encoding_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.json_format_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.enforce_naming_style_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.default_symbol_visibility_),
         0,
         1,
         2,
@@ -1635,6 +1661,7 @@ const ::uint32_t
         4,
         5,
         6,
+        7,
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_),
         6, // hasbit index offset
@@ -1714,13 +1741,14 @@ static const ::_pbi::MigrationSchema
         {341, sizeof(::google::protobuf::MethodOptions)},
         {353, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
         {360, sizeof(::google::protobuf::UninterpretedOption)},
-        {377, sizeof(::google::protobuf::FeatureSet)},
-        {395, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
-        {404, sizeof(::google::protobuf::FeatureSetDefaults)},
-        {413, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-        {426, sizeof(::google::protobuf::SourceCodeInfo)},
-        {429, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-        {442, sizeof(::google::protobuf::GeneratedCodeInfo)},
+        {377, sizeof(::google::protobuf::FeatureSet_VisibilityFeature)},
+        {378, sizeof(::google::protobuf::FeatureSet)},
+        {398, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
+        {407, sizeof(::google::protobuf::FeatureSetDefaults)},
+        {416, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+        {429, sizeof(::google::protobuf::SourceCodeInfo)},
+        {432, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+        {445, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_FileDescriptorSet_default_instance_._instance,
@@ -1749,6 +1777,7 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_MethodOptions_default_instance_._instance,
     &::google::protobuf::_UninterpretedOption_NamePart_default_instance_._instance,
     &::google::protobuf::_UninterpretedOption_default_instance_._instance,
+    &::google::protobuf::_FeatureSet_VisibilityFeature_default_instance_._instance,
     &::google::protobuf::_FeatureSet_default_instance_._instance,
     &::google::protobuf::_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
     &::google::protobuf::_FeatureSetDefaults_default_instance_._instance,
@@ -1947,7 +1976,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "\030\005 \001(\003\022\024\n\014double_value\030\006 \001(\001\022\024\n\014string_v"
     "alue\030\007 \001(\014\022\027\n\017aggregate_value\030\010 \001(\t\0323\n\010N"
     "amePart\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_extensi"
-    "on\030\002 \002(\010\"\274\013\n\nFeatureSet\022\202\001\n\016field_presen"
+    "on\030\002 \002(\010\"\203\016\n\nFeatureSet\022\202\001\n\016field_presen"
     "ce\030\001 \001(\0162).google.protobuf.FeatureSet.Fi"
     "eldPresenceB\?\210\001\001\230\001\004\230\001\001\242\001\r\022\010EXPLICIT\030\204\007\242\001"
     "\r\022\010IMPLICIT\030\347\007\242\001\r\022\010EXPLICIT\030\350\007\262\001\003\010\350\007\022b\n\t"
@@ -1969,67 +1998,78 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "(\0162..google.protobuf.FeatureSet.EnforceN"
     "amingStyleBI\210\001\002\230\001\001\230\001\002\230\001\003\230\001\004\230\001\005\230\001\006\230\001\007\230\001\010\230"
     "\001\t\242\001\021\022\014STYLE_LEGACY\030\204\007\242\001\016\022\tSTYLE2024\030\351\007\262"
-    "\001\003\010\351\007\"\\\n\rFieldPresence\022\032\n\026FIELD_PRESENCE"
-    "_UNKNOWN\020\000\022\014\n\010EXPLICIT\020\001\022\014\n\010IMPLICIT\020\002\022\023"
-    "\n\017LEGACY_REQUIRED\020\003\"7\n\010EnumType\022\025\n\021ENUM_"
-    "TYPE_UNKNOWN\020\000\022\010\n\004OPEN\020\001\022\n\n\006CLOSED\020\002\"V\n\025"
-    "RepeatedFieldEncoding\022#\n\037REPEATED_FIELD_"
-    "ENCODING_UNKNOWN\020\000\022\n\n\006PACKED\020\001\022\014\n\010EXPAND"
-    "ED\020\002\"I\n\016Utf8Validation\022\033\n\027UTF8_VALIDATIO"
-    "N_UNKNOWN\020\000\022\n\n\006VERIFY\020\002\022\010\n\004NONE\020\003\"\004\010\001\020\001\""
-    "S\n\017MessageEncoding\022\034\n\030MESSAGE_ENCODING_U"
-    "NKNOWN\020\000\022\023\n\017LENGTH_PREFIXED\020\001\022\r\n\tDELIMIT"
-    "ED\020\002\"H\n\nJsonFormat\022\027\n\023JSON_FORMAT_UNKNOW"
-    "N\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGACY_BEST_EFFORT\020\002\"W"
-    "\n\022EnforceNamingStyle\022 \n\034ENFORCE_NAMING_S"
-    "TYLE_UNKNOWN\020\000\022\r\n\tSTYLE2024\020\001\022\020\n\014STYLE_L"
-    "EGACY\020\002*\006\010\350\007\020\213N*\006\010\213N\020\220N*\006\010\220N\020\221NJ\006\010\347\007\020\350\007\""
-    "\230\003\n\022FeatureSetDefaults\022N\n\010defaults\030\001 \003(\013"
-    "2<.google.protobuf.FeatureSetDefaults.Fe"
-    "atureSetEditionDefault\0221\n\017minimum_editio"
-    "n\030\004 \001(\0162\030.google.protobuf.Edition\0221\n\017max"
-    "imum_edition\030\005 \001(\0162\030.google.protobuf.Edi"
-    "tion\032\313\001\n\030FeatureSetEditionDefault\022)\n\007edi"
-    "tion\030\003 \001(\0162\030.google.protobuf.Edition\0229\n\024"
-    "overridable_features\030\004 \001(\0132\033.google.prot"
-    "obuf.FeatureSet\0223\n\016fixed_features\030\005 \001(\0132"
-    "\033.google.protobuf.FeatureSetJ\004\010\001\020\002J\004\010\002\020\003"
-    "R\010features\"\343\001\n\016SourceCodeInfo\022:\n\010locatio"
-    "n\030\001 \003(\0132(.google.protobuf.SourceCodeInfo"
-    ".Location\032\206\001\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001"
-    "\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003"
-    " \001(\t\022\031\n\021trailing_comments\030\004 \001(\t\022!\n\031leadi"
-    "ng_detached_comments\030\006 \003(\t*\014\010\200\354\312\377\001\020\201\354\312\377\001"
-    "\"\234\002\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003"
-    "(\0132-.google.protobuf.GeneratedCodeInfo.A"
-    "nnotation\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002"
-    "\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013"
-    "\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google.p"
-    "rotobuf.GeneratedCodeInfo.Annotation.Sem"
-    "antic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005"
-    "ALIAS\020\002*\247\002\n\007Edition\022\023\n\017EDITION_UNKNOWN\020\000"
-    "\022\023\n\016EDITION_LEGACY\020\204\007\022\023\n\016EDITION_PROTO2\020"
-    "\346\007\022\023\n\016EDITION_PROTO3\020\347\007\022\021\n\014EDITION_2023\020"
-    "\350\007\022\021\n\014EDITION_2024\020\351\007\022\027\n\023EDITION_1_TEST_"
-    "ONLY\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022\035\n\027EDITI"
-    "ON_99997_TEST_ONLY\020\235\215\006\022\035\n\027EDITION_99998_"
-    "TEST_ONLY\020\236\215\006\022\035\n\027EDITION_99999_TEST_ONLY"
-    "\020\237\215\006\022\023\n\013EDITION_MAX\020\377\377\377\377\007B~\n\023com.google."
-    "protobufB\020DescriptorProtosH\001Z-google.gol"
-    "ang.org/protobuf/types/descriptorpb\370\001\001\242\002"
-    "\003GPB\252\002\032Google.Protobuf.Reflection"
+    "\001\003\010\351\007\022\240\001\n\031default_symbol_visibility\030\010 \001("
+    "\0162E.google.protobuf.FeatureSet.Visibilit"
+    "yFeature.DefaultSymbolVisibilityB6\210\001\002\230\001\001"
+    "\242\001\017\022\nEXPORT_ALL\030\204\007\242\001\025\022\020EXPORT_TOP_LEVEL\030"
+    "\351\007\262\001\003\010\351\007\032\241\001\n\021VisibilityFeature\"\201\001\n\027Defau"
+    "ltSymbolVisibility\022%\n!DEFAULT_SYMBOL_VIS"
+    "IBILITY_UNKNOWN\020\000\022\016\n\nEXPORT_ALL\020\001\022\024\n\020EXP"
+    "ORT_TOP_LEVEL\020\002\022\r\n\tLOCAL_ALL\020\003\022\n\n\006STRICT"
+    "\020\004J\010\010\001\020\200\200\200\200\002\"\\\n\rFieldPresence\022\032\n\026FIELD_P"
+    "RESENCE_UNKNOWN\020\000\022\014\n\010EXPLICIT\020\001\022\014\n\010IMPLI"
+    "CIT\020\002\022\023\n\017LEGACY_REQUIRED\020\003\"7\n\010EnumType\022\025"
+    "\n\021ENUM_TYPE_UNKNOWN\020\000\022\010\n\004OPEN\020\001\022\n\n\006CLOSE"
+    "D\020\002\"V\n\025RepeatedFieldEncoding\022#\n\037REPEATED"
+    "_FIELD_ENCODING_UNKNOWN\020\000\022\n\n\006PACKED\020\001\022\014\n"
+    "\010EXPANDED\020\002\"I\n\016Utf8Validation\022\033\n\027UTF8_VA"
+    "LIDATION_UNKNOWN\020\000\022\n\n\006VERIFY\020\002\022\010\n\004NONE\020\003"
+    "\"\004\010\001\020\001\"S\n\017MessageEncoding\022\034\n\030MESSAGE_ENC"
+    "ODING_UNKNOWN\020\000\022\023\n\017LENGTH_PREFIXED\020\001\022\r\n\t"
+    "DELIMITED\020\002\"H\n\nJsonFormat\022\027\n\023JSON_FORMAT"
+    "_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGACY_BEST_EFF"
+    "ORT\020\002\"W\n\022EnforceNamingStyle\022 \n\034ENFORCE_N"
+    "AMING_STYLE_UNKNOWN\020\000\022\r\n\tSTYLE2024\020\001\022\020\n\014"
+    "STYLE_LEGACY\020\002*\006\010\350\007\020\213N*\006\010\213N\020\220N*\006\010\220N\020\221NJ\006"
+    "\010\347\007\020\350\007\"\230\003\n\022FeatureSetDefaults\022N\n\010default"
+    "s\030\001 \003(\0132<.google.protobuf.FeatureSetDefa"
+    "ults.FeatureSetEditionDefault\0221\n\017minimum"
+    "_edition\030\004 \001(\0162\030.google.protobuf.Edition"
+    "\0221\n\017maximum_edition\030\005 \001(\0162\030.google.proto"
+    "buf.Edition\032\313\001\n\030FeatureSetEditionDefault"
+    "\022)\n\007edition\030\003 \001(\0162\030.google.protobuf.Edit"
+    "ion\0229\n\024overridable_features\030\004 \001(\0132\033.goog"
+    "le.protobuf.FeatureSet\0223\n\016fixed_features"
+    "\030\005 \001(\0132\033.google.protobuf.FeatureSetJ\004\010\001\020"
+    "\002J\004\010\002\020\003R\010features\"\343\001\n\016SourceCodeInfo\022:\n\010"
+    "location\030\001 \003(\0132(.google.protobuf.SourceC"
+    "odeInfo.Location\032\206\001\n\010Location\022\020\n\004path\030\001 "
+    "\003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_com"
+    "ments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001(\t\022!"
+    "\n\031leading_detached_comments\030\006 \003(\t*\014\010\200\354\312\377"
+    "\001\020\201\354\312\377\001\"\234\002\n\021GeneratedCodeInfo\022A\n\nannotat"
+    "ion\030\001 \003(\0132-.google.protobuf.GeneratedCod"
+    "eInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004path\030"
+    "\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030"
+    "\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.g"
+    "oogle.protobuf.GeneratedCodeInfo.Annotat"
+    "ion.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SE"
+    "T\020\001\022\t\n\005ALIAS\020\002*\247\002\n\007Edition\022\023\n\017EDITION_UN"
+    "KNOWN\020\000\022\023\n\016EDITION_LEGACY\020\204\007\022\023\n\016EDITION_"
+    "PROTO2\020\346\007\022\023\n\016EDITION_PROTO3\020\347\007\022\021\n\014EDITIO"
+    "N_2023\020\350\007\022\021\n\014EDITION_2024\020\351\007\022\027\n\023EDITION_"
+    "1_TEST_ONLY\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022\035"
+    "\n\027EDITION_99997_TEST_ONLY\020\235\215\006\022\035\n\027EDITION"
+    "_99998_TEST_ONLY\020\236\215\006\022\035\n\027EDITION_99999_TE"
+    "ST_ONLY\020\237\215\006\022\023\n\013EDITION_MAX\020\377\377\377\377\007*U\n\020Symb"
+    "olVisibility\022\024\n\020VISIBILITY_UNSET\020\000\022\024\n\020VI"
+    "SIBILITY_LOCAL\020\001\022\025\n\021VISIBILITY_EXPORT\020\002B"
+    "~\n\023com.google.protobufB\020DescriptorProtos"
+    "H\001Z-google.golang.org/protobuf/types/des"
+    "criptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Ref"
+    "lection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    10353,
+    10767,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
     nullptr,
     0,
-    33,
+    34,
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
@@ -2067,6 +2107,7 @@ _ServiceOptions_default_instance_.Init();
 _MethodOptions_default_instance_.Init();
 _UninterpretedOption_NamePart_default_instance_.Init();
 _UninterpretedOption_default_instance_.Init();
+_FeatureSet_VisibilityFeature_default_instance_.Init();
 _FeatureSet_default_instance_.Init();
 _FeatureSetDefaults_FeatureSetEditionDefault_default_instance_.Init();
 _FeatureSetDefaults_default_instance_.Init();
@@ -2138,60 +2179,72 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_Idempot
 }
 PROTOBUF_CONSTINIT const uint32_t MethodOptions_IdempotencyLevel_internal_data_[] = {
     196608u, 0u, };
-const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[9];
+}
+PROTOBUF_CONSTINIT const uint32_t FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_[] = {
+    327680u, 0u, };
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor() {
+  ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[10];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_FieldPresence_internal_data_[] = {
     262144u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[10];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[11];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_EnumType_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[11];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_Utf8Validation_internal_data_[] = {
     65536u, 32u, 6u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_MessageEncoding_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_JsonFormat_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnforceNamingStyle_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[17];
 }
 PROTOBUF_CONSTINIT const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[] = {
     196608u, 0u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[17];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[18];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
     196608u, 589824u, 99997u, 1000u, 99999u, 998u, 1001u, 99998u, 2147483647u, 900u, 999u, };
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor() {
+  ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[19];
+}
+PROTOBUF_CONSTINIT const uint32_t SymbolVisibility_internal_data_[] = {
+    196608u, 0u, };
 // ===================================================================
 
 class FileDescriptorSet::_Internal {
@@ -13014,6 +13067,114 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PR
 }
 // ===================================================================
 
+class FeatureSet_VisibilityFeature::_Internal {
+ public:
+};
+
+FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.VisibilityFeature)
+}
+FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const FeatureSet_VisibilityFeature& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  FeatureSet_VisibilityFeature* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet.VisibilityFeature)
+}
+
+inline void* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) FeatureSet_VisibilityFeature(arena);
+}
+constexpr auto FeatureSet_VisibilityFeature::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet_VisibilityFeature),
+                                            alignof(FeatureSet_VisibilityFeature));
+}
+constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_FeatureSet_VisibilityFeature_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &FeatureSet_VisibilityFeature::MergeImpl,
+          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<FeatureSet_VisibilityFeature>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &FeatureSet_VisibilityFeature::SharedDtor,
+          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<FeatureSet_VisibilityFeature>(), &FeatureSet_VisibilityFeature::ByteSizeLong,
+              &FeatureSet_VisibilityFeature::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
+          false,
+      },
+      &FeatureSet_VisibilityFeature::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        FeatureSet_VisibilityFeature_class_data_ =
+            FeatureSet_VisibilityFeature::InternalGenerateClassData_();
+
+const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&FeatureSet_VisibilityFeature_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(FeatureSet_VisibilityFeature_class_data_.tc_table);
+  return FeatureSet_VisibilityFeature_class_data_.base();
+}
+constexpr ::_pbi::TcParseTable<0, 0, 0, 0, 2>
+FeatureSet_VisibilityFeature::_table_ = {
+  {
+    0,  // no _has_bits_
+    0, // no _extensions_
+    0, 0,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967295,  // skipmap
+    offsetof(decltype(_table_), field_names),  // no field_entries
+    0,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    FeatureSet_VisibilityFeature_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet_VisibilityFeature>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+  }}, {{
+    65535, 65535
+  }}, // no field_entries, or aux_entries
+  {{
+  }},
+};
+
+
+
+
+
+
+
+::google::protobuf::Metadata FeatureSet_VisibilityFeature::GetMetadata() const {
+  return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
 class FeatureSet::_Internal {
  public:
   using HasBits =
@@ -13057,9 +13218,9 @@ FeatureSet::FeatureSet(
                offsetof(Impl_, field_presence_),
            reinterpret_cast<const char *>(&from._impl_) +
                offsetof(Impl_, field_presence_),
-           offsetof(Impl_, enforce_naming_style_) -
+           offsetof(Impl_, default_symbol_visibility_) -
                offsetof(Impl_, field_presence_) +
-               sizeof(Impl_::enforce_naming_style_));
+               sizeof(Impl_::default_symbol_visibility_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet)
 }
@@ -13074,9 +13235,9 @@ inline void FeatureSet::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, field_presence_),
            0,
-           offsetof(Impl_, enforce_naming_style_) -
+           offsetof(Impl_, default_symbol_visibility_) -
                offsetof(Impl_, field_presence_) +
-               sizeof(Impl_::enforce_naming_style_));
+               sizeof(Impl_::default_symbol_visibility_));
 }
 FeatureSet::~FeatureSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSet)
@@ -13142,17 +13303,17 @@ const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FeatureSet::GetC
   ::google::protobuf::internal::PrefetchToLocalCache(FeatureSet_class_data_.tc_table);
   return FeatureSet_class_data_.base();
 }
-constexpr ::_pbi::TcParseTable<3, 7, 7, 0, 2>
+constexpr ::_pbi::TcParseTable<3, 8, 8, 0, 2>
 FeatureSet::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._extensions_),
-    7, 56,  // max_field_number, fast_idx_mask
+    8, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967168,  // skipmap
+    4294967040,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    7,  // num_field_entries
-    7,  // num_aux_entries
+    8,  // num_field_entries
+    8,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     FeatureSet_class_data_.base(),
     nullptr,  // post_loop_handler
@@ -13161,7 +13322,9 @@ FeatureSet::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+    {::_pbi::TcParser::FastEr0S1,
+     {64, 7, 4, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.default_symbol_visibility_)}},
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
      {8, 0, 3, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_)}},
@@ -13207,6 +13370,9 @@ FeatureSet::_table_ = {
     // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enforce_naming_style_), _Internal::kHasBitsOffset + 6, 6,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+    // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.default_symbol_visibility_), _Internal::kHasBitsOffset + 7, 7,
+    (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
   }},
   {{
       {0, 4},
@@ -13216,6 +13382,7 @@ FeatureSet::_table_ = {
       {0, 3},
       {0, 3},
       {0, 3},
+      {0, 5},
   }},
   {{
   }},
@@ -13229,10 +13396,10 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 
   _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000007fu) != 0) {
+  if ((cached_has_bits & 0x000000ffu) != 0) {
     ::memset(&_impl_.field_presence_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.enforce_naming_style_) -
-        reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.enforce_naming_style_));
+        reinterpret_cast<char*>(&_impl_.default_symbol_visibility_) -
+        reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.default_symbol_visibility_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -13303,6 +13470,13 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
         7, this_._internal_enforce_naming_style(), target);
   }
 
+  // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+  if ((cached_has_bits & 0x00000080u) != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+        8, this_._internal_default_symbol_visibility(), target);
+  }
+
   // All extensions.
   target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
                                                     target, stream);
@@ -13332,7 +13506,7 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000007fu) != 0) {
+  if ((cached_has_bits & 0x000000ffu) != 0) {
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if ((cached_has_bits & 0x00000001u) != 0) {
       total_size += 1 +
@@ -13368,6 +13542,11 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_enforce_naming_style());
     }
+    // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if ((cached_has_bits & 0x00000080u) != 0) {
+      total_size += 1 +
+                    ::_pbi::WireFormatLite::EnumSize(this_._internal_default_symbol_visibility());
+    }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
@@ -13382,7 +13561,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000007fu) != 0) {
+  if ((cached_has_bits & 0x000000ffu) != 0) {
     if ((cached_has_bits & 0x00000001u) != 0) {
       _this->_impl_.field_presence_ = from._impl_.field_presence_;
     }
@@ -13403,6 +13582,9 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
     if ((cached_has_bits & 0x00000040u) != 0) {
       _this->_impl_.enforce_naming_style_ = from._impl_.enforce_naming_style_;
+    }
+    if ((cached_has_bits & 0x00000080u) != 0) {
+      _this->_impl_.default_symbol_visibility_ = from._impl_.default_symbol_visibility_;
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -13432,8 +13614,8 @@ void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enforce_naming_style_)
-      + sizeof(FeatureSet::_impl_.enforce_naming_style_)
+      PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.default_symbol_visibility_)
+      + sizeof(FeatureSet::_impl_.default_symbol_visibility_)
       - PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_)>(
           reinterpret_cast<char*>(&_impl_.field_presence_),
           reinterpret_cast<char*>(&other->_impl_.field_presence_));

@@ -332,7 +332,7 @@ const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init() 
 
 const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P4444444";
+  static const char* mini_descriptor = "$P44444444";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -344,6 +344,17 @@ const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 5), google__protobuf__FeatureSet__MessageEncoding_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 6), google__protobuf__FeatureSet__JsonFormat_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 7), google__protobuf__FeatureSet__EnforceNamingStyle_enum_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 8), google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init());
+  return mini_table;
+}
+
+const upb_MiniTable* google__protobuf__FeatureSet__VisibilityFeature_msg_init() {
+  static upb_MiniTable* mini_table = NULL;
+  static const char* mini_descriptor = "$";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
+                          upb_BootstrapArena(), NULL);
   return mini_table;
 }
 
@@ -506,6 +517,16 @@ const upb_MiniTableEnum* google__protobuf__FeatureSet__Utf8Validation_enum_init(
   return mini_table;
 }
 
+const upb_MiniTableEnum* google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!A";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
 const upb_MiniTableEnum* google__protobuf__FieldDescriptorProto__Label_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!0";
@@ -587,6 +608,16 @@ const upb_MiniTableEnum* google__protobuf__GeneratedCodeInfo__Annotation__Semant
 }
 
 const upb_MiniTableEnum* google__protobuf__MethodOptions__IdempotencyLevel_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google__protobuf__SymbolVisibility_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;

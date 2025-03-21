@@ -8051,6 +8051,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8064,6 +8065,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8077,6 +8079,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8155,6 +8158,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8168,6 +8172,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8349,6 +8354,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8433,6 +8439,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
+                default_symbol_visibility: EXPORT_TOP_LEVEL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -8467,6 +8474,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8496,6 +8504,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8865,6 +8874,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8899,6 +8909,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8981,6 +8992,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9093,6 +9105,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9479,6 +9492,20 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
               NotNull());
 }
 
+TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
+  BuildDescriptorMessagesInTestPool();
+
+  // By default, the pool does not enforce naming style violations.
+  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+    message bad_message_name {}
+  )schema"),
+              NotNull());
+}
+
 TEST_F(FeaturesTest, BadPackageName) {
   BuildDescriptorMessagesInTestPool();
 
@@ -9754,6 +9781,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9870,6 +9898,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9970,6 +9999,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10079,6 +10109,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10173,6 +10204,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10244,6 +10276,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11342,6 +11375,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -12063,6 +12097,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -12086,6 +12121,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
               )pb"));
 }
 
@@ -12101,6 +12137,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -12129,6 +12166,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
               )pb"));
 }
 

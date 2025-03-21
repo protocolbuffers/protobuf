@@ -2023,6 +2023,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2036,6 +2037,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2048,7 +2050,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2023
@@ -2077,6 +2082,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2090,6 +2096,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2102,7 +2109,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 defaults {
                   edition: EDITION_2024
@@ -2114,6 +2124,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
                   }
                   fixed_features {}
                 }
@@ -2145,6 +2156,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2158,6 +2170,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2170,7 +2183,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 defaults {
                   edition: EDITION_2024
@@ -2182,6 +2198,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
                   }
                   fixed_features {}
                 }
