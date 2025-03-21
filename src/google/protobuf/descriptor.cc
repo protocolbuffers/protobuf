@@ -43,6 +43,7 @@
 #include "absl/base/thread_annotations.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/function_ref.h"
@@ -7749,13 +7750,41 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                      conflicting_field->full_name());
                });
     } else {
+      absl::btree_set<std::pair<int, int>> fields_used;
+      auto* parent = field->containing_type();
+      for (int i = 0; i < parent->field_count(); ++i) {
+        int n = parent->field(i)->number();
+        fields_used.insert({n, n});
+      }
+      for (int i = 0; i < parent->extension_range_count(); ++i) {
+        auto* range = parent->extension_range(i);
+        fields_used.insert({range->start_number(), range->end_number() - 1});
+      }
+      for (int i = 0; i < parent->reserved_range_count(); ++i) {
+        auto* range = parent->reserved_range(i);
+        fields_used.insert({range->start, range->end - 1});
+      }
+      int proposed_number = 1;
+      for (auto [start, end] : fields_used) {
+        if (start <= proposed_number && proposed_number <= end) {
+          proposed_number = end + 1;
+        } else {
+          break;
+        }
+      }
+
+      const std::string proposed_message =
+          proposed_number <= FieldDescriptor::kMaxNumber
+              ? absl::StrCat("Next available field number is ", proposed_number)
+              : "There are no available field numbers";
+
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::NUMBER, [&] {
                  return absl::Substitute(
                      "Field number $0 has already been used in "
-                     "\"$1\" by field \"$2\".",
+                     "\"$1\" by field \"$2\". $3.",
                      field->number(), containing_type_name,
-                     conflicting_field->name());
+                     conflicting_field->name(), proposed_message);
                });
     }
   } else {

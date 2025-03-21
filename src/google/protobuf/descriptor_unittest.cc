@@ -5355,15 +5355,51 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
 
 TEST_F(ValidationErrorTest, FieldNumberConflict) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name: \"bar\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
-
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
       "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
-      "\"Foo\" by field \"foo\".\n");
+      "\"Foo\" by field \"foo\". Next available field number is 2.\n");
+
+  // Now we add other fields, extension ranges, reserved fields, etc.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "baz" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          extension_range { start: 3 end: 6 }
+          field { name: "bak" number: 6 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          extension_range { start: 7 end: 10 }
+          field { name: "bm" number: 10 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          reserved_range { start: 11 end: 20 }
+          field { name: "bt" number: 20 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "br" number: 22 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
+      "\"Foo\" by field \"foo\". Next available field number is 21.\n");
+
+  // Now there are no available numbers.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          reserved_range { start: 2 end: 536870913 }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
+      "\"Foo\" by field \"foo\". There are no available field numbers.\n");
 }
 
 TEST_F(ValidationErrorTest, BadMessageSetExtensionType) {
