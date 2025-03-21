@@ -6403,12 +6403,12 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     kRubyPackageFieldNumber = 45,
     kFeaturesFieldNumber = 50,
     kJavaMultipleFilesFieldNumber = 10,
-    kJavaGenerateEqualsAndHashFieldNumber = 20,
-    kJavaStringCheckUtf8FieldNumber = 27,
     kCcGenericServicesFieldNumber = 16,
     kJavaGenericServicesFieldNumber = 17,
     kPyGenericServicesFieldNumber = 18,
+    kJavaGenerateEqualsAndHashFieldNumber = 20,
     kDeprecatedFieldNumber = 23,
+    kJavaStringCheckUtf8FieldNumber = 27,
     kOptimizeForFieldNumber = 9,
     kCcEnableArenasFieldNumber = 31,
   };
@@ -6615,28 +6615,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void _internal_set_java_multiple_files(bool value);
 
   public:
-  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  [[deprecated]]  bool has_java_generate_equals_and_hash() const;
-  [[deprecated]]  void clear_java_generate_equals_and_hash() ;
-  [[deprecated]] bool java_generate_equals_and_hash() const;
-  [[deprecated]] void set_java_generate_equals_and_hash(bool value);
-
-  private:
-  bool _internal_java_generate_equals_and_hash() const;
-  void _internal_set_java_generate_equals_and_hash(bool value);
-
-  public:
-  // optional bool java_string_check_utf8 = 27 [default = false];
-  bool has_java_string_check_utf8() const;
-  void clear_java_string_check_utf8() ;
-  bool java_string_check_utf8() const;
-  void set_java_string_check_utf8(bool value);
-
-  private:
-  bool _internal_java_string_check_utf8() const;
-  void _internal_set_java_string_check_utf8(bool value);
-
-  public:
   // optional bool cc_generic_services = 16 [default = false];
   bool has_cc_generic_services() const;
   void clear_cc_generic_services() ;
@@ -6670,6 +6648,17 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void _internal_set_py_generic_services(bool value);
 
   public:
+  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  [[deprecated]]  bool has_java_generate_equals_and_hash() const;
+  [[deprecated]]  void clear_java_generate_equals_and_hash() ;
+  [[deprecated]] bool java_generate_equals_and_hash() const;
+  [[deprecated]] void set_java_generate_equals_and_hash(bool value);
+
+  private:
+  bool _internal_java_generate_equals_and_hash() const;
+  void _internal_set_java_generate_equals_and_hash(bool value);
+
+  public:
   // optional bool deprecated = 23 [default = false];
   bool has_deprecated() const;
   void clear_deprecated() ;
@@ -6679,6 +6668,17 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
+
+  public:
+  // optional bool java_string_check_utf8 = 27 [default = false];
+  bool has_java_string_check_utf8() const;
+  void clear_java_string_check_utf8() ;
+  bool java_string_check_utf8() const;
+  void set_java_string_check_utf8(bool value);
+
+  private:
+  bool _internal_java_string_check_utf8() const;
+  void _internal_set_java_string_check_utf8(bool value);
 
   public:
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
@@ -6920,12 +6920,12 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ArenaStringPtr ruby_package_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool java_multiple_files_;
-    bool java_generate_equals_and_hash_;
-    bool java_string_check_utf8_;
     bool cc_generic_services_;
     bool java_generic_services_;
     bool py_generic_services_;
+    bool java_generate_equals_and_hash_;
     bool deprecated_;
+    bool java_string_check_utf8_;
     int optimize_for_;
     bool cc_enable_arenas_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -7184,12 +7184,12 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     kFeaturesFieldNumber = 21,
     kFeatureSupportFieldNumber = 22,
     kCtypeFieldNumber = 1,
-    kJstypeFieldNumber = 6,
     kPackedFieldNumber = 2,
-    kLazyFieldNumber = 5,
-    kUnverifiedLazyFieldNumber = 15,
     kDeprecatedFieldNumber = 3,
+    kLazyFieldNumber = 5,
     kWeakFieldNumber = 10,
+    kJstypeFieldNumber = 6,
+    kUnverifiedLazyFieldNumber = 15,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
   };
@@ -7287,17 +7287,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   void _internal_set_ctype(::google::protobuf::FieldOptions_CType value);
 
   public:
-  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  bool has_jstype() const;
-  void clear_jstype() ;
-  ::google::protobuf::FieldOptions_JSType jstype() const;
-  void set_jstype(::google::protobuf::FieldOptions_JSType value);
-
-  private:
-  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
-  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
-
-  public:
   // optional bool packed = 2;
   bool has_packed() const;
   void clear_packed() ;
@@ -7307,28 +7296,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   private:
   bool _internal_packed() const;
   void _internal_set_packed(bool value);
-
-  public:
-  // optional bool lazy = 5 [default = false];
-  bool has_lazy() const;
-  void clear_lazy() ;
-  bool lazy() const;
-  void set_lazy(bool value);
-
-  private:
-  bool _internal_lazy() const;
-  void _internal_set_lazy(bool value);
-
-  public:
-  // optional bool unverified_lazy = 15 [default = false];
-  bool has_unverified_lazy() const;
-  void clear_unverified_lazy() ;
-  bool unverified_lazy() const;
-  void set_unverified_lazy(bool value);
-
-  private:
-  bool _internal_unverified_lazy() const;
-  void _internal_set_unverified_lazy(bool value);
 
   public:
   // optional bool deprecated = 3 [default = false];
@@ -7342,6 +7309,17 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   void _internal_set_deprecated(bool value);
 
   public:
+  // optional bool lazy = 5 [default = false];
+  bool has_lazy() const;
+  void clear_lazy() ;
+  bool lazy() const;
+  void set_lazy(bool value);
+
+  private:
+  bool _internal_lazy() const;
+  void _internal_set_lazy(bool value);
+
+  public:
   // optional bool weak = 10 [default = false];
   bool has_weak() const;
   void clear_weak() ;
@@ -7351,6 +7329,28 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   private:
   bool _internal_weak() const;
   void _internal_set_weak(bool value);
+
+  public:
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  bool has_jstype() const;
+  void clear_jstype() ;
+  ::google::protobuf::FieldOptions_JSType jstype() const;
+  void set_jstype(::google::protobuf::FieldOptions_JSType value);
+
+  private:
+  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
+  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
+
+  public:
+  // optional bool unverified_lazy = 15 [default = false];
+  bool has_unverified_lazy() const;
+  void clear_unverified_lazy() ;
+  bool unverified_lazy() const;
+  void set_unverified_lazy(bool value);
+
+  private:
+  bool _internal_unverified_lazy() const;
+  void _internal_set_unverified_lazy(bool value);
 
   public:
   // optional bool debug_redact = 16 [default = false];
@@ -7585,12 +7585,12 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE feature_support_;
     int ctype_;
-    int jstype_;
     bool packed_;
-    bool lazy_;
-    bool unverified_lazy_;
     bool deprecated_;
+    bool lazy_;
     bool weak_;
+    int jstype_;
+    bool unverified_lazy_;
     bool debug_redact_;
     int retention_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -16473,13 +16473,13 @@ inline void FileOptions::_internal_set_java_multiple_files(bool value) {
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 inline bool FileOptions::has_java_generate_equals_and_hash() const {
-  bool value = (_impl_._has_bits_[0] & 0x00001000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00008000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generate_equals_and_hash_ = false;
-  _impl_._has_bits_[0] &= ~0x00001000u;
+  _impl_._has_bits_[0] &= ~0x00008000u;
 }
 inline bool FileOptions::java_generate_equals_and_hash() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generate_equals_and_hash)
@@ -16487,7 +16487,7 @@ inline bool FileOptions::java_generate_equals_and_hash() const {
 }
 inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
   _internal_set_java_generate_equals_and_hash(value);
-  _impl_._has_bits_[0] |= 0x00001000u;
+  _impl_._has_bits_[0] |= 0x00008000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generate_equals_and_hash)
 }
 inline bool FileOptions::_internal_java_generate_equals_and_hash() const {
@@ -16501,13 +16501,13 @@ inline void FileOptions::_internal_set_java_generate_equals_and_hash(bool value)
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 inline bool FileOptions::has_java_string_check_utf8() const {
-  bool value = (_impl_._has_bits_[0] & 0x00002000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_string_check_utf8_ = false;
-  _impl_._has_bits_[0] &= ~0x00002000u;
+  _impl_._has_bits_[0] &= ~0x00020000u;
 }
 inline bool FileOptions::java_string_check_utf8() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_string_check_utf8)
@@ -16515,7 +16515,7 @@ inline bool FileOptions::java_string_check_utf8() const {
 }
 inline void FileOptions::set_java_string_check_utf8(bool value) {
   _internal_set_java_string_check_utf8(value);
-  _impl_._has_bits_[0] |= 0x00002000u;
+  _impl_._has_bits_[0] |= 0x00020000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_string_check_utf8)
 }
 inline bool FileOptions::_internal_java_string_check_utf8() const {
@@ -16629,13 +16629,13 @@ inline void FileOptions::set_allocated_go_package(std::string* PROTOBUF_NULLABLE
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00004000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00001000u) != 0;
   return value;
 }
 inline void FileOptions::clear_cc_generic_services() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00004000u;
+  _impl_._has_bits_[0] &= ~0x00001000u;
 }
 inline bool FileOptions::cc_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_generic_services)
@@ -16643,7 +16643,7 @@ inline bool FileOptions::cc_generic_services() const {
 }
 inline void FileOptions::set_cc_generic_services(bool value) {
   _internal_set_cc_generic_services(value);
-  _impl_._has_bits_[0] |= 0x00004000u;
+  _impl_._has_bits_[0] |= 0x00001000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_generic_services)
 }
 inline bool FileOptions::_internal_cc_generic_services() const {
@@ -16657,13 +16657,13 @@ inline void FileOptions::_internal_set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00008000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00002000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_generic_services() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00008000u;
+  _impl_._has_bits_[0] &= ~0x00002000u;
 }
 inline bool FileOptions::java_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generic_services)
@@ -16671,7 +16671,7 @@ inline bool FileOptions::java_generic_services() const {
 }
 inline void FileOptions::set_java_generic_services(bool value) {
   _internal_set_java_generic_services(value);
-  _impl_._has_bits_[0] |= 0x00008000u;
+  _impl_._has_bits_[0] |= 0x00002000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generic_services)
 }
 inline bool FileOptions::_internal_java_generic_services() const {
@@ -16685,13 +16685,13 @@ inline void FileOptions::_internal_set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00010000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00004000u) != 0;
   return value;
 }
 inline void FileOptions::clear_py_generic_services() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.py_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00010000u;
+  _impl_._has_bits_[0] &= ~0x00004000u;
 }
 inline bool FileOptions::py_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.py_generic_services)
@@ -16699,7 +16699,7 @@ inline bool FileOptions::py_generic_services() const {
 }
 inline void FileOptions::set_py_generic_services(bool value) {
   _internal_set_py_generic_services(value);
-  _impl_._has_bits_[0] |= 0x00010000u;
+  _impl_._has_bits_[0] |= 0x00004000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 inline bool FileOptions::_internal_py_generic_services() const {
@@ -16713,13 +16713,13 @@ inline void FileOptions::_internal_set_py_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00010000u) != 0;
   return value;
 }
 inline void FileOptions::clear_deprecated() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00020000u;
+  _impl_._has_bits_[0] &= ~0x00010000u;
 }
 inline bool FileOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.deprecated)
@@ -16727,7 +16727,7 @@ inline bool FileOptions::deprecated() const {
 }
 inline void FileOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
-  _impl_._has_bits_[0] |= 0x00020000u;
+  _impl_._has_bits_[0] |= 0x00010000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.deprecated)
 }
 inline bool FileOptions::_internal_deprecated() const {
@@ -17997,13 +17997,13 @@ inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_C
 
 // optional bool packed = 2;
 inline bool FieldOptions::has_packed() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void FieldOptions::clear_packed() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.packed_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool FieldOptions::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.packed)
@@ -18011,7 +18011,7 @@ inline bool FieldOptions::packed() const {
 }
 inline void FieldOptions::set_packed(bool value) {
   _internal_set_packed(value);
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.packed)
 }
 inline bool FieldOptions::_internal_packed() const {
@@ -18025,13 +18025,13 @@ inline void FieldOptions::_internal_set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
   return value;
 }
 inline void FieldOptions::clear_jstype() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.jstype_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000080u;
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
@@ -18039,7 +18039,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
   _internal_set_jstype(value);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000080u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -18084,13 +18084,13 @@ inline void FieldOptions::_internal_set_lazy(bool value) {
 
 // optional bool unverified_lazy = 15 [default = false];
 inline bool FieldOptions::has_unverified_lazy() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
   return value;
 }
 inline void FieldOptions::clear_unverified_lazy() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.unverified_lazy_ = false;
-  _impl_._has_bits_[0] &= ~0x00000040u;
+  _impl_._has_bits_[0] &= ~0x00000100u;
 }
 inline bool FieldOptions::unverified_lazy() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.unverified_lazy)
@@ -18098,7 +18098,7 @@ inline bool FieldOptions::unverified_lazy() const {
 }
 inline void FieldOptions::set_unverified_lazy(bool value) {
   _internal_set_unverified_lazy(value);
-  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_._has_bits_[0] |= 0x00000100u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.unverified_lazy)
 }
 inline bool FieldOptions::_internal_unverified_lazy() const {
@@ -18112,13 +18112,13 @@ inline void FieldOptions::_internal_set_unverified_lazy(bool value) {
 
 // optional bool deprecated = 3 [default = false];
 inline bool FieldOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void FieldOptions::clear_deprecated() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000080u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool FieldOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.deprecated)
@@ -18126,7 +18126,7 @@ inline bool FieldOptions::deprecated() const {
 }
 inline void FieldOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
-  _impl_._has_bits_[0] |= 0x00000080u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.deprecated)
 }
 inline bool FieldOptions::_internal_deprecated() const {
@@ -18140,13 +18140,13 @@ inline void FieldOptions::_internal_set_deprecated(bool value) {
 
 // optional bool weak = 10 [default = false];
 inline bool FieldOptions::has_weak() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
 inline void FieldOptions::clear_weak() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_ = false;
-  _impl_._has_bits_[0] &= ~0x00000100u;
+  _impl_._has_bits_[0] &= ~0x00000040u;
 }
 inline bool FieldOptions::weak() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.weak)
@@ -18154,7 +18154,7 @@ inline bool FieldOptions::weak() const {
 }
 inline void FieldOptions::set_weak(bool value) {
   _internal_set_weak(value);
-  _impl_._has_bits_[0] |= 0x00000100u;
+  _impl_._has_bits_[0] |= 0x00000040u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
 }
 inline bool FieldOptions::_internal_weak() const {

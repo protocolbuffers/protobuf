@@ -643,12 +643,12 @@ inline constexpr FileOptions::Impl_::Impl_(
             ::_pbi::ConstantInitialized()),
         features_{nullptr},
         java_multiple_files_{false},
-        java_generate_equals_and_hash_{false},
-        java_string_check_utf8_{false},
         cc_generic_services_{false},
         java_generic_services_{false},
         py_generic_services_{false},
+        java_generate_equals_and_hash_{false},
         deprecated_{false},
+        java_string_check_utf8_{false},
         optimize_for_{static_cast< ::google::protobuf::FileOptions_OptimizeMode >(1)},
         cc_enable_arenas_{true} {}
 
@@ -686,12 +686,12 @@ inline constexpr FieldOptions::Impl_::Impl_(
         features_{nullptr},
         feature_support_{nullptr},
         ctype_{static_cast< ::google::protobuf::FieldOptions_CType >(0)},
-        jstype_{static_cast< ::google::protobuf::FieldOptions_JSType >(0)},
         packed_{false},
-        lazy_{false},
-        unverified_lazy_{false},
         deprecated_{false},
+        lazy_{false},
         weak_{false},
+        jstype_{static_cast< ::google::protobuf::FieldOptions_JSType >(0)},
+        unverified_lazy_{false},
         debug_redact_{false},
         retention_{static_cast< ::google::protobuf::FieldOptions_OptionRetention >(0)} {}
 
@@ -1449,14 +1449,14 @@ const ::uint32_t
         0,
         1,
         11,
-        12,
-        13,
+        15,
+        17,
         18,
         2,
+        12,
+        13,
         14,
-        15,
         16,
-        17,
         19,
         3,
         4,
@@ -1522,12 +1522,12 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.feature_support_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_),
         2,
-        4,
         3,
-        5,
-        6,
         7,
+        5,
         8,
+        4,
+        6,
         9,
         10,
         ~0u,
@@ -7905,9 +7905,9 @@ inline void FileOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   ::memset(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, features_),
            0,
-           offsetof(Impl_, deprecated_) -
+           offsetof(Impl_, java_string_check_utf8_) -
                offsetof(Impl_, features_) +
-               sizeof(Impl_::deprecated_));
+               sizeof(Impl_::java_string_check_utf8_));
 }
 FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
@@ -8035,24 +8035,24 @@ FileOptions::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool cc_generic_services = 16 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {384, 14, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_)}},
+     {384, 12, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_)}},
     // optional bool java_generic_services = 17 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {392, 15, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_)}},
+     {392, 13, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_)}},
     // optional bool py_generic_services = 18 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {400, 16, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_)}},
+     {400, 14, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
     {::_pbi::TcParser::FastV8S2,
-     {416, 12, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_)}},
+     {416, 15, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_)}},
     // optional string csharp_namespace = 37;
     {::_pbi::TcParser::FastSS2,
      {682, 4, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_)}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool deprecated = 23 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {440, 17, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_)}},
+     {440, 16, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_)}},
     // optional string php_class_prefix = 40;
     {::_pbi::TcParser::FastSS2,
      {706, 6, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_class_prefix_)}},
@@ -8062,7 +8062,7 @@ FileOptions::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool java_string_check_utf8 = 27 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {472, 13, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_)}},
+     {472, 17, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_)}},
     // optional string php_metadata_namespace = 44;
     {::_pbi::TcParser::FastSS2,
      {738, 8, 0, PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_metadata_namespace_)}},
@@ -8096,22 +8096,22 @@ FileOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.go_package_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional bool cc_generic_services = 16 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_), _Internal::kHasBitsOffset + 14, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_generic_services_), _Internal::kHasBitsOffset + 12, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_generic_services = 17 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_), _Internal::kHasBitsOffset + 15, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generic_services_), _Internal::kHasBitsOffset + 13, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool py_generic_services = 18 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_), _Internal::kHasBitsOffset + 16, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_), _Internal::kHasBitsOffset + 14, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_), _Internal::kHasBitsOffset + 12, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_generate_equals_and_hash_), _Internal::kHasBitsOffset + 15, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool deprecated = 23 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 17, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 16, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool java_string_check_utf8 = 27 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_), _Internal::kHasBitsOffset + 13, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_string_check_utf8_), _Internal::kHasBitsOffset + 17, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool cc_enable_arenas = 31 [default = true];
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_), _Internal::kHasBitsOffset + 19, 0,
@@ -8214,13 +8214,13 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
   if ((cached_has_bits & 0x0000f800u) != 0) {
     ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.java_generic_services_) -
-        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generic_services_));
+        reinterpret_cast<char*>(&_impl_.java_generate_equals_and_hash_) -
+        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generate_equals_and_hash_));
   }
   if ((cached_has_bits & 0x000f0000u) != 0) {
-    ::memset(&_impl_.py_generic_services_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_) -
-        reinterpret_cast<char*>(&_impl_.py_generic_services_)) + sizeof(_impl_.deprecated_));
+    ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.java_string_check_utf8_) -
+        reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.java_string_check_utf8_));
     _impl_.optimize_for_ = 1;
     _impl_.cc_enable_arenas_ = true;
   }
@@ -8283,42 +8283,42 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if ((cached_has_bits & 0x00004000u) != 0) {
+  if ((cached_has_bits & 0x00001000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         16, this_._internal_cc_generic_services(), target);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if ((cached_has_bits & 0x00008000u) != 0) {
+  if ((cached_has_bits & 0x00002000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         17, this_._internal_java_generic_services(), target);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if ((cached_has_bits & 0x00010000u) != 0) {
+  if ((cached_has_bits & 0x00004000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         18, this_._internal_py_generic_services(), target);
   }
 
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if ((cached_has_bits & 0x00001000u) != 0) {
+  if ((cached_has_bits & 0x00008000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         20, this_._internal_java_generate_equals_and_hash(), target);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if ((cached_has_bits & 0x00020000u) != 0) {
+  if ((cached_has_bits & 0x00010000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         23, this_._internal_deprecated(), target);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if ((cached_has_bits & 0x00002000u) != 0) {
+  if ((cached_has_bits & 0x00020000u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         27, this_._internal_java_string_check_utf8(), target);
@@ -8572,24 +8572,24 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
       _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
     }
     if ((cached_has_bits & 0x00001000u) != 0) {
-      _this->_impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
-    }
-    if ((cached_has_bits & 0x00002000u) != 0) {
-      _this->_impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
-    }
-    if ((cached_has_bits & 0x00004000u) != 0) {
       _this->_impl_.cc_generic_services_ = from._impl_.cc_generic_services_;
     }
-    if ((cached_has_bits & 0x00008000u) != 0) {
+    if ((cached_has_bits & 0x00002000u) != 0) {
       _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
+    }
+    if ((cached_has_bits & 0x00004000u) != 0) {
+      _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
+    }
+    if ((cached_has_bits & 0x00008000u) != 0) {
+      _this->_impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
     }
   }
   if ((cached_has_bits & 0x000f0000u) != 0) {
     if ((cached_has_bits & 0x00010000u) != 0) {
-      _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
+      _this->_impl_.deprecated_ = from._impl_.deprecated_;
     }
     if ((cached_has_bits & 0x00020000u) != 0) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      _this->_impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
     }
     if ((cached_has_bits & 0x00040000u) != 0) {
       _this->_impl_.optimize_for_ = from._impl_.optimize_for_;
@@ -9898,11 +9898,11 @@ FieldOptions::_table_ = {
     {::_pbi::TcParser::FastEr0S1,
      {8, 2, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_)}},
     // optional bool packed = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.packed_), 4>(),
-     {16, 4, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.packed_), 3>(),
+     {16, 3, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_)}},
     // optional bool deprecated = 3 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.deprecated_), 7>(),
-     {24, 7, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.deprecated_), 4>(),
+     {24, 4, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_)}},
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     {::_pbi::TcParser::FastMtR2,
      {418, 63, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_)}},
@@ -9911,22 +9911,22 @@ FieldOptions::_table_ = {
      {40, 5, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_)}},
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
     {::_pbi::TcParser::FastEr0S1,
-     {48, 3, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
+     {48, 7, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {::_pbi::TcParser::FastMtR2,
      {16058, 63, 3, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool weak = 10 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 8>(),
-     {80, 8, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 6>(),
+     {80, 6, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool unverified_lazy = 15 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.unverified_lazy_), 6>(),
-     {120, 6, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.unverified_lazy_), 8>(),
+     {120, 8, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_)}},
   }}, {{
     999, 0, 1,
     65534, 13,
@@ -9936,22 +9936,22 @@ FieldOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_), _Internal::kHasBitsOffset + 2, 4,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool packed = 2;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_), _Internal::kHasBitsOffset + 4, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool deprecated = 3 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 7, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool lazy = 5 [default = false];
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 3, 5,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 7, 5,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool weak = 10 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 8, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 6, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool unverified_lazy = 15 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_), _Internal::kHasBitsOffset + 6, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool debug_redact = 16 [default = false];
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_), _Internal::kHasBitsOffset + 9, 0,
@@ -10012,13 +10012,13 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   }
   if ((cached_has_bits & 0x000000fcu) != 0) {
     ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_) -
-        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.deprecated_));
+        reinterpret_cast<char*>(&_impl_.jstype_) -
+        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.jstype_));
   }
   if ((cached_has_bits & 0x00000700u) != 0) {
-    ::memset(&_impl_.weak_, 0, static_cast<::size_t>(
+    ::memset(&_impl_.unverified_lazy_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.retention_) -
-        reinterpret_cast<char*>(&_impl_.weak_)) + sizeof(_impl_.retention_));
+        reinterpret_cast<char*>(&_impl_.unverified_lazy_)) + sizeof(_impl_.retention_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -10048,14 +10048,14 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   }
 
   // optional bool packed = 2;
-  if ((cached_has_bits & 0x00000010u) != 0) {
+  if ((cached_has_bits & 0x00000008u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         2, this_._internal_packed(), target);
   }
 
   // optional bool deprecated = 3 [default = false];
-  if ((cached_has_bits & 0x00000080u) != 0) {
+  if ((cached_has_bits & 0x00000010u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         3, this_._internal_deprecated(), target);
@@ -10069,21 +10069,21 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   }
 
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  if ((cached_has_bits & 0x00000008u) != 0) {
+  if ((cached_has_bits & 0x00000080u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         6, this_._internal_jstype(), target);
   }
 
   // optional bool weak = 10 [default = false];
-  if ((cached_has_bits & 0x00000100u) != 0) {
+  if ((cached_has_bits & 0x00000040u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         10, this_._internal_weak(), target);
   }
 
   // optional bool unverified_lazy = 15 [default = false];
-  if ((cached_has_bits & 0x00000040u) != 0) {
+  if ((cached_has_bits & 0x00000100u) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         15, this_._internal_unverified_lazy(), target);
@@ -10201,8 +10201,8 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   }
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000200u & cached_has_bits) * 3;
-  total_size += ::absl::popcount(0x000001f0u & cached_has_bits) * 2;
-  if ((cached_has_bits & 0x0000000fu) != 0) {
+  total_size += ::absl::popcount(0x00000178u & cached_has_bits) * 2;
+  if ((cached_has_bits & 0x00000087u) != 0) {
     // optional .google.protobuf.FeatureSet features = 21;
     if ((cached_has_bits & 0x00000001u) != 0) {
       total_size += 2 +
@@ -10219,7 +10219,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_ctype());
     }
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    if ((cached_has_bits & 0x00000008u) != 0) {
+    if ((cached_has_bits & 0x00000080u) != 0) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_jstype());
     }
@@ -10271,24 +10271,24 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
       _this->_impl_.ctype_ = from._impl_.ctype_;
     }
     if ((cached_has_bits & 0x00000008u) != 0) {
-      _this->_impl_.jstype_ = from._impl_.jstype_;
+      _this->_impl_.packed_ = from._impl_.packed_;
     }
     if ((cached_has_bits & 0x00000010u) != 0) {
-      _this->_impl_.packed_ = from._impl_.packed_;
+      _this->_impl_.deprecated_ = from._impl_.deprecated_;
     }
     if ((cached_has_bits & 0x00000020u) != 0) {
       _this->_impl_.lazy_ = from._impl_.lazy_;
     }
     if ((cached_has_bits & 0x00000040u) != 0) {
-      _this->_impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
+      _this->_impl_.weak_ = from._impl_.weak_;
     }
     if ((cached_has_bits & 0x00000080u) != 0) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      _this->_impl_.jstype_ = from._impl_.jstype_;
     }
   }
   if ((cached_has_bits & 0x00000700u) != 0) {
     if ((cached_has_bits & 0x00000100u) != 0) {
-      _this->_impl_.weak_ = from._impl_.weak_;
+      _this->_impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
     }
     if ((cached_has_bits & 0x00000200u) != 0) {
       _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
