@@ -168,17 +168,11 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   }
 
   // If we fit in the inline space, use it.
-  if (kHasInlineRep && data.size() <= inline_capacity) {
+  if (data.size() <= inline_capacity) {
     set_inline_size(data.size());
     if (!data.empty()) {
       memmove(inline_head(), data.data(), data.size());
     }
-    return;
-  }
-
-  // Special case when no inline space and value is empty: rep is null
-  if (!kHasInlineRep && data.empty()) {
-    rep_ = nullptr;
     return;
   }
 
