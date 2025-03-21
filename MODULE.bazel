@@ -163,6 +163,7 @@ protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 protobuf_maven.install(
     name = "protobuf_maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+    lock_file = "//:maven_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
@@ -184,6 +185,7 @@ protobuf_maven_dev.install(
         "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
         "info.picocli:picocli:4.6.3",
     ],
+    lock_file = "//:maven_dev_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",

@@ -34,8 +34,7 @@ jobs:
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
-            # TODO: b/393604460 - enable bzlmod once coursier error is fixed.
-            flags: --java_language_version=8 --noenable_bzlmod
+            flags: --java_language_version=8
           - name: OpenJDK 11
             cache_key: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-11-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
