@@ -132,7 +132,7 @@ proto_lang_toolchain(
     plugin = ":protoc-gen-upb_minitable_stage1",
     plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
     progress_message = "Generating upb minitables",
-    runtime = "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    runtime = "//upb:generated_code_support",
     # TODO: Restrict to "//bazel:__pkg__" once we are on Bazel >=6.5.
     visibility = ["//visibility:public"],
 )

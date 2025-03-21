@@ -241,7 +241,7 @@ cc_dist_library(
     name = "upb",
     tags = ["manual"],
     deps = [
-        "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//upb:generated_code_support",
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
