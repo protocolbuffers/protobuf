@@ -77,7 +77,7 @@ class PROTOBUF_EXPORT MicroString {
 
  public:
 #if defined(ABSL_IS_LITTLE_ENDIAN)
-  static constexpr bool kHasInlineRep = sizeof(uintptr_t) >= 8;
+  static constexpr bool kHasInlineRep = true;
 #else
   // For now, disable the inline rep if not in little endian.
   // We can revisit this later if performance in such platforms is relevant.
@@ -228,6 +228,7 @@ class PROTOBUF_EXPORT MicroString {
     }
   };
 
+  static_assert(alignof(void*) >= 4, "We need two tag bits from pointers.");
   static constexpr uintptr_t kIsLargeRepTag = 0x1;
   static_assert(sizeof(UnownedPayload::for_tag) == kIsLargeRepTag,
                 "See comment in for_tag declaration above.");
@@ -484,11 +485,14 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
 
 template <size_t RequestedSpace>
 class MicroStringExtraImpl : private MicroString {
+  static constexpr size_t RoundUp(size_t n) {
+    return (n + (alignof(MicroString) - 1)) & ~(alignof(MicroString) - 1);
+  }
+
  public:
   // Round up to avoid padding
   static constexpr size_t kInlineCapacity =
-      ((RequestedSpace - MicroString::kInlineCapacity + 7) & ~7) +
-      MicroString::kInlineCapacity;
+      RoundUp(RequestedSpace + /* inline_size */ 1) - /* inline_size */ 1;
 
   static_assert(kInlineCapacity < MicroString::kMaxInlineCapacity,
                 "Must fit with the tags.");

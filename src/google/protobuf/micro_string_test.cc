@@ -47,6 +47,9 @@ enum PreviousState { kInline, kMicroRep, kOwned, kUnowned, kString, kAlias };
 static constexpr auto kUnownedPayload =
     MicroString::MakeUnownedPayload("0123456789");
 
+static constexpr auto kInlineInput =
+    absl::string_view("0123456789").substr(0, MicroString::kInlineCapacity);
+
 class MicroStringPrevTest
     : public testing::TestWithParam<std::tuple<bool, PreviousState>> {
  protected:
@@ -157,7 +160,7 @@ INSTANTIATE_TEST_SUITE_P(MicroStringTransitionTest, MicroStringPrevTest,
 
 TEST(MicroStringTest, InlineIsEnabledWhenExpected) {
 #if defined(ABSL_IS_LITTLE_ENDIAN)
-  constexpr bool kExpectInline = sizeof(uintptr_t) >= 8;
+  constexpr bool kExpectInline = true;
 #else
   constexpr bool kExpectInline = false;
 #endif
@@ -266,21 +269,24 @@ TEST(MicroStringTest, SupportsExpectedInputTypes) {
 
 template <int N>
 void TestExtraCapacity(int expected_sizeof) {
-  EXPECT_EQ(sizeof(MicroStringExtra<N>), expected_sizeof);
-  EXPECT_EQ(MicroStringExtra<N>::kInlineCapacity, expected_sizeof - 1);
+  EXPECT_EQ(sizeof(MicroStringExtra<N>), expected_sizeof) << N;
+  EXPECT_EQ(MicroStringExtra<N>::kInlineCapacity, expected_sizeof - 1) << N;
 }
 
 TEST(MicroStringTest, ExtraRequestedInlineSpace) {
   if (!MicroString::kHasInlineRep) {
     GTEST_SKIP() << "Inline is not active";
   }
-  TestExtraCapacity<0>(8);
-  TestExtraCapacity<1>(8);
-  TestExtraCapacity<7>(8);
-  TestExtraCapacity<8>(16);
-  TestExtraCapacity<15>(16);
-  TestExtraCapacity<16>(24);
-  TestExtraCapacity<23>(24);
+  // We write in terms of steps to support 64 and 32 bits.
+  static constexpr size_t kStep = alignof(MicroString);
+  TestExtraCapacity<0 * kStep + 0>(1 * kStep);
+  TestExtraCapacity<0 * kStep + 1>(1 * kStep);
+  TestExtraCapacity<1 * kStep - 1>(1 * kStep);
+  TestExtraCapacity<1 * kStep + 0>(2 * kStep);
+  TestExtraCapacity<2 * kStep - 1>(2 * kStep);
+  TestExtraCapacity<2 * kStep + 0>(3 * kStep);
+  TestExtraCapacity<3 * kStep - 1>(3 * kStep);
+  TestExtraCapacity<3 * kStep + 0>(4 * kStep);
 }
 
 TEST(MicroStringTest, CapacityIsRoundedUpOnArena) {
@@ -364,7 +370,7 @@ TEST_P(MicroStringPrevTest, SetInline) {
     GTEST_SKIP() << "Inline is not active";
   }
 
-  const absl::string_view input("ABCD");
+  const absl::string_view input = kInlineInput;
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   str_.Set(input, arena());
@@ -414,7 +420,7 @@ TEST_P(MicroStringPrevTest, SetAliasSmall) {
   if (!MicroString::kHasInlineRep) {
     GTEST_SKIP() << "Inline is not active";
   }
-  const absl::string_view input("ABC");
+  const absl::string_view input = kInlineInput;
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
@@ -430,8 +436,11 @@ TEST_P(MicroStringPrevTest, SetAliasSmall) {
   }
   EXPECT_EQ(out, input);
 
-  // We should not need to allocate memory here in any case.
-  ExpectMemoryUsed(used, false, self_used);
+  // In 32-bit mode, we will use memory that is not rounded to the arena
+  // alignment because sizeof(LargeRep)==12. Avoid using `ExpectMemoryUsed`
+  // because it expects it.
+  EXPECT_EQ(0, arena_space_used() - used);
+  EXPECT_EQ(self_used, str_.SpaceUsedExcludingSelfLong());
 }
 
 TEST_P(MicroStringPrevTest, SetAliasLarge) {
@@ -895,7 +904,8 @@ TEST(MicroStringExtraTest, SetStringUsesInlineSpace) {
   const size_t used_in_string = StringSpaceUsedExcludingSelfLong(large);
   str.Set(std::move(large), &arena);
   // This one is too big, so we move the whole std::string.
-  EXPECT_EQ(kLargeRepSize + sizeof(std::string), arena.SpaceUsed() - used);
+  EXPECT_EQ(ArenaAlignDefault::Ceil(kLargeRepSize + sizeof(std::string)),
+            arena.SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
             str.SpaceUsedExcludingSelfLong());
 }
