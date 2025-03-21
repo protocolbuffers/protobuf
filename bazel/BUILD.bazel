@@ -14,7 +14,7 @@ bzl_library(
     srcs = ["proto_library.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel/private:bazel_proto_library_rule_bzl",
+        "//bazel/private:proto_library_rule_bzl",
         "@proto_bazel_features//:features",
     ],
 )
