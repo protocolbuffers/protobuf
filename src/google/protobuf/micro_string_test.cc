@@ -158,19 +158,8 @@ INSTANTIATE_TEST_SUITE_P(MicroStringTransitionTest, MicroStringPrevTest,
                                                           kString, kAlias)),
                          Printer{});
 
-TEST(MicroStringTest, InlineIsEnabledWhenExpected) {
-#if defined(ABSL_IS_LITTLE_ENDIAN)
-  constexpr bool kExpectInline = true;
-#else
-  constexpr bool kExpectInline = false;
-#endif
-  if (kExpectInline) {
-    EXPECT_TRUE(MicroString::kHasInlineRep);
-    EXPECT_EQ(MicroString::kInlineCapacity, sizeof(MicroString) - 1);
-  } else {
-    EXPECT_FALSE(MicroString::kHasInlineRep);
-    EXPECT_EQ(MicroString::kInlineCapacity, 0);
-  }
+TEST(MicroStringTest, CheckExpectedInlineBufferSize) {
+  EXPECT_EQ(MicroString::kInlineCapacity, sizeof(MicroString) - 1);
 }
 
 TEST(MicroStringTest, DefaultIsEmpty) {
@@ -212,10 +201,6 @@ void TestInline() {
 }
 
 TEST(MicroStringTest, SetInlineFromClear) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-
   TestInline<MicroString>();
   TestInline<MicroStringExtra<8>>();
   TestInline<MicroStringExtra<16>>();
@@ -265,28 +250,6 @@ void SupportsExpectedInputTypes() {
 TEST(MicroStringTest, SupportsExpectedInputTypes) {
   SupportsExpectedInputTypes<MicroString>();
   SupportsExpectedInputTypes<MicroStringExtra<15>>();
-}
-
-template <int N>
-void TestExtraCapacity(int expected_sizeof) {
-  EXPECT_EQ(sizeof(MicroStringExtra<N>), expected_sizeof) << N;
-  EXPECT_EQ(MicroStringExtra<N>::kInlineCapacity, expected_sizeof - 1) << N;
-}
-
-TEST(MicroStringTest, ExtraRequestedInlineSpace) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-  // We write in terms of steps to support 64 and 32 bits.
-  static constexpr size_t kStep = alignof(MicroString);
-  TestExtraCapacity<0 * kStep + 0>(1 * kStep);
-  TestExtraCapacity<0 * kStep + 1>(1 * kStep);
-  TestExtraCapacity<1 * kStep - 1>(1 * kStep);
-  TestExtraCapacity<1 * kStep + 0>(2 * kStep);
-  TestExtraCapacity<2 * kStep - 1>(2 * kStep);
-  TestExtraCapacity<2 * kStep + 0>(3 * kStep);
-  TestExtraCapacity<3 * kStep - 1>(3 * kStep);
-  TestExtraCapacity<3 * kStep + 0>(4 * kStep);
 }
 
 TEST(MicroStringTest, CapacityIsRoundedUpOnArena) {
@@ -366,10 +329,6 @@ TEST_P(MicroStringPrevTest, SetNullView) {
 }
 
 TEST_P(MicroStringPrevTest, SetInline) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-
   const absl::string_view input = kInlineInput;
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
@@ -417,9 +376,6 @@ TEST_P(MicroStringPrevTest, SetOwned) {
 }
 
 TEST_P(MicroStringPrevTest, SetAliasSmall) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
   const absl::string_view input = kInlineInput;
 
   const size_t used = arena_space_used();
@@ -479,10 +435,6 @@ TEST_P(MicroStringPrevTest, SetUnowned) {
 }
 
 TEST_P(MicroStringPrevTest, SetStringSmall) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-
   std::string input(1, 'a');
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
@@ -757,15 +709,8 @@ void SetInChunksTest(size_t size) {
   str.Destroy();
 }
 
-TEST(MicroStringTest, SetInChunksInline) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-  SetInChunksTest(5);
-}
-
+TEST(MicroStringTest, SetInChunksInline) { SetInChunksTest(5); }
 TEST(MicroStringTest, SetInChunksMicro) { SetInChunksTest(50); }
-
 TEST(MicroStringTest, SetInChunksOwned) { SetInChunksTest(500); }
 
 TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
@@ -830,12 +775,35 @@ TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
   str.Destroy();
 }
 
-TEST(MicroStringExtraTest, SettersWithinInline) {
-  if (!MicroString::kHasInlineRep ||
-      MicroStringExtra<8>::kInlineCapacity != 15) {
-    GTEST_SKIP() << "Inline is not active";
+class MicroStringExtraTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    if (!MicroString::kAllowExtraCapacity) {
+      GTEST_SKIP() << "Extra capacity is not allowed.";
+    }
   }
+};
 
+template <int N>
+void TestExtraCapacity(int expected_sizeof) {
+  EXPECT_EQ(sizeof(MicroStringExtra<N>), expected_sizeof);
+  EXPECT_EQ(MicroStringExtra<N>::kInlineCapacity, expected_sizeof - 1);
+}
+
+TEST(MicroStringTest, ExtraRequestedInlineSpace) {
+  // We write in terms of steps to support 64 and 32 bits.
+  static constexpr size_t kStep = alignof(MicroString);
+  TestExtraCapacity<0 * kStep + 0>(1 * kStep);
+  TestExtraCapacity<0 * kStep + 1>(1 * kStep);
+  TestExtraCapacity<1 * kStep - 1>(1 * kStep);
+  TestExtraCapacity<1 * kStep + 0>(2 * kStep);
+  TestExtraCapacity<2 * kStep - 1>(2 * kStep);
+  TestExtraCapacity<2 * kStep + 0>(3 * kStep);
+  TestExtraCapacity<3 * kStep - 1>(3 * kStep);
+  TestExtraCapacity<3 * kStep + 0>(4 * kStep);
+}
+
+TEST_F(MicroStringExtraTest, SettersWithinInline) {
   Arena arena;
   size_t used = arena.SpaceUsed();
   size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 16);
@@ -867,17 +835,13 @@ TEST(MicroStringExtraTest, SettersWithinInline) {
   EXPECT_EQ(expected_use, str23.SpaceUsedExcludingSelfLong());
 }
 
-TEST(MicroStringExtraTest, CopyConstructWithinInline) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-
+TEST_F(MicroStringExtraTest, CopyConstructWithinInline) {
   Arena arena;
   const size_t used = arena.SpaceUsed();
   MicroStringExtra<16> inline_str;
   constexpr absl::string_view kStr10 = "1234567890";
-  ABSL_CHECK_GT(kStr10.size(), MicroString::kInlineCapacity);
-  ABSL_CHECK_LE(kStr10.size(), MicroStringExtra<16>::kInlineCapacity);
+  ASSERT_GT(kStr10.size(), MicroString::kInlineCapacity);
+  ASSERT_LE(kStr10.size(), MicroStringExtra<16>::kInlineCapacity);
   inline_str.Set(kStr10, &arena);
   EXPECT_EQ(used, arena.SpaceUsed());
   MicroStringExtra<16> copy(nullptr, inline_str);
@@ -887,11 +851,7 @@ TEST(MicroStringExtraTest, CopyConstructWithinInline) {
   EXPECT_EQ(0, copy.SpaceUsedExcludingSelfLong());
 }
 
-TEST(MicroStringExtraTest, SetStringUsesInlineSpace) {
-  if (!MicroString::kHasInlineRep) {
-    GTEST_SKIP() << "Inline is not active";
-  }
-
+TEST_F(MicroStringExtraTest, SetStringUsesInlineSpace) {
   Arena arena;
 
   MicroStringExtra<40> str;
