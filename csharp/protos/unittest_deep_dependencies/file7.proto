@@ -1,0 +1,4 @@
+syntax = "proto3";
+package unittest_deep_dependencies;
+import "google/protobuf/any.proto";
+import "unittest_deep_dependencies/file14.proto";
