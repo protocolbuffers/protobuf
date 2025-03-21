@@ -937,8 +937,15 @@ class GenericTypeHandler<std::string> {
 
 }  // namespace internal
 
-// RepeatedPtrField is like RepeatedField, but used for repeated strings or
-// Messages.
+// `RepeatedPtrField` is like `RepeatedField`, but used for repeated strings or
+// `Message`s. As the name suggests, it stores an array of pointers and is
+// analogous to a `std::vector<std::unique_ptr<T>>`. Elements are therefore
+// guaranteed to have stable addresses.
+//
+// However, methods such as `Swap`, `AddAllocated`, and `ReleaseLast` may
+// invalidate pointers to the affected elements. These methods sometimes need to
+// copy elements onto, off of, or between arenas, which requires the address to
+// change.
 template <typename Element>
 class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     : private internal::RepeatedPtrFieldBase {
