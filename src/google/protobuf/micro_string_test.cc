@@ -783,11 +783,6 @@ TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
 }
 
 TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Might not be possible to allocate that much memory on "
-                    "this platform.";
-  }
-
   MicroString str;
   str.SetInChunks(1'000'000'000, nullptr, [](auto append) {
     append("first");
@@ -801,6 +796,11 @@ TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
 }
 
 TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Might not be possible to allocate that much memory on "
+                    "this platform.";
+  }
+
   std::string total(1'000'000'000, 0);
   // Fill with some "random" data.
   unsigned char x = 17;
