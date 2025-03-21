@@ -69,6 +69,7 @@ jobs:
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: 7.5.0
           command: |
             xcodebuild \
                 -project "objectivec/${{ matrix.xc_project }}" \

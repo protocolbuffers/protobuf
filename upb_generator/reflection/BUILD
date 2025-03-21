@@ -73,6 +73,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upbdefs=%s",
     progress_message = "Generating upb protos",
     runtime = "//upb:generated_reflection_support",
-    # TODO: Restrict to "//bazel:__pkg__" once we are on Bazel >=6.5.
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__pkg__"],
 )

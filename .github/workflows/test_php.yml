@@ -232,6 +232,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: 7.5.0
           command: |
             pushd php
             php -v
@@ -245,5 +246,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          version: 7.5.0
           bazel-cache: php_macos/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
