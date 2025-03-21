@@ -53,9 +53,12 @@ const char kThinSeparator[] =
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
                               absl::string_view annotation_file,
                               Options options) {
+  printer->Print("@com.google.protobuf.Generated\n");
+
   if (annotation_file.empty()) {
     return;
   }
+  // Print javax.annotation.Generated to support Kythe indexing
   std::string ptemplate =
       "@javax.annotation.Generated(value=\"protoc\", comments=\"annotations:";
   ptemplate.push_back(delimiter);
