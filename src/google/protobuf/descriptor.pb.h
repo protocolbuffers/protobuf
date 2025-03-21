@@ -11586,6 +11586,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     kExtensionFieldNumber = 7,
     kPublicDependencyFieldNumber = 10,
     kWeakDependencyFieldNumber = 11,
+    kOptionDependencyFieldNumber = 15,
     kNameFieldNumber = 1,
     kPackageFieldNumber = 2,
     kSyntaxFieldNumber = 12,
@@ -11719,6 +11720,28 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_weak_dependency();
 
   public:
+  // repeated string option_dependency = 15;
+  int option_dependency_size() const;
+  private:
+  int _internal_option_dependency_size() const;
+
+  public:
+  void clear_option_dependency() ;
+  const std::string& option_dependency(int index) const;
+  std::string* PROTOBUF_NONNULL mutable_option_dependency(int index);
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_option_dependency(int index, Arg_&& value, Args_... args);
+  std::string* PROTOBUF_NONNULL add_option_dependency();
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void add_option_dependency(Arg_&& value, Args_... args);
+  const ::google::protobuf::RepeatedPtrField<std::string>& option_dependency() const;
+  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_option_dependency();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_option_dependency() const;
+  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
+
+  public:
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
@@ -11812,8 +11835,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 13,
-                                   7, 79,
+  static const ::google::protobuf::internal::TcParseTable<4, 14,
+                                   7, 96,
                                    2>
       _table_;
 
@@ -11841,6 +11864,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
     ::google::protobuf::RepeatedField<::int32_t> public_dependency_;
     ::google::protobuf::RepeatedField<::int32_t> weak_dependency_;
+    ::google::protobuf::RepeatedPtrField<std::string> option_dependency_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr package_;
     ::google::protobuf::internal::ArenaStringPtr syntax_;
@@ -12597,6 +12621,70 @@ inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL
 FileDescriptorProto::_internal_mutable_weak_dependency() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.weak_dependency_;
+}
+
+// repeated string option_dependency = 15;
+inline int FileDescriptorProto::_internal_option_dependency_size() const {
+  return _internal_option_dependency().size();
+}
+inline int FileDescriptorProto::option_dependency_size() const {
+  return _internal_option_dependency_size();
+}
+inline void FileDescriptorProto::clear_option_dependency() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.option_dependency_.Clear();
+}
+inline std::string* PROTOBUF_NONNULL FileDescriptorProto::add_option_dependency()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  std::string* _s = _internal_mutable_option_dependency()->Add();
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.option_dependency)
+  return _s;
+}
+inline const std::string& FileDescriptorProto::option_dependency(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.option_dependency)
+  return _internal_option_dependency().Get(index);
+}
+inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_option_dependency(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.option_dependency)
+  return _internal_mutable_option_dependency()->Mutable(index);
+}
+template <typename Arg_, typename... Args_>
+inline void FileDescriptorProto::set_option_dependency(int index, Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_option_dependency()->Mutable(index), std::forward<Arg_>(value),
+                        args... );
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.option_dependency)
+}
+template <typename Arg_, typename... Args_>
+inline void FileDescriptorProto::add_option_dependency(Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_option_dependency(),
+                               std::forward<Arg_>(value),
+                               args... );
+  // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.option_dependency)
+}
+inline const ::google::protobuf::RepeatedPtrField<std::string>& FileDescriptorProto::option_dependency() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.option_dependency)
+  return _internal_option_dependency();
+}
+inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+FileDescriptorProto::mutable_option_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.option_dependency)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_option_dependency();
+}
+inline const ::google::protobuf::RepeatedPtrField<std::string>&
+FileDescriptorProto::_internal_option_dependency() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.option_dependency_;
+}
+inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+FileDescriptorProto::_internal_mutable_option_dependency() {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return &_impl_.option_dependency_;
 }
 
 // repeated .google.protobuf.DescriptorProto message_type = 4;

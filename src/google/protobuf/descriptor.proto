@@ -113,6 +113,10 @@ message FileDescriptorProto {
   // For Google-internal migration only. Do not use.
   repeated int32 weak_dependency = 11;
 
+  // Names of files imported by this file purely for the purpose of providing
+  // option extensions. These are excluded from the dependency list above.
+  repeated string option_dependency = 15;
+
   // All top-level definitions in this file.
   repeated DescriptorProto message_type = 4;
   repeated EnumDescriptorProto enum_type = 5;
