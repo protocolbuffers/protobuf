@@ -38,4 +38,20 @@ public final class LegacyUnredactedTextFormat {
   static String legacyUnredactedSingleLineString(UnknownFieldSet fields) {
     return TextFormat.printer().emittingSingleLine(true).printToString(fields);
   }
+
+  /**
+   * Return object.toString() with the guarantee that any Protobuf Message.toString() invoked under
+   * this call always returns TextFormat (except for Message.toString() calls that are also under
+   * ProtobufToStringOutput.callWithDebugFormat). This is particularly useful for toString calls on
+   * objects that contain Protobuf messages (e.g collections) and existing code expects
+   * toString() on these objects to contain Message.toString() outputs in TextFormat.
+   */
+  static String legacyUnredactedToString(Object object) {
+    String[] result = new String[1];
+    ProtobufToStringOutput.callWithTextFormat(
+        () -> {
+          result[0] = object.toString();
+        });
+    return result[0];
+  }
 }
