@@ -1056,7 +1056,21 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
 
 static PyObject* PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase* self,
                                                 void* closure) {
+  PyErr_WarnEx(
+      PyExc_DeprecationWarning,
+      "label() is deprecated. Use is_required() or is_repeated() instead.", 2);
+
   return PyLong_FromLong(upb_FieldDef_Label(self->def));
+}
+
+static PyObject* PyUpb_FieldDescriptor_IsRequired(PyUpb_DescriptorBase* self,
+                                                  void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsRequired(self->def));
+}
+
+static PyObject* PyUpb_FieldDescriptor_IsRepeated(PyUpb_DescriptorBase* self,
+                                                  void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsRepeated(self->def));
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetIsExtension(
@@ -1165,6 +1179,10 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"type", (getter)PyUpb_FieldDescriptor_GetType, NULL, "Type"},
     {"cpp_type", (getter)PyUpb_FieldDescriptor_GetCppType, NULL, "C++ Type"},
     {"label", (getter)PyUpb_FieldDescriptor_GetLabel, NULL, "Label"},
+    {"is_required", (getter)PyUpb_FieldDescriptor_IsRequired, NULL,
+     "Is Required"},
+    {"is_repeated", (getter)PyUpb_FieldDescriptor_IsRepeated, NULL,
+     "Is Repeated"},
     {"number", (getter)PyUpb_FieldDescriptor_GetNumber, NULL, "Number"},
     {"index", (getter)PyUpb_FieldDescriptor_GetIndex, NULL, "Index"},
     {"default_value", (getter)PyUpb_FieldDescriptor_GetDefaultValue, NULL,
