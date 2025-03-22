@@ -461,6 +461,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
 
   friend class Arena;
 
+  friend class internal::v2::TableDrivenParse;
+
   static constexpr int kSooCapacityElements =
       internal::SooCapacityElements(sizeof(Element));
 
