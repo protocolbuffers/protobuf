@@ -34,6 +34,9 @@ final class UnsafeUtil {
   private static final long BOOLEAN_ARRAY_BASE_OFFSET = arrayBaseOffset(boolean[].class);
   private static final long BOOLEAN_ARRAY_INDEX_SCALE = arrayIndexScale(boolean[].class);
 
+  private static final long SHORT_ARRAY_BASE_OFFSET = arrayBaseOffset(int[].class);
+  private static final long SHORT_ARRAY_INDEX_SCALE = arrayIndexScale(int[].class);
+
   private static final long INT_ARRAY_BASE_OFFSET = arrayBaseOffset(int[].class);
   private static final long INT_ARRAY_INDEX_SCALE = arrayIndexScale(int[].class);
 
@@ -101,6 +104,14 @@ final class UnsafeUtil {
     MEMORY_ACCESSOR.putByte(target, offset, value);
   }
 
+  static short getShort(Object target, long offset) {
+    return MEMORY_ACCESSOR.getInt(target, offset);
+  }
+
+  static void putShort(Object target, long offset, short value) {
+    MEMORY_ACCESSOR.putInt(target, offset, value);
+  }
+
   static int getInt(Object target, long offset) {
     return MEMORY_ACCESSOR.getInt(target, offset);
   }
@@ -155,6 +166,14 @@ final class UnsafeUtil {
 
   static void putByte(byte[] target, long index, byte value) {
     MEMORY_ACCESSOR.putByte(target, BYTE_ARRAY_BASE_OFFSET + index, value);
+  }
+
+  static short getShort(int[] target, long index) {
+    return MEMORY_ACCESSOR.getShort(target, SHORT_ARRAY_BASE_OFFSET + (index * SHORT_ARRAY_INDEX_SCALE));
+  }
+
+  static void putShort(int[] target, long index, short value) {
+    MEMORY_ACCESSOR.putShort(target, SHORT_ARRAY_BASE_OFFSET + (index * SHORT_ARRAY_INDEX_SCALE), value);
   }
 
   static int getInt(int[] target, long index) {
@@ -233,6 +252,14 @@ final class UnsafeUtil {
 
   static void putByte(long address, byte value) {
     MEMORY_ACCESSOR.putByte(address, value);
+  }
+
+  static short getShort(long address) {
+    return MEMORY_ACCESSOR.getShort(address);
+  }
+
+  static void putShort(long address, short value) {
+    MEMORY_ACCESSOR.putShort(address, value);
   }
 
   static int getInt(long address) {
@@ -398,8 +425,8 @@ final class UnsafeUtil {
       // We walk one byte at a time until the left address, at least, is a multiple of 8.
       // If the right address is, too, so much the better.
       for (;
-          index < length && (leftAlignment & STRIDE_ALIGNMENT_MASK) != 0;
-          index++, leftAlignment++) {
+           index < length && (leftAlignment & STRIDE_ALIGNMENT_MASK) != 0;
+           index++, leftAlignment++) {
         if (left[leftOff + index] != right[rightOff + index]) {
           return index;
         }
@@ -488,6 +515,8 @@ final class UnsafeUtil {
         clazz.getMethod("objectFieldOffset", Field.class);
         clazz.getMethod("arrayBaseOffset", Class.class);
         clazz.getMethod("arrayIndexScale", Class.class);
+        clazz.getMethod("getShort", Object.class, long.class);
+        clazz.getMethod("getShort", Object.class, long.class, short.class);
         clazz.getMethod("getInt", Object.class, long.class);
         clazz.getMethod("putInt", Object.class, long.class, int.class);
         clazz.getMethod("getLong", Object.class, long.class);
@@ -505,6 +534,14 @@ final class UnsafeUtil {
     public abstract byte getByte(Object target, long offset);
 
     public abstract void putByte(Object target, long offset, byte value);
+
+    public final short getShort(Object target, long offset) {
+      return unsafe.getShort(target, offset);
+    }
+
+    public final void putShort(Object target, long offset, short value) {
+      unsafe.putShort(target, offset, value);
+    }
 
     public final int getInt(Object target, long offset) {
       return unsafe.getInt(target, offset);
@@ -570,6 +607,10 @@ final class UnsafeUtil {
     public abstract byte getByte(long address);
 
     public abstract void putByte(long address, byte value);
+
+    public abstract short getShort(long address);
+
+    public abstract void putShort(long address, short value);
 
     public abstract int getInt(long address);
 
@@ -669,6 +710,8 @@ final class UnsafeUtil {
         Class<?> clazz = unsafe.getClass();
         clazz.getMethod("getByte", long.class);
         clazz.getMethod("putByte", long.class, byte.class);
+        clazz.getMethod("getShort", long.class);
+        clazz.getMethod("putShort", long.class, short.class);
         clazz.getMethod("getInt", long.class);
         clazz.getMethod("putInt", long.class, int.class);
         clazz.getMethod("getLong", long.class);
@@ -691,6 +734,16 @@ final class UnsafeUtil {
     @Override
     public void putByte(long address, byte value) {
       unsafe.putByte(address, value);
+    }
+
+    @Override
+    public short getShort(long address) {
+      return unsafe.getShort(address);
+    }
+
+    @Override
+    public void putShort(long address, short value) {
+      unsafe.putShort(address, value);
     }
 
     @Override
@@ -807,6 +860,16 @@ final class UnsafeUtil {
 
     @Override
     public void putByte(long address, byte value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public short getShort(long address) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putShort(long address, int value) {
       throw new UnsupportedOperationException();
     }
 
