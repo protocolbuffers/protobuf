@@ -1,7 +1,9 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_python//python:defs.bzl", "py_library")
+load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -70,6 +72,26 @@ def _CsharpOuts(srcs):
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".cs"
         for src in srcs
     ]
+
+_PROTOC_ATTRS = toolchains.if_legacy_toolchain({
+    "_proto_compiler": attr.label(
+        cfg = "exec",
+        executable = True,
+        allow_files = True,
+        default = configuration_field("proto", "proto_compiler"),
+    ),
+})
+_PROTOC_FRAGMENTS = ["proto"]
+_PROTOC_TOOLCHAINS = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN)
+
+def _protoc_files_to_run(ctx):
+    if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return toolchain.proto.proto_compiler
+    else:
+        return ctx.attr._proto_compiler[DefaultInfo].files_to_run
 
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
@@ -310,7 +332,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
             args.add_all([src.path[offset:] for src in dep.direct_sources])
 
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = _protoc_files_to_run(ctx),
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -334,12 +356,9 @@ internal_gen_well_known_protos_java = rule(
         "javalite": attr.bool(
             default = False,
         ),
-        "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
-        ),
-    },
+    } | _PROTOC_ATTRS,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
 )
 
 def _internal_gen_kt_protos(ctx):
@@ -373,7 +392,7 @@ def _internal_gen_kt_protos(ctx):
             args.add_all([src.path[offset:] for src in dep.direct_sources])
 
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = _protoc_files_to_run(ctx),
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -397,12 +416,9 @@ internal_gen_kt_protos = rule(
         "lite": attr.bool(
             default = False,
         ),
-        "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
-        ),
-    },
+    } | _PROTOC_ATTRS,
+    fragments = _PROTOC_FRAGMENTS,
+    toolchains = _PROTOC_TOOLCHAINS,
 )
 
 def internal_objc_proto_library(
