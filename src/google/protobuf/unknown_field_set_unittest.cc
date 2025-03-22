@@ -32,6 +32,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -644,9 +645,8 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
     result += shadow_vector.SpaceUsedExcludingSelfLong();
     result += shadow_vector_group.SpaceUsedExcludingSelfLong();
     if (str != nullptr) {
-      result += sizeof(std::string);
-      static const size_t sso_capacity = std::string().capacity();
-      if (str->capacity() > sso_capacity) result += str->capacity();
+      result += sizeof(std::string) +
+                internal::StringSpaceUsedExcludingSelfLong(*str);
     }
     if (group != nullptr) {
       result += sizeof(UnknownFieldSet);
@@ -837,7 +837,7 @@ TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
   ASSERT_TRUE(field_set.SerializeToCord(&cord));
 
   unittest::TestPackedTypes message;
-  ASSERT_TRUE(message.ParseFromCord(cord));
+  ASSERT_TRUE(message.ParseFromString(cord));
   EXPECT_THAT(message.packed_int32(), ElementsAre(-1, -2, -3, -4));
   EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
 }

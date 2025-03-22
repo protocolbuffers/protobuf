@@ -66,7 +66,7 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
   }
 
   auto mapping_arg = absl::c_find_if(
-      args, [](auto& arg) { return arg.first == "bazel_crate_mapping"; });
+      args, [](auto& arg) { return arg.first == "crate_mapping"; });
   if (mapping_arg != args.end()) {
     opts.mapping_file_path = mapping_arg->second;
   }
@@ -76,6 +76,15 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
   });
   if (strip_nonfunctional_codegen_arg != args.end()) {
     opts.strip_nonfunctional_codegen = true;
+  }
+
+  auto generated_entry_point_rs_file_name_arg =
+      absl::c_find_if(args, [](auto& arg) {
+        return arg.first == "generated_entry_point_rs_file_name";
+      });
+  if (generated_entry_point_rs_file_name_arg != args.end()) {
+    opts.generated_entry_point_rs_file_name =
+        generated_entry_point_rs_file_name_arg->second;
   }
 
   return opts;

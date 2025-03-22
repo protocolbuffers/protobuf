@@ -1,11 +1,8 @@
 load("@rules_buf//buf:defs.bzl", "buf_breaking_test")
-load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
+load("@rules_java//java:java_library.bzl", "java_library")
 
 # Simple build tests for compatibility of gencode from previous major versions
 # with the current runtime.
-#
-# To add more test cases in Java, use java_runtime_conformance as below, and add
-# the corresponding http_archive in the WORKSPACE file for the version.
 
 java_library(
     name = "v25_test_protos_srcjar",
@@ -25,12 +22,6 @@ java_library(
     ]),
     visibility = ["//java/core:__pkg__"],
     deps = ["@com_google_protobuf_v25.0//java/core"],
-)
-
-# main gencode builds with main runtime as a proof of concept.
-java_runtime_conformance(
-    name = "java_conformance_main",
-    gencode_version = "main",
 )
 
 # Breaking change detection for well-known types and descriptor.proto.

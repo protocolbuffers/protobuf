@@ -86,7 +86,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "5.30.0")
+set(protobuf_VERSION_STRING "6.31.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -203,7 +203,7 @@ if (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "SHARED")
 else (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "STATIC")
-  set(ABSL_MSVC_STATIC_RUNTIME ON)
+  set(ABSL_MSVC_STATIC_RUNTIME ${protobuf_MSVC_STATIC_RUNTIME})
   if (protobuf_MSVC_STATIC_RUNTIME)
       set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
   else()

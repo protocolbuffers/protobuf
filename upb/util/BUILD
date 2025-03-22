@@ -50,13 +50,13 @@ cc_library(
     hdrs = ["def_to_proto_test.h"],
     deps = [
         ":def_to_proto",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf/util:differencer",
         "//upb:base",
         "//upb:mem",
         "//upb/reflection:internal",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -70,7 +70,7 @@ cc_test(
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//src/google/protobuf/util:differencer",
@@ -78,9 +78,9 @@ cc_test(
         "//upb:mem",
         "//upb:reflection",
         "//upb/test:parse_text_proto",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -145,9 +145,9 @@ cc_test(
         "//upb:mem",
         "//upb:reflection",
         "//upb/reflection:internal",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

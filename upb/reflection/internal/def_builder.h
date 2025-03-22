@@ -8,6 +8,18 @@
 #ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
+#include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/file.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/internal/def_pool.h"
@@ -40,16 +52,16 @@ struct upb_DefBuilder {
   UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
   char* tmp_buf;                          // Temporary buffer in tmp_arena.
   size_t tmp_buf_size;                    // Size of temporary buffer.
-  upb_FileDef* file;                 // File we are building.
-  upb_Arena* arena;                  // Allocate defs here.
-  upb_Arena* tmp_arena;              // For temporary allocations.
-  upb_Status* status;                // Record errors here.
-  const upb_MiniTableFile* layout;   // NULL if we should build layouts.
-  upb_MiniTablePlatform platform;    // Platform we are targeting.
-  int enum_count;                    // Count of enums built so far.
-  int msg_count;                     // Count of messages built so far.
-  int ext_count;                     // Count of extensions built so far.
-  jmp_buf err;                       // longjmp() on error.
+  upb_FileDef* file;                      // File we are building.
+  upb_Arena* arena;                       // Allocate defs here.
+  upb_Arena* tmp_arena;                   // For temporary allocations.
+  upb_Status* status;                     // Record errors here.
+  const upb_MiniTableFile* layout;        // NULL if we should build layouts.
+  upb_MiniTablePlatform platform;         // Platform we are targeting.
+  int enum_count;                         // Count of enums built so far.
+  int msg_count;                          // Count of messages built so far.
+  int ext_count;                          // Count of extensions built so far.
+  jmp_buf err;                            // longjmp() on error.
 };
 
 extern const char* kUpbDefOptDefault;
@@ -87,6 +99,19 @@ UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
   if (!ret) _upb_DefBuilder_OomErr(ctx);
   return ret;
 }
+
+/* Allocates an array of `count` elements, checking for size_t overflow */
+UPB_INLINE void* _upb_DefBuilder_AllocCounted(upb_DefBuilder* ctx, size_t size,
+                                              size_t count) {
+  if (count == 0) return NULL;
+  if (SIZE_MAX / size < count) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
+  return _upb_DefBuilder_Alloc(ctx, size * count);
+}
+
+#define UPB_DEFBUILDER_ALLOCARRAY(ctx, type, count) \
+  ((type*)_upb_DefBuilder_AllocCounted(ctx, sizeof(type), (count)))
 
 // Adds a symbol |v| to the symtab, which must be a def pointer previously
 // packed with pack_def(). The def's pointer to upb_FileDef* must be set before

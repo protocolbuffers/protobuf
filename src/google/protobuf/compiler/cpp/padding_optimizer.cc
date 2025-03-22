@@ -7,6 +7,9 @@
 
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 
+#include <algorithm>
+#include <cstddef>
+
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -83,7 +86,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   std::vector<FieldGroup> aligned_to_1[kMaxFamily];
   std::vector<FieldGroup> aligned_to_4[kMaxFamily];
   std::vector<FieldGroup> aligned_to_8[kMaxFamily];
-  for (int i = 0; i < fields->size(); ++i) {
+  for (size_t i = 0; i < fields->size(); ++i) {
     const FieldDescriptor* field = (*fields)[i];
 
     Family f = OTHER;
@@ -119,9 +122,9 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   for (int f = 0; f < kMaxFamily; f++) {
     // Now group fields aligned to 1 byte into sets of 4, and treat those like a
     // single field aligned to 4 bytes.
-    for (int i = 0; i < aligned_to_1[f].size(); i += 4) {
+    for (size_t i = 0; i < aligned_to_1[f].size(); i += 4) {
       FieldGroup field_group;
-      for (int j = i; j < aligned_to_1[f].size() && j < i + 4; ++j) {
+      for (size_t j = i; j < aligned_to_1[f].size() && j < i + 4; ++j) {
         field_group.Append(aligned_to_1[f][j]);
       }
       aligned_to_4[f].push_back(field_group);
@@ -133,9 +136,9 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 
     // Now group fields aligned to 4 bytes (or the 4-field groups created above)
     // into pairs, and treat those like a single field aligned to 8 bytes.
-    for (int i = 0; i < aligned_to_4[f].size(); i += 2) {
+    for (size_t i = 0; i < aligned_to_4[f].size(); i += 2) {
       FieldGroup field_group;
-      for (int j = i; j < aligned_to_4[f].size() && j < i + 2; ++j) {
+      for (size_t j = i; j < aligned_to_4[f].size() && j < i + 2; ++j) {
         field_group.Append(aligned_to_4[f][j]);
       }
       if (i == aligned_to_4[f].size() - 1) {
@@ -158,7 +161,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   // Now pull out all the FieldDescriptors in order.
   fields->clear();
   for (int f = 0; f < kMaxFamily; ++f) {
-    for (int i = 0; i < aligned_to_8[f].size(); ++i) {
+    for (size_t i = 0; i < aligned_to_8[f].size(); ++i) {
       fields->insert(fields->end(), aligned_to_8[f][i].fields().begin(),
                      aligned_to_8[f][i].fields().end());
     }

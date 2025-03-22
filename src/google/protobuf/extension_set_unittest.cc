@@ -684,7 +684,7 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
   // Make sure we can add extensions.
   destination.AddExtension(unittest::unpacked_int32_extension, 1);
   destination.AddExtension(unittest::unpacked_enum_extension,
-                           protobuf_unittest::FOREIGN_BAR);
+                           proto2_unittest::FOREIGN_BAR);
 }
 
 TEST(ExtensionSetTest, UnpackedToPackedParsing) {
@@ -708,7 +708,7 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
   // Make sure we can add extensions.
   destination.AddExtension(unittest::packed_int32_extension, 1);
   destination.AddExtension(unittest::packed_enum_extension,
-                           protobuf_unittest::FOREIGN_BAR);
+                           proto2_unittest::FOREIGN_BAR);
 }
 
 TEST(ExtensionSetTest, IsInitialized) {
@@ -1413,7 +1413,7 @@ TEST(ExtensionSetTest, BoolExtension) {
   unittest::TestAllExtensions msg;
   uint8_t wire_bytes[2] = {13 * 8, 42 /* out of bounds payload for bool */};
   EXPECT_TRUE(msg.ParseFromArray(wire_bytes, 2));
-  EXPECT_TRUE(msg.GetExtension(protobuf_unittest::optional_bool_extension));
+  EXPECT_TRUE(msg.GetExtension(proto2_unittest::optional_bool_extension));
 }
 
 TEST(ExtensionSetTest, ConstInit) {

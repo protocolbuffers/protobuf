@@ -9,10 +9,13 @@
 #define UPB_MESSAGE_INTERNAL_MAP_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
+#include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 
@@ -27,14 +30,20 @@ typedef enum {
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
+union upb_Map_Table {
+  upb_strtable strtable;
+  upb_inttable inttable;
+};
+
 struct upb_Map {
   // Size of key and val, based on the map type.
   // Strings are represented as '0' because they must be handled specially.
   char key_size;
   char val_size;
   bool UPB_PRIVATE(is_frozen);
+  bool UPB_PRIVATE(is_strtable);
 
-  upb_strtable table;
+  union upb_Map_Table t;
 };
 
 #ifdef __cplusplus
@@ -63,6 +72,12 @@ UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
   } else {
     return upb_StringView_FromDataAndSize((const char*)key, size);
   }
+}
+
+UPB_INLINE uintptr_t _upb_map_tointkey(const void* key, size_t key_size) {
+  uintptr_t intkey = 0;
+  memcpy(&intkey, key, key_size);
+  return intkey;
 }
 
 UPB_INLINE void _upb_map_fromkey(upb_StringView key, void* out, size_t size) {
@@ -95,35 +110,59 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
-  upb_strtable_iter it;
-  it.t = &map->table;
-  it.index = *iter;
-  upb_strtable_next(&it);
-  *iter = it.index;
-  if (upb_strtable_done(&it)) return NULL;
-  return (void*)str_tabent(&it);
+UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_iter it;
+    it.t = &map->t.strtable;
+    it.index = *iter;
+    upb_strtable_next(&it);
+    *iter = it.index;
+    return !upb_strtable_done(&it);
+  } else {
+    uintptr_t key;
+    upb_value val;
+    intptr_t int_iter = 0;
+    memcpy(&int_iter, iter, sizeof(intptr_t));
+    upb_inttable_next(&map->t.inttable, &key, &val, &int_iter);
+    memcpy(iter, &int_iter, sizeof(size_t));
+    return !upb_inttable_done(&map->t.inttable, int_iter);
+  }
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  upb_strtable_clear(&map->table);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_strtable_clear(&map->t.strtable);
+  } else {
+    upb_inttable_clear(&map->t.inttable);
+  }
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  upb_StringView k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove2(&map->table, k.data, k.size, val);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView k = _upb_map_tokey(key, key_size);
+    return upb_strtable_remove2(&map->t.strtable, k.data, k.size, val);
+  } else {
+    uintptr_t intkey = _upb_map_tointkey(key, key_size);
+    return upb_inttable_remove(&map->t.inttable, intkey, val);
+  }
 }
 
 UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
                              size_t key_size, void* val, size_t val_size) {
-  upb_value tabval;
-  upb_StringView k = _upb_map_tokey(key, key_size);
-  bool ret = upb_strtable_lookup2(&map->table, k.data, k.size, &tabval);
+  upb_value tabval = {0};
+  bool ret;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView k = _upb_map_tokey(key, key_size);
+    ret = upb_strtable_lookup2(&map->t.strtable, k.data, k.size, &tabval);
+  } else {
+    uintptr_t intkey = _upb_map_tointkey(key, key_size);
+    ret = upb_inttable_lookup(&map->t.inttable, intkey, &tabval);
+  }
   if (ret && val) {
     _upb_map_fromvalue(tabval, val, val_size);
   }
@@ -136,24 +175,39 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  upb_StringView strkey = _upb_map_tokey(key, key_size);
+  // Prep the value.
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  // TODO: add overwrite operation to minimize number of lookups.
-  bool removed =
-      upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
-  if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
-    return kUpb_MapInsertStatus_OutOfMemory;
+  bool removed;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView strkey = _upb_map_tokey(key, key_size);
+    // TODO: add overwrite operation to minimize number of lookups.
+    removed =
+        upb_strtable_remove2(&map->t.strtable, strkey.data, strkey.size, NULL);
+    if (!upb_strtable_insert(&map->t.strtable, strkey.data, strkey.size, tabval,
+                             a)) {
+      return kUpb_MapInsertStatus_OutOfMemory;
+    }
+  } else {
+    uintptr_t intkey = _upb_map_tointkey(key, key_size);
+    removed = upb_inttable_remove(&map->t.inttable, intkey, NULL);
+    if (!upb_inttable_insert(&map->t.inttable, intkey, tabval, a)) {
+      return kUpb_MapInsertStatus_OutOfMemory;
+    }
   }
   return removed ? kUpb_MapInsertStatus_Replaced
                  : kUpb_MapInsertStatus_Inserted;
 }
 
 UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
-  return map->table.t.count;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    return map->t.strtable.t.count;
+  } else {
+    return upb_inttable_count(&map->t.inttable);
+  }
 }
 
 // Strings/bytes are special-cased in maps.

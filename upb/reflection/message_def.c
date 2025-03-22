@@ -37,7 +37,7 @@
 #include "upb/port/def.inc"
 
 struct upb_MessageDef {
-  const UPB_DESC(MessageOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(MessageOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
@@ -76,9 +76,6 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -644,7 +641,7 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
 
 static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
                                               const upb_StringView* protos) {
-  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  upb_StringView* sv = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_StringView, n);
   for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
@@ -728,7 +725,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->real_oneof_count = m->oneof_count - synthetic_count;
 
   assign_msg_wellknowntype(m);
-  upb_inttable_compact(&m->itof, ctx->arena);
+  if (!upb_inttable_compact(&m->itof, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
   const UPB_DESC(EnumDescriptorProto)* const* enums =
       UPB_DESC(DescriptorProto_enum_type)(msg_proto, &n_enum);
@@ -761,7 +758,7 @@ upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
   const char* name = containing_type ? containing_type->full_name
                                      : _upb_FileDef_RawPackage(ctx->file);
 
-  upb_MessageDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageDef) * n);
+  upb_MessageDef* m = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MessageDef, n);
   for (int i = 0; i < n; i++) {
     create_msgdef(ctx, name, protos[i], parent_features, containing_type,
                   &m[i]);

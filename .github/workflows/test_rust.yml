@@ -19,8 +19,7 @@ jobs:
       matrix:
         config:
           - { name: "No bzlmod", flags: --noenable_bzlmod }
-          # TODO: b/379846319 - Fix the tests with bzlmod and enable this.
-          # - { name: "bzlmod", flags: --enable_bzlmod --enable_workspace }
+          - { name: "Bzlmod and Workspace", flags: --enable_bzlmod --enable_workspace }
           - { name: Optimized, flags: --config=opt }
           - { name: ASAN, flags: --config=asan }
 
@@ -38,11 +37,11 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

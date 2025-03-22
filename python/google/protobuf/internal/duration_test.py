@@ -12,6 +12,7 @@ import datetime
 import unittest
 
 from google.protobuf import duration
+from google.protobuf.internal import well_known_types_test_pb2
 
 from google.protobuf import duration_pb2
 
@@ -56,6 +57,13 @@ class DurationTest(unittest.TestCase):
     td = duration.to_timedelta(message)
     converted_message = duration.from_timedelta(td)
     self.assertEqual(message, converted_message)
+
+  def test_duration_construction(self):
+    expected_td = datetime.timedelta(microseconds=123)
+    message = well_known_types_test_pb2.WKTMessage(
+        optional_duration=expected_td
+    )
+    self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
 
 
 if __name__ == '__main__':

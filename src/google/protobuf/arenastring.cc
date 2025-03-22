@@ -7,8 +7,15 @@
 
 #include "google/protobuf/arenastring.h"
 
+#include <atomic>
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <utility>
 
+#include "absl/base/const_init.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"

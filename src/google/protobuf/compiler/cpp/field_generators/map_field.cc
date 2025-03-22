@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -18,6 +19,9 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -46,7 +50,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   }
 
   return {
-      {"Map", absl::Substitute("::google::protobuf::Map<$0, $1>", key_type, val_type)},
+      {"Map", absl::Substitute("::$2::Map<$0, $1>", key_type, val_type,
+                               ProtobufNamespace(opts))},
       {"Entry", ClassName(field->message_type(), false)},
       {"Key", PrimitiveTypeName(opts, key->cpp_type())},
       {"Val", val_type},
@@ -203,11 +208,11 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
     $DEPRECATED$ const $Map$& $name$() const;
-    $DEPRECATED$ $Map$* $mutable_name$();
+    $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
 
     private:
     const $Map$& $_internal_name$() const;
-    $Map$* $_internal_mutable_name$();
+    $Map$* $nonnull$ $_internal_mutable_name$();
 
     public:
   )cc");
@@ -229,14 +234,15 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::_internal_mutable_$name_internal$() {
+    inline $Map$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $Map$* $nonnull$ $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
@@ -311,6 +317,7 @@ void Map::GenerateByteSize(io::Printer* p) const {
         }
       )cc");
 }
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
@@ -323,3 +330,5 @@ std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

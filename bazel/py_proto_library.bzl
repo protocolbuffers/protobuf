@@ -44,8 +44,9 @@ def _py_proto_aspect_impl(target, ctx):
 
     # Check Proto file names
     for proto in target[ProtoInfo].direct_sources:
-        if proto.is_source and "-" in proto.dirname:
-            fail("Cannot generate Python code for a .proto whose path contains '-' ({}).".format(
+        import_path = proto_common.get_import_path(proto)
+        if proto.is_source and "-" in import_path:
+            fail("Cannot generate Python code for a .proto whose python import path contains '-' ({}).".format(
                 proto.path,
             ))
 
@@ -76,7 +77,12 @@ def _py_proto_aspect_impl(target, ctx):
             proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
 
         plugin_output = ctx.bin_dir.path + "/" + proto_root
-        proto_root = ctx.workspace_name + "/" + proto_root
+
+        # Import path within the runfiles tree
+        if proto_root.startswith("external/"):
+            proto_root = proto_root[len("external") + 1:]
+        else:
+            proto_root = ctx.workspace_name + "/" + proto_root
 
         proto_common.compile(
             actions = ctx.actions,

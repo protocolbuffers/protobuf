@@ -119,6 +119,17 @@ public abstract class AbstractMessage
     return memoizedSize;
   }
 
+  /*
+   * This method will only ever return true if `this` and `other` have the same descriptor instance
+   * for their type (including a gencode message compared to a `DynamicMessage` constructed using
+   * the same descriptor instance).
+   *
+   * For reasons of backward compatibility, a comparison
+   * involving `DynamicMessage` that is constructed using semantically the same descriptor which
+   * was loaded separately (such that the reference identity of the descriptors does not match) will
+   * always return false even if there is otherwise no skew between the descriptors and the contents
+   * of the instances.
+   */
   @Override
   public boolean equals(final Object other) {
     if (other == this) {

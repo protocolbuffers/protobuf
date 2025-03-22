@@ -15,8 +15,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upb {
-namespace generator {
+namespace upb::generator {
 
 // These are the publicly visible symbols defined in foo.upbdefs.h.
 //   const upb_MessageDef* <GetMessage>(upb_DefPool *s);
@@ -25,8 +24,7 @@ namespace generator {
 UPBC_API std::string ReflectionGetMessageSymbol(absl::string_view full_name);
 UPBC_API std::string ReflectionFileSymbol(absl::string_view filename);
 
-}  // namespace generator
-}  // namespace upb
+}  // namespace upb::generator
 
 #include "upb/port/undef.inc"
 

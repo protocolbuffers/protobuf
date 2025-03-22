@@ -110,17 +110,18 @@ gen_file_lists(
         # Libraries:
         ":protobuf": "libprotobuf",
         ":protobuf_lite": "libprotobuf_lite",
+        ":protoc_public": "libprotoc_public",
         ":protoc": "libprotoc",
         ":upb": "libupb",
         ":protoc-gen-upb": "protoc-gen-upb",
         ":protoc-gen-upbdefs": "protoc-gen-upbdefs",
-        ":protoc-gen-upb_minitable": "protoc-gen-upb_minitable",
         # Protos:
         "//src/google/protobuf:well_known_type_protos": "wkt_protos",
         "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
         "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
+        "//go:go_features_proto": "go_features_proto,go/",
 
         # Test libraries:
         ":common_test": "common_test",
@@ -192,6 +193,7 @@ cc_dist_library(
     dist_deps = [
         ":protobuf",
         ":protobuf_lite",
+        ":upb",
     ],
     tags = ["manual"],
     deps = [
@@ -205,6 +207,33 @@ cc_dist_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+        "//upb_generator/minitable:generator",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc_public",
+    dist_deps = [
+        ":protobuf",
+        ":protobuf_lite",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/csharp:names",
+        "//src/google/protobuf/compiler/java:names",
+        "//src/google/protobuf/compiler/objectivec:names",
+        "//src/google/protobuf/compiler/php:names",
+        # TODO Make these private in the next breaking C++ release.
+        "//src/google/protobuf/compiler/cpp:generator_headers",
+        "//src/google/protobuf/compiler/csharp:generator_headers",
+        "//src/google/protobuf/compiler/java:generator_headers",
+        "//src/google/protobuf/compiler/kotlin:generator_headers",
+        "//src/google/protobuf/compiler/objectivec:generator_headers",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python:generator_headers",
+        "//src/google/protobuf/compiler/ruby:generator_headers",
     ],
 )
 
@@ -212,7 +241,7 @@ cc_dist_library(
     name = "upb",
     tags = ["manual"],
     deps = [
-        "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//upb:generated_code_support",
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
@@ -231,7 +260,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/c:generator_with_main",
+        "//upb_generator/c:protoc-gen-upb",
     ],
 )
 
@@ -242,18 +271,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/reflection:generator_with_main",
-    ],
-)
-
-cc_dist_library(
-    name = "protoc-gen-upb_minitable",
-    dist_deps = [
-        ":upb",
-    ],
-    tags = ["manual"],
-    deps = [
-        "//upb_generator/minitable:generator_with_main",
+        "//upb_generator/reflection:protoc-gen-upbdefs",
     ],
 )
 

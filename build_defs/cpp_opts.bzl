@@ -23,6 +23,7 @@ COPTS = select({
 
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
+    "@platforms//os:android": [],
     "//build_defs:config_android": [],
     "//build_defs:config_android-legacy-default-crosstool": [],
     "//build_defs:config_android-stlport": [],
@@ -38,6 +39,11 @@ LINK_OPTS = select({
         "-lpthread",
         "-lm",
         "-framework CoreFoundation",
+    ],
+    "@platforms//os:windows": [
+        "-ldbghelp",
+        "-lpthread",
+        "-lm",
     ],
     "//conditions:default": [
         "-lpthread",

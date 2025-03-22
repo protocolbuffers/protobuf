@@ -171,24 +171,30 @@ rust_test(
 rust_test(
     name = "bad_names_cpp_test",
     srcs = ["bad_names_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
     deps = [
+        "//rust:protobuf_cpp_export",
         "//rust/test:bad_names_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
 
-# TODO: This test currently fails on upb due to the thunk names not correctly matching
-# the upb C codegen collision avoidance.
-# rust_test(
-#     name = "bad_names_upb_test",
-#     srcs = ["bad_names_test.rs"],
-#     deps = [
-#         "@crate_index//:googletest",
-#         "//rust/test:bad_names_upb_rust_proto",
-#         "//rust/test:unittest_upb_rust_proto",
-#     ],
-# )
+rust_test(
+    name = "bad_names_upb_test",
+    srcs = ["bad_names_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:bad_names_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
 
 rust_test(
     name = "nested_types_cpp_test",
@@ -423,8 +429,8 @@ rust_test(
 )
 
 rust_test(
-    name = "merge_from_cpp_test",
-    srcs = ["merge_from_test.rs"],
+    name = "message_copy_merge_cpp_test",
+    srcs = ["message_copy_merge_test.rs"],
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
     },
@@ -436,8 +442,8 @@ rust_test(
 )
 
 rust_test(
-    name = "merge_from_upb_test",
-    srcs = ["merge_from_test.rs"],
+    name = "message_copy_merge_upb_test",
+    srcs = ["message_copy_merge_test.rs"],
     aliases = {
         "//rust:protobuf_upb": "protobuf",
     },
@@ -469,6 +475,42 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
         "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
+    deps = [
+        "//rust:protobuf_gtest_matchers_upb",
+        "//rust:protobuf_upb",
+        "//rust/test:map_unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "proto_proc_macro_cpp_test",
+    srcs = ["proto_proc_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    proc_macro_deps = [
+        "//rust/proto_proc_macro",
+    ],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:map_unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "proto_proc_macro_upb_test",
+    srcs = ["proto_proc_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
+    },
+    proc_macro_deps = [
+        "//rust/proto_proc_macro",
+    ],
     deps = [
         "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",

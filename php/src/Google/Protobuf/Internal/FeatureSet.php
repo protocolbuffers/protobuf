@@ -7,9 +7,9 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * TODO Enums in C++ gencode (and potentially other languages) are
@@ -47,6 +47,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
      */
     protected $json_format = null;
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
+     */
+    protected $enforce_naming_style = null;
 
     /**
      * Constructor.
@@ -60,6 +64,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      *     @type int $utf8_validation
      *     @type int $message_encoding
      *     @type int $json_format
+     *     @type int $enforce_naming_style
      * }
      */
     public function __construct($data = NULL) {
@@ -255,6 +260,38 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\JsonFormat::class);
         $this->json_format = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
+     * @return int
+     */
+    public function getEnforceNamingStyle()
+    {
+        return isset($this->enforce_naming_style) ? $this->enforce_naming_style : 0;
+    }
+
+    public function hasEnforceNamingStyle()
+    {
+        return isset($this->enforce_naming_style);
+    }
+
+    public function clearEnforceNamingStyle()
+    {
+        unset($this->enforce_naming_style);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setEnforceNamingStyle($var)
+    {
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle::class);
+        $this->enforce_naming_style = $var;
 
         return $this;
     }

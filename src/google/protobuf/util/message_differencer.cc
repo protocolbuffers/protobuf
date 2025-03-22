@@ -20,12 +20,10 @@
 #include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/descriptor.h"
@@ -823,6 +821,12 @@ static PROTOBUF_NOINLINE MessageDifferencer::SpecificField& PushSpecificField(
   return fields->back();
 }
 
+void MessageDifferencer::ForceCompareField(const FieldDescriptor* field) {
+  if (force_compare_no_presence_fields_.contains(field)) {
+    force_compare_failure_triggering_fields_.emplace(field->full_name());
+  }
+}
+
 bool MessageDifferencer::CompareWithFieldsInternal(
     const Message& message1, const Message& message2, int unpacked_any,
     const std::vector<const FieldDescriptor*>& message1_fields,
@@ -897,8 +901,8 @@ bool MessageDifferencer::CompareWithFieldsInternal(
     } else if (FieldBefore(field2, field1)) {
       const bool ignore_field =
           IsIgnored(message1, message2, field2, *parent_fields);
-      if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
-        force_compare_failure_triggering_fields_.emplace(field2->full_name());
+      if (!ignore_field) {
+        ForceCompareField(field2);
       }
 
       // Field 2 is not in the field list for message 1.
@@ -989,9 +993,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       fieldDifferent = !CompareFieldValueUsingParentFields(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
-      if (force_compare_no_presence_fields_.contains(field1)) {
-        force_compare_failure_triggering_fields_.emplace(field1->full_name());
-      }
+      ForceCompareField(field1);
 
       if (reporter_ != nullptr) {
         SpecificField& specific_field = PushSpecificField(parent_fields);

@@ -53,16 +53,17 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
-using protobuf_unittest::NestedTestAllTypes;
-using protobuf_unittest::TestAllExtensions;
-using protobuf_unittest::TestAllTypes;
-using protobuf_unittest::TestEmptyMessage;
-using protobuf_unittest::TestOneof2;
-using protobuf_unittest::TestRepeatedString;
+using proto2_unittest::NestedTestAllTypes;
+using proto2_unittest::TestAllExtensions;
+using proto2_unittest::TestAllTypes;
+using proto2_unittest::TestEmptyMessage;
+using proto2_unittest::TestOneof2;
+using proto2_unittest::TestRepeatedString;
 using ::testing::ElementsAreArray;
 
 namespace google {
 namespace protobuf {
+
 
 class Notifier {
  public:
@@ -1410,11 +1411,11 @@ TEST(ArenaTest, ExtensionsOnArena) {
   Arena arena;
   // Ensure no leaks.
   TestAllExtensions* message_ext = Arena::Create<TestAllExtensions>(&arena);
-  message_ext->SetExtension(protobuf_unittest::optional_int32_extension, 42);
-  message_ext->SetExtension(protobuf_unittest::optional_string_extension,
+  message_ext->SetExtension(proto2_unittest::optional_int32_extension, 42);
+  message_ext->SetExtension(proto2_unittest::optional_string_extension,
                             std::string("test"));
   message_ext
-      ->MutableExtension(protobuf_unittest::optional_nested_message_extension)
+      ->MutableExtension(proto2_unittest::optional_nested_message_extension)
       ->set_bb(42);
 }
 

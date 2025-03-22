@@ -2,8 +2,8 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//rust:aspects.bzl", "RustProtoInfo")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
+load("//rust/bazel:aspects.bzl", "RustProtoInfo")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
 def _find_actions_with_mnemonic(actions, mnemonic):
@@ -173,12 +173,20 @@ def _rust_outputs_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
 
-    label_to_file = {
-        "child_cpp_rust_proto": "child.c.pb.rs",
-        "child_upb_rust_proto": "child.u.pb.rs",
+    label_to_files = {
+        "child_cpp_rust_proto": ["generated.c.rs", "child.c.pb.rs"],
+        "child_upb_rust_proto": ["generated.u.rs", "child.u.pb.rs"],
     }
-    expected_output = label_to_file[target_under_test.label.name]
-    asserts.true(env, target_under_test.files.to_list()[0].path.endswith(expected_output))
+    expected_outputs = label_to_files[target_under_test.label.name]
+    actual_outputs = target_under_test.files.to_list()
+    asserts.equals(env, len(expected_outputs), len(actual_outputs))
+    for expected in expected_outputs:
+        found = False
+        for actual in actual_outputs:
+            if actual.path.endswith(expected):
+                found = True
+                break
+        asserts.true(env, found)
 
     return analysistest.end(env)
 

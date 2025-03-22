@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -47,6 +48,9 @@ struct Options {
   Kernel kernel;
   std::string mapping_file_path;
   bool strip_nonfunctional_codegen = false;
+
+  // The name to use for the generated entry point rs file.
+  std::string generated_entry_point_rs_file_name = "generated.rs";
 
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
@@ -128,11 +132,16 @@ class Context {
     auto it =
         rust_generator_context_->import_path_to_crate_name_.find(import_path);
     if (it == rust_generator_context_->import_path_to_crate_name_.end()) {
-      ABSL_LOG(FATAL)
+      ABSL_LOG(ERROR)
           << "Path " << import_path
-          << " not found in crate mapping. Crate mapping has "
+          << " not found in crate mapping. Crate mapping contains "
           << rust_generator_context_->import_path_to_crate_name_.size()
-          << " entries";
+          << " entries:";
+      for (const auto& entry :
+           rust_generator_context_->import_path_to_crate_name_) {
+        ABSL_LOG(ERROR) << "  " << entry.first << " : " << entry.second << "\n";
+      }
+      ABSL_LOG(FATAL) << "Cannot continue with missing crate mapping.";
     }
     return it->second;
   }

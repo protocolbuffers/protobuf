@@ -9,8 +9,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypesOrBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

@@ -18,10 +18,12 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -31,11 +33,14 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_sink.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/unparser_traits.h"
 #include "google/protobuf/json/internal/writer.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -905,3 +910,5 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

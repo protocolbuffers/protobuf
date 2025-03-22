@@ -19,7 +19,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestStringView;
+using ::proto2_unittest::TestStringView;
 using ::testing::ElementsAre;
 using ::testing::StrEq;
 
@@ -309,6 +309,13 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
               StrEq("111111111111"));
   EXPECT_THAT(reflection->GetRepeatedStringView(message, field, 2, scratch),
               StrEq("222222222222"));
+}
+
+TEST(StringViewFieldTest, MergeAndClearEmptyImplicitPresence) {
+  TestStringView message, other;
+  other.set_implicit_presence("");
+  message.MergeFrom(other);
+  message.Clear();
 }
 
 }  // namespace

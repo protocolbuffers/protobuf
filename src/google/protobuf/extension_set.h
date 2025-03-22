@@ -85,7 +85,7 @@ namespace internal {
 class InternalMetadata;
 
 namespace v2 {
-class TableDriven;
+class TableDrivenMessage;
 }  // namespace v2
 
 // Used to store values of type WireFormatLite::FieldType without having to
@@ -572,7 +572,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
-  friend class google::protobuf::internal::v2::TableDriven;
+  friend class google::protobuf::internal::v2::TableDrivenMessage;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -668,6 +668,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
+
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.

@@ -150,17 +150,18 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-#ifdef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
-#error PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE was previously defined
-#endif
-#if defined(PROTOBUF_TEMPORARY_ENABLE_STRING_VIEW_RETURN_TYPE)
-#define PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE 1
+// Introducing a future-breaking change guard for descriptor database migration.
+// This allows google3 to transition to absl::string_view while keeping OSS
+// on std::string until the migration is fully completed.
+// The temporary macro enables incremental migration before permanently flipping
+// the switch.
+#ifdef PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE
+#error PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE was previously defined
 #endif
 
-#ifdef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME
-#error PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME was previously defined
+#if defined(PROTOBUF_TEMPORARY_ENABLE_STRING_VIEW_DESCRIPTOR_DATABASE)
+#define PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE 1
 #endif
-#define PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE_TYPENAME 1
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
@@ -306,9 +307,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
   _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
   __builtin_offsetof(TYPE, FIELD)                            \
   _Pragma("clang diagnostic pop")
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_FIELD_OFFSET(TYPE, FIELD) __builtin_offsetof(TYPE, FIELD)
-#else  // defined(__clang__)
+#else
 // Note that we calculate relative to the pointer value 16 here since if we
 // just use zero, GCC complains about dereferencing a NULL pointer.  We
 // choose 16 rather than some other number just in case the compiler would
@@ -573,7 +574,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
 #endif
 #if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
-    !defined(_MSC_VER)
+    !defined(_MSC_VER) && !defined(_WIN32)
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
@@ -629,6 +630,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma push_macro("linux")
 #undef linux
 #define PROTOBUF_DID_UNDEF_LINUX
+#endif
+
+// netdb.h defines this on some platforms.
+#ifdef NO_DATA
+#pragma push_macro("NO_DATA")
+#undef NO_DATA
+#define PROTOBUF_DID_UNDEF_NO_DATA
 #endif
 
 // Windows declares several inconvenient macro names.  We #undef them and then
@@ -766,6 +774,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 //   for (int i = 0; i < public_dep->message_type_count(); ++i)
 #pragma clang diagnostic ignored "-Wshadow"
 #pragma clang diagnostic ignored "-Wextra-semi"
+// Ensure we don't regress nullability annotations (related: b/383569842)
+#pragma clang diagnostic error "-Wnullability-completeness"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -886,6 +896,20 @@ namespace internal {
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
 
+// PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(expr, prob) tells the compiler that
+// the expression expr is likely to be true with probability prob. This is
+// helpful for the compiler to make better optimization decisions when we know
+// the probability of a certain branch (e.g. from a profile).
+#ifdef PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY
+#error PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY was previously defined
+#endif
+#if ABSL_HAVE_BUILTIN(__builtin_expect_with_probability)
+#define PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(expr, prob) \
+  __builtin_expect_with_probability((expr), 1, (prob))
+#else
+#define PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(expr, prob) (expr)
+#endif
+
 #ifdef PROTOBUF_DEPRECATE_AND_INLINE
 #error PROTOBUF_DEPRECATE_AND_INLINE was previously defined
 #endif
@@ -893,6 +917,14 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() ABSL_DEPRECATE_AND_INLINE()
 #else
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
+#endif
+
+#ifdef PROTOBUF_NONNULL
+#error PROTOBUF_NONNULL was previously defined
+#endif
+#ifndef PROTOBUF_NONNULL
+#define PROTOBUF_NONNULL
+#define PROTOBUF_NULLABLE
 #endif
 
 namespace google {

@@ -592,7 +592,7 @@ class GeneratedClassTest extends TestBase
         $arr = array(1, 2.1, "3");
         $m->setRepeatedInt32($arr);
         $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
-        $this->assertSame("Google\Protobuf\Internal\RepeatedField",
+        $this->assertSame("Google\Protobuf\RepeatedField",
                           get_class($m->getRepeatedInt32()));
         $this->assertSame(3, count($m->getRepeatedInt32()));
         $this->assertSame(1, $m->getRepeatedInt32()[0]);

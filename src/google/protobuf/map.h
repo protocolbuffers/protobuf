@@ -15,6 +15,7 @@
 #define GOOGLE_PROTOBUF_MAP_H__
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -27,19 +28,19 @@
 #include <type_traits>
 #include <utility>
 
-#include "absl/base/optimization.h"
-#include "absl/memory/memory.h"
-#include "google/protobuf/message_lite.h"
-
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -68,11 +69,12 @@ struct PtrAndLen;
 
 namespace internal {
 namespace v2 {
-class TableDriven;
+class TableDrivenMessage;
 }  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
+class MapFieldBase;
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
@@ -84,8 +86,6 @@ struct MapBenchmarkPeer;
 
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase;
-
-class DynamicMapField;
 
 class GeneratedMessageReflection;
 
@@ -160,18 +160,6 @@ struct TransparentSupport<std::string> {
   }
 };
 
-enum class MapNodeSizeInfoT : uint32_t;
-inline uint16_t SizeFromInfo(MapNodeSizeInfoT node_size_info) {
-  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 16);
-}
-inline constexpr uint16_t ValueOffsetFromInfo(MapNodeSizeInfoT node_size_info) {
-  return static_cast<uint16_t>(static_cast<uint32_t>(node_size_info) >> 0);
-}
-constexpr MapNodeSizeInfoT MakeNodeInfo(uint16_t size, uint16_t value_offset) {
-  return static_cast<MapNodeSizeInfoT>((static_cast<uint32_t>(size) << 16) |
-                                       value_offset);
-}
-
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
   // This way sizeof(NodeBase) contains any possible padding it was going to
@@ -180,10 +168,6 @@ struct NodeBase {
 
   void* GetVoidKey() { return this + 1; }
   const void* GetVoidKey() const { return this + 1; }
-
-  void* GetVoidValue(MapNodeSizeInfoT size_info) {
-    return reinterpret_cast<char*>(this) + ValueOffsetFromInfo(size_info);
-  }
 };
 
 constexpr size_t kGlobalEmptyTableSize = 1;
@@ -277,7 +261,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kDouble,   // double
     kString,   // std::string
     kMessage,  // Derived from MessageLite
-    kUnknown,  // For DynamicMapField for now
   };
   // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
 
@@ -302,7 +285,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     } else if constexpr (std::is_base_of_v<MessageLite, T>) {
       return TypeKind::kMessage;
     } else {
-      return TypeKind::kUnknown;
+      static_assert(false && sizeof(T));
     }
   }
 
@@ -311,8 +294,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
     uint16_t node_size;
     // Equivalent to `offsetof(Node, kv.second)` in the derived type.
     uint8_t value_offset;
-    TypeKind key_type : 4;
-    TypeKind value_type : 4;
+    uint8_t key_type : 4;
+    uint8_t value_type : 4;
+
+    TypeKind key_type_kind() const { return static_cast<TypeKind>(key_type); }
+    TypeKind value_type_kind() const {
+      return static_cast<TypeKind>(value_type);
+    }
   };
   static_assert(sizeof(TypeInfo) == 4);
 
@@ -339,18 +327,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return reinterpret_cast<T*>(node->GetVoidKey());
   }
 
+  void* GetVoidValue(NodeBase* node) const {
+    return reinterpret_cast<char*>(node) + type_info_.value_offset;
+  }
+
   template <typename T>
   T* GetValue(NodeBase* node) const {
     // Debug check that `T` matches what we expect from the type info.
     ABSL_DCHECK_EQ(static_cast<int>(StaticTypeKind<T>()),
                    static_cast<int>(type_info_.value_type));
-    return reinterpret_cast<T*>(reinterpret_cast<char*>(node) +
-                                type_info_.value_offset);
+    return reinterpret_cast<T*>(GetVoidValue(node));
   }
 
-  void ClearTable(bool reset, void (*destroy)(NodeBase*)) {
+  void ClearTable(bool reset) {
     if (num_buckets_ == internal::kGlobalEmptyTableSize) return;
-    ClearTableImpl(reset, destroy);
+    ClearTableImpl(reset);
   }
 
   // Space used for the table and nodes.
@@ -361,6 +352,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
   static constexpr map_index_t kMinTableSize = 16 / sizeof(void*);
+  static constexpr map_index_t kMaxTableSize = map_index_t{1} << 31;
 
  public:
   Arena* arena() const { return arena_; }
@@ -373,6 +365,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(table_, other->table_);
     std::swap(arena_, other->arena_);
   }
+
+  void UntypedMergeFrom(const UntypedMapBase& other);
+  void UntypedSwap(UntypedMapBase& other);
 
   static size_type max_size() {
     return std::numeric_limits<map_index_t>::max();
@@ -401,12 +396,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void VisitAllNodes(F f) const;
 
  protected:
+  friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
-  friend class v2::TableDriven;
+  friend class v2::TableDrivenMessage;
 
   // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
   // typedef in it representing the dynamic type of key/value of the node.
@@ -420,7 +416,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     map_index_t bucket;
   };
 
-  void ClearTableImpl(bool reset, void (*destroy)(NodeBase*));
+  void ClearTableImpl(bool reset);
 
   // Returns whether we should insert after the head of the list. For
   // non-optimized builds, we randomly decide whether to insert right at the
@@ -473,21 +469,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void DeleteNode(NodeBase* node);
 
-  template <typename Node>
-  static void DestroyNode(NodeBase* node) {
-    static_cast<Node*>(node)->~Node();
-  }
-
-  template <typename Node>
-  static constexpr auto GetDestroyNode() {
-    return internal::UntypedMapBase::StaticTypeKind<
-               typename Node::key_type>() == TypeKind::kUnknown ||
-                   internal::UntypedMapBase::StaticTypeKind<
-                       typename Node::mapped_type>() == TypeKind::kUnknown
-               ? DestroyNode<Node>
-               : nullptr;
-  }
-
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
@@ -498,7 +479,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
 template <typename F>
 auto UntypedMapBase::VisitKeyType(F f) const {
-  switch (type_info_.key_type) {
+  switch (type_info_.key_type_kind()) {
     case TypeKind::kBool:
       return f(std::enable_if<true, bool>{});
     case TypeKind::kU32:
@@ -511,7 +492,6 @@ auto UntypedMapBase::VisitKeyType(F f) const {
     case TypeKind::kFloat:
     case TypeKind::kDouble:
     case TypeKind::kMessage:
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -519,7 +499,7 @@ auto UntypedMapBase::VisitKeyType(F f) const {
 
 template <typename F>
 auto UntypedMapBase::VisitValueType(F f) const {
-  switch (type_info_.value_type) {
+  switch (type_info_.value_type_kind()) {
     case TypeKind::kBool:
       return f(std::enable_if<true, bool>{});
     case TypeKind::kU32:
@@ -535,7 +515,6 @@ auto UntypedMapBase::VisitValueType(F f) const {
     case TypeKind::kMessage:
       return f(std::enable_if<true, MessageLite>{});
 
-    case TypeKind::kUnknown:
     default:
       Unreachable();
   }
@@ -605,22 +584,65 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    return vtable_->get_map(*this, false);
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
+    }
+    return GetMapRaw();
   }
+
   UntypedMapBase* MutableMap() {
-    return &const_cast<UntypedMapBase&>(vtable_->get_map(*this, true));
+    const auto p = payload_.load(std::memory_order_acquire);
+    // If this instance has a payload, then it might need sync'n.
+    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+      sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
+    }
+    return &GetMapRaw();
   }
 
  protected:
-  struct VTable {
-    const UntypedMapBase& (*get_map)(const MapFieldBaseForParse&,
-                                     bool is_mutable);
-  };
-  explicit constexpr MapFieldBaseForParse(const VTable* vtable)
-      : vtable_(vtable) {}
+  static constexpr size_t MapOffset() { return sizeof(MapFieldBaseForParse); }
+
+  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
+  const UntypedMapBase& GetMapRaw() const {
+    return *reinterpret_cast<const UntypedMapBase*>(
+        reinterpret_cast<const char*>(this) + MapOffset());
+  }
+  UntypedMapBase& GetMapRaw() {
+    return *reinterpret_cast<UntypedMapBase*>(reinterpret_cast<char*>(this) +
+                                              MapOffset());
+  }
+
+  // Injected from map_field.cc once we need to use it.
+  // We can't have a strong dep on it because it would cause protobuf_lite to
+  // depend on reflection.
+  using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
+  static std::atomic<SyncFunc> sync_map_with_repeated;
+
+  // The prototype is a `Message`, but due to restrictions on constexpr in the
+  // codegen we are receiving it as `void` during constant evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
+      : prototype_as_void_(prototype_as_void) {}
+
+  enum class TaggedPtr : uintptr_t {};
+  explicit MapFieldBaseForParse(const Message* prototype, TaggedPtr ptr)
+      : payload_(ptr), prototype_as_void_(prototype) {
+    // We should not have a payload on construction.
+    ABSL_DCHECK(!IsPayload(ptr));
+  }
+
   ~MapFieldBaseForParse() = default;
 
-  const VTable* vtable_;
+  static constexpr uintptr_t kHasPayloadBit = 1;
+
+  static bool IsPayload(TaggedPtr p) {
+    return static_cast<uintptr_t>(p) & kHasPayloadBit;
+  }
+
+  mutable std::atomic<TaggedPtr> payload_{};
+  const void* prototype_as_void_;
+  PROTOBUF_TSAN_DECLARE_MEMBER;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -668,11 +690,17 @@ class KeyMapBase : public UntypedMapBase {
   using KeyNode = internal::KeyNode<Key>;
 
  protected:
+  friend UntypedMapBase;
+  friend class MapFieldBase;
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
   friend class v2::TableDriven;
+
+  Key* GetKey(NodeBase* node) const {
+    return UntypedMapBase::GetKey<Key>(node);
+  }
 
   PROTOBUF_NOINLINE size_type EraseImpl(map_index_t b, KeyNode* node,
                                         bool do_destroy) {
@@ -786,6 +814,25 @@ class KeyMapBase : public UntypedMapBase {
     return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
   }
 
+  // For a particular size, calculate the lowest capacity `cap` where
+  // `size <= CalculateHiCutoff(cap)`.
+  static size_type CalculateCapacityForSize(size_type size) {
+    ABSL_DCHECK_NE(size, 0u);
+
+    if (size > kMaxTableSize / 2) {
+      return kMaxTableSize;
+    }
+
+    size_t capacity = size_type{1} << (std::numeric_limits<size_type>::digits -
+                                       absl::countl_zero(size - 1));
+
+    if (size > CalculateHiCutoff(capacity)) {
+      capacity *= 2;
+    }
+
+    return std::max<size_type>(capacity, kMinTableSize);
+  }
+
   void AssertLoadFactor() const {
     ABSL_DCHECK_LE(num_elements_, CalculateHiCutoff(num_buckets_));
   }
@@ -806,7 +853,9 @@ class KeyMapBase : public UntypedMapBase {
     // practice, this seems fine.
     if (ABSL_PREDICT_FALSE(new_size > hi_cutoff)) {
       if (num_buckets_ <= max_size() / 2) {
-        Resize(num_buckets_ * 2);
+        Resize(kMinTableSize > kGlobalEmptyTableSize * 2
+                   ? std::max(kMinTableSize, num_buckets_ * 2)
+                   : num_buckets_ * 2);
         return true;
       }
     } else if (ABSL_PREDICT_FALSE(new_size <= lo_cutoff &&
@@ -816,7 +865,8 @@ class KeyMapBase : public UntypedMapBase {
       // So, estimate how much to shrink by making sure we don't shrink so
       // much that we would need to grow the table after a few inserts.
       const size_type hypothetical_size = new_size * 5 / 4 + 1;
-      while ((hypothetical_size << lg2_of_size_reduction_factor) < hi_cutoff) {
+      while ((hypothetical_size << (1 + lg2_of_size_reduction_factor)) <
+             hi_cutoff) {
         ++lg2_of_size_reduction_factor;
       }
       size_type new_num_buckets = std::max<size_type>(
@@ -829,13 +879,34 @@ class KeyMapBase : public UntypedMapBase {
     return false;
   }
 
+  // Interpret `head` as a linked list and insert all the nodes into `this`.
+  // REQUIRES: this->empty()
+  // REQUIRES: the input nodes have unique keys
+  PROTOBUF_NOINLINE void MergeIntoEmpty(NodeBase* head, size_t num_nodes) {
+    ABSL_DCHECK_EQ(size(), size_t{0});
+    ABSL_DCHECK_NE(num_nodes, size_t{0});
+    if (const map_index_t needed_capacity = CalculateCapacityForSize(num_nodes);
+        needed_capacity != this->num_buckets_) {
+      Resize(std::max(kMinTableSize, needed_capacity));
+    }
+    num_elements_ = num_nodes;
+    AssertLoadFactor();
+    while (head != nullptr) {
+      KeyNode* node = static_cast<KeyNode*>(head);
+      head = head->next;
+      absl::PrefetchToLocalCacheNta(head);
+      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+    }
+  }
+
   // Resize to the given number of buckets.
   void Resize(map_index_t new_num_buckets) {
+    ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
+    ABSL_DCHECK(absl::has_single_bit(new_num_buckets));
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
-      ABSL_DCHECK_GE(kMinTableSize, new_num_buckets);
-      num_buckets_ = index_of_first_non_null_ = kMinTableSize;
+      num_buckets_ = index_of_first_non_null_ = new_num_buckets;
       table_ = CreateEmptyTable(num_buckets_);
       return;
     }
@@ -856,6 +927,7 @@ class KeyMapBase : public UntypedMapBase {
       }
     }
     DeleteTable(old_table, old_table_size);
+    AssertLoadFactor();
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
@@ -983,13 +1055,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     StaticValidityCheck();
 
     this->AssertLoadFactor();
-    this->ClearTable(false, this->template GetDestroyNode<Node>());
+    this->ClearTable(false);
   }
 
  private:
   Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
-    insert(other.begin(), other.end());
+    CopyFromImpl(other);
   }
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
@@ -1327,15 +1399,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  void clear() {
-    this->ClearTable(true, this->template GetDestroyNode<Node>());
-  }
+  void clear() { this->ClearTable(true); }
 
   // Assign
   Map& operator=(const Map& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
       clear();
-      insert(other.begin(), other.end());
+      CopyFromImpl(other);
     }
     return *this;
   }
@@ -1344,12 +1414,13 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO: optimize this. The temporary copy can be allocated
-      // in the same arena as the other message, and the "other = copy" can
-      // be replaced with the fast-path swap above.
-      Map copy = *this;
-      *this = other;
-      other = copy;
+      size_t other_size = other.size();
+      Node* other_copy = this->CloneFromOther(other);
+      other = *this;
+      this->clear();
+      if (other_size != 0) {
+        this->MergeIntoEmpty(other_copy, other_size);
+      }
     }
   }
 
@@ -1373,10 +1444,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   struct Node : Base::KeyNode {
     using key_type = Key;
     using mapped_type = T;
-    static constexpr internal::MapNodeSizeInfoT size_info() {
-      return internal::MakeNodeInfo(sizeof(Node),
-                                    PROTOBUF_FIELD_OFFSET(Node, kv.second));
-    }
     value_type kv;
   };
 
@@ -1384,8 +1451,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     return internal::UntypedMapBase::TypeInfo{
         sizeof(Node),
         PROTOBUF_FIELD_OFFSET(Node, kv.second),
-        internal::UntypedMapBase::StaticTypeKind<Key>(),
-        internal::UntypedMapBase::StaticTypeKind<T>(),
+        static_cast<uint8_t>(internal::UntypedMapBase::StaticTypeKind<Key>()),
+        static_cast<uint8_t>(internal::UntypedMapBase::StaticTypeKind<T>()),
     };
   }
 
@@ -1398,18 +1465,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K, typename... Args>
-  std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
-    auto p = this->FindHelper(TS::ToView(k));
-    internal::map_index_t b = p.bucket;
-    // Case 1: key was already present.
-    if (p.node != nullptr)
-      return std::make_pair(iterator(internal::UntypedMapIterator{
-                                static_cast<Node*>(p.node), this, p.bucket}),
-                            false);
-    // Case 2: insert.
-    if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      b = this->BucketNumber(TS::ToView(k));
-    }
+  PROTOBUF_ALWAYS_INLINE Node* CreateNode(K&& k, Args&&... args) {
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
@@ -1429,20 +1485,54 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // Note: if `T` is arena constructible, `Args` needs to be empty.
     Arena::CreateInArenaStorage(&node->kv.second, this->arena_,
                                 std::forward<Args>(args)...);
+    return node;
+  }
 
+  // Copy all elements from `other`, using the arena from `this`.
+  // Return them as a linked list, using the `next` pointer in the node.
+  PROTOBUF_NOINLINE Node* CloneFromOther(const Map& other) {
+    Node* head = nullptr;
+    for (const auto& [key, value] : other) {
+      Node* new_node;
+      if constexpr (std::is_base_of_v<MessageLite, mapped_type>) {
+        new_node = CreateNode(key);
+        new_node->kv.second = value;
+      } else {
+        new_node = CreateNode(key, value);
+      }
+      new_node->next = head;
+      head = new_node;
+    }
+    return head;
+  }
+
+  void CopyFromImpl(const Map& other) {
+    if (other.empty()) return;
+    // We split the logic in two: first we clone the data which requires
+    // Key/Value types, then we insert them all which only requires Key.
+    // That way we reduce code duplication.
+    this->MergeIntoEmpty(CloneFromOther(other), other.size());
+  }
+
+  template <typename K, typename... Args>
+  std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
+    auto p = this->FindHelper(TS::ToView(k));
+    internal::map_index_t b = p.bucket;
+    // Case 1: key was already present.
+    if (p.node != nullptr) {
+      return std::make_pair(iterator(internal::UntypedMapIterator{
+                                static_cast<Node*>(p.node), this, p.bucket}),
+                            false);
+    }
+    // Case 2: insert.
+    if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
+      b = this->BucketNumber(TS::ToView(k));
+    }
+    auto* node = CreateNode(std::forward<K>(k), std::forward<Args>(args)...);
     this->InsertUnique(b, node);
     ++this->num_elements_;
     return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
                           true);
-  }
-
-  // For DynamicMapField, which needs a special destructor.
-  void EraseDynamic(iterator it) {
-    this->EraseImpl(it.bucket_index_,
-                    static_cast<typename Map::KeyNode*>(it.node_), false);
-    if (this->arena() == nullptr) {
-      delete static_cast<Node*>(it.node_);
-    }
   }
 
   using Base::arena;
@@ -1454,7 +1544,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using DestructorSkippable_ = void;
   template <typename K, typename V>
   friend class internal::MapFieldLite;
-  friend class internal::DynamicMapField;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;

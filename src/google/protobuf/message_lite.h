@@ -29,6 +29,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
@@ -81,6 +82,8 @@ namespace internal {
 
 namespace v2 {
 class TableDriven;
+class TableDrivenMessage;
+class TableDrivenParse;
 }  // namespace v2
 
 class MessageCreator {
@@ -302,6 +305,7 @@ class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
 
+
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
 // if the total size was > INT_MAX, it is not important what this function
@@ -329,18 +333,10 @@ inline int ToIntSize(size_t size) {
   return static_cast<int>(size);
 }
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-using GetTypeNameReturnType = absl::string_view;
-#else
-using GetTypeNameReturnType = std::string;
-#endif
-
 
 PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
-
-PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 
 struct ClassDataFull;
 
@@ -538,7 +534,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  internal::GetTypeNameReturnType GetTypeName() const;
+  absl::string_view GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -827,6 +823,7 @@ class PROTOBUF_EXPORT MessageLite {
   virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+
   // Legacy ByteSize() API.
   [[deprecated("Please use ByteSizeLong() instead")]] int ByteSize() const {
     return internal::ToIntSize(ByteSizeLong());
@@ -920,6 +917,15 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  // As above, but for fields that use base class type. Eg foreign weak fields.
+  static MessageLite* CopyConstruct(Arena* arena, const MessageLite& from);
+
+  PROTOBUF_ALWAYS_INLINE static Message* CopyConstruct(Arena* arena,
+                                                       const Message& from) {
+    return reinterpret_cast<Message*>(
+        CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
+  }
+
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
@@ -931,6 +937,7 @@ class PROTOBUF_EXPORT MessageLite {
     }
     return tc_table;
   }
+
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
@@ -1047,6 +1054,8 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
   friend class internal::v2::TableDriven;
+  friend class internal::v2::TableDrivenMessage;
+  friend class internal::v2::TableDrivenParse;
   friend internal::MessageCreator;
 
   template <typename Type>
@@ -1248,7 +1257,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
   static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
                 "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
+  if (ABSL_PREDICT_FALSE(kMustBeFunc || (int8_t)as_tag < 0)) {
     PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
     return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
   }

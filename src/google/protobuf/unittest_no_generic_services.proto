@@ -9,7 +9,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest.no_generic_services_test;
+package proto2_unittest.no_generic_services_test;
 
 
 // *_generic_services are false by default.

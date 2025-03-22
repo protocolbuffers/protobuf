@@ -22,33 +22,31 @@ public class FeatureSetDescriptorTest
     [Test]
     public void Proto2Defaults()
     {
-        var expectedDefaults = new FeatureSet
-        {
-            EnumType = EnumType.Closed,
-            FieldPresence = FieldPresence.Explicit,
-            JsonFormat = JsonFormat.LegacyBestEffort,
-            MessageEncoding = MessageEncoding.LengthPrefixed,
-            RepeatedFieldEncoding = RepeatedFieldEncoding.Expanded,
-            Utf8Validation = Utf8Validation.None,
-        };
+        // Note: additional fixed features may be added in future Editions (features which
+        // have a value set to match preexisting proto2 behavior), so this is not an exhaustive
+        // list of all proto2 defaults.
         var actualDefaults = FeatureSetDescriptor.GetEditionDefaults(Edition.Proto2).Proto;
-        Assert.AreEqual(expectedDefaults, actualDefaults);
+        Assert.AreEqual(EnumType.Closed, actualDefaults.EnumType);
+        Assert.AreEqual(FieldPresence.Explicit, actualDefaults.FieldPresence);
+        Assert.AreEqual(JsonFormat.LegacyBestEffort, actualDefaults.JsonFormat);
+        Assert.AreEqual(MessageEncoding.LengthPrefixed, actualDefaults.MessageEncoding);
+        Assert.AreEqual(RepeatedFieldEncoding.Expanded, actualDefaults.RepeatedFieldEncoding);
+        Assert.AreEqual(Utf8Validation.None, actualDefaults.Utf8Validation);
     }
 
     [Test]
     public void Proto3Defaults()
     {
-        var expectedDefaults = new FeatureSet
-        {
-            EnumType = EnumType.Open,
-            FieldPresence = FieldPresence.Implicit,
-            JsonFormat = JsonFormat.Allow,
-            MessageEncoding = MessageEncoding.LengthPrefixed,
-            RepeatedFieldEncoding = RepeatedFieldEncoding.Packed,
-            Utf8Validation = Utf8Validation.Verify,
-        };
+        // Note: additional fixed features may be added in future Editions (features which
+        // have a value set to match preexisting proto2 behavior), so this is not an exhaustive
+        // list of all proto2 defaults.
         var actualDefaults = FeatureSetDescriptor.GetEditionDefaults(Edition.Proto3).Proto;
-        Assert.AreEqual(expectedDefaults, actualDefaults);
+        Assert.AreEqual(EnumType.Open, actualDefaults.EnumType);
+        Assert.AreEqual(FieldPresence.Implicit, actualDefaults.FieldPresence);
+        Assert.AreEqual(JsonFormat.Allow, actualDefaults.JsonFormat);
+        Assert.AreEqual(MessageEncoding.LengthPrefixed, actualDefaults.MessageEncoding);
+        Assert.AreEqual(RepeatedFieldEncoding.Packed, actualDefaults.RepeatedFieldEncoding);
+        Assert.AreEqual(Utf8Validation.Verify, actualDefaults.Utf8Validation);
     }
 
     [Test]

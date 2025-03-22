@@ -16,8 +16,8 @@ cc_library(
     hdrs = ["names.h"],
     visibility = ["//upb_generator:__subpackages__"],
     deps = [
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:string_view",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -30,14 +30,13 @@ cc_library(
         "//third_party/kotlin/protobuf/generator/native:__subpackages__",
     ],
     deps = [
-        "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:reflection",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
     ],
 )

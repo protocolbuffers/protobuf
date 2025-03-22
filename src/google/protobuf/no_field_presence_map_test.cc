@@ -119,6 +119,10 @@ TEST(NoFieldPresenceTest, GenCodeMapMissingKeyDeathTest) {
   EXPECT_DEATH(message.map_int32_bytes().at(9), "key not found");
 }
 
+#ifndef NDEBUG
+// This test case tests a DCHECK assertion. If this scenario happens in
+// optimized builds, it's technically UB, so having a test case for it in opt
+// builds is meaningless.
 TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
   TestAllMapTypes message;
   const Reflection* r = message.GetReflection();
@@ -126,10 +130,12 @@ TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
 
   const FieldDescriptor* field_map_int32_bytes =
       desc->FindFieldByName("map_int32_bytes");
-  // Trying to get an unset map entry would crash in debug mode.
-  EXPECT_DEBUG_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
-                     "index < current_size_");
+
+  // Trying to get an unset map entry would crash with a DCHECK in debug mode.
+  EXPECT_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
+               "index < current_size_");
 }
+#endif
 
 TEST(NoFieldPresenceTest, ReflectionEmptyMapTest) {
   TestAllMapTypes message;

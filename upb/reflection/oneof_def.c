@@ -22,7 +22,7 @@
 #include "upb/port/def.inc"
 
 struct upb_OneofDef {
-  const UPB_DESC(OneofOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(OneofOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MessageDef* parent;
   const char* full_name;
@@ -153,7 +153,7 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
     }
 
     o->fields =
-        _upb_DefBuilder_Alloc(ctx, sizeof(upb_FieldDef*) * o->field_count);
+        UPB_DEFBUILDER_ALLOCARRAY(ctx, const upb_FieldDef*, o->field_count);
     o->field_count = 0;
   }
 
@@ -209,7 +209,7 @@ upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
                                  upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_OneofDef));
 
-  upb_OneofDef* o = _upb_DefBuilder_Alloc(ctx, sizeof(upb_OneofDef) * n);
+  upb_OneofDef* o = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_OneofDef, n);
   for (int i = 0; i < n; i++) {
     create_oneofdef(ctx, m, protos[i], parent_features, &o[i]);
   }

@@ -1,6 +1,18 @@
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "generator_headers",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_library(
     name = "kotlin",
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
@@ -18,7 +30,7 @@ cc_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -54,9 +66,9 @@ cc_library(
         "//src/google/protobuf/compiler/java/lite:field_generators",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
     ],
 )

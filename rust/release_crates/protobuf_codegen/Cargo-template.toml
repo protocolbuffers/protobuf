@@ -1,6 +1,6 @@
 [package]
 edition = "2021"   # The Rust edition (not to be confused with Protobuf Edition).
-name = "staging-protobuf-codegen"
+name = "protobuf-codegen"
 readme = "README.md"
 version = "{VERSION}"
 description = "Code generator for Rust Protocol Buffers bindings"

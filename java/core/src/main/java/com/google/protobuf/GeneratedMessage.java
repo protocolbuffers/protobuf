@@ -528,8 +528,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public BuilderT clone() {
       BuilderT builder = (BuilderT) getDefaultInstanceForType().newBuilderForType();
-      builder.mergeFrom(buildPartial());
-      return builder;
+      return builder.mergeFrom(buildPartial());
     }
 
     /**
@@ -1107,7 +1106,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /**
      * For compatibility with older gencode.
      *
-     * <p> TODO Remove this in the next breaking release.
+     * <p>TODO Remove this in the next breaking release.
      *
      * @deprecated Use {@link newExtensionSerializer()} instead.
      */
@@ -2067,8 +2066,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
                 fields[i] = new MapFieldAccessor(field, messageClass);
               } else {
                 fields[i] =
-                    new RepeatedMessageFieldAccessor(
-                        field, camelCaseNames[i], messageClass, builderClass);
+                    new RepeatedMessageFieldAccessor(camelCaseNames[i], messageClass, builderClass);
               }
             } else if (field.getJavaType() == FieldDescriptor.JavaType.ENUM) {
               fields[i] =
@@ -2399,8 +2397,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass,
           final String containingOneofCamelCaseName) {
-        isOneofField =
-            descriptor.getRealContainingOneof() != null;
+        isOneofField = descriptor.getRealContainingOneof() != null;
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
@@ -3126,7 +3123,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     private static final class RepeatedMessageFieldAccessor extends RepeatedFieldAccessor {
       RepeatedMessageFieldAccessor(
-          final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
@@ -3342,7 +3338,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
   }
 
-  /** Serialize the map using the iteration order. */
+  /** Serializes the map using the iteration order. */
   private static <K, V> void serializeMapTo(
       CodedOutputStream out, Map<K, V> m, MapEntry<K, V> defaultEntry, int fieldNumber)
       throws IOException {

@@ -25,9 +25,16 @@ int assume_var_for_test = 1;
 TEST(PortTest, ProtobufAssume) {
   PROTOBUF_ASSUME(assume_var_for_test == 1);
 #ifdef GTEST_HAS_DEATH_TEST
+#if defined(NDEBUG)
+  // If NDEBUG is defined, then instead of reliably crashing, the code below
+  // will assume a false statement. This is undefined behavior which will trip
+  // up sanitizers.
+  GTEST_SKIP() << "Can't test PROTOBUF_ASSUME()";
+#else
   EXPECT_DEBUG_DEATH(
       PROTOBUF_ASSUME(assume_var_for_test == 2),
       "port_test\\.cc:.*Assumption failed: 'assume_var_for_test == 2'");
+#endif
 #endif
 }
 

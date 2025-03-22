@@ -63,6 +63,9 @@ class ExtensionFunctions(object):
   def install(self, *args, **kwargs):
     pass
 
+  def bundle_fetch(self, *args, **kwargs):
+    pass
+
 
 class ModuleFileFunctions(object):
   """A fake MODULE file that we can exec() to get the functions we need."""
@@ -84,14 +87,23 @@ class ModuleFileFunctions(object):
         }
     )
 
-  def register_toolchains(self, *args):
+  def register_toolchains(self, *args, **kwargs):
     pass
 
   def use_repo(self, *args, **kwargs):
     pass
 
-  def use_extension(self, *args):
+  def single_version_override(self, *args, **kwargs):
+    pass
+
+  def use_extension(self, *args, **kwargs):
     return ExtensionFunctions()
+
+  def local_path_override(self, *args, **kwargs):
+    pass
+
+  def git_override(self, *args, **kwargs):
+    pass
 
 
 class Converter(object):

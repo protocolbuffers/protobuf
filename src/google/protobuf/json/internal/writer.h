@@ -8,12 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 
-#include <cfloat>
-#include <cmath>
 #include <cstdint>
-#include <iostream>
-#include <limits>
-#include <ostream>
 #include <string>
 #include <tuple>
 #include <type_traits>

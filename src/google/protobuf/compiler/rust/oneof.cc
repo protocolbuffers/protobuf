@@ -37,7 +37,7 @@ namespace rust {
 // Example:
 // For this oneof:
 // message SomeMsg {
-//   oneof some_oneof {
+//   oneof some {
 //     int32 field_a = 7;
 //     SomeMsg field_b = 9;
 //   }
@@ -52,7 +52,7 @@ namespace rust {
 //   }
 //
 //   #[repr(C)]
-//   pub enum SomeOneofCase {
+//   pub enum SomeCase {
 //     FieldA = 7,
 //     FieldB = 9,
 //     not_set = 0
@@ -60,25 +60,15 @@ namespace rust {
 // }
 // impl SomeMsg {
 //   pub fn some_oneof(&self) -> SomeOneof {...}
-//   pub fn some_oneof_case(&self) -> SomeOneofCase {...}
+//   pub fn some_oneof_case(&self) -> SomeCase {...}
 // }
 // impl SomeMsgMut {
 //   pub fn some_oneof(&self) -> SomeOneof {...}
-//   pub fn some_oneof_case(&self) -> SomeOneofCase {...}
+//   pub fn some_oneof_case(&self) -> SomeCase {...}
 // }
 // impl SomeMsgView {
 //   pub fn some_oneof(self) -> SomeOneof {...}
-//   pub fn some_oneof_case(self) -> SomeOneofCase {...}
-// }
-//
-// An additional "Case" enum which just reflects the corresponding slot numbers
-// is emitted for usage with the FFI (exactly matching the Case struct that both
-// cpp and upb generate).
-//
-// #[repr(C)] pub(super) enum SomeOneofCase {
-//   FieldA = 7,
-//   FieldB = 9,
-//   not_set = 0
+//   pub fn some_oneof_case(self) -> SomeCase {...}
 // }
 
 namespace {
@@ -151,7 +141,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              }
            }},
       },
-      // TODO: Revisit if isize is the optimal repr for this enum.
       // Note: This enum deliberately has a 'msg lifetime associated with it
       // even if all fields were scalars; we could conditionally exclude the
       // lifetime under that case, but it would mean changing the .proto file
@@ -161,11 +150,10 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
       #[non_exhaustive]
       #[derive(Debug, Clone, Copy)]
       #[allow(dead_code)]
-      #[repr(isize)]
+      #[repr(u32)]
       pub enum $view_enum_name$<'msg> {
         $view_fields$
 
-        #[allow(non_camel_case_types)]
         not_set(std::marker::PhantomData<&'msg ()>) = 0
       }
       )rs");
@@ -206,7 +194,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
       pub enum $case_enum_name$ {
         $cases$
 
-        #[allow(non_camel_case_types)]
         not_set = 0
       }
 
@@ -314,7 +301,7 @@ void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
           {"oneof_name", oneof.name()},
-          {"case_enum_name", OneofCaseEnumRsName(oneof)},
+          {"case_enum_name", OneofCaseEnumCppName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
           {"QualifiedMsg", cpp::QualifiedClassName(oneof.containing_type())},
       },

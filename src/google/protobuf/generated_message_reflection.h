@@ -59,12 +59,12 @@ class WeakFieldMap;  // weak_field_map.h
 // Tag used on offsets for fields that don't have a real offset.
 // For example, weak message fields go into the WeakFieldMap and not in an
 // actual field.
-constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
+inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 
 // Mask used on offsets for split fields.
-constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
-constexpr uint32_t kLazyMask = 0x1u;
-constexpr uint32_t kInlinedMask = 0x1u;
+inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
+inline constexpr uint32_t kLazyMask = 0x1u;
+inline constexpr uint32_t kInlinedMask = 0x1u;
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -156,6 +156,7 @@ struct ReflectionSchema {
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32_t HasBitIndex(const FieldDescriptor* field) const {
+    ABSL_DCHECK(!field->is_extension());
     if (has_bits_offset_ == -1) return static_cast<uint32_t>(-1);
     ABSL_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
@@ -180,14 +181,6 @@ struct ReflectionSchema {
   uint32_t InlinedStringDonatedOffset() const {
     ABSL_DCHECK(HasInlinedString());
     return static_cast<uint32_t>(inlined_string_donated_offset_);
-  }
-
-  // The offset of the InternalMetadataWithArena member.
-  // For Lite this will actually be an InternalMetadataWithArenaLite.
-  // The schema doesn't contain enough information to distinguish between
-  // these two cases.
-  uint32_t GetMetadataOffset() const {
-    return static_cast<uint32_t>(metadata_offset_);
   }
 
   // Whether this message has an ExtensionSet.
@@ -252,7 +245,6 @@ struct ReflectionSchema {
   const uint32_t* offsets_;
   const uint32_t* has_bit_indices_;
   int has_bits_offset_;
-  int metadata_offset_;
   int extensions_offset_;
   int oneof_case_offset_;
   int object_size_;
@@ -292,8 +284,6 @@ struct ReflectionSchema {
 // or merge with ReflectionSchema.
 struct MigrationSchema {
   int32_t offsets_index;
-  int32_t has_bit_indices_index;
-  int32_t inlined_string_indices_index;
   int object_size;
 };
 

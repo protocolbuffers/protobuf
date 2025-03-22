@@ -358,16 +358,29 @@ inline bool IsString(const FieldDescriptor* field) {
 }
 
 
+inline bool IsArenaStringPtr(const FieldDescriptor* field) {
+  return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
+         field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
+}
+
 bool IsProfileDriven(const Options& options);
 
 // Returns true if `field` is unlikely to be present based on PDProto profile.
-bool IsRarelyPresent(const FieldDescriptor* field, const Options& options);
+PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
+                                   const Options& options);
 
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-float GetPresenceProbability(const FieldDescriptor* field,
-                             const Options& options);
+absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                             const Options& options);
+
+// GetFieldGroupPresenceProbability computes presence probability for a group of
+// fields. It uses the absence probability (easier to compute)
+// (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end the aggregate presence
+// probability can be expressed as (1 - all_absent_probability).
+absl::optional<float> GetFieldGroupPresenceProbability(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options);
 
 bool IsStringInliningEnabled(const Options& options);
 
@@ -444,10 +457,11 @@ VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
 
 
 // Is the given message being split (go/pdsplit)?
-bool ShouldSplit(const Descriptor* desc, const Options& options);
+PROTOC_EXPORT bool ShouldSplit(const Descriptor* desc, const Options& options);
 
 // Is the given field being split out?
-bool ShouldSplit(const FieldDescriptor* field, const Options& options);
+PROTOC_EXPORT bool ShouldSplit(const FieldDescriptor* field,
+                               const Options& options);
 
 // Should we generate code that force creating an allocation in the constructor
 // of the given message?
@@ -473,19 +487,26 @@ bool HasRepeatedFields(const FileDescriptor* file);
 // does not include extensions, since ctype is ignored for extensions.
 bool HasStringPieceFields(const FileDescriptor* file, const Options& options);
 
+// Does the file have any string/bytes fields?.  This excludes cord and string
+// piece fields.
+bool HasRegularStringFields(const FileDescriptor* file, const Options& options);
+
 // Does the file have any string/bytes fields with ctype=CORD? This does not
 // include extensions, since ctype is ignored for extensions.
 bool HasCordFields(const FileDescriptor* file, const Options& options);
 
 // Does the file have any map fields, necessitating the file to include
-// map_field_inl.h and map.h.
+// map_field.h and map.h.
 bool HasMapFields(const FileDescriptor* file);
 
 // Does this file have any enum type definitions?
 bool HasEnumDefinitions(const FileDescriptor* file);
 
 // Returns true if any message in the file can have v2 table.
-bool HasV2Table(const FileDescriptor* file, const Options& options);
+bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
+bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
 
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,
@@ -1184,18 +1205,63 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
 
 // Emit the repeated field getter for the custom options.
-// If safe_boundary_check is specified, it calls the internal checked getter.
+// Depending on the bounds check mode specified, this will emit the
+// corresponding getter.
 inline auto GetEmitRepeatedFieldGetterSub(const Options& options,
                                           io::Printer* p) {
   return io::Printer::Sub{
       "getter",
       [&options, p] {
-        if (options.safe_boundary_check) {
-          p->Emit(R"cc(
-            $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
-          )cc");
-        } else {
-          p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
+        switch (options.bounds_check_mode) {
+          case BoundsCheckMode::kNoEnforcement:
+            p->Emit(R"cc(_internal_$name_internal$().Get(index))cc");
+            break;
+          case BoundsCheckMode::kReturnDefaultValue:
+            p->Emit(R"cc(
+              $pbi$::CheckedGetOrDefault(_internal_$name_internal$(), index)
+            )cc");
+            break;
+          case BoundsCheckMode::kAbort:
+            p->Emit(R"cc(
+              $pbi$::CheckedGetOrAbort(_internal_$name_internal$(), index)
+            )cc");
+            break;
+        }
+      }}
+      .WithSuffix("");
+}
+
+// Emit the code for getting a mutable element from a repeated field. This will
+// generate different code depending on the `bounds_check_mode` specified in the
+// options.
+// TODO: b/347304492 Harden this function by taking in the field and checking
+// if splitting is supported.
+inline auto GetEmitRepeatedFieldMutableSub(const Options& options,
+                                           io::Printer* p,
+                                           bool use_stringpiecefield = false) {
+  return io::Printer::Sub{
+      "mutable",
+      [&options, p, use_stringpiecefield] {
+        switch (options.bounds_check_mode) {
+          case BoundsCheckMode::kNoEnforcement:
+          case BoundsCheckMode::kReturnDefaultValue:
+            if (use_stringpiecefield) {
+              p->Emit("$field$.Mutable(index)");
+            } else {
+              p->Emit(
+                  R"cc(_internal_mutable_$name_internal$()->Mutable(index))cc");
+            }
+            break;
+          case BoundsCheckMode::kAbort:
+            if (use_stringpiecefield) {
+              p->Emit("$pbi$::CheckedMutableOrAbort(&$field$, index)");
+            } else {
+              p->Emit(R"cc(
+                $pbi$::CheckedMutableOrAbort(
+                    _internal_mutable_$name_internal$(), index)
+              )cc");
+            }
+            break;
         }
       }}
       .WithSuffix("");

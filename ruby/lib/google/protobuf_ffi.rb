@@ -17,8 +17,8 @@ require 'google/protobuf/ffi/field_descriptor'
 require 'google/protobuf/ffi/oneof_descriptor'
 require 'google/protobuf/ffi/method_descriptor'
 require 'google/protobuf/ffi/service_descriptor'
-require 'google/protobuf/ffi/descriptor_pool'
 require 'google/protobuf/ffi/file_descriptor'
+require 'google/protobuf/ffi/descriptor_pool'
 require 'google/protobuf/ffi/map'
 require 'google/protobuf/ffi/object_cache'
 require 'google/protobuf/ffi/repeated_field'
@@ -42,7 +42,8 @@ module Google
     def self.discard_unknown(message)
       raise FrozenError if message.frozen?
       raise ArgumentError.new "Expected message, got #{message.class} instead." if message.instance_variable_get(:@msg).nil?
-      unless Google::Protobuf::FFI.message_discard_unknown(message.instance_variable_get(:@msg), message.class.descriptor, 128)
+      pool_def = message.class.descriptor.instance_variable_get(:@descriptor_pool).descriptor_pool
+      unless Google::Protobuf::FFI.message_discard_unknown(message.instance_variable_get(:@msg), message.class.descriptor, pool_def, 128)
         raise RuntimeError.new "Messages nested too deeply."
       end
       nil

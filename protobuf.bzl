@@ -111,13 +111,13 @@ def _proto_gen_impl(ctx):
     if source_dir:
         has_sources = any([src.is_source for src in srcs])
         if has_sources:
-            import_flags += ["-I" + source_dir]
+            import_flags.append("-I" + source_dir)
     else:
-        import_flags += ["-I."]
+        import_flags.append("-I.")
 
     has_generated = any([not src.is_source for src in srcs])
     if has_generated:
-        import_flags += ["-I" + gen_dir]
+        import_flags.append("-I" + gen_dir)
 
     if ctx.attr.includes:
         for include in ctx.attr.includes:
@@ -125,7 +125,7 @@ def _proto_gen_impl(ctx):
                 # This is effectively source_dir, which has already been handled,
                 # and may be generated incorrectly here.
                 continue
-            import_flags += ["-I" + _GetPath(ctx, include)]
+            import_flags.append("-I" + _GetPath(ctx, include))
 
     import_flags = depset(direct = import_flags)
 
@@ -182,7 +182,7 @@ def _proto_gen_impl(ctx):
                 outs.extend(_RubyOuts([src.basename]))
 
             # Otherwise, rely on user-supplied outs.
-            args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
+            args.append(("--%s_out=" + path_tpl) % (lang, gen_dir))
 
         if ctx.attr.outs:
             outs.extend(ctx.attr.outs)
@@ -203,8 +203,8 @@ def _proto_gen_impl(ctx):
 
             if ctx.attr.plugin_options:
                 outdir = ",".join(ctx.attr.plugin_options) + ":" + outdir
-            args += [("--plugin=protoc-gen-%s=" + path_tpl) % (lang, plugin.path)]
-            args += ["--%s_out=%s" % (lang, outdir)]
+            args.append(("--plugin=protoc-gen-%s=" + path_tpl) % (lang, plugin.path))
+            args.append("--%s_out=%s" % (lang, outdir))
             tools.append(plugin)
 
         if not in_gen_dir:
@@ -512,7 +512,7 @@ def internal_objc_proto_library(
 
 def internal_ruby_proto_library(
         name,
-        ruby_library,
+        rb_library,
         srcs = [],
         deps = [],
         includes = ["."],
@@ -529,7 +529,7 @@ def internal_ruby_proto_library(
 
     Args:
       name: the name of the ruby_proto_library.
-      ruby_library: the ruby library rules to use.
+      rb_library: the ruby library rules to use.
       srcs: the .proto files to compile.
       deps: a list of dependency labels; must be a internal_ruby_proto_library.
       includes: a string indicating the include path of the .proto files.
@@ -538,7 +538,7 @@ def internal_ruby_proto_library(
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
       visibility: the visibility of the generated files.
-      **kwargs: other keyword arguments that are passed to ruby_library.
+      **kwargs: other keyword arguments that are passed to rb_library.
 
     """
 
@@ -559,13 +559,12 @@ def internal_ruby_proto_library(
     deps = []
     if default_runtime:
         deps.append(default_runtime)
-    ruby_library(
+    rb_library(
         name = name,
         srcs = [name + "_genproto"],
         deps = deps,
         testonly = testonly,
         visibility = visibility,
-        includes = includes,
         **kwargs
     )
 
@@ -594,7 +593,7 @@ def internal_py_proto_library(
 
     NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
     be removed in the next minor release.  Users should migrate to the py_proto_library rule from
-    rules_python instead.
+    bazel/py_proto_library.bzl instead.
 
     Args:
       name: the name of the py_proto_library.

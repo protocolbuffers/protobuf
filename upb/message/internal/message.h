@@ -40,27 +40,78 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
-typedef struct upb_Message_Internal {
-  // Total size of this structure, including the data that follows.
-  // Must be aligned to 8, which is alignof(upb_Extension)
-  uint32_t size;
+typedef struct upb_TaggedAuxPtr {
+  // Two lowest bits form a tag:
+  // 00 - non-aliased unknown data
+  // 10 - aliased unknown data
+  // 01 - extension
+  uintptr_t ptr;
+} upb_TaggedAuxPtr;
 
-  /* Offsets relative to the beginning of this structure.
-   *
-   * Unknown data grows forward from the beginning to unknown_end.
-   * Extension data grows backward from size to ext_begin.
-   * When the two meet, we're out of data and have to realloc.
-   *
-   * If we imagine that the final member of this struct is:
-   *   char data[size - overhead];  // overhead = sizeof(upb_Message_Internal)
-   *
-   * Then we have:
-   *   unknown data: data[0 .. (unknown_end - overhead)]
-   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
-  uint32_t unknown_end;
-  uint32_t ext_begin;
-  // Data follows, as if there were an array:
-  //   char data[size - sizeof(upb_Message_Internal)];
+UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr == 0;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr & 1;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr != 0) && ((ptr.ptr & 1) == 0);
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr != 0) && ((ptr.ptr & 2) == 2);
+}
+
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~3ULL);
+}
+
+UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_StringView*)(ptr.ptr & ~3ULL);
+}
+
+UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = 0;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | 1;
+  return ptr;
+}
+
+// This tag means that the original allocation for this field starts with the
+// string view and ends with the end of the content referenced by the string
+// view.
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)sv;
+  return ptr;
+}
+
+// This tag implies no guarantee between the relationship of the string view and
+// the data it points to.
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeUnknownDataAliased(const upb_StringView* sv) {
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)sv | 2;
+  return ptr;
+}
+
+typedef struct upb_Message_Internal {
+  // Total number of entries set in aux_data
+  uint32_t size;
+  uint32_t capacity;
+  // Tagged pointers to upb_StringView or upb_Extension
+  upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
 
 #ifdef UPB_TRACING_ENABLED
@@ -87,12 +138,41 @@ UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
+UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
+    struct upb_Message* msg, const char* data, size_t len, upb_Arena* arena,
+    bool alias);
+
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
-// The data is copied into the message instance.
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
-                                          const char* data, size_t len,
-                                          upb_Arena* arena, bool alias);
+// If alias is set, will keep a view to the provided data; otherwise a copy is
+// made.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
+                                                     const char* data,
+                                                     size_t len,
+                                                     upb_Arena* arena,
+                                                     bool alias) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  if (alias) {
+    // Aliasing parse of a message with sequential unknown fields is a simple
+    // pointer bump, so inline it.
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in && in->size) {
+      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
+        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+        bool was_aliased = upb_TaggedAuxPtr_IsUnknownAliased(ptr);
+        // Fast path if the field we're adding is immediately after the last
+        // added unknown field.
+        if (was_aliased && existing->data + existing->size == data) {
+          existing->size += len;
+          return true;
+        }
+      }
+    }
+  }
+  return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(msg, data, len, arena,
+                                                      alias);
+}
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance. Data when concatenated together
@@ -102,11 +182,10 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
                                            upb_Arena* arena,
                                            upb_StringView data[], size_t count);
 
-// Ensure at least `need` unused bytes are available for unknown fields or
-// extensions. Returns false if a reallocation is needed to satisfy the request,
-// and fails.
-bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
-                                               size_t need, upb_Arena* arena);
+// Ensures at least one slot is available in the aux_data of this message.
+// Returns false if a reallocation is needed to satisfy the request, and fails.
+bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
+                                           upb_Arena* arena);
 
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
@@ -114,17 +193,20 @@ bool UPB_PRIVATE(_upb_Message_EnsureAvailable)(struct upb_Message* msg,
 UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
                                         upb_StringView* data, uintptr_t* iter) {
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (in && *iter == kUpb_Message_UnknownBegin) {
-    size_t len = in->unknown_end - sizeof(upb_Message_Internal);
-    if (len != 0) {
-      data->size = len;
-      data->data = (const char*)(in + 1);
-      (*iter)++;
-      return true;
+  size_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
+        *data = *upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+        *iter = i;
+        return true;
+      }
     }
   }
   data->size = 0;
   data->data = NULL;
+  *iter = i;
   return false;
 }
 
@@ -138,22 +220,25 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
                                           const upb_MiniTableExtension** out_e,
                                           upb_MessageValue* out_v,
                                           uintptr_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-  while (i++ < count) {
-    // Extensions are stored in reverse wire order, so to iterate in wire order,
-    // we need to iterate backwards.
-    const upb_Extension* ext = &exts[count - i];
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  uintptr_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
 
-    // Empty repeated fields or maps semantically don't exist.
-    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
+        // Empty repeated fields or maps semantically don't exist.
+        if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
 
-    *out_e = ext->ext;
-    *out_v = ext->data;
-    *iter = i;
-    return true;
+        *out_e = ext->ext;
+        *out_v = ext->data;
+        *iter = i;
+        return true;
+      }
+    }
   }
+  *iter = i;
 
   return false;
 }
@@ -161,12 +246,17 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
     upb_MessageValue* out_v, uintptr_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-  while (i++ < count) {
-    // Extensions are stored in reverse wire order
-    const upb_Extension* ext = &exts[i - 1];
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  uintptr_t i = *iter;
+  uint32_t size = in->size;
+  while (i < size) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
+    i++;
+    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      continue;
+    }
+    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
 
     // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
@@ -176,7 +266,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     *iter = i;
     return true;
   }
-
+  *iter = i;
   return false;
 }
 

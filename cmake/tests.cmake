@@ -178,7 +178,7 @@ add_test(NAME full-test
 if (protobuf_BUILD_LIBUPB)
   set(upb_test_proto_genfiles)
   foreach(proto_file ${upb_test_protos_files} ${descriptor_proto_proto_srcs})
-    foreach(generator upb upbdefs upb_minitable)
+    foreach(generator upb upbdefs)
       protobuf_generate(
         PROTOS ${proto_file}
         LANGUAGE ${generator}
@@ -191,6 +191,18 @@ if (protobuf_BUILD_LIBUPB)
       )
       set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
     endforeach()
+
+    # The minitable generator has a slightly different setup from the other upb
+    # generators, since it is built into protoc.
+    protobuf_generate(
+      PROTOS ${proto_file}
+      LANGUAGE upb_minitable
+      GENERATE_EXTENSIONS .upb_minitable.h .upb_minitable.c
+      OUT_VAR pb_generated_files
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}
+    )
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
   endforeach(proto_file)
 
   add_executable(upb-test
@@ -225,19 +237,23 @@ file(GLOB_RECURSE _local_upb_hdrs
   "${PROJECT_SOURCE_DIR}/upb/*.h"
 )
 
+# Exclude test library headers.
+list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
+  ${compiler_test_utils_hdrs} ${upb_test_util_files} ${libprotoc_hdrs})
+foreach(_hdr ${_exclude_hdrs})
+  list(REMOVE_ITEM _local_hdrs ${_hdr})
+  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
+endforeach()
+list(APPEND _local_hdrs ${libprotoc_public_hdrs})
+
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h")
-
-# Exclude test library headers.
-list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs} ${upb_test_util_files})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
-  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
 endforeach()
 
 foreach(_hdr ${_local_hdrs})

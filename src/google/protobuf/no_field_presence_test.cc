@@ -68,6 +68,7 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::FOO, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_FOO, m.optional_foreign_enum());
 
+  EXPECT_EQ(0, m.optional_string_piece().size());
 
   EXPECT_EQ(0, m.repeated_int32_size());
   EXPECT_EQ(0, m.repeated_int64_size());
@@ -89,6 +90,7 @@ void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(0, m.repeated_proto2_message_size());
   EXPECT_EQ(0, m.repeated_nested_enum_size());
   EXPECT_EQ(0, m.repeated_foreign_enum_size());
+  EXPECT_EQ(0, m.repeated_string_piece_size());
   EXPECT_EQ(0, m.repeated_lazy_message_size());
   EXPECT_EQ(TestAllTypes::ONEOF_FIELD_NOT_SET, m.oneof_field_case());
 }
@@ -114,6 +116,7 @@ void FillValues(TestAllTypes* m) {
   m->mutable_optional_proto2_message()->set_optional_int32(44);
   m->set_optional_nested_enum(TestAllTypes::BAZ);
   m->set_optional_foreign_enum(FOREIGN_BAZ);
+  m->set_optional_string_piece("test");
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
@@ -135,6 +138,7 @@ void FillValues(TestAllTypes* m) {
   m->add_repeated_proto2_message()->set_optional_int32(48);
   m->add_repeated_nested_enum(TestAllTypes::BAZ);
   m->add_repeated_foreign_enum(FOREIGN_BAZ);
+  m->add_repeated_string_piece("test");
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -166,6 +170,7 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
   EXPECT_EQ(TestAllTypes::BAZ, m.optional_nested_enum());
   EXPECT_EQ(FOREIGN_BAZ, m.optional_foreign_enum());
+  EXPECT_EQ("test", m.optional_string_piece());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
 
@@ -209,6 +214,8 @@ void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(TestAllTypes::BAZ, m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
   EXPECT_EQ(FOREIGN_BAZ, m.repeated_foreign_enum(0));
+  EXPECT_EQ(1, m.repeated_string_piece_size());
+  EXPECT_EQ("test", m.repeated_string_piece(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
@@ -733,7 +740,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != FieldOptions::STRING) {
+    if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field)) {
       continue;
     }
     EXPECT_EQ(true, r->HasField(message, field));
@@ -860,6 +867,98 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   dest.MergeFrom(source);
   EXPECT_EQ(84, dest.optional_int32());
   EXPECT_EQ("test2", dest.optional_string());
+}
+
+TEST(NoFieldPresenceTest, ParseEmptyStringFromWire) {
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(15)->name(),
+            "optional_bytes");
+
+  // Input wire tag: 0172 (octal) which is 01 111 010
+  //   Field number 15 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty string
+  //   encoded on the wire.
+  absl::string_view wire("\172\x00",  // 3:LEN 0
+                         2);
+
+  TestAllTypes message;
+  message.MergeFromString(wire);
+
+  // Implicit-presence fields don't have hazzers, so we can only verify that the
+  // empty bytes field is not overwritten.
+  EXPECT_THAT(message.optional_bytes(), IsEmpty());
+
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_THAT(output_data, IsEmpty());
+}
+
+TEST(MessageTest, ParseEmptyStringFromWireOverwritesExistingField) {
+  TestAllTypes message;
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(15)->name(),
+            "optional_bytes");
+  message.set_optional_bytes("hello");
+
+  // Input wire tag: 0172 (octal) which is 01 111 010
+  //   Field number 15 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty string
+  //   encoded on the wire.
+  absl::string_view wire("\172\x00",  // 3:LEN 0
+                         2);
+  message.MergeFromString(wire);
+
+  // Implicit-presence fields don't have hazzers, so we can only verify that the
+  // empty bytes field is overwritten.
+  EXPECT_THAT(message.optional_bytes(), IsEmpty());
+
+  // Since string field is overwritten to be empty, this message will not
+  // serialize.
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_THAT(output_data, IsEmpty());
+}
+
+TEST(MessageTest, MergeEmptyMessageFromWire) {
+  // Input wire tag: 9A 01 (hex) which is 10011010 00000001
+  //   Field number 19 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty message
+  //   encoded on the wire.
+  absl::string_view wire("\x9A\x01\x00", 3);
+
+  TestAllTypes message;
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(19)->name(),
+            "optional_foreign_message");
+  message.MergeFromString(wire);
+
+  // Message fields always have explicit presence, so serializing the message
+  // will write the original bytes back out onto the wire.
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_EQ(output_data, wire);
+}
+
+TEST(MessageTest, MergeEmptyMessageFromWireDoesNotOverwiteExisting) {
+  // Input wire tag: 9A 01 (hex) which is 10011010 00000001
+  //   Field number 19 with wire type LEN
+  // Explicitly specify LEN to be zero, then it's basically an empty message
+  //   encoded on the wire.
+  absl::string_view wire("\x9A\x01\x00", 3);
+
+  TestAllTypes message;
+  ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(19)->name(),
+            "optional_foreign_message");
+
+  message.mutable_optional_foreign_message()->set_c(12);
+  std::string original_output_data;
+  EXPECT_TRUE(message.SerializeToString(&original_output_data));
+
+  message.MergeFromString(wire);
+  EXPECT_TRUE(message.has_optional_foreign_message());
+  EXPECT_EQ(message.optional_foreign_message().c(), 12);
+
+  std::string output_data;
+  EXPECT_TRUE(message.SerializeToString(&output_data));
+  EXPECT_NE(output_data, wire);
+  EXPECT_EQ(output_data, original_output_data);
 }
 
 TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
@@ -1027,6 +1126,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   message.set_optional_bytes("");
   message.set_optional_nested_enum(TestAllTypes::FOO);  // first enum entry
   message.set_optional_foreign_enum(FOREIGN_FOO);       // first enum entry
+  message.set_optional_string_piece("");
 
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(0, this->GetOutput().size());

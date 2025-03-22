@@ -20,7 +20,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -365,16 +364,12 @@ static std::string SubMessagePrefix(const std::string& prefix,
                                     const FieldDescriptor* field, int index) {
   std::string result(prefix);
   if (field->is_extension()) {
-    result.append("(");
-    result.append(field->full_name());
-    result.append(")");
+    absl::StrAppend(&result, "(", field->full_name(), ")");
   } else {
-    result.append(field->name());
+    absl::StrAppend(&result, field->name());
   }
   if (index != -1) {
-    result.append("[");
-    result.append(absl::StrCat(index));
-    result.append("]");
+    absl::StrAppend(&result, "[", index, "]");
   }
   result.append(".");
   return result;

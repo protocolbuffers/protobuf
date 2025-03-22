@@ -31,12 +31,11 @@ build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 # Abseil passes nullptr to memcmp with 0 size
 build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
-common --noenable_bzlmod
-
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
 
-common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
+common --enable_platform_specific_config
+
+# Use clang-cl by default on Windows (see https://github.com/protocolbuffers/protobuf/issues/20085).
+build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl

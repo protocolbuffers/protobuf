@@ -38,6 +38,7 @@ cc_library(
         "//upb/hash",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_table:internal",
     ],
@@ -85,8 +86,8 @@ cc_test(
         "//upb:mini_table",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -107,8 +108,8 @@ cc_test(
     deps = [
         ":eps_copy_input_stream",
         "//upb:mem",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

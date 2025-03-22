@@ -22,14 +22,20 @@ cc_library(
         "status_macros.h",
     ],
     copts = COPTS,
+    defines = ["GOOGLE_PROTOBUF_USING_BAZEL=1"] + select({
+        "//build_defs:protobuf_allow_msvc": [
+            "GOOGLE_PROTOBUF_MSVC_BAZEL_OVERRIDE=1",
+        ],
+        "//conditions:default": [],
+    }),
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:port",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -51,9 +57,9 @@ cc_library(
     deps = [
         ":lite",
         "//src/google/protobuf:port",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -74,10 +80,10 @@ cc_test(
         ":stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

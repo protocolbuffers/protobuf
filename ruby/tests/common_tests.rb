@@ -252,7 +252,7 @@ module CommonTests
     l3 = l + l.dup
     assert_equal l3.count, l.count * 2
     l.count.times do |i|
-      assert_equal l[i], l3[i] 
+      assert_equal l[i], l3[i]
       assert_equal l[i], l3[l.count + i]
     end
 
@@ -413,6 +413,22 @@ module CommonTests
     end
     assert_raises RangeError do
       m["asdf"] = 0x1_0000_0000
+    end
+  end
+
+  # This is a regression test for a bug in Map.hash. It used to return an
+  # inconsistent result when there was a collision in the map (two keys mapping
+  # to the same hash table entry).
+  def test_map_hash
+    for i in 0..25
+      for j in i+1..25
+        m = Google::Protobuf::Map.new(:int32, :string)
+        m[i] = "abc"
+        m[j] = "def"
+        m2 = m.dup
+        assert_equal m, m2
+        assert_equal m.hash, m2.hash
+      end
     end
   end
 
@@ -1735,34 +1751,24 @@ module CommonTests
     assert_nil h[m2]
   end
 
-  def cruby_or_jruby_9_3_or_higher?
-    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-    match = RUBY_PLATFORM == "java" &&
-      JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
-    match && (match[1].to_i > 9 || (match[1].to_i == 9 && match[2].to_i >= 3))
-  end
-
   def test_object_gc
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
     m.optional_msg
-    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
+    GC.start(full_mark: true, immediate_sweep: true)
     m.optional_msg.inspect
   end
 
   def test_object_gc_freeze
     m = proto_module::TestMessage.new
     m.repeated_float.freeze
-    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-    GC.start(full_mark: true) if cruby_or_jruby_9_3_or_higher?
+    GC.start(full_mark: true)
 
     # Make sure we remember that the object is frozen.
     # The wrapper object contains this information, so we need to ensure that
     # the previous GC did not collect it.
     assert m.repeated_float.frozen?
 
-    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
+    GC.start(full_mark: true, immediate_sweep: true)
     assert m.repeated_float.frozen?
   end
 

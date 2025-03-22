@@ -1,5 +1,3 @@
-Required.*.TextFormatInput.FloatFieldNoNegativeOctal                                                               # Should have failed to parse, but didn't.
-Required.*.TextFormatInput.FloatFieldNoOctal                                                                       # Should have failed to parse, but didn't.
 Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput                                           # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
 Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput                                         # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
 Required.*.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput                                          # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\

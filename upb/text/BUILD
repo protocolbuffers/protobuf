@@ -27,6 +27,7 @@ cc_library(
         "//upb:message",
         "//upb:port",
         "//upb:reflection",
+        "//upb/hash",
         "//upb/lex",
         "//upb/message:internal",
         "//upb/message:types",
@@ -98,9 +99,9 @@ cc_test(
         "//upb/message:internal",
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_log",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

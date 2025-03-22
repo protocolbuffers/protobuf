@@ -42,10 +42,14 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
   std::string mini_table_name =
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
   std::string linkage = ext->extension_scope() ? "static" : "extern";
+  std::string ext_type = CppTypeParameterName(ext);
+  if (ext->is_repeated()) {
+    ext_type = absl::StrCat("::hpb::RepeatedField<", ext_type, ">");
+  }
   ctx.Emit(
       {{"linkage", linkage},
        {"extendee_type", ContainingTypeName(ext)},
-       {"extension_type", CppTypeParameterName(ext)},
+       {"extension_type", ext_type},
        {"extension_name", ext->name()}},
       R"cc(
         $linkage$ const ::hpb::internal::ExtensionIdentifier<$extendee_type$,
@@ -70,12 +74,16 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
   std::string class_prefix =
       ext->extension_scope() ? ClassName(ext->extension_scope()) + "::" : "";
+  std::string ext_type = CppTypeParameterName(ext);
+  if (ext->is_repeated()) {
+    ext_type = absl::StrCat("::hpb::RepeatedField<", ext_type, ">");
+  }
   ctx.Emit(
       {{"containing_type_name", ContainingTypeName(ext)},
        {"mini_table_name", mini_table_name},
        {"ext_name", ext->name()},
        {"default_value", DefaultValue(ext)},
-       {"ext_type", CppTypeParameterName(ext)},
+       {"ext_type", ext_type},
        {"class_prefix", class_prefix}},
       R"cc(
         constexpr ::hpb::internal::ExtensionIdentifier<$containing_type_name$,

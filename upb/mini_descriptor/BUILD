@@ -62,7 +62,7 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -70,9 +70,9 @@ cc_test(
         "//upb:port",
         "//upb:wire",
         "//upb/message:internal",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

@@ -16,8 +16,8 @@ syntax = "proto2";
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
 // In test_util.h we do
-// "using namespace unittest_import = protobuf_unittest_import".
-package protobuf_unittest_import;
+// "using namespace unittest_import = proto2_unittest_import".
+package proto2_unittest_import;
 
 option optimize_for = SPEED;
 option cc_enable_arenas = true;

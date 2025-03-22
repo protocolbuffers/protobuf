@@ -18,7 +18,7 @@ from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import wire_format
 
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 
 
 _INPUT_BYTES = b'\x84r\x12'
@@ -26,7 +26,7 @@ _EXPECTED = (14596, 18)
 
 
 @testing_refleaks.TestCase
-class DecoderTest(_parameterized.TestCase):
+class DecoderTest(parameterized.TestCase):
 
   def test_decode_varint_bytes(self):
     (size, pos) = decoder._DecodeVarint(_INPUT_BYTES, 0)
@@ -130,11 +130,11 @@ class DecoderTest(_parameterized.TestCase):
         memoryview(b'\054\014'),
     )
 
-  @_parameterized.parameters(int(0), float(0.0), False, '')
+  @parameterized.parameters(int(0), float(0.0), False, '')
   def test_default_scalar(self, value):
     self.assertTrue(decoder.IsDefaultScalarValue(value))
 
-  @_parameterized.parameters(int(1), float(-0.0), float(1.0), True, 'a')
+  @parameterized.parameters(int(1), float(-0.0), float(1.0), True, 'a')
   def test_not_default_scalar(self, value):
     self.assertFalse(decoder.IsDefaultScalarValue(value))
 

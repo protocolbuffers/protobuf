@@ -1042,9 +1042,26 @@ bool IsLikelyPresent(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-float GetPresenceProbability(const FieldDescriptor* field,
-                             const Options& options) {
-  return 1.f;
+absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                             const Options& options) {
+  return absl::nullopt;
+}
+
+absl::optional<float> GetFieldGroupPresenceProbability(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+  ABSL_DCHECK(!fields.empty());
+  if (!IsProfileDriven(options)) return absl::nullopt;
+
+  double all_absent_probability = 1.0;
+
+  for (const auto* field : fields) {
+    absl::optional<float> probability = GetPresenceProbability(field, options);
+    if (!probability) {
+      return absl::nullopt;
+    }
+    all_absent_probability *= 1.0 - *probability;
+  }
+  return 1.0 - all_absent_probability;
 }
 
 bool IsStringInliningEnabled(const Options& options) {
@@ -1195,6 +1212,26 @@ bool HasStringPieceFields(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
+static bool HasRegularStringFields(const Descriptor* descriptor,
+                                   const Options& options) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    if (IsString(descriptor->field(i))) return true;
+  }
+  for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+    if (HasRegularStringFields(descriptor->nested_type(i), options))
+      return true;
+  }
+  return false;
+}
+
+bool HasRegularStringFields(const FileDescriptor* file,
+                            const Options& options) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasRegularStringFields(file->message_type(i), options)) return true;
+  }
+  return false;
+}
+
 static bool HasCordFields(const Descriptor* descriptor,
                           const Options& options) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -1256,10 +1293,18 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
   return false;
 }
 
-bool HasV2Table(const FileDescriptor* file, const Options& options) {
+bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (HasV2Table(file->message_type(i), options)) return true;
   }
+  return false;
+}
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasV2ParseTable(const FileDescriptor* file, const Options& options) {
   return false;
 }
 

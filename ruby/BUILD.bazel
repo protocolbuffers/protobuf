@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("@rules_ruby//ruby:defs.bzl", "rb_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 load("//conformance:defs.bzl", "conformance_test")
 load("//python:internal.bzl", "internal_copy_files")
@@ -42,7 +42,7 @@ selects.config_setting_group(
     name = "jruby_ffi",
     match_all = [
         ":ffi_enabled",
-        "@rules_ruby//ruby/runtime:config_jruby",
+        "@ruby//engine:jruby",
     ],
 )
 
@@ -50,7 +50,7 @@ selects.config_setting_group(
     name = "jruby_native",
     match_all = [
         ":ffi_disabled",
-        "@rules_ruby//ruby/runtime:config_jruby",
+        "@ruby//engine:jruby",
     ],
 )
 
@@ -58,7 +58,7 @@ selects.config_setting_group(
     name = "ruby_ffi",
     match_all = [
         ":ffi_enabled",
-        "@rules_ruby//ruby/runtime:config_ruby",
+        "@ruby//engine:ruby",
     ],
 )
 
@@ -66,7 +66,7 @@ selects.config_setting_group(
     name = "ruby_native",
     match_all = [
         ":ffi_disabled",
-        "@rules_ruby//ruby/runtime:config_ruby",
+        "@ruby//engine:ruby",
     ],
 )
 
@@ -100,7 +100,6 @@ internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":copied_wkt_proto_files"],
     default_runtime = "",
-    includes = ["."],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -121,7 +120,6 @@ internal_ruby_proto_library(
     name = "conformance_test_ruby_proto",
     testonly = 1,
     srcs = [":copied_conformance_test_files"],
-    includes = ["."],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -143,12 +141,11 @@ internal_ruby_proto_library(
     name = "conformance_editions_test_ruby_proto",
     testonly = 1,
     srcs = [":copied_conformance_editions_test_files"],
-    includes = ["."],
     visibility = ["//conformance:__pkg__"],
     deps = [":well_known_ruby_protos"],
 )
 
-ruby_library(
+rb_library(
     name = "protobuf",
     visibility = [
         "//visibility:public",
@@ -193,7 +190,7 @@ genrule(
     """,
     tags = ["manual"],
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "@ruby//engine:jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
@@ -230,7 +227,7 @@ genrule(
     """,
     tags = ["manual"],
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "@ruby//engine:ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
@@ -238,7 +235,7 @@ genrule(
 filegroup(
     name = "release",
     srcs = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
+        "@ruby//engine:jruby": [":jruby_release"],
         "//conditions:default": [":ruby_release"],
     }),
     tags = ["manual"],

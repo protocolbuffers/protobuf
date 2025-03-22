@@ -1,6 +1,6 @@
 edition = "2023";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/cpp_features.proto";
 
@@ -8,10 +8,11 @@ option java_multiple_files = true;
 option optimize_for = SPEED;
 option features.(pb.cpp).string_type = VIEW;
 
-// NEXT_TAG = 5;
+// NEXT_TAG = 6;
 message TestStringView {
   string singular_string = 1;
   bytes singular_bytes = 2;
+  string implicit_presence = 5 [features.field_presence = IMPLICIT];
 
   repeated string repeated_string = 3;
   repeated bytes repeated_bytes = 4;

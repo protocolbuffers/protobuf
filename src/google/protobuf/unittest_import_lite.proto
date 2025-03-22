@@ -11,7 +11,7 @@
 
 edition = "2023";
 
-package protobuf_unittest_import;
+package proto2_unittest_import;
 
 import public "google/protobuf/unittest_import_public_lite.proto";
 

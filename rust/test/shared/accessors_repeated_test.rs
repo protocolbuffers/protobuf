@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use protobuf::{AsMut, AsView, Repeated};
+use protobuf::{proto, AsMut, AsView, Repeated};
 use unittest_rust_proto::{test_all_types, test_all_types::NestedMessage, TestAllTypes};
 
 macro_rules! generate_repeated_numeric_test {
@@ -246,9 +246,19 @@ fn test_repeated_message_setter() {
 }
 
 #[gtest]
+fn test_empty_repeated_message_drop() {
+    let _ = Repeated::<TestAllTypes>::new();
+}
+
+#[gtest]
 fn test_repeated_message_drop() {
     let mut repeated = Repeated::<TestAllTypes>::new();
     repeated.as_mut().push(TestAllTypes::new());
+
+    {
+        let v: Vec<TestAllTypes> = vec![proto!(TestAllTypes { optional_int32: 1 })];
+        repeated.as_mut().extend(v.iter().cloned());
+    }
 }
 
 #[gtest]

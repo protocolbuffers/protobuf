@@ -1,0 +1,3 @@
+protoc
+protoc-gen-upb
+protoc-gen-upbdefs

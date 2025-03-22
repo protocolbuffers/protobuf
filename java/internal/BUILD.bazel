@@ -1,3 +1,4 @@
+load("@rules_java//java:java_test.bzl", "java_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 package(default_visibility = ["//java:__subpackages__"])
@@ -18,7 +19,7 @@ java_test(
     srcs = ["JavaVersionTest.java"],
     test_class = "JavaVersionTest",
     deps = [
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )

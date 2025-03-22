@@ -28,6 +28,8 @@ extern "C" {
 #[allow(dead_code)]
 #[repr(i32)]
 enum Options {
+    Default = 0,
+
     // When set, prints everything on a single line.
     SingleLine = 1,
 
@@ -50,7 +52,7 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
     //   `mt`
     // - `buf` is nullptr and `buf_len` is 0
     let len =
-        unsafe { upb_DebugString(msg, mt, Options::NoSortMaps as i32, core::ptr::null_mut(), 0) };
+        unsafe { upb_DebugString(msg, mt, Options::Default as i32, core::ptr::null_mut(), 0) };
     assert!(len < isize::MAX as usize);
     // +1 for the trailing NULL
     let mut buf = vec![0u8; len + 1];
@@ -58,9 +60,8 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
     // - `msg` is a legally dereferencable upb_Message whose associated minitable is
     //   `mt`
     // - `buf` is legally writable for 'buf_len' bytes
-    let written_len = unsafe {
-        upb_DebugString(msg, mt, Options::NoSortMaps as i32, buf.as_mut_ptr(), buf.len())
-    };
+    let written_len =
+        unsafe { upb_DebugString(msg, mt, Options::Default as i32, buf.as_mut_ptr(), buf.len()) };
     assert_eq!(len, written_len);
     String::from_utf8_lossy(buf.as_slice()).to_string()
 }

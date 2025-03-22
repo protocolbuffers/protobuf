@@ -6,12 +6,14 @@
 namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
+use Google\Protobuf\RepeatedField;
 
 /**
  * Wrapper message for `uint32`.
  * The JSON representation for `UInt32Value` is JSON number.
+ * Not recommended for use in new APIs, but still useful for legacy APIs and
+ * has no plan to be removed.
  *
  * Generated from protobuf message <code>google.protobuf.UInt32Value</code>
  */

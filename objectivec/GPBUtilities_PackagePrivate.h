@@ -21,6 +21,11 @@
 #define GPBNSStringify(S) @ #S
 #define GPBNSStringifySymbol(S) GPBNSStringify(S)
 
+// A type to represent an Objective C class.
+// This is actually an `objc_class` but the runtime headers will not allow us to
+// reference `objc_class`, so we have defined our own.
+typedef struct GPBObjcClass_t GPBObjcClass_t;
+
 // Macros for generating a Class from a class name. These are used in
 // the generated GPB descriptor classes wherever an Objective C class
 // reference is needed for a generated class.
@@ -43,12 +48,6 @@ GPB_INLINE void GPB_DEBUG_CHECK_RUNTIME_VERSIONS(void) {
   GPBCheckRuntimeVersionSupport(GOOGLE_PROTOBUF_OBJC_VERSION);
 #endif
 }
-
-// Helper called within the library when the runtime detects something that
-// indicates a older runtime is being used with newer generated code. Normally
-// GPB_DEBUG_CHECK_RUNTIME_VERSIONS() gates this with a better message; this
-// is just a final safety net to prevent otherwise hard to diagnose errors.
-void GPBRuntimeMatchFailure(void);
 
 // Conversion functions for de/serializing floating point types.
 
@@ -169,9 +168,9 @@ GPB_INLINE BOOL GPBFieldStoresObject(GPBFieldDescriptor *field) {
   return GPBDataTypeIsObject(desc->dataType);
 }
 
-BOOL GPBGetHasIvar(GPBMessage *self, int32_t index, uint32_t fieldNumber);
+BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber);
 void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber, BOOL value);
-uint32_t GPBGetHasOneof(GPBMessage *self, int32_t index);
+uint32_t GPBGetHasOneof(GPBMessage *self, int32_t idx);
 
 GPB_INLINE BOOL GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBMessageFieldDescription *fieldDesc = field->description_;

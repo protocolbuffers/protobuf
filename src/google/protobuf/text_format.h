@@ -44,14 +44,13 @@ namespace internal {
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_string_safe_format;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 
 // This enum contains all the APIs that convert protos to human-readable
 // formats. A higher-level API must correspond to a greater number than any
 // lower-level APIs it calls under the hood (e.g kDebugString >
 // kMemberPrintToString > kPrintWithStream).
-PROTOBUF_EXPORT enum class FieldReporterLevel {
+enum class PROTOBUF_EXPORT FieldReporterLevel {
   kNoReport = 0,
   kPrintMessage = 1,
   kPrintWithGenerator = 2,
@@ -85,13 +84,11 @@ namespace internal {
 // Enum used to set printing options for StringifyMessage.
 PROTOBUF_EXPORT enum class Option;
 
-// Converts a protobuf message to a string. If enable_safe_format is true,
-// sensitive fields are redacted, and a per-process randomized prefix is
-// inserted.
+// Converts a protobuf message to a string. Sensitive fields are redacted, and a
+// per-process randomized prefix is inserted.
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
                                              Option option,
-                                             FieldReporterLevel reporter_level,
-                                             bool enable_safe_format);
+                                             FieldReporterLevel reporter_level);
 
 class UnsetFieldsMetadataTextFormatTestUtil;
 class UnsetFieldsMetadataMessageDifferencerTestUtil;
@@ -457,7 +454,7 @@ class PROTOBUF_EXPORT TextFormat {
     friend std::string Message::Utf8DebugString() const;
     friend std::string internal::StringifyMessage(
         const Message& message, internal::Option option,
-        internal::FieldReporterLevel reporter_level, bool enable_safe_format);
+        internal::FieldReporterLevel reporter_level);
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
@@ -622,6 +619,12 @@ class PROTOBUF_EXPORT TextFormat {
     bool report;
   };
 
+  static TextFormat::RedactionState GetRedactionState(
+      const FieldDescriptor* field);
+
+  static TextFormat::RedactionState IsOptionSensitive(
+      const Message& opts, const Reflection* reflection,
+      const FieldDescriptor* option);
   // Data structure which is populated with the locations of each field
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
@@ -823,6 +826,10 @@ class PROTOBUF_EXPORT TextFormat {
                                    const T&... values);
 };
 
+namespace internal {
+void PrintTextMarker(TextFormat::BaseTextGenerator* generator, bool redact,
+                     bool randomize, bool single_line_mode);
+}  // namespace internal
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,

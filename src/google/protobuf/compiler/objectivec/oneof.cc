@@ -21,34 +21,39 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor,
                                const GenerationOptions& generation_options)
     : descriptor_(descriptor), generation_options_(generation_options) {
-  variables_["enum_name"] = OneofEnumName(descriptor_);
-  variables_["name"] = OneofName(descriptor_);
-  variables_["capitalized_name"] = OneofNameCapitalized(descriptor_);
-  variables_["raw_index"] = absl::StrCat(descriptor_->index());
+  variables_.Set("enum_name", OneofEnumName(descriptor_));
+  variables_.Set("name", OneofName(descriptor_));
+  variables_.Set("capitalized_name", OneofNameCapitalized(descriptor_));
+  variables_.Set("raw_index", absl::StrCat(descriptor_->index()));
   const Descriptor* msg_descriptor = descriptor_->containing_type();
-  variables_["owning_message_class"] = ClassName(msg_descriptor);
+  variables_.Set("owning_message_class", ClassName(msg_descriptor));
 }
 
 void OneofGenerator::SetOneofIndexBase(int index_base) {
   int index = descriptor_->index() + index_base;
   // Flip the sign to mark it as a oneof.
-  variables_["index"] = absl::StrCat(-index);
+  variables_.Set("index", absl::StrCat(-index));
 }
 
 void OneofGenerator::GenerateCaseEnum(io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit({{"cases",
                   [&] {
                     for (int j = 0; j < descriptor_->field_count(); j++) {
                       const FieldDescriptor* field = descriptor_->field(j);
                       printer->Emit(
-                          {{"field_name", FieldNameCapitalized(field)},
-                           {"field_number", field->number()}},
+                          {Sub("enum_entry_name",
+                               absl::StrCat(printer->LookupVar("enum_name"),
+                                            "_", FieldNameCapitalized(field)))
+                               .AnnotatedAs(field),
+                           Sub("field_number", field->number())},
                           R"objc(
-                            $enum_name$_$field_name$ = $field_number$,
+                            $enum_entry_name$ = $field_number$,
                           )objc");
                     }
                   }}},
@@ -63,33 +68,41 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) const {
 
 void OneofGenerator::GeneratePublicCasePropertyDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
-  printer->Emit({{"comments",
+  auto vars = variables_.Install(printer);
+  printer->Emit({Sub("oneof_getter_name",
+                     absl::StrCat(printer->LookupVar("name"), "OneOfCase"))
+                     .AnnotatedAs(descriptor_),
+                 {"comments",
                   [&] {
                     EmitCommentsString(printer, generation_options_,
                                        descriptor_);
                   }}},
                 R"objc(
                   $comments$;
-                  @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;
+                  @property(nonatomic, readonly) $enum_name$ $oneof_getter_name$;
                 )objc");
   printer->Emit("\n");
 }
 
 void OneofGenerator::GenerateClearFunctionDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
-  printer->Emit(R"objc(
+  auto vars = variables_.Install(printer);
+  printer->Emit(
+      {Sub("clear_function_name",
+           absl::StrCat(printer->LookupVar("owning_message_class"), "_Clear",
+                        printer->LookupVar("capitalized_name"), "OneOfCase"))
+           .AnnotatedAs(descriptor_)},
+      R"objc(
       /**
        * Clears whatever value was set for the oneof '$name$'.
        **/
-      void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);
+      void $clear_function_name$($owning_message_class$ *message);
     )objc");
 }
 
 void OneofGenerator::GeneratePropertyImplementation(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(R"objc(
     @dynamic $name$OneOfCase;
   )objc");
@@ -97,7 +110,7 @@ void OneofGenerator::GeneratePropertyImplementation(
 
 void OneofGenerator::GenerateClearFunctionImplementation(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(R"objc(
     void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {
       GPBDescriptor *descriptor = [$owning_message_class$ descriptor];
@@ -108,11 +121,11 @@ void OneofGenerator::GenerateClearFunctionImplementation(
 }
 
 std::string OneofGenerator::DescriptorName() const {
-  return variables_.find("name")->second;
+  return variables_.Value("name");
 }
 
 std::string OneofGenerator::HasIndexAsString() const {
-  return variables_.find("index")->second;
+  return variables_.Value("index");
 }
 
 }  // namespace objectivec

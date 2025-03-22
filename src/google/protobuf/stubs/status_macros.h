@@ -45,8 +45,9 @@ absl::Status DoAssignOrReturn(T& lhs, absl::StatusOr<T> result) {
   return result.status();
 }
 
-#define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr)       \
-  absl::Status status = DoAssignOrReturn(lhs, (rexpr)); \
+#define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr)               \
+  absl::Status status =                                         \
+      ::google::protobuf::util::DoAssignOrReturn(lhs, (rexpr)); \
   if (ABSL_PREDICT_FALSE(!status.ok())) return status;
 
 // Executes an expression that returns a util::StatusOr, extracting its value

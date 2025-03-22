@@ -12,6 +12,7 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
@@ -58,11 +59,6 @@ def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     hdrs += proto_common.declare_generated_files(
         ctx.actions,
         extension = ".upb.proto.h",
-        proto_info = proto_info,
-    )
-    hdrs += proto_common.declare_generated_files(
-        ctx.actions,
-        extension = ".upb.fwd.h",
         proto_info = proto_info,
     )
 
@@ -153,11 +149,11 @@ _upb_cc_proto_library_aspect = aspect(
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
-                "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb:generated_cpp_support",
                 "//hpb:generated_hpb_support",
-                "@com_google_absl//absl/log:absl_check",
-                "@com_google_absl//absl/strings",
-                "@com_google_absl//absl/status:statusor",
+                "@abseil-cpp//absl/log:absl_check",
+                "@abseil-cpp//absl/strings",
+                "@abseil-cpp//absl/status:statusor",
                 "//hpb:repeated_field",
             ],
         ),

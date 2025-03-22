@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <string>
@@ -19,8 +20,11 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
@@ -28,9 +32,12 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mem/arena.hpp"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/c/names.h"
@@ -217,6 +224,10 @@ std::string MapKeyCType(upb::FieldDefPtr map_field) {
 
 std::string MapValueCType(upb::FieldDefPtr map_field) {
   return CType(map_field.message_type().map_value());
+}
+
+std::string MapValueCTypeConst(upb::FieldDefPtr map_field) {
+  return CTypeConst(map_field.message_type().map_value());
 }
 
 std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
@@ -408,9 +419,14 @@ void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
           return ($0_oneofcases)upb_Message_WhichOneofFieldNumber(
               UPB_UPCAST(msg), &field);
         }
+        UPB_INLINE void $1_clear_$2($1* msg) {
+          const upb_MiniTableField field = $3;
+          upb_Message_ClearOneof(UPB_UPCAST(msg), $4, &field);
+        }
       )cc",
       fullname, msg_name, oneof.name(),
-      FieldInitializer(pools, oneof.field(0), options));
+      FieldInitializer(pools, oneof.field(0), options),
+      MessageMiniTableRef(oneof.containing_type(), options));
 }
 
 void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
@@ -475,14 +491,20 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       MapValueSize(field, "*val"));
   output(
       R"cc(
-        UPB_INLINE $0 $1_$2_next(const $1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
+        UPB_INLINE bool $0_$1_next(const $0* msg, $2* key, $3* val,
+                                   size_t* iter) {
+          const upb_MiniTableField field = $4;
           const upb_Map* map = upb_Message_GetMap(UPB_UPCAST(msg), &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
+          if (!map) return false;
+          upb_MessageValue k;
+          upb_MessageValue v;
+          if (!upb_Map_Next(map, &k, &v, iter)) return false;
+          memcpy(key, &k, sizeof(*key));
+          memcpy(val, &v, sizeof(*val));
+          return true;
         }
       )cc",
-      CTypeConst(field), msg_name, resolved_name,
+      msg_name, resolved_name, MapKeyCType(field), MapValueCTypeConst(field),
       FieldInitializerStrong(pools, field, options));
   // Generate private getter returning a upb_Map or NULL for immutable and
   // a upb_Map for mutable.
@@ -505,20 +527,6 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       FieldInitializerStrong(pools, field, options),
       MapKeySize(field, MapKeyCType(field)),
       MapValueSize(field, MapValueCType(field)));
-}
-
-void GenerateMapEntryGetters(upb::FieldDefPtr field, absl::string_view msg_name,
-                             Output& output) {
-  output(
-      R"cc(
-        UPB_INLINE $0 $1_$2(const $1* msg) {
-          $3 ret;
-          _upb_msg_map_$2(msg, &ret, $4);
-          return ret;
-        }
-      )cc",
-      CTypeConst(field), msg_name, field.name(), CType(field),
-      field.ctype() == kUpb_CType_String ? "0" : "sizeof(ret)");
 }
 
 void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
@@ -608,8 +616,6 @@ void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapGetters(field, pools, msg_name, mangler, options, output);
-  } else if (field.containing_type().mapentry()) {
-    GenerateMapEntryGetters(field, msg_name, output);
   } else if (field.IsSequence()) {
     GenerateRepeatedGetters(field, pools, msg_name, mangler, options, output);
   } else {
@@ -655,17 +661,6 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       )cc",
       msg_name, resolved_name, MapKeyCType(field),
       FieldInitializer(pools, field, options), MapKeySize(field, "key"));
-  output(
-      R"cc(
-        UPB_INLINE $0 $1_$2_nextmutable($1* msg, size_t* iter) {
-          const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(UPB_UPCAST(msg), &field);
-          if (!map) return NULL;
-          return ($0)_upb_map_next(map, iter);
-        }
-      )cc",
-      CType(field), msg_name, resolved_name,
-      FieldInitializerStrong(pools, field, options));
 }
 
 void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
@@ -746,36 +741,20 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
                                 absl::string_view msg_name,
                                 const NameMangler& mangler,
                                 const Options& options, Output& output) {
-  if (field == field.containing_type().map_key()) {
-    // Key cannot be mutated.
-    return;
-  }
-
   std::string field_name = mangler.ResolveFieldName(field.name());
 
-  if (field == field.containing_type().map_value()) {
-    output(R"cc(
-             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
-               _upb_msg_map_set_value(msg, &value, $3);
-             }
-           )cc",
-           msg_name, field_name, CType(field),
-           field.ctype() == kUpb_CType_String ? "0"
-                                              : "sizeof(" + CType(field) + ")");
-  } else {
-    output(R"cc(
-             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
-               const upb_MiniTableField field = $3;
-               upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
-             }
-           )cc",
-           msg_name, field_name, CType(field),
-           FieldInitializerStrong(pools, field, options));
-  }
+  output(R"cc(
+           UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
+             const upb_MiniTableField field = $3;
+             upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+           }
+         )cc",
+         msg_name, field_name, CType(field),
+         FieldInitializerStrong(pools, field, options));
 
   // Message fields also have a Msg_mutable_foo() accessor that will create
   // the sub-message if it doesn't already exist.
-  if (field.IsSubMessage() && !field.containing_type().mapentry()) {
+  if (field.IsSubMessage()) {
     output(
         R"cc(
           UPB_INLINE struct $0* $1_mutable_$2($1* msg, upb_Arena* arena) {
@@ -810,9 +789,7 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
                              Output& output) {
   output("/* $0 */\n\n", message.full_name());
   std::string msg_name = MessageType(message);
-  if (!message.mapentry()) {
-    GenerateMessageFunctionsInHeader(message, options, output);
-  }
+  GenerateMessageFunctionsInHeader(message, options, output);
 
   for (int i = 0; i < message.real_oneof_count(); i++) {
     GenerateOneofInHeader(message.oneof(i), pools, msg_name, options, output);
@@ -864,8 +841,15 @@ std::vector<upb::MessageDefPtr> SortedForwardMessages(
 
 void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
                  const Options& options, Output& output) {
-  const std::vector<upb::MessageDefPtr> this_file_messages =
-      SortedMessages(file);
+  const std::vector<upb::MessageDefPtr> sorted_messages = SortedMessages(file);
+
+  // Filter out map entries.
+  std::vector<upb::MessageDefPtr> this_file_messages;
+  std::copy_if(
+      sorted_messages.begin(), sorted_messages.end(),
+      std::back_inserter(this_file_messages),
+      [](const upb::MessageDefPtr& message) { return !message.mapentry(); });
+
   const std::vector<upb::FieldDefPtr> this_file_exts = SortedExtensions(file);
   std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file, kAllEnums);
   std::vector<upb::MessageDefPtr> forward_messages =
@@ -1148,35 +1132,42 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
 }
 
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
-                  const Options& options, Plugin* plugin) {
+                  const Options& options,
+                  google::protobuf::compiler::GeneratorContext* context) {
   Output h_output;
   WriteHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(CApiHeaderFilename(file.name(), false),
-                        h_output.output());
+  {
+    auto stream =
+        absl::WrapUnique(context->Open(CApiHeaderFilename(file.name(), false)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(h_output.output())));
+  }
 
   if (options.bootstrap_stage == 0) {
     Output c_output;
     WriteMiniDescriptorSource(pools, file, options, c_output);
-    plugin->AddOutputFile(SourceFilename(file), c_output.output());
+    auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(c_output.output())));
   } else {
     // TODO: remove once we can figure out how to make both Blaze
     // and Bazel happy with header-only libraries.
 
-    plugin->AddOutputFile(SourceFilename(file), "\n");
+    auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord("\n")));
   }
 }
 
-bool ParseOptions(Plugin* plugin, Options* options) {
-  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
+bool ParseOptions(absl::string_view parameter, Options* options,
+                  std::string* error) {
+  for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "bootstrap_stage") {
       if (!absl::SimpleAtoi(pair.second, &options->bootstrap_stage)) {
-        plugin->SetError(absl::Substitute("Bad stage: $0", pair.second));
+        *error = absl::Substitute("Bad stage: $0", pair.second);
         return false;
       }
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       options->strip_nonfunctional_codegen = true;
     } else {
-      plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+      *error = absl::Substitute("Unknown parameter: $0", pair.first);
       return false;
     }
   }
@@ -1184,9 +1175,46 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   return true;
 }
 
-absl::string_view ToStringView(upb_StringView str) {
-  return absl::string_view(str.data, str.size);
-}
+class CGenerator : public google::protobuf::compiler::CodeGenerator {
+  bool Generate(const google::protobuf::FileDescriptor* file,
+                const std::string& parameter,
+                google::protobuf::compiler::GeneratorContext* generator_context,
+                std::string* error) const override {
+    std::vector<const google::protobuf::FileDescriptor*> files{file};
+    return GenerateAll(files, parameter, generator_context, error);
+  }
+
+  bool GenerateAll(const std::vector<const google::protobuf::FileDescriptor*>& files,
+                   const std::string& parameter,
+                   google::protobuf::compiler::GeneratorContext* generator_context,
+                   std::string* error) const override {
+    Options options;
+    if (!ParseOptions(parameter, &options, error)) {
+      return false;
+    }
+
+    upb::Arena arena;
+    DefPoolPair pools;
+    absl::flat_hash_set<std::string> files_seen;
+    for (const auto* file : files) {
+      PopulateDefPool(file, &arena, &pools, &files_seen);
+      upb::FileDefPtr upb_file = pools.GetFile(file->name());
+      GenerateFile(pools, upb_file, options, generator_context);
+    }
+
+    return true;
+  }
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
+  }
+  google::protobuf::Edition GetMinimumEdition() const override {
+    return google::protobuf::Edition::EDITION_PROTO2;
+  }
+  google::protobuf::Edition GetMaximumEdition() const override {
+    return google::protobuf::Edition::EDITION_2023;
+  }
+};
 
 }  // namespace
 
@@ -1194,21 +1222,6 @@ absl::string_view ToStringView(upb_StringView str) {
 }  // namespace upb
 
 int main(int argc, char** argv) {
-  upb::generator::DefPoolPair pools;
-  upb::generator::Plugin plugin;
-  upb::generator::Options options;
-  if (!ParseOptions(&plugin, &options)) return 0;
-  plugin.GenerateFilesRaw(
-      [&](const UPB_DESC(FileDescriptorProto) * file_proto, bool generate) {
-        upb::Status status;
-        upb::FileDefPtr file = pools.AddFile(file_proto, &status);
-        if (!file) {
-          absl::string_view name = upb::generator::ToStringView(
-              UPB_DESC(FileDescriptorProto_name)(file_proto));
-          ABSL_LOG(FATAL) << "Couldn't add file " << name
-                          << " to DefPool: " << status.error_message();
-        }
-        if (generate) GenerateFile(pools, file, options, &plugin);
-      });
-  return 0;
+  upb::generator::CGenerator generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

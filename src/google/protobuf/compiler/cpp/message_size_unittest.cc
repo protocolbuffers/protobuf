@@ -80,12 +80,12 @@ TEST(GeneratedMessageTest, MockSizes) {
 }
 
 TEST(GeneratedMessageTest, EmptyMessageSize) {
-  EXPECT_EQ(sizeof(protobuf_unittest::TestEmptyMessage),
+  EXPECT_EQ(sizeof(proto2_unittest::TestEmptyMessage),
             sizeof(MockZeroFieldsBase));
 }
 
 TEST(GeneratedMessageTest, ReservedSize) {
-  EXPECT_EQ(sizeof(protobuf_unittest::TestReservedFields),
+  EXPECT_EQ(sizeof(proto2_unittest::TestReservedFields),
             sizeof(MockZeroFieldsBase));
 }
 
@@ -97,7 +97,7 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
     // + 0-4 bytes of padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
-  EXPECT_EQ(sizeof(protobuf_unittest::TestEmptyMessageWithExtensions),
+  EXPECT_EQ(sizeof(proto2_unittest::TestEmptyMessageWithExtensions),
             sizeof(MockGenerated));
 }
 
@@ -124,7 +124,7 @@ TEST(GeneratedMessageTest, RecursiveMessageSize) {
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
 #endif  // PROTOBUF_FORCE_SPLIT
 
-  EXPECT_EQ(sizeof(protobuf_unittest::TestRecursiveMessage),
+  EXPECT_EQ(sizeof(proto2_unittest::TestRecursiveMessage),
             sizeof(MockGenerated));
 }
 
@@ -137,7 +137,7 @@ TEST(GeneratedMessageTest, OneStringSize) {
     void* data;                                    // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
-  EXPECT_EQ(sizeof(protobuf_unittest::OneString), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::OneString), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, MoreStringSize) {
@@ -159,7 +159,7 @@ TEST(GeneratedMessageTest, MoreStringSize) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
 #endif  // PROTOBUF_FORCE_SPLIT
-  EXPECT_EQ(sizeof(protobuf_unittest::MoreString), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::MoreString), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, Int32MessageSize) {
@@ -171,7 +171,7 @@ TEST(GeneratedMessageTest, Int32MessageSize) {
     int32_t data;                                  // 4 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
-  EXPECT_EQ(sizeof(protobuf_unittest::Int32Message), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::Int32Message), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, Int64MessageSize) {
@@ -183,7 +183,7 @@ TEST(GeneratedMessageTest, Int64MessageSize) {
     int64_t data;                                  // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
-  EXPECT_EQ(sizeof(protobuf_unittest::Int64Message), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::Int64Message), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, BoolMessageSize) {
@@ -196,7 +196,7 @@ TEST(GeneratedMessageTest, BoolMessageSize) {
     // + 3 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
-  EXPECT_EQ(sizeof(protobuf_unittest::BoolMessage), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::BoolMessage), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, OneofSize) {
@@ -208,7 +208,7 @@ TEST(GeneratedMessageTest, OneofSize) {
     uint32_t oneof_case[1];                        // 4 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
-  EXPECT_EQ(sizeof(protobuf_unittest::TestOneof), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestOneof), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, Oneof2Size) {
@@ -240,7 +240,7 @@ TEST(GeneratedMessageTest, Oneof2Size) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
 #endif  // PROTOBUF_FORCE_SPLIT
-  EXPECT_EQ(sizeof(protobuf_unittest::TestOneof2), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestOneof2), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, FieldOrderingsSize) {
@@ -269,7 +269,7 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
 #endif  // PROTOBUF_FORCE_SPLIT
-  EXPECT_EQ(sizeof(protobuf_unittest::TestFieldOrderings), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestFieldOrderings), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, TestMessageSize) {
@@ -300,7 +300,7 @@ TEST(GeneratedMessageTest, TestMessageSize) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
 #endif  // PROTOBUF_FORCE_SPLIT
-  EXPECT_EQ(sizeof(protobuf_unittest::TestMessageSize), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestMessageSize), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, PackedTypesSize) {
@@ -342,7 +342,7 @@ TEST(GeneratedMessageTest, PackedTypesSize) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
 #endif  // PROTOBUF_FORCE_SPLIT
-  EXPECT_EQ(sizeof(protobuf_unittest::TestPackedTypes), sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestPackedTypes), sizeof(MockGenerated));
 }
 
 }  // namespace cpp_unittest

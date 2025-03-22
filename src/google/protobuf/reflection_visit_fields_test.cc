@@ -29,13 +29,13 @@ namespace {
 
 #ifdef __cpp_if_constexpr
 
-using ::protobuf_unittest::NestedTestAllTypes;
-using ::protobuf_unittest::TestAllExtensions;
-using ::protobuf_unittest::TestAllTypes;
-using ::protobuf_unittest::TestMap;
-using ::protobuf_unittest::TestOneof2;
-using ::protobuf_unittest::TestPackedExtensions;
-using ::protobuf_unittest::TestPackedTypes;
+using ::proto2_unittest::NestedTestAllTypes;
+using ::proto2_unittest::TestAllExtensions;
+using ::proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestMap;
+using ::proto2_unittest::TestOneof2;
+using ::proto2_unittest::TestPackedExtensions;
+using ::proto2_unittest::TestPackedTypes;
 using ::proto2_wireformat_unittest::TestMessageSet;
 
 struct TestParam {

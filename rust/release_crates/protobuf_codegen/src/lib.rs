@@ -1,13 +1,38 @@
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone)]
+pub struct Dependency {
+    pub crate_name: String,
+    pub proto_import_paths: Vec<PathBuf>,
+    pub c_include_paths: Vec<PathBuf>,
+    pub proto_files: Vec<String>,
+}
 
 #[derive(Debug)]
 pub struct CodeGen {
     inputs: Vec<PathBuf>,
     output_dir: PathBuf,
     includes: Vec<PathBuf>,
+    dependencies: Vec<Dependency>,
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+fn missing_protoc_error_message() -> String {
+    format!(
+        "
+Please make sure you have protoc available in your PATH. You can build it \
+from source as follows: \
+git clone https://github.com/protocolbuffers/protobuf.git; \
+cd protobuf; \
+git checkout rust-prerelease-{}; \
+cmake . -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON; \
+cmake --build . --parallel 12",
+        VERSION
+    )
+}
 
 // Given the output of "protoc --version", returns a shortened version string
 // suitable for comparing against the protobuf crate version.
@@ -48,6 +73,7 @@ impl CodeGen {
             inputs: Vec::new(),
             output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             includes: Vec::new(),
+            dependencies: Vec::new(),
         }
     }
 
@@ -76,6 +102,11 @@ impl CodeGen {
         self
     }
 
+    pub fn dependency(&mut self, deps: Vec<Dependency>) -> &mut Self {
+        self.dependencies.extend(deps);
+        self
+    }
+
     fn expected_generated_rs_files(&self) -> Vec<PathBuf> {
         self.inputs
             .iter()
@@ -98,6 +129,19 @@ impl CodeGen {
             .collect()
     }
 
+    fn generate_crate_mapping_file(&self) -> PathBuf {
+        let crate_mapping_path = self.output_dir.join("crate_mapping.txt");
+        let mut file = File::create(crate_mapping_path.clone()).unwrap();
+        for dep in &self.dependencies {
+            file.write_all(format!("{}\n", dep.crate_name).as_bytes()).unwrap();
+            file.write_all(format!("{}\n", dep.proto_files.len()).as_bytes()).unwrap();
+            for f in &dep.proto_files {
+                file.write_all(format!("{}\n", f).as_bytes()).unwrap();
+            }
+        }
+        crate_mapping_path
+    }
+
     pub fn generate_and_compile(&self) -> Result<(), String> {
         let upb_version = std::env::var("DEP_UPB_VERSION").expect("DEP_UPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
         if VERSION != upb_version {
@@ -108,10 +152,9 @@ impl CodeGen {
         }
 
         let mut version_cmd = std::process::Command::new("protoc");
-        let output = version_cmd
-            .arg("--version")
-            .output()
-            .map_err(|e| format!("failed to run protoc --version: {}", e))?;
+        let output = version_cmd.arg("--version").output().map_err(|e| {
+            format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
+        })?;
 
         let protoc_version = protoc_version(&String::from_utf8(output.stdout).unwrap());
         let expected_protoc_version = expected_protoc_version(VERSION);
@@ -134,6 +177,13 @@ impl CodeGen {
         for include in &self.includes {
             println!("cargo:rerun-if-changed={}", include.display());
         }
+        for dep in &self.dependencies {
+            for path in &dep.proto_import_paths {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+        }
+
+        let crate_mapping_path = self.generate_crate_mapping_file();
 
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
             .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
@@ -141,6 +191,12 @@ impl CodeGen {
         for include in &self.includes {
             cmd.arg(format!("--proto_path={}", include.display()));
         }
+        for dep in &self.dependencies {
+            for path in &dep.proto_import_paths {
+                cmd.arg(format!("--proto_path={}", path.display()));
+            }
+        }
+        cmd.arg(format!("--rust_opt=crate_mapping={}", crate_mapping_path.display()));
         let output = cmd.output().map_err(|e| format!("failed to run protoc: {}", e))?;
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
@@ -158,6 +214,12 @@ impl CodeGen {
             )
             .include(self.output_dir.clone())
             .flag("-std=c99");
+
+        for dep in &self.dependencies {
+            for path in &dep.c_include_paths {
+                cc_build.include(path);
+            }
+        }
 
         for path in &self.expected_generated_rs_files() {
             if !path.exists() {
@@ -182,19 +244,19 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[googletest::test]
+    #[gtest]
     fn test_protoc_version() {
-        assert_eq!(protoc_version("libprotoc 30.0"), "30.0");
-        assert_eq!(protoc_version("libprotoc 30.0-dev"), "30.0");
-        assert_eq!(protoc_version("libprotoc 30.0-rc1"), "30.0-rc1");
+        assert_that!(protoc_version("libprotoc 30.0"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0-dev"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0-rc1"), eq("30.0-rc1"));
     }
 
     #[googletest::test]
     fn test_expected_protoc_version() {
-        assert_eq!(expected_protoc_version("4.30.0"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-alpha"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-beta"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-pre"), "30.0");
-        assert_eq!(expected_protoc_version("4.30.0-rc1"), "30.0-rc1");
+        assert_that!(expected_protoc_version("4.30.0"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-alpha"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
+        assert_that!(expected_protoc_version("4.30.0-rc1"), eq("30.0-rc1"));
     }
 }

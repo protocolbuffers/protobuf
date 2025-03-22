@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <limits>
@@ -243,7 +244,7 @@ struct SooRep {
 // We have to specialize several methods in the Cord case to get the memory
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
-class RepeatedField final
+class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
     : private internal::RepeatedFieldDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
@@ -803,8 +804,13 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
+  if constexpr (internal::GetBoundsCheckMode() ==
+                internal::BoundsCheckMode::kAbort) {
+    internal::RuntimeAssertInBounds(index, size());
+  } else {
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, size());
+  }
   return elements(is_soo())[index];
 }
 
@@ -827,8 +833,13 @@ inline Element& RepeatedField<Element>::at(int index)
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
+  if constexpr (internal::GetBoundsCheckMode() ==
+                internal::BoundsCheckMode::kAbort) {
+    internal::RuntimeAssertInBounds(index, size());
+  } else {
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, size());
+  }
   return &elements(is_soo())[index];
 }
 
@@ -1436,6 +1447,28 @@ internal::RepeatedFieldBackInsertIterator<T> RepeatedFieldBackInserter(
     RepeatedField<T>* const mutable_field) {
   return internal::RepeatedFieldBackInsertIterator<T>(mutable_field);
 }
+
+namespace internal {
+template <typename T>
+inline void CheckIndexInBoundsOrAbort(const RepeatedField<T>& field,
+                                      int index) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+    LogIndexOutOfBoundsAndAbort(index, field.size());
+  }
+}
+
+template <typename T>
+const T& CheckedGetOrAbort(const RepeatedField<T>& field, int index) {
+  CheckIndexInBoundsOrAbort(field, index);
+  return field.Get(index);
+}
+
+template <typename T>
+inline T* CheckedMutableOrAbort(RepeatedField<T>* field, int index) {
+  CheckIndexInBoundsOrAbort(*field, index);
+  return field->Mutable(index);
+}
+}  // namespace internal
 
 
 }  // namespace protobuf

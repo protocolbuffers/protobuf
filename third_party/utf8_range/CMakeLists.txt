@@ -17,7 +17,7 @@ add_library (utf8_range
 
 ##
 # A heavier-weight C++ wrapper that supports Abseil.
-add_library (utf8_validity utf8_validity.cc utf8_range.c)
+add_library (utf8_validity utf8_range.c)
 
 set_target_properties(utf8_range PROPERTIES
   VERSION ${protobuf_VERSION}

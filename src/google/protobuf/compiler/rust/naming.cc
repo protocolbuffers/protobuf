@@ -22,7 +22,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -41,6 +40,14 @@ namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
   return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
+}
+
+std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {
+  size_t last_slash = file.name().find_last_of('/');
+  return absl::StrCat(last_slash == std::string::npos
+                          ? ""
+                          : file.name().substr(0, last_slash + 1),
+                      ctx.opts().generated_entry_point_rs_file_name);
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -232,7 +239,11 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
 
 std::string RustInternalModuleName(const FileDescriptor& file) {
   return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {{"_", "__"}, {"/", "_s"}}));
+      absl::StrReplaceAll(StripProto(file.name()), {
+                                                       {"_", "__"},
+                                                       {"/", "_s"},
+                                                       {"-", "__"},
+                                                   }));
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
@@ -323,12 +334,14 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
 }
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
-  return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
+  return SnakeToUpperCamelCase(oneof.name()) + "Oneof";
 }
 
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
-  // Note: This is the name used for the cpp Case enum, we use it for both
-  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
+  return SnakeToUpperCamelCase(oneof.name()) + "Case";
+}
+
+std::string OneofCaseEnumCppName(const OneofDescriptor& oneof) {
   return SnakeToUpperCamelCase(oneof.name()) + "Case";
 }
 

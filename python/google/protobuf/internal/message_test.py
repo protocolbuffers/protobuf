@@ -30,6 +30,7 @@ import warnings
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import more_extensions_pb2
@@ -40,7 +41,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor
 from google.protobuf import message
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -50,7 +51,7 @@ UCS2_MAXUNICODE = 65535
 
 warnings.simplefilter('error', DeprecationWarning)
 
-@_parameterized.named_parameters(('_proto2', unittest_pb2),
+@parameterized.named_parameters(('_proto2', unittest_pb2),
                                 ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
@@ -496,6 +497,40 @@ class MessageTest(unittest.TestCase):
     message = more_messages_pb2.RequiredField()
     message.MergeFrom(msg)
     self.assertEqual(msg, message)
+
+  def testScalarRepeatedClear(self, message_module):
+    msg = message_module.TestAllTypes()
+    empty_size = msg.ByteSize()
+    msg.repeated_int32.append(1)
+    msg.repeated_int32.append(3)
+    repeated_int = msg.repeated_int32
+    self.assertEqual(2, len(msg.repeated_int32))
+    self.assertGreater(msg.ByteSize(), empty_size)
+    msg.repeated_int32.clear()
+    self.assertEqual(0, len(msg.repeated_int32))
+    self.assertEqual(0, len(repeated_int))
+    self.assertEqual(empty_size, msg.ByteSize())
+
+  def testCompositeRepeatedClear(self, message_module):
+    msg = message_module.TestAllTypes()
+    empty_size = msg.ByteSize()
+    msg.repeated_nested_message.add(bb=123)
+    msg.repeated_nested_message.add(bb=2)
+    repeated_nested_message = msg.repeated_nested_message
+    self.assertEqual(2, len(msg.repeated_nested_message))
+    self.assertGreater(msg.ByteSize(), empty_size)
+    msg.repeated_nested_message.clear()
+    self.assertEqual(0, len(msg.repeated_nested_message))
+    self.assertEqual(0, len(repeated_nested_message))
+    self.assertEqual(empty_size, msg.ByteSize())
+
+  def testCompositeRepeatedClearRelease(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=123)
+    # sub msg reference should still work after clear()
+    sub_msg = msg.repeated_nested_message[0]
+    msg.repeated_nested_message.clear()
+    self.assertEqual(123, sub_msg.bb)
 
   def testAddWrongRepeatedNestedField(self, message_module):
     msg = message_module.TestAllTypes()
@@ -1058,6 +1093,13 @@ class MessageTest(unittest.TestCase):
       m.repeated_string.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_string)
 
+  def testExtendWithNoLen(self, message_module):
+    """ Test extending repeated fields with iterables but no len"""
+    m = message_module.TestAllTypes()
+    self.assertSequenceEqual([], m.repeated_int32)
+    m.repeated_int32.extend(i for i in range(2))
+    self.assertSequenceEqual([0, 1], m.repeated_int32)
+
   def testExtendInt32WithPythonList(self, message_module):
     """Test extending repeated int32 fields with python lists."""
     m = message_module.TestAllTypes()
@@ -1068,6 +1110,8 @@ class MessageTest(unittest.TestCase):
     self.assertSequenceEqual([0, 1, 2], m.repeated_int32)
     m.repeated_int32.extend([3, 4])
     self.assertSequenceEqual([0, 1, 2, 3, 4], m.repeated_int32)
+    with self.assertRaises(TypeError):
+      m.repeated_int32.extend([5, 6, 'hi', 7])
 
   def testExtendFloatWithPythonList(self, message_module):
     """Test extending repeated float fields with python lists."""
@@ -1278,11 +1322,15 @@ class MessageTest(unittest.TestCase):
   def testDir(self, message_module):
     m = message_module.TestAllTypes()
     attributes = dir(m)
-    self.assertGreaterEqual(len(attributes), 55)
+    self.assertGreaterEqual(len(attributes), 124)
+
+    attribute_set = set(attributes)
     self.assertIn('DESCRIPTOR', attributes)
+    self.assertIn('oneof_string', attribute_set)
+    self.assertIn('optional_double', attribute_set)
+    self.assertIn('repeated_float', attribute_set)
 
     class_attributes = dir(type(m))
-    attribute_set = set(attributes)
     for attr in class_attributes:
       if attr != 'Extensions':
         self.assertIn(attr, attribute_set)
@@ -1456,22 +1504,14 @@ class Proto2Test(unittest.TestCase):
     """Assigning an invalid enum number is not allowed for closed enums."""
     m = unittest_pb2.TestAllTypes()
 
-    # TODO Enable these once upb's behavior is made conformant.
-    if api_implementation.Type() != 'upb':
-      # Can not assign unknown enum to closed enums.
-      with self.assertRaises(ValueError) as _:
-        m.optional_nested_enum = 1234567
-      self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
-      # Assignment is a different code path than append for the C++ impl.
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
-      with self.assertRaises(ValueError):
-        m.repeated_nested_enum[0] = 123456
-    else:
+    # Can not assign unknown enum to closed enums.
+    with self.assertRaises(ValueError) as _:
       m.optional_nested_enum = 1234567
-      m.repeated_nested_enum.append(1234567)
-      m.repeated_nested_enum.append(2)
-      m.repeated_nested_enum[0] = 2
+    self.assertRaises(ValueError, m.repeated_nested_enum.append, 1234567)
+    # Assignment is a different code path than append for the C++ impl.
+    m.repeated_nested_enum.append(2)
+    m.repeated_nested_enum[0] = 2
+    with self.assertRaises(ValueError):
       m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.
@@ -2419,11 +2459,11 @@ class Proto3Test(unittest.TestCase):
     int32_foreign_keys = list(msg.map_int32_foreign_message.keys())
 
     keys = []
-    for key in msg.map_string_string:
+    for key in list(msg.map_string_string.keys()):
       keys.append(key)
       msg.map_string_string[key] = '000'
-    self.assertEqual(keys, string_string_keys)
-    self.assertEqual(keys, list(msg.map_string_string.keys()))
+    self.assertCountEqual(keys, string_string_keys)
+    self.assertCountEqual(keys, list(msg.map_string_string.keys()))
 
     keys = []
     for key in msg.map_int32_foreign_message:
@@ -2545,6 +2585,10 @@ class Proto3Test(unittest.TestCase):
     msg2 = map_unittest_pb2.TestMap(
         map_string_foreign_message=msg1.map_string_foreign_message)
     self.assertEqual(42, msg2.map_string_foreign_message['test'].c)
+    msg3 = map_unittest_pb2.TestMap(
+        map_string_foreign_message={'test': dict(c=42)}
+    )
+    self.assertEqual(42, msg3.map_string_foreign_message['test'].c)
 
   def testMapFieldRaisesCorrectError(self):
     # Should raise a TypeError when given a non-iterable.
@@ -2587,10 +2631,6 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_all_types[2].optional_string = 'bar'
 
-    if api_implementation.Type() == 'cpp':
-      # Need to keep the map reference because of b/27942626.
-      # TODO: Remove it.
-      unused_map = msg.map_int32_all_types  # pylint: disable=unused-variable
     msg_value = msg.map_int32_all_types[2]
     msg.Clear()
 

@@ -86,9 +86,9 @@ std::string FieldName(const FieldDescriptor* field) {
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
   if (internal::cpp::IsGroupLike(*field)) {
-    field_name = field->message_type()->name();
+    field_name = std::string(field->message_type()->name());
   } else {
-    field_name = field->name();
+    field_name = std::string(field->name());
   }
   if (IsForbidden(field_name)) {
     // Append a trailing "#" to indicate that the name should be decorated to
@@ -130,7 +130,7 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
     result = DefaultPackage(options);
     if (!file->package().empty()) {
       if (!result.empty()) result += '.';
-      result += file->package();
+      absl::StrAppend(&result, file->package());
     }
   }
 

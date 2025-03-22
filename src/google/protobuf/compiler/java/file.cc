@@ -205,12 +205,11 @@ bool FileGenerator::Validate(std::string* error) {
   // end up overwriting the outer class with one of the inner ones.
   if (name_resolver_->HasConflictingClassName(file_, classname_,
                                               NameEquality::EXACT_EQUAL)) {
-    error->assign(file_->name());
-    error->append(
+    *error = absl::StrCat(
+        file_->name(),
         ": Cannot generate Java output because the file's outer class name, "
-        "\"");
-    error->append(classname_);
-    error->append(
+        "\"",
+        classname_,
         "\", matches the name of one of the types declared inside it.  "
         "Please either rename the type or use the java_outer_classname "
         "option to specify a different outer class name for the .proto file.");
