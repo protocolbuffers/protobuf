@@ -1531,5 +1531,91 @@ TEST2_FILE = ProtoFile(
         'google/protobuf/internal/more_messages.proto'])
 
 
+class LocalFakeDB(descriptor_database.DescriptorDatabase):
+
+  def FindFileContainingExtension(self, extendee_name, extension_number):
+    return descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
+
+  def FindAllExtensionNumbers(self, extendee_name):
+    return [1001, 1002]
+
+
+class BadDB(descriptor_database.DescriptorDatabase):
+
+  def FindFileContainingExtension(self, extendee_name, extension_number):
+    raise RuntimeError('just ignore it')
+
+  def FindAllExtensionNumbers(self, extendee_name):
+    raise RuntimeError('just ignore it')
+
+
+class BadDB2(descriptor_database.DescriptorDatabase):
+
+  # Returns a none list value.
+  def FindAllExtensionNumbers(self, extendee_name):
+    return 1.2
+
+
+@testing_refleaks.TestCase
+class FallBackDBTest(unittest.TestCase):
+
+  def setUp(self):
+    self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test1_pb2.DESCRIPTOR.serialized_pb
+    )
+    factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
+    db = LocalFakeDB()
+    db.Add(self.factory_test1_fd)
+    db.Add(factory_test2_fd)
+    self.pool = descriptor_pool.DescriptorPool(db)
+    file_desc = self.pool.FindFileByName(
+        'google/protobuf/internal/factory_test1.proto'
+    )
+    self.message_desc = file_desc.message_types_by_name['Factory1Message']
+
+    bad_db = BadDB()
+    bad_db.Add(self.factory_test1_fd)
+    self.bad_pool = descriptor_pool.DescriptorPool(bad_db)
+
+  def testFindExtensionByNumber(self):
+    ext = self.pool.FindExtensionByNumber(self.message_desc, 1001)
+    self.assertEqual(ext.name, 'one_more_field')
+
+  def testFindAllExtensions(self):
+    extensions = self.pool.FindAllExtensions(self.message_desc)
+    self.assertEqual(len(extensions), 2)
+
+  def testIgnoreBadFindExtensionByNumber(self):
+    file_desc = self.bad_pool.FindFileByName(
+        'google/protobuf/internal/factory_test1.proto'
+    )
+    message_desc = file_desc.message_types_by_name['Factory1Message']
+    with self.assertRaises(KeyError):
+      ext = self.bad_pool.FindExtensionByNumber(message_desc, 1001)
+
+  def testIgnoreBadFindAllExtensions(self):
+    file_desc = self.bad_pool.FindFileByName(
+        'google/protobuf/internal/factory_test1.proto'
+    )
+    message_desc = file_desc.message_types_by_name['Factory1Message']
+    extensions = self.bad_pool.FindAllExtensions(message_desc)
+    self.assertEqual(len(extensions), 0)
+
+  def testFindAllExtensionsReturnsNoneList(self):
+    db = BadDB2()
+    db.Add(self.factory_test1_fd)
+    pool = descriptor_pool.DescriptorPool(db)
+    file_desc = pool.FindFileByName(
+        'google/protobuf/internal/factory_test1.proto'
+    )
+    message_desc = file_desc.message_types_by_name['Factory1Message']
+    extensions = self.bad_pool.FindAllExtensions(message_desc)
+    self.assertEqual(len(extensions), 0)
+
+
 if __name__ == '__main__':
   unittest.main()
