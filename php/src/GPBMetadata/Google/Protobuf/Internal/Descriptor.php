@@ -25,6 +25,7 @@ class Descriptor
             ->repeated('dependency', \Google\Protobuf\Internal\GPBType::STRING, 3)
             ->repeated('public_dependency', \Google\Protobuf\Internal\GPBType::INT32, 10)
             ->repeated('weak_dependency', \Google\Protobuf\Internal\GPBType::INT32, 11)
+            ->repeated('option_dependency', \Google\Protobuf\Internal\GPBType::STRING, 15)
             ->repeated('message_type', \Google\Protobuf\Internal\GPBType::MESSAGE, 4, 'google.protobuf.internal.DescriptorProto')
             ->repeated('enum_type', \Google\Protobuf\Internal\GPBType::MESSAGE, 5, 'google.protobuf.internal.EnumDescriptorProto')
             ->repeated('service', \Google\Protobuf\Internal\GPBType::MESSAGE, 6, 'google.protobuf.internal.ServiceDescriptorProto')
