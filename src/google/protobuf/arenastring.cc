@@ -10,18 +10,14 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
 #include <string>
 #include <utility>
 
 #include "absl/base/const_init.h"
-#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 
