@@ -9,9 +9,12 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -91,7 +94,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 
     Family f = OTHER;
     if (field->is_repeated()) {
-      f = REPEATED;
+      f = ShouldSplit(field, options) ? OTHER : REPEATED;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
       f = STRING;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -120,6 +123,12 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 
   // For each family, group fields to optimize padding.
   for (int f = 0; f < kMaxFamily; f++) {
+    // Match the logic in LocalityOptimizer::OptimizeLayoutByFamily. Sort by
+    // preferred location to keep fields as close to their field number order as
+    // possible. Using stable_sort ensures that the output is consistent across
+    // runs.
+    std::stable_sort(aligned_to_1[f].begin(), aligned_to_1[f].end());
+
     // Now group fields aligned to 1 byte into sets of 4, and treat those like a
     // single field aligned to 4 bytes.
     for (size_t i = 0; i < aligned_to_1[f].size(); i += 4) {
