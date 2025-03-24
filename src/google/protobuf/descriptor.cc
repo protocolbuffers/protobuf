@@ -2529,16 +2529,13 @@ void DescriptorPool::FindAllExtensions(
   DeferredValidation deferred_validation(this);
   std::vector<const FieldDescriptor*> extensions;
   {
-    absl::MutexLockMaybe lock(mutex_);
-    if (fallback_database_ != nullptr) {
-      tables_->known_bad_symbols_.clear();
-      tables_->known_bad_files_.clear();
-    }
-
     // Initialize tables_->extensions_ from the fallback database first
     // (but do this only once per descriptor).
     if (fallback_database_ != nullptr &&
         tables_->extensions_loaded_from_db_.count(extendee) == 0) {
+      absl::MutexLockMaybe lock(mutex_);
+      tables_->known_bad_symbols_.clear();
+      tables_->known_bad_files_.clear();
       std::vector<int> numbers;
       if (fallback_database_->FindAllExtensionNumbers(
               std::string(extendee->full_name()), &numbers)) {
