@@ -207,7 +207,8 @@ UPB_INLINE void UPB_PRIVATE(_upb_TextEncode_Bytes)(txtenc* e,
   UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "\"");
   for (; ptr < end; ptr++) {
     unsigned char uc = *ptr;
-    if (UPB_PRIVATE(_upb_AsciiIsPrint)(uc)) {
+    if (UPB_PRIVATE(_upb_AsciiIsPrint)(uc) &&
+        !UPB_PRIVATE(_upb_DefinitelyNeedsEscape)(uc)) {
       UPB_PRIVATE(_upb_TextEncode_PutBytes)(e, ptr, 1);
     } else {
       UPB_PRIVATE(_upb_TextEncode_Escaped)(e, uc);

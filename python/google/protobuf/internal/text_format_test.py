@@ -609,6 +609,14 @@ class TextFormatMessageToStringTests(TextFormatBase):
                                                  print_unknown_fields=True,
                                                  as_one_line=True))
 
+  def testBytestDoubleQuotes(self, message_module):
+    msg = message_module.TestAllTypes(optional_bytes=b'"')
+    self.assertEqual(str(msg), 'optional_bytes: "\\""\n')
+
+  def testBytesSingleQuote(self, message_module):
+    msg = message_module.TestAllTypes(optional_bytes=b"'")
+    self.assertEqual(str(msg), 'optional_bytes: "\\\'"\n')
+
 
 @parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToTextBytesTests(TextFormatBase):
