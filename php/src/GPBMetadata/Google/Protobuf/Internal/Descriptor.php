@@ -322,6 +322,18 @@ class Descriptor
             ->optional('message_encoding', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.FeatureSet.MessageEncoding')
             ->optional('json_format', \Google\Protobuf\Internal\GPBType::ENUM, 6, 'google.protobuf.internal.FeatureSet.JsonFormat')
             ->optional('enforce_naming_style', \Google\Protobuf\Internal\GPBType::ENUM, 7, 'google.protobuf.internal.FeatureSet.EnforceNamingStyle')
+            ->optional('default_symbol_visibility', \Google\Protobuf\Internal\GPBType::ENUM, 8, 'google.protobuf.internal.FeatureSet.VisibilityFeature.DefaultSymbolVisibility')
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.FeatureSet.VisibilityFeature', \Google\Protobuf\Internal\FeatureSet\VisibilityFeature::class)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.VisibilityFeature.DefaultSymbolVisibility', \Google\Protobuf\Internal\DefaultSymbolVisibility::class)
+            ->value("DEFAULT_SYMBOL_VISIBILITY_UNKNOWN", 0)
+            ->value("EXPORT_ALL", 1)
+            ->value("EXPORT_TOP_LEVEL", 2)
+            ->value("LOCAL_ALL", 3)
+            ->value("STRICT", 4)
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FeatureSet.FieldPresence', \Google\Protobuf\Internal\FieldPresence::class)
@@ -422,6 +434,12 @@ class Descriptor
             ->value("EDITION_99998_TEST_ONLY", 99998)
             ->value("EDITION_99999_TEST_ONLY", 99999)
             ->value("EDITION_MAX", 2147483647)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.SymbolVisibility', \Google\Protobuf\Internal\SymbolVisibility::class)
+            ->value("VISIBILITY_UNSET", 0)
+            ->value("VISIBILITY_LOCAL", 1)
+            ->value("VISIBILITY_EXPORT", 2)
             ->finalizeToPool();
 
         $pool->finish();
