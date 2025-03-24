@@ -17,6 +17,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/annotations.pb.h"
 
 namespace google {
 namespace protobuf {

@@ -88,6 +88,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/annotations.pb.cc
 )
 
 # @//pkg:protobuf

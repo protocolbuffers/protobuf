@@ -19,6 +19,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/annotations.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -66,6 +67,12 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   } else {
     std::string default_value = variables_["default_value"];
     variables_["default_value_access"] = std::move(default_value);
+  }
+
+  // Only print [SerializeField] if the custom option is set to true.
+  if (descriptor_->options().HasExtension(serialize_field) &&
+    descriptor_->options().GetExtension(serialize_field)) {
+  printer->Print("[SerializeField]\n");
   }
 
   // Declare the field itself.

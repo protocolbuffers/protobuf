@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+option csharp_namespace = "gen";
+option go_package = "server/gen/annotation;annotation";
+
+// Extend MessageOptions with a custom option.
+extend google.protobuf.MessageOptions {
+  // Use a unique tag number (in the 50000+ range to avoid conflicts).
+  bool serializable_message = 50001;
+}
+
+// Extend FieldOptions with a custom option.
+extend google.protobuf.FieldOptions {
+  bool serialize_field = 50002;
+}
+
+// Extend FileOptions with a custom option for UnityEngine inclusion.
+extend google.protobuf.FileOptions {
+  bool include_unityengine = 50003;
+}

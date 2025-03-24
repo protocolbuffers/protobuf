@@ -26,6 +26,7 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/annotations.pb.h" // <-- Add this line at the top
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -100,6 +101,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   AddSerializableAttribute(printer);
 
+  if (descriptor_->options().HasExtension(serializable_message) &&
+    descriptor_->options().GetExtension(serializable_message)) {
+    printer->Print("[global::System.SerializableAttribute]\n");
+  }
   printer->Print(
       "[global::System.Diagnostics.DebuggerDisplayAttribute(\"{ToString(),nq}"
       "\")]\n");
