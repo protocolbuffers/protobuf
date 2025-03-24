@@ -15,7 +15,7 @@ use unittest_rust_proto::{
 
 use proto_proc_macro::proto_proc;
 
-use map_unittest_rust_proto::TestMap;
+use map_unittest_rust_proto::{TestMap, TestMapWithMessages};
 
 struct TestValue {
     val: i64,
@@ -217,8 +217,6 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().get("quux").unwrap(), eq("quuz"));
 }
 
-/*
-TODO: Re-enable this test once message maps work.
 #[gtest]
 fn test_message_maps() {
     let msg3 = proto_proc!(TestAllTypes { optional_int32: 3 });
@@ -235,4 +233,3 @@ fn test_message_maps() {
     assert_that!(msg.map_string_all_types().get("baz").unwrap().optional_int32(), eq(2));
     assert_that!(msg.map_string_all_types().get("quux").unwrap().optional_int32(), eq(3));
 }
-*/

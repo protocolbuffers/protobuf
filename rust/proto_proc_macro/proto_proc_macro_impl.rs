@@ -10,8 +10,8 @@ extern crate proc_macro;
 use quote::{format_ident, quote, ToTokens};
 use syn::{
     parse::ParseStream, parse_macro_input, parse_quote, punctuated::Punctuated, Error, Expr,
-    ExprArray, ExprPath, ExprStruct, FieldValue, Ident, Member, Path, QSelf, Result, Stmt, Token,
-    Type, TypePath,
+    ExprArray, ExprPath, ExprStruct, ExprTuple, FieldValue, Ident, Member, Path, QSelf, Result,
+    Stmt, Token, Type, TypePath,
 };
 
 /// proto! enables the use of Rust struct initialization syntax to create
@@ -76,6 +76,18 @@ enum EnclosingContext {
         /// The name of the repeated field.
         repeated_field: Ident,
     },
+
+    /// The current expression is (key, value) tuple literal for a map field.
+    Map { map_field: Ident },
+}
+
+impl EnclosingContext {
+    pub fn repeated_field(&self) -> Ident {
+        match self {
+            EnclosingContext::Array { repeated_field } => repeated_field.clone(),
+            _ => panic!("Can only get the repeated field of an array context"),
+        }
+    }
 }
 
 fn expand_struct(
@@ -184,6 +196,17 @@ fn expand_struct_head_tail(
                 Some(parse_quote!(this)),
             ))
         }
+        EnclosingContext::Map { map_field } => {
+            // In a message inside a key value tuple, create a new message and return it.
+            // The type trickery is used to infer the message type from the map wrapper.
+            Ok((
+                parse_quote!(::protobuf::__internal::get_map_default_value(
+                    ::protobuf::__internal::Private,
+                    this.#map_field()
+                )),
+                Some(parse_quote!(this)),
+            ))
+        }
     }
 }
 
@@ -201,7 +224,9 @@ fn expand_array(array: ExprArray, enclosing_context: EnclosingContext) -> Result
     let enclosing_context = EnclosingContext::Array {
         repeated_field: match enclosing_context {
             EnclosingContext::Struct { field } => field,
-            EnclosingContext::TopLevel | EnclosingContext::Array { .. } => {
+            EnclosingContext::TopLevel
+            | EnclosingContext::Array { .. }
+            | EnclosingContext::Map { .. } => {
                 return Err(Error::new_spanned(array, "arrays must be nested inside a message"))
             }
         },
@@ -213,9 +238,30 @@ fn expand_array(array: ExprArray, enclosing_context: EnclosingContext) -> Result
         .map(|elem| match elem {
             Expr::Struct(struct_) => expand_struct(struct_, enclosing_context.clone()),
             Expr::Array(array) => expand_array(array, enclosing_context.clone()),
+            Expr::Tuple(tuple) => expand_tuple(
+                tuple,
+                EnclosingContext::Map { map_field: enclosing_context.repeated_field() },
+            ),
             expr => Ok(expr),
         })
         .collect::<Result<Vec<Expr>>>()?;
 
     Ok(parse_quote!([#(#array),*].into_iter()))
+}
+
+fn expand_tuple(tuple: ExprTuple, enclosing_context: EnclosingContext) -> Result<Expr> {
+    if let Some(attr) = tuple.attrs.first() {
+        return Err(Error::new_spanned(attr, "unsupported syntax"));
+    }
+
+    if tuple.elems.len() != 2 {
+        return Err(Error::new_spanned(tuple, "Map tuple literals must have exactly two elements"));
+    }
+
+    let key = tuple.elems[0].clone();
+    let value = match &tuple.elems[1] {
+        Expr::Struct(struct_) => expand_struct(struct_.clone(), enclosing_context.clone()),
+        expr => Ok(expr.clone()),
+    }?;
+    Ok(parse_quote!((#key, #value)))
 }
