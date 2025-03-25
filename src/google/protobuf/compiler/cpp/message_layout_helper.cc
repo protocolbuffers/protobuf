@@ -12,6 +12,31 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+void FieldGroup::Append(const FieldGroup& other) {
+  UpdatePreferredLocationAndInsertOtherFields(other);
+}
+
+bool FieldGroup::operator<(const FieldGroup& other) const {
+  return preferred_location_ < other.preferred_location_;
+}
+
+bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
+    const FieldGroup& other) {
+  if (other.fields_.empty()) {
+    return false;
+  }
+
+  // Preferred location is the average among all the fields, so we weight by
+  // the number of fields on each FieldGroup object.
+  preferred_location_ = (preferred_location_ * fields_.size() +
+                         (other.preferred_location_ * other.fields_.size())) /
+                        (fields_.size() + other.fields_.size());
+
+  fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
+
+  return true;
+}
+
 FieldPartitionArray MessageLayoutHelper::PartitionFields(
     const std::vector<const FieldDescriptor*>& fields, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) const {

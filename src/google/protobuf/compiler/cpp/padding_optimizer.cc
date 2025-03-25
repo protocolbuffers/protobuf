@@ -24,50 +24,6 @@ namespace cpp {
 
 namespace {
 
-// FieldGroup is just a helper for PaddingOptimizer below. It holds a vector of
-// fields that are grouped together because they have compatible alignment, and
-// a preferred location in the final field ordering.
-class FieldGroup {
- public:
-  FieldGroup() : preferred_location_(0) {}
-
-  // A group with a single field.
-  FieldGroup(double preferred_location, const FieldDescriptor* field)
-      : preferred_location_(preferred_location), fields_(1, field) {}
-
-  // Append the fields in 'other' to this group.
-  void Append(const FieldGroup& other) {
-    if (other.fields_.empty()) {
-      return;
-    }
-    // Preferred location is the average among all the fields, so we weight by
-    // the number of fields on each FieldGroup object.
-    preferred_location_ = (preferred_location_ * fields_.size() +
-                           (other.preferred_location_ * other.fields_.size())) /
-                          (fields_.size() + other.fields_.size());
-    fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
-  }
-
-  void SetPreferredLocation(double location) { preferred_location_ = location; }
-  const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
-
-  // FieldGroup objects sort by their preferred location.
-  bool operator<(const FieldGroup& other) const {
-    return preferred_location_ < other.preferred_location_;
-  }
-
- private:
-  // "preferred_location_" is an estimate of where this group should go in the
-  // final list of fields.  We compute this by taking the average index of each
-  // field in this group in the original ordering of fields.  This is very
-  // approximate, but should put this group close to where its member fields
-  // originally went.
-  double preferred_location_;
-  std::vector<const FieldDescriptor*> fields_;
-  // We rely on the default copy constructor and operator= so this type can be
-  // used in a vector.
-};
-
 void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
                           const Options& options,
                           MessageSCCAnalyzer* scc_analyzer) {
