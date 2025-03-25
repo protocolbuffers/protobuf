@@ -18,11 +18,10 @@
 namespace google {
 namespace protobuf {
 namespace json_internal {
-// Internal version of google::protobuf::util::MessageToJsonStream; see json.h for
-// details.
-absl::Status MessageToJsonStream(const Message& message, 
-                                 io::ZeroCopyOutputStream* json_output,
-                                 json_internal::WriterOptions options);
+// Internal version of google::protobuf::util::MessageToJson; see json.h for details.
+absl::Status MessageToJson(const Message& message, 
+                           io::ZeroCopyOutputStream* json_output,
+                           json_internal::WriterOptions options);
 
 // Internal version of google::protobuf::util::BinaryToJsonStream; see json.h for
 // details.

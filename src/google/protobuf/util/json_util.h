@@ -29,7 +29,7 @@ using ::google::protobuf::json::JsonToBinaryStream;
 using ::google::protobuf::json::JsonToBinaryString;
 
 using ::google::protobuf::json::MessageToJsonString;
-using ::google::protobuf::json::MessageToJsonStream;
+using ::google::protobuf::json::MessageToJson;
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

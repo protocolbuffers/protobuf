@@ -85,12 +85,12 @@ absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
 absl::Status MessageToJsonString(const Message& message, std::string* output,
                                  const PrintOptions& options) {
   io::StringOutputStream out(output);
-  return MessageToJsonStream(message, &out, options);
+  return MessageToJson(message, &out, options);
 }
 
-absl::Status MessageToJsonStream(const Message& message, 
-                                 io::ZeroCopyOutputStream* json_output,
-                                 const PrintOptions& options) {
+absl::Status MessageToJson(const Message& message, 
+                           io::ZeroCopyOutputStream* json_output,
+                           const PrintOptions& options) {
   google::protobuf::json_internal::WriterOptions opts;
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
@@ -102,7 +102,7 @@ absl::Status MessageToJsonStream(const Message& message,
   // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
-  return google::protobuf::json_internal::MessageToJsonStream(message, json_output, opts);
+  return google::protobuf::json_internal::MessageToJson(message, json_output, opts);
 }
 
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,

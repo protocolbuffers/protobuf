@@ -831,13 +831,13 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
 }
 }  // namespace
 
-absl::Status MessageToJsonStream(const Message& message, 
-                                 io::ZeroCopyOutputStream* json_output,
-                                 json_internal::WriterOptions options) {
+absl::Status MessageToJson(const Message& message, 
+                           io::ZeroCopyOutputStream* json_output,
+                           json_internal::WriterOptions options) {
   // NOTE: Most of the contortions in this function are to allow for capture of
-  // input and output of the parser in ABSL_DLOG mode. Destruction order is very
-  // critical in this function, because io::ZeroCopy*Stream types usually only
-  // flush on destruction.
+  // output of the parser in ABSL_DLOG mode. Destruction order is very critical 
+  // in this function, because io::ZeroCopy*Stream types usually only flush on 
+  // destruction.
 
   // For ABSL_DLOG, we would like to print out the input and output, which
   // requires buffering both instead of doing "zero copy". This block, and the
