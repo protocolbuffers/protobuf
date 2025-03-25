@@ -13,6 +13,7 @@
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -67,11 +68,9 @@ class FieldGroup {
   // used in a vector.
 };
 
-}  // namespace
-
-static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
-                                 const Options& options,
-                                 MessageSCCAnalyzer* scc_analyzer) {
+void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
+                          const Options& options,
+                          MessageSCCAnalyzer* scc_analyzer) {
   if (fields->empty()) return;
 
   // The sorted numeric order of Family determines the declaration order in the
@@ -177,6 +176,8 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
   }
 }
 
+}  // namespace
+
 // Reorder 'fields' so that if the fields are output into a c++ class in the new
 // order, fields of similar family (see below) are together and within each
 // family, alignment padding is minimized.
@@ -213,20 +214,13 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
 void PaddingOptimizer::OptimizeLayout(
     std::vector<const FieldDescriptor*>* fields, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
-  std::vector<const FieldDescriptor*> normal;
-  std::vector<const FieldDescriptor*> split;
-  for (const auto* field : *fields) {
-    if (ShouldSplit(field, options)) {
-      split.push_back(field);
-    } else {
-      normal.push_back(field);
-    }
-  }
-  OptimizeLayoutHelper(&normal, options, scc_analyzer);
-  OptimizeLayoutHelper(&split, options, scc_analyzer);
+  auto field_partitions = PartitionFields(*fields, options, scc_analyzer);
+
   fields->clear();
-  fields->insert(fields->end(), normal.begin(), normal.end());
-  fields->insert(fields->end(), split.begin(), split.end());
+  for (auto& partition : field_partitions) {
+    OptimizeLayoutHelper(&partition, options, scc_analyzer);
+    fields->insert(fields->end(), partition.begin(), partition.end());
+  }
 }
 
 }  // namespace cpp
