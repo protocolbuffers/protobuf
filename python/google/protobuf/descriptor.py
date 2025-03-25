@@ -721,13 +721,6 @@ class FieldDescriptor(DescriptorBase):
 
   @property
   def label(self):
-    warnings.warn(
-        'Call to deprecated label property. Use is_required() or is_repeated()'
-        ' methods instead.',
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-
     if (
         self._GetFeatures().field_presence
         == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED

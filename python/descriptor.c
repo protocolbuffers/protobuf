@@ -1056,10 +1056,6 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
 
 static PyObject* PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase* self,
                                                 void* closure) {
-  PyErr_WarnEx(
-      PyExc_DeprecationWarning,
-      "label() is deprecated. Use is_required() or is_repeated() instead.", 2);
-
   return PyLong_FromLong(upb_FieldDef_Label(self->def));
 }
 
