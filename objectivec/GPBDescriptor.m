@@ -142,11 +142,14 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // No real value in checking all the fields individually, just check the combined flags at the
   // end.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBFieldFlags unknownFieldFlags =
       (GPBFieldFlags)(~(GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
                         GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero |
                         GPBFieldTextFormatNameCustom | GPBFieldMapKeyMask));
   NSAssert((mergedFieldFlags & unknownFieldFlags) == 0, @"Internal error: unknown field flags set");
+#pragma clang diagnostic pop
 #endif  // defined(DEBUG) && DEBUG
 
   BOOL wireFormat = (flags & GPBDescriptorInitializationFlag_WireFormat) != 0;
@@ -611,9 +614,12 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return (description_->flags & GPBFieldRequired) != 0;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (BOOL)isOptional {
-  return (description_->flags & GPBFieldOptional) != 0;
+  return self.fieldType == GPBFieldTypeSingle && !self.isRequired;
 }
+#pragma clang diagnostic pop
 
 - (GPBFieldType)fieldType {
   GPBFieldFlags flags = description_->flags;

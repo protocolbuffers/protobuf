@@ -1428,8 +1428,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
             return NO;
           }
         } else {
-          NSAssert(field.isOptional, @"%@: Single message field %@ not required or optional?",
-                   [self class], field.name);
           if (GPBGetHasIvarField(self, field)) {
             GPBMessage *message = GPBGetMessageMessageField(self, field);
             if (!message.initialized) {
