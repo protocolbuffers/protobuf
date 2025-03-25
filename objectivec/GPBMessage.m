@@ -1119,7 +1119,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
     descriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMessage class]
                                    messageName:@"GPBMessage"
-                                runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                                runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311
                                fileDescription:&fileDescription
                                         fields:NULL
                                     fieldCount:0

@@ -132,6 +132,7 @@ extern "C" {
 // The values are only removed when GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION
 // is updated to make them no longer valid.
 extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310;  // NOLINT
+extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311;  // NOLINT
 
 #if defined(__cplusplus)
 }  // extern "C"
