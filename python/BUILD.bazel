@@ -160,5 +160,6 @@ py_extension(
         "//upb/hash",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "@abseil-cpp//absl/base:core_headers",
     ],
 )
