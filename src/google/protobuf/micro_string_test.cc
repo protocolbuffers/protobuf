@@ -1052,7 +1052,15 @@ TEST(MicroStringTest, MemoryUsageComparison) {
     int64_t this_micro_str_used = micro_str.SpaceUsedExcludingSelfLong();
     int64_t this_arena_str_used = SpaceUsedExcludingSelfLong(arena_str);
     // We expect to always use the same or less memory.
-    EXPECT_LE(this_micro_str_used, this_arena_str_used);
+    if (sizeof(void*) >= 8) {
+      EXPECT_LE(this_micro_str_used, this_arena_str_used);
+    } else {
+      // Except that in 32-bit platforms we have heap alignment to 4 bytes, but
+      // arena alignment is always 8. Take that fact into account by rounding up
+      // the ArenaStringPtr use.
+      EXPECT_LE(this_micro_str_used,
+                ArenaAlignDefault::Ceil(this_arena_str_used));
+    }
 
     int64_t diff = micro_str_used - arena_str_used;
     int64_t this_diff = this_micro_str_used - this_arena_str_used;
