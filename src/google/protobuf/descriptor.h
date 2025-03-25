@@ -2518,6 +2518,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
   friend class ::google::protobuf::compiler::CommandLineInterface;
   friend class TextFormat;
+  friend class Reflection;
 
   struct MemoBase {
     virtual ~MemoBase() = default;
@@ -2527,16 +2528,17 @@ class PROTOBUF_EXPORT DescriptorPool {
     T value;
   };
 
-  // Memoize a projection of a field.  This is used to cache the results of
-  // calling a function on a field, used for expensive descriptor calculations.
-  template <typename Func>
-  const auto& MemoizeProjection(const FieldDescriptor* field, Func func) const {
-    using ResultT = std::decay_t<decltype(func(field))>;
-    ABSL_DCHECK(field->file()->pool() == this);
+  // Memoize a projection of a descriptor. This is used to cache the results of
+  // calling a function on a descriptor, used for expensive descriptor
+  // calculations.
+  template <typename Desc, typename Func>
+  const auto& MemoizeProjection(const Desc* descriptor, Func func) const {
+    using ResultT = std::decay_t<decltype(func(descriptor))>;
+    ABSL_DCHECK(descriptor->file()->pool() == this);
     static_assert(std::is_empty_v<Func>);
     // This static bool is unique per-Func, so its address can be used as a key.
     static bool type_key;
-    auto key = std::pair<const void*, const void*>(field, &type_key);
+    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
     {
       absl::ReaderMutexLock lock(&field_memo_table_mutex_);
       auto it = field_memo_table_->find(key);
@@ -2545,7 +2547,7 @@ class PROTOBUF_EXPORT DescriptorPool {
       }
     }
     auto result = std::make_unique<MemoData<ResultT>>();
-    result->value = func(field);
+    result->value = func(descriptor);
     {
       absl::MutexLock lock(&field_memo_table_mutex_);
       auto insert_result = field_memo_table_->insert({key, std::move(result)});
