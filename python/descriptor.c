@@ -1054,8 +1054,20 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
   return PyLong_FromLong(cpp_types[upb_FieldDef_CType(self->def)]);
 }
 
+static void WarnDeprecatedLabel(void) {
+  static int deprecated_label_count = 100;
+  if (deprecated_label_count > 0) {
+    --deprecated_label_count;
+    PyErr_WarnEx(
+        PyExc_DeprecationWarning,
+        "label() is deprecated. Use is_required() or is_repeated() instead.",
+        3);
+  }
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase* self,
                                                 void* closure) {
+  WarnDeprecatedLabel();
   return PyLong_FromLong(upb_FieldDef_Label(self->def));
 }
 

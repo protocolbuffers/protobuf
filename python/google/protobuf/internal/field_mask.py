@@ -100,7 +100,7 @@ def _IsValidPath(message_descriptor, path):
   for name in parts:
     field = message_descriptor.fields_by_name.get(name)
     if (field is None or
-        field.label == FieldDescriptor.LABEL_REPEATED or
+        field.is_repeated or
         field.type != FieldDescriptor.TYPE_MESSAGE):
       return False
     message_descriptor = field.message_type
@@ -271,7 +271,7 @@ def _MergeMessage(
           name, source_descriptor.full_name))
     if child:
       # Sub-paths are only allowed for singular message fields.
-      if (field.label == FieldDescriptor.LABEL_REPEATED or
+      if (field.is_repeated or
           field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
         raise ValueError('Error: Field {0} in message {1} is not a singular '
                          'message field and cannot have sub-fields.'.format(
@@ -281,7 +281,7 @@ def _MergeMessage(
             child, getattr(source, name), getattr(destination, name),
             replace_message, replace_repeated)
       continue
-    if field.label == FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if replace_repeated:
         destination.ClearField(_StrConvert(name))
       repeated_source = getattr(source, name)
