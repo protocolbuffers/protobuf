@@ -147,6 +147,7 @@ java_library(
     deps = [":lite_runtime_only"],
 )
 
+# Bazel users, don't depend on this target, use //java/lite.
 protobuf_versioned_java_library(
     name = "lite_bundle",
     srcs = LITE_SRCS + [
@@ -268,22 +269,17 @@ java_library(
     ],
 )
 
+# Bazel users, don't depend on this target, use :core.
 protobuf_versioned_java_library(
     name = "core_bundle",
-    srcs = FULL_SRCS,
+    srcs = FULL_SRCS + LITE_SRCS,
     automatic_module_name = "com.google.protobuf",
     bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
                          "are a way of encoding structured data in an " +
                          "efficient yet extensible format.",
     bundle_name = "Protocol Buffers [Core]",
     bundle_symbolic_name = "com.google.protobuf",
-    visibility = ["//visibility:public"],
-    exports = [
-        ":lite_runtime_only",
-    ],
-    deps = [
-        ":lite_runtime_only",
-    ],
+    visibility = ["//visibility:private"],
 )
 
 # Bazel users, don't depend on this target, use :core.
