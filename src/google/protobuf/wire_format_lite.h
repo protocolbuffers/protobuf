@@ -25,6 +25,7 @@
 #include <utility>
 
 #include "absl/base/casts.h"
+#include "absl/base/internal/endian.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
@@ -448,8 +449,7 @@ class PROTOBUF_EXPORT WireFormatLite {
       uint8_t* target);
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static uint8_t* WriteFixedNoTagToArray(
-      const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
-      uint8_t* target);
+      const RepeatedField<T>& value, uint8_t* target);
 
   // Write fields, including tags.
   template <int field_number>
@@ -1084,22 +1084,17 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   }
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
-#if defined(ABSL_IS_LITTLE_ENDIAN)
     values->Resize(old_entries + new_entries, 0);
-    // values->mutable_data() may change after Resize(), so do this after:
-    void* dest = reinterpret_cast<void*>(values->mutable_data() + old_entries);
-    if (!input->ReadRaw(dest, new_bytes)) {
-      values->Truncate(old_entries);
-      return false;
+    CType* dest = values->mutable_data() + old_entries;
+    if constexpr (CanReadWriteViaMemcpy<CType>()) {
+      if (!input->ReadRaw(dest, new_bytes)) {
+        return false;
+      }
+    } else {
+      for (int i = 0; i < new_entries; ++i, ++dest) {
+        if (!ReadPrimitive<CType, DeclaredType>(input, dest)) return false;
+      }
     }
-#else
-    values->Reserve(old_entries + new_entries);
-    CType value;
-    for (int i = 0; i < new_entries; ++i) {
-      if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
-      values->AddAlreadyReserved(value);
-    }
-#endif
   } else {
     // This is the slow-path case where "length" may be too large to
     // safely allocate.  We read as much as we can into *values
@@ -1321,21 +1316,23 @@ inline uint8_t* WireFormatLite::WritePrimitiveNoTagToArray(
 
 template <typename T>
 inline uint8_t* WireFormatLite::WriteFixedNoTagToArray(
-    const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
-    uint8_t* target) {
-#if defined(ABSL_IS_LITTLE_ENDIAN)
-  (void)Writer;
-
-  const int n = value.size();
-  ABSL_DCHECK_GT(n, 0);
-
-  const T* ii = value.data();
-  const int bytes = n * static_cast<int>(sizeof(ii[0]));
-  memcpy(target, ii, static_cast<size_t>(bytes));
-  return target + bytes;
-#else
-  return WritePrimitiveNoTagToArray(value, Writer, target);
-#endif
+    const RepeatedField<T>& value, uint8_t* target) {
+  if constexpr (CanReadWriteViaMemcpy<T>()) {
+    ABSL_DCHECK(!value.empty());
+    const size_t bytes = sizeof(T) * value.size();
+    memcpy(target, value.data(), bytes);
+    return target + bytes;
+  } else {
+    for (T v : value) {
+      if constexpr (sizeof(T) == 4) {
+        absl::little_endian::Store32(target, absl::bit_cast<uint32_t>(v));
+      } else {
+        absl::little_endian::Store64(target, absl::bit_cast<uint64_t>(v));
+      }
+      target += sizeof(T);
+    }
+    return target;
+  }
 }
 
 inline uint8_t* WireFormatLite::WriteInt32ToArray(int field_number,

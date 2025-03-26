@@ -34,7 +34,6 @@
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
-#include "google/protobuf/endian.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
@@ -50,7 +49,6 @@ using conformance::WireFormat;
 using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
-using google::protobuf::internal::little_endian::FromHost;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
@@ -115,15 +113,11 @@ std::string longvarint(uint64_t x, int extra) {
 }
 
 std::string fixed32(void* data) {
-  uint32_t data_le;
-  std::memcpy(&data_le, data, 4);
-  data_le = FromHost(data_le);
+  uint32_t data_le = absl::little_endian::Load32(data);
   return std::string(reinterpret_cast<char*>(&data_le), 4);
 }
 std::string fixed64(void* data) {
-  uint64_t data_le;
-  std::memcpy(&data_le, data, 8);
-  data_le = FromHost(data_le);
+  uint64_t data_le = absl::little_endian::Load64(data);
   return std::string(reinterpret_cast<char*>(&data_le), 8);
 }
 

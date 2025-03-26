@@ -25,7 +25,6 @@
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
-#include "google/protobuf/endian.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -219,7 +218,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
     // EOF means we're done.
     return true;
   }
-  in_len = internal::little_endian::ToHost(in_len);
+  in_len = absl::little_endian::ToHost(in_len);
 
   std::string serialized_input;
   serialized_input.resize(in_len);
@@ -234,7 +233,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   std::string serialized_output;
   response->SerializeToString(&serialized_output);
 
-  uint32_t out_len = internal::little_endian::FromHost(
+  uint32_t out_len = absl::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));
 
   RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, &out_len, sizeof(out_len)));

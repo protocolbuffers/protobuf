@@ -157,7 +157,6 @@ cc_library(
         ":conformance_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
-        "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",

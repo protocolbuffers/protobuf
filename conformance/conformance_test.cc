@@ -31,7 +31,6 @@
 #include "conformance/conformance.pb.h"
 #include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
-#include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 
@@ -556,7 +555,7 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
-  uint32_t len = internal::little_endian::FromHost(
+  uint32_t len = absl::little_endian::FromHost(
       static_cast<uint32_t>(serialized_request.size()));
 
   if (isolated_) {

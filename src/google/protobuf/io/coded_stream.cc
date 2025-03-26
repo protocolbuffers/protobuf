@@ -345,60 +345,6 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
 }
 
 
-bool CodedInputStream::ReadLittleEndian16Fallback(uint16_t* value) {
-  constexpr size_t kSize = sizeof(*value);
-  uint8_t bytes[kSize];
-
-  const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(kSize)) {
-    // Fast path:  Enough bytes in the buffer to read directly.
-    ptr = buffer_;
-    Advance(kSize);
-  } else {
-    // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, kSize)) return false;
-    ptr = bytes;
-  }
-  ReadLittleEndian16FromArray(ptr, value);
-  return true;
-}
-
-bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
-  constexpr size_t kSize = sizeof(*value);
-  uint8_t bytes[kSize];
-
-  const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(kSize)) {
-    // Fast path:  Enough bytes in the buffer to read directly.
-    ptr = buffer_;
-    Advance(kSize);
-  } else {
-    // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, kSize)) return false;
-    ptr = bytes;
-  }
-  ReadLittleEndian32FromArray(ptr, value);
-  return true;
-}
-
-bool CodedInputStream::ReadLittleEndian64Fallback(uint64_t* value) {
-  constexpr size_t kSize = sizeof(*value);
-  uint8_t bytes[kSize];
-
-  const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(kSize)) {
-    // Fast path:  Enough bytes in the buffer to read directly.
-    ptr = buffer_;
-    Advance(kSize);
-  } else {
-    // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, kSize)) return false;
-    ptr = bytes;
-  }
-  ReadLittleEndian64FromArray(ptr, value);
-  return true;
-}
-
 namespace {
 
 // Decodes varint64 with known size, N, and returns next pointer. Knowing N at
@@ -917,7 +863,6 @@ uint8_t* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
   }
 }
 
-#ifndef ABSL_IS_LITTLE_ENDIAN
 uint8_t* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
                                                    uint8_t* ptr) {
   auto p = static_cast<const uint8_t*>(data);
@@ -963,7 +908,6 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
   }
   return ptr;
 }
-#endif
 
 uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
   int s = GetSize(ptr);

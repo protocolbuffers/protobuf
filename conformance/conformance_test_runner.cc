@@ -56,7 +56,6 @@
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
-#include "google/protobuf/endian.h"
 
 using google::protobuf::ConformanceTestSuite;
 using std::string;
@@ -213,7 +212,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name, uint32_t len,
     return;
   }
 
-  len = internal::little_endian::ToHost(len);
+  len = absl::little_endian::ToHost(len);
   response->resize(len);
   CheckedRead(read_fd_, (void *)response->c_str(), len);
 }

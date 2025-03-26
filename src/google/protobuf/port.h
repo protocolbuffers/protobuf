@@ -212,6 +212,20 @@ inline absl::optional<absl::string_view> RttiTypeName() {
 #endif
 }
 
+#if defined(ABSL_IS_BIG_ENDIAN)
+constexpr bool IsLittleEndian() { return false; }
+#elif defined(ABSL_IS_LITTLE_ENDIAN)
+constexpr bool IsLittleEndian() { return true; }
+#else
+#error "Only little-endian and big-endian are supported."
+#endif
+
+template <typename T>
+constexpr bool CanReadWriteViaMemcpy() {
+  static_assert(std::is_arithmetic_v<T>);
+  return internal::IsLittleEndian() || sizeof(T) == 1;
+}
+
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type

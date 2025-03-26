@@ -15,6 +15,7 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/base/internal/endian.h"
 #include "absl/base/optimization.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
@@ -266,11 +267,17 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
   }
   const uint16_t* lookup_table = table->field_lookup_begin();
   for (;;) {
-#ifdef ABSL_IS_LITTLE_ENDIAN
-    memcpy(&fstart, lookup_table, sizeof(fstart));
-#else
-    fstart = lookup_table[0] | (lookup_table[1] << 16);
-#endif
+    // `fstart` is coded as two separate `uint16_t` values.
+    // In little endian we can read them both in a single memcpy for efficiency.
+    // We can't use little_endian::Load32 because it is not a single 32-bit
+    // little endian value. The `uint16_t` values are normal variables in native
+    // encoding.
+    if (internal::IsLittleEndian()) {
+      memcpy(&fstart, lookup_table, sizeof(fstart));
+    } else {
+      fstart = lookup_table[0] | (lookup_table[1] << 16);
+    }
+
     lookup_table += sizeof(fstart) / sizeof(*lookup_table);
     uint32_t num_skip_entries = *lookup_table++;
     if (field_num < fstart) return nullptr;

@@ -11,6 +11,7 @@
 
 #include "google/protobuf/wire_format_lite.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -18,6 +19,7 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/base/internal/endian.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -285,57 +287,29 @@ void CodedOutputStreamFieldSkipper::SkipUnknownEnum(int field_number,
   unknown_fields_->WriteVarint64(value);
 }
 
-#if !defined(ABSL_IS_LITTLE_ENDIAN)
-
-namespace {
-void EncodeFixedSizeValue(float v, uint8_t* dest) {
-  WireFormatLite::WriteFloatNoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(double v, uint8_t* dest) {
-  WireFormatLite::WriteDoubleNoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(uint32_t v, uint8_t* dest) {
-  WireFormatLite::WriteFixed32NoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(uint64_t v, uint8_t* dest) {
-  WireFormatLite::WriteFixed64NoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(int32_t v, uint8_t* dest) {
-  WireFormatLite::WriteSFixed32NoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(int64_t v, uint8_t* dest) {
-  WireFormatLite::WriteSFixed64NoTagToArray(v, dest);
-}
-
-void EncodeFixedSizeValue(bool v, uint8_t* dest) {
-  WireFormatLite::WriteBoolNoTagToArray(v, dest);
-}
-}  // anonymous namespace
-
-#endif  // !defined(ABSL_IS_LITTLE_ENDIAN)
-
 template <typename CType>
 static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
-#if defined(ABSL_IS_LITTLE_ENDIAN)
-  output->WriteRaw(reinterpret_cast<const char*>(a), n * sizeof(a[0]));
-#else
-  const int kAtATime = 128;
-  uint8_t buf[sizeof(CType) * kAtATime];
-  for (int i = 0; i < n; i += kAtATime) {
-    int to_do = std::min(kAtATime, n - i);
-    uint8_t* ptr = buf;
-    for (int j = 0; j < to_do; j++) {
-      EncodeFixedSizeValue(a[i + j], ptr);
-      ptr += sizeof(a[0]);
+  if constexpr (CanReadWriteViaMemcpy<CType>()) {
+    output->WriteRaw(a, n * sizeof(CType));
+  } else {
+    const int kAtATime = 128;
+    uint8_t buf[sizeof(CType) * kAtATime];
+    for (int i = 0; i < n; i += kAtATime) {
+      int to_do = std::min(kAtATime, n - i);
+      uint8_t* ptr = buf;
+      for (int j = 0; j < to_do; j++) {
+        const CType v = a[i + j];
+        if constexpr (sizeof(CType) == 4) {
+          absl::little_endian::Store32(ptr, absl::bit_cast<uint32_t>(v));
+        } else {
+          absl::little_endian::Store64(ptr, absl::bit_cast<uint64_t>(v));
+        }
+
+        ptr += sizeof(a[0]);
+      }
+      output->WriteRaw(buf, to_do * sizeof(a[0]));
     }
-    output->WriteRaw(buf, to_do * sizeof(a[0]));
   }
-#endif
 }
 
 void WireFormatLite::WriteFloatArray(const float* a, int n,
