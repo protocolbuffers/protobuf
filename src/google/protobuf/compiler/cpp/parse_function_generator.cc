@@ -411,10 +411,10 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
         case TailCallTableInfo::kEnumRange:
           p->Emit(
               {
-                  {"start", aux_entry.enum_range.start},
-                  {"size", aux_entry.enum_range.size},
+                  {"first", aux_entry.enum_range.first},
+                  {"last", aux_entry.enum_range.last},
               },
-              "{$start$, $size$},\n");
+              "{$first$, $last$},\n");
           break;
         case TailCallTableInfo::kEnumValidator:
           p->Emit({{"name", QualifiedClassName(aux_entry.field->enum_type(),

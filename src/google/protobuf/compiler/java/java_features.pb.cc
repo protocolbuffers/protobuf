@@ -426,8 +426,8 @@ JavaFeatures::_table_ = {
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
   }},
   {{
+      {0, 2},
       {0, 3},
-      {0, 4},
   }},
   {{
   }},

@@ -5013,7 +5013,7 @@ ExtensionRangeOptions::_table_ = {
       {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>()},
       {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
       {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-      {0, 2},
+      {0, 1},
   }},
   {{
   }},
@@ -10049,10 +10049,10 @@ FieldOptions::_table_ = {
       {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
       {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
       {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-      {0, 3},
-      {0, 3},
-      {0, 3},
-      {0, 10},
+      {0, 2},
+      {0, 2},
+      {0, 2},
+      {0, 9},
   }},
   {{
   }},
@@ -12136,7 +12136,7 @@ MethodOptions::_table_ = {
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
       {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
-      {0, 3},
+      {0, 2},
   }},
   {{
   }},
@@ -13382,14 +13382,14 @@ FeatureSet::_table_ = {
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
   }},
   {{
-      {0, 4},
       {0, 3},
-      {0, 3},
+      {0, 2},
+      {0, 2},
       {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
-      {0, 3},
-      {0, 3},
-      {0, 3},
-      {0, 5},
+      {0, 2},
+      {0, 2},
+      {0, 2},
+      {0, 4},
   }},
   {{
   }},
@@ -15172,7 +15172,7 @@ GeneratedCodeInfo_Annotation::_table_ = {
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
   }},
   {{
-      {0, 3},
+      {0, 2},
   }},
   {{
     "\54\0\13\0\0\0\0\0"

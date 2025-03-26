@@ -266,7 +266,7 @@ CppFeatures::_table_ = {
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
   }},
   {{
-      {0, 4},
+      {0, 3},
   }},
   {{
   }},

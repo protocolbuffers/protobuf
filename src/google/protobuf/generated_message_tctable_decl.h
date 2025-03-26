@@ -412,8 +412,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
-    constexpr FieldAux(int16_t range_start, uint16_t range_length)
-        : enum_range{range_start, range_length} {}
+    constexpr FieldAux(int32_t range_first, int32_t range_last)
+        : enum_range{range_first, range_last} {}
     constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
@@ -422,8 +422,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
     struct {
-      int16_t start;    // minimum enum number (if it fits)
-      uint16_t length;  // length of range (i.e., max = start + length - 1)
+      int32_t first;  // the first label in the range (inclusive)
+      int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;

@@ -46,23 +46,8 @@ bool TreatEnumAsInt(const FieldDescriptor* field) {
           field->containing_type()->map_value() == field);
 }
 
-bool SetEnumValidationRange(int start_value, int64_t size_value, int16_t& start,
-                            uint16_t& size) {
-  if (static_cast<int16_t>(start_value) != start_value) {
-    return false;
-  }
-
-  if (static_cast<uint16_t>(size_value) != size_value) {
-    return false;
-  }
-
-  start = start_value;
-  size = size_value;
-  return true;
-}
-
-bool GetEnumValidationRangeSlow(const EnumDescriptor* enum_type, int16_t& start,
-                                uint16_t& size) {
+bool GetEnumValidationRangeSlow(const EnumDescriptor* enum_type, int32_t& first,
+                                int32_t& last) {
   const auto val = [&](int index) { return enum_type->value(index)->number(); };
   int min = val(0);
   int max = min;
@@ -80,11 +65,8 @@ bool GetEnumValidationRangeSlow(const EnumDescriptor* enum_type, int16_t& start,
     return false;
   }
 
-  if (!SetEnumValidationRange(min, range, start, size)) {
-    // Don't even bother on checking for a dense range if we can't represent the
-    // min/max in the output.
-    return false;
-  }
+  first = min;
+  last = max;
 
   absl::FixedArray<uint64_t> array((range + 63) / 64);
   array.fill(0);
@@ -101,16 +83,17 @@ bool GetEnumValidationRangeSlow(const EnumDescriptor* enum_type, int16_t& start,
   return unique_count == range;
 }
 
-bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
-                            uint16_t& size) {
+bool GetEnumValidationRange(const EnumDescriptor* enum_type, int32_t& first,
+                            int32_t& last) {
   if (!IsEnumFullySequential(enum_type)) {
     // Maybe the labels are not sequential in declaration order, but the values
     // could still be a dense range. Try the slower approach.
-    return GetEnumValidationRangeSlow(enum_type, start, size);
+    return GetEnumValidationRangeSlow(enum_type, first, last);
   }
 
-  return SetEnumValidationRange(enum_type->value(0)->number(),
-                                enum_type->value_count(), start, size);
+  first = enum_type->value(0)->number();
+  last = enum_type->value(enum_type->value_count() - 1)->number();
+  return true;
 }
 
 enum class EnumRangeInfo {
@@ -125,15 +108,14 @@ enum class EnumRangeInfo {
 // to remain unchanged if the enum range is not small.
 EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
                                uint8_t& rmax_value) {
-  int16_t start;
-  uint16_t size;
-  if (!GetEnumValidationRange(field->enum_type(), start, size)) {
+  int32_t first;
+  int32_t last;
+  if (!GetEnumValidationRange(field->enum_type(), first, last)) {
     return EnumRangeInfo::kNone;
   }
-  int max_value = start + size - 1;
-  if (max_value <= 127 && (start == 0 || start == 1)) {
-    rmax_value = static_cast<uint8_t>(max_value);
-    return start == 0 ? EnumRangeInfo::kContiguous0
+  if (last <= 127 && (first == 0 || first == 1)) {
+    rmax_value = static_cast<uint8_t>(last);
+    return first == 0 ? EnumRangeInfo::kContiguous0
                       : EnumRangeInfo::kContiguous1;
   }
   return EnumRangeInfo::kContiguous;
@@ -664,9 +646,9 @@ uint16_t MakeTypeCardForField(
                          ? fl::kPackedOpenEnum
                          : fl::kOpenEnum;
       } else {
-        int16_t start;
-        uint16_t size;
-        if (GetEnumValidationRange(field->enum_type(), start, size)) {
+        int32_t first;
+        int32_t last;
+        if (GetEnumValidationRange(field->enum_type(), first, last)) {
           // Validation is done by range check (start/length in FieldAux).
           type_card |= field->is_repeated() && field->is_packed()
                            ? fl::kPackedEnumRange
@@ -963,8 +945,8 @@ TailCallTableInfo::TailCallTableInfo(
       aux_entries.push_back({});
       auto& aux_entry = aux_entries.back();
 
-      if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.start,
-                                 aux_entry.enum_range.size)) {
+      if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.first,
+                                 aux_entry.enum_range.last)) {
         aux_entry.type = kEnumRange;
       } else {
         aux_entry.type = kEnumValidator;

@@ -3544,8 +3544,8 @@ void Reflection::PopulateTcParseFieldAux(
             GetDefaultMessageInstance(aux_entry.field);
         break;
       case internal::TailCallTableInfo::kEnumRange:
-        field_aux++->enum_range = {aux_entry.enum_range.start,
-                                   aux_entry.enum_range.size};
+        field_aux++->enum_range = {aux_entry.enum_range.first,
+                                   aux_entry.enum_range.last};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
         ABSL_LOG(FATAL) << "Not supported.";

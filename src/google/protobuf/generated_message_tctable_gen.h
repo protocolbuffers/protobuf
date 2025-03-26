@@ -116,8 +116,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct AuxEntry {
     AuxType type;
     struct EnumRange {
-      int16_t start;
-      uint16_t size;
+      int32_t first;
+      int32_t last;
     };
     union {
       const FieldDescriptor* field;
