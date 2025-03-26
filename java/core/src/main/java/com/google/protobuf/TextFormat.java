@@ -15,13 +15,13 @@ import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -41,6 +41,11 @@ public final class TextFormat {
   private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
 
   private static final String REDACTED_MARKER = "[REDACTED]";
+
+  /** Returns the caller of the toString() method. */
+  public static String getToStringCaller(String className) {
+    return SyslogReporter.getCallerOfProtobufToString(className);
+  }
 
   /**
    * Generates a human readable form of this message, useful for debugging and other purposes, with

@@ -88,7 +88,8 @@ public abstract class AbstractMessage
         ProtobufToStringOutput.shouldOutputDebugFormat()
             ? TextFormat.debugFormatPrinter()
             : TextFormat.printer();
-    return printer.printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING);
+    return printer.printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING)
+        + TextFormat.getToStringCaller(this.getClass().getName());
   }
 
   @Override
