@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "30.2-dev",  # Automatically updated on release
+    version = "30.3-dev",  # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
