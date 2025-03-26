@@ -4483,18 +4483,18 @@ class ValidationErrorTest : public testing::Test {
   // Add file_proto to the DescriptorPool. Expect errors to be produced which
   // match the given error text.
   void BuildFileWithErrors(const FileDescriptorProto& file_proto,
-                           const std::string& expected_errors) {
+                           testing::Matcher<std::string> expected_errors) {
     MockErrorCollector error_collector;
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
                 nullptr);
-    EXPECT_EQ(expected_errors, error_collector.text_);
+    EXPECT_THAT(error_collector.text_, expected_errors);
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given error text.
   void BuildFileWithErrors(const std::string& file_text,
-                           const std::string& expected_errors) {
+                           testing::Matcher<std::string> expected_errors) {
     FileDescriptorProto file_proto;
     ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     BuildFileWithErrors(file_proto, expected_errors);
@@ -5400,6 +5400,46 @@ TEST_F(ValidationErrorTest, FieldNumberConflict) {
       )pb",
       "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
       "\"Foo\" by field \"foo\". There are no available field numbers.\n");
+
+  // Overflow check. Exhaust the whole range, and make the field number INT_MAX.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 2147483647 type: TYPE_INT32 }
+          field { name: "bar" number: 2147483647 type: TYPE_INT32 }
+          reserved_range { start: 1 end: 2147483647 }
+        }
+      )pb",
+      HasSubstr("There are no available field numbers."));
+  // Overflow check. Exhaust the whole range, and make ranges INT_MAX, INT_MIN.
+  // The input is invalid, so we only care that it doesn't trigger a sanitizer
+  // failure.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 type: TYPE_INT32 }
+          field { name: "bar" number: 1 type: TYPE_INT32 }
+          extension_range { start: 2 end: 2147483647 }
+          extension_range { start: 2 end: -2147483648 }
+        }
+      )pb",
+      HasSubstr("field number"));
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 type: TYPE_INT32 }
+          field { name: "bar" number: 1 type: TYPE_INT32 }
+          reserved_range { start: 2 end: 2147483647 }
+          reserved_range { start: 2 end: -2147483648 }
+        }
+      )pb",
+      HasSubstr("field number"));
 }
 
 TEST_F(ValidationErrorTest, BadMessageSetExtensionType) {

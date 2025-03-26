@@ -7750,7 +7750,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                      conflicting_field->full_name());
                });
     } else {
-      absl::btree_set<std::pair<int, int>> fields_used;
+      absl::btree_set<std::pair<int64_t, int64_t>> fields_used;
       auto* parent = field->containing_type();
       for (int i = 0; i < parent->field_count(); ++i) {
         int n = parent->field(i)->number();
@@ -7758,13 +7758,15 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       }
       for (int i = 0; i < parent->extension_range_count(); ++i) {
         auto* range = parent->extension_range(i);
-        fields_used.insert({range->start_number(), range->end_number() - 1});
+        fields_used.insert({range->start_number(),
+                            static_cast<int64_t>(range->end_number()) - 1});
       }
       for (int i = 0; i < parent->reserved_range_count(); ++i) {
         auto* range = parent->reserved_range(i);
-        fields_used.insert({range->start, range->end - 1});
+        fields_used.insert(
+            {range->start, static_cast<int64_t>(range->end) - 1});
       }
-      int proposed_number = 1;
+      int64_t proposed_number = 1;
       for (auto [start, end] : fields_used) {
         if (start <= proposed_number && proposed_number <= end) {
           proposed_number = end + 1;
