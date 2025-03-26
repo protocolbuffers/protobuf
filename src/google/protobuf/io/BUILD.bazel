@@ -27,11 +27,11 @@ cc_library(
     deps = [
         ":io_win32",
         "//src/google/protobuf:arena",
-        "//src/google/protobuf:endian",
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs:lite",
         "@abseil-cpp//absl/base",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:endian",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",

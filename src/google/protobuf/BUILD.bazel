@@ -574,7 +574,6 @@ cc_library(
         "arenastring.h",
         "arenaz_sampler.h",
         "descriptor_lite.h",
-        "endian.h",
         "explicitly_constructed.h",
         "extension_set.h",
         "extension_set_inl.h",
@@ -616,7 +615,6 @@ cc_library(
         ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
-        ":endian",
         ":internal_visibility",
         ":micro_string",
         ":port",
@@ -2309,18 +2307,4 @@ filegroup(
         "lite_unittest.cc",
     ],
     visibility = ["//pkg:__pkg__"],
-)
-
-cc_library(
-    name = "endian",
-    hdrs = ["endian.h"],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//conformance:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        ":port",
-        "@abseil-cpp//absl/base:config",
-    ],
 )

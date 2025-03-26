@@ -106,11 +106,12 @@
 
 #include "absl/log/absl_log.h"  // Replace with vlog_is_on.h after Abseil LTS 20240722
 
+#include "absl/base/internal/endian.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/endian.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -595,9 +596,6 @@ class PROTOBUF_EXPORT CodedInputStream {
   bool ReadVarint32Slow(uint32_t* value);
   bool ReadVarint64Slow(uint64_t* value);
   int ReadVarintSizeAsIntSlow();
-  bool ReadLittleEndian16Fallback(uint16_t* value);
-  bool ReadLittleEndian32Fallback(uint32_t* value);
-  bool ReadLittleEndian64Fallback(uint64_t* value);
 
   // Fallback/slow methods for reading tags. These do not update last_tag_,
   // but will set legitimate_message_end_ if we are at the end of the input
@@ -781,8 +779,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
     ptr = WriteLengthDelim(num, size, ptr);
-    return WriteRawLittleEndian<element_size>(r.data(), static_cast<int>(size),
-                                              ptr);
+    return WriteRawLittleEndian(r.data(), static_cast<int>(size), ptr);
   }
 
   // Returns true if there was an underlying I/O error since this object was
@@ -917,13 +914,10 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr;
   }
 
-  template <int S>
-  uint8_t* WriteRawLittleEndian(const void* data, int size, uint8_t* ptr);
-#if !defined(ABSL_IS_LITTLE_ENDIAN) || \
-    defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  template <typename T>
+  uint8_t* WriteRawLittleEndian(const T* data, int size, uint8_t* ptr);
   uint8_t* WriteRawLittleEndian32(const void* data, int size, uint8_t* ptr);
   uint8_t* WriteRawLittleEndian64(const void* data, int size, uint8_t* ptr);
-#endif
 
   // These methods are for CodedOutputStream. Ideally they should be private
   // but to match current behavior of CodedOutputStream as close as possible
@@ -957,33 +951,18 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   friend class CodedOutputStream;
 };
 
-template <>
-inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<1>(const void* data,
-                                                             int size,
-                                                             uint8_t* ptr) {
-  return WriteRaw(data, size, ptr);
-}
-template <>
-inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
-                                                             int size,
-                                                             uint8_t* ptr) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  return WriteRaw(data, size, ptr);
-#else
-  return WriteRawLittleEndian32(data, size, ptr);
-#endif
-}
-template <>
-inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
-                                                             int size,
-                                                             uint8_t* ptr) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  return WriteRaw(data, size, ptr);
-#else
-  return WriteRawLittleEndian64(data, size, ptr);
-#endif
+template <typename T>
+inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian(const T* data,
+                                                          int size,
+                                                          uint8_t* ptr) {
+  if constexpr (internal::CanReadWriteViaMemcpy<T>()) {
+    return WriteRaw(data, size, ptr);
+  } else if constexpr (sizeof(T) == 4) {
+    return WriteRawLittleEndian32(data, size, ptr);
+  } else {
+    static_assert(sizeof(T) == 8);
+    return WriteRawLittleEndian64(data, size, ptr);
+  }
 }
 
 // Class which encodes and writes binary data which is composed of varint-
@@ -1334,60 +1313,53 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian16FromArray(
     const uint8_t* buffer, uint16_t* value) {
-  memcpy(value, buffer, sizeof(*value));
-  *value = google::protobuf::internal::little_endian::ToHost(*value);
+  *value = absl::little_endian::Load16(buffer);
   return buffer + sizeof(*value);
 }
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8_t* buffer, uint32_t* value) {
-  memcpy(value, buffer, sizeof(*value));
-  *value = google::protobuf::internal::little_endian::ToHost(*value);
+  *value = absl::little_endian::Load32(buffer);
   return buffer + sizeof(*value);
 }
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
     const uint8_t* buffer, uint64_t* value) {
-  memcpy(value, buffer, sizeof(*value));
-  *value = google::protobuf::internal::little_endian::ToHost(*value);
+  *value = absl::little_endian::Load64(buffer);
   return buffer + sizeof(*value);
 }
 
 inline bool CodedInputStream::ReadLittleEndian16(uint16_t* value) {
   if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian16FromArray(buffer_, value);
-    return true;
   } else {
-    return ReadLittleEndian16Fallback(value);
+    uint8_t local_buffer[sizeof(uint16_t)];
+    if (!ReadRaw(local_buffer, sizeof(uint16_t))) return false;
+    ReadLittleEndian16FromArray(local_buffer, value);
   }
+  return true;
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian32FromArray(buffer_, value);
-    return true;
   } else {
-    return ReadLittleEndian32Fallback(value);
+    uint8_t local_buffer[sizeof(uint32_t)];
+    if (!ReadRaw(local_buffer, sizeof(uint32_t))) return false;
+    ReadLittleEndian32FromArray(local_buffer, value);
   }
-#else
-  return ReadLittleEndian32Fallback(value);
-#endif
+  return true;
 }
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64_t* value) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (ABSL_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian64FromArray(buffer_, value);
-    return true;
   } else {
-    return ReadLittleEndian64Fallback(value);
+    uint8_t local_buffer[sizeof(uint64_t)];
+    if (!ReadRaw(local_buffer, sizeof(uint64_t))) return false;
+    ReadLittleEndian64FromArray(local_buffer, value);
   }
-#else
-  return ReadLittleEndian64Fallback(value);
-#endif
+  return true;
 }
 
 inline uint32_t CodedInputStream::ReadTagNoLastTag() {
@@ -1656,43 +1628,19 @@ inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian16ToArray(uint16_t value,
                                                               uint8_t* target) {
-  uint16_t little_endian_value = google::protobuf::internal::little_endian::ToHost(value);
-  memcpy(target, &little_endian_value, sizeof(value));
+  absl::little_endian::Store16(target, value);
   return target + sizeof(value);
 }
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
                                                               uint8_t* target) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  memcpy(target, &value, sizeof(value));
-#else
-  target[0] = static_cast<uint8_t>(value);
-  target[1] = static_cast<uint8_t>(value >> 8);
-  target[2] = static_cast<uint8_t>(value >> 16);
-  target[3] = static_cast<uint8_t>(value >> 24);
-#endif
+  absl::little_endian::Store32(target, value);
   return target + sizeof(value);
 }
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian64ToArray(uint64_t value,
                                                               uint8_t* target) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-  memcpy(target, &value, sizeof(value));
-#else
-  uint32_t part0 = static_cast<uint32_t>(value);
-  uint32_t part1 = static_cast<uint32_t>(value >> 32);
-
-  target[0] = static_cast<uint8_t>(part0);
-  target[1] = static_cast<uint8_t>(part0 >> 8);
-  target[2] = static_cast<uint8_t>(part0 >> 16);
-  target[3] = static_cast<uint8_t>(part0 >> 24);
-  target[4] = static_cast<uint8_t>(part1);
-  target[5] = static_cast<uint8_t>(part1 >> 8);
-  target[6] = static_cast<uint8_t>(part1 >> 16);
-  target[7] = static_cast<uint8_t>(part1 >> 24);
-#endif
+  absl::little_endian::Store64(target, value);
   return target + sizeof(value);
 }
 
