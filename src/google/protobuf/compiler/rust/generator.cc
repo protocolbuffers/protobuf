@@ -18,6 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
@@ -176,8 +177,11 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"Option", "::std::option::Option"},
   });
 
-  std::string expected_runtime_version = absl::StrCat(
-      absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"), "-beta1");
+  auto expected_runtime_version =
+      std::string(absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"));
+  if (!absl::StrContains(expected_runtime_version, "-rc")) {
+    expected_runtime_version.append("-release");
+  }
 
   ctx.Emit({{"expected_runtime_version", expected_runtime_version}},
            R"rs(
