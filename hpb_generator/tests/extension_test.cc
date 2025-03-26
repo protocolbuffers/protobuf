@@ -621,4 +621,9 @@ TEST(CppGeneratedCode, GetExtensionRepeatedString) {
   EXPECT_EQ((*res)[1], "world");
 }
 
+TEST(CppGeneratedCode, ConstExprExtensionNumber) {
+  constexpr auto ext_num = hpb::ExtensionNumber(int32_ext);
+  EXPECT_EQ(ext_num, 13002);
+}
+
 }  // namespace

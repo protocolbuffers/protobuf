@@ -20,11 +20,6 @@ void WriteExtensionIdentifiersHeader(
     Context& ctx);
 void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
                                     Context& ctx);
-void WriteExtensionIdentifiers(
-    const std::vector<const protobuf::FieldDescriptor*>& extensions,
-    Context& ctx);
-void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
-                              Context& ctx);
 
 }  // namespace protobuf
 }  // namespace google::hpb_generator
