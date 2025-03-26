@@ -18,6 +18,7 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/set_alias.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_enum.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/arena.h"
@@ -52,6 +53,12 @@ TEST(CppGeneratedCode, ImportedEnum) { EXPECT_EQ(3, TestEnum::DEVICE_MONITOR); }
 TEST(CppGeneratedCode, Enum) { EXPECT_EQ(1, RED); }
 
 TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::hpb_CELSIUS); }
+
+TEST(CppGeneratedCode, EnumContainingMessage) {
+  EXPECT_EQ(
+      1, ::hpb_unittest::protos::ContainingMessage_OtherMessage_NestedTestEnum::
+             ContainingMessage_OtherMessage_NestedTestEnum_DEVICE_KEYBOARD);
+}
 
 TEST(CppGeneratedCode, MessageEnumType) {
   TestModel_Category category1 = TestModel_Category_IMAGES;

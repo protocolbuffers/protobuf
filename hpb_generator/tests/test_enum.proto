@@ -15,3 +15,14 @@ enum TestEnum {
   DEVICE_MOUSE = 2;
   DEVICE_MONITOR = 3;
 }
+
+message ContainingMessage {
+  message OtherMessage {
+    enum NestedTestEnum {
+      DEVICE_UNKNOWN = 0;
+      DEVICE_KEYBOARD = 1;
+      DEVICE_MOUSE = 2;
+      DEVICE_MONITOR = 3;
+    }
+  }
+}
