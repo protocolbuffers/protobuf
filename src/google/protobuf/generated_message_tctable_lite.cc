@@ -2743,7 +2743,10 @@ const char* TcParser::ParseOneMapEntry(
           ABSL_DCHECK_EQ(static_cast<int>(type_kind),
                          static_cast<int>(UntypedMapBase::TypeKind::kMessage));
           ABSL_DCHECK_EQ(inner_tag, value_tag);
-          ptr = ctx->ParseMessage(reinterpret_cast<MessageLite*>(obj), ptr);
+          ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+            return ParseLoop(reinterpret_cast<MessageLite*>(obj), ptr, ctx,
+                             aux[1].table);
+          });
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           continue;
         }
