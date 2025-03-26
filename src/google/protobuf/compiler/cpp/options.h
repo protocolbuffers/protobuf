@@ -64,13 +64,8 @@ struct Options {
   // TODO: clean this up after the change is rolled out for 2
   // weeks.
   bool profile_driven_cluster_aux_subtable = true;
-#ifdef PROTOBUF_STABLE_EXPERIMENTS
-  bool force_eagerly_verified_lazy = true;
-  bool force_inline_string = true;
-#else   // PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = false;
   bool force_inline_string = false;
-#endif  // !PROTOBUF_STABLE_EXPERIMENTS
   bool strip_nonfunctional_codegen = false;
 };
 
