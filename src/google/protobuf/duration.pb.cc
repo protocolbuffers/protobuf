@@ -192,10 +192,9 @@ constexpr auto Duration::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Duration_class_data_ =
-            Duration::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Duration_class_data_ =
+        Duration::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Duration_class_data_);

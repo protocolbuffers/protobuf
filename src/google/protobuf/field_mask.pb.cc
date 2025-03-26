@@ -201,10 +201,9 @@ constexpr auto FieldMask::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FieldMask_class_data_ =
-            FieldMask::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FieldMask_class_data_ =
+        FieldMask::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldMask::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldMask_class_data_);
