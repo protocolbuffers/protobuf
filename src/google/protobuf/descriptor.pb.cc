@@ -2459,10 +2459,9 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FileDescriptorSet_class_data_ =
-            FileDescriptorSet::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FileDescriptorSet_class_data_ =
+        FileDescriptorSet::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FileDescriptorSet::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FileDescriptorSet_class_data_);
@@ -2793,10 +2792,9 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FileDescriptorProto_class_data_ =
-            FileDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FileDescriptorProto_class_data_ =
+        FileDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FileDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FileDescriptorProto_class_data_);
@@ -3427,10 +3425,9 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        DescriptorProto_ExtensionRange_class_data_ =
-            DescriptorProto_ExtensionRange::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull DescriptorProto_ExtensionRange_class_data_ =
+        DescriptorProto_ExtensionRange::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DescriptorProto_ExtensionRange_class_data_);
@@ -3737,10 +3734,9 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        DescriptorProto_ReservedRange_class_data_ =
-            DescriptorProto_ReservedRange::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull DescriptorProto_ReservedRange_class_data_ =
+        DescriptorProto_ReservedRange::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL DescriptorProto_ReservedRange::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DescriptorProto_ReservedRange_class_data_);
@@ -4076,10 +4072,9 @@ constexpr auto DescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        DescriptorProto_class_data_ =
-            DescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull DescriptorProto_class_data_ =
+        DescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL DescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DescriptorProto_class_data_);
@@ -4641,10 +4636,9 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        ExtensionRangeOptions_Declaration_class_data_ =
-            ExtensionRangeOptions_Declaration::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_Declaration_class_data_ =
+        ExtensionRangeOptions_Declaration::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ExtensionRangeOptions_Declaration_class_data_);
@@ -5024,10 +5018,9 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        ExtensionRangeOptions_class_data_ =
-            ExtensionRangeOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ExtensionRangeOptions_class_data_ =
+        ExtensionRangeOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ExtensionRangeOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ExtensionRangeOptions_class_data_);
@@ -5430,10 +5423,9 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FieldDescriptorProto_class_data_ =
-            FieldDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FieldDescriptorProto_class_data_ =
+        FieldDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldDescriptorProto_class_data_);
@@ -5968,10 +5960,9 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        OneofDescriptorProto_class_data_ =
-            OneofDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull OneofDescriptorProto_class_data_ =
+        OneofDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL OneofDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&OneofDescriptorProto_class_data_);
@@ -6258,10 +6249,9 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        EnumDescriptorProto_EnumReservedRange_class_data_ =
-            EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_EnumReservedRange_class_data_ =
+        EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumDescriptorProto_EnumReservedRange_class_data_);
@@ -6567,10 +6557,9 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        EnumDescriptorProto_class_data_ =
-            EnumDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull EnumDescriptorProto_class_data_ =
+        EnumDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumDescriptorProto_class_data_);
@@ -6970,10 +6959,9 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        EnumValueDescriptorProto_class_data_ =
-            EnumValueDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull EnumValueDescriptorProto_class_data_ =
+        EnumValueDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumValueDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumValueDescriptorProto_class_data_);
@@ -7317,10 +7305,9 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        ServiceDescriptorProto_class_data_ =
-            ServiceDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ServiceDescriptorProto_class_data_ =
+        ServiceDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ServiceDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ServiceDescriptorProto_class_data_);
@@ -7674,10 +7661,9 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        MethodDescriptorProto_class_data_ =
-            MethodDescriptorProto::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull MethodDescriptorProto_class_data_ =
+        MethodDescriptorProto::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL MethodDescriptorProto::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&MethodDescriptorProto_class_data_);
@@ -8137,10 +8123,9 @@ constexpr auto FileOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FileOptions_class_data_ =
-            FileOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FileOptions_class_data_ =
+        FileOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FileOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FileOptions_class_data_);
@@ -8943,10 +8928,9 @@ constexpr auto MessageOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        MessageOptions_class_data_ =
-            MessageOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull MessageOptions_class_data_ =
+        MessageOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL MessageOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&MessageOptions_class_data_);
@@ -9344,10 +9328,9 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FieldOptions_EditionDefault_class_data_ =
-            FieldOptions_EditionDefault::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FieldOptions_EditionDefault_class_data_ =
+        FieldOptions_EditionDefault::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldOptions_EditionDefault::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldOptions_EditionDefault_class_data_);
@@ -9637,10 +9620,9 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FieldOptions_FeatureSupport_class_data_ =
-            FieldOptions_FeatureSupport::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FieldOptions_FeatureSupport_class_data_ =
+        FieldOptions_FeatureSupport::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldOptions_FeatureSupport::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldOptions_FeatureSupport_class_data_);
@@ -10021,10 +10003,9 @@ constexpr auto FieldOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FieldOptions_class_data_ =
-            FieldOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FieldOptions_class_data_ =
+        FieldOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldOptions_class_data_);
@@ -10620,10 +10601,9 @@ constexpr auto OneofOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        OneofOptions_class_data_ =
-            OneofOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull OneofOptions_class_data_ =
+        OneofOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL OneofOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&OneofOptions_class_data_);
@@ -10966,10 +10946,9 @@ constexpr auto EnumOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        EnumOptions_class_data_ =
-            EnumOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull EnumOptions_class_data_ =
+        EnumOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumOptions_class_data_);
@@ -11374,10 +11353,9 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        EnumValueOptions_class_data_ =
-            EnumValueOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull EnumValueOptions_class_data_ =
+        EnumValueOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumValueOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumValueOptions_class_data_);
@@ -11791,10 +11769,9 @@ constexpr auto ServiceOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        ServiceOptions_class_data_ =
-            ServiceOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ServiceOptions_class_data_ =
+        ServiceOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ServiceOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ServiceOptions_class_data_);
@@ -12163,10 +12140,9 @@ constexpr auto MethodOptions::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        MethodOptions_class_data_ =
-            MethodOptions::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull MethodOptions_class_data_ =
+        MethodOptions::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL MethodOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&MethodOptions_class_data_);
@@ -12534,10 +12510,9 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        UninterpretedOption_NamePart_class_data_ =
-            UninterpretedOption_NamePart::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_ =
+        UninterpretedOption_NamePart::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UninterpretedOption_NamePart::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UninterpretedOption_NamePart_class_data_);
@@ -12849,10 +12824,9 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        UninterpretedOption_class_data_ =
-            UninterpretedOption::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull UninterpretedOption_class_data_ =
+        UninterpretedOption::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UninterpretedOption::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UninterpretedOption_class_data_);
@@ -13291,10 +13265,9 @@ constexpr auto FeatureSet::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FeatureSet_class_data_ =
-            FeatureSet::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FeatureSet_class_data_ =
+        FeatureSet::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FeatureSet::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FeatureSet_class_data_);
@@ -13710,10 +13683,9 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FeatureSetDefaults_FeatureSetEditionDefault_class_data_ =
-            FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_FeatureSetEditionDefault_class_data_ =
+        FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FeatureSetDefaults_FeatureSetEditionDefault_class_data_);
@@ -14065,10 +14037,9 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        FeatureSetDefaults_class_data_ =
-            FeatureSetDefaults::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull FeatureSetDefaults_class_data_ =
+        FeatureSetDefaults::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FeatureSetDefaults::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FeatureSetDefaults_class_data_);
@@ -14413,10 +14384,9 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        SourceCodeInfo_Location_class_data_ =
-            SourceCodeInfo_Location::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull SourceCodeInfo_Location_class_data_ =
+        SourceCodeInfo_Location::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL SourceCodeInfo_Location::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&SourceCodeInfo_Location_class_data_);
@@ -14791,10 +14761,9 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        SourceCodeInfo_class_data_ =
-            SourceCodeInfo::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull SourceCodeInfo_class_data_ =
+        SourceCodeInfo::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL SourceCodeInfo::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&SourceCodeInfo_class_data_);
@@ -15080,10 +15049,9 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        GeneratedCodeInfo_Annotation_class_data_ =
-            GeneratedCodeInfo_Annotation::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_Annotation_class_data_ =
+        GeneratedCodeInfo_Annotation::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&GeneratedCodeInfo_Annotation_class_data_);
@@ -15447,10 +15415,9 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        GeneratedCodeInfo_class_data_ =
-            GeneratedCodeInfo::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull GeneratedCodeInfo_class_data_ =
+        GeneratedCodeInfo::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GeneratedCodeInfo::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&GeneratedCodeInfo_class_data_);
