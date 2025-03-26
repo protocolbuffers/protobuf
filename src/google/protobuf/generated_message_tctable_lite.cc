@@ -886,8 +886,14 @@ PROTOBUF_ALWAYS_INLINE void PrefetchEnumData(uint16_t xform_val,
 PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(int32_t val, uint16_t xform_val,
                                            TcParseTableBase::FieldAux aux) {
   if (xform_val == field_layout::kTvRange) {
-    auto lo = aux.enum_range.start;
-    return lo <= val && val < (lo + aux.enum_range.length);
+    static_assert(sizeof(aux.enum_range.start) <= 2);
+    static_assert(sizeof(aux.enum_range.length) <= 2);
+    // enum_range consists of 16-bit values, so they will not overflow int32.
+    int32_t lo = static_cast<int32_t>(aux.enum_range.start);
+    // Note that (signed + unsigned) produces an unsigned in C++ by default.
+    // Therefore we need to explicitly cast length into an int32 before adding.
+    int32_t hi = lo + (static_cast<int32_t>(aux.enum_range.length) - 1);
+    return lo <= val && val <= hi;
   }
   if (PROTOBUF_BUILTIN_CONSTANT_P(xform_val)) {
     return internal::ValidateEnumInlined(val, aux.enum_data);
