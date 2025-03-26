@@ -41,7 +41,7 @@ cmake --build . --parallel 12",
 // optionally followed by "-dev" or "-rcN". We want to strip the "-dev" suffix
 // if present and return something like "30.0" or "30.0-rc1".
 fn protoc_version(protoc_output: &str) -> String {
-    let mut s = protoc_output.strip_prefix("libprotoc ").unwrap().to_string();
+    let mut s = protoc_output.strip_prefix("libprotoc ").unwrap().trim().to_string();
     let first_dash = s.find("-dev");
     if let Some(i) = first_dash {
         s.truncate(i);
@@ -247,6 +247,7 @@ mod tests {
     #[gtest]
     fn test_protoc_version() {
         assert_that!(protoc_version("libprotoc 30.0"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0\n"), eq("30.0"));
         assert_that!(protoc_version("libprotoc 30.0-dev"), eq("30.0"));
         assert_that!(protoc_version("libprotoc 30.0-rc1"), eq("30.0-rc1"));
     }
