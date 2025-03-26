@@ -56,6 +56,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -105,16 +106,18 @@ size_t CamelCaseSize(const absl::string_view input) {
 std::string ToCamelCase(const absl::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
-  result.reserve(input.size());
+  // allocate uninitialized instead of reserve to avoid size computation.
+  absl::strings_internal::STLStringResizeUninitialized(&result, input.size());
 
+  size_t current_index = 0;
   for (char character : input) {
     if (character == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(absl::ascii_toupper(character));
+      result[current_index++] = absl::ascii_toupper(character);
       capitalize_next = false;
     } else {
-      result.push_back(character);
+      result[current_index++] = character;
     }
   }
 
@@ -122,6 +125,7 @@ std::string ToCamelCase(const absl::string_view input, bool lower_first) {
   if (lower_first && !result.empty()) {
     result[0] = absl::ascii_tolower(result[0]);
   }
+  result.resize(current_index);
 
   ABSL_DCHECK_EQ(CamelCaseSize(input), result.size());
 
