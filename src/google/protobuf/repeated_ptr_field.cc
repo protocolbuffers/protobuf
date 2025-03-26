@@ -55,7 +55,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   {
     int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
         old_capacity, old_capacity + extend_amount);
-    ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
+    ABSL_DCHECK_LE(static_cast<size_t>(new_capacity), kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
     const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
     if (arena == nullptr) {
@@ -105,14 +105,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
-void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
-  return AddInternal(factory);
-}
-
-void* RepeatedPtrFieldBase::AddString() {
-  return AddInternal([](Arena* arena) { return NewStringElement(arena); });
-}
-
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   if (using_sso()) {
     if (start == 0 && num == 1) {
@@ -126,11 +118,6 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
     r->allocated_size -= num;
   }
   ExchangeCurrentSize(current_size_ - num);
-}
-
-MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
-  return static_cast<MessageLite*>(
-      AddInternal([prototype](Arena* a) { return prototype->New(a); }));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
@@ -246,10 +233,6 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
-}
-
-void* NewStringElement(Arena* arena) {
-  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal
