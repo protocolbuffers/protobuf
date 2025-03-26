@@ -4183,10 +4183,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             };
           }
 
-          PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $pbi$::ClassDataFull
-                  $classname$_class_data_ =
-                      $classname$::InternalGenerateClassData_();
+          PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+              $pbi$::ClassDataFull $classname$_class_data_ =
+                  $classname$::InternalGenerateClassData_();
 
           const $pbi$::ClassData* $nonnull$ $classname$::GetClassData() const {
             $pin_weak_descriptor$;
