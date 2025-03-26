@@ -105,8 +105,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        # TODO: Re-enable once aarch64 is fixed.
-        arch: [x86_64]
+        arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch }}
     runs-on: ubuntu-22-4core
     steps:
