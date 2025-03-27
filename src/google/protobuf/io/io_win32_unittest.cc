@@ -96,7 +96,7 @@ void StripTrailingSlashes(string* str) {
 bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
   DWORD size = ::GetEnvironmentVariableW(name, nullptr, 0);
   if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
-    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
+    auto wcs = HeapArray<WCHAR>::WithSize(size);
     ::GetEnvironmentVariableW(name, wcs.get(), size);
     // GetEnvironmentVariableA retrieves an Active-Code-Page-encoded text which
     // we'd first need to convert to UTF-16 then to UTF-8, because there seems
@@ -112,7 +112,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 bool GetCwdAsUtf8(string* result) {
   DWORD size = ::GetCurrentDirectoryW(0, nullptr);
   if (size > 0) {
-    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
+    auto wcs = HeapArray<WCHAR>::WithSize(size);
     ::GetCurrentDirectoryW(size, wcs.get());
     // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
     // we'd first need to convert to UTF-16 then to UTF-8, because there seems
@@ -557,7 +557,7 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
 
 TEST_F(IoWin32Test, AsWindowsPathTest) {
   DWORD size = GetCurrentDirectoryW(0, nullptr);
-  std::unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
+  auto cwd_str = HeapArray<WCHAR>::WithSize(size);
   EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0U);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();
 
