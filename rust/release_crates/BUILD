@@ -23,14 +23,3 @@ sh_binary(
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
-
-sh_binary(
-    name = "publish_release",
-    srcs = ["publish_release.sh"],
-    data = [
-        ":crates",
-        "//:protoc",
-    ],
-    tags = ["manual"],
-    deps = ["@bazel_tools//tools/bash/runfiles"],
-)
