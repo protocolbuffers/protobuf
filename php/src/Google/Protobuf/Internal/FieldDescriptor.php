@@ -104,6 +104,11 @@ class FieldDescriptor
         return $this->label;
     }
 
+    public function isRequired()
+    {
+        return $this->label === GPBLabel::REQUIRED;
+    }
+
     public function isRepeated()
     {
         return $this->label === GPBLabel::REPEATED;
@@ -241,7 +246,7 @@ class FieldDescriptor
         $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
         // TODO: once proto2 is supported, this default should be false
         // for proto2.
-        if ($proto->getLabel() === GPBLabel::REPEATED &&
+        if ($proto->isRepeated() &&
             $proto->getType() !== GPBType::MESSAGE &&
             $proto->getType() !== GPBType::GROUP &&
             $proto->getType() !== GPBType::STRING &&

@@ -67,6 +67,7 @@ module Google
         @type ||= Google::Protobuf::FFI.get_type(self)
       end
 
+      # DEPRECATED: Use required? or repeated? instead.
       def label
         @label ||= Google::Protobuf::FFI.get_label(self)
       end
@@ -197,6 +198,10 @@ module Google
         @map ||= Google::Protobuf::FFI.is_map self
       end
 
+      def required?
+        @required ||= Google::Protobuf::FFI.is_required self
+      end
+
       def repeated?
         @repeated ||= Google::Protobuf::FFI.is_repeated self
       end
@@ -325,6 +330,7 @@ module Google
       attach_function :get_has_presence,           :upb_FieldDef_HasPresence,           [FieldDescriptor], :bool
       attach_function :get_is_packed,              :upb_FieldDef_IsPacked,              [FieldDescriptor], :bool
       attach_function :is_map,                     :upb_FieldDef_IsMap,                 [FieldDescriptor], :bool
+      attach_function :is_required,                :upb_FieldDef_IsRequired,            [FieldDescriptor], :bool
       attach_function :is_repeated,                :upb_FieldDef_IsRepeated,            [FieldDescriptor], :bool
       attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,          [FieldDescriptor], :bool
       attach_function :get_json_name,              :upb_FieldDef_JsonName,              [FieldDescriptor], :string
