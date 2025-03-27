@@ -24,10 +24,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
+#include <cstring>
 #include <iterator>
 #include <limits>
-#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -35,9 +34,11 @@
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -113,8 +114,41 @@ PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
 template <typename Type>
 class GenericTypeHandler;
 
-// This is the common base class for RepeatedPtrFields.  It deals only in void*
-// pointers.  Users should not use this interface directly.
+using ElementNewFn = void(Arena*, void*& ptr);
+
+// Encodes the minimum information about a type required to allocate raw storage
+// for objects of that type.
+class AllocTraits {
+ public:
+  constexpr AllocTraits(size_t size_of, size_t align_of)
+      : size_of_{size_of}, align_of_{align_of} {
+    ABSL_DCHECK_EQ(size_of_ % align_of_, 0U);
+    ABSL_DCHECK_LE(align_of_, internal::ArenaAlignDefault::align);
+  }
+
+  explicit AllocTraits(const MessageLite& value) {
+    const internal::ClassData* class_data = GetClassData(value);
+    size_of_ = class_data->allocation_size();
+    align_of_ = class_data->alignment();
+  }
+  explicit constexpr AllocTraits(const std::string& value)
+      : size_of_{sizeof(value)}, align_of_{alignof(value)} {}
+
+  inline void AssertAlignment(void* ptr) {
+    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(ptr) % align_of_, 0U)
+        << ptr << " % " << align_of_;
+  }
+
+  constexpr size_t size_of() const { return size_of_; }
+  constexpr size_t align_of() const { return align_of_; }
+
+ private:
+  size_t size_of_;
+  size_t align_of_;
+};
+
+// This is the common base class for RepeatedPtrFields.  It deals only in
+// void* pointers.  Users should not use this interface directly.
 //
 // The methods of this interface correspond to the methods of RepeatedPtrField,
 // but may have a template argument called TypeHandler.  Its signature is:
@@ -123,7 +157,8 @@ class GenericTypeHandler;
 //     using Type = MyType;
 //
 //     static Type*(*)(Arena*) GetNewFunc();
-//     static void GetArena(Type* value);
+//     static Type*(*)(Arena*) GetNewFromPrototypeFunc(const Type* prototype);
+//     static Arena* GetArena(Type* value);
 //
 //     static Type* New(Arena* arena, Type&& value);
 //     static void Delete(Type*, Arena* arena);
@@ -139,8 +174,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   using Value = typename TypeHandler::Type;
 
   static constexpr int kSSOCapacity = 1;
-
-  using ElementFactory = void* (*)(Arena*);
 
  protected:
   // We use the same TypeHandler for all Message types to deduplicate generated
@@ -209,25 +242,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add() {
-    if (std::is_same<Value<TypeHandler>, std::string>{}) {
-      return cast<TypeHandler>(AddString());
-    }
-    return cast<TypeHandler>(AddMessageLite(TypeHandler::GetNewFunc()));
+    return cast<TypeHandler>(
+        AddInternal(TypeHandler::GetNewFunc(),
+                    AllocTraits{TypeHandler::normalized_default_instance()}));
   }
 
   template <typename TypeHandler>
-  inline void Add(Value<TypeHandler>&& value) {
-    static_assert(std::is_move_constructible<Value<TypeHandler>>::value, "");
-    static_assert(std::is_move_assignable<Value<TypeHandler>>::value, "");
-    if (current_size_ < allocated_size()) {
-      *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
-          std::move(value);
-      return;
-    }
-    MaybeExtend();
-    if (!using_sso()) ++rep()->allocated_size;
-    auto* result = TypeHandler::New(arena_, std::move(value));
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
+  void Add(Value<TypeHandler>&& value) {
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(TypeHandler::GetNewFunc(),
+                    AllocTraits{TypeHandler::normalized_default_instance()}));
+    *result = std::move(value);
   }
 
   // Must be called from destructor.
@@ -296,7 +321,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // a link-time dependency on the concrete message type.
   //
   // Pre-condition: prototype must not be nullptr.
-  MessageLite* AddMessage(const MessageLite* prototype);
+  template <typename TypeHandler>
+  Value<TypeHandler>* AddFromPrototype(const Value<TypeHandler>* prototype) {
+    using H = CommonHandler<TypeHandler>;
+    Value<TypeHandler>* result = cast<TypeHandler>(AddInternal(
+        H::GetNewFromPrototypeFunc(prototype), AllocTraits{*prototype}));
+    return result;
+  }
 
   template <typename TypeHandler>
   void Clear() {
@@ -335,10 +366,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Similar to `AddAllocated` but faster.
   //
   // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value) {
+  template <typename TypeHandler>
+  void AddAllocatedForParse(Value<TypeHandler>* value) {
     ABSL_DCHECK(PrepareForParse());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-      *InternalExtend(1) = value;
+      *InternalExtend(1, AllocTraits{*value}) = value;
       ++rep()->allocated_size;
     } else {
       if (using_sso()) {
@@ -370,7 +402,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void CloseGap(int start, int num);
 
-  void Reserve(int capacity);
+  void Reserve(int capacity, AllocTraits alloc_traits);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -465,7 +497,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // Make room for the new pointer.
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
+      InternalExtend(1, AllocTraits{*value});
       ++rep()->allocated_size;
     } else if (AllocatedSizeAtCapacity()) {
       // There is no more space in the pointer array because it contains some
@@ -547,8 +579,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other) {
+    if (this == other || (empty() && other->empty())) return;
     ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
-
     // Copy semantics in this case. We try to improve efficiency by placing the
     // temporary on |other|'s arena so that messages are copied twice rather
     // than three times.
@@ -737,41 +769,23 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // next available element slot.
   //
   // Pre-condition: |extend_amount| must be > 0.
-  void** InternalExtend(int extend_amount);
-
-  // Ensures that capacity is big enough to store one more allocated element.
-  inline void MaybeExtend() {
-    if (AllocatedSizeAtCapacity()) {
-      ABSL_DCHECK_EQ(allocated_size(), Capacity());
-      InternalExtend(1);
-    } else {
-      ABSL_DCHECK_NE(allocated_size(), Capacity());
-    }
-  }
+  void** InternalExtend(int extend_amount, AllocTraits alloc_traits);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
-  inline void** InternalReserve(int n) {
+  inline void** InternalReserve(int n, AllocTraits alloc_traits) {
     if (n <= Capacity()) {
       void** elements = using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
       return elements + current_size_;
     }
-    return InternalExtend(n - Capacity());
+    return InternalExtend(n - Capacity(), alloc_traits);
   }
-
-  // Internal helpers for Add that keep definition out-of-line.
-  void* AddMessageLite(ElementFactory factory);
-  void* AddString();
 
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
   // ready for reuse. Returns pointer to the new element.
-  //
-  // Note: avoid inlining this function in methods such as `Add()` as this would
-  // drastically increase binary size due to template instantiation and implicit
-  // inlining.
-  template <typename Factory>
-  void* AddInternal(Factory factory);
+  void* AddInternal(absl::FunctionRef<ElementNewFn> factory,
+                    AllocTraits alloc_traits);
 
   // A few notes on internal representation:
   //
@@ -809,12 +823,12 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from);
 
 
-template <typename Factory>
-void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
+inline void* RepeatedPtrFieldBase::AddInternal(
+    absl::FunctionRef<ElementNewFn> factory, AllocTraits alloc_traits) {
   Arena* const arena = GetArena();
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
-    tagged_rep_or_elem_ = factory(arena);
+    factory(arena, tagged_rep_or_elem_);
     return tagged_rep_or_elem_;
   }
   absl::PrefetchToLocalCache(tagged_rep_or_elem_);
@@ -823,8 +837,8 @@ void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
       ExchangeCurrentSize(1);
       return tagged_rep_or_elem_;
     }
-    void*& result = *InternalExtend(1);
-    result = factory(arena);
+    void*& result = *InternalExtend(1, alloc_traits);
+    factory(arena, result);
     Rep* r = rep();
     r->allocated_size = 2;
     ExchangeCurrentSize(2);
@@ -832,102 +846,109 @@ void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
   }
   Rep* r = rep();
   if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-    InternalExtend(1);
+    InternalExtend(1, alloc_traits);
     r = rep();
   } else {
-    if (current_size_ != r->allocated_size) {
+    if (ClearedCount() > 0) {
       return r->elements[ExchangeCurrentSize(current_size_ + 1)];
     }
   }
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
-  result = factory(arena);
+  factory(arena, result);
   return result;
 }
 
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
+// Encapsulates the minimally required subset of T's properties in a
+// `RepeatedPtrField<T>` specialization so the type-agnostic
+// `RepeatedPtrFieldBase` could do its job without knowing T.
+//
+// This generic definition is for types derived from `MessageLite`. That is
+// statically asserted, but only where a non-conforming type would emit a
+// compile-time diagnostic that lacks proper guidance for fixing. Asserting
+// at the top level isn't possible, because some template argument types are not
+// yet fully defined at the instantiation point.
+//
+// Explicit specializations are provided for `std::string` and
+// `StringPieceField` further below.
 template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
 
-  static constexpr auto GetNewFunc() { return Arena::DefaultConstruct<Type>; }
+  // NOTE: Can't `static_assert(std::is_base_of_v<MessageLite, Type>)` here,
+  // because the type is not yet fully defined at this point sometimes, so we
+  // are forced to assert in every function that needs it.
+
+  static constexpr auto GetNewFunc() {
+    return [](Arena* arena, void*& ptr) {
+      ptr = Arena::DefaultConstruct<Type>(arena);
+    };
+  }
+  static constexpr auto GetNewFromPrototypeFunc(const Type* prototype) {
+    static_assert(std::is_base_of_v<MessageLite, Type>);
+    ABSL_DCHECK(prototype != nullptr);
+    return
+        [prototype](Arena* arena, void*& ptr) { ptr = prototype->New(arena); };
+  }
+
   static inline Arena* GetArena(Type* value) {
     return Arena::InternalGetArena(value);
   }
 
-  static inline Type* New(Arena* arena, Type&& value) {
-    return Arena::Create<Type>(arena, std::move(value));
-  }
   static inline void Delete(Type* value, Arena* arena) {
+    static_assert(std::is_base_of_v<MessageLite, Type>);
     if (arena != nullptr) return;
-#ifdef __cpp_if_constexpr
-    if constexpr (std::is_base_of<MessageLite, Type>::value) {
-      // Using virtual destructor to reduce generated code size that would have
-      // happened otherwise due to inlined `~Type()`.
-      InternalOutOfLineDeleteMessageLite(value);
-    } else {
-      delete value;
-    }
-#else
-    delete value;
-#endif
+    // Using virtual destructor to reduce generated code size that would have
+    // happened otherwise due to inlined `~Type()`.
+    InternalOutOfLineDeleteMessageLite(value);
   }
-  static inline void Clear(Type* value) { value->Clear(); }
+  static inline void Clear(Type* value) {
+    static_assert(std::is_base_of_v<MessageLite, Type>);
+    value->Clear();
+  }
   static inline size_t SpaceUsedLong(const Type& value) {
+    // NOTE: For `SpaceUsedLong()`, we do need `Message`, not `MessageLite`.
+    static_assert(std::is_base_of_v<Message, Type>);
     return value.SpaceUsedLong();
   }
 
   static const Type& default_instance() {
+    static_assert(has_default_instance());
     return *static_cast<const GenericType*>(
         MessageTraits<Type>::default_instance());
   }
-
-  static constexpr bool has_default_instance() { return true; }
+  static const MessageLite& normalized_default_instance() {
+    return *static_cast<const MessageLite*>(
+        MessageTraits<Type>::default_instance());
+  }
+  static constexpr bool has_default_instance() {
+    return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
+  }
 };
-
-template <>
-inline Arena* GenericTypeHandler<MessageLite>::GetArena(MessageLite* value) {
-  return value->GetArena();
-}
-
-template <>
-inline constexpr bool GenericTypeHandler<MessageLite>::has_default_instance() {
-  return false;
-}
-
-// Message specialization bodies defined in message.cc. This split is necessary
-// to allow proto2-lite (which includes this header) to be independent of
-// Message.
-template <>
-PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetArena(Message* value);
-
-template <>
-inline constexpr bool GenericTypeHandler<Message>::has_default_instance() {
-  return false;
-}
-
-PROTOBUF_EXPORT void* NewStringElement(Arena* arena);
 
 template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
 
-  static constexpr auto GetNewFunc() { return NewStringElement; }
+  static constexpr auto GetNewFunc() {
+    return [](Arena* arena, void*& ptr) { ptr = Arena::Create<Type>(arena); };
+  }
+  static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
+    return GetNewFunc();
+  }
+
   static inline Arena* GetArena(Type*) { return nullptr; }
 
-  static PROTOBUF_NOINLINE Type* New(Arena* arena, Type&& value) {
-    return Arena::Create<Type>(arena, std::move(value));
-  }
   static inline void Delete(Type* value, Arena* arena) {
     if (arena == nullptr) {
       delete value;
     }
   }
   static inline void Clear(Type* value) { value->clear(); }
-  static inline void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
@@ -935,9 +956,12 @@ class GenericTypeHandler<std::string> {
   static const Type& default_instance() {
     return GetEmptyStringAlreadyInited();
   }
-
+  static const Type& normalized_default_instance() {
+    return default_instance();
+  }
   static constexpr bool has_default_instance() { return true; }
 };
+
 
 }  // namespace internal
 
@@ -1080,7 +1104,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // Reserves space to expand the field to at least the given size.  This only
   // resizes the pointer array; it doesn't allocate any objects.  If the
   // array is grown, it will always be at least doubled in size.
-  void Reserve(int new_size);
+  //
+  // The optional `prototype` is used to determine the memory allocation traits.
+  // It is only really required if the `Element` type is either `Message` or
+  // `MessageLite`: otherwise and by default, the traits of the concrete
+  // `Element` type are used.
+  void Reserve(int new_size, const Element* prototype = nullptr);
 
   int Capacity() const;
 
@@ -1262,7 +1291,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
 
   void AddAllocatedForParse(Element* p) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse(p);
+    return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p);
   }
 };
 
@@ -1494,6 +1523,7 @@ inline void RepeatedPtrField<Element>::MergeFrom(
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::CopyFrom(const RepeatedPtrField& other) {
+  if (other.empty() || this == &other) return;
   RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other);
 }
 
@@ -1535,7 +1565,7 @@ inline const Element* const* RepeatedPtrField<Element>::data() const
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
-  if (this == other) return;
+  if (this == other || (empty() && other->empty())) return;
   RepeatedPtrFieldBase::Swap<TypeHandler>(other);
 }
 
@@ -1590,8 +1620,19 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 
 template <typename Element>
-inline void RepeatedPtrField<Element>::Reserve(int new_size) {
-  return RepeatedPtrFieldBase::Reserve(new_size);
+inline void RepeatedPtrField<Element>::Reserve(int new_size,
+                                               const Element* prototype) {
+  using internal::AllocTraits;
+  if constexpr (TypeHandler::has_default_instance()) {
+    ABSL_DCHECK(prototype == nullptr)
+        << "Do not pass a prototype for concrete element types";
+    return RepeatedPtrFieldBase::Reserve(
+        new_size, AllocTraits{TypeHandler::normalized_default_instance()});
+  } else {
+    ABSL_DCHECK(prototype != nullptr)
+        << "Pass a prototype for abstract element types (Message, MessageLite)";
+    return RepeatedPtrFieldBase::Reserve(new_size, AllocTraits{*prototype});
+  }
 }
 
 template <typename Element>
@@ -1623,7 +1664,8 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional);
+    // DO NOT SUBMIT: Drop, or pass `AllocTraits` or a prototype from Rust side.
+    // field.Reserve(field.size() + additional, /*alloc_traits=*/...);
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
