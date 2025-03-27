@@ -141,15 +141,6 @@ class PROTOBUF_EXPORT WireFormat {
   static bool SkipMessage(io::CodedInputStream* input,
                           UnknownFieldSet* unknown_fields);
 
-  // Read a packed enum field. If the is_valid function is not nullptr, values
-  // for which is_valid(value) returns false are appended to
-  // unknown_fields_stream.
-  static bool ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
-                                             uint32_t field_number,
-                                             bool (*is_valid)(int),
-                                             UnknownFieldSet* unknown_fields,
-                                             RepeatedField<int>* values);
-
   // Write the contents of an UnknownFieldSet to the output.
   static void SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
                                      io::CodedOutputStream* output) {
@@ -175,18 +166,10 @@ class PROTOBUF_EXPORT WireFormat {
 
   // Same thing except for messages that have the message_set_wire_format
   // option.
-  static void SerializeUnknownMessageSetItems(
-      const UnknownFieldSet& unknown_fields, io::CodedOutputStream* output) {
-    output->SetCur(InternalSerializeUnknownMessageSetItemsToArray(
-        unknown_fields, output->Cur(), output->EpsCopy()));
-  }
-  // Same as above, except writing directly to the provided buffer.
   // Requires that the buffer have sufficient capacity for
   // ComputeUnknownMessageSetItemsSize(unknown_fields).
   //
   // Returns a pointer past the last written byte.
-  static uint8_t* SerializeUnknownMessageSetItemsToArray(
-      const UnknownFieldSet& unknown_fields, uint8_t* target);
   static uint8_t* InternalSerializeUnknownMessageSetItemsToArray(
       const UnknownFieldSet& unknown_fields, uint8_t* target,
       io::EpsCopyOutputStream* stream);
@@ -234,12 +217,6 @@ class PROTOBUF_EXPORT WireFormat {
   // option message_set_wire_format = true.
   static bool ParseAndMergeMessageSetItem(io::CodedInputStream* input,
                                           Message* message);
-  static void SerializeMessageSetItemWithCachedSizes(
-      const FieldDescriptor* field, const Message& message,
-      io::CodedOutputStream* output) {
-    output->SetCur(InternalSerializeMessageSetItem(
-        field, message, output->Cur(), output->EpsCopy()));
-  }
   static uint8_t* InternalSerializeMessageSetItem(
       const FieldDescriptor* field, const Message& message, uint8_t* target,
       io::EpsCopyOutputStream* stream);
