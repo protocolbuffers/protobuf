@@ -11191,6 +11191,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     kReservedNameFieldNumber = 5,
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 3,
+    kVisibilityFieldNumber = 6,
   };
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   int value_size() const;
@@ -11279,12 +11280,23 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::EnumOptions* PROTOBUF_NONNULL _internal_mutable_options();
 
   public:
+  // optional .google.protobuf.SymbolVisibility visibility = 6;
+  bool has_visibility() const;
+  void clear_visibility() ;
+  ::google::protobuf::SymbolVisibility visibility() const;
+  void set_visibility(::google::protobuf::SymbolVisibility value);
+
+  private:
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   3, 61,
+  static const ::google::protobuf::internal::TcParseTable<3, 6,
+                                   4, 61,
                                    2>
       _table_;
 
@@ -11310,6 +11322,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE options_;
+    int visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11479,6 +11492,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     kReservedNameFieldNumber = 10,
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 7,
+    kVisibilityFieldNumber = 11,
   };
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   int field_size() const;
@@ -11652,12 +11666,23 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::MessageOptions* PROTOBUF_NONNULL _internal_mutable_options();
 
   public:
+  // optional .google.protobuf.SymbolVisibility visibility = 11;
+  bool has_visibility() const;
+  void clear_visibility() ;
+  ::google::protobuf::SymbolVisibility visibility() const;
+  void set_visibility(::google::protobuf::SymbolVisibility value);
+
+  private:
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 10,
-                                   8, 65,
+  static const ::google::protobuf::internal::TcParseTable<4, 11,
+                                   9, 65,
                                    2>
       _table_;
 
@@ -11688,6 +11713,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE options_;
+    int visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -14252,6 +14278,37 @@ DescriptorProto::_internal_mutable_reserved_name() {
   return &_impl_.reserved_name_;
 }
 
+// optional .google.protobuf.SymbolVisibility visibility = 11;
+inline bool DescriptorProto::has_visibility() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void DescriptorProto::clear_visibility() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.visibility_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline ::google::protobuf::SymbolVisibility DescriptorProto::visibility() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.visibility)
+  return _internal_visibility();
+}
+inline void DescriptorProto::set_visibility(::google::protobuf::SymbolVisibility value) {
+  _internal_set_visibility(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
+  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.visibility)
+}
+inline ::google::protobuf::SymbolVisibility DescriptorProto::_internal_visibility() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::SymbolVisibility>(_impl_.visibility_);
+}
+inline void DescriptorProto::_internal_set_visibility(::google::protobuf::SymbolVisibility value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::SymbolVisibility_internal_data_));
+                                          _impl_.visibility_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ExtensionRangeOptions_Declaration
@@ -15868,6 +15925,37 @@ inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
 EnumDescriptorProto::_internal_mutable_reserved_name() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_name_;
+}
+
+// optional .google.protobuf.SymbolVisibility visibility = 6;
+inline bool EnumDescriptorProto::has_visibility() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void EnumDescriptorProto::clear_visibility() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.visibility_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline ::google::protobuf::SymbolVisibility EnumDescriptorProto::visibility() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.visibility)
+  return _internal_visibility();
+}
+inline void EnumDescriptorProto::set_visibility(::google::protobuf::SymbolVisibility value) {
+  _internal_set_visibility(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
+  // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.visibility)
+}
+inline ::google::protobuf::SymbolVisibility EnumDescriptorProto::_internal_visibility() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::google::protobuf::SymbolVisibility>(_impl_.visibility_);
+}
+inline void EnumDescriptorProto::_internal_set_visibility(::google::protobuf::SymbolVisibility value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::google::protobuf::SymbolVisibility_internal_data_));
+                                          _impl_.visibility_ = value;
 }
 
 // -------------------------------------------------------------------
