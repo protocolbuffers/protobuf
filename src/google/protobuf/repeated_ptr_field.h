@@ -246,6 +246,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_LE(n, Capacity());
     void** elems = elements();
     for (int i = 0; i < n; i++) {
+      if (i + 5 < n) {
+        absl::PrefetchToLocalCacheNta(elems[i + 5]);
+      }
       Delete<H>(elems[i], nullptr);
     }
     if (!using_sso()) {
