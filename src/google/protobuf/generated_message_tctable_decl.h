@@ -373,6 +373,40 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<FastFieldEntry*>(this + 1) + idx;
   }
 
+  static uint32_t RecodeTagForFastParsing(uint32_t tag) {
+    ABSL_DCHECK_LE(tag, 0x3FFFu);
+    // Construct the varint-coded tag. If it is more than 7 bits, we need to
+    // shift the high bits and add a continue bit.
+    if (uint32_t hibits = tag & 0xFFFFFF80) {
+      // hi = tag & ~0x7F
+      // lo = tag & 0x7F
+      // This shifts hi to the left by 1 to the next byte and sets the
+      // continuation bit.
+      tag = tag + hibits + 128;
+    }
+    return tag;
+  }
+
+  static constexpr size_t kMaxFastFields = 32;
+  static uint32_t TagToIdx(uint32_t tag,
+                           uint32_t fast_table_size = kMaxFastFields) {
+    // The fast table size must be a power of two.
+    ABSL_DCHECK_EQ((fast_table_size & (fast_table_size - 1)), uint32_t{0});
+
+    // The field index is determined by the low bits of the field number, where
+    // the table size determines the width of the mask. The largest table
+    // supported is 32 entries. The parse loop uses these bits directly, so that
+    // the dispatch does not require arithmetic:
+    //        byte 0   byte 1
+    //   tag: 1nnnnttt 0nnnnnnn
+    //        ^^^^^
+    //         idx (table_size_log2=5)
+    // This means that any field number that does not fit in the lower 4 bits
+    // will always have the top bit of its table index asserted.
+    uint32_t idx_mask = fast_table_size - 1;
+    return (tag >> 3) & idx_mask;
+  }
+
   // Returns a begin iterator (pointer) to the start of the field lookup table.
   const uint16_t* field_lookup_begin() const {
     return reinterpret_cast<const uint16_t*>(reinterpret_cast<uintptr_t>(this) +
