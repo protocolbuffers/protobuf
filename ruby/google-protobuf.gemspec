@@ -40,7 +40,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rake", ">= 13"
   s.add_development_dependency "ffi", "~>1"
   s.add_development_dependency "ffi-compiler", "~>1"
-  s.add_development_dependency "rake-compiler", "~> 1.1.0"
-  s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
+  s.add_development_dependency "rake-compiler", "~> 1.2"
+  s.add_development_dependency "rake-compiler-dock", "~> 1.9"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
 end
