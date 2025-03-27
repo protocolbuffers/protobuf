@@ -376,14 +376,6 @@ cc_library(
     deps = ["//third_party/utf8_range"],
 )
 
-exports_files(
-    [
-        "third_party/lunit/console.lua",
-        "third_party/lunit/lunit.lua",
-    ],
-    visibility = ["//lua:__pkg__"],
-)
-
 filegroup(
     name = "source_files",
     srcs = glob(
