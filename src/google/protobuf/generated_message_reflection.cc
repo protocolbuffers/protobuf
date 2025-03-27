@@ -24,6 +24,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
+#include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
@@ -3037,11 +3038,11 @@ bool Reflection::IsSingularFieldNonEmpty(const Message& message,
     case FieldDescriptor::CPPTYPE_FLOAT:
       static_assert(sizeof(uint32_t) == sizeof(float),
                     "Code assumes uint32_t and float are the same size.");
-      return GetRaw<uint32_t>(message, field) != 0;
+      return absl::bit_cast<uint32_t>(GetRaw<float>(message, field)) != 0;
     case FieldDescriptor::CPPTYPE_DOUBLE:
       static_assert(sizeof(uint64_t) == sizeof(double),
                     "Code assumes uint64_t and double are the same size.");
-      return GetRaw<uint64_t>(message, field) != 0;
+      return absl::bit_cast<uint64_t>(GetRaw<double>(message, field)) != 0;
     case FieldDescriptor::CPPTYPE_ENUM:
       return GetRaw<int>(message, field) != 0;
     case FieldDescriptor::CPPTYPE_STRING:
