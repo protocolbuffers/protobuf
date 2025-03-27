@@ -429,6 +429,18 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get(f.as_raw($pbi$::Private), i) };
             $pb$::View::<Self>::new($pbi$::Private, msg)
           }
+
+          unsafe fn repeated_get_mut_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::Mut<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            // - `i < len(f)` is promised by caller.
+            let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get_mut(f.as_raw($pbi$::Private), i) };
+            $pb$::Mut::<Self> { inner: $pbr$::MutatorMessageRef::from_raw_msg(&msg) }
+          }
+
           fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
             // SAFETY:
             // - `f.as_raw()` is a valid `RepeatedPtrField*`.
@@ -523,6 +535,18 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             let msg_ptr = unsafe { $pbr$::upb_Array_Get(f.as_raw($pbi$::Private), i).msg_val }
               .expect("upb_Array* element should not be NULL.");
             $pb$::View::<Self>::new($pbi$::Private, msg_ptr)
+          }
+
+          unsafe fn repeated_get_mut_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::Mut<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            // - `i < len(f)` is promised by the caller.
+            let msg_ptr = unsafe { $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i).msg }
+              .expect("upb_Array* element should not be NULL.");
+            unsafe {$pb$::Mut::<Self> { inner: $pbr$::MutatorMessageRef::from_raw_parts(msg_ptr, f.arena($pbi$::Private)) } }
           }
 
           fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {

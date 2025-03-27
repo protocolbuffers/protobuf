@@ -130,6 +130,10 @@ impl<'msg> MutatorMessageRef<'msg> {
     pub fn arena(&self) -> &Arena {
         self.arena
     }
+
+    pub fn from_raw_parts(msg: RawMessage, arena: &'msg Arena) -> Self {
+        MutatorMessageRef { msg, arena }
+    }
 }
 
 /// Kernel-specific owned `string` and `bytes` field type.
@@ -352,6 +356,12 @@ impl<'msg, T> RepeatedMut<'msg, T> {
     #[doc(hidden)]
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
         self.inner.arena.raw()
+    }
+
+    // Returns an `Arena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn arena(&self, _private: Private) -> &'msg Arena {
+        self.inner.arena
     }
 }
 
