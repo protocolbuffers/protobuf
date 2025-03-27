@@ -45,6 +45,12 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated string reserved_name = 5;</code>
      */
     private $reserved_name;
+    /**
+     * Support for `export` and `local` keywords on enums.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.SymbolVisibility visibility = 6;</code>
+     */
+    protected $visibility = null;
 
     /**
      * Constructor.
@@ -62,6 +68,8 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      *     @type string[] $reserved_name
      *           Reserved enum value names, which may not be reused. A given name may only
      *           be reserved once.
+     *     @type int $visibility
+     *           Support for `export` and `local` keywords on enums.
      * }
      */
     public function __construct($data = NULL) {
@@ -209,6 +217,42 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->reserved_name = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Support for `export` and `local` keywords on enums.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.SymbolVisibility visibility = 6;</code>
+     * @return int
+     */
+    public function getVisibility()
+    {
+        return isset($this->visibility) ? $this->visibility : 0;
+    }
+
+    public function hasVisibility()
+    {
+        return isset($this->visibility);
+    }
+
+    public function clearVisibility()
+    {
+        unset($this->visibility);
+    }
+
+    /**
+     * Support for `export` and `local` keywords on enums.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.SymbolVisibility visibility = 6;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setVisibility($var)
+    {
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\SymbolVisibility::class);
+        $this->visibility = $var;
 
         return $this;
     }

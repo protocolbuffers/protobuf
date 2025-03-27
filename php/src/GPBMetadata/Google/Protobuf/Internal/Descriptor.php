@@ -47,6 +47,7 @@ class Descriptor
             ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 7, 'google.protobuf.internal.MessageOptions')
             ->repeated('reserved_range', \Google\Protobuf\Internal\GPBType::MESSAGE, 9, 'google.protobuf.internal.DescriptorProto.ReservedRange')
             ->repeated('reserved_name', \Google\Protobuf\Internal\GPBType::STRING, 10)
+            ->optional('visibility', \Google\Protobuf\Internal\GPBType::ENUM, 11, 'google.protobuf.internal.SymbolVisibility')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.DescriptorProto.ExtensionRange', \Google\Protobuf\Internal\DescriptorProto\ExtensionRange::class)
@@ -132,6 +133,7 @@ class Descriptor
             ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 3, 'google.protobuf.internal.EnumOptions')
             ->repeated('reserved_range', \Google\Protobuf\Internal\GPBType::MESSAGE, 4, 'google.protobuf.internal.EnumDescriptorProto.EnumReservedRange')
             ->repeated('reserved_name', \Google\Protobuf\Internal\GPBType::STRING, 5)
+            ->optional('visibility', \Google\Protobuf\Internal\GPBType::ENUM, 6, 'google.protobuf.internal.SymbolVisibility')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.EnumDescriptorProto.EnumReservedRange', \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange::class)
