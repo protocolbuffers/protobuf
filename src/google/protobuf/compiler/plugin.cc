@@ -10,6 +10,7 @@
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
 
