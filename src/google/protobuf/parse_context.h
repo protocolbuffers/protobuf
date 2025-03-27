@@ -25,7 +25,6 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
@@ -1055,7 +1054,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
 }
 
 PROTOBUF_EXPORT
-std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t first);
+std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res);
 
 // Used for length prefixes. Could read up to 5 bytes, but no more than
 // necessary for a single varint. The caller must ensure enough bytes are
