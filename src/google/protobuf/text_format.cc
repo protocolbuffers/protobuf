@@ -3037,7 +3037,7 @@ bool TextFormat::Printer::TryRedactFieldValue(
     const Message& message, const FieldDescriptor* field,
     BaseTextGenerator* generator, bool insert_value_separator) const {
   TextFormat::RedactionState redaction_state =
-      field->file()->pool()->MemoizeProjection(
+      DescriptorPool::MemoizeProjection(
           field, [](const FieldDescriptor* field) {
             return TextFormat::GetRedactionState(field);
           });

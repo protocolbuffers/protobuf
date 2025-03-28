@@ -2527,28 +2527,30 @@ class PROTOBUF_EXPORT DescriptorPool {
     T value;
   };
 
-  // Memoize a projection of a field.  This is used to cache the results of
-  // calling a function on a field, used for expensive descriptor calculations.
-  template <typename Func>
-  const auto& MemoizeProjection(const FieldDescriptor* field, Func func) const {
-    using ResultT = std::decay_t<decltype(func(field))>;
-    ABSL_DCHECK(field->file()->pool() == this);
+  // Memoize a projection of a descriptor. This is used to cache the results of
+  // calling a function on a descriptor, used for expensive descriptor
+  // calculations.
+  template <typename Desc, typename Func>
+  static const auto& MemoizeProjection(const Desc* descriptor, Func func) {
+    using ResultT = std::decay_t<decltype(func(descriptor))>;
+    auto* pool = descriptor->file()->pool();
     static_assert(std::is_empty_v<Func>);
     // This static bool is unique per-Func, so its address can be used as a key.
     static bool type_key;
-    auto key = std::pair<const void*, const void*>(field, &type_key);
+    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
     {
-      absl::ReaderMutexLock lock(&field_memo_table_mutex_);
-      auto it = field_memo_table_->find(key);
-      if (it != field_memo_table_->end()) {
+      absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
+      auto it = pool->field_memo_table_->find(key);
+      if (it != pool->field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
       }
     }
     auto result = std::make_unique<MemoData<ResultT>>();
-    result->value = func(field);
+    result->value = func(descriptor);
     {
-      absl::MutexLock lock(&field_memo_table_mutex_);
-      auto insert_result = field_memo_table_->insert({key, std::move(result)});
+      absl::MutexLock lock(&pool->field_memo_table_mutex_);
+      auto insert_result =
+          pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;
       return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
     }
