@@ -28,7 +28,7 @@ cc_library(
     hdrs = [
         "upb.h",
     ],
-    copts = UPB_DEFAULT_COPTS,
+    copts = UPB_DEFAULT_COPTS + ["-Wno-tautological-constant-out-of-range-compare"],
     visibility = ["//visibility:public"],
     deps = [
         "//upb:json",
