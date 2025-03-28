@@ -6048,6 +6048,8 @@ UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);
 
 // Must be last.
 
+#if UPB_FASTTABLE
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6143,6 +6145,8 @@ TAGBYTES(r)
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif /* UPB_FASTTABLE */
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODE_FAST_H_ */
