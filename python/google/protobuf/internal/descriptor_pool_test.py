@@ -329,7 +329,7 @@ class DescriptorPoolTestBase(object):
     field = self.pool.FindFieldByName(
         'google.protobuf.python.internal.Factory1Message.list_value')
     self.assertEqual(field.name, 'list_value')
-    self.assertEqual(field.label, field.LABEL_REPEATED)
+    self.assertTrue(field.is_repeated)
     self.assertFalse(field.has_options)
 
     with self.assertRaises(KeyError):
