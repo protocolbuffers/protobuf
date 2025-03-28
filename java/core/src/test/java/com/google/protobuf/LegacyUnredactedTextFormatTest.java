@@ -129,4 +129,55 @@ public final class LegacyUnredactedTextFormatTest {
                 + " 15: 0xabcd1234"
                 + " 15: 0xabcdef1234567890");
   }
+
+  @Test
+  public void legacyUnredactedToString_returnsTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedToString(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void legacyUnredactedToString_returnsTextFormatForNonNullObject() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void legacyUnredactedToString_returnsEmptyStringForNullObject() {
+    UnittestProto.RedactedFields message = null;
+    assertThat(LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(message))
+        .isEqualTo(String.valueOf(message));
+  }
 }
