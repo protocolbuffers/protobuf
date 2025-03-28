@@ -75,7 +75,8 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-          field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
+          not field.is_required and
+          not field.is_repeated)
 
 _edition_defaults_lock = threading.Lock()
 
@@ -1159,7 +1160,7 @@ class DescriptorPool(object):
     if field_proto.type == descriptor.FieldDescriptor.TYPE_ENUM:
       field_desc.enum_type = desc
 
-    if field_proto.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field_proto.is_repeated:
       field_desc.has_default_value = False
       field_desc.default_value = []
     elif field_proto.HasField('default_value'):
