@@ -9535,15 +9535,45 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
   BuildDescriptorMessagesInTestPool();
 
-  // By default, the pool does not enforce naming style violations.
-  ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
     edition = "2024";
     package naming;
 
     option features.default_symbol_visibility = STRICT;
-    message bad_message_name {}
+
+    local message LocalOuter {
+      local enum Inner {
+        VAL_1 = 0;
+      }
+    }
+
+    export message ExportOuter {
+      enum Inner {
+        VAL_1 = 0;
+      }
+    }
   )schema"),
               NotNull());
+}
+
+TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
+  BuildDescriptorMessagesInTestPool();
+
+  ParseAndBuildFileWithErrorSubstr(
+      "vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema",
+      "nested messages cannot be `export` with STRICT "
+      "visibility. Message must be moved to top-level, ideally in its own file "
+      "in order to be `export`.");
 }
 
 TEST_F(FeaturesTest, BadPackageName) {
@@ -12255,7 +12285,7 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
 
   // Check that they are references aliasing the same object.
   EXPECT_TRUE(
-      (std::is_same_v<decltype(name), const decltype(descriptor->name()) &>));
+      (std::is_same_v<decltype(name), const decltype(descriptor->name())&>));
   EXPECT_EQ(&name, &dupe_name);
 
   auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(

@@ -826,6 +826,109 @@ class Symbol {
     return {};
   }
 
+  SymbolVisibility visibility() const {
+    switch (type()) {
+      case MESSAGE:
+        return descriptor()->visibility();
+      case ENUM:
+        return enum_descriptor()->visibility();
+      default:
+        return SymbolVisibility::VISIBILITY_UNSET;
+    }
+
+    return SymbolVisibility::VISIBILITY_UNSET;
+  }
+
+  bool IsNestedDefinition() const {
+    switch (type()) {
+      case MESSAGE:
+        return descriptor()->containing_type() != nullptr;
+      case ENUM:
+        return enum_descriptor()->containing_type() != nullptr;
+      case FIELD:  // For extension fields
+        return field_descriptor()->containing_type() != nullptr;
+      default:
+        return false;
+    }
+  }
+
+  SymbolVisibility GetEffectiveVisibility() const {
+    SymbolVisibility effective_visibility = visibility();
+
+    // If our visibility is specifically set we can return that.  We'll validate
+    // whether it's reasonable or not later.
+    if (effective_visibility == SymbolVisibility::VISIBILITY_UNSET) {
+      switch (GetFile()->features().default_symbol_visibility()) {
+        case FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_ALL:
+          return SymbolVisibility::VISIBILITY_EXPORT;
+        case FeatureSet_VisibilityFeature_DefaultSymbolVisibility_EXPORT_TOP_LEVEL:
+          return IsNestedDefinition() ? SymbolVisibility::VISIBILITY_LOCAL
+                                      : SymbolVisibility::VISIBILITY_EXPORT;
+        case FeatureSet_VisibilityFeature_DefaultSymbolVisibility_LOCAL_ALL:
+        case FeatureSet_VisibilityFeature_DefaultSymbolVisibility_STRICT:
+          return SymbolVisibility::VISIBILITY_LOCAL;
+
+        // Unset shouldn't be possible from the compiler, but happens in unit
+        // tests so assume it represents pre-edition 2024 defaults. In either
+        // case we want to fail open.
+        case FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DEFAULT_SYMBOL_VISIBILITY_UNKNOWN:
+        default:
+          return SymbolVisibility::VISIBILITY_EXPORT;
+      }
+    }
+
+    return effective_visibility;
+  }
+
+  /*
+   * Calculate whether this symbol can be accessed from the given
+   * FileDescriptor*.
+   *
+   * Returns true if the symbol is in the same file OR the symbol is `export`
+   */
+  bool IsVisibleFrom(FileDescriptor* other) const {
+    if (GetFile() == nullptr || other == nullptr) {
+      return false;
+    }
+    if (GetFile() == other) {
+      return true;
+    }
+
+    SymbolVisibility effective_visibility = GetEffectiveVisibility();
+
+    return effective_visibility == SymbolVisibility::VISIBILITY_EXPORT;
+  }
+
+  std::string GetVisibilityError(FileDescriptor* other,
+                                 absl::string_view usage = "") const {
+    if (IsVisibleFrom(other)) {
+      return "";
+    }
+
+    SymbolVisibility explicit_visibility = visibility();
+
+    std::string reason =
+        explicit_visibility == SymbolVisibility::VISIBILITY_LOCAL
+            ? "It is explicitly marked 'local'"
+            : absl::StrCat(
+                  "It defaulted to local from file-level 'option "
+                  "features.default_symbol_visibility = '",
+                  FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(
+                      GetFile()->features().default_symbol_visibility()),
+                  "';");
+
+    const absl::string_view file_path =
+        GetFile() != nullptr ? GetFile()->name() : "unknown_file";
+    const absl::string_view symbol_name = full_name();
+
+    return absl::StrCat("Symbol \"", symbol_name, "\", defined in \"",
+                        file_path, "\" ", usage,
+                        " is "
+                        "not visible from \"",
+                        other->name(), "\". ", reason,
+                        " and cannot be accessed outside its own file");
+  }
+
  private:
   const internal::SymbolBase* ptr_;
 };
@@ -4560,6 +4663,8 @@ class DescriptorBuilder {
                        const MethodDescriptorProto& proto);
   void SuggestFieldNumbers(FileDescriptor* file,
                            const FileDescriptorProto& proto);
+  void CheckVisibilityRules(FileDescriptor* file,
+                            const FileDescriptorProto& proto);
 
   // Checks that the extension field matches what is declared.
   void CheckExtensionDeclaration(const FieldDescriptor& field,
@@ -6368,6 +6473,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
           }
         });
   }
+  if (!had_errors_) {
+    // Check Symbol Visibility and Co-Location rules.
+    CheckVisibilityRules(result, proto);
+  }
 
   if (had_errors_) {
     return nullptr;
@@ -6420,6 +6529,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->is_unqualified_placeholder_ = false;
   result->well_known_type_ = Descriptor::WELLKNOWNTYPE_UNSPECIFIED;
   result->options_ = nullptr;  // Set to default_instance later if necessary.
+  result->visibility_ = proto.visibility();
 
   auto it = pool_->tables_->well_known_types_.find(result->full_name());
   if (it != pool_->tables_->well_known_types_.end()) {
@@ -7119,6 +7229,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->containing_type_ = parent;
   result->is_placeholder_ = false;
   result->is_unqualified_placeholder_ = false;
+  result->visibility_ = proto.visibility();
 
   if (proto.value_size() == 0) {
     // We cannot allow enums with no values because this would mean there
@@ -7530,7 +7641,14 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                      "\" is not a message type.");
                });
       return;
+    } else if (!extendee.IsVisibleFrom(file_)) {
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::EXTENDEE, [&] {
+                 return extendee.GetVisibilityError(file_, "target of extend");
+               });
+      return;
     }
+
     field->containing_type_ = extendee.descriptor();
 
     const Descriptor::ExtensionRange* extension_range =
@@ -7626,6 +7744,13 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
           return;
         }
       }
+    }
+
+    if (!type.IsVisibleFrom(file_)) {
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::EXTENDEE,
+               [&] { return type.GetVisibilityError(file_); });
+      return;
     }
 
     if (!proto.has_type()) {
@@ -7949,6 +8074,184 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
   }
 }
 
+// Internal State used for checking visilibity rules.
+struct VisibilityCheckerState {
+  FileDescriptor* containing_file;
+
+  std::vector<std::pair<const Descriptor*, const DescriptorProto*>>
+      top_level_messages;
+  std::vector<std::pair<const Descriptor*, const DescriptorProto*>>
+      nested_messages;
+
+  std::vector<std::pair<const EnumDescriptor*, const EnumDescriptorProto*>>
+      top_level_enums;
+  std::vector<std::pair<const EnumDescriptor*, const EnumDescriptorProto*>>
+      nested_enums;
+
+  std::vector<const ServiceDescriptor*> top_level_services;
+
+  std::vector<const FieldDescriptor*> top_level_extend;
+  std::vector<const FieldDescriptor*> nested_extend;
+};
+
+// Populate VisibilityCheckerState for messages.
+void CheckVisibilityRulesVisit(const Descriptor& message,
+                               const DescriptorProto& proto,
+                               VisibilityCheckerState* state) {
+  if (message.containing_type() == nullptr) {
+    state->top_level_messages.push_back(std::make_pair(&message, &proto));
+  } else {
+    state->nested_messages.push_back(std::make_pair(&message, &proto));
+  }
+}
+
+// Populate VisibilityCheckerState for enums.
+void CheckVisibilityRulesVisit(const EnumDescriptor& enm,
+                               const EnumDescriptorProto& proto,
+                               VisibilityCheckerState* state) {
+  if (enm.containing_type() == nullptr) {
+    state->top_level_enums.push_back(std::make_pair(&enm, &proto));
+  } else {
+    state->nested_enums.push_back(std::make_pair(&enm, &proto));
+  }
+}
+
+// Populate VisibilityCheckerState for services.
+void CheckVisibilityRulesVisit(const ServiceDescriptor& service,
+                               const ServiceDescriptorProto& proto,
+                               VisibilityCheckerState* state) {
+  state->top_level_services.push_back(&service);
+}
+
+// Populate VisibilityCheckerState for extensions.
+void CheckVisibilityRulesVisit(const FieldDescriptor& field,
+                               const FieldDescriptorProto& proto,
+                               VisibilityCheckerState* state) {
+  // We only care about extensions.
+  if (!field.is_extension()) {
+    return;
+  }
+  const Descriptor* contained_in = field.extension_scope();
+  if (contained_in == nullptr) {
+    state->top_level_extend.push_back(&field);
+  } else {
+    state->nested_extend.push_back(&field);
+  }
+}
+
+// Returns true iff the message is a pure zero field message used only for Enum
+// namespacing.  AKA it is:
+// * top-level
+// * visibility local either explicitly or by file default
+// * has reserved range of 1 to max.
+bool IsEnumNamespaceMessage(
+    const Descriptor* container,
+    FeatureSet::VisibilityFeature::DefaultSymbolVisibility default_visibility) {
+
+  // Only allowed for top-level messages
+  if (container->containing_type() != nullptr) {
+    return false;
+  }
+
+  bool default_to_local =
+      default_visibility ==
+          FeatureSet_VisibilityFeature_DefaultSymbolVisibility_STRICT ||
+      default_visibility ==
+          FeatureSet_VisibilityFeature_DefaultSymbolVisibility_LOCAL_ALL;
+
+  bool is_local =
+      container->visibility() == SymbolVisibility::VISIBILITY_LOCAL ||
+      (container->visibility() == SymbolVisibility::VISIBILITY_UNSET &&
+       default_to_local);
+
+  // must either be marked local, or unset with file default making it local
+  if (!is_local) {
+    return false;
+  }
+
+  if (container->reserved_range_count() != 1) {
+    return false;
+  }
+
+  const Descriptor::ReservedRange* range = container->reserved_range(0);
+  if (range == nullptr && range->start != 1 &&
+      range->end != FieldDescriptor::kLastReservedNumber) {
+    return false;
+  }
+
+  return true;
+}
+
+// Enforce File-wide visibility and co-location rules.
+void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
+                                             const FileDescriptorProto& proto) {
+  // No visibility rules before 2024
+  if (file->edition() <= Edition::EDITION_2023) {
+    return;
+  }
+
+  // In edition 2024 we only enforce STRICT visibilty rules. There are  more to
+  // come. This has a single check, allowing nested enums to have visibility set
+  // only when in the form:
+  //
+  // local msg { export enum {} reserved 1 to max; }
+  if (file->features().default_symbol_visibility() !=
+      FeatureSet_VisibilityFeature_DefaultSymbolVisibility_STRICT) {
+    return;
+  }
+
+  // Check DefaultSymbolVisibility first.
+  //
+  // For Edition 2024:
+  // If DefaultSymbolVisibility is STRICT enforce it with caveats for:
+  //
+
+  VisibilityCheckerState state;
+
+  // Build our state object so we can apply rules based on type.
+  internal::VisitDescriptors(
+      *file, proto,
+      [&](const auto& descriptor, const auto& proto)
+          -> decltype(CheckVisibilityRulesVisit(descriptor, proto, nullptr)) {
+        CheckVisibilityRulesVisit(descriptor, proto, &state);
+      });
+
+  for (auto& nested : state.nested_messages) {
+    if (nested.first->visibility() == SymbolVisibility::VISIBILITY_EXPORT) {
+      AddError(nested.first->full_name(), *nested.second,
+               DescriptorPool::ErrorCollector::INPUT_TYPE, [&] {
+                 return absl::StrCat(
+                     "\"", nested.first->name(),
+                     "\" nested messages cannot be `export` with STRICT "
+                     "visibility. Message must be moved to top-level, ideally "
+                     "in its own file in order to be `export`.");
+               });
+    }
+  }
+
+  for (auto& nested : state.nested_enums) {
+    if (nested.first->visibility() == SymbolVisibility::VISIBILITY_EXPORT) {
+      // Check to see if its surrounded by a top-level message marked local and
+      // having extended range 1 to max.
+
+      if (!IsEnumNamespaceMessage(
+              nested.first->containing_type(), file->features().default_symbol_visibility())) {
+        AddError(nested.first->full_name(), *nested.second,
+                 DescriptorPool::ErrorCollector::INPUT_TYPE, [&] {
+                   return absl::StrCat(
+                       "\"", nested.first->name(),
+                       "\" nested enums cannot be marked `export` with STRICT "
+                       "visibility. For C++ namespace messages use: `local "
+                       "message <OuterNamespace> { export enum ",
+                       nested.first->name(), " {...} reserved 1 to max; }`");
+                 });
+      }
+    }
+
+    // Enforce Future rules here:
+  }
+}
+
 // -------------------------------------------------------------------
 
 // Determine if the file uses optimize_for = LITE_RUNTIME, being careful to
@@ -8100,9 +8403,9 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   // Only repeated primitive fields may be packed.
   if (field->options().packed() && !field->is_packable()) {
-    AddError(
-        field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
-        "[packed = true] can only be specified for repeated primitive fields.");
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "[packed = true] can only be specified for repeated primitive "
+             "fields.");
   }
 
   // Note:  Default instance may not yet be initialized here, so we have to
@@ -8206,8 +8509,8 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
       // Either no declarations, or there are but no matches. If there are no
       // declarations, we check its verification state. If there are other
-      // non-matching declarations, we enforce that this extension must also be
-      // declared.
+      // non-matching declarations, we enforce that this extension must also
+      // be declared.
       if (!extension_range->options_->declaration().empty() ||
           (extension_range->options_->verification() ==
            ExtensionRangeOptions::DECLARATION)) {
@@ -8216,7 +8519,8 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
             [&] {
               return absl::Substitute(
                   "Missing extension declaration for field $0 with number $1 "
-                  "in extendee message $2. An extension range must declare for "
+                  "in extendee message $2. An extension range must declare "
+                  "for "
                   "all extension fields if its verification state is "
                   "DECLARATION or there's any declaration in the range "
                   "already. Otherwise, consider splitting up the range.",
@@ -8254,7 +8558,8 @@ void DescriptorBuilder::ValidateFileFeatures(const FileDescriptor* file,
   if (file->options().java_string_check_utf8()) {
     AddError(
         file->name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
-        "File option java_string_check_utf8 is not allowed under editions. Use "
+        "File option java_string_check_utf8 is not allowed under editions. "
+        "Use "
         "the (pb.java).utf8_validation feature to control this behavior.");
   }
 }
@@ -8266,8 +8571,8 @@ void DescriptorBuilder::ValidateFieldFeatures(
     return;
   }
 
-  // Double check proto descriptors in editions.  These would usually be caught
-  // by the parser, but may not be for dynamically built descriptors.
+  // Double check proto descriptors in editions.  These would usually be
+  // caught by the parser, but may not be for dynamically built descriptors.
   if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Required label is not allowed under editions.  Use the feature "
@@ -8305,10 +8610,10 @@ void DescriptorBuilder::ValidateFieldFeatures(
 
   if (field->containing_type() != nullptr &&
       field->containing_type()->options().map_entry()) {
-    // Skip validation of explicit features on generated map fields.  These will
-    // be blindly propagated from the original map field, and may violate a lot
-    // of these conditions.  Note: we do still validate the user-specified map
-    // field.
+    // Skip validation of explicit features on generated map fields.  These
+    // will be blindly propagated from the original map field, and may violate
+    // a lot of these conditions.  Note: we do still validate the
+    // user-specified map field.
     return;
   }
 
@@ -8379,7 +8684,8 @@ void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
       bool inserted = insert_result.second;
       if (!inserted) {
         if (!enm->options().allow_alias()) {
-          // Generate error if duplicated enum values are explicitly disallowed.
+          // Generate error if duplicated enum values are explicitly
+          // disallowed.
           auto make_error = [&] {
             // Find the next free number.
             absl::flat_hash_set<int64_t> used;
@@ -8459,8 +8765,8 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
     }
 
     // Both full_name and type should be present. If none of them is set,
-    // add an error unless reserved is set to true. If only one of them is set,
-    // add an error whether or not reserved is set to true.
+    // add an error unless reserved is set to true. If only one of them is
+    // set, add an error whether or not reserved is set to true.
     if (!declaration.has_full_name() || !declaration.has_type()) {
       if (declaration.has_full_name() != declaration.has_type() ||
           !declaration.reserved()) {
@@ -8531,8 +8837,8 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
 
 
     if (!range_options.declaration().empty()) {
-      // TODO: remove the "has_verification" check once the default
-      // is flipped to DECLARATION.
+      // TODO: remove the "has_verification" check once the
+      // default is flipped to DECLARATION.
       if (range_options.has_verification() &&
           range_options.verification() == ExtensionRangeOptions::UNVERIFIED) {
         AddError(message.full_name(), proto.extension_range(i),
@@ -8608,9 +8914,9 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_BYTES:
-      AddError(
-          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
-          "Key in map fields cannot be float/double, bytes or message types.");
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "Key in map fields cannot be float/double, bytes or message "
+               "types.");
       break;
     case FieldDescriptor::TYPE_BOOL:
     case FieldDescriptor::TYPE_INT32:
@@ -8626,8 +8932,8 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_SFIXED64:
       // Legal cases
       break;
-      // Do not add a default, so that the compiler will complain when new types
-      // are added.
+      // Do not add a default, so that the compiler will complain when new
+      // types are added.
   }
 
   if (value->type() == FieldDescriptor::TYPE_ENUM) {
@@ -8943,7 +9249,8 @@ DescriptorBuilder::OptionInterpreter::~OptionInterpreter() = default;
 
 bool DescriptorBuilder::OptionInterpreter::InterpretOptionExtensions(
     OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/false);
+  return InterpretOptionsImpl(options_to_interpret,
+                              /*skip_extensions=*/false);
 }
 bool DescriptorBuilder::OptionInterpreter::InterpretNonExtensionOptions(
     OptionsToInterpret* options_to_interpret) {
@@ -9060,8 +9367,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   }
 
   if (skip_extensions == uninterpreted_option_->name(0).is_extension()) {
-    // Allow feature and option interpretation to occur in two phases.  This is
-    // necessary because features *are* options and need to be interpreted
+    // Allow feature and option interpretation to occur in two phases.  This
+    // is necessary because features *are* options and need to be interpreted
     // before resolving them.  However, options can also *have* features
     // attached to them.
     return true;
@@ -9069,9 +9376,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
   const Descriptor* options_descriptor = nullptr;
   // Get the options message's descriptor from the builder's pool, so that we
-  // get the version that knows about any extension options declared in the file
-  // we're currently building. The descriptor should be there as long as the
-  // file we're building imported descriptor.proto.
+  // get the version that knows about any extension options declared in the
+  // file we're currently building. The descriptor should be there as long as
+  // the file we're building imported descriptor.proto.
 
   // Note that we use DescriptorBuilder::FindSymbolNotEnforcingDeps(), not
   // DescriptorPool::FindMessageTypeByName() because we're already holding the
@@ -9080,6 +9387,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   // the file that defines the option, not descriptor.proto itself.
   Symbol symbol = builder_->FindSymbolNotEnforcingDeps(
       options->GetDescriptor()->full_name());
+
   options_descriptor = symbol.descriptor();
   if (options_descriptor == nullptr) {
     // The options message's descriptor was not in the builder's pool, so use
@@ -9089,12 +9397,12 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   }
   ABSL_CHECK(options_descriptor);
 
-  // We iterate over the name parts to drill into the submessages until we find
-  // the leaf field for the option. As we drill down we remember the current
-  // submessage's descriptor in |descriptor| and the next field in that
-  // submessage in |field|. We also track the fields we're drilling down
-  // through in |intermediate_fields|. As we go, we reconstruct the full option
-  // name in |debug_msg_name|, for use in error messages.
+  // We iterate over the name parts to drill into the submessages until we
+  // find the leaf field for the option. As we drill down we remember the
+  // current submessage's descriptor in |descriptor| and the next field in
+  // that submessage in |field|. We also track the fields we're drilling down
+  // through in |intermediate_fields|. As we go, we reconstruct the full
+  // option name in |debug_msg_name|, for use in error messages.
   const Descriptor* descriptor = options_descriptor;
   const FieldDescriptor* field = nullptr;
   std::vector<const FieldDescriptor*> intermediate_fields;
@@ -9110,14 +9418,39 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     }
     if (uninterpreted_option_->name(i).is_extension()) {
       absl::StrAppend(&debug_msg_name, "(", name_part, ")");
-      // Search for the extension's descriptor as an extension in the builder's
-      // pool. Note that we use DescriptorBuilder::LookupSymbol(), not
-      // DescriptorPool::FindExtensionByName(), for two reasons: 1) It allows
-      // relative lookups, and 2) because we're already holding the pool's
-      // mutex, and the latter method locks it again.
+      // Search for the extension's descriptor as an extension in the
+      // builder's pool. Note that we use DescriptorBuilder::LookupSymbol(),
+      // not DescriptorPool::FindExtensionByName(), for two reasons: 1) It
+      // allows relative lookups, and 2) because we're already holding the
+      // pool's mutex, and the latter method locks it again.
       symbol =
           builder_->LookupSymbol(name_part, options_to_interpret_->name_scope);
       field = symbol.field_descriptor();
+
+      if (field != nullptr) {
+        Symbol ext_type_symbol;
+        if (field->message_type() != nullptr) {
+          ext_type_symbol =
+              builder_->LookupSymbol(field->message_type()->full_name(),
+                                     options_to_interpret_->name_scope);
+        } else if (field->enum_type() != nullptr) {
+          ext_type_symbol =
+              builder_->LookupSymbol(field->enum_type()->full_name(),
+                                     options_to_interpret_->name_scope);
+        }
+
+        if (!ext_type_symbol.IsNull()) {
+          // Once we have a symbol verify its visible from our file
+          if (!ext_type_symbol.IsVisibleFrom(builder_->file_)) {
+            return AddNameError([&] {
+              return ext_type_symbol.GetVisibilityError(
+                  builder_->file_,
+                  absl::StrCat("for option \"", name_part, "\" "));
+            });
+          }
+        }
+      }
+
       // If we don't find the field then the field's descriptor was not in the
       // builder's pool, but there's no point in looking in the generated
       // pool. We require that you import the file that defines any extensions
@@ -9130,8 +9463,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
     if (field == nullptr) {
       if (get_allow_unknown(builder_->pool_)) {
-        // We can't find the option, but AllowUnknownDependencies() is enabled,
-        // so we will just leave it as uninterpreted.
+        // We can't find the option, but AllowUnknownDependencies() is
+        // enabled, so we will just leave it as uninterpreted.
         AddWithoutInterpreting(*uninterpreted_option_, options);
         return true;
       } else if (!(builder_->undefine_resolved_name_).empty()) {
@@ -9148,18 +9481,19 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
         });
       } else {
         return AddNameError([&] {
-          return absl::StrCat(
-              "Option \"", debug_msg_name, "\" unknown. Ensure that your proto",
-              " definition file imports the proto which defines the option.");
+          return absl::StrCat("Option \"", debug_msg_name,
+                              "\" unknown. Ensure that your proto",
+                              " definition file imports the proto which "
+                              "defines the option.");
         });
       }
     } else if (field->containing_type() != descriptor) {
       if (get_is_placeholder(field->containing_type())) {
         // The field is an extension of a placeholder type, so we can't
         // reliably verify whether it is a valid extension to use here (e.g.
-        // we don't know if it is an extension of the correct *Options message,
-        // or if it has a valid field number, etc.).  Just leave it as
-        // uninterpreted instead.
+        // we don't know if it is an extension of the correct *Options
+        // message, or if it has a valid field number, etc.).  Just leave it
+        // as uninterpreted instead.
         AddWithoutInterpreting(*uninterpreted_option_, options);
         return true;
       } else {
@@ -9679,8 +10013,8 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
               option_field->full_name(), "\".");
         });
       } else {
-        // Sign-extension is not a problem, since we cast directly from int32_t
-        // to uint64_t, without first going through uint32_t.
+        // Sign-extension is not a problem, since we cast directly from
+        // int32_t to uint64_t, without first going through uint32_t.
         unknown_fields->AddVarint(
             option_field->number(),
             static_cast<uint64_t>(static_cast<int64_t>(enum_value->number())));
@@ -10053,8 +10387,8 @@ void FileDescriptor::DependenciesOnceInit(const FileDescriptor* to_init) {
 
 const FileDescriptor* FileDescriptor::dependency(int index) const {
   if (dependencies_once_) {
-    // Do once init for all indices, as it's unlikely only a single index would
-    // be called, and saves on absl::call_once allocations.
+    // Do once init for all indices, as it's unlikely only a single index
+    // would be called, and saves on absl::call_once allocations.
     absl::call_once(*dependencies_once_, FileDescriptor::DependenciesOnceInit,
                     this);
   }
@@ -10169,7 +10503,8 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
 }
 
 bool IsGroupLike(const FieldDescriptor& field) {
-  // Groups are always tag-delimited, currently specified by a TYPE_GROUP type.
+  // Groups are always tag-delimited, currently specified by a TYPE_GROUP
+  // type.
   if (field.type() != FieldDescriptor::TYPE_GROUP) return false;
   // Group fields always are always the lowercase type name.
   if (field.name() != absl::AsciiStrToLower(field.message_type()->name())) {

@@ -263,6 +263,7 @@ TEST_F(ParseMessageTest, IgnoreBOM) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -287,6 +288,7 @@ TEST_F(ParseMessageTest, SimpleMessage) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -300,6 +302,7 @@ TEST_F(ParseMessageTest, ImplicitSyntaxIdentifier) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
@@ -315,6 +318,7 @@ TEST_F(ParseMessageTest, ExplicitSyntaxIdentifier) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
@@ -331,6 +335,7 @@ TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
 }
@@ -348,6 +353,7 @@ TEST_F(ParseMessageTest, SimpleFields) {
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:15 }"
       "  field { name:\"bar\" label:LABEL_OPTIONAL type:TYPE_INT32 number:34 }"
       "  field { name:\"baz\" label:LABEL_REPEATED type:TYPE_INT32 number:3  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -403,6 +409,7 @@ TEST_F(ParseMessageTest, PrimitiveFieldTypes) {
       "}"
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_BOOL     number:1 "
       "}"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -510,6 +517,7 @@ TEST_F(ParseMessageTest, FieldDefaults) {
       "  field {"
       "    type:TYPE_DOUBLE  default_value:\"43981\"                " ETC
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 #undef ETC
 }
@@ -525,6 +533,7 @@ TEST_F(ParseMessageTest, FieldJsonName) {
       "    name: \"foo\" label: LABEL_OPTIONAL type: TYPE_STRING number: 1"
       "    json_name: \"@type\"\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}\n");
 }
 
@@ -572,6 +581,7 @@ TEST_F(ParseMessageTest, FieldOptions) {
       "                                            identifier_value: \"hey\" }"
       "          }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -622,6 +632,7 @@ TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
       "      }"
       "    }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -681,6 +692,7 @@ TEST_F(ParseMessageTest, FieldOptionsSupportInfAndNan) {
       "      }"
       "    }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -712,6 +724,7 @@ TEST_F(ParseMessageTest, Oneof) {
       "    name: \"D\""
       "    field { name:\"i\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -744,6 +757,7 @@ TEST_F(ParseMessageTest, MultipleOneofs) {
       "  oneof_decl {"
       "    name: \"bar\""
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -792,6 +806,7 @@ TEST_F(ParseMessageTest, Maps) {
       "    type_name: \"CompositeTypeMapEntry\""
       "    number: 2"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -806,6 +821,7 @@ TEST_F(ParseMessageTest, Group) {
       "  nested_type { name: \"TestGroup\" }"
       "  field { name:\"testgroup\" label:LABEL_OPTIONAL number:1"
       "          type:TYPE_GROUP type_name: \"TestGroup\" }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -818,9 +834,13 @@ TEST_F(ParseMessageTest, NestedMessage) {
 
       "message_type {"
       "  name: \"TestMessage\""
-      "  nested_type { name: \"Nested\" }"
+      "  nested_type { "
+      "    name: \"Nested\""
+      "    visibility: VISIBILITY_UNSET"
+      "  }"
       "  field { name:\"test_nested\" label:LABEL_OPTIONAL number:1"
       "          type_name: \"Nested\" }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -833,9 +853,13 @@ TEST_F(ParseMessageTest, NestedEnum) {
 
       "message_type {"
       "  name: \"TestMessage\""
-      "  enum_type { name: \"NestedEnum\" }"
+      "  enum_type {"
+      "    name: \"NestedEnum\""
+      "    visibility: VISIBILITY_UNSET"
+      "  }"
       "  field { name:\"test_enum\" label:LABEL_OPTIONAL number:1"
       "          type_name: \"NestedEnum\" }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -854,6 +878,7 @@ TEST_F(ParseMessageTest, ReservedRange) {
       "  reserved_range { start:9   end:12        }"
       "  reserved_range { start:3   end:4         }"
       "  reserved_range { start:20  end:536870912 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -876,6 +901,7 @@ TEST_F(ParseMessageTest, ReservedRangeOnMessageSet) {
       "    }"
       "  }"
       "  reserved_range { start:20  end:2147483647 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -889,6 +915,7 @@ TEST_F(ParseMessageTest, ReservedNames) {
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
       "  reserved_name: \"bar\""
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -905,6 +932,7 @@ TEST_F(ParseMessageTest, ReservedIdentifiers) {
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
       "  reserved_name: \"bar\""
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -919,6 +947,7 @@ TEST_F(ParseMessageTest, ExtensionRange) {
       "  name: \"TestMessage\""
       "  extension_range { start:10 end:20        }"
       "  extension_range { start:30 end:536870912 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -943,6 +972,7 @@ TEST_F(ParseMessageTest, ExtensionRangeWithOptions) {
       "      }"
       "    }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -959,6 +989,7 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
       "  extension_range { start:9   end:12        }"
       "  extension_range { start:100 end:536870912 }"
       "  extension_range { start:3   end:4         }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1064,6 +1095,7 @@ TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
       "      }"
       "    }"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1089,6 +1121,7 @@ TEST_F(ParseMessageTest, LargerMaxForMessageSetWireFormatMessages) {
       "      identifier_value: \"true\"\n"
       "    }\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1117,6 +1150,7 @@ TEST_F(ParseMessageTest, ExtensionsInMessageScope) {
       "              extendee: \"Extendee1\" }"
       "  extension { name:\"bar\" label:LABEL_REPEATED number:22"
       "              type_name:\"TestMessage\" extendee: \"Extendee2\" }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1144,6 +1178,7 @@ TEST_F(ParseMessageTest, OptionalLabelProto3) {
       "message_type {"
       "  name: \"TestMessage\""
       "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 } "
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1160,6 +1195,7 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
       "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 "
       "          proto3_optional: true oneof_index: 0 } "
       "  oneof_decl { name:\"_foo\" } "
+      "  visibility: VISIBILITY_UNSET"
       "}");
 
   // Handle collisions in the synthetic oneof name.
@@ -1181,6 +1217,7 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
       "          oneof_index: 0 } "
       "  oneof_decl { name:\"_foo\" } "
       "  oneof_decl { name:\"X_foo\" } "
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1210,6 +1247,7 @@ TEST_F(ParseEnumTest, SimpleEnum) {
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1234,6 +1272,7 @@ TEST_F(ParseEnumTest, Values) {
       "  value { name:\"HEX_MIN\" number:-2147483648 }"
       "  value { name:\"INT_MAX\" number:2147483647 }"
       "  value { name:\"INT_MIN\" number:-2147483648 }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1268,6 +1307,7 @@ TEST_F(ParseEnumTest, ValueOptions) {
       "      } "
       "    } "
       "  } "
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1290,6 +1330,7 @@ TEST_F(ParseEnumTest, ReservedRange) {
       "  reserved_range { start:9            end:11          }"
       "  reserved_range { start:3            end:3           }"
       "  reserved_range { start:20           end:2147483647  }"
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1305,6 +1346,7 @@ TEST_F(ParseEnumTest, ReservedNames) {
       "  value { name:\"FOO\" number:0 }"
       "  reserved_name: \"foo\""
       "  reserved_name: \"bar\""
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -1323,6 +1365,7 @@ TEST_F(ParseEnumTest, ReservedIdentifiers) {
       "  value { name:\"FOO\" number:0 }"
       "  reserved_name: \"foo\""
       "  reserved_name: \"bar\""
+      "  visibility: VISIBILITY_UNSET"
       "}");
 }
 
@@ -2358,6 +2401,7 @@ TEST_F(ParserValidationErrorTest, Proto2JsonConflictError) {
       "  field {\n"
       "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'Foo' number: 2\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}\n");
 }
 
@@ -2389,6 +2433,7 @@ TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictWithDefaultError) {
       "  field {\n"
       "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'bar' number: 2\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}\n");
 }
 
@@ -2440,6 +2485,7 @@ TEST_F(ParserValidationErrorTest, Proto3JsonConflictLegacy) {
       "      identifier_value: 'true'\n"
       "    }\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}\n");
 }
 
@@ -2469,6 +2515,7 @@ TEST_F(ParserValidationErrorTest, Proto2JsonConflictLegacy) {
       "      identifier_value: 'true'\n"
       "    }\n"
       "  }\n"
+      "  visibility: VISIBILITY_UNSET"
       "}\n");
 }
 
@@ -4211,6 +4258,7 @@ TEST_F(ParseEditionsTest, Editions) {
       "    label: LABEL_OPTIONAL"
       "    type: TYPE_INT32"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}"
       "syntax: \"editions\""
       "edition: EDITION_2023\n");
@@ -4239,6 +4287,7 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "    start: 100"
       "    end: 200"
       "  }"
+      "  visibility: VISIBILITY_UNSET"
       "}"
       "extension {"
       "  name: \"foo\""
@@ -4305,6 +4354,7 @@ TEST_F(ParseEditionsTest, MapFeatures) {
                }
                options { map_entry: true }
              }
+             visibility: VISIBILITY_UNSET
            }
            syntax: "editions"
            edition: EDITION_2023)pb");
@@ -4469,6 +4519,133 @@ TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
         })schema",
       "1:8: Features are only valid under editions.\n"
       "4:17: Features are only valid under editions.\n");
+}
+
+// ===================================================================
+
+typedef ParserTest ParseVisibilityTest;
+
+TEST_F(ParseVisibilityTest, Edition2023) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        export message A {
+          int32 b = 1;
+        })schema",
+      "2:15: 'local' and 'export' visibility modifiers are valid only on "
+      "edition 2024 and greater.\n");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictExportMessage) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        export message A {
+          local enum NestedEnum {
+            A_VAL = 0;
+          }
+          export message NestedMessage {
+          }
+        })schema",
+      R"pb(message_type {
+             name: "A"
+             enum_type {
+               name: "NestedEnum"
+               value { name: "A_VAL" number: 0 }
+               visibility: VISIBILITY_LOCAL
+             }
+             nested_type { name: "NestedMessage" visibility: VISIBILITY_EXPORT }
+             visibility: VISIBILITY_EXPORT
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictLocalMessage) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        local message B {
+          export enum NestedEnum {
+            B_VAL = 0;
+          }
+          local message NestedMessage {
+          }
+        }
+        )schema",
+      R"pb(message_type {
+             name: "B"
+             enum_type {
+               name: "NestedEnum"
+               value { name: "B_VAL" number: 0 }
+               visibility: VISIBILITY_EXPORT
+             }
+             nested_type { name: "NestedMessage" visibility: VISIBILITY_LOCAL }
+             visibility: VISIBILITY_LOCAL
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictExportEnum) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        export enum C {
+          C_VAL = 0;
+        }
+        )schema",
+      R"pb(enum_type {
+             name: "C"
+             visibility: VISIBILITY_EXPORT
+             value { name: "C_VAL" number: 0 }
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictLocalEnum) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        local enum D {
+          D_VAL = 0;
+        }
+        )schema",
+      R"pb(enum_type {
+             name: "D"
+             visibility: VISIBILITY_LOCAL
+             value { name: "D_VAL" number: 0 }
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NoServiceVisibility) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        local service Foo {
+        }
+        )schema",
+      "2:14: 'local' and 'export' visibility modifiers are valid only on "
+      "'message' and 'enum'\n");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NoextendVisibility) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        export extend Foo {
+          optional string yes = 12;
+        }
+        )schema",
+      "2:15: 'local' and 'export' visibility modifiers are valid only on "
+      "'message' and 'enum'\n");
 }
 
 

@@ -83,8 +83,10 @@ class DescriptorPool;
 // Defined in descriptor.proto
 #ifndef SWIG
 enum Edition : int;
+enum SymbolVisibility : int;
 #else   // !SWIG
 typedef int Edition;
+typedef int SymbolVisibility;
 #endif  // !SWIG
 class DescriptorProto;
 class DescriptorProto_ExtensionRange;
@@ -542,6 +544,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Returns nullptr if no such value exists.
   const EnumValueDescriptor* FindEnumValueByName(absl::string_view name) const;
 
+  // visiblity declared on the message
+  SymbolVisibility visibility() const;
+
   // Extensions ------------------------------------------------------
 
   // A range of field numbers which are designated for third-party
@@ -789,6 +794,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   int extension_count_;
   int reserved_range_count_;
   int reserved_name_count_;
+  SymbolVisibility visibility_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
@@ -806,7 +812,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class FileDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 152);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 160);
 
 // Describes a single field of a message.  To get the descriptor for a given
 // field, first get the Descriptor for the message in which it is defined,
@@ -1492,6 +1498,9 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // |*out_location| unchanged iff location information was not available.
   bool GetSourceLocation(SourceLocation* out_location) const;
 
+  // visiblity declared on the enum
+  SymbolVisibility visibility() const;
+
  private:
   friend class Symbol;
   friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
@@ -1558,6 +1567,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   int reserved_name_count_;
   EnumDescriptor::ReservedRange* reserved_ranges_;
   const std::string** reserved_names_;
+  SymbolVisibility visibility_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<EnumDescriptor>() and AllocateArray<EnumDescriptor>() in
@@ -1575,7 +1585,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class Reflection;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 96);
 
 // Describes an individual enum constant of a particular type.  To get the
 // EnumValueDescriptor for a given enum value, first get the EnumDescriptor
@@ -2732,6 +2742,7 @@ PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_name_count, int)
 
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, is_placeholder, bool)
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, visibility, SymbolVisibility)
 
 PROTOBUF_DEFINE_NAME_ACCESSOR(FieldDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
@@ -2768,6 +2779,7 @@ PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_range_count, int)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, visibility, SymbolVisibility)
 
 inline absl::string_view EnumValueDescriptor::name() const {
   return all_names_[0];
