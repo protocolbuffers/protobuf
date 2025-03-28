@@ -47,6 +47,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/FieldSet.java",
     "src/main/java/com/google/protobuf/FieldType.java",
     "src/main/java/com/google/protobuf/FloatArrayList.java",
+    "src/main/java/com/google/protobuf/Generated.java",
     "src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java",
     "src/main/java/com/google/protobuf/GeneratedMessageLite.java",
     "src/main/java/com/google/protobuf/InlineMe.java",
