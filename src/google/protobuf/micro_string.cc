@@ -282,9 +282,10 @@ void MicroString::SetString(std::string&& data, Arena* arena,
   h->ResetBase();
 }
 
-void MicroString::SetUnowned(const UnownedPayload& unowned, Arena* arena) {
+void MicroString::SetUnowned(const UnownedPayload& unowned_input,
+                             Arena* arena) {
   if (arena == nullptr) Destroy();
-  rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(&unowned) |
+  rep_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(&unowned_input) |
                                  kIsLargeRepTag);
   ABSL_DCHECK_EQ(+large_rep_kind(), +kUnowned);
 }

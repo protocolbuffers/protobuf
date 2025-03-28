@@ -121,8 +121,8 @@ class PROTOBUF_EXPORT MicroString {
     // but works during constant evaluation.
     char for_tag[1];
   };
-  explicit constexpr MicroString(const UnownedPayload& unowned)
-      : rep_(const_cast<char*>(unowned.for_tag + kIsLargeRepTag)) {}
+  explicit constexpr MicroString(const UnownedPayload& unowned_input)
+      : rep_(const_cast<char*>(unowned_input.for_tag + kIsLargeRepTag)) {}
 
   // Resets value to the default constructor state.
   // Disregards initial value of rep_ (so this is the *ONLY* safe method to call
@@ -197,7 +197,7 @@ class PROTOBUF_EXPORT MicroString {
 
   // Set the payload to `unowned`. Will not allocate memory, but might free
   // memory if already set.
-  void SetUnowned(const UnownedPayload& unowned, Arena* arena);
+  void SetUnowned(const UnownedPayload& unowned_input, Arena* arena);
 
   // Set the string, but the input comes in individual chunks.
   // This function is designed to be called from the parser.
@@ -256,7 +256,7 @@ class PROTOBUF_EXPORT MicroString {
                        reinterpret_cast<char*>(this) + inline_capacity + 1,
                        reinterpret_cast<char*>(other));
     } else {
-      ABSL_DCHECK_EQ(inline_capacity, 0);
+      ABSL_DCHECK_EQ(inline_capacity, size_t{0});
       std::swap(rep_, other->rep_);
     }
   }
@@ -418,7 +418,7 @@ class PROTOBUF_EXPORT MicroString {
       if (!Self::kHasInlineBuffer) {
         // We can only come here if the value is inline-empty and the input is
         // empty, so nothing to do.
-        ABSL_DCHECK_EQ(size, 0);
+        ABSL_DCHECK_EQ(size, size_t{0});
         ABSL_DCHECK_EQ(self.rep_, nullptr);
         return;
       }
