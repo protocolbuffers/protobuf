@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/annotations.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -37,6 +38,11 @@ MessageFieldGenerator::~MessageFieldGenerator() {
 }
 
 void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
+  // Only print [SerializeField] if the custom option is set to true.
+  if (descriptor_->options().HasExtension(serialize_field) &&
+    descriptor_->options().GetExtension(serialize_field)) {
+  printer->Print("[SerializeField]\n");
+  }
   printer->Print(
     variables_,
     "private $type_name$ $name$_;\n");

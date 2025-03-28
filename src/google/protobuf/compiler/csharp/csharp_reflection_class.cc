@@ -20,6 +20,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/annotations.pb.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -107,13 +108,20 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
     "//     source: $file_name$\n"
     "// </auto-generated>\n"
     "#pragma warning disable 1591, 0612, 3021, 8981\n"
-    "#region Designer generated code\n"
-    "\n"
+    "#region Designer generated code\n\n",
+    "file_name", file_->name());
+
+  // Check your custom file-scoped option here:
+  if (file_->options().HasExtension(include_unityengine) &&
+      file_->options().GetExtension(include_unityengine)) {
+    printer->Print("using UnityEngine;\n");
+  }
+
+  printer->Print(
     "using pb = global::Google.Protobuf;\n"
     "using pbc = global::Google.Protobuf.Collections;\n"
     "using pbr = global::Google.Protobuf.Reflection;\n"
-    "using scg = global::System.Collections.Generic;\n",
-    "file_name", file_->name());
+    "using scg = global::System.Collections.Generic;\n");
 
   if (!namespace_.empty()) {
     printer->Print("namespace $namespace$ {\n", "namespace", namespace_);
