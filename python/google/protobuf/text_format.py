@@ -1195,8 +1195,11 @@ class _Parser(object):
     if tokenizer.TryConsume(
         ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
       self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
-      if tokenizer.LookingAt('['):
-        self._SkipRepeatedFieldValue(tokenizer)
+      if tokenizer.TryConsume('['):
+        if tokenizer.LookingAt('<') or tokenizer.LookingAt('{'):
+          self._SkipRepeatedMessage(tokenizer, immediate_message_type)
+        else:
+          self._SkipRepeatedScalar(tokenizer)
       else:
         self._SkipFieldValue(tokenizer)
     else:
@@ -1271,17 +1274,30 @@ class _Parser(object):
         not tokenizer.TryConsumeFloat()):
       raise ParseError('Invalid field value: ' + tokenizer.token)
 
-  def _SkipRepeatedFieldValue(self, tokenizer):
-    """Skips over a repeated field value.
+  def _SkipRepeatedScalar(self, tokenizer):
+    """Skips over a repeated scalar field value.
 
     Args:
       tokenizer: A tokenizer to parse the field value.
     """
-    tokenizer.Consume('[')
     if not tokenizer.LookingAt(']'):
       self._SkipFieldValue(tokenizer)
       while tokenizer.TryConsume(','):
         self._SkipFieldValue(tokenizer)
+    tokenizer.Consume(']')
+
+  def _SkipRepeatedMessage(self, tokenizer, immediate_message_type):
+    """Skips over a repeated message field.
+
+    Args:
+      tokenizer: A tokenizer to parse the field value.
+      immediate_message_type: The type of the message immediately containing the
+        silent marker.
+    """
+    if not tokenizer.LookingAt(']'):
+      self._SkipFieldMessage(tokenizer, immediate_message_type)
+      while tokenizer.TryConsume(','):
+        self._SkipFieldMessage(tokenizer, immediate_message_type)
     tokenizer.Consume(']')
 
 
