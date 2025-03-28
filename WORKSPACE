@@ -190,19 +190,24 @@ http_archive(
 )
 
 http_archive(
-    name = "com_github_google_benchmark",
+    name = "google_benchmark",
     sha256 = "62e2f2e6d8a744d67e4bbc212fcfd06647080de4253c97ad5c6749e09faf2cb0",
     strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
     urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
 )
 
 http_archive(
-    name = "com_google_googleapis",
-    build_file = "//benchmarks:BUILD.googleapis",
-    patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
-    sha256 = "f5d1f45a03e608632084811a5870b4ebdf0b95edbe899e6448d337427d8f38dc",
-    strip_prefix = "googleapis-c414002bae922fc4577637a542e11fb9700af10f",
-    urls = ["https://github.com/googleapis/googleapis/archive/c414002bae922fc4577637a542e11fb9700af10f.zip"],
+    name = "googleapis",
+    integrity = "sha256-PopiL25y4WYMFq6EavbasLPraW+98BcuV7nN1nUjeOc=",
+    strip_prefix = "googleapis-fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0",
+    urls = ["https://github.com/googleapis/googleapis/archive/fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0.zip"],
+)
+
+load("@googleapis//:repository_rules.bzl", "switched_rules_by_language")
+
+switched_rules_by_language(
+    name = "com_google_googleapis_imports",
+    cc = True,
 )
 
 load("@system_python//:pip.bzl", "pip_parse")

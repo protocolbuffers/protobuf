@@ -56,7 +56,7 @@ single_version_override(
 )
 
 bazel_dep(name = "rules_shell", version = "0.2.0")
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Ruby toolchains
 ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency = True)
@@ -210,4 +210,9 @@ use_repo(cc_configure, "local_config_cc")
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)
 
+# For the Lua upb implementation
 bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
+
+# For benchmarks
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", dev_dependency = True)
+bazel_dep(name = "google_benchmark", version = "1.9.2", dev_dependency = True)

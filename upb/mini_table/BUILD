@@ -121,7 +121,7 @@ cc_test(
         "//upb:mini_table_compat",
         "//upb:port",
         "@abseil-cpp//absl/random",
-        "@com_github_google_benchmark//:benchmark_main",
+        "@google_benchmark//:benchmark_main",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
