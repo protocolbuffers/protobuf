@@ -34,5 +34,6 @@ set(rules_buf-version "0.3.0")
 set(rules_testing-version "0.8.0")
 set(abseil-py-version "2.1.0")
 set(rules_proto-version "7.0.2")
+set(lua-version "5.4.6")
 
 
