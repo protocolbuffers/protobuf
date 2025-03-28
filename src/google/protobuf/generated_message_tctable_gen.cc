@@ -306,18 +306,6 @@ bool IsFieldEligibleForFastParsing(
       break;
     }
 
-    case FieldDescriptor::TYPE_ENUM: {
-      uint8_t rmax_value;
-      if (!message_options.uses_codegen &&
-          GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
-        // We can't use fast parsing for these entries because we can't specify
-        // the validator.
-        // TODO: Implement a fast parser for these enums.
-        return false;
-      }
-      break;
-    }
-
     default:
       break;
   }
@@ -889,15 +877,15 @@ TailCallTableInfo::TailCallTableInfo(
       if (field->is_map()) {
         entry.aux_idx = aux_entries.size();
         aux_entries.push_back({kMapAuxInfo, {field}});
-        if (message_options.uses_codegen) {
-          // If we don't use codegen we can't add these.
-          auto* map_value = field->message_type()->map_value();
-          if (map_value->message_type() != nullptr) {
-            aux_entries.push_back({kSubTable, {map_value}});
-          } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
-                     !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
-            aux_entries.push_back({kEnumValidator, {map_value}});
-          }
+        auto* map_value = field->message_type()->map_value();
+        if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
+            !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
+          aux_entries.push_back({kEnumValidator, {map_value}});
+        }
+        // If we don't use codegen we can't add kSubTable.
+        if (message_options.uses_codegen &&
+            map_value->message_type() != nullptr) {
+          aux_entries.push_back({kSubTable, {map_value}});
         }
       } else if (field->options().weak()) {
         // Disable the type card for this entry to force the fallback.
