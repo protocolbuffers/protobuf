@@ -9,7 +9,7 @@ pkg_tar(
         "//:LICENSE",
     ],
     tags = ["manual"],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
@@ -29,5 +29,5 @@ filegroup(
         "Cargo.toml",
         "README.md",
     ] + glob(["src/**/*"]),
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
