@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/type.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -27,13 +26,13 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/stubs/status_macros.h"
+#include "google/protobuf/type.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -539,13 +538,13 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 
   Value& slot = emplace_result.first->second;
   using value_type = std::decay_t<T>;
-  if (auto* extant = absl::get_if<value_type>(&slot)) {
+  if (auto* extant = std::get_if<value_type>(&slot)) {
     std::vector<value_type> repeated;
     repeated.push_back(std::move(*extant));
     repeated.push_back(std::forward<T>(value));
 
     slot = std::move(repeated);
-  } else if (auto* extant = absl::get_if<std::vector<value_type>>(&slot)) {
+  } else if (auto* extant = std::get_if<std::vector<value_type>>(&slot)) {
     extant->push_back(std::forward<T>(value));
   } else {
     absl::optional<absl::string_view> name =

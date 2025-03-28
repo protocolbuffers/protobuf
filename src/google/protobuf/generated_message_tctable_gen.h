@@ -12,10 +12,10 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__
 
 #include <cstdint>
+#include <variant>
 #include <vector>
 
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -77,11 +77,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       uint16_t coded_tag;
       uint16_t nonfield_info;
     };
-    absl::variant<Empty, Field, NonField> data;
+    std::variant<Empty, Field, NonField> data;
 
-    bool is_empty() const { return absl::holds_alternative<Empty>(data); }
-    const Field* AsField() const { return absl::get_if<Field>(&data); }
-    const NonField* AsNonField() const { return absl::get_if<NonField>(&data); }
+    bool is_empty() const { return std::holds_alternative<Empty>(data); }
+    const Field* AsField() const { return std::get_if<Field>(&data); }
+    const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
