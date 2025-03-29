@@ -10,6 +10,9 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 
+#include <string>
+#include <vector>
+
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
