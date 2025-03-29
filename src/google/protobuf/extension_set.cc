@@ -479,8 +479,7 @@ int ExtensionSet::GetEnum(int number, int default_value) const {
   }
 }
 
-const int& ExtensionSet::GetRefEnum(int number,
-                                    const int& default_value) const {
+const int& ExtensionSet::GetRefEnum(int number, const int default_value) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr || extension->is_cleared) {
     // Not present.  Return the default value.
