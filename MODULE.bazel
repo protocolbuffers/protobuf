@@ -216,3 +216,14 @@ bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
 # For benchmarks
 bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", dev_dependency = True)
 bazel_dep(name = "google_benchmark", version = "1.9.2", dev_dependency = True)
+
+bazel_dep(name = "com_google_protobuf_previous_release", version = "30.2", dev_dependency = True)
+archive_override(
+    module_name = "com_google_protobuf_previous_release",
+    integrity = "sha256-LPI0p+wT7aQ56q8D17TbzXG9KUDnDpvt0c2g/xFuNnY=",
+    strip_prefix = "protobuf-43e1626812c1b543e56a7bec59dc09eb18248bd2",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/43e1626812c1b543e56a7bec59dc09eb18248bd2.tar.gz"],
+    patch_cmds = [
+        "sed -i 's/name = \"protobuf\",$/name = \"com_google_protobuf_previous_release\",/' MODULE.bazel",
+    ],
+)
