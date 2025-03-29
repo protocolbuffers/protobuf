@@ -501,10 +501,19 @@ class TextFormat::Parser::ParserImpl {
           finder_ ? finder_->FindAnyType(*message, prefix, full_type_name)
                   : DefaultFinderFindAnyType(*message, prefix, full_type_name);
       if (value_descriptor == nullptr) {
-        ReportError(absl::StrCat("Could not find type \"",
-                                 prefix_and_full_type_name,
-                                 "\" stored in google.protobuf.Any."));
-        return false;
+        if (!allow_unknown_extension_) {
+          ReportError(absl::StrCat("Could not find type \"",
+                                   prefix_and_full_type_name,
+                                   "\" stored in google.protobuf.Any."));
+          return false;
+        } else {
+          ReportWarning(absl::StrCat("Ignoring unresolved type \"",
+                                     prefix_and_full_type_name,
+                                     "\" stored in google.protobuf.Any."));
+        }
+      }
+      if (value_descriptor == nullptr && allow_unknown_extension_) {
+        return SkipFieldMessage();
       }
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
