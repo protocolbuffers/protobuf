@@ -2041,6 +2041,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * @param builderClass The builder type.
      * @return this
      */
+    @CanIgnoreReturnValue
     public FieldAccessorTable ensureFieldAccessorsInitialized(
         Class<? extends GeneratedMessage> messageClass, Class<? extends Builder<?>> builderClass) {
       if (initialized) {
@@ -3187,6 +3188,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   /**
    * Checks that the {@link Extension} is non-Lite and returns it as a {@link GeneratedExtension}.
    */
+  @SuppressWarnings("unchecked")
   private static <MessageT extends ExtendableMessage<MessageT>, T>
       Extension<MessageT, T> checkNotLite(ExtensionLite<? extends MessageT, T> extension) {
     if (extension.isLite()) {
