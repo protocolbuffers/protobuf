@@ -177,7 +177,7 @@ class UntypedMessage final {
       return 0;
     }
 
-    return absl::visit(SizeVisitor{}, it->second);
+    return std::visit(SizeVisitor{}, it->second);
   }
 
   // Returns the contents of a field by number.
