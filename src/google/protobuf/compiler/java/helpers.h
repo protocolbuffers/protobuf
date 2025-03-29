@@ -213,7 +213,7 @@ absl::string_view KotlinTypeName(JavaType type);
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
 // name is "com.google.protobuf.WireFormat.FieldType.INT32".
-absl::string_view FieldTypeName(const FieldDescriptor::Type field_type);
+absl::string_view FieldTypeName(FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
 std::string DefaultValue(const FieldDescriptor* field, bool immutable,
