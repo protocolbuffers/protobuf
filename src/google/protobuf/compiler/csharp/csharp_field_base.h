@@ -30,7 +30,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   FieldGeneratorBase(const FieldDescriptor* descriptor,
                      int presenceIndex,
                      const Options* options);
-  ~FieldGeneratorBase();
+  ~FieldGeneratorBase() override;
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;

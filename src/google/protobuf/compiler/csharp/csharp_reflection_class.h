@@ -23,7 +23,7 @@ namespace csharp {
 class ReflectionClassGenerator : public SourceGeneratorBase {
  public:
   ReflectionClassGenerator(const FileDescriptor* file, const Options* options);
-  ~ReflectionClassGenerator();
+  ~ReflectionClassGenerator() override;
 
   ReflectionClassGenerator(const ReflectionClassGenerator&) = delete;
   ReflectionClassGenerator& operator=(const ReflectionClassGenerator&) = delete;

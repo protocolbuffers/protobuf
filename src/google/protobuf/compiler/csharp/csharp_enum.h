@@ -23,7 +23,7 @@ namespace csharp {
 class EnumGenerator : public SourceGeneratorBase {
  public:
   EnumGenerator(const EnumDescriptor* descriptor, const Options* options);
-  ~EnumGenerator();
+  ~EnumGenerator() override;
 
   EnumGenerator(const EnumGenerator&) = delete;
   EnumGenerator& operator=(const EnumGenerator&) = delete;

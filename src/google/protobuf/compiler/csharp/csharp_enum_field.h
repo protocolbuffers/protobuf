@@ -21,16 +21,16 @@ class EnumFieldGenerator : public PrimitiveFieldGenerator {
   EnumFieldGenerator(const FieldDescriptor* descriptor,
                      int presenceIndex,
                      const Options *options);
-  ~EnumFieldGenerator();
+  ~EnumFieldGenerator() override;
 
   EnumFieldGenerator(const EnumFieldGenerator&) = delete;
   EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
 
-  virtual void GenerateCodecCode(io::Printer* printer) override;
-  virtual void GenerateParsingCode(io::Printer* printer) override;
-  virtual void GenerateSerializationCode(io::Printer* printer) override;
-  virtual void GenerateSerializedSizeCode(io::Printer* printer) override;
-  virtual void GenerateExtensionCode(io::Printer* printer) override;
+  void GenerateCodecCode(io::Printer* printer) override;
+  void GenerateParsingCode(io::Printer* printer) override;
+  void GenerateSerializationCode(io::Printer* printer) override;
+  void GenerateSerializedSizeCode(io::Printer* printer) override;
+  void GenerateExtensionCode(io::Printer* printer) override;
 };
 
 class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
@@ -38,15 +38,15 @@ class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
   EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
                           int presenceIndex,
                           const Options *options);
-  ~EnumOneofFieldGenerator();
+  ~EnumOneofFieldGenerator() override;
 
   EnumOneofFieldGenerator(const EnumOneofFieldGenerator&) = delete;
   EnumOneofFieldGenerator& operator=(const EnumOneofFieldGenerator&) = delete;
 
-  virtual void GenerateMergingCode(io::Printer* printer) override;
-  virtual void GenerateParsingCode(io::Printer* printer) override;
-  virtual void GenerateSerializationCode(io::Printer* printer) override;
-  virtual void GenerateSerializedSizeCode(io::Printer* printer) override;
+  void GenerateMergingCode(io::Printer* printer) override;
+  void GenerateParsingCode(io::Printer* printer) override;
+  void GenerateSerializationCode(io::Printer* printer) override;
+  void GenerateSerializedSizeCode(io::Printer* printer) override;
 };
 
 }  // namespace csharp
