@@ -2732,7 +2732,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   FileDescriptorProto parsed;
   parser_->Parse(input_.get(), &parsed);
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2780,7 +2780,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   FileDescriptorProto parsed;
   parser_->Parse(input_.get(), &parsed);
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2926,7 +2926,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     }
 
     // Result of DebugStringWithOptions should be parseable.
-    SetupParser(debug_string.c_str());
+    SetupParser(debug_string);
     FileDescriptorProto parsed;
     parser_->Parse(input_.get(), &parsed);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2959,7 +2959,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   parsed.set_name("foo.proto");
   ASSERT_TRUE(parser_->Parse(input_.get(), &parsed));
 
@@ -3086,7 +3086,7 @@ class SourceInfoTest : public ParserTest {
   // all the source location spans in its SourceCodeInfo table.
   bool Parse(const char* text) {
     ExtractMarkers(text);
-    SetupParser(text_without_markers_.c_str());
+    SetupParser(text_without_markers_);
     if (!parser_->Parse(input_.get(), &file_)) {
       return false;
     }
