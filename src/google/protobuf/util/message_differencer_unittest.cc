@@ -2395,7 +2395,7 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsSetWithIgnoredFields) {
   TextFormat::MergeFromString("rm { a: 11\n b: 13 }", &msg2);
   util::MessageDifferencer differ;
   differ.TreatAsSet(GetFieldDescriptor(msg1, "rm"));
-  differ.AddIgnoreCriteria(absl::WrapUnique(new TestIgnorer));
+  differ.AddIgnoreCriteria(std::make_unique<TestIgnorer>());
   EXPECT_TRUE(differ.Compare(msg1, msg2));
 }
 
@@ -2407,7 +2407,7 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
   util::MessageDifferencer differ;
   differ.TreatAsMap(GetFieldDescriptor(msg1, "rm"),
                     GetFieldDescriptor(msg1, "rm.m"));
-  differ.AddIgnoreCriteria(absl::WrapUnique(new TestIgnorer));
+  differ.AddIgnoreCriteria(std::make_unique<TestIgnorer>());
   EXPECT_TRUE(differ.Compare(msg1, msg2));
 }
 
