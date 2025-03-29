@@ -299,7 +299,6 @@ cc_test(
         "//upb:wire_reader",
         "//upb/base:internal",
         "//upb/test:test_messages_proto2_upb_proto",
-        "@abseil-cpp//absl/types:variant",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

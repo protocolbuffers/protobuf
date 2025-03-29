@@ -90,7 +90,6 @@ else()
     absl::time
     absl::type_traits
     absl::utility
-    absl::variant
   )
   set(protobuf_ABSL_USED_TEST_TARGETS
     absl::scoped_mock_log
