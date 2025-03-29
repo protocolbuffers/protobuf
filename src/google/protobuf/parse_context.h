@@ -27,7 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
-#include "google/protobuf/endian.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -592,36 +591,22 @@ struct EndianHelper<1> {
 
 template <>
 struct EndianHelper<2> {
-  static uint16_t Load(const void* p) {
-    uint16_t tmp;
-    std::memcpy(&tmp, p, 2);
-    return little_endian::ToHost(tmp);
-  }
+  static uint16_t Load(const void* p) { return absl::little_endian::Load16(p); }
 };
 
 template <>
 struct EndianHelper<4> {
-  static uint32_t Load(const void* p) {
-    uint32_t tmp;
-    std::memcpy(&tmp, p, 4);
-    return little_endian::ToHost(tmp);
-  }
+  static uint32_t Load(const void* p) { return absl::little_endian::Load32(p); }
 };
 
 template <>
 struct EndianHelper<8> {
-  static uint64_t Load(const void* p) {
-    uint64_t tmp;
-    std::memcpy(&tmp, p, 8);
-    return little_endian::ToHost(tmp);
-  }
+  static uint64_t Load(const void* p) { return absl::little_endian::Load64(p); }
 };
 
 template <typename T>
 T UnalignedLoad(const char* p) {
-  auto tmp = EndianHelper<sizeof(T)>::Load(p);
-  T res;
-  memcpy(&res, &tmp, sizeof(T));
+  T res = absl::bit_cast<T>(EndianHelper<sizeof(T)>::Load(p));
   return res;
 }
 template <typename T, typename Void,
@@ -1181,12 +1166,13 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
-#ifdef ABSL_IS_LITTLE_ENDIAN
-    std::memcpy(dst, ptr, block_size);
-#else
-    for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
+    if constexpr (internal::IsLittleEndian() || sizeof(T) == 1) {
+      std::memcpy(dst, ptr, block_size);
+    } else {
+      for (int i = 0; i < num; i++) {
+        dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+      }
+    }
     size -= block_size;
     if (limit_ <= kSlopBytes) return nullptr;
     ptr = Next();
@@ -1200,12 +1186,14 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
-#ifdef ABSL_IS_LITTLE_ENDIAN
-  ABSL_CHECK(dst != nullptr) << out << "," << num;
-  std::memcpy(dst, ptr, block_size);
-#else
-  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
+  if constexpr (internal::IsLittleEndian() || sizeof(T) == 1) {
+    ABSL_CHECK(dst != nullptr) << out << "," << num;
+    std::memcpy(dst, ptr, block_size);
+  } else {
+    for (int i = 0; i < num; i++) {
+      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+    }
+  }
   ptr += block_size;
   if (size != block_size) return nullptr;
   return ptr;

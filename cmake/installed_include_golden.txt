@@ -64,7 +64,6 @@ google/protobuf/duration.proto
 google/protobuf/dynamic_message.h
 google/protobuf/empty.pb.h
 google/protobuf/empty.proto
-google/protobuf/endian.h
 google/protobuf/explicitly_constructed.h
 google/protobuf/extension_set.h
 google/protobuf/extension_set_inl.h

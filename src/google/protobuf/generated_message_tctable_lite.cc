@@ -266,11 +266,7 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
   }
   const uint16_t* lookup_table = table->field_lookup_begin();
   for (;;) {
-#ifdef ABSL_IS_LITTLE_ENDIAN
-    memcpy(&fstart, lookup_table, sizeof(fstart));
-#else
-    fstart = lookup_table[0] | (lookup_table[1] << 16);
-#endif
+    fstart = absl::little_endian::Load32(lookup_table);
     lookup_table += sizeof(fstart) / sizeof(*lookup_table);
     uint32_t num_skip_entries = *lookup_table++;
     if (field_num < fstart) return nullptr;
