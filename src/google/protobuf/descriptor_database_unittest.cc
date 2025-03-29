@@ -14,11 +14,16 @@
 #include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"

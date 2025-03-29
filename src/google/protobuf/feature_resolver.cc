@@ -7,8 +7,6 @@
 
 #include "google/protobuf/feature_resolver.h"
 
-#include <algorithm>
-#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -16,15 +14,13 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/optimization.h"
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_join.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -32,7 +28,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/text_format.h"
 
 // Must be included last.
