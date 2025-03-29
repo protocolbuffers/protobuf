@@ -21,6 +21,7 @@
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 

@@ -12,16 +12,26 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <limits>
+#include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/bytestream.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 
 // Must be included last
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {

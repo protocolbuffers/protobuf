@@ -11,9 +11,9 @@
 
 #include "google/protobuf/io/printer.h"
 
+#include <cstddef>
 #include <ostream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -24,6 +24,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
