@@ -49,9 +49,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
-
 // ===================================================================
 ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
     const Descriptor* descriptor, Context* context)
