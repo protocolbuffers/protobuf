@@ -380,7 +380,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, "[]|");
     }
-    type = absl::StrCat(type, "[]");
+    absl::StrAppend(&type, "[]");
   }
   return type;
 }
