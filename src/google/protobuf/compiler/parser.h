@@ -28,6 +28,7 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/repeated_ptr_field.h"
 
 namespace google {
 namespace protobuf {

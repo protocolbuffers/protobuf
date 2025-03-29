@@ -13,30 +13,36 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/macros.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_import_public.pb.h"
-#include "google/protobuf/wire_format.h"
 
 
 // Must be included last.
