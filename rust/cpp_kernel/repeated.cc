@@ -134,7 +134,8 @@ google::protobuf::MessageLite* proto2_rust_RepeatedField_Message_get_mut(
 
 google::protobuf::MessageLite* proto2_rust_RepeatedField_Message_add(
     RepeatedPtrFieldBase* field, const google::protobuf::MessageLite* prototype) {
-  return field->AddMessage(prototype);
+  return field->AddFromPrototype<GenericTypeHandler<google::protobuf::MessageLite>>(
+      prototype);
 }
 
 void proto2_rust_RepeatedField_Message_clear(RepeatedPtrFieldBase* field) {
