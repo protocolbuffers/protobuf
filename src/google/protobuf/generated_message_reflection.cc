@@ -64,7 +64,6 @@ using google::protobuf::internal::ArenaStringPtr;
 using google::protobuf::internal::DescriptorTable;
 using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
-using google::protobuf::internal::GetEmptyString;
 using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
