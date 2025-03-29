@@ -14,22 +14,25 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdlib>
 #include <random>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/macros.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/notification.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
@@ -40,7 +43,6 @@
 #include "google/protobuf/util/message_differencer_unittest.pb.h"
 #include "google/protobuf/util/message_differencer_unittest_proto3.pb.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 namespace google {
