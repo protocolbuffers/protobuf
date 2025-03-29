@@ -6626,6 +6626,80 @@ TEST_F(ValidationErrorTest, JsonNameEmbeddedNull) {
       "null characters.\n");
 }
 
+void TestNameSizeLimit(const FileDescriptorProto& file, std::string& name,
+                       absl::string_view element) {
+  const std::string orig = name;
+
+  // The exact threshold is not fixed, so find it.
+  size_t success = 10;
+  size_t fail = 70000;
+
+  const auto test = [&](size_t size) {
+    name.assign(size, 'x');
+    MockErrorCollector error_collector;
+    DescriptorPool pool;
+    auto* out = pool.BuildFileCollectingErrors(file, &error_collector);
+    if (out == nullptr) {
+      EXPECT_THAT(error_collector.text_, HasSubstr("too long")) << element;
+    }
+    return out != nullptr;
+  };
+
+  while (fail - success > 1) {
+    size_t mid = (fail + success) / 2;
+    if (test(mid)) {
+      success = mid;
+    } else {
+      fail = mid;
+    }
+  }
+
+  ABSL_LOG(INFO) << "First failure on " << fail << " for " << element;
+  for (size_t i = success - 5; i <= success; ++i) {
+    EXPECT_TRUE(test(i)) << element;
+  }
+  for (size_t i = fail; i <= fail + 5; ++i) {
+    EXPECT_FALSE(test(i)) << element;
+  }
+
+  // Reset the name for the next test.
+  name = orig;
+}
+
+TEST_F(ValidationErrorTest, TooLongNamesCauseABuildError) {
+  FileDescriptorProto file_proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "name" number: 1 type: TYPE_STRING }
+        }
+      )pb",
+      &file_proto));
+
+  // Grow package.
+  TestNameSizeLimit(file_proto, *file_proto.mutable_package(), "package");
+
+  // Grow message name.
+  TestNameSizeLimit(file_proto,
+                    *file_proto.mutable_message_type(0)->mutable_name(),
+                    "message");
+
+  // Grow field name.
+  TestNameSizeLimit(
+      file_proto,
+      *file_proto.mutable_message_type(0)->mutable_field(0)->mutable_name(),
+      "field");
+
+  // Grow field json_name.
+  TestNameSizeLimit(file_proto,
+                    *file_proto.mutable_message_type(0)
+                         ->mutable_field(0)
+                         ->mutable_json_name(),
+                    "json_name");
+}
+
 TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
   BuildDescriptorMessagesInTestPool();
 
