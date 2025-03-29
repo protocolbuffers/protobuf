@@ -9,6 +9,8 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <ctime>
+#include <string>
 
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/timestamp.pb.h"
