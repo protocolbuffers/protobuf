@@ -24,7 +24,6 @@ using ::hpb::internal::Requires;
 
 using ::hpb_unittest::protos::container_ext;
 using ::hpb_unittest::protos::ContainerExtension;
-using ::hpb_unittest::protos::other_ext;
 using ::hpb_unittest::protos::TestModel;
 using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
