@@ -39,6 +39,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -49,6 +50,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
