@@ -31,7 +31,6 @@
 namespace google {
 namespace protobuf {
 
-using internal::ArenaStringPtr;
 using internal::InlinedStringField;
 
 namespace {
