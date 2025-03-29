@@ -11,9 +11,14 @@
 
 #include "google/protobuf/reflection_ops.h"
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
 #include "absl/strings/str_join.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 
