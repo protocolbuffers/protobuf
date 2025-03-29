@@ -12,7 +12,12 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL_H__
 
+#include <gtest/gtest.h>
+#include "absl/base/macros.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
 #define UNITTEST ::proto2_unittest
