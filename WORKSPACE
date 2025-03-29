@@ -293,14 +293,22 @@ crate_repositories()
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(
-    name = "com_google_protobuf_v25.0",
+    name = "com_google_protobuf_v25",
     integrity = "sha256-aYl601ZjGPYtu0Nc2Nsl58qiPgSXqT9e20mQM5FcxXk=",
     strip_prefix = "protobuf-d8756a62c8ae40686b75fee9ad9c876ac892d043",
     url = "https://github.com/protocolbuffers/protobuf/archive/d8756a62c8ae40686b75fee9ad9c876ac892d043.tar.gz",
+    patch_args = ["-p1"],
+    patches = [
+        "@com_google_protobuf//:patches/protobuf_v25/0001-Add-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0002-Examples-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0003-relative-labels.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0004-Add-utf8_range-dependency.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0005-Add-repo_name.patch",
+    ],
 )
 
-# Needed as a dependency of @com_google_protobuf_v25.0
-load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
+# Needed as a dependency of @com_google_protobuf_v25
+load("@com_google_protobuf_v25//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
 
 protobuf_v25_deps()
 
