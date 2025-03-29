@@ -9,7 +9,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <numeric>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -18,7 +20,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/arena.h"
 #include "upb/message/array.h"
 
 using ::testing::ElementsAre;
