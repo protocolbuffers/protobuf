@@ -37,6 +37,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -202,6 +203,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       return ptr + size;
     }
     return AppendStringFallback(ptr, size, s);
+  }
+  [[nodiscard]] const char* VerifyUTF8(const char* ptr, int size) {
+    if (size <= BytesAvailable(ptr)) {
+      return utf8_range::IsStructurallyValid({ptr, static_cast<size_t>(size)})
+                 ? ptr + size
+                 : nullptr;
+    }
+    return VerifyUTF8Fallback(ptr, size);
   }
   // Implemented in arenastring.cc
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
@@ -378,6 +387,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   inline const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
+  const char* VerifyUTF8Fallback(const char* ptr, int size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
