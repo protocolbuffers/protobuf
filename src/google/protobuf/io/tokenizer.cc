@@ -1243,7 +1243,7 @@ static bool AllInClass(const std::string& s) {
 
 bool Tokenizer::IsIdentifier(const std::string& text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
-  if (text.size() == 0) return false;
+  if (text.empty()) return false;
   if (!Letter::InClass(text.at(0))) return false;
   if (!AllInClass<Alphanumeric>(text.substr(1))) return false;
   return true;
