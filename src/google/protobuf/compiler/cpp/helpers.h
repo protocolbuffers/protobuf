@@ -732,6 +732,14 @@ void ListAllFields(const Descriptor* d,
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 
+// Collects all fields from the given descriptor, excluding weak fields and
+// fields in oneofs.
+//
+// Returns the number of weak fields.
+int CollectFieldsExcludingWeakAndOneof(
+    const Descriptor* d, const Options& options,
+    std::vector<const FieldDescriptor*>& fields);
+
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
   if (do_nested_types) {
