@@ -33,6 +33,11 @@ extern "C" {
         arena: RawArena,
     ) -> MapInsertStatus;
     pub fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
+    pub fn upb_Map_GetMutable(
+        map: RawMap,
+        key: upb_MessageValue,
+        value: *mut upb_MessageValue,
+    ) -> bool;
     pub fn upb_Map_Delete(
         map: RawMap,
         key: upb_MessageValue,
@@ -60,6 +65,7 @@ mod tests {
         assert_linked!(upb_Map_Size);
         assert_linked!(upb_Map_Insert);
         assert_linked!(upb_Map_Get);
+        assert_linked!(upb_Map_GetMutable);
         assert_linked!(upb_Map_Delete);
         assert_linked!(upb_Map_Clear);
         assert_linked!(upb_Map_Next);

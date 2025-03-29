@@ -52,6 +52,11 @@ bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
   return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
 }
 
+bool upb_Map_GetMutable(upb_Map* map, upb_MessageValue key,
+                        upb_MessageValue* val) {
+  return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
+}
+
 void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
 
 upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,

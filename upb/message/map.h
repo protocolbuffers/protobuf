@@ -39,6 +39,12 @@ UPB_API size_t upb_Map_Size(const upb_Map* map);
 UPB_API bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
                          upb_MessageValue* val);
 
+// Stores a value for the given key into |*val| (or the zero value if the key is
+// not present). Returns whether the key was present. The |val| pointer may be
+// NULL, in which case the function tests whether the given key is present.
+UPB_API bool upb_Map_GetMutable(upb_Map* map, upb_MessageValue key,
+                                upb_MessageValue* val);
+
 // Removes all entries in the map.
 UPB_API void upb_Map_Clear(upb_Map* map);
 
@@ -71,7 +77,7 @@ UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
 //   ...
 // }
 
-#define kUpb_Map_Begin ((size_t) - 1)
+#define kUpb_Map_Begin ((size_t)-1)
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
