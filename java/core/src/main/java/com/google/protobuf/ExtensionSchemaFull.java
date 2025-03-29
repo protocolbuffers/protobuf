@@ -26,7 +26,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
       Field field = GeneratedMessage.ExtendableMessage.class.getDeclaredField("extensions");
       return UnsafeUtil.objectFieldOffset(field);
     } catch (Throwable e) {
-      throw new IllegalStateException("Unable to lookup extension field offset");
+      throw new IllegalStateException("Unable to lookup extension field offset", e);
     }
   }
 
