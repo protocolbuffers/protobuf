@@ -97,7 +97,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     auto& map_slot = files_[filename];
-    map_slot.reset(new std::string);
+    map_slot = std::make_unique<std::string>();
     return new io::StringOutputStream(map_slot.get());
   }
 
