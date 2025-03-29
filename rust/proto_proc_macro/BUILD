@@ -12,7 +12,7 @@ PROC_MACRO_SRCS = ["proto_proc_macro_impl.rs"]
 rust_proc_macro(
     name = "proto_proc_macro",
     srcs = PROC_MACRO_SRCS,
-    visibility = ["//rust/test:__subpackages__"],
+    visibility = ["//rust:__subpackages__"],
     deps = [
         "@crate_index//:quote",
         "@crate_index//:syn",
