@@ -20,7 +20,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
-#include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.h"
