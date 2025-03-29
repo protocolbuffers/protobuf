@@ -21,20 +21,17 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
-#include <iosfwd>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -164,7 +161,7 @@ class PROTOBUF_EXPORT StringOutputStream final : public ZeroCopyOutputStream {
 // in large blocks.
 class PROTOBUF_EXPORT CopyingInputStream {
  public:
-  virtual ~CopyingInputStream() {}
+  virtual ~CopyingInputStream() = default;
 
   // Reads up to "size" bytes into the given buffer.  Returns the number of
   // bytes read.  Read() waits until at least one byte is available, or
@@ -260,7 +257,7 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
 // in large blocks.
 class PROTOBUF_EXPORT CopyingOutputStream {
  public:
-  virtual ~CopyingOutputStream() {}
+  virtual ~CopyingOutputStream() = default;
 
   // Writes "size" bytes from the given buffer to the output.  Returns true
   // if successful, false on a write error.
