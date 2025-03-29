@@ -7,12 +7,10 @@
 
 #include "google/protobuf/json/internal/parser.h"
 
-#include <cfloat>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -39,6 +37,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/lexer.h"
+#include "google/protobuf/json/internal/message_path.h"
 #include "google/protobuf/json/internal/parser_traits.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
