@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <utility>
+
 #include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
