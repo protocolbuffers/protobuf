@@ -816,7 +816,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor,
   for (int i = 0; i < message_descriptor.enum_type_count(); ++i) {
     const std::string descriptor_name =
         ModuleLevelDescriptorName(*message_descriptor.enum_type(i));
-    printer_->Print(descriptor_name.c_str());
+    printer_->Print(descriptor_name);
     printer_->Print(",\n");
   }
   printer_->Outdent();
