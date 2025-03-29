@@ -862,7 +862,7 @@ void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
   printer->Print(" {\n");
   printer->Indent();
   PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
-  if (trailing_code != NULL) {
+  if (trailing_code != nullptr) {
     printer->Print(variables_, trailing_code);
   }
   printer->Outdent();
