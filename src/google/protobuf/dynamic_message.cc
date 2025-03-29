@@ -65,6 +65,7 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -80,6 +81,7 @@ using internal::ExtensionSet;
 
 
 using internal::ArenaStringPtr;
+using internal::MicroString;
 
 // ===================================================================
 // Some helper tables and functions...
@@ -243,6 +245,10 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
           case FieldDescriptor::CppStringType::kCord:
             return sizeof(absl::Cord);
           case FieldDescriptor::CppStringType::kView:
+            if (internal::EnableExperimentalMicroString()) {
+              return sizeof(MicroString);
+            }
+            [[fallthrough]];
           case FieldDescriptor::CppStringType::kString:
             return sizeof(ArenaStringPtr);
         }
@@ -251,6 +257,17 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
   }
 
   ABSL_DLOG(FATAL) << "Can't get here.";
+  return 0;
+}
+
+uint32_t FieldFlags(const FieldDescriptor* field) {
+  if (internal::EnableExperimentalMicroString() &&   //
+      !field->is_repeated() &&                       //
+      !field->is_extension() &&                      //
+      field->cpp_type() == field->CPPTYPE_STRING &&  //
+      field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
+    return internal::kMicroStringMask;
+  }
   return 0;
 }
 
@@ -327,7 +344,11 @@ class DynamicMessage final : public Message {
   static void* NewImpl(const void* prototype, void* mem, Arena* arena);
   static void DestroyImpl(MessageLite& ptr);
 
-  void* MutableRaw(int i);
+  // If `T` is not `void`, it will mask bits off the offset via alignment.
+  // Used to remove feature masks that are part of the reflection
+  // implementation.
+  template <typename T = void>
+  T* MutableRaw(int i);
   void* MutableExtensionsRaw();
   void* MutableWeakFieldMapRaw();
   void* MutableOneofCaseRaw(int i);
@@ -417,8 +438,13 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   SharedCtor(lock_factory);
 }
 
-inline void* DynamicMessage::MutableRaw(int i) {
-  return OffsetToPointer(type_info_->offsets[i]);
+template <typename T>
+inline T* DynamicMessage::MutableRaw(int i) {
+  uint32_t mask = ~uint32_t{};
+  if constexpr (!std::is_void_v<T>) {
+    mask = ~(uint32_t{alignof(T)} - 1);
+  }
+  return reinterpret_cast<T*>(OffsetToPointer(type_info_->offsets[i] & mask));
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
@@ -514,6 +540,16 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
             }
             break;
           case FieldDescriptor::CppStringType::kView:
+            if (internal::EnableExperimentalMicroString() &&
+                !field->is_repeated()) {
+              auto* str = ::new (MutableRaw<MicroString>(i)) MicroString();
+              if (field->has_default_value()) {
+                // TODO: Use an unowned block instead.
+                str->Set(field->default_value_string(), arena);
+              }
+              break;
+            }
+            [[fallthrough]];
           case FieldDescriptor::CppStringType::kString:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
@@ -601,6 +637,11 @@ DynamicMessage::~DynamicMessage() {
               delete *reinterpret_cast<absl::Cord**>(field_ptr);
               break;
             case FieldDescriptor::CppStringType::kView:
+              if (internal::EnableExperimentalMicroString()) {
+                reinterpret_cast<MicroString*>(field_ptr)->Destroy();
+                break;
+              }
+              [[fallthrough]];
             case FieldDescriptor::CppStringType::kString: {
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
               break;
@@ -662,6 +703,11 @@ DynamicMessage::~DynamicMessage() {
           reinterpret_cast<absl::Cord*>(field_ptr)->~Cord();
           break;
         case FieldDescriptor::CppStringType::kView:
+          if (internal::EnableExperimentalMicroString()) {
+            MutableRaw<MicroString>(i)->Destroy();
+            break;
+          }
+          [[fallthrough]];
         case FieldDescriptor::CppStringType::kString: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
@@ -869,7 +915,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     if (!InRealOneof(type->field(i))) {
       int field_size = FieldSpaceUsed(type->field(i));
       size = AlignTo(size, std::min(kSafeAlignment, field_size));
-      offsets[i] = size;
+      offsets[i] = size | FieldFlags(type->field(i));
       size += field_size;
     }
   }
@@ -894,11 +940,11 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     for (int j = 0; j < type->real_oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = type->real_oneof_decl(i)->field(j);
       // oneof fields are not accessed through offsets, but we still have the
-      // entry from a legacy implementation. This should be removed at some
-      // point.
+      // entry for each.
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
-      offsets[field->index()] = internal::kInvalidFieldOffsetTag;
+      offsets[field->index()] =
+          internal::kInvalidFieldOffsetTag | FieldFlags(field);
     }
   }
 

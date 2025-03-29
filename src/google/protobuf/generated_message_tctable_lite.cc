@@ -32,6 +32,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -1782,6 +1783,12 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         field.Destroy();
         break;
       }
+      case field_layout::kRepMString: {
+        if (msg->GetArena() == nullptr) {
+          RefAt<MicroString>(msg, current_entry->offset).Destroy();
+        }
+        break;
+      }
       case field_layout::kRepCord: {
         if (msg->GetArena() == nullptr) {
           delete RefAt<absl::Cord*>(msg, current_entry->offset);
@@ -2319,6 +2326,14 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
         EnsureArenaStringIsNotDefault(msg, &field);
         break;
       }
+      is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
+      break;
+    }
+
+    case field_layout::kRepMString: {
+      auto& field = RefAt<MicroString>(base, entry.offset);
+      if (need_init) field.InitDefault();
+      ptr = ctx->ReadMicroString(ptr, field, msg->GetArena());
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
     }
@@ -2914,13 +2929,14 @@ std::string TypeCardToString(uint16_t type_card) {
           ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
       }
 
-      static constexpr const char* kRepNames[] = {"AString", "IString", "Cord",
-                                                  "SPiece", "SString"};
+      static constexpr const char* kRepNames[] = {
+          "AString", "IString", "Cord", "SPiece", "SString", "MString"};
       static_assert((fl::kRepAString >> fl::kRepShift) == 0, "");
       static_assert((fl::kRepIString >> fl::kRepShift) == 1, "");
       static_assert((fl::kRepCord >> fl::kRepShift) == 2, "");
       static_assert((fl::kRepSPiece >> fl::kRepShift) == 3, "");
       static_assert((fl::kRepSString >> fl::kRepShift) == 4, "");
+      static_assert((fl::kRepMString >> fl::kRepShift) == 5, "");
 
       absl::StrAppend(&out, " | ::_fl::kRep", kRepNames[rep_index]);
       break;

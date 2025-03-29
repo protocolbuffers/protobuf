@@ -287,11 +287,14 @@ bool IsFieldEligibleForFastParsing(
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
       auto ctype = field->cpp_string_type();
-      if (ctype == FieldDescriptor::CppStringType::kString ||
-          ctype == FieldDescriptor::CppStringType::kView) {
+      if (ctype == FieldDescriptor::CppStringType::kView) {
+        // TODO: Add fast parsers.
+        if (options.use_micro_string) return false;
+      } else if (ctype == FieldDescriptor::CppStringType::kString) {
         // strings are fine...
       } else if (ctype == FieldDescriptor::CppStringType::kCord) {
-        // Cords are worth putting into the fast table, if they're not repeated
+        // Cords are worth putting into the fast table, if they're not
+        // repeated
         if (field->is_repeated()) return false;
       } else {
         return false;
@@ -756,7 +759,8 @@ uint16_t MakeTypeCardForField(
           type_card |= fl::kRepSString;
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
-          type_card |= fl::kRepAString;
+          type_card |=
+              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }
