@@ -394,7 +394,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static double DestructorSkippable(...);
 
     typedef std::integral_constant<
-        bool, sizeof(DestructorSkippable<T>(static_cast<const T*>(0))) ==
+        bool, sizeof(DestructorSkippable<T>(static_cast<const T*>(nullptr))) ==
                       sizeof(char) ||
                   std::is_trivially_destructible<T>::value>
         is_destructor_skippable;
@@ -406,10 +406,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static double ArenaConstructable(...);
 
     typedef std::integral_constant<bool, sizeof(ArenaConstructable<T>(
-                                             static_cast<const T*>(0))) ==
+                                             static_cast<const T*>(nullptr))) ==
                                              sizeof(char)>
         is_arena_constructable;
-
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
