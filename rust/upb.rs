@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private, SealedInternal};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
@@ -515,6 +515,12 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
         self.inner.arena.raw()
     }
+
+    // Returns an `Arena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn arena(&self, _private: Private) -> &'msg Arena {
+        self.inner.arena
+    }
 }
 
 #[derive(Debug)]
@@ -578,6 +584,20 @@ pub trait UpbTypeConversions: Proxied {
     /// - `msg` must be the correct variant for `Self`.
     /// - `msg` pointers must point to memory valid for `'msg` lifetime.
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self>;
+
+    /// # Safety
+    /// - `msg` must be the correct variant for `Self`.
+    /// - `msg` pointers must point to memory valid for `'msg` lifetime.
+    #[allow(unused_variables)]
+    unsafe fn mut_from_message_value<'msg>(
+        msg: upb_MessageValue,
+        arena: &'msg Arena,
+    ) -> Mut<'msg, Self>
+    where
+        Self: Message,
+    {
+        panic!("mut_from_message_value is only implemented for messages.")
+    }
 }
 
 macro_rules! impl_upb_type_conversions_for_scalars {
@@ -761,6 +781,29 @@ where
             return None;
         }
         Some(unsafe { <Self as UpbTypeConversions>::from_message_value(val.assume_init()) })
+    }
+
+    fn map_get_mut<'a>(mut map: MapMut<'a, Key, Self>, key: View<'_, Key>) -> Option<Mut<'a, Self>>
+    where
+        Self: Message,
+    {
+        let mut val = MaybeUninit::uninit();
+        let found = unsafe {
+            upb_Map_Get(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                val.as_mut_ptr(),
+            )
+        };
+        if !found {
+            return None;
+        }
+        Some(unsafe {
+            <Self as UpbTypeConversions>::mut_from_message_value(
+                val.assume_init(),
+                map.arena(Private),
+            )
+        })
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {

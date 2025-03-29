@@ -616,6 +616,15 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                   debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
                   unsafe { $Msg$View::new($pbi$::Private, value.val.m) }
               }
+
+              unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+                  unsafe {
+                    $Msg$Mut {
+                      inner: $pbr$::MutatorMessageRef::from_raw_msg(&value.val.m)
+                    }
+                  }
+              }
           }
           )rs");
       return;
@@ -652,6 +661,15 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                         $pbi$::Private,
                         unsafe { msg.msg_val }
                             .expect("expected present message value in map"))
+                }
+
+                unsafe fn mut_from_message_value<'msg>(msg: $pbr$::upb_MessageValue, arena: &'msg $pbr$::Arena)
+                    -> $pb$::Mut<'msg, Self> {
+                    unsafe { 
+                      $pb$::Mut::<Self> { 
+                        inner: $pbr$::MutatorMessageRef::from_raw_parts(msg.msg_val.expect("expected present message value in map"), arena)
+                      }
+                    }
                 }
             }
             )rs");
