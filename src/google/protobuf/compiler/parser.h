@@ -333,9 +333,11 @@ class PROTOBUF_EXPORT Parser final {
 
   // Parse various language high-level language construrcts.
   bool ParseMessageDefinition(DescriptorProto* message,
+                              SymbolVisibility visibility,
                               const LocationRecorder& message_location,
                               const FileDescriptorProto* containing_file);
   bool ParseEnumDefinition(EnumDescriptorProto* enum_type,
+                           SymbolVisibility visibility,
                            const LocationRecorder& enum_location,
                            const FileDescriptorProto* containing_file);
   bool ParseServiceDefinition(ServiceDescriptorProto* service,
@@ -526,6 +528,18 @@ class PROTOBUF_EXPORT Parser final {
   // When finished successfully, we are looking at the first token past
   // the ending brace.
   bool ParseUninterpretedBlock(std::string* value);
+
+  // Parses a visibility prefix on message and enum and stores the resulting
+  // value of SymbolVisibility in *value.
+  // E.g.,
+  // message Foo {...}         *value gets VISIBILITY_UNSET
+  // local enum Bar {...}      *value gets VISIBILITY_LOCAL
+  // export message Baz {...}  *value gets VISIBILITY_EXPORT
+  //
+  // Behvior changes based on if the symbol is top-level and the
+  // DefaultSymbolVisibility Feature of the file.
+  bool ParseVisibility(SymbolVisibility* value,
+                       const FileDescriptorProto* containing_file);
 
   struct MapField {
     // Whether the field is a map field.

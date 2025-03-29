@@ -13,7 +13,6 @@
 
 #include "google/protobuf/compiler/parser.h"
 
-
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -699,18 +698,25 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility;
+  DO(ParseVisibility(&visibility, file));
+
+  if (LookingAt("message")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
     // Maximum depth allowed by the DescriptorPool.
     recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
-    return ParseMessageDefinition(file->add_message_type(), location, file);
+    return ParseMessageDefinition(file->add_message_type(), visibility,
+                                  location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kEnumTypeFieldNumber,
                               file->enum_type_size());
-    return ParseEnumDefinition(file->add_enum_type(), location, file);
+    return ParseEnumDefinition(file->add_enum_type(), visibility, location,
+                               file);
   } else if (LookingAt("service")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kServiceFieldNumber,
@@ -780,13 +786,16 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
 }
 
 bool Parser::ParseMessageDefinition(
-    DescriptorProto* message, const LocationRecorder& message_location,
+    DescriptorProto* message, const SymbolVisibility visibility,
+    const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
   const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
   if (--recursion_depth_ <= 0) {
     RecordError("Reached maximum recursion limit for nested messages.");
     return false;
   }
+
+  message->set_visibility(visibility);
 
   DO(Consume("message"));
   {
@@ -891,17 +900,22 @@ bool Parser::ParseMessageStatement(DescriptorProto* message,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility;
+  DO(ParseVisibility(&visibility, containing_file));
+
+  if (LookingAt("message")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kNestedTypeFieldNumber,
                               message->nested_type_size());
-    return ParseMessageDefinition(message->add_nested_type(), location,
-                                  containing_file);
+    return ParseMessageDefinition(message->add_nested_type(), visibility,
+                                  location, containing_file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kEnumTypeFieldNumber,
                               message->enum_type_size());
-    return ParseEnumDefinition(message->add_enum_type(), location,
+    return ParseEnumDefinition(message->add_enum_type(), visibility, location,
                                containing_file);
   } else if (LookingAt("extensions")) {
     LocationRecorder location(message_location,
@@ -2087,8 +2101,11 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 // Enums
 
 bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
+                                 const SymbolVisibility visibility,
                                  const LocationRecorder& enum_location,
                                  const FileDescriptorProto* containing_file) {
+  enum_type->set_visibility(visibility);
+
   DO(Consume("enum"));
 
   {
@@ -2506,6 +2523,48 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
   location.RecordLegacyImportLocation(containing_file, import_file);
 
   DO(ConsumeEndOfDeclaration(";", &location));
+
+  return true;
+}
+
+bool Parser::ParseVisibility(SymbolVisibility* value,
+                             const FileDescriptorProto* containing_file) {
+  using DefaultSymbolVisibility =
+      google::protobuf::FeatureSet::VisibilityFeature::DefaultSymbolVisibility;
+
+  if (value == nullptr || containing_file == nullptr) {
+    // Something went wrong just ignore it, leaving visibility unset.
+    return true;
+  }
+
+  if (TryConsume("export")) {
+    *value = SymbolVisibility::VISIBILITY_EXPORT;
+  } else if (TryConsume("local")) {
+    *value = SymbolVisibility::VISIBILITY_LOCAL;
+  } else {
+    *value = SymbolVisibility::VISIBILITY_UNSET;
+  }
+
+  // If we set a visiblity make sure its OK.
+  if (*value != SymbolVisibility::VISIBILITY_UNSET) {
+    if (containing_file->edition() <= Edition::EDITION_2023) {
+      RecordError(
+          "'local' and 'export' visibility modifiers are valid only on edition "
+          "2024 and greater.");
+
+      *value = SymbolVisibility::VISIBILITY_UNSET;
+      return false;
+    }
+
+    if (!LookingAt("message") && !LookingAt("enum")) {
+      RecordError(
+          "'local' and 'export' visibility modifiers are valid only on "
+          "'message' "
+          "and 'enum'");
+      *value = SymbolVisibility::VISIBILITY_UNSET;
+      return false;
+    }
+  }
 
   return true;
 }
