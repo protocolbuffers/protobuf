@@ -261,7 +261,7 @@ bool CodedInputStream::ReadString(std::string* buffer, int size) {
     if (z.second) {
       // Oddly enough, memcpy() requires its first two args to be non-NULL even
       // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
-      ABSL_DCHECK(z.first != NULL);
+      ABSL_DCHECK(z.first != nullptr);
       memcpy(z.first, buffer_, size);
       Advance(size);
     }
@@ -715,8 +715,8 @@ bool CodedInputStream::Refresh() {
     RecomputeBufferLimits();
     return true;
   } else {
-    buffer_ = NULL;
-    buffer_end_ = NULL;
+    buffer_ = nullptr;
+    buffer_end_ = nullptr;
     return false;
   }
 }
