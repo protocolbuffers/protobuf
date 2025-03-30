@@ -136,7 +136,7 @@ class ThreadSafeArenaStatsHandle {
   ThreadSafeArenaStats* MutableStats() { return info_; }
 
   friend void swap(ThreadSafeArenaStatsHandle& lhs,
-                   ThreadSafeArenaStatsHandle& rhs) {
+                   ThreadSafeArenaStatsHandle& rhs) noexcept {
     std::swap(lhs.info_, rhs.info_);
   }
 
