@@ -1368,20 +1368,24 @@ public class TextFormatTest {
   @Test
   public void testShortDebugString_field() {
     final FieldDescriptor dataField = OneString.getDescriptor().findFieldByName("data");
-    assertThat(TextFormat.printer().shortDebugString(dataField, "test data"))
+    assertThat(
+            TextFormat.printer()
+                .emittingSingleLine(true)
+                .printFieldToString(dataField, "test data"))
         .isEqualTo("data: \"test data\"");
 
     final FieldDescriptor optionalField =
         TestAllTypes.getDescriptor().findFieldByName("optional_nested_message");
     final Object value = NestedMessage.newBuilder().setBb(42).build();
 
-    assertThat(TextFormat.printer().shortDebugString(optionalField, value))
+    assertThat(
+            TextFormat.printer().emittingSingleLine(true).printFieldToString(optionalField, value))
         .isEqualTo("optional_nested_message { bb: 42 }");
   }
 
   @Test
   public void testShortDebugString_unknown() {
-    assertThat(TextFormat.printer().shortDebugString(makeUnknownFieldSet()))
+    assertThat(TextFormat.printer().emittingSingleLine(true).printToString(makeUnknownFieldSet()))
         .isEqualTo(
             "5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5: { 12: 6 } 5 { 10: 5 }"
                 + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"
