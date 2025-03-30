@@ -77,7 +77,7 @@ proto3_unittest::TestNoPresenceField MakeTestNoPresenceField() {
 const FieldDescriptor* GetFieldDescriptor(const Message& message,
                                           const std::string& field_name) {
   std::vector<std::string> field_path =
-      absl::StrSplit(field_name, ".", absl::SkipEmpty());
+      absl::StrSplit(field_name, '.', absl::SkipEmpty());
   const Descriptor* descriptor = message.GetDescriptor();
   const FieldDescriptor* field = nullptr;
   for (int i = 0; i < field_path.size(); i++) {
