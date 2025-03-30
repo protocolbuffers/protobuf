@@ -2063,13 +2063,13 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   Options options;
 
-  for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
+  for (const auto& option : absl::StrSplit(parameter, ',', absl::SkipEmpty())) {
     const std::vector<std::string> option_pair =
-        absl::StrSplit(option, "=", absl::SkipEmpty());
+        absl::StrSplit(option, '=', absl::SkipEmpty());
     if (absl::StartsWith(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix :
-           absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
+           absl::StrSplit(option_pair[1], '#', absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
         ABSL_LOG(INFO) << prefix;
       }
