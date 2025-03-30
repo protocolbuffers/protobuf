@@ -18,7 +18,7 @@ class ImmutableFieldLiteGenerator : public FieldGenerator {
   ImmutableFieldLiteGenerator(const ImmutableFieldLiteGenerator&) = delete;
   ImmutableFieldLiteGenerator& operator=(const ImmutableFieldLiteGenerator&) =
       delete;
-  virtual ~ImmutableFieldLiteGenerator() = default;
+  ~ImmutableFieldLiteGenerator() override = default;
 
   virtual int GetNumBitsForMessage() const = 0;
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
