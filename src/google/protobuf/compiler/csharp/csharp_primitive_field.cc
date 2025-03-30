@@ -72,7 +72,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   // Only print [SerializeField] if the custom option is set to true.
   if (descriptor_->options().HasExtension(serialize_field) &&
     descriptor_->options().GetExtension(serialize_field)) {
-  printer->Print("[SerializeField]\n");
+  printer->Print("[UnityEngine.SerializeField]\n");
   }
 
   // Declare the field itself.
