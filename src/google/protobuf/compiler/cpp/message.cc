@@ -630,17 +630,8 @@ MessageGenerator::MessageGenerator(
 
   // Compute optimized field order to be used for layout and initialization
   // purposes.
-  for (auto field : FieldRange(descriptor_)) {
-    if (IsWeak(field, options_)) {
-      ++num_weak_fields_;
-      continue;
-    }
-
-    if (!field->real_containing_oneof()) {
-      optimized_order_.push_back(field);
-    }
-  }
-
+  num_weak_fields_ = CollectFieldsExcludingWeakAndOneof(descriptor_, options_,
+                                                        optimized_order_);
   const size_t initial_size = optimized_order_.size();
   message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
                                          scc_analyzer_);
