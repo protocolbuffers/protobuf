@@ -14,7 +14,7 @@ module(
 # Thus the highest version in their module graph is resolved.
 
 # These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.13.0", repo_name = "build_bazel_rules_apple")
+bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
 #ifndef PROTO2_OPENSOURCE
@@ -170,6 +170,9 @@ protobuf_maven.install(
     ],
 )
 use_repo(protobuf_maven, "protobuf_maven")
+
+# Temporarily pin transitive dependency for https://github.com/bazelbuild/bazel/issues/24426
+bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
 
 # Development dependencies
 protobuf_maven_dev = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
