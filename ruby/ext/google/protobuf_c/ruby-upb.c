@@ -3960,6 +3960,16 @@ bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
   return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
 }
 
+struct upb_Message* upb_Map_GetMutable(upb_Map* map, upb_MessageValue key) {
+  UPB_ASSERT(map->val_size == sizeof(upb_Message*));
+  upb_Message* val = NULL;
+  if (_upb_Map_Get(map, &key, map->key_size, &val, sizeof(upb_Message*))) {
+    return val;
+  } else {
+    return NULL;
+  }
+}
+
 void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
 
 upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
