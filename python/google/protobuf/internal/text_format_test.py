@@ -841,6 +841,16 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(message.optional_nested_message.bb, 45)
     self.assertEqual(message.optional_int32, 123)
 
+  def testParseUnknownRepeatedMessage(self, message_module):
+    message = message_module.TestAllTypes()
+    text = (
+        'unknown_repeated: [{}]\n'
+        'unknown_repeated2: [<>, {}]\n'
+        'optional_nested_message { bb: 45 }'
+    )
+    text_format.Parse(text, message, allow_unknown_field=True)
+    self.assertEqual(message.optional_nested_message.bb, 45)
+
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_nested_enum: BARR'
