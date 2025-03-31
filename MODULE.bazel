@@ -39,7 +39,7 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.51.0")
+bazel_dep(name = "rules_rust", version = "0.51.0", dev_dependency = True)
 
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
