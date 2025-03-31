@@ -657,8 +657,7 @@ public final class TextFormat {
      * Generates a human readable form of this message, useful for debugging and other purposes,
      * with no newline characters.
      *
-     * @deprecated Use {@code
-     *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
+     * @deprecated Use {@code this.emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
     @Deprecated
     public String shortDebugString(final MessageOrBuilder message) {
