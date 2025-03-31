@@ -250,7 +250,7 @@ class DescriptorNames {
   }
 
  private:
-  uint16_t get_size(int index) const {
+  size_t get_size(int index) const {
     // We don't use `uint16_t` in the payload type to avoid having to align it.
     // Instead, we read via memcpy.
     uint16_t size;
@@ -258,7 +258,7 @@ class DescriptorNames {
     return size;
   }
 
-  absl::string_view get(uint16_t offset, uint16_t size) const {
+  absl::string_view get(size_t offset, size_t size) const {
     return absl::string_view(payload_ - offset, size);
   }
 

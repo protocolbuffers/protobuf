@@ -440,9 +440,16 @@ class FlatAllocatorImpl {
 
   // TODO: Remove the NULL terminators to save memory and simplify
   // the code.
-  internal::DescriptorNames CreateDescriptorNames(
+  std::optional<internal::DescriptorNames> CreateDescriptorNames(
       std::initializer_list<absl::string_view> bytes,
       std::initializer_list<size_t> sizes) {
+    for (size_t size : sizes) {
+      // Name too long.
+      if (size != static_cast<uint16_t>(size)) {
+        return std::nullopt;
+      }
+    }
+
     size_t total_size = 0;
     for (auto b : bytes) total_size += b.size();
     total_size += sizes.size() * sizeof(uint16_t);
@@ -453,8 +460,7 @@ class FlatAllocatorImpl {
     }
     auto res = internal::DescriptorNames(out);
     for (size_t size : sizes) {
-      uint16_t size16 = static_cast<size_t>(size);
-      ABSL_CHECK_EQ(size, size16);
+      uint16_t size16 = static_cast<uint16_t>(size);
       memcpy(out, &size16, sizeof(size16));
       out += sizeof(size16);
     }
@@ -465,8 +471,8 @@ class FlatAllocatorImpl {
     PlanArray<char>(internal::DescriptorNames::AllocationSizeForSimpleNames(
         full_name_size));
   }
-  internal::DescriptorNames AllocateEntityNames(absl::string_view scope,
-                                                absl::string_view name) {
+  std::optional<internal::DescriptorNames> AllocateEntityNames(
+      absl::string_view scope, absl::string_view name) {
     static constexpr absl::string_view kNullChar("\0", 1);
     if (scope.empty()) {
       return CreateDescriptorNames({name, kNullChar},
@@ -477,11 +483,15 @@ class FlatAllocatorImpl {
           {name.size(), scope.size() + 1 + name.size()});
     }
   }
-  internal::DescriptorNames AllocateEntityNames(absl::string_view full_name,
-                                                size_t name_size) {
+
+  internal::DescriptorNames AllocatePlaceholderNames(
+      absl::string_view full_name, size_t name_size) {
     static constexpr absl::string_view kNullChar("\0", 1);
-    return CreateDescriptorNames({full_name, kNullChar},
-                                 {name_size, full_name.size()});
+    auto out = CreateDescriptorNames({full_name, kNullChar},
+                                     {name_size, full_name.size()});
+    if (out.has_value()) return *out;
+    // Return any valid name for the caller to use and keep going.
+    return AllocateEntityNames("", "unknown").value();
   }
 
   template <typename... In>
@@ -536,7 +546,7 @@ class FlatAllocatorImpl {
     PlanArray<char>(total_bytes);
   }
 
-  internal::DescriptorNames AllocateFieldNames(
+  std::optional<internal::DescriptorNames> AllocateFieldNames(
       const absl::string_view name, const absl::string_view scope,
       const std::string* opt_json_name) {
     ABSL_CHECK(has_allocated());
@@ -4490,7 +4500,7 @@ class DescriptorBuilder {
   // `proto_name`, and the second one is the full name. Full proto name is
   // "scope.proto_name" if scope is non-empty and "proto_name" otherwise.
   auto AllocateNameStrings(absl::string_view scope,
-                           absl::string_view proto_name,
+                           absl::string_view proto_name, const Message& entity,
                            internal::FlatAllocator& alloc);
 
   // These methods all have the same signature for the sake of the BUILD_ARRAY
@@ -5288,7 +5298,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     EnumDescriptor* placeholder_enum = &placeholder_file->enum_types_[0];
     memset(static_cast<void*>(placeholder_enum), 0, sizeof(*placeholder_enum));
 
-    placeholder_enum->all_names_ = alloc.AllocateEntityNames(
+    placeholder_enum->all_names_ = alloc.AllocatePlaceholderNames(
         placeholder_full_name, placeholder_name.size());
     placeholder_enum->file_ = placeholder_file;
     placeholder_enum->options_ = &EnumOptions::default_instance();
@@ -5327,7 +5337,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     memset(static_cast<void*>(placeholder_message), 0,
            sizeof(*placeholder_message));
 
-    placeholder_message->all_names_ = alloc.AllocateEntityNames(
+    placeholder_message->all_names_ = alloc.AllocatePlaceholderNames(
         placeholder_full_name, placeholder_name.size());
     placeholder_message->file_ = placeholder_file;
     placeholder_message->options_ = &MessageOptions::default_instance();
@@ -6379,8 +6389,16 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
 auto DescriptorBuilder::AllocateNameStrings(const absl::string_view scope,
                                             const absl::string_view proto_name,
+                                            const Message& entity,
                                             internal::FlatAllocator& alloc) {
-  return alloc.AllocateEntityNames(scope, proto_name);
+  if (auto names = alloc.AllocateEntityNames(scope, proto_name)) {
+    return *names;
+  }
+
+  AddError(scope.empty() ? proto_name : absl::StrCat(scope, ".", proto_name),
+           entity, DescriptorPool::ErrorCollector::NAME, "Name too long.");
+  // Return any valid name for the caller to use and keep going.
+  return alloc.AllocateEntityNames("", "unknown").value();
 }
 
 namespace {
@@ -6411,7 +6429,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      internal::FlatAllocator& alloc) {
   const absl::string_view scope =
       (parent == nullptr) ? file_->package() : parent->full_name();
-  result->all_names_ = AllocateNameStrings(scope, proto.name(), alloc);
+  result->all_names_ = AllocateNameStrings(scope, proto.name(), proto, alloc);
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
   result->file_ = file_;
@@ -6682,9 +6700,16 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
       (parent == nullptr) ? file_->package() : parent->full_name();
 
   // We allocate all names in a single array, and dedup them.
-  result->all_names_ = alloc.AllocateFieldNames(
-      proto.name(), scope,
-      proto.has_json_name() ? &proto.json_name() : nullptr);
+  if (auto names = alloc.AllocateFieldNames(
+          proto.name(), scope,
+          proto.has_json_name() ? &proto.json_name() : nullptr)) {
+    result->all_names_ = *names;
+  } else {
+    AddError(
+        scope.empty() ? proto.name() : absl::StrCat(scope, ".", proto.name()),
+        proto, DescriptorPool::ErrorCollector::NAME, "Name too long.");
+    result->all_names_ = alloc.AllocateEntityNames("", "unknown").value();
+  }
 
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
@@ -7023,7 +7048,7 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
                                    Descriptor* parent, OneofDescriptor* result,
                                    internal::FlatAllocator& alloc) {
   result->all_names_ =
-      AllocateNameStrings(parent->full_name(), proto.name(), alloc);
+      AllocateNameStrings(parent->full_name(), proto.name(), proto, alloc);
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
   result->containing_type_ = parent;
@@ -7113,7 +7138,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   const absl::string_view scope =
       (parent == nullptr) ? file_->package() : parent->full_name();
 
-  result->all_names_ = AllocateNameStrings(scope, proto.name(), alloc);
+  result->all_names_ = AllocateNameStrings(scope, proto.name(), proto, alloc);
   ValidateSymbolName(proto.name(), result->full_name(), proto);
   result->file_ = file_;
   result->containing_type_ = parent;
@@ -7288,7 +7313,7 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
                                      ServiceDescriptor* result,
                                      internal::FlatAllocator& alloc) {
   result->all_names_ =
-      AllocateNameStrings(file_->package(), proto.name(), alloc);
+      AllocateNameStrings(file_->package(), proto.name(), proto, alloc);
   result->file_ = file_;
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
@@ -7308,7 +7333,7 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
                                     internal::FlatAllocator& alloc) {
   result->service_ = parent;
   result->all_names_ =
-      AllocateNameStrings(parent->full_name(), proto.name(), alloc);
+      AllocateNameStrings(parent->full_name(), proto.name(), proto, alloc);
 
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
