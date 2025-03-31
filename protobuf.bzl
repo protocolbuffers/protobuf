@@ -493,8 +493,8 @@ def internal_ruby_proto_library(
         srcs = [],
         deps = [],
         includes = ["."],
-        default_runtime = "@com_google_protobuf//ruby:protobuf",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = "//ruby:protobuf",
+        protoc = "//:protoc",
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
