@@ -194,6 +194,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   }  
   if (file_->extension_count() > 0) {
     std::vector<std::string> extensions;
+    extensions.reserve(file_->extension_count());
     for (int i = 0; i < file_->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(file_->extension(i)));
     }
@@ -296,6 +297,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Extensions
   if (descriptor->extension_count() > 0) {
     std::vector<std::string> extensions;
+    extensions.reserve(descriptor->extension_count());
     for (int i = 0; i < descriptor->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }
