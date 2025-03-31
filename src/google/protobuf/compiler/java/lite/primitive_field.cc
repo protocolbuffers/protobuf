@@ -31,7 +31,6 @@ namespace compiler {
 namespace java {
 
 using internal::WireFormat;
-using internal::WireFormatLite;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
