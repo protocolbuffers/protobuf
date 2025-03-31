@@ -122,9 +122,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
                                             hpb::Arena& arena) {
-  return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
-                                    ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), 0);
+  return backend::Serialize(message, arena);
 }
 
 }  // namespace hpb
