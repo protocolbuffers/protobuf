@@ -85,7 +85,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
                   Options{.backend = Backend::UPB});
   WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
-  // Write model.upb.proto.cc
+  // Write model.hpb.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   auto cc_ctx =

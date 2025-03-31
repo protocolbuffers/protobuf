@@ -51,7 +51,7 @@ def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     srcs = []
     srcs += proto_common.declare_generated_files(
         ctx.actions,
-        extension = ".upb.proto.cc",
+        extension = ".hpb.cc",
         proto_info = proto_info,
     )
 

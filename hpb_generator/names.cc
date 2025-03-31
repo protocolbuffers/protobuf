@@ -100,7 +100,7 @@ std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor) {
 }
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file) {
-  return compiler::StripProto(file->name()) + ".upb.proto.cc";
+  return compiler::StripProto(file->name()) + ".hpb.cc";
 }
 
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
