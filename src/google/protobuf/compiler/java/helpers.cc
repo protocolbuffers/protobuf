@@ -953,10 +953,10 @@ bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
   (void)immutable;
   return NestInFileClass(descriptor);
 }
-}  // namespace
 
 template <typename Descriptor>
-absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
+absl::Status ValidateNestInFileClassFeatureHelper(
+    const Descriptor& descriptor) {
   if (descriptor.containing_type() != nullptr) {
     const pb::JavaFeatures& unresolved_features =
         JavaGenerator::GetUnresolvedSourceFeatures(descriptor, pb::java);
@@ -968,6 +968,15 @@ absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
     }
   }
   return absl::OkStatus();
+}
+}  // namespace
+
+absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
+}
+
+absl::Status ValidateNestInFileClassFeature(const EnumDescriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
 }
 
 bool NestedInFileClass(const Descriptor& descriptor, bool immutable) {

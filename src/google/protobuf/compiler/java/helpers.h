@@ -140,8 +140,8 @@ inline Proto1EnumRepresentation GetProto1EnumRepresentation(
   return Proto1EnumRepresentation::kInteger;
 }
 
-template <typename Descriptor>
 absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor);
+absl::Status ValidateNestInFileClassFeature(const EnumDescriptor& descriptor);
 
 // Returns true if the generated class for the type is nested in the generated
 // proto file Java class.
