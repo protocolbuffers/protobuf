@@ -180,6 +180,16 @@ task :clean do
 end
 
 Gem::PackageTask.new(spec) do |pkg|
+  # When packaging the gem via `rake gem`, we only want to define
+  # "ext/google/protobuf_c/extconf.rb" as the extension to build the C
+  # extension.
+  pkg.gem_spec.extensions = pkg.gem_spec.extensions.map do |extension|
+    extension == "Rakefile" ? "ext/google/protobuf_c/extconf.rb" : extension
+  end
+
+  pkg.gem_spec.files = pkg.gem_spec.files.reject { |f| f == "Rakefile" }
+
+  pkg.package_files.exclude("Rakefile")
 end
 
 # Skip build/genproto in Bazel builds, where we expect this to

@@ -25,9 +25,17 @@ Gem::Specification.new do |s|
     s.files     += Dir.glob('ext/**/*').reject do |file|
       File.basename(file) =~ /^(BUILD\.bazel)$/
     end
-    s.extensions = %w[
-      ext/google/protobuf_c/extconf.rb
-      ext/google/protobuf_c/Rakefile
+
+    # When installing this gem from git via bundler
+    # (ie: 'gem "google-protobuf", git: "https://.../protobuf.git"' in your
+    # Gemfile), Rakefile is necessary so the prerequisite tasks run to copy
+    # third party C libraries and generate well known protobufs.  When building
+    # the gem via `rake gem`, these steps will have already occurred, and so we
+    # replace the `Rakefile` extension with `ext/google/protobuf_c/extconf.rb`.
+    # See the `Gem::PackageTask.new` declaration in `Rakefile` for more details.
+    s.extensions = [
+      File.exist?("Rakefile") ? "Rakefile" : "ext/google/protobuf_c/extconf.rb",
+      "ext/google/protobuf_c/Rakefile"
     ]
   end
   s.required_ruby_version = '>= 3.1'
