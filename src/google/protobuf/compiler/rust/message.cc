@@ -543,9 +543,9 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
           ) -> $pb$::Mut<Self> {
             // SAFETY:
             // - `f.as_raw()` is a valid `upb_Array*`.
+            // - `f` is a an array of message-valued elements.
             // - `i < len(f)` is promised by the caller.
-            let msg_ptr = unsafe { $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i).msg }
-              .expect("upb_Array* element should not be NULL.");
+            let msg_ptr = unsafe { $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i) };
             unsafe {$pb$::Mut::<Self> { inner: $pbr$::MutatorMessageRef::from_raw_parts(msg_ptr, f.arena($pbi$::Private)) } }
           }
 
