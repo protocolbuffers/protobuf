@@ -264,7 +264,7 @@ int64_t CopyingInputStreamAdaptor::ByteCount() const {
 }
 
 void CopyingInputStreamAdaptor::AllocateBufferIfNeeded() {
-  if (buffer_.get() == NULL) {
+  if (buffer_ == NULL) {
     buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
