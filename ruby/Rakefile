@@ -189,7 +189,7 @@ Gem::PackageTask.new(spec) do |pkg|
     extension == "Rakefile" ? "ext/google/protobuf_c/extconf.rb" : extension
   end
 
-  pkg.gem_spec.files = pkg.gem_spec.files.reject { |f| f == "Rakefile" }
+  pkg.gem_spec.files.reject! { |f| f == "Rakefile" }
 
   pkg.package_files.exclude("Rakefile")
 end
