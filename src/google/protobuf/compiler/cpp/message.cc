@@ -633,8 +633,8 @@ MessageGenerator::MessageGenerator(
   num_weak_fields_ = CollectFieldsExcludingWeakAndOneof(descriptor_, options_,
                                                         optimized_order_);
   const size_t initial_size = optimized_order_.size();
-  message_layout_helper_->OptimizeLayout(optimized_order_, options_,
-                                         scc_analyzer_);
+  optimized_order_ = message_layout_helper_->OptimizeLayout(
+      optimized_order_, options_, scc_analyzer_);
   ABSL_CHECK_EQ(initial_size, optimized_order_.size());
 
   // This message has hasbits iff one or more fields need one.

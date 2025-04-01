@@ -1791,6 +1791,10 @@ void ListAllFields(const FileDescriptor* d,
   }
 }
 
+bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options) {
+  return field->real_containing_oneof() == nullptr && !IsWeak(field, options);
+}
+
 int CollectFieldsExcludingWeakAndOneof(
     const Descriptor* d, const Options& options,
     std::vector<const FieldDescriptor*>& fields) {
@@ -1798,10 +1802,9 @@ int CollectFieldsExcludingWeakAndOneof(
   for (auto field : FieldRange(d)) {
     if (IsWeak(field, options)) {
       ++num_weak_fields;
-      continue;
     }
 
-    if (!field->real_containing_oneof()) {
+    if (IsLayoutOptimized(field, options)) {
       fields.push_back(field);
     }
   }

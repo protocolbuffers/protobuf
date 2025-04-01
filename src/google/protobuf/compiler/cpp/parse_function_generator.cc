@@ -32,7 +32,6 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-namespace {
 using internal::TailCallTableInfo;
 using internal::cpp::Utf8CheckMode;
 
@@ -48,8 +47,6 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
             });
   return ordered_fields;
 }
-
-}  // namespace
 
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, int max_has_bit_index,
@@ -72,12 +69,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       BuildFieldOptions(descriptor_, ordered_fields_, options_, scc_analyzer_,
                         has_bit_indices, inlined_string_indices_);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
-      descriptor_,
-      TailCallTableInfo::MessageOptions{
-          /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
-              FileOptions::LITE_RUNTIME,
-          /* uses_codegen */ true},
-      fields);
+      BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
@@ -99,9 +91,8 @@ ParseFunctionGenerator::BuildFieldOptions(
     fields.push_back({
         field,
         index < has_bit_indices.size() ? has_bit_indices[index] : -1,
-        // When not present, we're not sure how likely "field" is present.
-        // Assign a 50% probability to avoid pessimizing it.
-        GetPresenceProbability(field, options).value_or(0.5f),
+        GetPresenceProbability(field, options)
+            .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options, scc_analyzer),
         IsStringInlined(field, options),
         IsImplicitWeakField(field, options, scc_analyzer),
@@ -112,6 +103,19 @@ ParseFunctionGenerator::BuildFieldOptions(
     });
   }
   return fields;
+}
+
+TailCallTableInfo ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
+    const Descriptor* descriptor, const Options& options,
+    absl::Span<const TailCallTableInfo::FieldOptions> field_options) {
+  TailCallTableInfo tc_table_info(
+      descriptor,
+      TailCallTableInfo::MessageOptions{
+          /* is_lite */ GetOptimizeFor(descriptor->file(), options) ==
+              FileOptions::LITE_RUNTIME,
+          /* uses_codegen */ true},
+      field_options);
+  return tc_table_info;
 }
 
 struct SkipEntry16 {
