@@ -33,7 +33,7 @@ class PaddingOptimizer final : public MessageLayoutHelper {
   PaddingOptimizer() = default;
   ~PaddingOptimizer() override = default;
 
-  void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
+  void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,
                       const Options& options,
                       MessageSCCAnalyzer* scc_analyzer) override;
 
@@ -44,6 +44,8 @@ class PaddingOptimizer final : public MessageLayoutHelper {
     // Assume all fields are hot.
     return kHot;
   }
+
+  FieldGroup SingleFieldGroup(const FieldDescriptor* field) const override;
 };
 
 }  // namespace cpp

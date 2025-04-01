@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -76,18 +77,35 @@ class MessageLayoutHelper {
  public:
   virtual ~MessageLayoutHelper() {}
 
-  virtual void OptimizeLayout(std::vector<const FieldDescriptor*>* fields,
+  virtual void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,
                               const Options& options,
                               MessageSCCAnalyzer* scc_analyzer) = 0;
 
  protected:
+  enum FieldFamily {
+    REPEATED = 0,  // Non-split repeated fields.
+    STRING = 1,
+    MESSAGE = 2,
+    ZERO_INITIALIZABLE = 3,
+    OTHER = 4,
+    kMaxFamily
+  };
+
   FieldPartitionArray PartitionFields(
       const std::vector<const FieldDescriptor*>& fields, const Options& options,
       MessageSCCAnalyzer* scc_analyzer) const;
 
+  // Reorders "fields" by descending hotness grouped by field family.
+  void OptimizeLayoutByFamily(std::vector<const FieldDescriptor*>& fields,
+                              const Options& options,
+                              absl::Span<const FieldFamily> families,
+                              MessageSCCAnalyzer* scc_analyzer);
+
   virtual FieldHotness GetFieldHotness(
       const FieldDescriptor* field, const Options& options,
       MessageSCCAnalyzer* scc_analyzer) const = 0;
+
+  virtual FieldGroup SingleFieldGroup(const FieldDescriptor* field) const = 0;
 };
 
 }  // namespace cpp
