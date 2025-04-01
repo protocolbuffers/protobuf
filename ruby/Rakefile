@@ -47,7 +47,9 @@ else
   protoc_command = 'protoc'
 end
 
-directory "tmp"
+tmp_protoc_out = "tmp/protoc-out"
+
+directory tmp_protoc_out
 
 genproto_output = []
 
@@ -57,14 +59,14 @@ unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = File.join("../src/", proto_file)
     output_basename = File.basename(proto_file).sub(/\.proto$/, "_pb.rb")
-    tmp_output_file = File.join("tmp/", File.dirname(proto_file), output_basename)
+    tmp_output_file = File.join(tmp_protoc_out, File.dirname(proto_file), output_basename)
     # Generated _pb.rb for files in subdirectories of google/protobuf
     # (eg: ../src/google/protobuf/compiler/plugin.proto) should all still end up
     # in lib/google/protobuf.
     output_file = File.join("lib/google/protobuf", output_basename)
     genproto_output << output_file
-    file output_file => [input_file, "tmp"] do |file_task|
-      sh "#{protoc_command} -I../src --ruby_out=tmp #{input_file}"
+    file output_file => [input_file, tmp_protoc_out] do |file_task|
+      sh "#{protoc_command} -I../src --ruby_out=#{tmp_protoc_out} #{input_file}"
       FileUtils.cp tmp_output_file, output_file
     end
   end
