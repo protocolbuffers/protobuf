@@ -154,7 +154,7 @@ public class LazyFieldLite {
    */
   public boolean containsDefaultInstance() {
     return memoizedBytes == ByteString.EMPTY
-        || value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY);
+        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY));
   }
 
   /**
