@@ -2237,7 +2237,7 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
 }
 
 void MessageDifferencer::StreamReporter::Print(const std::string& str) {
-  printer_->Print(str.c_str());
+  printer_->Print(str);
 }
 
 void MessageDifferencer::StreamReporter::PrintMapKey(

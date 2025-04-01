@@ -441,7 +441,7 @@ void ToUint128(const Duration& value, absl::uint128* result, bool* negative) {
   }
 }
 
-void ToDuration(const absl::uint128& value, bool negative, Duration* duration) {
+void ToDuration(const absl::uint128 value, bool negative, Duration* duration) {
   int64_t seconds =
       static_cast<int64_t>(absl::Uint128Low64(value / kNanosPerSecond));
   int32_t nanos =
