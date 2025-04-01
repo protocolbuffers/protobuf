@@ -38,5 +38,6 @@ set(rules_proto-version "7.0.2")
 set(lua-version "5.4.6")
 set(googleapis-version "0.0.0-20240819-fe8ba054a")
 set(google_benchmark-version "1.9.2")
+set(com_google_protobuf_v25-version "25.0")
 
 
