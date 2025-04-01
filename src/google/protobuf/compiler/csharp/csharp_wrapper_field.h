@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_WRAPPER_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_WRAPPER_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_WRAPPER_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_WRAPPER_FIELD_H__
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
@@ -75,4 +75,4 @@ class WrapperOneofFieldGenerator : public WrapperFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_WRAPPER_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_WRAPPER_FIELD_H__
