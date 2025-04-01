@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
-#define PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
 
 #include <string>
 
@@ -47,4 +47,4 @@ std::string MessageProxyType(const protobuf::FieldDescriptor* field,
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 
-#endif  // PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
