@@ -543,8 +543,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   // (previously annotated) memory is released.
   void AnnotateSize(int old_size, int new_size) const {
     if (old_size != new_size) {
-      ABSL_ATTRIBUTE_UNUSED const bool is_soo = this->is_soo();
-      ABSL_ATTRIBUTE_UNUSED const Element* elem = unsafe_elements(is_soo);
+      [[maybe_unused]] const bool is_soo = this->is_soo();
+      [[maybe_unused]] const Element* elem = unsafe_elements(is_soo);
       ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(elem, elem + Capacity(is_soo),
                                          elem + old_size, elem + new_size);
       if (new_size < old_size) {
@@ -771,7 +771,7 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int capacity = Capacity(is_soo);
+  [[maybe_unused]] const int capacity = Capacity(is_soo);
   ABSL_DCHECK_GE(capacity - old_size, n) << capacity << ", " << old_size;
   Element* p =
       unsafe_elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + n);
@@ -866,13 +866,13 @@ inline void RepeatedField<Element>::Add(Element value) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
+  [[maybe_unused]] const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
+  [[maybe_unused]] const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
-  ABSL_ATTRIBUTE_UNUSED Element* const final_elements = unsafe_elements(is_soo);
+  [[maybe_unused]] Element* const final_elements = unsafe_elements(is_soo);
   PROTOBUF_ASSUME(elem == final_elements);
-  ABSL_ATTRIBUTE_UNUSED const int final_capacity = Capacity(is_soo);
+  [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
 }
 
@@ -906,13 +906,13 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
+  [[maybe_unused]] const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
+  [[maybe_unused]] const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
-  ABSL_ATTRIBUTE_UNUSED Element* const final_elements = unsafe_elements(is_soo);
+  [[maybe_unused]] Element* const final_elements = unsafe_elements(is_soo);
   PROTOBUF_ASSUME(elem == final_elements);
-  ABSL_ATTRIBUTE_UNUSED const int final_capacity = Capacity(is_soo);
+  [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
 }
 
