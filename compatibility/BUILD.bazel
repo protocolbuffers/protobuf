@@ -21,7 +21,7 @@ java_library(
         "v3.25.0/*.srcjar",
     ]),
     visibility = ["//java/core:__pkg__"],
-    deps = ["@com_google_protobuf_v25.0//java/core"],
+    deps = ["@com_google_protobuf_v25//java/core"],
 )
 
 # Breaking change detection for well-known types and descriptor.proto.

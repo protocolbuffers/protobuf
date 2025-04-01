@@ -210,7 +210,7 @@ bazel_dep(
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
 use_repo(cc_configure, "local_config_cc")
 
-# rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
+# rules_proto are needed for @com_google_protobuf_v25 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)
 
 # For the Lua upb implementation
@@ -219,3 +219,21 @@ bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
 # For benchmarks
 bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", dev_dependency = True)
 bazel_dep(name = "google_benchmark", version = "1.9.2", dev_dependency = True)
+
+# For testing runtime against old gencode from a previous major version.
+bazel_dep(name = "com_google_protobuf_v25", version = "25.0", dev_dependency = True)
+archive_override(
+    module_name = "com_google_protobuf_v25",
+    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
+    strip_prefix = "protobuf-25.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/protobuf_v25/0001-Add-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0002-Examples-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0003-relative-labels.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0004-Add-utf8_range-dependency.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
+    ],
+)

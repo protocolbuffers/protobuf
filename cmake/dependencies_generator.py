@@ -105,6 +105,9 @@ class ModuleFileFunctions(object):
   def git_override(self, *args, **kwargs):
     pass
 
+  def archive_override(self, *args, **kwargs):
+    pass
+
 
 class Converter(object):
 

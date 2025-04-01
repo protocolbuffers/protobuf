@@ -293,14 +293,19 @@ crate_repositories()
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(
-    name = "com_google_protobuf_v25.0",
-    integrity = "sha256-aYl601ZjGPYtu0Nc2Nsl58qiPgSXqT9e20mQM5FcxXk=",
-    strip_prefix = "protobuf-d8756a62c8ae40686b75fee9ad9c876ac892d043",
-    url = "https://github.com/protocolbuffers/protobuf/archive/d8756a62c8ae40686b75fee9ad9c876ac892d043.tar.gz",
+    name = "com_google_protobuf_v25",
+    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
+    strip_prefix = "protobuf-25.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+    patch_args = ["-p1"],
+    patches = [
+        # There are other patches, but they are only needed for bzlmod.
+        "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
+    ],
 )
 
-# Needed as a dependency of @com_google_protobuf_v25.0
-load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
+# Needed as a dependency of @com_google_protobuf_v25
+load("@com_google_protobuf_v25//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
 
 protobuf_v25_deps()
 
