@@ -30,7 +30,8 @@ namespace cpp {
 // comment for details.
 class PaddingOptimizer final : public MessageLayoutHelper {
  public:
-  PaddingOptimizer() = default;
+  explicit PaddingOptimizer(const Descriptor* descriptor)
+      : MessageLayoutHelper(descriptor) {}
   ~PaddingOptimizer() override = default;
 
   void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,

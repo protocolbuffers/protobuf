@@ -75,7 +75,11 @@ class FieldGroup {
 // by rearranging the fields of a message.
 class MessageLayoutHelper {
  public:
-  virtual ~MessageLayoutHelper() {}
+  explicit MessageLayoutHelper(const Descriptor* descriptor)
+      : descriptor_(descriptor) {}
+  virtual ~MessageLayoutHelper() = default;
+
+  const Descriptor* descriptor() const { return descriptor_; }
 
   virtual void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,
                               const Options& options,
@@ -106,6 +110,9 @@ class MessageLayoutHelper {
       MessageSCCAnalyzer* scc_analyzer) const = 0;
 
   virtual FieldGroup SingleFieldGroup(const FieldDescriptor* field) const = 0;
+
+ private:
+  const Descriptor* descriptor_;
 };
 
 }  // namespace cpp
