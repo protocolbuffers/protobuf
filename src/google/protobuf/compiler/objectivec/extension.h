@@ -51,4 +51,4 @@ class ExtensionGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_EXTENSION_H__
