@@ -11,8 +11,8 @@
 //
 // For pros and cons of this approach, please see conformance.proto.
 
-#ifndef CONFORMANCE_CONFORMANCE_TEST_H
-#define CONFORMANCE_CONFORMANCE_TEST_H
+#ifndef GOOGLE_PROTOBUF_CONFORMANCE_CONFORMANCE_TEST_H__
+#define GOOGLE_PROTOBUF_CONFORMANCE_CONFORMANCE_TEST_H__
 
 #include <cstddef>
 #include <cstdint>
@@ -370,4 +370,4 @@ class ConformanceTestSuite {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // CONFORMANCE_CONFORMANCE_TEST_H
+#endif  // GOOGLE_PROTOBUF_CONFORMANCE_CONFORMANCE_TEST_H__
