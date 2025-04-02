@@ -317,12 +317,11 @@ http_archive(
 )
 
 # For checking breaking changes to well-known types from the previous release version.
-load("//:protobuf_version.bzl", "PROTOBUF_PREVIOUS_RELEASE")
-
 http_archive(
     name = "com_google_protobuf_previous_release",
-    strip_prefix = "protobuf-" + PROTOBUF_PREVIOUS_RELEASE,
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
+    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    strip_prefix = "protobuf-29.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
 
 http_archive(

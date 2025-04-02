@@ -237,3 +237,15 @@ archive_override(
         "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
     ],
 )
+
+bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
+archive_override(
+    module_name = "com_google_protobuf_previous_release",
+    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    strip_prefix = "protobuf-29.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
+    ],
+)
