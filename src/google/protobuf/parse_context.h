@@ -37,6 +37,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -202,6 +203,13 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       return ptr + size;
     }
     return AppendStringFallback(ptr, size, s);
+  }
+  [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size) {
+    if (size <= static_cast<size_t>(BytesAvailable(ptr))) {
+      return utf8_range::IsStructurallyValid({ptr, size}) ? ptr + size
+                                                          : nullptr;
+    }
+    return VerifyUTF8Fallback(ptr, size);
   }
   // Implemented in arenastring.cc
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
@@ -378,6 +386,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   inline const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
+  const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
@@ -393,11 +402,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
+    // Some append functions may return false to bail out early.
+    constexpr bool kCheckReturn =
+        std::is_invocable_r_v<bool, decltype(append), const char*, int>;
+
     int chunk_size = BytesAvailable(ptr);
     do {
       ABSL_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
-      append(ptr, chunk_size);
+      if constexpr (kCheckReturn) {
+        if (!append(ptr, chunk_size)) return nullptr;
+      } else {
+        append(ptr, chunk_size);
+      }
       ptr += chunk_size;
       size -= chunk_size;
       // TODO Next calls NextBuffer which generates buffers with
@@ -409,7 +426,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr += kSlopBytes;
       chunk_size = BytesAvailable(ptr);
     } while (size > chunk_size);
-    append(ptr, size);
+
+    if constexpr (kCheckReturn) {
+      if (!append(ptr, size)) return nullptr;
+    } else {
+      append(ptr, size);
+    }
     return ptr + size;
   }
 

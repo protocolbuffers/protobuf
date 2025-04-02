@@ -19,6 +19,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -204,6 +205,73 @@ const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
   }
   return AppendSize(ptr, size,
                     [str](const char* p, int s) { str->append(p, s); });
+}
+
+namespace {
+
+// Returns true if "fragment" potentially prefixed with "leftover" is valid
+// UTF8. Copied from `CordIsValid()`:
+// http://google3/util/utf8/internal/unilib.cc;l=85;rcl=740640507
+bool IsViewValidUTF8WithLeftover(absl::string_view fragment,
+                                 std::string& leftover) {
+  // A valid UTF8 ranges in [1, 4]: https://en.wikipedia.org/wiki/UTF-8
+  constexpr size_t kUtfMax = 4;
+
+  if (size_t leftover_size = leftover.size(); leftover_size > 0) {
+    ABSL_DCHECK_LT(leftover_size, kUtfMax);
+
+    // Copy into the leftover buffer until it has kUtfMax bytes, and match code
+    // points within that buffer, removing them from the prefix of the next
+    // chunk.
+    const size_t fill_size = kUtfMax - leftover_size;
+    if (fragment.size() < fill_size) {
+      // If the full fragment fits in the buffer, match and consume if possible.
+      absl::StrAppend(&leftover, fragment);
+      // Opportunistically validate but it's okay otherwise as we may be
+      // building up to a valid UTF8.
+      leftover.erase(0, utf8_range::SpanStructurallyValid(leftover));
+      return true;
+    }
+
+    // Otherwise, fill the buffer from the prefix of the fragment, match, and
+    // remove the bytes in the *match* (not the unmatched part of the buffer)
+    // that originally came from the current fragment.
+    //
+    // Note that fragment is big enough to fill leftover to the max UTF8 value.
+    // It has to have a valid UTF8.
+    absl::StrAppend(&leftover, fragment.substr(0, fill_size));
+    const size_t leftover_valid = utf8_range::SpanStructurallyValid(leftover);
+    if (leftover_valid == 0) {
+      return false;
+    }
+    fragment.remove_prefix(leftover_valid - leftover_size);
+  }
+
+  const size_t valid = utf8_range::SpanStructurallyValid(fragment);
+  fragment.remove_prefix(valid);
+  // If the last Unicode char crosses to next fragment, length must be smaller
+  // than kUtfMax.
+  if (kUtfMax <= fragment.size()) {
+    return false;
+  }
+
+  leftover.assign(fragment.data(), fragment.size());
+
+  // So far so good. Continue to the next fragment.
+  return true;
+}
+
+}  // namespace
+
+const char* EpsCopyInputStream::VerifyUTF8Fallback(const char* ptr,
+                                                   size_t size) {
+  // Copied the implementation of CordIsValid().
+  std::string leftover;
+
+  ptr = AppendSize(ptr, size, [&leftover](const char* p, int s) -> bool {
+    return IsViewValidUTF8WithLeftover({p, static_cast<size_t>(s)}, leftover);
+  });
+  return leftover.empty() ? ptr : nullptr;
 }
 
 const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
