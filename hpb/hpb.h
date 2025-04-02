@@ -25,14 +25,18 @@
 
 #ifdef HPB_BACKEND_UPB
 #include "google/protobuf/hpb/backend/upb/upb.h"
+#elif defined(HPB_BACKEND_CPP)
+#include "google/protobuf/hpb/backend/cpp/cpp.h"
 #else
-#error hpb backend must be specified
+#error invalid hpb backend
 #endif
 
 namespace hpb {
 
 #ifdef HPB_BACKEND_UPB
-namespace backend = internal::backend::upb;
+namespace backend = hpb::internal::backend::upb;
+#elif defined(HPB_BACKEND_CPP)
+namespace backend = hpb::internal::backend::cpp;
 #endif
 
 template <typename T>
