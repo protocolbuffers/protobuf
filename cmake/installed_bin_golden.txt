@@ -1,3 +1,13 @@
 protoc
+protoc-gen-cpp
+protoc-gen-csharp
+protoc-gen-java
+protoc-gen-kotlin
+protoc-gen-objectivec
+protoc-gen-php
+protoc-gen-pyi
+protoc-gen-python
+protoc-gen-ruby
+protoc-gen-rust
 protoc-gen-upb
 protoc-gen-upbdefs
