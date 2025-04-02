@@ -13,12 +13,12 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/variant.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -50,7 +50,7 @@ void protobuf_assumption_failed(const char* pred, const char* file, int line) {
 static void PrintAllCounters();
 static auto& CounterMap() {
   using Map = std::map<absl::string_view,
-                       std::map<absl::variant<int64_t, absl::string_view>,
+                       std::map<std::variant<int64_t, absl::string_view>,
                                 const RealDebugCounter*>>;
   static auto* counter_map = new Map{};
   static bool dummy = std::atexit(PrintAllCounters);
@@ -76,14 +76,14 @@ static void PrintAllCounters() {
     }
     for (auto& count : category.second) {
       size_t value = count.second->value();
-      if (absl::holds_alternative<int64_t>(count.first)) {
+      if (std::holds_alternative<int64_t>(count.first)) {
         // For integers, right align
-        absl::FPrintF(stderr, "    %9d : %10zu",
-                      absl::get<int64_t>(count.first), value);
+        absl::FPrintF(stderr, "    %9d : %10zu", std::get<int64_t>(count.first),
+                      value);
       } else {
         // For strings, left align
         absl::FPrintF(stderr, "    %-10s: %10zu",
-                      absl::get<absl::string_view>(count.first), value);
+                      std::get<absl::string_view>(count.first), value);
       }
       if (total != 0 && category.second.size() > 1) {
         absl::FPrintF(
