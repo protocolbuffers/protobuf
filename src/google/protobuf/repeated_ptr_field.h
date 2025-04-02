@@ -1623,16 +1623,16 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional);
+    field.Reserve(static_cast<int>(field.size() + additional));
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
                                size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 
   static MessageLite& At(RepeatedPtrFieldBase& field, size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 };
 

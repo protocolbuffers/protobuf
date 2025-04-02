@@ -511,7 +511,7 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
             $byte_size$;
             if (byte_size > 0) {
               target = stream->WriteEnumPacked(
-                  $number$, this_._internal_$name$(), byte_size, target);
+                  $number$, this_._internal_$name$(), static_cast<int>(byte_size), target);
             }
           }
         )cc");

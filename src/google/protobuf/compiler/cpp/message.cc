@@ -1416,7 +1416,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     if (field->is_repeated()) {
       p->Emit(R"cc(
         inline int $classname$::_internal_$name_internal$_size() const {
-          return _internal_$name_internal$().size();
+          return static_cast<int>(_internal_$name_internal$().size());
         }
         inline int $classname$::$name$_size() const {
           $WeakDescriptorSelfPin$;

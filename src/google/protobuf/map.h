@@ -872,7 +872,7 @@ class KeyMapBase : public UntypedMapBase {
       size_type new_num_buckets = std::max<size_type>(
           kMinTableSize, num_buckets_ >> lg2_of_size_reduction_factor);
       if (new_num_buckets != num_buckets_) {
-        Resize(new_num_buckets);
+        Resize(static_cast<map_index_t>(new_num_buckets));
         return true;
       }
     }
@@ -885,11 +885,11 @@ class KeyMapBase : public UntypedMapBase {
   PROTOBUF_NOINLINE void MergeIntoEmpty(NodeBase* head, size_t num_nodes) {
     ABSL_DCHECK_EQ(size(), size_t{0});
     ABSL_DCHECK_NE(num_nodes, size_t{0});
-    if (const map_index_t needed_capacity = CalculateCapacityForSize(num_nodes);
+    if (const map_index_t needed_capacity = static_cast<map_index_t>(CalculateCapacityForSize(num_nodes));
         needed_capacity != this->num_buckets_) {
       Resize(std::max(kMinTableSize, needed_capacity));
     }
-    num_elements_ = num_nodes;
+    num_elements_ = static_cast<map_index_t>(num_nodes);
     AssertLoadFactor();
     while (head != nullptr) {
       KeyNode* node = static_cast<KeyNode*>(head);
