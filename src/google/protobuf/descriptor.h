@@ -2518,6 +2518,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
   friend class ::google::protobuf::compiler::CommandLineInterface;
   friend class TextFormat;
+  friend Reflection;
 
   struct MemoBase {
     virtual ~MemoBase() = default;
