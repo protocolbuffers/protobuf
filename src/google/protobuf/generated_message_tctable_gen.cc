@@ -303,9 +303,8 @@ bool IsFieldEligibleForFastParsing(
       break;
   }
 
-  // The tailcall parser can only update the first 32 hasbits. Fields with
-  // has-bits beyond the first 32 are handled by mini parsing/fallback.
-  if (entry.hasbit_idx >= 32) return false;
+  if (entry.hasbit_idx > TailCallTableInfo::kMaxFastFieldHasbitIndex)
+    return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
@@ -778,69 +777,13 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
   return true;
 }
 
-TailCallTableInfo::TailCallTableInfo(
+std::vector<TailCallTableInfo::FieldEntryInfo>
+TailCallTableInfo::BuildFieldEntries(
     const Descriptor* descriptor, const MessageOptions& message_options,
-    absl::Span<const FieldOptions> ordered_fields) {
-  fallback_function =
-      // Map entries discard unknown data
-      descriptor->options().map_entry()
-          ? TcParseFunction::kDiscardEverythingFallback
-      // Reflection and weak messages have the reflection fallback
-      : !message_options.uses_codegen || HasWeakFields(descriptor)
-          ? TcParseFunction::kReflectionFallback
-      // Codegen messages have lite and non-lite version
-      : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
-                                : TcParseFunction::kGenericFallback;
-
-  if (descriptor->options().message_set_wire_format()) {
-    ABSL_DCHECK(ordered_fields.empty());
-    if (message_options.uses_codegen) {
-      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
-          message_options.is_lite
-              ? TcParseFunction::kMessageSetWireFormatParseLoopLite
-              : TcParseFunction::kMessageSetWireFormatParseLoop,
-          0, 0}}};
-
-      aux_entries = {{kSelfVerifyFunc}};
-    } else {
-      ABSL_DCHECK(!message_options.is_lite);
-      // The message set parser loop only handles codegen because it hardcodes
-      // the generated extension registry. For reflection, use the reflection
-      // loop which can handle arbitrary message factories.
-      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
-          TcParseFunction::kReflectionParseLoop, 0, 0}}};
-    }
-
-    table_size_log2 = 0;
-    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
-    field_name_data = GenerateFieldNames(descriptor, field_entries,
-                                         message_options, ordered_fields);
-
-    return;
-  }
-
-  ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
-                             [](const auto& lhs, const auto& rhs) {
-                               return lhs.field->number() < rhs.field->number();
-                             }));
-  // If this message has any inlined string fields, store the donation state
-  // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
-  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
-                  [](auto& f) { return f.is_string_inlined; })) {
-    aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
-    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
-  }
-
-  // If this message is split, store the split pointer offset in the second
-  // and third auxiliary entries, which are kSplitOffsetAuxIdx and
-  // kSplitSizeAuxIdx.
-  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
-                  [](auto& f) { return f.should_split; })) {
-    static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
-    aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
-    aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
-    aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
-  }
+    absl::Span<const FieldOptions> ordered_fields,
+    std::vector<TailCallTableInfo::AuxEntry>& aux_entries) {
+  std::vector<FieldEntryInfo> field_entries;
+  field_entries.reserve(ordered_fields.size());
 
   const auto is_non_cold = [](const FieldOptions& options) {
     return options.presence_probability >= 0.005;
@@ -970,6 +913,76 @@ TailCallTableInfo::TailCallTableInfo(
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
                 num_non_cold_subtables);
 
+  return field_entries;
+}
+
+TailCallTableInfo::TailCallTableInfo(
+    const Descriptor* descriptor, const MessageOptions& message_options,
+    absl::Span<const FieldOptions> ordered_fields) {
+  fallback_function =
+      // Map entries discard unknown data
+      descriptor->options().map_entry()
+          ? TcParseFunction::kDiscardEverythingFallback
+      // Reflection and weak messages have the reflection fallback
+      : !message_options.uses_codegen || HasWeakFields(descriptor)
+          ? TcParseFunction::kReflectionFallback
+      // Codegen messages have lite and non-lite version
+      : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
+                                : TcParseFunction::kGenericFallback;
+
+  if (descriptor->options().message_set_wire_format()) {
+    ABSL_DCHECK(ordered_fields.empty());
+    if (message_options.uses_codegen) {
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          message_options.is_lite
+              ? TcParseFunction::kMessageSetWireFormatParseLoopLite
+              : TcParseFunction::kMessageSetWireFormatParseLoop,
+          0, 0}}};
+
+      aux_entries = {{kSelfVerifyFunc}};
+    } else {
+      ABSL_DCHECK(!message_options.is_lite);
+      // The message set parser loop only handles codegen because it hardcodes
+      // the generated extension registry. For reflection, use the reflection
+      // loop which can handle arbitrary message factories.
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          TcParseFunction::kReflectionParseLoop, 0, 0}}};
+    }
+
+    table_size_log2 = 0;
+    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
+    field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                         message_options, ordered_fields);
+
+    return;
+  }
+
+  ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
+                             [](const auto& lhs, const auto& rhs) {
+                               return lhs.field->number() < rhs.field->number();
+                             }));
+  // If this message has any inlined string fields, store the donation state
+  // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
+  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
+                  [](auto& f) { return f.is_string_inlined; })) {
+    aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
+    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
+  }
+
+  // If this message is split, store the split pointer offset in the second
+  // and third auxiliary entries, which are kSplitOffsetAuxIdx and
+  // kSplitSizeAuxIdx.
+  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
+                  [](auto& f) { return f.should_split; })) {
+    static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
+    aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
+    aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
+    aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
+  }
+
+  field_entries = BuildFieldEntries(descriptor, message_options, ordered_fields,
+                                    aux_entries);
+
   auto end_group_tag = GetEndGroupTag(descriptor);
 
   FastFieldInfo fast_fields[TcParseTableBase::kMaxFastFields];
@@ -1003,8 +1016,14 @@ TailCallTableInfo::TailCallTableInfo(
     // Half the table by merging fields.
     num_fast_fields /= 2;
     for (size_t i = 0; i < num_fast_fields; ++i) {
-      if ((important_fields >> i) & 1) continue;
-      fast_fields[i] = fast_fields[i + num_fast_fields];
+      size_t merge_i = i + num_fast_fields;
+      // Overwrite the surviving entries if the discarded half contains an
+      // important field (meaning the surviving entry is not) or the surviving
+      // entry is empty.
+      if (((important_fields >> merge_i) & 1) != 0 ||
+          fast_fields[i].is_empty()) {
+        fast_fields[i] = fast_fields[merge_i];
+      }
     }
     important_fields |= important_fields >> num_fast_fields;
   }
