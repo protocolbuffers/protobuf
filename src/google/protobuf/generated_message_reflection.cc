@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
@@ -38,6 +39,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -3476,34 +3478,35 @@ static void PopulateTcParseLookupTable(
   *lookup_table++ = 0xFFFF;
 }
 
+static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
+  std::vector<int> numbers;
+  numbers.reserve(desc->value_count());
+  for (int i = 0; i < desc->value_count(); ++i) {
+    numbers.push_back(desc->value(i)->number());
+  }
+
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+  return internal::GenerateEnumData(numbers);
+}
+
 void Reflection::PopulateTcParseEntries(
     internal::TailCallTableInfo& table_info,
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->type() == field->TYPE_ENUM &&
-        (entry.type_card & internal::field_layout::kTvMask) ==
-            internal::field_layout::kTvEnum &&
-        table_info.aux_entries[entry.aux_idx].type ==
-            internal::TailCallTableInfo::kEnumValidator) {
-      // Mini parse can't handle it. Fallback to reflection.
-      *entries = {};
-      table_info.aux_entries[entry.aux_idx] = {};
+    const OneofDescriptor* oneof = field->real_containing_oneof();
+    entries->offset = schema_.GetFieldOffset(field);
+    if (oneof != nullptr) {
+      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+    } else if (schema_.HasHasbits()) {
+      entries->has_idx =
+          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
-      entries->offset = schema_.GetFieldOffset(field);
-      if (oneof != nullptr) {
-        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
-      } else if (schema_.HasHasbits()) {
-        entries->has_idx =
-            static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
-      } else {
-        entries->has_idx = 0;
-      }
-      entries->aux_idx = entry.aux_idx;
-      entries->type_card = entry.type_card;
+      entries->has_idx = 0;
     }
-
+    entries->aux_idx = entry.aux_idx;
+    entries->type_card = entry.type_card;
     ++entries;
   }
 }
@@ -3549,7 +3552,11 @@ void Reflection::PopulateTcParseFieldAux(
                                    aux_entry.enum_range.last};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
-        ABSL_LOG(FATAL) << "Not supported.";
+        field_aux++->enum_data =
+            DescriptorPool::MemoizeProjection(
+                aux_entry.field->enum_type(),
+                [](auto* e) { return MakeEnumValidatorData(e); })
+                .data();
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
