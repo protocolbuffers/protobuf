@@ -39,16 +39,25 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
-bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.3")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
 
+bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
+
+# Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
+# rules_fuzzing 0.5.3 is not yet available in BCR.
+bazel_dep(name = "rules_fuzzing", version = "0.5.3", dev_dependency = True)
+archive_override(
+    module_name = "rules_fuzzing",
+    integrity = "sha256-CCdEIsQ4NBbfX5gpQ+QNWBQfdJwJAIu3gEQO7OaxE+Q=",
+    strip_prefix = "rules_fuzzing-0.5.3",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.5.3.tar.gz"],
+)
 
 # Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
 # Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
@@ -232,8 +241,6 @@ bazel_dep(name = "com_google_protobuf_v25", version = "25.0", dev_dependency = T
 archive_override(
     module_name = "com_google_protobuf_v25",
     integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
-    strip_prefix = "protobuf-25.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
     patch_strip = 1,
     patches = [
         "@com_google_protobuf//:patches/protobuf_v25/0001-Add-MODULE.bazel.patch",
@@ -243,16 +250,18 @@ archive_override(
         "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
         "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
     ],
+    strip_prefix = "protobuf-25.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
 )
 
 bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
 archive_override(
     module_name = "com_google_protobuf_previous_release",
     integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
-    strip_prefix = "protobuf-29.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
     patch_strip = 1,
     patches = [
         "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
     ],
+    strip_prefix = "protobuf-29.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
