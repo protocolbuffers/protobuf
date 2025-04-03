@@ -95,7 +95,6 @@ cc_library(
         "message.cc",
         "message_layout_helper.cc",
         "namespace_printer.cc",
-        "padding_optimizer.cc",
         "parse_function_generator.cc",
         "service.cc",
         "tracker.cc",

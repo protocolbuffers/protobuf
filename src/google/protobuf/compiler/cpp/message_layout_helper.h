@@ -13,10 +13,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -26,19 +26,6 @@ namespace compiler {
 namespace cpp {
 
 class MessageSCCAnalyzer;
-
-// TODO: Merge kCold and kSplit once all field types can be split.
-enum FieldHotness {
-  kRepeated,  // Non-split repeated fields.
-  kHot,
-  kWarm,
-  kCold,
-  kSplit,
-  kMax,
-};
-
-using FieldPartitionArray =
-    std::array<std::vector<const FieldDescriptor*>, FieldHotness::kMax>;
 
 class FieldGroup {
  public:
@@ -55,6 +42,10 @@ class FieldGroup {
   }
 
   const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
+
+  // Returns an estimate of the total memory size of the fields in this group,
+  // ignoring padding/alignment.
+  size_t EstimateMemorySize() const;
 
   void SetPreferredLocation(double location) { preferred_location_ = location; }
 
@@ -83,9 +74,60 @@ class MessageLayoutHelper {
 
   virtual void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,
                               const Options& options,
-                              MessageSCCAnalyzer* scc_analyzer) = 0;
+                              MessageSCCAnalyzer* scc_analyzer) const {
+    return DoOptimizeLayout(fields, options, scc_analyzer);
+  }
 
  protected:
+  // TODO: Merge kCold and kSplit once all field types can be
+  // split.
+  enum FieldHotness {
+    kRepeated,  // Non-split repeated fields.
+    kHot,
+    kWarm,
+    kCold,
+    kSplit,
+    kMaxHotness,
+  };
+
+  // Reorder 'fields' so that if the fields are output into a c++ class in the
+  // new order, fields of similar family (see below) are together and within
+  // each family, alignment padding is minimized.
+  //
+  // We try to do this while keeping each field as close as possible to its
+  // field number order (or access count for profiled protos) so that we don't
+  // reduce cache locality much for function that access each field in order.
+  // Originally, OptimizePadding used declaration order for its decisions, but
+  // generated code minus the serializer/parsers uses the output of
+  // OptimizePadding as well (stored in MessageGenerator::optimized_order_).
+  // Since the serializers use field number order, we use that as a tie-breaker.
+  //
+  // We classify each field into a particular "family" of fields, that we
+  // perform the same operation on in our generated functions.
+  //
+  // REPEATED is placed first, as the C++ compiler automatically initializes
+  // these fields in layout order.
+  //
+  // STRING is grouped next, as our Clear/SharedCtor/SharedDtor walks it and
+  // calls ArenaStringPtr::Destroy on each.
+  //
+  // MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
+  // delete on each.  We initialize these fields with a NULL pointer (see
+  // MessageFieldGenerator::GenerateConstructorCode), which allows them to be
+  // memset.
+  //
+  // ZERO_INITIALIZABLE is memset in Clear/SharedCtor
+  //
+  // OTHER these fields are initialized one-by-one.
+  //
+  // If there are split fields in `fields`, they will be placed at the end. The
+  // order within split fields follows the same rule, aka classify and order by
+  // "family".
+  void DoOptimizeLayout(std::vector<const FieldDescriptor*>& fields,
+                        const Options& options,
+                        MessageSCCAnalyzer* scc_analyzer) const;
+
+ private:
   enum FieldFamily {
     REPEATED = 0,  // Non-split repeated fields.
     STRING = 1,
@@ -95,15 +137,11 @@ class MessageLayoutHelper {
     kMaxFamily
   };
 
-  FieldPartitionArray PartitionFields(
-      const std::vector<const FieldDescriptor*>& fields, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer) const;
+  using FieldPartitionArray =
+      std::array<std::array<std::vector<FieldGroup>, kMaxHotness>, kMaxFamily>;
 
-  // Reorders "fields" by descending hotness grouped by field family.
-  void OptimizeLayoutByFamily(std::vector<const FieldDescriptor*>& fields,
-                              const Options& options,
-                              absl::Span<const FieldFamily> families,
-                              MessageSCCAnalyzer* scc_analyzer);
+  // Returns true if the message has PDProto data.
+  virtual bool HasProfiledData() const = 0;
 
   virtual FieldHotness GetFieldHotness(
       const FieldDescriptor* field, const Options& options,
@@ -111,7 +149,18 @@ class MessageLayoutHelper {
 
   virtual FieldGroup SingleFieldGroup(const FieldDescriptor* field) const = 0;
 
- private:
+  // Consolidate field groups that are aligned to `alignment` into groups that
+  // are aligned to `target_alignment`.
+  //
+  // For example, if `alignment` is 1 and `target_alignment` is 4, then the
+  // field groups will be consolidated into groups of 4.
+  //
+  // Requires `alignment` < `target_alignment`, and each must be a power of 2.
+  static std::array<std::vector<FieldGroup>, kMaxHotness>
+  ConsolidateAlignedFieldGroups(
+      std::array<std::vector<FieldGroup>, kMaxHotness>& field_groups,
+      size_t alignment, size_t target_alignment);
+
   const Descriptor* descriptor_;
 };
 
