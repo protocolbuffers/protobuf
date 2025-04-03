@@ -56,4 +56,14 @@ class MessageTest < Test::Unit::TestCase
     assert_equal({}, message.a_map.to_h)
     assert_equal [], message.sub_messages
   end
+
+  def test_gaps_in_fields
+    message = X::Y::Z::MessageWithGaps.create(
+      123, "howdy", 3.14,
+    )
+
+    assert_equal 123, message.field1
+    assert_equal "howdy", message.field2
+    assert_equal 3.14, message.field3
+  end
 end

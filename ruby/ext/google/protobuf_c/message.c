@@ -720,6 +720,8 @@ static VALUE Message_create(int argc, VALUE* argv, VALUE klass_rb) {
       continue;
     }
 
+    // `upb_MesasgeDef_Field()` looks up the field by the order in which it's
+    // defined in the .proto, regardless of the field number.
     const upb_FieldDef* f = upb_MessageDef_Field(message->msgdef, i);
 
     Message_InitFieldFromValue(message_upb, f, argv[i], arena);

@@ -22,3 +22,9 @@ message MyMessage {
   map<string, int32> a_map = 8;
   repeated MyOtherMessage sub_messages = 9;
 }
+
+message MessageWithGaps {
+  int32 field1 = 500;
+  string field2 = 75;
+  double field3 = 100;
+}
