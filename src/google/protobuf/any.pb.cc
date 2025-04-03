@@ -122,7 +122,7 @@ bool Any::GetAnyFieldDescriptors(
   return ::_pbi::GetAnyFieldDescriptors(message, type_url_field, value_field);
 }
 bool Any::ParseAnyTypeUrl(
-    ::absl::string_view type_url,
+    ::std::string_view type_url,
     std::string* PROTOBUF_NONNULL full_type_name) {
   return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);
 }

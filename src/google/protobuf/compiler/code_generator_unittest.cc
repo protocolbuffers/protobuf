@@ -18,7 +18,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -80,14 +80,14 @@ class TestGenerator : public CodeGenerator {
 
 class SimpleErrorCollector : public io::ErrorCollector {
  public:
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     ABSL_LOG(ERROR) << absl::StrFormat("%d:%d:%s", line, column, message);
   }
 };
 
 class CodeGeneratorTest : public ::testing::Test {
  protected:
-  const FileDescriptor* BuildFile(absl::string_view schema) {
+  const FileDescriptor* BuildFile(std::string_view schema) {
     io::ArrayInputStream input_stream(schema.data(),
                                       static_cast<int>(schema.size()));
     SimpleErrorCollector error_collector;

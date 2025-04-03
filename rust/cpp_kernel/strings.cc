@@ -3,7 +3,7 @@
 #include <cstring>
 #include <string>
 
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "rust/cpp_kernel/rust_alloc_for_cpp_api.h"
 
 namespace google {
@@ -14,8 +14,8 @@ std::string PtrAndLen::CopyToString() const {
   return len == 0 ? "" : std::string(ptr, len);
 }
 
-absl::string_view PtrAndLen::AsStringView() const {
-  return absl::string_view(len == 0 ? nullptr : ptr, len);
+std::string_view PtrAndLen::AsStringView() const {
+  return std::string_view(len == 0 ? nullptr : ptr, len);
 }
 
 void PtrAndLen::PlacementNewString(void* location) {

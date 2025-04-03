@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -30,7 +30,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-std::string EscapeJavadoc(absl::string_view input) {
+std::string EscapeJavadoc(std::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -88,7 +88,7 @@ std::string EscapeJavadoc(absl::string_view input) {
   return result;
 }
 
-static std::string EscapeKdoc(absl::string_view input) {
+static std::string EscapeKdoc(std::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 

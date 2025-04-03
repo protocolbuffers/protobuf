@@ -57,11 +57,11 @@ class MockErrorCollector : public io::ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordWarning(int line, int column, absl::string_view message) override {
+  void RecordWarning(int line, int column, std::string_view message) override {
     absl::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
@@ -75,9 +75,9 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   ~MockValidationErrorCollector() override = default;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, absl::string_view element_name,
+  void RecordError(std::string_view filename, std::string_view element_name,
                    const Message* descriptor, ErrorLocation location,
-                   absl::string_view message) override {
+                   std::string_view message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
@@ -97,7 +97,7 @@ class ParserTest : public testing::Test {
   ParserTest() : require_syntax_identifier_(false) {}
 
   // Set up the parser to parse the given text.
-  void SetupParser(absl::string_view text) {
+  void SetupParser(std::string_view text) {
     raw_input_ =
         absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
     input_ =
@@ -134,7 +134,7 @@ class ParserTest : public testing::Test {
   }
 
   // Parse the text and expect that the given errors are reported.
-  void ExpectHasErrors(absl::string_view text,
+  void ExpectHasErrors(std::string_view text,
                        const testing::Matcher<std::string>& expected_errors) {
     ExpectHasEarlyExitErrors(text, expected_errors);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -153,7 +153,7 @@ class ParserTest : public testing::Test {
   // Same as above but does not expect that the parser parses the complete
   // input.
   void ExpectHasEarlyExitErrors(
-      absl::string_view text,
+      std::string_view text,
       const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
@@ -166,7 +166,7 @@ class ParserTest : public testing::Test {
   // Parse the text as a file and validate it (with a DescriptorPool), and
   // expect that the validation step reports the given errors.
   void ExpectHasValidationErrors(
-      absl::string_view text,
+      std::string_view text,
       const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;

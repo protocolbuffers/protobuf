@@ -37,9 +37,9 @@ bool JsonWriter::MaybeWriteSpecialFp(double val) {
   return true;
 }
 
-void JsonWriter::WriteBase64(absl::string_view str) {
+void JsonWriter::WriteBase64(std::string_view str) {
   // This is the regular base64, not the "web-safe" version.
-  constexpr absl::string_view kBase64 =
+  constexpr std::string_view kBase64 =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   const char* ptr = str.data();
   const char* end = ptr + str.size();
@@ -51,7 +51,7 @@ void JsonWriter::WriteBase64(absl::string_view str) {
   };
 
   char buf[4];
-  absl::string_view view(buf, sizeof(buf));
+  std::string_view view(buf, sizeof(buf));
   Write("\"");
 
   while (end - ptr >= 3) {
@@ -116,7 +116,7 @@ struct Utf8Scalar {
   uint32_t u32;
   // The Unicode scalar value encoded as UTF-8 bytes. May not reflect the
   // contents of `u32` if it is kErrorSentinel.
-  absl::string_view utf8;
+  std::string_view utf8;
 };
 
 // Parses a single UTF-8-encoded Unicode scalar from `str`. Returns a pair of
@@ -124,7 +124,7 @@ struct Utf8Scalar {
 //
 // Returns U+FFFD on failure, and consumes an unspecified number of bytes in
 // doing so.
-static Utf8Scalar ConsumeUtf8Scalar(absl::string_view& str) {
+static Utf8Scalar ConsumeUtf8Scalar(std::string_view& str) {
   ABSL_DCHECK(!str.empty());
   uint32_t scalar = static_cast<uint8_t>(str[0]);
   const char* start = str.data();
@@ -186,14 +186,14 @@ static Utf8Scalar ConsumeUtf8Scalar(absl::string_view& str) {
     scalar = kErrorSentinel;
   }
 
-  return {scalar, absl::string_view(start, len)};
+  return {scalar, std::string_view(start, len)};
 }
 
 // Decides whether we must escape `scalar`.
 //
 // If the given Unicode scalar would not use a \u escape, `custom_escape` will
 // be set to a non-empty string.
-static bool MustEscape(uint32_t scalar, absl::string_view& custom_escape) {
+static bool MustEscape(uint32_t scalar, std::string_view& custom_escape) {
   switch (scalar) {
     // These escapes are defined by the JSON spec. We do not escape /.
     case '\n':
@@ -266,10 +266,10 @@ static bool MustEscape(uint32_t scalar, absl::string_view& custom_escape) {
   }
 }
 
-void JsonWriter::WriteEscapedUtf8(absl::string_view str) {
+void JsonWriter::WriteEscapedUtf8(std::string_view str) {
   while (!str.empty()) {
     auto scalar = ConsumeUtf8Scalar(str);
-    absl::string_view custom_escape;
+    std::string_view custom_escape;
 
     if (!MustEscape(scalar.u32, custom_escape)) {
       Write(scalar.utf8);
@@ -298,7 +298,7 @@ void JsonWriter::WriteEscapedUtf8(absl::string_view str) {
 void JsonWriter::WriteUEscape(uint16_t val) {
   char hex[7];
   int len = absl::SNPrintF(hex, sizeof(hex), R"(\u%04x)", val);
-  Write(absl::string_view(hex, static_cast<size_t>(len)));
+  Write(std::string_view(hex, static_cast<size_t>(len)));
 }
 }  // namespace json_internal
 }  // namespace protobuf

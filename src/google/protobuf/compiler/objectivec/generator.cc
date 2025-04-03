@@ -22,7 +22,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/file.h"
@@ -58,7 +58,7 @@ bool StringToBool(const std::string& value, bool* result) {
   return false;
 }
 
-std::string NumberedObjCMFileName(absl::string_view basename, int number) {
+std::string NumberedObjCMFileName(std::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".pbobjc.m");
 }
 
@@ -113,7 +113,7 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (absl::string_view split_piece :
+      for (std::string_view split_piece :
            absl::StrSplit(options[i].second, ';', absl::SkipEmpty())) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
@@ -329,7 +329,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // warning.
   char* options_warnings_suppressions_cstr =
       getenv("GPB_OBJC_SUPPRESS_DEPRECATED_OPTIONS_WARNINGS");
-  const absl::string_view options_warnings_suppressions =
+  const std::string_view options_warnings_suppressions =
       options_warnings_suppressions_cstr != nullptr
           ? options_warnings_suppressions_cstr
           : "";

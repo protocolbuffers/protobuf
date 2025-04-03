@@ -5,7 +5,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 // clang-format off
-#include "absl/strings/string_view.h"
+#include <string_view>
 // clang-format on
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -38,7 +38,7 @@ TEST(StringViewFieldTest, SingularViewGetter) {
 
   auto singular_string = message.singular_string();
   static_assert(
-      std::is_same<decltype(singular_string), absl::string_view>::value,
+      std::is_same<decltype(singular_string), std::string_view>::value,
       "unexpected type");
   EXPECT_THAT(singular_string, StrEq("0123456789"));
 
@@ -47,14 +47,14 @@ TEST(StringViewFieldTest, SingularViewGetter) {
 
   auto singular_bytes = message.singular_bytes();
   static_assert(
-      std::is_same<decltype(singular_bytes), absl::string_view>::value,
+      std::is_same<decltype(singular_bytes), std::string_view>::value,
       "unexpected type");
   EXPECT_THAT(singular_bytes, StrEq("012345678901234567890123456789"));
 }
 
 template <typename T>
 void VerifySingularStringSet(TestStringView& message, T&& value,
-                             absl::string_view expected) {
+                             std::string_view expected) {
   message.set_singular_string(static_cast<T&&>(value));
 
   EXPECT_TRUE(message.has_singular_string());
@@ -71,7 +71,7 @@ void VerifySingularStringSet(TestStringView& message, T&& value,
 TEST(StringViewFieldTest, SingularSetByStringView) {
   TestStringView message;
 
-  absl::string_view value = {STRING_PAYLOAD};
+  std::string_view value = {STRING_PAYLOAD};
 
   VerifySingularStringSet(message, value, value);
 }
@@ -79,7 +79,7 @@ TEST(StringViewFieldTest, SingularSetByStringView) {
 TEST(StringViewFieldTest, SingularSetByCharPtr) {
   TestStringView message;
 
-  absl::string_view expected = {STRING_PAYLOAD};
+  std::string_view expected = {STRING_PAYLOAD};
   const char* ptr = STRING_PAYLOAD;
 
   VerifySingularStringSet(message, ptr, expected);
@@ -138,7 +138,7 @@ TEST(StringViewFieldTest, RepeatedViewGetter) {
 
   auto repeated_string_0 = message.repeated_string(0);
   static_assert(
-      std::is_same<decltype(repeated_string_0), absl::string_view>::value,
+      std::is_same<decltype(repeated_string_0), std::string_view>::value,
       "unexpected type");
   EXPECT_THAT(repeated_string_0, StrEq("foo"));
   EXPECT_THAT(message.repeated_string(), ElementsAre("foo", "bar", "baz"));
@@ -147,7 +147,7 @@ TEST(StringViewFieldTest, RepeatedViewGetter) {
 
   auto repeated_bytes_2 = message.repeated_bytes(2);
   static_assert(
-      std::is_same<decltype(repeated_bytes_2), absl::string_view>::value,
+      std::is_same<decltype(repeated_bytes_2), std::string_view>::value,
       "unexpected type");
   EXPECT_THAT(repeated_bytes_2, StrEq("222"));
   EXPECT_THAT(message.repeated_bytes(),
@@ -178,9 +178,9 @@ TEST(StringViewFieldTest, RepeatedSetByCharPtr) {
 TEST(StringViewFieldTest, RepeatedSetByStringView) {
   TestStringView message;
 
-  absl::string_view view0 = "foo";
-  absl::string_view view1 = "baz";
-  absl::string_view view2 = STRING_PAYLOAD;
+  std::string_view view0 = "foo";
+  std::string_view view1 = "baz";
+  std::string_view view2 = STRING_PAYLOAD;
   message.add_repeated_string(view0);
   message.add_repeated_string(view1);
   message.add_repeated_string(view2);

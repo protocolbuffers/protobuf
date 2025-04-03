@@ -22,7 +22,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
@@ -141,10 +141,10 @@ void MakeDescriptors(
   }
 }
 
-void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
-  absl::string_view::size_type last_slash = name.rfind('/');
+void EmitLinkWKTs(std::string_view name, io::Printer* p) {
+  std::string_view::size_type last_slash = name.rfind('/');
   std::string basename;
-  if (last_slash == absl::string_view::npos) {
+  if (last_slash == std::string_view::npos) {
     basename = std::string(name);
   } else {
     basename = std::string(name.substr(last_slash + 1));
@@ -304,7 +304,7 @@ FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
 }
 
 void FileGenerator::GenerateHeader(io::Printer* p,
-                                   absl::string_view info_path) const {
+                                   std::string_view info_path) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
     absl::btree_set<std::string> fwd_decls;
     for (const auto& generator : message_generators_) {
@@ -543,7 +543,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
           // #import the headers for anything that a plain dependency of this
           // proto file (that means they were just an include, not a "public"
           // include).
-          absl::flat_hash_set<absl::string_view> public_import_names;
+          absl::flat_hash_set<std::string_view> public_import_names;
           for (int i = 0; i < file_->public_dependency_count(); i++) {
             public_import_names.insert(file_->public_dependency(i)->name());
           }

@@ -23,7 +23,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -553,8 +553,8 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
   return ReadBytesToString(input, value);
 }
 
-void PrintUTF8ErrorLog(absl::string_view message_name,
-                       absl::string_view field_name, const char* operation_str,
+void PrintUTF8ErrorLog(std::string_view message_name,
+                       std::string_view field_name, const char* operation_str,
                        bool emit_stacktrace) {
   std::string stacktrace;
   (void)emit_stacktrace;  // Parameter is used by Google-internal code.
@@ -579,7 +579,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
-                                      const absl::string_view field_name) {
+                                      const std::string_view field_name) {
   if (!utf8_range::IsStructurallyValid({data, static_cast<size_t>(size)})) {
     const char* operation_str = nullptr;
     switch (op) {

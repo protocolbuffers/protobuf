@@ -21,7 +21,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/csharp/csharp_enum_field.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_generator.h"
@@ -102,7 +102,7 @@ CSharpType GetCSharpType(FieldDescriptor::Type type) {
 // Numeric                       Alphanumeric              Upper
 // Lower letter                  Alphanumeric              Same as current
 // Upper letter                  Alphanumeric              Lower
-std::string ShoutyToPascalCase(absl::string_view input) {
+std::string ShoutyToPascalCase(std::string_view input) {
   std::string result;
   // Simple way of implementing "always start with upper"
   char previous = '_';
@@ -131,7 +131,7 @@ std::string ShoutyToPascalCase(absl::string_view input) {
 // foo_bar) => bar - casing is ignored (foo_bar, foobarbaz) => baz - underscore
 // in prefix is ignored (foobar, foo_barbaz) => baz - underscore in value is
 // ignored (foo, bar) => bar - prefix isn't matched; return original value
-std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
+std::string TryRemovePrefix(std::string_view prefix, std::string_view value) {
   // First normalize to a lower-case no-underscores prefix to match against
   std::string prefix_to_match = "";
   for (size_t i = 0; i < prefix.size(); i++) {
@@ -180,8 +180,8 @@ std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
 // - Convert to PascalCase.
 // For example, an enum called Color with a value of COLOR_BLUE should
 // result in an enum value in C# called just Blue
-std::string GetEnumValueName(absl::string_view enum_name,
-                             absl::string_view enum_value_name) {
+std::string GetEnumValueName(std::string_view enum_name,
+                             std::string_view enum_value_name) {
   std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
   std::string result = ShoutyToPascalCase(stripped);
   // Just in case we have an enum name of FOO and a value of FOO_2... make sure
@@ -221,7 +221,7 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // Names of members declared or overridden in the message.
   static const auto& reserved_member_names =
-      *new absl::flat_hash_set<absl::string_view>(
+      *new absl::flat_hash_set<std::string_view>(
           {"Types", "Descriptor", "Equals", "ToString", "GetHashCode",
            "WriteTo", "Clone", "CalculateSize", "MergeFrom", "OnConstruction",
            "Parser"});
@@ -304,7 +304,7 @@ int GetFixedSize(FieldDescriptor::Type type) {
 static const char base64_chars[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-std::string StringToBase64(absl::string_view input) {
+std::string StringToBase64(std::string_view input) {
   std::string result;
   size_t remaining = input.size();
   const unsigned char* src = (const unsigned char*)input.data();

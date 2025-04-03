@@ -19,7 +19,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -424,7 +424,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
     }
   }
 
-  const absl::string_view field_description_type(
+  const std::string_view field_description_type(
       need_defaults ? "GPBMessageFieldDescriptionWithDefault"
                     : "GPBMessageFieldDescription");
 

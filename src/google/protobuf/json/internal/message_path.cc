@@ -30,11 +30,11 @@ void MessagePath::Describe(std::string& out) const {
       absl::StrAppend(&out, "[", components_[i].repeated_index, "]");
     }
   }
-  absl::string_view kind_name =
+  std::string_view kind_name =
       FieldDescriptor::TypeName(components_.back().type);
   absl::StrAppend(&out, ": ", kind_name);
 
-  absl::string_view type_name = components_.back().type_name;
+  std::string_view type_name = components_.back().type_name;
   if (!type_name.empty()) {
     absl::StrAppend(&out, " ", type_name);
   }

@@ -13,7 +13,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -29,23 +29,23 @@ namespace cpp {
 namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-constexpr absl::string_view kTracker = "Impl_::_tracker_";
-constexpr absl::string_view kVarPrefix = "annotate_";
-constexpr absl::string_view kTypeTraits = "_proto_TypeTraits";
+constexpr std::string_view kTracker = "Impl_::_tracker_";
+constexpr std::string_view kVarPrefix = "annotate_";
+constexpr std::string_view kTypeTraits = "_proto_TypeTraits";
 
 struct Call {
-  Call(absl::string_view var, absl::string_view call) : var(var), call(call) {}
-  Call(absl::optional<int> field_index, absl::string_view var,
-       absl::string_view call)
+  Call(std::string_view var, std::string_view call) : var(var), call(call) {}
+  Call(absl::optional<int> field_index, std::string_view var,
+       std::string_view call)
       : var(var), call(call), field_index(field_index) {}
 
-  Call This(absl::optional<absl::string_view> thiz) && {
+  Call This(absl::optional<std::string_view> thiz) && {
     this->thiz = thiz;
     return std::move(*this);
   }
 
   template <typename... SubArgs>
-  Call Arg(absl::string_view format, const SubArgs&... args) && {
+  Call Arg(std::string_view format, const SubArgs&... args) && {
     this->args.emplace_back(absl::Substitute(format, args...));
     return std::move(*this);
   }
@@ -55,10 +55,10 @@ struct Call {
     return std::move(*this);
   }
 
-  absl::string_view var;
-  absl::string_view call;
+  std::string_view var;
+  std::string_view call;
   absl::optional<int> field_index;
-  absl::optional<absl::string_view> thiz = "this";
+  absl::optional<std::string_view> thiz = "this";
   std::vector<std::string> args;
   bool suppressed = false;
 };
@@ -80,7 +80,7 @@ std::vector<Sub> GenerateTrackerCalls(
       }
       absl::StrAppend(&call_str, "(");
 
-      absl::string_view arg_sep = "";
+      std::string_view arg_sep = "";
       if (call.thiz.has_value()) {
         absl::StrAppend(&call_str, *call.thiz);
         arg_sep = ", ";
@@ -118,34 +118,34 @@ std::vector<Sub> GenerateTrackerCalls(
 
 std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
                                   const Options& opts) {
-  absl::string_view extns =
+  std::string_view extns =
       IsMapEntryMessage(message) ? "_extensions_" : "_impl_._extensions_";
 
-  auto primitive_extn_accessor = [extns](absl::string_view var,
-                                         absl::string_view call) {
+  auto primitive_extn_accessor = [extns](std::string_view var,
+                                         std::string_view call) {
     return Call(var, call)
         .Arg("id.number()")
         .Arg("$0::GetPtr(id.number(), $1, id.default_value_ref())", kTypeTraits,
              extns);
   };
 
-  auto index_extn_accessor = [extns](absl::string_view var,
-                                     absl::string_view call) {
+  auto index_extn_accessor = [extns](std::string_view var,
+                                     std::string_view call) {
     return Call(var, call)
         .Arg("id.number()")
         .Arg("$0::GetPtr(id.number(), $1, index)", kTypeTraits, extns);
   };
 
-  auto add_extn_accessor = [extns](absl::string_view var,
-                                   absl::string_view call) {
+  auto add_extn_accessor = [extns](std::string_view var,
+                                   std::string_view call) {
     return Call(var, call)
         .Arg("id.number()")
         .Arg("$0::GetPtr(id.number(), $1, $1.ExtensionSize(id.number()) - 1)",
              kTypeTraits, extns);
   };
 
-  auto list_extn_accessor = [extns](absl::string_view var,
-                                    absl::string_view call) {
+  auto list_extn_accessor = [extns](std::string_view var,
+                                    std::string_view call) {
     return Call(var, call)
         .Arg("id.number()")
         .Arg("$0::GetRepeatedPtr(id.number(), $1)", kTypeTraits, extns);

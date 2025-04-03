@@ -358,7 +358,7 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
 }
 
 bool CopyingOutputStreamAdaptor::WriteCord(const absl::Cord& cord) {
-  for (absl::string_view chunk : cord.Chunks()) {
+  for (std::string_view chunk : cord.Chunks()) {
     if (!WriteAliasedRaw(chunk.data(), chunk.size())) {
       return false;
     }
@@ -475,7 +475,7 @@ CordInputStream::CordInputStream(const absl::Cord* cord)
 
 bool CordInputStream::LoadChunkData() {
   if (bytes_remaining_ != 0) {
-    absl::string_view sv = absl::Cord::ChunkRemaining(it_);
+    std::string_view sv = absl::Cord::ChunkRemaining(it_);
     data_ = sv.data();
     size_ = available_ = sv.size();
     return true;

@@ -12,7 +12,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
@@ -39,7 +39,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
   const FileDescriptor* fdesc =
       proto2_unittest::TestAllTypes::descriptor()->file();
   FileGenerator fgen(fdesc, /*options=*/{});
-  static constexpr absl::string_view kExpectedDescriptorOrder[] = {
+  static constexpr std::string_view kExpectedDescriptorOrder[] = {
       "Uint64Message",
       "Uint32Message",
       "TestVerifyUint32Simple",

@@ -26,7 +26,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/generator.h"
@@ -53,7 +53,7 @@ const char kThinSeparator[] =
     "// -------------------------------------------------------------------\n";
 
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
-                              absl::string_view annotation_file,
+                              std::string_view annotation_file,
                               Options options) {
   printer->Print("@com.google.protobuf.Generated\n");
 
@@ -72,8 +72,8 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
 
 void PrintEnumVerifierLogic(
     io::Printer* printer, const FieldDescriptor* descriptor,
-    const absl::flat_hash_map<absl::string_view, std::string>& variables,
-    absl::string_view var_name, absl::string_view terminating_string,
+    const absl::flat_hash_map<std::string_view, std::string>& variables,
+    std::string_view var_name, std::string_view terminating_string,
     bool enforce_lite) {
   std::string enum_verifier_string =
       enforce_lite ? absl::StrCat(var_name, ".internalGetVerifier()")
@@ -91,7 +91,7 @@ void PrintEnumVerifierLogic(
 }
 
 void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
-                                  absl::string_view java_class_name) {
+                                  std::string_view java_class_name) {
   const auto& version = GetProtobufJavaVersion(oss_runtime);
   printer->Print(
       "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
@@ -109,7 +109,7 @@ void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
       absl::StrCat(java_class_name, ".class.getName()"));
 }
 
-std::string UnderscoresToCamelCase(absl::string_view input,
+std::string UnderscoresToCamelCase(std::string_view input,
                                    bool cap_next_letter) {
   ABSL_CHECK(!input.empty());
   std::string result;
@@ -146,7 +146,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   return result;
 }
 
-std::string ToCamelCase(absl::string_view input, bool lower_first) {
+std::string ToCamelCase(std::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
   result.reserve(input.size());
@@ -172,9 +172,9 @@ std::string ToCamelCase(absl::string_view input, bool lower_first) {
 
 // Names that should be avoided as field names in Kotlin.
 // All Kotlin hard keywords are in this list.
-bool IsForbiddenKotlin(absl::string_view field_name) {
+bool IsForbiddenKotlin(std::string_view field_name) {
   static const auto& kKotlinForbiddenNames =
-      *new absl::flat_hash_set<absl::string_view>({
+      *new absl::flat_hash_set<std::string_view>({
           "as",      "as?",       "break",  "class", "continue", "do",
           "else",    "false",     "for",    "fun",   "if",       "in",
           "!in",     "interface", "is",     "!is",   "null",     "object",
@@ -189,7 +189,7 @@ bool IsForbiddenKotlin(absl::string_view field_name) {
 std::string EscapeKotlinKeywords(std::string name) {
   std::vector<std::string> escaped_packages;
   std::vector<std::string> packages = absl::StrSplit(name, ".");  // NOLINT
-  for (absl::string_view package : packages) {
+  for (std::string_view package : packages) {
     if (IsForbiddenKotlin(package)) {
       escaped_packages.push_back(absl::StrCat("`", package, "`"));
     } else {
@@ -294,7 +294,7 @@ JavaType GetJavaType(const FieldDescriptor* field) {
   return JAVATYPE_INT;
 }
 
-absl::string_view PrimitiveTypeName(JavaType type) {
+std::string_view PrimitiveTypeName(JavaType type) {
   switch (type) {
     case JAVATYPE_INT:
       return "int";
@@ -323,11 +323,11 @@ absl::string_view PrimitiveTypeName(JavaType type) {
   return {};
 }
 
-absl::string_view PrimitiveTypeName(const FieldDescriptor* descriptor) {
+std::string_view PrimitiveTypeName(const FieldDescriptor* descriptor) {
   return PrimitiveTypeName(GetJavaType(descriptor));
 }
 
-absl::string_view BoxedPrimitiveTypeName(JavaType type) {
+std::string_view BoxedPrimitiveTypeName(JavaType type) {
   switch (type) {
     case JAVATYPE_INT:
       return "java.lang.Integer";
@@ -356,11 +356,11 @@ absl::string_view BoxedPrimitiveTypeName(JavaType type) {
   return {};
 }
 
-absl::string_view BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
+std::string_view BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor));
 }
 
-absl::string_view KotlinTypeName(JavaType type) {
+std::string_view KotlinTypeName(JavaType type) {
   switch (type) {
     case JAVATYPE_INT:
       return "kotlin.Int";
@@ -401,7 +401,7 @@ std::string GetOneofStoredType(const FieldDescriptor* field) {
   }
 }
 
-absl::string_view FieldTypeName(FieldDescriptor::Type field_type) {
+std::string_view FieldTypeName(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32:
       return "INT32";
@@ -448,7 +448,7 @@ absl::string_view FieldTypeName(FieldDescriptor::Type field_type) {
   return {};
 }
 
-bool AllAscii(absl::string_view text) {
+bool AllAscii(std::string_view text) {
   for (int i = 0; i < text.size(); i++) {
     if ((text[i] & 0x80) != 0) {
       return false;
@@ -576,7 +576,7 @@ bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field) {
          !field->default_value_string().empty();
 }
 
-constexpr absl::string_view bit_masks[] = {
+constexpr std::string_view bit_masks[] = {
     "0x00000001", "0x00000002", "0x00000004", "0x00000008",
     "0x00000010", "0x00000020", "0x00000040", "0x00000080",
 
@@ -600,7 +600,7 @@ std::string GetBitFieldNameForBit(int bitIndex) {
 
 namespace {
 
-std::string GenerateGetBitInternal(absl::string_view prefix, int bitIndex) {
+std::string GenerateGetBitInternal(std::string_view prefix, int bitIndex) {
   std::string varName = absl::StrCat(prefix, GetBitFieldNameForBit(bitIndex));
   int bitInVarIndex = bitIndex % 32;
 
@@ -608,7 +608,7 @@ std::string GenerateGetBitInternal(absl::string_view prefix, int bitIndex) {
                       ") != 0)");
 }
 
-std::string GenerateSetBitInternal(absl::string_view prefix, int bitIndex) {
+std::string GenerateSetBitInternal(std::string_view prefix, int bitIndex) {
   std::string varName = absl::StrCat(prefix, GetBitFieldNameForBit(bitIndex));
   int bitInVarIndex = bitIndex % 32;
 
@@ -678,7 +678,7 @@ bool IsReferenceType(JavaType type) {
   return false;
 }
 
-absl::string_view GetCapitalizedType(const FieldDescriptor* field,
+std::string_view GetCapitalizedType(const FieldDescriptor* field,
                                      bool immutable, Options options) {
   switch (GetType(field)) {
     case FieldDescriptor::TYPE_INT32:

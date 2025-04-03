@@ -11,7 +11,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/any.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -31,8 +31,8 @@ const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
 const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
-std::string GetTypeUrl(absl::string_view message_name,
-                       absl::string_view type_url_prefix) {
+std::string GetTypeUrl(std::string_view message_name,
+                       std::string_view type_url_prefix) {
   if (!type_url_prefix.empty() &&
       type_url_prefix[type_url_prefix.size() - 1] == '/') {
     return absl::StrCat(type_url_prefix, message_name);
@@ -41,23 +41,23 @@ std::string GetTypeUrl(absl::string_view message_name,
   }
 }
 
-bool EndsWithTypeName(absl::string_view type_url, absl::string_view type_name) {
+bool EndsWithTypeName(std::string_view type_url, std::string_view type_name) {
   return type_url.size() > type_name.size() &&
          type_url[type_url.size() - type_name.size() - 1] == '/' &&
          absl::EndsWith(type_url, type_name);
 }
 
 bool InternalPackFromLite(const MessageLite& message,
-                          absl::string_view type_url_prefix,
-                          absl::string_view type_name,
+                          std::string_view type_url_prefix,
+                          std::string_view type_name,
                           UrlType* PROTOBUF_NONNULL dst_url,
                           ValueType* PROTOBUF_NONNULL dst_value) {
   *dst_url = GetTypeUrl(type_name, type_url_prefix);
   return message.SerializeToString(dst_value);
 }
 
-bool InternalUnpackToLite(absl::string_view type_name,
-                          absl::string_view type_url, const ValueType& value,
+bool InternalUnpackToLite(std::string_view type_name,
+                          std::string_view type_url, const ValueType& value,
                           MessageLite* PROTOBUF_NONNULL dst_message) {
   if (!InternalIsLite(type_name, type_url)) {
     return false;
@@ -65,11 +65,11 @@ bool InternalUnpackToLite(absl::string_view type_name,
   return dst_message->ParseFromString(value);
 }
 
-bool InternalIsLite(absl::string_view type_name, absl::string_view type_url) {
+bool InternalIsLite(std::string_view type_name, std::string_view type_url) {
   return EndsWithTypeName(type_url, type_name);
 }
 
-bool ParseAnyTypeUrl(absl::string_view type_url,
+bool ParseAnyTypeUrl(std::string_view type_url,
                      std::string* PROTOBUF_NULLABLE url_prefix,
                      std::string* PROTOBUF_NONNULL full_type_name) {
   size_t pos = type_url.find_last_of('/');
@@ -83,7 +83,7 @@ bool ParseAnyTypeUrl(absl::string_view type_url,
   return true;
 }
 
-bool ParseAnyTypeUrl(absl::string_view type_url,
+bool ParseAnyTypeUrl(std::string_view type_url,
                      std::string* PROTOBUF_NONNULL full_type_name) {
   return ParseAnyTypeUrl(type_url, nullptr, full_type_name);
 }

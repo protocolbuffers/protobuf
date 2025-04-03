@@ -31,7 +31,7 @@ namespace compiler {
 namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
@@ -116,7 +116,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
   if (SupportsPresenceApi(descriptor_)) {
     (*variables)["has_property_check"] = absl::StrCat("Has", property_name());
@@ -303,7 +303,7 @@ bool FieldGeneratorBase::has_default_value() {
   }
 }
 
-bool AllPrintableAscii(absl::string_view text) {
+bool AllPrintableAscii(std::string_view text) {
   for(int i = 0; i < text.size(); i++) {
     if (text[i] < 0x20 || text[i] > 0x7e) {
       return false;

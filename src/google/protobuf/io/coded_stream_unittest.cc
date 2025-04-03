@@ -37,7 +37,7 @@
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include "google/protobuf/testing/googletest.h"
@@ -1093,7 +1093,7 @@ TEST_P(ResetCords, ReadLargeCord) {
     CodedInputStream coded_input(&input);
 
     absl::Cord cord;
-    if (!kResetCords_case) cord.Append(absl::string_view("value"));
+    if (!kResetCords_case) cord.Append(std::string_view("value"));
     EXPECT_TRUE(
         coded_input.ReadCord(&cord, static_cast<int>(large_cord.size())));
     EXPECT_EQ(large_cord, cord);
@@ -1112,7 +1112,7 @@ TEST_P(BlockSizesWithResetCords, ReadCordImpossiblyLarge) {
     CodedInputStream coded_input(&input);
 
     absl::Cord cord;
-    if (!kResetCords_case) cord.Append(absl::string_view("value"));
+    if (!kResetCords_case) cord.Append(std::string_view("value"));
     // Try to read a gigabyte.  This should fail because the input is only
     // sizeof(buffer_) bytes.
     EXPECT_FALSE(coded_input.ReadCord(&cord, 1 << 30));

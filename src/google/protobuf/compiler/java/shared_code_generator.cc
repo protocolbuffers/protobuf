@@ -168,7 +168,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Find out all dependencies.
   std::vector<std::pair<std::string, std::string> > dependencies;
   for (int i = 0; i < file_->dependency_count(); i++) {
-    const absl::string_view filename = file_->dependency(i)->name();
+    const std::string_view filename = file_->dependency(i)->name();
     std::string package = FileJavaPackage(file_->dependency(i), true, options_);
     std::string classname =
         name_resolver_->GetDescriptorClassName(file_->dependency(i));

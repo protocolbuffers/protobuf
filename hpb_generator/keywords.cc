@@ -12,11 +12,11 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace google::protobuf::hpb_generator {
 
-static const absl::string_view kKeywordList[] = {
+static const std::string_view kKeywordList[] = {
     //
     "NULL",
     "alignas",
@@ -123,7 +123,7 @@ static absl::flat_hash_set<std::string>* MakeKeywordsMap() {
 
 static absl::flat_hash_set<std::string>& kKeywords = *MakeKeywordsMap();
 
-std::string ResolveKeywordConflict(absl::string_view name) {
+std::string ResolveKeywordConflict(std::string_view name) {
   if (kKeywords.count(name) > 0) {
     return absl::StrCat(name, "_");
   }

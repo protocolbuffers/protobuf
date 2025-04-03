@@ -13,7 +13,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_repeated_fields.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
@@ -28,27 +28,27 @@ namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
 
 using NameToFieldDescriptorMap =
-    absl::flat_hash_map<absl::string_view, const protobuf::FieldDescriptor*>;
+    absl::flat_hash_map<std::string_view, const protobuf::FieldDescriptor*>;
 
 void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
-                              absl::string_view resolved_field_name,
-                              absl::string_view resolved_upbc_name,
+                              std::string_view resolved_field_name,
+                              std::string_view resolved_upbc_name,
                               Context& ctx);
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
-                             absl::string_view resolved_field_name,
-                             absl::string_view resolved_upbc_name,
+                             std::string_view resolved_field_name,
+                             std::string_view resolved_upbc_name,
                              Context& ctx);
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
-                            absl::string_view resolved_field_name,
-                            absl::string_view resolved_upbc_name, Context& ctx);
+                            std::string_view resolved_field_name,
+                            std::string_view resolved_upbc_name, Context& ctx);
 
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
                                  const protobuf::FieldDescriptor* field,
-                                 absl::string_view resolved_field_name,
-                                 absl::string_view class_name, Context& ctx);
+                                 std::string_view resolved_field_name,
+                                 std::string_view class_name, Context& ctx);
 
 // Returns C++ class member name by resolving naming conflicts across
 // proto field names (such as clear_ prefixes) and keyword collisions.
@@ -139,8 +139,8 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
 
 void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
-                              const absl::string_view resolved_field_name,
-                              const absl::string_view resolved_upbc_name,
+                              const std::string_view resolved_field_name,
+                              const std::string_view resolved_upbc_name,
                               Context& ctx) {
   // Generate hazzer (if any).
   if (field->has_presence()) {
@@ -154,8 +154,8 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
 
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
-                             const absl::string_view resolved_field_name,
-                             const absl::string_view resolved_upbc_name,
+                             const std::string_view resolved_field_name,
+                             const std::string_view resolved_upbc_name,
                              Context& ctx) {
   if (field->has_presence()) {
     ctx.EmitLegacy("void clear_$0() { $2_clear_$1(msg_); }\n",
@@ -166,8 +166,8 @@ void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
 
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
-                            const absl::string_view resolved_field_name,
-                            const absl::string_view resolved_upbc_name,
+                            const std::string_view resolved_field_name,
+                            const std::string_view resolved_upbc_name,
                             Context& ctx) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
@@ -304,18 +304,18 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
 
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
                                  const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
+                                 const std::string_view resolved_field_name,
+                                 const std::string_view class_name,
                                  Context& ctx) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
-  absl::string_view upbc_name = field->name();
-  absl::string_view converted_key_name = "key";
-  absl::string_view optional_conversion_code = "";
+  std::string_view upbc_name = field->name();
+  std::string_view converted_key_name = "key";
+  std::string_view optional_conversion_code = "";
 
   if (key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
-    // Insert conversion from absl::string_view to upb_StringView.
+    // Insert conversion from std::string_view to upb_StringView.
     // Creates upb_StringView on stack to prevent allocation.
     converted_key_name = "upb_key";
     optional_conversion_code =
@@ -448,7 +448,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
             upb_StringView value;
             $5bool success = $4_$7_get(msg_, $6, &value);
             if (success) {
-              return absl::string_view(value.data, value.size);
+              return std::string_view(value.data, value.size);
             }
             return absl::NotFoundError("");
           }
@@ -621,7 +621,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names) {
   // C++ implementation specific reserved names.
   static const auto& kReservedNames =
-      *new absl::flat_hash_set<absl::string_view>({
+      *new absl::flat_hash_set<std::string_view>({
           "msg",
           "msg_",
           "arena",
@@ -629,22 +629,22 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       });
 
   // C++ specific prefixes used by code generator for field access.
-  static constexpr absl::string_view kClearMethodPrefix = "clear_";
-  static constexpr absl::string_view kSetMethodPrefix = "set_";
-  static constexpr absl::string_view kHasMethodPrefix = "has_";
-  static constexpr absl::string_view kDeleteMethodPrefix = "delete_";
-  static constexpr absl::string_view kAddToRepeatedMethodPrefix = "add_";
-  static constexpr absl::string_view kResizeArrayMethodPrefix = "resize_";
+  static constexpr std::string_view kClearMethodPrefix = "clear_";
+  static constexpr std::string_view kSetMethodPrefix = "set_";
+  static constexpr std::string_view kHasMethodPrefix = "has_";
+  static constexpr std::string_view kDeleteMethodPrefix = "delete_";
+  static constexpr std::string_view kAddToRepeatedMethodPrefix = "add_";
+  static constexpr std::string_view kResizeArrayMethodPrefix = "resize_";
 
   // List of generated accessor prefixes to check against.
   // Example:
   //     optional repeated string phase = 236;
   //     optional bool clear_phase = 237;
-  static constexpr absl::string_view kAccessorPrefixes[] = {
+  static constexpr std::string_view kAccessorPrefixes[] = {
       kClearMethodPrefix,       kDeleteMethodPrefix, kAddToRepeatedMethodPrefix,
       kResizeArrayMethodPrefix, kSetMethodPrefix,    kHasMethodPrefix};
 
-  absl::string_view field_name = field->name();
+  std::string_view field_name = field->name();
   if (kReservedNames.count(field_name) > 0) {
     if (absl::EndsWith(field_name, "_")) {
       return absl::StrCat(field_name, "_");

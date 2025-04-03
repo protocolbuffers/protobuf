@@ -28,7 +28,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
@@ -58,7 +58,7 @@ namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
 using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
-absl::flat_hash_map<absl::string_view, std::string> FileVars(
+absl::flat_hash_map<std::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
       {"filename", std::string(file->name())},
@@ -203,12 +203,12 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   std::vector<const FieldDescriptor*> fields;
   ListAllFields(file_, &fields);
 
-  absl::flat_hash_set<absl::string_view> all_fields;
+  absl::flat_hash_set<std::string_view> all_fields;
   for (const FieldDescriptor* field : fields) {
     all_fields.insert(field->name());
   }
 
-  for (absl::string_view name : {"major", "minor"}) {
+  for (std::string_view name : {"major", "minor"}) {
     if (!all_fields.contains(name)) {
       continue;
     }
@@ -239,7 +239,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
              p->Emit(R"cc(
                namespace internal {
                template <typename T>
-               ::absl::string_view GetAnyMessageName();
+               ::std::string_view GetAnyMessageName();
                }  // namespace internal
              )cc");
            }},
@@ -304,7 +304,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 }
 
 void FileGenerator::GenerateProtoHeader(io::Printer* p,
-                                        absl::string_view info_path) {
+                                        std::string_view info_path) {
   if (!options_.proto_h) {
     return;
   }
@@ -350,7 +350,7 @@ void FileGenerator::GenerateProtoHeader(io::Printer* p,
 }
 
 void FileGenerator::GeneratePBHeader(io::Printer* p,
-                                     absl::string_view info_path) {
+                                     std::string_view info_path) {
   GenerateFile(p, GeneratedFileType::kPbH, [&] {
     p->Emit(
         {
@@ -407,9 +407,9 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
   });
 }
 
-void FileGenerator::DoIncludeFile(absl::string_view google3_name,
+void FileGenerator::DoIncludeFile(std::string_view google3_name,
                                   bool do_export, io::Printer* p) {
-  constexpr absl::string_view prefix = "third_party/protobuf/";
+  constexpr std::string_view prefix = "third_party/protobuf/";
   ABSL_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
@@ -443,7 +443,7 @@ void FileGenerator::DoIncludeFile(absl::string_view google3_name,
     // The bootstrapped proto generated code needs to use the
     // third_party/protobuf header paths to avoid circular dependencies.
     if (options_.bootstrap) {
-      constexpr absl::string_view bootstrap_prefix = "net/proto2/public";
+      constexpr std::string_view bootstrap_prefix = "net/proto2/public";
       if (absl::ConsumePrefix(&google3_name, bootstrap_prefix)) {
         path = absl::StrCat("third_party/protobuf", google3_name);
       }
@@ -455,7 +455,7 @@ void FileGenerator::DoIncludeFile(absl::string_view google3_name,
   }
 }
 
-std::string FileGenerator::CreateHeaderInclude(absl::string_view basename,
+std::string FileGenerator::CreateHeaderInclude(std::string_view basename,
                                                const FileDescriptor* file) {
   if (options_.opensource_runtime && IsWellKnownMessage(file) &&
       !options_.runtime_include_base.empty()) {
@@ -1047,7 +1047,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
 static void GatherAllCustomOptionTypes(
     const FileDescriptor* file,
-    absl::btree_map<absl::string_view, const Descriptor*>& out) {
+    absl::btree_map<std::string_view, const Descriptor*>& out) {
   const DescriptorPool* pool = file->pool();
   const Descriptor* fd_proto_descriptor = pool->FindMessageTypeByName(
       FileDescriptorProto::descriptor()->full_name());
@@ -1112,7 +1112,7 @@ static std::vector<const Descriptor*>
 GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file,
                                            const Options& options) {
   // Sorted map to dedup and to make deterministic.
-  absl::btree_map<absl::string_view, const Descriptor*> res;
+  absl::btree_map<std::string_view, const Descriptor*> res;
 
   // For simplicity we force pin request/response messages for all
   // services. The current implementation of services might not do
@@ -1201,7 +1201,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                   $schemas$,
           };
         )cc");
-    constexpr absl::string_view file_default_instances_code = R"cc(
+    constexpr std::string_view file_default_instances_code = R"cc(
       static const ::_pb::Message* $nonnull$ const file_default_instances[] = {
           $defaults$,
       };
@@ -1254,7 +1254,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             return;
           }
 
-          absl::string_view data = file_data;
+          std::string_view data = file_data;
           if (data.size() <= 65535) {
             static constexpr size_t kBytesPerLine = 40;
             while (!data.empty()) {
@@ -1281,7 +1281,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             std::string line;
             for (char c : chunk) {
               absl::StrAppend(&line, "'",
-                              absl::CEscape(absl::string_view(&c, 1)), "', ");
+                              absl::CEscape(std::string_view(&c, 1)), "', ");
             }
 
             p->Emit({{"line", line}}, R"cc(
@@ -1720,7 +1720,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
 }
 
 void FileGenerator::GenerateMetadataPragma(io::Printer* p,
-                                           absl::string_view info_path) {
+                                           std::string_view info_path) {
   if (info_path.empty() || options_.annotation_pragma_name.empty() ||
       options_.annotation_guard_name.empty()) {
     return;

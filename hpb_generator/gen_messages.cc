@@ -14,7 +14,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_accessors.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
@@ -143,7 +143,7 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
            )cc");
 }
 
-std::string UnderscoresToCamelCase(absl::string_view input,
+std::string UnderscoresToCamelCase(std::string_view input,
                                    bool cap_next_letter) {
   std::string result;
 
@@ -268,7 +268,7 @@ void WriteModelPublicDeclaration(
         friend Proxy;
         friend CProxy;
         friend absl::StatusOr<$2>(::hpb::Parse<$2>(
-            absl::string_view bytes,
+            std::string_view bytes,
             const ::hpb::ExtensionRegistry& extension_registry));
         friend upb_Arena* hpb::interop::upb::GetArena<$0>($0* message);
         friend upb_Arena* hpb::interop::upb::GetArena<$0>(::hpb::Ptr<$0> message);

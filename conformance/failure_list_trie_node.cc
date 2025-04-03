@@ -15,13 +15,13 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
 
-absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
+absl::Status FailureListTrieNode::Insert(std::string_view test_name) {
   auto result = WalkDownMatch(test_name);
   if (result.has_value()) {
     return absl::AlreadyExistsError(
@@ -42,13 +42,13 @@ absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
   return absl::OkStatus();
 }
 
-void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
-  absl::string_view section = test_name.substr(0, test_name.find('.'));
+void FailureListTrieNode::InsertImpl(std::string_view test_name) {
+  std::string_view section = test_name.substr(0, test_name.find('.'));
 
   bool is_last_section = test_name == section;
 
   // test_name cannot be overwritten
-  absl::string_view test_name_rest =
+  std::string_view test_name_rest =
       is_last_section ? "" : test_name.substr(section.length() + 1);
   for (auto& child : children_) {
     if (child->data_ == section) {
@@ -73,17 +73,17 @@ void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
 }
 
 absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
-    absl::string_view test_name) {
-  absl::string_view section = test_name.substr(0, test_name.find('.'));
+    std::string_view test_name) {
+  std::string_view section = test_name.substr(0, test_name.find('.'));
   // test_name cannot be overwritten
-  absl::string_view to_match;
+  std::string_view to_match;
   if (section != test_name) {
     to_match = test_name.substr(section.length() + 1);
   }
 
   for (auto& child : children_) {
     if (child->data_ == section || child->data_ == "*" || section == "*") {
-      absl::string_view appended = child->data_;
+      std::string_view appended = child->data_;
       // Extracted last section -> no more '.' -> test_name will be
       // equal to section
       if (test_name == section) {

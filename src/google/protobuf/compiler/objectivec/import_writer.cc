@@ -18,7 +18,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/descriptor.h"
@@ -41,33 +41,33 @@ class ProtoFrameworkCollector : public LineConsumer {
           inout_proto_file_to_framework_name)
       : map_(inout_proto_file_to_framework_name) {}
 
-  bool ConsumeLine(absl::string_view line, std::string* out_error) override;
+  bool ConsumeLine(std::string_view line, std::string* out_error) override;
 
  private:
   absl::flat_hash_map<std::string, std::string>* map_;
 };
 
-bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
+bool ProtoFrameworkCollector::ConsumeLine(std::string_view line,
                                           std::string* out_error) {
   size_t offset = line.find(':');
-  if (offset == absl::string_view::npos) {
+  if (offset == std::string_view::npos) {
     *out_error = absl::StrCat(
         "Framework/proto file mapping line without colon sign: '", line, "'.");
     return false;
   }
-  absl::string_view framework_name =
+  std::string_view framework_name =
       absl::StripAsciiWhitespace(line.substr(0, offset));
-  absl::string_view proto_file_list =
+  std::string_view proto_file_list =
       absl::StripAsciiWhitespace(line.substr(offset + 1));
 
   size_t start = 0;
   while (start < proto_file_list.length()) {
     offset = proto_file_list.find(',', start);
-    if (offset == absl::string_view::npos) {
+    if (offset == std::string_view::npos) {
       offset = proto_file_list.length();
     }
 
-    absl::string_view proto_file = absl::StripAsciiWhitespace(
+    std::string_view proto_file = absl::StripAsciiWhitespace(
         proto_file_list.substr(start, offset - start));
     if (!proto_file.empty()) {
       auto existing_entry = map_->find(proto_file);

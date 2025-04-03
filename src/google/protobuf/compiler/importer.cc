@@ -30,7 +30,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -58,7 +58,7 @@ using google::protobuf::io::win32::open;
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in command_line_interface.cc?
-static bool IsWindowsAbsolutePath(absl::string_view text) {
+static bool IsWindowsAbsolutePath(std::string_view text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
   return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
@@ -86,7 +86,7 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
   bool had_errors() { return had_errors_; }
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     if (multi_file_error_collector_ != nullptr) {
       multi_file_error_collector_->RecordError(filename_, line, column,
                                                message);
@@ -94,7 +94,7 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     had_errors_ = true;
   }
 
-  void RecordWarning(int line, int column, absl::string_view message) override {
+  void RecordWarning(int line, int column, std::string_view message) override {
     if (multi_file_error_collector_ != nullptr) {
       multi_file_error_collector_->RecordWarning(filename_, line, column,
                                                  message);
@@ -180,9 +180,9 @@ SourceTreeDescriptorDatabase::ValidationErrorCollector::
     ~ValidationErrorCollector() {}
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordError(
-    absl::string_view filename, absl::string_view element_name,
+    std::string_view filename, std::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    absl::string_view message) {
+    std::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
@@ -196,9 +196,9 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordError(
 }
 
 void SourceTreeDescriptorDatabase::ValidationErrorCollector::RecordWarning(
-    absl::string_view filename, absl::string_view element_name,
+    std::string_view filename, std::string_view element_name,
     const Message* descriptor, ErrorLocation location,
-    absl::string_view message) {
+    std::string_view message) {
   if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
@@ -227,7 +227,7 @@ const FileDescriptor* Importer::Import(const std::string& filename) {
   return pool_.FindFileByName(filename);
 }
 
-void Importer::AddDirectInputFile(absl::string_view file_name, bool is_error) {
+void Importer::AddDirectInputFile(std::string_view file_name, bool is_error) {
   pool_.AddDirectInputFile(file_name, is_error);
 }
 
@@ -263,7 +263,7 @@ DiskSourceTree::~DiskSourceTree() {}
 //   then if foo/bar is a symbolic link, foo/bar/baz.proto will canonicalize
 //   to a path which does not appear to be under foo, and thus the compiler
 //   will complain that baz.proto is not inside the --proto_path.
-static std::string CanonicalizePath(absl::string_view path) {
+static std::string CanonicalizePath(std::string_view path) {
 #ifdef _WIN32
   // The Win32 API accepts forward slashes as a path delimiter even though
   // backslashes are standard.  Let's avoid confusion and use only forward
@@ -279,9 +279,9 @@ static std::string CanonicalizePath(absl::string_view path) {
   path = path_str;
 #endif
 
-  std::vector<absl::string_view> canonical_parts;
+  std::vector<std::string_view> canonical_parts;
   if (!path.empty() && path.front() == '/') canonical_parts.push_back("");
-  for (absl::string_view part : absl::StrSplit(path, '/', absl::SkipEmpty())) {
+  for (std::string_view part : absl::StrSplit(path, '/', absl::SkipEmpty())) {
     if (part == ".") {
       // Ignore.
     } else {
@@ -293,7 +293,7 @@ static std::string CanonicalizePath(absl::string_view path) {
   return absl::StrJoin(canonical_parts, "/");
 }
 
-static inline bool ContainsParentReference(absl::string_view path) {
+static inline bool ContainsParentReference(std::string_view path) {
   return path == ".." || absl::StartsWith(path, "../") ||
          absl::EndsWith(path, "/..") || absl::StrContains(path, "/../");
 }
@@ -315,9 +315,9 @@ static inline bool ContainsParentReference(absl::string_view path) {
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foobar", "foo", "baz", &result));
-static bool ApplyMapping(absl::string_view filename,
-                         absl::string_view old_prefix,
-                         absl::string_view new_prefix, std::string* result) {
+static bool ApplyMapping(std::string_view filename,
+                         std::string_view old_prefix,
+                         std::string_view new_prefix, std::string* result) {
   if (old_prefix.empty()) {
     // old_prefix matches any relative path.
     if (ContainsParentReference(filename)) {
@@ -353,7 +353,7 @@ static bool ApplyMapping(absl::string_view filename,
       if (after_prefix_start != -1) {
         // Yep.  So the prefixes are directories and the filename is a file
         // inside them.
-        absl::string_view after_prefix = filename.substr(after_prefix_start);
+        std::string_view after_prefix = filename.substr(after_prefix_start);
         if (ContainsParentReference(after_prefix)) {
           // We do not allow the file name to use "..".
           return false;
@@ -369,14 +369,14 @@ static bool ApplyMapping(absl::string_view filename,
   return false;
 }
 
-void DiskSourceTree::MapPath(absl::string_view virtual_path,
-                             absl::string_view disk_path) {
+void DiskSourceTree::MapPath(std::string_view virtual_path,
+                             std::string_view disk_path) {
   mappings_.push_back(
       Mapping(std::string(virtual_path), CanonicalizePath(disk_path)));
 }
 
 DiskSourceTree::DiskFileToVirtualFileResult
-DiskSourceTree::DiskFileToVirtualFile(absl::string_view disk_file,
+DiskSourceTree::DiskFileToVirtualFile(std::string_view disk_file,
                                       std::string* virtual_file,
                                       std::string* shadowing_disk_file) {
   int mapping_index = -1;
@@ -420,14 +420,14 @@ DiskSourceTree::DiskFileToVirtualFile(absl::string_view disk_file,
   return SUCCESS;
 }
 
-bool DiskSourceTree::VirtualFileToDiskFile(absl::string_view virtual_file,
+bool DiskSourceTree::VirtualFileToDiskFile(std::string_view virtual_file,
                                            std::string* disk_file) {
   std::unique_ptr<io::ZeroCopyInputStream> stream(
       OpenVirtualFile(virtual_file, disk_file));
   return stream != nullptr;
 }
 
-io::ZeroCopyInputStream* DiskSourceTree::Open(absl::string_view filename) {
+io::ZeroCopyInputStream* DiskSourceTree::Open(std::string_view filename) {
   return OpenVirtualFile(filename, nullptr);
 }
 
@@ -436,7 +436,7 @@ std::string DiskSourceTree::GetLastErrorMessage() {
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
-    absl::string_view virtual_file, std::string* disk_file) {
+    std::string_view virtual_file, std::string* disk_file) {
   if (virtual_file != CanonicalizePath(virtual_file) ||
       ContainsParentReference(virtual_file)) {
     // We do not allow importing of paths containing things like ".." or
@@ -473,7 +473,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
-    absl::string_view filename) {
+    std::string_view filename) {
   struct stat sb;
   int ret = 0;
   do {

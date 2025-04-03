@@ -43,8 +43,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, int line, int column,
-                   absl::string_view message) {
+  void RecordError(std::string_view filename, int line, int column,
+                   std::string_view message) {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }

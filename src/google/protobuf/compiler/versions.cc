@@ -13,7 +13,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/plugin.pb.h"
 
 // Must be included last.
@@ -23,7 +23,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace internal {
-Version ParseProtobufVersion(absl::string_view version) {
+Version ParseProtobufVersion(std::string_view version) {
   ABSL_CHECK(!version.empty()) << "version cannot be empty.";
   Version result;
   std::vector<std::string> parts = absl::StrSplit(version, '-');
@@ -41,7 +41,7 @@ Version ParseProtobufVersion(absl::string_view version) {
 }  // namespace internal
 
 const Version& GetProtobufCPPVersion(bool oss_runtime) {
-  absl::string_view version = PROTOBUF_CPP_VERSION_STRING;
+  std::string_view version = PROTOBUF_CPP_VERSION_STRING;
   // Heap-allocated versions to avoid re-parsing version strings
   static const Version* cpp_version =
       new Version(internal::ParseProtobufVersion(version));
@@ -49,14 +49,14 @@ const Version& GetProtobufCPPVersion(bool oss_runtime) {
 }
 
 const Version& GetProtobufJavaVersion(bool oss_runtime) {
-  absl::string_view version = PROTOBUF_JAVA_VERSION_STRING;
+  std::string_view version = PROTOBUF_JAVA_VERSION_STRING;
   static const Version* java_version =
       new Version(internal::ParseProtobufVersion(version));
   return *java_version;
 }
 
 const Version& GetProtobufPythonVersion(bool oss_runtime) {
-  absl::string_view version = PROTOBUF_PYTHON_VERSION_STRING;
+  std::string_view version = PROTOBUF_PYTHON_VERSION_STRING;
   static const Version* python_version =
       new Version(internal::ParseProtobufVersion(version));
   return *python_version;

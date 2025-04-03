@@ -25,7 +25,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -84,7 +84,7 @@ absl::Span<const ResolverPool::Field> ResolverPool::Message::FieldsByIndex()
 }
 
 const ResolverPool::Field* ResolverPool::Message::FindField(
-    absl::string_view name) const {
+    std::string_view name) const {
   if (raw_.fields_size() == 0) {
     return nullptr;
   }
@@ -130,7 +130,7 @@ const ResolverPool::Field* ResolverPool::Message::FindField(
 }
 
 absl::StatusOr<const ResolverPool::Message*> ResolverPool::FindMessage(
-    absl::string_view url) {
+    std::string_view url) {
   auto it = messages_.find(url);
   if (it != messages_.end()) {
     return it->second.get();
@@ -145,7 +145,7 @@ absl::StatusOr<const ResolverPool::Message*> ResolverPool::FindMessage(
 }
 
 absl::StatusOr<const ResolverPool::Enum*> ResolverPool::FindEnum(
-    absl::string_view url) {
+    std::string_view url) {
   auto it = enums_.find(url);
   if (it != enums_.end()) {
     return it->second.get();
@@ -548,7 +548,7 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
   } else if (auto* extant = std::get_if<std::vector<value_type>>(&slot)) {
     extant->push_back(std::forward<T>(value));
   } else {
-    absl::optional<absl::string_view> name =
+    absl::optional<std::string_view> name =
         google::protobuf::internal::RttiTypeName<value_type>();
     if (!name.has_value()) {
       name = "<unknown>";

@@ -208,7 +208,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
 
   // The const accessor can't be used to modify the element
   EXPECT_FALSE((std::is_assignable<decltype(test_model.repeated_string()[1]),
-                                   absl::string_view>::value));
+                                   std::string_view>::value));
   // But the mutable one is fine.
   (*test_model.mutable_repeated_string())[1] = "other";
   EXPECT_THAT(test_model.repeated_string(), ElementsAre("a", "other", "c"));

@@ -93,10 +93,10 @@ TEST(PythonPluginTest, ImportTest) {
   ABSL_CHECK_OK(
       File::GetContents(absl::StrCat(::testing::TempDir(), "/test1_pb2.py"),
                         &output, true));
-  std::vector<absl::string_view> lines = absl::StrSplit(output, '\n');
+  std::vector<std::string_view> lines = absl::StrSplit(output, '\n');
   std::string expected_import = "import test2_pb2";
   bool found_expected_import = false;
-  for (absl::string_view line : lines) {
+  for (std::string_view line : lines) {
     if (absl::StrContains(line, expected_import)) {
       found_expected_import = true;
     }

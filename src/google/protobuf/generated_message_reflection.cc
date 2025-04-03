@@ -33,7 +33,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
@@ -116,7 +116,7 @@ void InitializeLazyExtensionSet() {
 }
 
 bool ParseNamedEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
-                    absl::string_view name, int* PROTOBUF_NONNULL value) {
+                    std::string_view name, int* PROTOBUF_NONNULL value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;
   *value = d->number();
@@ -2004,7 +2004,7 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
-absl::string_view Reflection::GetStringViewImpl(const Message& message,
+std::string_view Reflection::GetStringViewImpl(const Message& message,
                                                 const FieldDescriptor* field,
                                                 ScratchSpace* scratch) const {
   if (field->is_extension()) {
@@ -2029,7 +2029,7 @@ absl::string_view Reflection::GetStringViewImpl(const Message& message,
   }
 }
 
-absl::string_view Reflection::GetStringView(const Message& message,
+std::string_view Reflection::GetStringView(const Message& message,
                                             const FieldDescriptor* field,
                                             ScratchSpace& scratch) const {
   USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
@@ -2190,7 +2190,7 @@ const std::string& Reflection::GetRepeatedStringReference(
 }
 
 // See GetStringView(), above.
-absl::string_view Reflection::GetRepeatedStringViewImpl(
+std::string_view Reflection::GetRepeatedStringViewImpl(
     const Message& message, const FieldDescriptor* field, int index,
     ScratchSpace* scratch) const {
   if (field->is_extension()) {
@@ -2210,7 +2210,7 @@ absl::string_view Reflection::GetRepeatedStringViewImpl(
   internal::Unreachable();
 }
 
-absl::string_view Reflection::GetRepeatedStringView(
+std::string_view Reflection::GetRepeatedStringView(
     const Message& message, const FieldDescriptor* field, int index,
     ScratchSpace& scratch) const {
   USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
@@ -2871,7 +2871,7 @@ int Reflection::MapSize(const Message& message,
 // -----------------------------------------------------------------------------
 
 const FieldDescriptor* Reflection::FindKnownExtensionByName(
-    absl::string_view name) const {
+    std::string_view name) const {
   if (!schema_.HasExtensionSet()) return nullptr;
   return descriptor_pool_->FindExtensionByPrintableName(descriptor_, name);
 }

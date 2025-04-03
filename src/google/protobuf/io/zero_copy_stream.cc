@@ -17,7 +17,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/span.h"
 
 // Must be included last.
@@ -89,7 +89,7 @@ bool ZeroCopyOutputStream::WriteCord(const absl::Cord& cord) {
   int buffer_size = 0;
   if (!Next(&buffer, &buffer_size)) return false;
 
-  for (absl::string_view fragment : cord.Chunks()) {
+  for (std::string_view fragment : cord.Chunks()) {
     while (fragment.size() > static_cast<size_t>(buffer_size)) {
       std::memcpy(buffer, fragment.data(), buffer_size);
 

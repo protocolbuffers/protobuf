@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
@@ -110,7 +110,7 @@ class JsonTest : public testing::TestWithParam<Codec> {
 
   // The out parameter comes first since `json` tends to be a very long string,
   // and clang-format does a poor job if it is not the last parameter.
-  absl::Status ToProto(Message& proto, absl::string_view json,
+  absl::Status ToProto(Message& proto, std::string_view json,
                        ParseOptions options = {}) {
     if (GetParam() == Codec::kReflective) {
       return JsonStringToMessage(json, &proto, options);
@@ -132,7 +132,7 @@ class JsonTest : public testing::TestWithParam<Codec> {
   }
 
   template <typename Proto>
-  absl::StatusOr<Proto> ToProto(absl::string_view json,
+  absl::StatusOr<Proto> ToProto(std::string_view json,
                                 ParseOptions options = {}) {
     Proto proto;
     RETURN_IF_ERROR(ToProto(proto, json, options));
@@ -965,7 +965,7 @@ TEST_P(JsonTest, ParseWrappers) {
 }
 
 TEST_P(JsonTest, TestParsingUnknownAnyFields) {
-  absl::string_view input = R"json(
+  std::string_view input = R"json(
     {
       "value": {
         "@type": "type.googleapis.com/proto3.TestMessage",
@@ -997,7 +997,7 @@ TEST_P(JsonTest, TestHugeBareString) {
 }
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
-  absl::string_view input = R"json({"ayuLmao": "UNKNOWN_VALUE"})json";
+  std::string_view input = R"json({"ayuLmao": "UNKNOWN_VALUE"})json";
 
   EXPECT_THAT(ToProto<proto2_unittest::TestNumbers>(input),
               StatusIs(absl::StatusCode::kInvalidArgument));
@@ -1011,7 +1011,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3) {
   TestMessage m;
-  absl::string_view input = R"json({"enum_value":"UNKNOWN_VALUE"})json";
+  std::string_view input = R"json({"enum_value":"UNKNOWN_VALUE"})json";
 
   m.set_enum_value(proto3::BAR);
   ASSERT_THAT(ToProto(m, input), StatusIs(absl::StatusCode::kInvalidArgument));
@@ -1025,7 +1025,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3) {
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromInt) {
   TestMessage m;
-  absl::string_view input = R"json({"enum_value":12345})json";
+  std::string_view input = R"json({"enum_value":12345})json";
 
   m.set_enum_value(proto3::BAR);
   ASSERT_OK(ToProto(m, input));
@@ -1040,7 +1040,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromInt) {
 // Trying to pass an object as an enum field value is always treated as an
 // error
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromObject) {
-  absl::string_view input = R"json({"enum_value": {}})json";
+  std::string_view input = R"json({"enum_value": {}})json";
 
   EXPECT_THAT(ToProto<TestMessage>(input),
               StatusIs(absl::StatusCode::kInvalidArgument));
@@ -1052,7 +1052,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromObject) {
 }
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromArray) {
-  absl::string_view input = R"json({"enum_value": []})json";
+  std::string_view input = R"json({"enum_value": []})json";
 
   EXPECT_THAT(ToProto<TestMessage>(input),
               StatusIs(absl::StatusCode::kInvalidArgument));
@@ -1064,7 +1064,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromArray) {
 }
 
 TEST_P(JsonTest, TestParsingRepeatedUnknownEnums) {
-  absl::string_view input = R"json({
+  std::string_view input = R"json({
     "repeated_enum_value": ["FOO", "BAZ", "BAR"]
   })json";
 

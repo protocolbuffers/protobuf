@@ -8,7 +8,7 @@
 #include "google/protobuf/any.h"
 
 #include "absl/strings/cord.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message.h"
@@ -29,14 +29,14 @@ bool InternalPackFrom(const Message& message, UrlType* PROTOBUF_NONNULL dst_url,
                               message.GetTypeName(), dst_url, dst_value);
 }
 
-bool InternalPackFrom(const Message& message, absl::string_view type_url_prefix,
+bool InternalPackFrom(const Message& message, std::string_view type_url_prefix,
                       UrlType* PROTOBUF_NONNULL dst_url,
                       ValueType* PROTOBUF_NONNULL dst_value) {
   return InternalPackFromLite(message, type_url_prefix, message.GetTypeName(),
                               dst_url, dst_value);
 }
 
-bool InternalUnpackTo(absl::string_view type_url, const ValueType& value,
+bool InternalUnpackTo(std::string_view type_url, const ValueType& value,
                       Message* PROTOBUF_NONNULL message) {
   return InternalUnpackToLite(message->GetTypeName(), type_url, value, message);
 }

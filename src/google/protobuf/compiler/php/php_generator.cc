@@ -20,7 +20,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/php/names.h"
 #include "google/protobuf/compiler/retention.h"
@@ -29,16 +29,16 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-constexpr absl::string_view kDescriptorFile =
+constexpr std::string_view kDescriptorFile =
     "google/protobuf/descriptor.proto";
-constexpr absl::string_view kEmptyFile = "google/protobuf/empty.proto";
-constexpr absl::string_view kEmptyMetadataFile =
+constexpr std::string_view kEmptyFile = "google/protobuf/empty.proto";
+constexpr std::string_view kEmptyMetadataFile =
     "GPBMetadata/Google/Protobuf/GPBEmpty.php";
-constexpr absl::string_view kDescriptorMetadataFile =
+constexpr std::string_view kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
-constexpr absl::string_view kDescriptorPackageName =
+constexpr std::string_view kDescriptorPackageName =
     "Google\\Protobuf\\Internal";
-constexpr absl::string_view kValidConstantNames[] = {
+constexpr std::string_view kValidConstantNames[] = {
     "int",  "float", "bool",     "string", "true", "false",
     "null", "void",  "iterable", "parent", "self", "readonly"};
 const int kValidConstantNamesSize = 12;
@@ -61,12 +61,12 @@ struct Options {
 namespace {
 
 // Forward decls.
-std::string PhpName(absl::string_view full_name, const Options& options);
+std::string PhpName(std::string_view full_name, const Options& options);
 std::string IntToString(int32_t value);
-std::string FilenameToClassname(absl::string_view filename);
+std::string FilenameToClassname(std::string_view filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
-std::string UnderscoresToCamelCase(absl::string_view name,
+std::string UnderscoresToCamelCase(std::string_view name,
                                    bool cap_first_letter);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
@@ -90,9 +90,9 @@ void GenerateEnumValueDocComment(io::Printer* printer,
 
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
-  absl::string_view full_name = desc->full_name();
+  std::string_view full_name = desc->full_name();
   if (is_internal) {
-    constexpr absl::string_view replace = "google.protobuf";
+    constexpr std::string_view replace = "google.protobuf";
     size_t index = full_name.find(replace);
     if (index != std::string::npos) {
       return absl::StrCat(full_name.substr(0, index),
@@ -103,7 +103,7 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
   return std::string(full_name);
 }
 
-std::string ConstantNamePrefix(absl::string_view classname) {
+std::string ConstantNamePrefix(std::string_view classname) {
   bool is_reserved = false;
 
   std::string lower = absl::AsciiStrToLower(classname);
@@ -128,7 +128,7 @@ template <typename DescriptorType>
 std::string RootPhpNamespace(const DescriptorType* desc,
                              const Options& options) {
   if (desc->file()->options().has_php_namespace()) {
-    absl::string_view php_namespace = desc->file()->options().php_namespace();
+    std::string_view php_namespace = desc->file()->options().php_namespace();
     if (!php_namespace.empty()) {
       return std::string(php_namespace);
     }
@@ -158,12 +158,12 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
   return FullClassName(desc, options);
 }
 
-std::string PhpNamePrefix(absl::string_view classname) {
+std::string PhpNamePrefix(std::string_view classname) {
   if (IsReservedName(classname)) return "PB";
   return "";
 }
 
-std::string PhpName(absl::string_view full_name, const Options& options) {
+std::string PhpName(std::string_view full_name, const Options& options) {
   if (options.is_descriptor) {
     return std::string(kDescriptorPackageName);
   }
@@ -235,7 +235,7 @@ std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
 
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
-  absl::string_view proto_file = file->name();
+  std::string_view proto_file = file->name();
   int start_index = 0;
   int first_index = proto_file.find_first_of('/', start_index);
   std::string result = "";
@@ -249,7 +249,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   }
 
   // Append directory name.
-  absl::string_view file_no_suffix;
+  std::string_view file_no_suffix;
   int lastindex = proto_file.find_last_of('.');
   if (proto_file == kEmptyFile) {
     return std::string(kEmptyMetadataFile);
@@ -258,7 +258,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   }
 
   if (file->options().has_php_metadata_namespace()) {
-    absl::string_view php_metadata_namespace =
+    std::string_view php_metadata_namespace =
         file->options().php_metadata_namespace();
     if (!php_metadata_namespace.empty() && php_metadata_namespace != "\\") {
       absl::StrAppend(&result, php_metadata_namespace);
@@ -478,7 +478,7 @@ std::string EnumOrMessageSuffix(const FieldDescriptor* field,
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string UnderscoresToCamelCase(absl::string_view name,
+std::string UnderscoresToCamelCase(std::string_view name,
                                    bool cap_first_letter) {
   std::string result;
   for (int i = 0; i < name.size(); i++) {
@@ -806,7 +806,7 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   Outdent(printer);
 }
 
-void GenerateMessageToPool(absl::string_view name_prefix,
+void GenerateMessageToPool(std::string_view name_prefix,
                            const Descriptor* message, io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
@@ -909,7 +909,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       printer->Print("$pool->finish();\n");
     } else {
       for (int i = 0; i < file->dependency_count(); i++) {
-        absl::string_view name = file->dependency(i)->name();
+        std::string_view name = file->dependency(i)->name();
         // Currently, descriptor.proto is not ready for external usage. Skip to
         // import it for now, so that its dependencies can still work as long as
         // they don't use protos defined in descriptor.proto.
@@ -1121,7 +1121,7 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
       "filename", file->name());
 }
 
-std::string FilenameToClassname(absl::string_view filename) {
+std::string FilenameToClassname(std::string_view filename) {
   size_t lastindex = filename.find_last_of('.');
   std::string result(filename.substr(0, lastindex));
   for (size_t i = 0; i < result.size(); i++) {
@@ -1431,7 +1431,7 @@ bool GenerateFile(const FileDescriptor* file, const Options& options,
   return true;
 }
 
-static std::string EscapePhpdoc(absl::string_view input) {
+static std::string EscapePhpdoc(std::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -1481,7 +1481,7 @@ static void GenerateDocCommentBodyForLocation(io::Printer* printer,
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<absl::string_view> lines =
+    std::vector<std::string_view> lines =
         absl::StrSplit(comments, '\n', absl::SkipEmpty());
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
@@ -1513,7 +1513,7 @@ static void GenerateDocCommentBody(io::Printer* printer,
   }
 }
 
-static std::string FirstLineOf(absl::string_view value) {
+static std::string FirstLineOf(std::string_view value) {
   std::string result(value);
 
   std::string::size_type pos = result.find_first_of('\n');

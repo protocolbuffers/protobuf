@@ -17,7 +17,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"
@@ -354,7 +354,7 @@ class NoFieldPresenceSwapFieldTest : public testing::Test {
 
   // Returns a field descriptor that corresponds to the field name.
   // Note that different messages would still return the same field descriptor.
-  const FieldDescriptor* FindFieldByName(absl::string_view field_name) {
+  const FieldDescriptor* FindFieldByName(std::string_view field_name) {
     const FieldDescriptor* f1 = d1_->FindFieldByName(field_name);
     const FieldDescriptor* f2 = d2_->FindFieldByName(field_name);
 
@@ -877,7 +877,7 @@ TEST(NoFieldPresenceTest, ParseEmptyStringFromWire) {
   //   Field number 15 with wire type LEN
   // Explicitly specify LEN to be zero, then it's basically an empty string
   //   encoded on the wire.
-  absl::string_view wire("\172\x00",  // 3:LEN 0
+  std::string_view wire("\172\x00",  // 3:LEN 0
                          2);
 
   TestAllTypes message;
@@ -902,7 +902,7 @@ TEST(MessageTest, ParseEmptyStringFromWireOverwritesExistingField) {
   //   Field number 15 with wire type LEN
   // Explicitly specify LEN to be zero, then it's basically an empty string
   //   encoded on the wire.
-  absl::string_view wire("\172\x00",  // 3:LEN 0
+  std::string_view wire("\172\x00",  // 3:LEN 0
                          2);
   message.MergeFromString(wire);
 
@@ -922,7 +922,7 @@ TEST(MessageTest, MergeEmptyMessageFromWire) {
   //   Field number 19 with wire type LEN
   // Explicitly specify LEN to be zero, then it's basically an empty message
   //   encoded on the wire.
-  absl::string_view wire("\x9A\x01\x00", 3);
+  std::string_view wire("\x9A\x01\x00", 3);
 
   TestAllTypes message;
   ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(19)->name(),
@@ -941,7 +941,7 @@ TEST(MessageTest, MergeEmptyMessageFromWireDoesNotOverwiteExisting) {
   //   Field number 19 with wire type LEN
   // Explicitly specify LEN to be zero, then it's basically an empty message
   //   encoded on the wire.
-  absl::string_view wire("\x9A\x01\x00", 3);
+  std::string_view wire("\x9A\x01\x00", 3);
 
   TestAllTypes message;
   ASSERT_EQ(TestAllTypes::GetDescriptor()->FindFieldByNumber(19)->name(),
@@ -972,7 +972,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
   ExplicitForeignMessage source;
   source.set_c(0);
   std::string wire = source.SerializeAsString();
-  ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
+  ASSERT_THAT(wire, StrEq(std::string_view{"\x08\x00", 2}));
 
   // The "parse" operation clears all fields before merging from wire.
   ASSERT_TRUE(dest.ParseFromString(wire));
@@ -993,7 +993,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireMergeTest) {
   ExplicitForeignMessage source;
   source.set_c(0);
   std::string wire = source.SerializeAsString();
-  ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
+  ASSERT_THAT(wire, StrEq(std::string_view{"\x08\x00", 2}));
 
   // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
   //                      well-defined.
@@ -1012,7 +1012,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireLastWins) {
   // check that, when the same field is present multiple times on the wire, we
   // always take the last one -- even if it is a zero.
 
-  absl::string_view wire{"\x08\x01\x08\x00", /*len=*/4};  // note the null-byte.
+  std::string_view wire{"\x08\x01\x08\x00", /*len=*/4};  // note the null-byte.
   ForeignMessage dest;
 
   // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is

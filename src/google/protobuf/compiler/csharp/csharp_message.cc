@@ -92,7 +92,7 @@ void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
@@ -356,7 +356,7 @@ bool MessageGenerator::HasNestedGeneratedTypes() {
 }
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   WriteGeneratedCodeAttributes(printer);
   vars["class_name"] = class_name();
   printer->Print(vars, "public $class_name$($class_name$ other) : this() {\n");
@@ -417,7 +417,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
 void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {}
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["class_name"] = class_name();
 
   // Equality
@@ -584,7 +584,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   // Note:  These are separate from GenerateMessageSerializationMethods()
   //   because they need to be generated even for messages that are optimized
   //   for code size.
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["class_name"] = class_name();
 
   WriteGeneratedCodeAttributes(printer);
@@ -667,7 +667,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 
 void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
                                              bool use_parse_context) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["maybe_ref_input"] = use_parse_context ? "ref input" : "input";
 
   printer->Emit(R"csharp(

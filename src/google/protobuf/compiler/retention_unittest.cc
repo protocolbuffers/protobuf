@@ -39,12 +39,12 @@ class FakeErrorCollector : public io::ErrorCollector {
   ~FakeErrorCollector() override = default;
 
   void RecordError(int line, io::ColumnNumber column,
-                   absl::string_view message) override {
+                   std::string_view message) override {
     ABSL_CHECK(false) << line << ":" << column << ": " << message;
   }
 
   void RecordWarning(int line, io::ColumnNumber column,
-                     absl::string_view message) override {
+                     std::string_view message) override {
     ABSL_CHECK(false) << line << ":" << column << ": " << message;
   }
 };
@@ -57,8 +57,8 @@ class RetentionStripTest : public testing::Test {
     pool_.BuildFile(descriptor_proto_descriptor);
   }
 
-  const FileDescriptor* ParseSchema(absl::string_view contents,
-                                    absl::string_view file_name = "foo.proto") {
+  const FileDescriptor* ParseSchema(std::string_view contents,
+                                    std::string_view file_name = "foo.proto") {
     std::string proto_file = absl::Substitute(
         R"schema(
           syntax = "proto2";
@@ -84,7 +84,7 @@ class RetentionStripTest : public testing::Test {
   }
 
   template <typename ProtoType>
-  ProtoType BuildDynamicProto(absl::string_view data) {
+  ProtoType BuildDynamicProto(std::string_view data) {
     // We use a dynamic message to generate the expected options proto. This
     // lets us parse the custom options in text format.
     const Descriptor* file_options_descriptor =

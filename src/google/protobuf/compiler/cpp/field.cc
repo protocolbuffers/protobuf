@@ -21,7 +21,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -308,7 +308,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
 
-  absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
+  std::string_view has_bits = IsMapEntryMessage(field->containing_type())
                                    ? "_has_bits_"
                                    : "_impl_._has_bits_";
 
@@ -337,7 +337,7 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("inlined_string_index", index);
   vars.emplace_back("inlined_string_mask", mask);
 
-  absl::string_view array = IsMapEntryMessage(field->containing_type())
+  std::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"
                                 : "_impl_._inlined_string_donated_";
 

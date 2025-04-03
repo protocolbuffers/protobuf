@@ -19,7 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -48,9 +48,9 @@ using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 // The `create_value` FunctionRef takes the representation of the value and
 // should use it to create and return the code that operates on this value.
 void AddPrimitiveVariableForThisAndOther(
-    absl::string_view this_variable_name, absl::string_view other_variable_name,
-    absl::FunctionRef<std::string(absl::string_view)> create_value,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    std::string_view this_variable_name, std::string_view other_variable_name,
+    absl::FunctionRef<std::string(std::string_view)> create_value,
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   (*variables)[this_variable_name] =
       create_value(absl::StrCat((*variables)["name"], "_"));
   (*variables)[other_variable_name] = create_value(
@@ -61,7 +61,7 @@ void SetPrimitiveVariables(
     const FieldDescriptor* descriptor, int message_bit_index,
     int builder_bit_index, const FieldGeneratorInfo* info,
     ClassNameResolver* name_resolver,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
+    absl::flat_hash_map<std::string_view, std::string>* variables,
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
@@ -142,7 +142,7 @@ void SetPrimitiveVariables(
       case FieldDescriptor::TYPE_BYTES:
         AddPrimitiveVariableForThisAndOther(
             "is_field_present_message", "is_other_field_present_message",
-            [](absl::string_view value) {
+            [](std::string_view value) {
               return absl::StrCat("!", value, ".isEmpty()");
             },
             variables);
@@ -150,7 +150,7 @@ void SetPrimitiveVariables(
       case FieldDescriptor::TYPE_FLOAT:
         AddPrimitiveVariableForThisAndOther(
             "is_field_present_message", "is_other_field_present_message",
-            [](absl::string_view value) {
+            [](std::string_view value) {
               return absl::StrCat("java.lang.Float.floatToRawIntBits(", value,
                                   ") != 0");
             },
@@ -159,7 +159,7 @@ void SetPrimitiveVariables(
       case FieldDescriptor::TYPE_DOUBLE:
         AddPrimitiveVariableForThisAndOther(
             "is_field_present_message", "is_other_field_present_message",
-            [](absl::string_view value) {
+            [](std::string_view value) {
               return absl::StrCat("java.lang.Double.doubleToRawLongBits(",
                                   value, ") != 0");
             },
@@ -168,7 +168,7 @@ void SetPrimitiveVariables(
       default:
         AddPrimitiveVariableForThisAndOther(
             "is_field_present_message", "is_other_field_present_message",
-            [variables](absl::string_view value) {
+            [variables](std::string_view value) {
               return absl::StrCat(value, " != ", (*variables)["default"]);
             },
             variables);

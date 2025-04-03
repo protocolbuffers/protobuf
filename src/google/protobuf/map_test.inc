@@ -1477,7 +1477,7 @@ void TestTransparent(const Key& key, const Key& miss_key) {
 // Emulate a non-Abseil string_view (e.g. STL when Abseil's alias is disabled).
 class CustomStringView {
   public:
-    CustomStringView(absl::string_view str) : str_(std::string(str)) {}
+    CustomStringView(std::string_view str) : str_(std::string(str)) {}
 
     const char* data() const { return str_.data(); }
     size_t size() const { return str_.size(); }
@@ -1485,7 +1485,7 @@ class CustomStringView {
     bool operator==(const CustomStringView& other) const {
       return other.str_ == str_;
     }
-    bool operator==(absl::string_view other) const { return other == str_; }
+    bool operator==(std::string_view other) const { return other == str_; }
     explicit operator std::string() const { return str_; }
     friend std::ostream& operator<<(std::ostream& out, const CustomStringView& view) {
       return out << view.str_;
@@ -1498,7 +1498,7 @@ class CustomStringView {
 TEST_F(MapImplTest, TransparentLookupForString) {
   TestTransparent("ABC", "LKJ");
   TestTransparent(std::string("ABC"), std::string("LKJ"));
-  TestTransparent(absl::string_view("ABC"), absl::string_view("LKJ"));
+  TestTransparent(std::string_view("ABC"), std::string_view("LKJ"));
   TestTransparent(CustomStringView("ABC"), CustomStringView("LKJ"));
 
   // std::reference_wrapper
@@ -2802,9 +2802,9 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnumThrowsAwayUnknownData) {
   //   2: 3     # this is an unknown enum. It should be kept.
   //   3: 120   # this is an extra field that will be discarded.
   // }
-  constexpr absl::string_view data = "\252\006\006\010\002\020\003\030x";
+  constexpr std::string_view data = "\252\006\006\010\002\020\003\030x";
   // Same as above, but without the extra field.
-  constexpr absl::string_view expected = "\252\006\004\010\002\020\003";
+  constexpr std::string_view expected = "\252\006\004\010\002\020\003";
   ASSERT_TRUE(to.ParseFromString(data));
   EXPECT_EQ(expected, to.SerializeAsString());
 
@@ -3067,17 +3067,17 @@ TEST(GeneratedMapFieldTest, InnerTagsInLongForm) {
   UNITTEST::TestMap message;
 
   // First, control
-  absl::string_view data("\012\004\010\007\020\005", 6);
+  std::string_view data("\012\004\010\007\020\005", 6);
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
 
   // Now we make the key tag long form
-  data = absl::string_view("\012\005\210\000\007\020\005", 7);
+  data = std::string_view("\012\005\210\000\007\020\005", 7);
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
 
   // Now we make the value tag long form
-  data = absl::string_view("\012\005\010\007\220\000\005", 7);
+  data = std::string_view("\012\005\010\007\220\000\005", 7);
   ASSERT_TRUE(message.ParseFromString(data));
   EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
 }

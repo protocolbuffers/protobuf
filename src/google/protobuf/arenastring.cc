@@ -18,7 +18,7 @@
 #include "absl/base/const_init.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -82,7 +82,7 @@ class ScopedCheckPtrInvariants {
 #endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates a heap allocated std::string value.
-inline TaggedStringPtr CreateString(absl::string_view value) {
+inline TaggedStringPtr CreateString(std::string_view value) {
   TaggedStringPtr res;
   res.SetAllocated(new std::string(value.data(), value.length()));
   return res;
@@ -91,7 +91,7 @@ inline TaggedStringPtr CreateString(absl::string_view value) {
 #ifndef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates an arena allocated std::string value.
-TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
+TaggedStringPtr CreateArenaString(Arena& arena, std::string_view s) {
   TaggedStringPtr res;
   res.SetMutableArena(Arena::Create<std::string>(&arena, s.data(), s.length()));
   return res;
@@ -106,7 +106,7 @@ TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
                           : CreateString(*Get());
 }
 
-void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
+void ArenaStringPtr::Set(std::string_view value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid

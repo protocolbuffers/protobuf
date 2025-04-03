@@ -16,7 +16,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
@@ -28,13 +28,13 @@ namespace compiler {
 namespace python {
 
 // Returns the Python module name expected for a given .proto filename.
-std::string ModuleName(absl::string_view filename) {
+std::string ModuleName(std::string_view filename) {
   std::string basename = StripProto(filename);
   absl::StrReplaceAll({{"-", "_"}, {"/", "."}}, &basename);
   return absl::StrCat(basename, "_pb2");
 }
 
-std::string StrippedModuleName(absl::string_view filename) {
+std::string StrippedModuleName(std::string_view filename) {
   std::string module_name = ModuleName(filename);
   return module_name;
 }
@@ -51,8 +51,8 @@ const char* const kKeywords[] = {
 const char* const* kKeywordsEnd =
     kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
 
-bool ContainsPythonKeyword(absl::string_view module_name) {
-  std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
+bool ContainsPythonKeyword(std::string_view module_name) {
+  std::vector<std::string_view> tokens = absl::StrSplit(module_name, '.');
   for (int i = 0; i < static_cast<int>(tokens.size()); ++i) {
     if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
       return true;
@@ -61,11 +61,11 @@ bool ContainsPythonKeyword(absl::string_view module_name) {
   return false;
 }
 
-bool IsPythonKeyword(absl::string_view name) {
+bool IsPythonKeyword(std::string_view name) {
   return (std::find(kKeywords, kKeywordsEnd, name) != kKeywordsEnd);
 }
 
-std::string ResolveKeyword(absl::string_view name) {
+std::string ResolveKeyword(std::string_view name) {
   if (IsPythonKeyword(name)) {
     return absl::StrCat("globals()['", name, "']");
   }
@@ -73,7 +73,7 @@ std::string ResolveKeyword(absl::string_view name) {
 }
 
 std::string GetFileName(const FileDescriptor* file_des,
-                        absl::string_view suffix) {
+                        std::string_view suffix) {
   std::string module_name = ModuleName(file_des->name());
   std::string filename = module_name;
   absl::StrReplaceAll({{".", "/"}}, &filename);
@@ -93,7 +93,7 @@ std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
 
 template <typename DescriptorT>
 std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
-                                        absl::string_view separator) {
+                                        std::string_view separator) {
   std::string name = std::string(descriptor.name());
   const Descriptor* parent = descriptor.containing_type();
   if (parent != nullptr) {
@@ -111,9 +111,9 @@ std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
 }
 
 template std::string NamePrefixedWithNestedTypes<Descriptor>(
-    const Descriptor& descriptor, absl::string_view separator);
+    const Descriptor& descriptor, std::string_view separator);
 template std::string NamePrefixedWithNestedTypes<EnumDescriptor>(
-    const EnumDescriptor& descriptor, absl::string_view separator);
+    const EnumDescriptor& descriptor, std::string_view separator);
 
 }  // namespace python
 }  // namespace compiler

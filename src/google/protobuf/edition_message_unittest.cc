@@ -21,7 +21,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/arena.h"
 #include "google/protobuf/edition_unittest.pb.h"
 #include "google/protobuf/explicitly_constructed.h"

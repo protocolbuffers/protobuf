@@ -2,7 +2,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "rust/test/shared/utf8/feature_verify.pb.h"
 #include "rust/test/shared/utf8/no_features_proto2.pb.h"
 #include "rust/test/shared/utf8/no_features_proto3.pb.h"
@@ -23,7 +23,7 @@ TEST(Utf8Test, TestProto2) {
   // No error on setter.
   no_features_proto2.set_my_field(kInvalidUtf8);
   EXPECT_THAT(no_features_proto2.my_field(),
-              Eq(absl::string_view(kInvalidUtf8)));
+              Eq(std::string_view(kInvalidUtf8)));
 
   // No error on serialization.
   std::string serialized_nonutf8 = no_features_proto2.SerializeAsString();
@@ -40,7 +40,7 @@ TEST(Utf8Test, TestProto3) {
   // No error on setter.
   no_features_proto3.set_my_field(kInvalidUtf8);
   EXPECT_THAT(no_features_proto3.my_field(),
-              Eq(absl::string_view(kInvalidUtf8)));
+              Eq(std::string_view(kInvalidUtf8)));
 
   // No error on serialization.
   std::string serialized_nonutf8 = no_features_proto3.SerializeAsString();
@@ -56,7 +56,7 @@ TEST(Utf8Test, TestEditionsVerify) {
 
   // No error on setter.
   verify.set_my_field(kInvalidUtf8);
-  EXPECT_THAT(verify.my_field(), Eq(absl::string_view(kInvalidUtf8)));
+  EXPECT_THAT(verify.my_field(), Eq(std::string_view(kInvalidUtf8)));
 
   // No error on serialization.
   std::string serialized_nonutf8 = verify.SerializeAsString();

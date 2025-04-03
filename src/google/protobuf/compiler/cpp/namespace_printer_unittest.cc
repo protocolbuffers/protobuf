@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -23,7 +23,7 @@ class NamespacePrinterTest : public testing::Test {
     ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
-  absl::string_view written() {
+  std::string_view written() {
     stream_.reset();
     return out_;
   }

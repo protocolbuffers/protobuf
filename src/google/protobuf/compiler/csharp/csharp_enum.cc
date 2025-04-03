@@ -50,7 +50,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     if (descriptor_->value(i)->options().deprecated()) {
       printer->Print("[global::System.ObsoleteAttribute]\n");
     }
-    const absl::string_view original_name = descriptor_->value(i)->name();
+    const std::string_view original_name = descriptor_->value(i)->name();
     std::string name =
         GetEnumValueName(descriptor_->name(), descriptor_->value(i)->name());
     // Make sure we don't get any duplicate names due to prefix removal.

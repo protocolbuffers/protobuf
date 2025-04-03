@@ -17,7 +17,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -70,7 +70,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   for (const EnumValueDescriptor* value : canonical_values_) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["name"] = std::string(value->name());
     vars["number"] = absl::StrCat(value->number());
     WriteEnumValueDocComment(printer, value, context_->options());
@@ -93,7 +93,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   for (const Alias& alias : aliases_) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["classname"] = std::string(descriptor_->name());
     vars["name"] = std::string(alias.value->name());
     vars["canonical_name"] = std::string(alias.canonical_value->name());
@@ -104,7 +104,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["name"] = std::string(descriptor_->value(i)->name());
     vars["number"] = absl::StrCat(descriptor_->value(i)->number());
     vars["{"] = "";

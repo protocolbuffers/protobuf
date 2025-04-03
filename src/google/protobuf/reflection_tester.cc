@@ -23,7 +23,7 @@ namespace protobuf {
 MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  const absl::string_view package = base_descriptor->file()->package();
+  const std::string_view package = base_descriptor->file()->package();
 
   map_enum_foo_ =
       pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_FOO"));
@@ -192,7 +192,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
-const FieldDescriptor* MapReflectionTester::F(absl::string_view name) {
+const FieldDescriptor* MapReflectionTester::F(std::string_view name) {
   const FieldDescriptor* result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
   ABSL_CHECK(result != nullptr);
@@ -604,7 +604,7 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
 }
 
 void MapReflectionTester::GetMapValueViaMapReflection(
-    Message* message, absl::string_view field_name, const MapKey& map_key,
+    Message* message, std::string_view field_name, const MapKey& map_key,
     MapValueRef* map_val) {
   const Reflection* reflection = message->GetReflection();
   EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
@@ -612,31 +612,31 @@ void MapReflectionTester::GetMapValueViaMapReflection(
 }
 
 void MapReflectionTester::DeleteMapValueViaMapReflection(
-    Message* message, absl::string_view field_name, const MapKey& map_key) {
+    Message* message, std::string_view field_name, const MapKey& map_key) {
   const Reflection* reflection = message->GetReflection();
   reflection->DeleteMapValue(message, F(field_name), map_key);
 }
 
 Message* MapReflectionTester::GetMapEntryViaReflection(
-    Message* message, absl::string_view field_name, int index) {
+    Message* message, std::string_view field_name, int index) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
 MapIterator MapReflectionTester::MapBegin(Message* message,
-                                          absl::string_view field_name) {
+                                          std::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapBegin(message, F(field_name));
 }
 
 MapIterator MapReflectionTester::MapEnd(Message* message,
-                                        absl::string_view field_name) {
+                                        std::string_view field_name) {
   const Reflection* reflection = message->GetReflection();
   return reflection->MapEnd(message, F(field_name));
 }
 
 int MapReflectionTester::MapSize(const Message& message,
-                                 absl::string_view field_name) {
+                                 std::string_view field_name) {
   const Reflection* reflection = message.GetReflection();
   return reflection->MapSize(message, F(field_name));
 }

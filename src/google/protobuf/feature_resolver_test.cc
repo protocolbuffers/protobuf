@@ -18,7 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -755,10 +755,10 @@ class FakeErrorCollector : public io::ErrorCollector {
  public:
   FakeErrorCollector() = default;
   ~FakeErrorCollector() override = default;
-  void RecordWarning(int line, int column, absl::string_view message) override {
+  void RecordWarning(int line, int column, std::string_view message) override {
     ABSL_LOG(WARNING) << line << ":" << column << ": " << message;
   }
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     ABSL_LOG(ERROR) << line << ":" << column << ": " << message;
   }
 };
@@ -777,7 +777,7 @@ class FeatureResolverPoolTest : public testing::Test {
     defaults_ = std::move(defaults).value();
   }
 
-  const FileDescriptor* ParseSchema(absl::string_view schema) {
+  const FileDescriptor* ParseSchema(std::string_view schema) {
     FakeErrorCollector error_collector;
     io::ArrayInputStream raw_input(schema.data(), schema.size());
     io::Tokenizer input(&raw_input, &error_collector);
@@ -1924,7 +1924,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
 
 class FeatureUnboundedTypeTest
     : public FeatureResolverPoolTest,
-      public ::testing::WithParamInterface<absl::string_view> {};
+      public ::testing::WithParamInterface<std::string_view> {};
 
 TEST_P(FeatureUnboundedTypeTest, CompileDefaults) {
   const FileDescriptor* file = ParseSchema(absl::Substitute(R"schema(

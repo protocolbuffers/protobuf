@@ -7,7 +7,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
@@ -23,7 +23,7 @@ class LuaGenerator : public protoc::CodeGenerator {
                 std::string* error) const override;
 };
 
-static std::string StripExtension(absl::string_view fname) {
+static std::string StripExtension(std::string_view fname) {
   size_t lastdot = fname.find_last_of('.');
   if (lastdot == std::string::npos) {
     return std::string(fname);
@@ -55,7 +55,7 @@ static bool IsPrint(int ch) {
   return ch < 0 ? false : isprint(ch);
 }
 
-static void PrintString(int max_cols, absl::string_view* str,
+static void PrintString(int max_cols, std::string_view* str,
                         protobuf::io::Printer* printer) {
   printer->Print("\'");
   while (max_cols > 0 && !str->empty()) {
@@ -102,7 +102,7 @@ bool LuaGenerator::Generate(const protobuf::FileDescriptor* file,
   file_proto.SerializeToString(&file_data);
 
   printer.Print("local descriptor = table.concat({\n");
-  absl::string_view data(file_data);
+  std::string_view data(file_data);
   while (!data.empty()) {
     printer.Print("  ");
     PrintString(72, &data, &printer);

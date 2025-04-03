@@ -39,7 +39,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
@@ -435,14 +435,14 @@ TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
   const char encoded[] = {"\n\x3\x80\0\0"};
   UNITTEST::NestedTestAllTypes parsed;
   EXPECT_FALSE(parsed.ParsePartialFromString(
-      absl::string_view{encoded, sizeof(encoded) - 1}));
+      std::string_view{encoded, sizeof(encoded) - 1}));
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroField) {
   const char encoded[] = {"\012\x6\205\0\0\0\0\0"};
   UNITTEST::NestedTestAllTypes parsed;
   EXPECT_FALSE(parsed.ParsePartialFromString(
-      absl::string_view{encoded, sizeof(encoded) - 1}));
+      std::string_view{encoded, sizeof(encoded) - 1}));
 }
 
 TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
@@ -1933,7 +1933,7 @@ std::string EncodeStringValue(int number, const std::string& value) {
 
 class TestInputStream final : public io::ZeroCopyInputStream {
  public:
-  explicit TestInputStream(absl::string_view payload, size_t break_pos)
+  explicit TestInputStream(std::string_view payload, size_t break_pos)
       : payload_(payload), break_pos_(break_pos) {}
 
   bool Next(const void** data, int* size) override {
@@ -1959,7 +1959,7 @@ class TestInputStream final : public io::ZeroCopyInputStream {
   }
 
  private:
-  absl::string_view payload_;
+  std::string_view payload_;
   size_t break_pos_;
 };
 }  // namespace
@@ -2082,7 +2082,7 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
 TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
   UNITTEST::TestAllTypes msg;
 
-  msg.set_optional_string(absl::string_view("Abcdef"));
+  msg.set_optional_string(std::string_view("Abcdef"));
   EXPECT_EQ(msg.optional_string(), "Abcdef");
 
   msg.set_optional_string("Asciiz");
@@ -2109,7 +2109,7 @@ TEST(MESSAGE_TEST_NAME, AllSetMethodsOnRepeatedStringField) {
 
   msg.add_repeated_string("");
 
-  msg.set_repeated_string(0, absl::string_view("Abcdef"));
+  msg.set_repeated_string(0, std::string_view("Abcdef"));
   EXPECT_EQ(msg.repeated_string(0), "Abcdef");
 
   msg.set_repeated_string(0, "Asciiz");
@@ -2134,7 +2134,7 @@ TEST(MESSAGE_TEST_NAME, AllSetMethodsOnRepeatedStringField) {
 TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
   UNITTEST::TestAllTypes msg;
 
-  msg.add_repeated_string(absl::string_view("Abcdef"));
+  msg.add_repeated_string(std::string_view("Abcdef"));
   EXPECT_EQ(msg.repeated_string(0), "Abcdef");
   msg.clear_repeated_string();
 

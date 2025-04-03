@@ -40,7 +40,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -215,7 +215,7 @@ class PDProtoAnalyzer {
   const FileDescriptor* current_file_ = nullptr;
 };
 
-size_t GetLongestName(const DescriptorPool& pool, absl::string_view name,
+size_t GetLongestName(const DescriptorPool& pool, std::string_view name,
                       size_t min_length) {
   size_t pos = name.length();
   while (pos > min_length) {
@@ -229,7 +229,7 @@ size_t GetLongestName(const DescriptorPool& pool, absl::string_view name,
 }
 
 const Descriptor* FindMessageTypeByCppName(const DescriptorPool& pool,
-                                           absl::string_view name) {
+                                           std::string_view name) {
   std::string s = absl::StrReplaceAll(name, {{"::", "."}});
   const Descriptor* descriptor = pool.FindMessageTypeByName(s);
   if (descriptor) return descriptor;
@@ -288,7 +288,7 @@ std::string TypeName(const FieldDescriptor* descriptor) {
   return s;
 }
 
-absl::StatusOr<AccessInfo> AccessInfoFromFile(absl::string_view profile) {
+absl::StatusOr<AccessInfo> AccessInfoFromFile(std::string_view profile) {
   absl::Cord cord;
   absl::Status status = GetContents(profile, &cord, true);
   if (!status.ok()) {
@@ -431,7 +431,7 @@ std::ostream& operator<<(std::ostream& s, Stats stats) {
 }  // namespace
 
 static absl::StatusOr<Stats> AnalyzeProfileProto(
-    std::ostream& stream, absl::string_view proto_profile,
+    std::ostream& stream, std::string_view proto_profile,
     const AnalyzeProfileProtoOptions& options) {
   if (options.pool == nullptr) {
     return absl::InvalidArgumentError("pool must not be null");
@@ -519,7 +519,7 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
 }
 
 absl::Status AnalyzeProfileProtoToText(
-    std::ostream& stream, absl::string_view proto_profile,
+    std::ostream& stream, std::string_view proto_profile,
     const AnalyzeProfileProtoOptions& options) {
   return AnalyzeProfileProto(stream, proto_profile, options).status();
 }
@@ -527,7 +527,7 @@ absl::Status AnalyzeProfileProtoToText(
 namespace {
 
 absl::StatusOr<std::vector<std::string>> FindProtoProfileFiles(
-    absl::string_view root) {
+    std::string_view root) {
   std::vector<std::string> paths;
   FileYielder yielder;
   int errors = 0;
@@ -593,7 +593,7 @@ ParallelRunResults RunInParallel(
 }  // namespace
 
 absl::Status AnalyzeAndAggregateProfileProtosToText(
-    std::ostream& stream, absl::string_view root,
+    std::ostream& stream, std::string_view root,
     const AnalyzeProfileProtoOptions& options) {
   // Find files.
   ASSIGN_OR_RETURN(const auto paths, FindProtoProfileFiles(root));

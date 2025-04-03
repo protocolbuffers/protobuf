@@ -10,7 +10,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/rust/context.h"
 
 using google::protobuf::compiler::rust::Options;
@@ -25,16 +25,16 @@ namespace rust {
 
 namespace {
 
-std::string WriteStringToTempFile(absl::string_view text) {
+std::string WriteStringToTempFile(std::string_view text) {
   std::string path = absl::StrCat(TestTempDir(), "crate_mapping");
   File::WriteStringToFileOrDie(text, path);
   return path;
 }
 
-std::string SkipLeadingWhitespace(absl::string_view text) {
+std::string SkipLeadingWhitespace(std::string_view text) {
   std::string result;
-  for (absl::string_view line : absl::StrSplit(text, '\n', absl::SkipEmpty())) {
-    absl::string_view stripped_line = absl::StripLeadingAsciiWhitespace(line);
+  for (std::string_view line : absl::StrSplit(text, '\n', absl::SkipEmpty())) {
+    std::string_view stripped_line = absl::StripLeadingAsciiWhitespace(line);
     // Deal with old libc++ on OSS Protobuf CI workers
     result.append(stripped_line.data(), stripped_line.size());
     result.append("\n");

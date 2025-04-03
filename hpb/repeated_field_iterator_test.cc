@@ -17,7 +17,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/message/array.h"
 
@@ -228,7 +228,7 @@ TEST(ScalarIteratorTest, IteratorBasedAlgorithmsWork) {
   EXPECT_THAT(v, ElementsAre(10, 12, 14, 16, 18, 11, 13, 15, 17, 19));
 }
 
-const char* CloneString(hpb::Arena& arena, absl::string_view str) {
+const char* CloneString(hpb::Arena& arena, std::string_view str) {
   char* data = (char*)upb_Arena_Malloc(arena.ptr(), str.size());
   memcpy(data, str.data(), str.size());
   return data;
@@ -236,7 +236,7 @@ const char* CloneString(hpb::Arena& arena, absl::string_view str) {
 upb_Array* MakeStringArray(hpb::Arena& arena,
                            const std::vector<std::string>& input) {
   upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_String);
-  for (absl::string_view str : input) {
+  for (std::string_view str : input) {
     upb_MessageValue message_value;
     message_value.str_val =
         upb_StringView_FromDataAndSize(CloneString(arena, str), str.size());
@@ -251,14 +251,14 @@ TEST(StringReferenceTest, BasicOperationsWork) {
 
   auto read = [&] {
     upb_MessageValue message_value = upb_Array_Get(arr, 0);
-    return absl::string_view(message_value.str_val.data,
+    return std::string_view(message_value.str_val.data,
                              message_value.str_val.size);
   };
 
-  StringRef<absl::string_view> p =
-      IteratorTestPeer::MakeStringRefProxy<absl::string_view>(arr, arena);
-  StringRef<const absl::string_view> cp =
-      IteratorTestPeer::MakeStringRefProxy<const absl::string_view>(arr, arena);
+  StringRef<std::string_view> p =
+      IteratorTestPeer::MakeStringRefProxy<std::string_view>(arr, arena);
+  StringRef<const std::string_view> cp =
+      IteratorTestPeer::MakeStringRefProxy<const std::string_view>(arr, arena);
   EXPECT_EQ(read(), "");
   EXPECT_EQ(p, "");
   p = "ABC";
@@ -273,11 +273,11 @@ TEST(StringReferenceTest, BasicOperationsWork) {
   EXPECT_FALSE((std::is_assignable<decltype(cp), int>::value));
 
   // Check that implicit conversion works T -> const T
-  StringRef<const absl::string_view> cp2 = p;
+  StringRef<const std::string_view> cp2 = p;
   EXPECT_EQ(cp2, "XBC");
 
   EXPECT_FALSE(
-      (std::is_convertible<decltype(cp), StringRef<absl::string_view>>::value));
+      (std::is_convertible<decltype(cp), StringRef<std::string_view>>::value));
 
   EXPECT_THAT(RunCompares(p, "XBC"),
               ElementsAre(true, false, false, true, false, true));
@@ -296,9 +296,9 @@ TEST(StringReferenceTest, AssignmentAndSwap) {
   upb_Array* arr1 = MakeStringArray(arena, {"ABC"});
   upb_Array* arr2 = MakeStringArray(arena, {"DEF"});
 
-  auto p = IteratorTestPeer::MakeStringRefProxy<absl::string_view>(arr1, arena);
+  auto p = IteratorTestPeer::MakeStringRefProxy<std::string_view>(arr1, arena);
   auto p2 =
-      IteratorTestPeer::MakeStringRefProxy<absl::string_view>(arr2, arena);
+      IteratorTestPeer::MakeStringRefProxy<std::string_view>(arr2, arena);
 
   EXPECT_EQ(p, "ABC");
   EXPECT_EQ(p2, "DEF");
@@ -355,18 +355,18 @@ TEST(StringIteratorTest, BasicOperationsWork) {
   hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
-  TestStringIterator<const absl::string_view>(arena, array);
-  TestStringIterator<absl::string_view>(arena, array);
+  TestStringIterator<const std::string_view>(arena, array);
+  TestStringIterator<std::string_view>(arena, array);
 }
 
 TEST(StringIteratorTest, Convertibility) {
   hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
-  StringIterator<absl::string_view> it =
-      IteratorTestPeer::MakeStringIterator<absl::string_view>(array, arena);
+  StringIterator<std::string_view> it =
+      IteratorTestPeer::MakeStringIterator<std::string_view>(array, arena);
   it += 4;
-  StringIterator<const absl::string_view> cit = it;
+  StringIterator<const std::string_view> cit = it;
   EXPECT_EQ(*it, "14");
   EXPECT_EQ(*cit, "14");
   it += 2;
@@ -376,44 +376,44 @@ TEST(StringIteratorTest, Convertibility) {
   EXPECT_EQ(*it, "16");
   EXPECT_EQ(*cit, "16");
 
-  EXPECT_FALSE((std::is_convertible<StringIterator<const absl::string_view>,
-                                    StringIterator<absl::string_view>>::value));
+  EXPECT_FALSE((std::is_convertible<StringIterator<const std::string_view>,
+                                    StringIterator<std::string_view>>::value));
   EXPECT_FALSE(
-      (std::is_assignable<StringIterator<absl::string_view>,
-                          StringIterator<const absl::string_view>>::value));
+      (std::is_assignable<StringIterator<std::string_view>,
+                          StringIterator<const std::string_view>>::value));
 }
 
 TEST(StringIteratorTest, MutabilityOnlyWorksOnMutable) {
   hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
-  StringIterator<absl::string_view> it =
-      IteratorTestPeer::MakeStringIterator<absl::string_view>(array, arena);
+  StringIterator<std::string_view> it =
+      IteratorTestPeer::MakeStringIterator<std::string_view>(array, arena);
 
   auto read = [&] {
     upb_MessageValue message_value = upb_Array_Get(array, 3);
-    return absl::string_view(message_value.str_val.data,
+    return std::string_view(message_value.str_val.data,
                              message_value.str_val.size);
   };
 
   EXPECT_EQ(read(), "13");
   it[3] = "113";
   EXPECT_EQ(read(), "113");
-  StringIterator<const absl::string_view> cit = it;
-  EXPECT_FALSE((std::is_assignable<decltype(*cit), absl::string_view>::value));
+  StringIterator<const std::string_view> cit = it;
+  EXPECT_FALSE((std::is_assignable<decltype(*cit), std::string_view>::value));
   EXPECT_FALSE(
-      (std::is_assignable<decltype(cit[1]), absl::string_view>::value));
+      (std::is_assignable<decltype(cit[1]), std::string_view>::value));
 }
 
 TEST(StringIteratorTest, IteratorReferenceInteraction) {
   hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
-  StringIterator<absl::string_view> it =
-      IteratorTestPeer::MakeStringIterator<absl::string_view>(array, arena);
+  StringIterator<std::string_view> it =
+      IteratorTestPeer::MakeStringIterator<std::string_view>(array, arena);
   EXPECT_EQ(it[4], "14");
   // op& from references goes back to iterator.
-  StringIterator<absl::string_view> it2 = &it[4];
+  StringIterator<std::string_view> it2 = &it[4];
   EXPECT_EQ(it + 4, it2);
 }
 
@@ -421,11 +421,11 @@ TEST(StringIteratorTest, IteratorBasedAlgorithmsWork) {
   hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
-  StringIterator<absl::string_view> it =
-      IteratorTestPeer::MakeStringIterator<absl::string_view>(array, arena);
+  StringIterator<std::string_view> it =
+      IteratorTestPeer::MakeStringIterator<std::string_view>(array, arena);
 
   auto read = [&] {
-    std::vector<absl::string_view> v;
+    std::vector<std::string_view> v;
     for (int i = 0; i < 10; ++i) {
       upb_MessageValue message_value = upb_Array_Get(array, i);
       v.emplace_back(message_value.str_val.data, message_value.str_val.size);
@@ -435,7 +435,7 @@ TEST(StringIteratorTest, IteratorBasedAlgorithmsWork) {
 
   EXPECT_THAT(read(), ElementsAre("10", "11", "12", "13", "14",  //
                                   "15", "16", "17", "18", "19"));
-  std::sort(it, it + 10, [](absl::string_view a, absl::string_view b) {
+  std::sort(it, it + 10, [](std::string_view a, std::string_view b) {
     return std::tuple(a[1] % 2, a) < std::tuple(b[1] % 2, b);
   });
   EXPECT_THAT(read(), ElementsAre("10", "12", "14", "16", "18",  //

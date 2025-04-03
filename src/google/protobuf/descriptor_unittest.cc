@@ -51,7 +51,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/notification.h"
@@ -131,7 +131,7 @@ DescriptorProto* AddNestedMessage(DescriptorProto* parent,
 }
 
 EnumDescriptorProto* AddEnum(FileDescriptorProto* file,
-                             absl::string_view name) {
+                             std::string_view name) {
   EnumDescriptorProto* result = file->add_enum_type();
   result->set_name(name);
   return result;
@@ -235,7 +235,7 @@ MethodDescriptorProto* AddMethod(ServiceDescriptorProto* service,
 
 // Empty enums technically aren't allowed.  We need to insert a dummy value
 // into them.
-void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
+void AddEmptyEnum(FileDescriptorProto* file, std::string_view name) {
   AddEnumValue(AddEnum(file, name), absl::StrCat(name, "_DUMMY"), 1);
 }
 
@@ -248,18 +248,18 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, absl::string_view element_name,
+  void RecordError(std::string_view filename, std::string_view element_name,
                    const Message* descriptor, ErrorLocation location,
-                   absl::string_view message) override {
+                   std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0: $1: $2: $3\n", filename,
                               element_name, ErrorLocationName(location),
                               message);
   }
 
   // implements ErrorCollector ---------------------------------------
-  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+  void RecordWarning(std::string_view filename, std::string_view element_name,
                      const Message* descriptor, ErrorLocation location,
-                     absl::string_view message) override {
+                     std::string_view message) override {
     absl::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
                               element_name, ErrorLocationName(location),
                               message);
@@ -576,8 +576,8 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
 }
 
 void ExtractDebugString(
-    const FileDescriptor* file, absl::flat_hash_set<absl::string_view>* visited,
-    std::vector<std::pair<absl::string_view, std::string>>* debug_strings) {
+    const FileDescriptor* file, absl::flat_hash_set<std::string_view>* visited,
+    std::vector<std::pair<std::string_view, std::string>>* debug_strings) {
   if (!visited->insert(file->name()).second) {
     return;
   }
@@ -590,7 +590,7 @@ void ExtractDebugString(
 class SimpleErrorCollector : public io::ErrorCollector {
  public:
   // implements ErrorCollector ---------------------------------------
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
   }
 
@@ -602,8 +602,8 @@ class SimpleErrorCollector : public io::ErrorCollector {
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
-  absl::flat_hash_set<absl::string_view> visited;
-  std::vector<std::pair<absl::string_view, std::string>> debug_strings;
+  absl::flat_hash_set<std::string_view> visited;
+  std::vector<std::pair<std::string_view, std::string>> debug_strings;
   ExtractDebugString(proto2_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
   ExtractDebugString(
@@ -615,7 +615,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
 
   DescriptorPool pool;
   for (size_t i = 0; i < debug_strings.size(); ++i) {
-    const absl::string_view name = debug_strings[i].first;
+    const std::string_view name = debug_strings[i].first;
     const std::string& content = debug_strings[i].second;
     io::ArrayInputStream input_stream(content.data(), content.size());
     SimpleErrorCollector error_collector;
@@ -856,7 +856,7 @@ TEST_F(DescriptorTest, ContainingType) {
 
 TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
   const auto collect_unique_names = [](const FieldDescriptor* field) {
-    absl::btree_set<absl::string_view> names{
+    absl::btree_set<std::string_view> names{
         field->name(), field->lowercase_name(), field->camelcase_name(),
         field->json_name()};
     // For names following the style guide, verify that we have the same number
@@ -880,12 +880,12 @@ TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
 }
 
 TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
-  // Name accessors where migrated from std::string to absl::string_view.
+  // Name accessors where migrated from std::string to std::string_view.
   // Some callers were taking the C-String out of the std::string via `.data()`
   // and that code kept working when the type was changed.
   // We want to keep that working for now to prevent breaking these users
   // dynamically.
-  const auto check_nul_terminated = [](absl::string_view view) {
+  const auto check_nul_terminated = [](std::string_view view) {
     EXPECT_EQ(view.data()[view.size()], '\0');
   };
   const auto check_nul_names = [&](auto* entity) {
@@ -910,7 +910,7 @@ TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
 
 TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
   const auto names = [&](auto* field) {
-    return std::vector<absl::string_view>{
+    return std::vector<std::string_view>{
         field->name(), field->lowercase_name(), field->camelcase_name(),
         field->json_name()};
   };
@@ -2687,7 +2687,7 @@ class MiscTest : public testing::Test {
     }
   }
 
-  absl::string_view GetTypeNameForFieldType(FieldDescriptor::Type type) {
+  std::string_view GetTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->type_name() : "";
   }
@@ -2698,7 +2698,7 @@ class MiscTest : public testing::Test {
                             : static_cast<FieldDescriptor::CppType>(0);
   }
 
-  absl::string_view GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
+  std::string_view GetCppTypeNameForFieldType(FieldDescriptor::Type type) {
     const FieldDescriptor* field = GetFieldDescriptorOfType(type);
     return field != nullptr ? field->cpp_type_name() : "";
   }
@@ -2723,39 +2723,39 @@ TEST_F(MiscTest, TypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("double"),
+  EXPECT_EQ(std::string_view("double"),
             GetTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"),
+  EXPECT_EQ(std::string_view("float"),
             GetTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("int64"),
+  EXPECT_EQ(std::string_view("int64"),
             GetTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint64"),
+  EXPECT_EQ(std::string_view("uint64"),
             GetTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_EQ(absl::string_view("int32"),
+  EXPECT_EQ(std::string_view("int32"),
             GetTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_EQ(absl::string_view("fixed64"),
+  EXPECT_EQ(std::string_view("fixed64"),
             GetTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_EQ(absl::string_view("fixed32"),
+  EXPECT_EQ(std::string_view("fixed32"),
             GetTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_EQ(absl::string_view("bool"), GetTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_EQ(absl::string_view("string"),
+  EXPECT_EQ(std::string_view("bool"), GetTypeNameForFieldType(FD::TYPE_BOOL));
+  EXPECT_EQ(std::string_view("string"),
             GetTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_EQ(absl::string_view("group"),
+  EXPECT_EQ(std::string_view("group"),
             GetTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_EQ(absl::string_view("message"),
+  EXPECT_EQ(std::string_view("message"),
             GetTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_EQ(absl::string_view("bytes"),
+  EXPECT_EQ(std::string_view("bytes"),
             GetTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_EQ(absl::string_view("uint32"),
+  EXPECT_EQ(std::string_view("uint32"),
             GetTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_EQ(absl::string_view("enum"), GetTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_EQ(absl::string_view("sfixed32"),
+  EXPECT_EQ(std::string_view("enum"), GetTypeNameForFieldType(FD::TYPE_ENUM));
+  EXPECT_EQ(std::string_view("sfixed32"),
             GetTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_EQ(absl::string_view("sfixed64"),
+  EXPECT_EQ(std::string_view("sfixed64"),
             GetTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_EQ(absl::string_view("sint32"),
+  EXPECT_EQ(std::string_view("sint32"),
             GetTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_EQ(absl::string_view("sint64"),
+  EXPECT_EQ(std::string_view("sint64"),
             GetTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
@@ -2764,24 +2764,24 @@ TEST_F(MiscTest, StaticTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("double"), FD::TypeName(FD::TYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"), FD::TypeName(FD::TYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("int64"), FD::TypeName(FD::TYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint64"), FD::TypeName(FD::TYPE_UINT64));
-  EXPECT_EQ(absl::string_view("int32"), FD::TypeName(FD::TYPE_INT32));
-  EXPECT_EQ(absl::string_view("fixed64"), FD::TypeName(FD::TYPE_FIXED64));
-  EXPECT_EQ(absl::string_view("fixed32"), FD::TypeName(FD::TYPE_FIXED32));
-  EXPECT_EQ(absl::string_view("bool"), FD::TypeName(FD::TYPE_BOOL));
-  EXPECT_EQ(absl::string_view("string"), FD::TypeName(FD::TYPE_STRING));
-  EXPECT_EQ(absl::string_view("group"), FD::TypeName(FD::TYPE_GROUP));
-  EXPECT_EQ(absl::string_view("message"), FD::TypeName(FD::TYPE_MESSAGE));
-  EXPECT_EQ(absl::string_view("bytes"), FD::TypeName(FD::TYPE_BYTES));
-  EXPECT_EQ(absl::string_view("uint32"), FD::TypeName(FD::TYPE_UINT32));
-  EXPECT_EQ(absl::string_view("enum"), FD::TypeName(FD::TYPE_ENUM));
-  EXPECT_EQ(absl::string_view("sfixed32"), FD::TypeName(FD::TYPE_SFIXED32));
-  EXPECT_EQ(absl::string_view("sfixed64"), FD::TypeName(FD::TYPE_SFIXED64));
-  EXPECT_EQ(absl::string_view("sint32"), FD::TypeName(FD::TYPE_SINT32));
-  EXPECT_EQ(absl::string_view("sint64"), FD::TypeName(FD::TYPE_SINT64));
+  EXPECT_EQ(std::string_view("double"), FD::TypeName(FD::TYPE_DOUBLE));
+  EXPECT_EQ(std::string_view("float"), FD::TypeName(FD::TYPE_FLOAT));
+  EXPECT_EQ(std::string_view("int64"), FD::TypeName(FD::TYPE_INT64));
+  EXPECT_EQ(std::string_view("uint64"), FD::TypeName(FD::TYPE_UINT64));
+  EXPECT_EQ(std::string_view("int32"), FD::TypeName(FD::TYPE_INT32));
+  EXPECT_EQ(std::string_view("fixed64"), FD::TypeName(FD::TYPE_FIXED64));
+  EXPECT_EQ(std::string_view("fixed32"), FD::TypeName(FD::TYPE_FIXED32));
+  EXPECT_EQ(std::string_view("bool"), FD::TypeName(FD::TYPE_BOOL));
+  EXPECT_EQ(std::string_view("string"), FD::TypeName(FD::TYPE_STRING));
+  EXPECT_EQ(std::string_view("group"), FD::TypeName(FD::TYPE_GROUP));
+  EXPECT_EQ(std::string_view("message"), FD::TypeName(FD::TYPE_MESSAGE));
+  EXPECT_EQ(std::string_view("bytes"), FD::TypeName(FD::TYPE_BYTES));
+  EXPECT_EQ(std::string_view("uint32"), FD::TypeName(FD::TYPE_UINT32));
+  EXPECT_EQ(std::string_view("enum"), FD::TypeName(FD::TYPE_ENUM));
+  EXPECT_EQ(std::string_view("sfixed32"), FD::TypeName(FD::TYPE_SFIXED32));
+  EXPECT_EQ(std::string_view("sfixed64"), FD::TypeName(FD::TYPE_SFIXED64));
+  EXPECT_EQ(std::string_view("sint32"), FD::TypeName(FD::TYPE_SINT32));
+  EXPECT_EQ(std::string_view("sint64"), FD::TypeName(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, CppTypes) {
@@ -2814,41 +2814,41 @@ TEST_F(MiscTest, CppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("double"),
+  EXPECT_EQ(std::string_view("double"),
             GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"),
+  EXPECT_EQ(std::string_view("float"),
             GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("int64"),
+  EXPECT_EQ(std::string_view("int64"),
             GetCppTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint64"),
+  EXPECT_EQ(std::string_view("uint64"),
             GetCppTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_EQ(absl::string_view("int32"),
+  EXPECT_EQ(std::string_view("int32"),
             GetCppTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_EQ(absl::string_view("uint64"),
+  EXPECT_EQ(std::string_view("uint64"),
             GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_EQ(absl::string_view("uint32"),
+  EXPECT_EQ(std::string_view("uint32"),
             GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
-  EXPECT_EQ(absl::string_view("bool"),
+  EXPECT_EQ(std::string_view("bool"),
             GetCppTypeNameForFieldType(FD::TYPE_BOOL));
-  EXPECT_EQ(absl::string_view("string"),
+  EXPECT_EQ(std::string_view("string"),
             GetCppTypeNameForFieldType(FD::TYPE_STRING));
-  EXPECT_EQ(absl::string_view("message"),
+  EXPECT_EQ(std::string_view("message"),
             GetCppTypeNameForFieldType(FD::TYPE_GROUP));
-  EXPECT_EQ(absl::string_view("message"),
+  EXPECT_EQ(std::string_view("message"),
             GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
-  EXPECT_EQ(absl::string_view("string"),
+  EXPECT_EQ(std::string_view("string"),
             GetCppTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_EQ(absl::string_view("uint32"),
+  EXPECT_EQ(std::string_view("uint32"),
             GetCppTypeNameForFieldType(FD::TYPE_UINT32));
-  EXPECT_EQ(absl::string_view("enum"),
+  EXPECT_EQ(std::string_view("enum"),
             GetCppTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_EQ(absl::string_view("int32"),
+  EXPECT_EQ(std::string_view("int32"),
             GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_EQ(absl::string_view("int64"),
+  EXPECT_EQ(std::string_view("int64"),
             GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_EQ(absl::string_view("int32"),
+  EXPECT_EQ(std::string_view("int32"),
             GetCppTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_EQ(absl::string_view("int64"),
+  EXPECT_EQ(std::string_view("int64"),
             GetCppTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
@@ -2857,16 +2857,16 @@ TEST_F(MiscTest, StaticCppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("int32"), FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_EQ(absl::string_view("int64"), FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint32"), FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_EQ(absl::string_view("uint64"), FD::CppTypeName(FD::CPPTYPE_UINT64));
-  EXPECT_EQ(absl::string_view("double"), FD::CppTypeName(FD::CPPTYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"), FD::CppTypeName(FD::CPPTYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("bool"), FD::CppTypeName(FD::CPPTYPE_BOOL));
-  EXPECT_EQ(absl::string_view("enum"), FD::CppTypeName(FD::CPPTYPE_ENUM));
-  EXPECT_EQ(absl::string_view("string"), FD::CppTypeName(FD::CPPTYPE_STRING));
-  EXPECT_EQ(absl::string_view("message"), FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+  EXPECT_EQ(std::string_view("int32"), FD::CppTypeName(FD::CPPTYPE_INT32));
+  EXPECT_EQ(std::string_view("int64"), FD::CppTypeName(FD::CPPTYPE_INT64));
+  EXPECT_EQ(std::string_view("uint32"), FD::CppTypeName(FD::CPPTYPE_UINT32));
+  EXPECT_EQ(std::string_view("uint64"), FD::CppTypeName(FD::CPPTYPE_UINT64));
+  EXPECT_EQ(std::string_view("double"), FD::CppTypeName(FD::CPPTYPE_DOUBLE));
+  EXPECT_EQ(std::string_view("float"), FD::CppTypeName(FD::CPPTYPE_FLOAT));
+  EXPECT_EQ(std::string_view("bool"), FD::CppTypeName(FD::CPPTYPE_BOOL));
+  EXPECT_EQ(std::string_view("enum"), FD::CppTypeName(FD::CPPTYPE_ENUM));
+  EXPECT_EQ(std::string_view("string"), FD::CppTypeName(FD::CPPTYPE_STRING));
+  EXPECT_EQ(std::string_view("message"), FD::CppTypeName(FD::CPPTYPE_MESSAGE));
 }
 
 TEST_F(MiscTest, MessageType) {
@@ -4452,14 +4452,14 @@ class ValidationErrorTest : public testing::Test {
   }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
-  const FileDescriptor* BuildFile(absl::string_view file_text) {
+  const FileDescriptor* BuildFile(std::string_view file_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
-  FileDescriptorProto ParseFile(absl::string_view file_name,
-                                absl::string_view file_text) {
+  FileDescriptorProto ParseFile(std::string_view file_name,
+                                std::string_view file_text) {
     io::ArrayInputStream input_stream(file_text.data(), file_text.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
@@ -4474,8 +4474,8 @@ class ValidationErrorTest : public testing::Test {
     return proto;
   }
 
-  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
-                                          absl::string_view file_text) {
+  const FileDescriptor* ParseAndBuildFile(std::string_view file_name,
+                                          std::string_view file_text) {
     return pool_.BuildFile(ParseFile(file_name, file_text));
   }
 
@@ -4502,18 +4502,18 @@ class ValidationErrorTest : public testing::Test {
 
   // Parse a proto file and build it.  Expect errors to be produced which match
   // the given error text.
-  void ParseAndBuildFileWithErrors(absl::string_view file_name,
-                                   absl::string_view file_text,
-                                   absl::string_view expected_errors) {
+  void ParseAndBuildFileWithErrors(std::string_view file_name,
+                                   std::string_view file_text,
+                                   std::string_view expected_errors) {
     MockErrorCollector error_collector;
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
                                                 &error_collector) == nullptr);
     EXPECT_EQ(expected_errors, error_collector.text_);
   }
 
-  void ParseAndBuildFileWithErrorSubstr(absl::string_view file_name,
-                                        absl::string_view file_text,
-                                        absl::string_view expected_errors) {
+  void ParseAndBuildFileWithErrorSubstr(std::string_view file_name,
+                                        std::string_view file_text,
+                                        std::string_view expected_errors) {
     MockErrorCollector error_collector;
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
                                                 &error_collector) == nullptr);
@@ -4547,7 +4547,7 @@ class ValidationErrorTest : public testing::Test {
   }
 
   void BuildDescriptorMessagesInTestPoolWithErrors(
-      absl::string_view expected_errors) {
+      std::string_view expected_errors) {
     FileDescriptorProto file_proto;
     DescriptorProto::descriptor()->file()->CopyTo(&file_proto);
     MockErrorCollector error_collector;
@@ -11082,7 +11082,7 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedImplicit) {
 }
 
 TEST_F(FeaturesTest, InvalidFieldMapImplicit) {
-  constexpr absl::string_view kProtoFile = R"schema(
+  constexpr std::string_view kProtoFile = R"schema(
     edition = "2023";
 
     message Foo {
@@ -11324,7 +11324,7 @@ TEST_F(FeaturesTest, InvalidFieldNonMessageWithMessageEncoding) {
 }
 
 TEST_F(FeaturesTest, InvalidFieldMapWithMessageEncoding) {
-  constexpr absl::string_view kProtoFile = R"schema(
+  constexpr std::string_view kProtoFile = R"schema(
     edition = "2023";
 
     message Foo {
@@ -11894,10 +11894,10 @@ TEST_F(FeaturesTest, FutureFeatureDefault) {
 class FeaturesDebugStringTest
     : public FeaturesTest,
       public testing::WithParamInterface<
-          std::tuple<absl::string_view, absl::string_view>> {
+          std::tuple<std::string_view, std::string_view>> {
  protected:
-  const FileDescriptor* LoadFile(absl::string_view name,
-                                 absl::string_view content) {
+  const FileDescriptor* LoadFile(std::string_view name,
+                                 std::string_view content) {
     io::ArrayInputStream input_stream(content.data(), content.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
@@ -12615,7 +12615,7 @@ using ExtensionDeclarationsTest =
 // For OSS, this is a function that directly returns the parsed
 // FileDescriptorProto.
 absl::StatusOr<FileDescriptorProto> ParameterizeFileProto(
-    absl::string_view file_text, const ExtensionDeclarationsTestParams& param) {
+    std::string_view file_text, const ExtensionDeclarationsTestParams& param) {
   (void)file_text;  // Parameter is used by Google-internal code.
   (void)param;      // Parameter is used by Google-internal code.
   FileDescriptorProto file_proto;
@@ -13106,7 +13106,7 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
 // DescriptorDatabase
 
 static void AddToDatabase(SimpleDescriptorDatabase* database,
-                          absl::string_view file_text) {
+                          std::string_view file_text) {
   FileDescriptorProto file_proto;
   EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
   database->Add(file_proto);
@@ -13701,8 +13701,8 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
   }
 
  private:
-  void FullMatch(absl::string_view name, absl::string_view begin_with,
-                 absl::string_view end_with, int32_t* file_num) {
+  void FullMatch(std::string_view name, std::string_view begin_with,
+                 std::string_view end_with, int32_t* file_num) {
     if (!absl::ConsumePrefix(&name, begin_with)) return;
     if (!absl::ConsumeSuffix(&name, end_with)) return;
     ABSL_CHECK(absl::SimpleAtoi(name, file_num));
@@ -13776,9 +13776,9 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
   AbortingErrorCollector(const AbortingErrorCollector&) = delete;
   AbortingErrorCollector& operator=(const AbortingErrorCollector&) = delete;
 
-  void RecordError(absl::string_view filename, absl::string_view element_name,
+  void RecordError(std::string_view filename, std::string_view element_name,
                    const Message* message, ErrorLocation location,
-                   absl::string_view error_message) override {
+                   std::string_view error_message) override {
     ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                     << element_name << "]: " << error_message;
   }
@@ -13792,7 +13792,7 @@ class SingletonSourceTree : public compiler::SourceTree {
   SingletonSourceTree(const SingletonSourceTree&) = delete;
   SingletonSourceTree& operator=(const SingletonSourceTree&) = delete;
 
-  io::ZeroCopyInputStream* Open(absl::string_view filename) override {
+  io::ZeroCopyInputStream* Open(std::string_view filename) override {
     return filename == filename_
                ? new io::ArrayInputStream(contents_.data(), contents_.size())
                : nullptr;
@@ -14447,14 +14447,14 @@ class LazilyBuildDependenciesTest : public testing::Test {
     pool_.InternalSetLazilyBuildDependencies();
   }
 
-  void ParseProtoAndAddToDb(absl::string_view proto) {
+  void ParseProtoAndAddToDb(std::string_view proto) {
     FileDescriptorProto tmp;
     ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
     db_.Add(tmp);
   }
 
-  void AddSimpleMessageProtoFileToDb(absl::string_view file_name,
-                                     absl::string_view message_name) {
+  void AddSimpleMessageProtoFileToDb(std::string_view file_name,
+                                     std::string_view message_name) {
     ParseProtoAndAddToDb(absl::StrFormat(
         R"pb(
           name: '%s.proto'
@@ -14466,9 +14466,9 @@ class LazilyBuildDependenciesTest : public testing::Test {
         file_name, message_name));
   }
 
-  void AddSimpleEnumProtoFileToDb(absl::string_view file_name,
-                                  absl::string_view enum_name,
-                                  absl::string_view enum_value_name) {
+  void AddSimpleEnumProtoFileToDb(std::string_view file_name,
+                                  std::string_view enum_name,
+                                  std::string_view enum_value_name) {
     ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
                                       ".proto' "
                                       "package: 'proto2_unittest' "

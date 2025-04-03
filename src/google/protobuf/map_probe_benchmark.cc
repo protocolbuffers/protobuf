@@ -15,7 +15,7 @@
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/map.h"
 
 namespace google::protobuf::internal {
@@ -256,9 +256,9 @@ int main(int argc, char** argv) {
 
   absl::PrintF("{\n");
   absl::PrintF("  \"benchmarks\": [\n");
-  absl::string_view comma;
+  std::string_view comma;
   for (const auto& result : results) {
-    auto print = [&](absl::string_view stat, double Ratios::*val) {
+    auto print = [&](std::string_view stat, double Ratios::*val) {
       std::string name =
           absl::StrCat(result.name, "/", result.dist_name, "/", stat);
       absl::PrintF("    %s{\n", comma);

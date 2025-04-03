@@ -29,7 +29,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
@@ -391,7 +391,7 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
                           Msg<Traits>& msg, bool any_reparse);
 template <typename Traits>
 absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
-                        absl::string_view name, Msg<Traits>& msg);
+                        std::string_view name, Msg<Traits>& msg);
 
 template <typename Traits>
 absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
@@ -790,7 +790,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
 }
 
 absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
-    absl::string_view& data, int max_digits, absl::string_view end) {
+    std::string_view& data, int max_digits, std::string_view end) {
   ABSL_DCHECK_LE(max_digits, 9);
 
   uint32_t val = 0;
@@ -816,7 +816,7 @@ absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
   return val;
 }
 
-absl::optional<int32_t> TakeNanosAndAdvance(absl::string_view& data) {
+absl::optional<int32_t> TakeNanosAndAdvance(std::string_view& data) {
   int32_t frac_secs = 0;
   size_t frac_digits = 0;
   if (absl::StartsWith(data, ".")) {
@@ -849,7 +849,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
   absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
   RETURN_IF_ERROR(str.status());
 
-  absl::string_view data = str->value.AsView();
+  std::string_view data = str->value.AsView();
   if (data.size() < 20) {
     return str->loc.Invalid("timestamp string too short");
   }
@@ -968,7 +968,7 @@ absl::Status ParseDuration(JsonLexer& lex, const Desc<Traits>& desc,
     return str->loc.Invalid("duration must start with an integer");
   }
 
-  absl::string_view sec_digits = str->value.AsView().substr(0, int_part_end);
+  std::string_view sec_digits = str->value.AsView().substr(0, int_part_end);
   int64_t secs;
   if (!absl::SimpleAtoi(sec_digits, &secs)) {
     return str->loc.Invalid("duration had bad seconds");
@@ -978,7 +978,7 @@ absl::Status ParseDuration(JsonLexer& lex, const Desc<Traits>& desc,
     return str->loc.Invalid("duration out of range");
   }
 
-  absl::string_view rest = str->value.AsView().substr(int_part_end);
+  std::string_view rest = str->value.AsView().substr(int_part_end);
   auto nanos = TakeNanosAndAdvance(rest);
   if (!nanos.has_value()) {
     return str->loc.Invalid("duration had bad nanoseconds");
@@ -1014,7 +1014,7 @@ absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
 
   // google.protobuf.FieldMask has a single field with number 1.
   auto paths_field = Traits::MustHaveField(desc, 1);
-  for (absl::string_view path : absl::StrSplit(paths, ',')) {
+  for (std::string_view path : absl::StrSplit(paths, ',')) {
     std::string snake_path;
     // Assume approximately six-letter words, so add one extra space for an
     // underscore for every six bytes.
@@ -1065,7 +1065,7 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
       }));
 
   // Build a new lexer over the skipped object.
-  absl::string_view any_text = mark.value.UpToUnread();
+  std::string_view any_text = mark.value.UpToUnread();
   io::ArrayInputStream in(any_text.data(), any_text.size());
   // Copying lex.options() is important; it inherits the recursion
   // limit.
@@ -1223,10 +1223,10 @@ absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
 
 template <typename Traits>
 absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
-                        absl::string_view name, Msg<Traits>& msg) {
+                        std::string_view name, Msg<Traits>& msg) {
   absl::optional<Field<Traits>> field;
   if (absl::StartsWith(name, "[") && absl::EndsWith(name, "]")) {
-    absl::string_view extn_name = name.substr(1, name.size() - 2);
+    std::string_view extn_name = name.substr(1, name.size() - 2);
     field = Traits::ExtensionByName(desc, extn_name);
 
     if (field.has_value()) {

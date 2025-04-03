@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.h"
@@ -28,7 +28,7 @@ namespace {
 
 class SimpleErrorCollector : public io::ErrorCollector {
  public:
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
   }
 
@@ -59,8 +59,8 @@ class NameResolverTest : public testing::Test {
         pb::JavaFeatures::descriptor()->file()->DebugString());
   }
 
-  void BuildFileAndPopulatePool(absl::string_view filename,
-                                absl::string_view contents) {
+  void BuildFileAndPopulatePool(std::string_view filename,
+                                std::string_view contents) {
     io::ArrayInputStream input_stream(contents.data(), contents.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);

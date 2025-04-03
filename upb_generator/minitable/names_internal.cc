@@ -10,7 +10,7 @@
 #include <string>
 
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb_generator/common/names.h"
 
 namespace upb {
@@ -18,13 +18,13 @@ namespace generator {
 
 namespace {
 
-std::string ToCIdent(absl::string_view str) {
+std::string ToCIdent(std::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }
 
 }  // namespace
 
-std::string MiniTableHeaderFilename(absl::string_view proto_filename,
+std::string MiniTableHeaderFilename(std::string_view proto_filename,
                                     bool bootstrap) {
   std::string base;
   if (bootstrap) {
@@ -37,11 +37,11 @@ std::string MiniTableHeaderFilename(absl::string_view proto_filename,
   return base + StripExtension(proto_filename) + ".upb_minitable.h";
 }
 
-std::string MiniTableFieldsVarName(absl::string_view msg_full_name) {
+std::string MiniTableFieldsVarName(std::string_view msg_full_name) {
   return ToCIdent(msg_full_name) + "__fields";
 }
 
-std::string MiniTableSubMessagesVarName(absl::string_view msg_full_name) {
+std::string MiniTableSubMessagesVarName(std::string_view msg_full_name) {
   return ToCIdent(msg_full_name) + "__submsgs";
 }
 
