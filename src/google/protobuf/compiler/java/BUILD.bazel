@@ -12,6 +12,15 @@ package(
     ],
 )
 
+cc_binary(
+    name = "protoc-gen-java",
+    srcs = ["main.cc"],
+    deps = [
+        ":java",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "names",
     hdrs = ["names.h"],

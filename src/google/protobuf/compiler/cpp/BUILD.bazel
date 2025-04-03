@@ -8,6 +8,15 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-cpp",
+    srcs = ["main.cc"],
+    deps = [
+        ":cpp",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "names",
     hdrs = ["names.h"],
