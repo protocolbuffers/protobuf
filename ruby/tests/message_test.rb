@@ -66,4 +66,25 @@ class MessageTest < Test::Unit::TestCase
     assert_equal "howdy", message.field2
     assert_equal 3.14, message.field3
   end
+
+  def test_too_many_args
+    sub_message = X::Y::Z::MyOtherMessage.create(1, 2)
+
+    exception = assert_raises ArgumentError do
+      X::Y::Z::MyMessage.create(
+        123,
+        ::Google::Protobuf::VALUE_NOT_PROVIDED,
+        ::Google::Protobuf::VALUE_NOT_PROVIDED,
+        456,
+        ::Google::Protobuf::VALUE_NOT_PROVIDED,
+        sub_message,
+        ["hello", "world"],
+        { "key" => 321 },
+        2.times.map { |i| X::Y::Z::MyOtherMessage.create(i, i + 1) },
+        "extra_argument",
+      )
+    end
+
+    assert_equal "Too many arguments (given 10, expected 9)", exception.message
+  end
 end

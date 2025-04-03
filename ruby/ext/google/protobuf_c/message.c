@@ -715,6 +715,13 @@ static VALUE Message_create(int argc, VALUE* argv, VALUE klass_rb) {
 
   Message_InitPtr(message_rb, message_upb, arena_rb);
 
+  int field_count = upb_MessageDef_FieldCount(message->msgdef);
+
+  if (argc > field_count) {
+    rb_raise(rb_eArgError, "Too many arguments (given %d, expected %d)",
+             argc, field_count);
+  }
+
   for (int i = 0; i < argc; i++) {
     if(argv[i] == not_provided) {
       continue;
