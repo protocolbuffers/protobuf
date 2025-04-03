@@ -214,7 +214,7 @@ TEST(OverheadTest, SingleMassiveBlockThenLittle) {
   for (int i = 0; i < 50; i++) {
     test.Alloc(64);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && !UPB_TSAN) {
 #ifdef __ANDROID__
     EXPECT_NEAR(test.WastePct(), 0.075, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
@@ -231,7 +231,7 @@ TEST(OverheadTest, Overhead_AlternatingSmallLargeBlocks) {
     test.Alloc(5000);
     test.Alloc(64);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && !UPB_TSAN) {
     EXPECT_NEAR(test.WastePct(), 0.007, 0.0025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.52, 0.025);
   }
@@ -242,7 +242,7 @@ TEST(OverheadTest, PartialMaxBlocks) {
   for (int i = 0; i < 10; i++) {
     test.Alloc(2096 + i);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && !UPB_TSAN) {
     EXPECT_NEAR(test.WastePct(), 0.16, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 1.1, 0.25);
   }
@@ -254,7 +254,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial) {
   for (int i = 0; i < 10; i++) {
     test.Alloc(initial_block_size * 2 + 1);
   }
-  if (!UPB_ASAN && sizeof(void*) == 8) {
+  if (!UPB_ASAN && !UPB_TSAN && sizeof(void*) == 8) {
     EXPECT_NEAR(test.WastePct(), 0.37, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.5, 0.025);
   }
@@ -266,7 +266,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
   for (int i = 0; i < 100; i++) {
     test.Alloc(initial_block_size * 2 + 1);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && !UPB_TSAN) {
 #ifdef __ANDROID__
     EXPECT_NEAR(test.WastePct(), 0.09, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.12, 0.025);
@@ -278,7 +278,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
   for (int i = 0; i < 900; i++) {
     test.Alloc(initial_block_size * 2 + 1);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && !UPB_TSAN) {
 #ifdef __ANDROID__
     EXPECT_NEAR(test.WastePct(), 0.05, 0.03);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.08, 0.025);

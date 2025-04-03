@@ -27,6 +27,7 @@
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   char* UPB_ONLYBITS(end);
+  UPB_TSAN_SYNTHETIC_MEMBER  // Must be last, to avoid affecting ABI.
 };
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
@@ -45,7 +46,7 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
 }
 
 UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
 
   size = UPB_ALIGN_MALLOC(size);
@@ -67,7 +68,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   UPB_ASSERT(ptr);
   UPB_ASSERT(size <= oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
@@ -94,7 +95,7 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
 
 UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
                                         size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
@@ -115,7 +116,7 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
 
 UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
                                        size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   if (ptr) {
     if (size == oldsize) {
       return ptr;
