@@ -15,7 +15,6 @@
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

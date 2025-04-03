@@ -9,9 +9,6 @@
 
 #include <time.h>
 
-#include <algorithm>
-#include <array>
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -19,7 +16,6 @@
 #include <memory>
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
-#include <thread>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -29,14 +25,11 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -45,9 +38,7 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_arena.pb.h"
 #include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/wire_format_lite.h"
 
-#include "absl/synchronization/mutex.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"

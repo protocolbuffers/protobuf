@@ -48,13 +48,9 @@
 #include <memory>
 #include <new>
 #include <string>
-#include <type_traits>
 
-#include "absl/base/attributes.h"
-#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/utility/utility.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
