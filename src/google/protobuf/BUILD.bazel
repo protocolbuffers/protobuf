@@ -712,6 +712,7 @@ cc_library(
     ],
     deps = [
         ":internal_visibility",
+        ":micro_string",
         ":port",
         ":protobuf_lite",
         "//src/google/protobuf/io",

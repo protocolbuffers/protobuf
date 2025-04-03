@@ -61,6 +61,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool use_direct_tcparser_table;
     bool should_split;
     int inlined_string_index;
+    bool use_micro_string;
   };
 
   TailCallTableInfo(const Descriptor* descriptor,

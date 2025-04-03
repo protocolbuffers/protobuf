@@ -1258,6 +1258,10 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldInlined(field);
   }
 
+  inline bool IsMicroString(const FieldDescriptor* field) const {
+    return schema_.IsFieldMicroString(field);
+  }
+
   // For "proto3 non-optional" primitive fields, aka implicit-presence fields,
   // returns true if the field is populated, i.e., nonzero. False otherwise.
   bool IsSingularFieldNonEmpty(const Message& message,
@@ -1321,6 +1325,10 @@ class PROTOBUF_EXPORT Reflection final {
   template <bool unsafe_shallow_swap>
   void SwapFieldsImpl(Message* message1, Message* message2,
                       const std::vector<const FieldDescriptor*>& fields) const;
+
+  template <bool unsafe_shallow_swap, typename FromType, typename ToType>
+  void InternalMoveOneofField(const FieldDescriptor* field, FromType* from,
+                              ToType* to) const;
 
   template <bool unsafe_shallow_swap>
   void SwapOneofField(Message* lhs, Message* rhs,
@@ -1664,6 +1672,7 @@ constexpr FieldDescriptor::CppType GetCppType() {
     // strings
     if (std::is_same_v<PCV, internal::ArenaStringPtr> ||
         std::is_same_v<PCV, std::string> ||
+        std::is_same_v<PCV, internal::MicroString> ||
         std::is_same_v<PCV, absl::Cord>) {
       return FieldDescriptor::CPPTYPE_STRING;
     }
@@ -1732,9 +1741,13 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
       switch (field->cpp_string_type()) {
         case FieldDescriptor::CppStringType::kView:
         case FieldDescriptor::CppStringType::kString:
-          ABSL_DCHECK((std::is_same_v<T, internal::ArenaStringPtr> ||
-                       std::is_same_v<T, RepeatedPtrField<std::string>>))
-              << error();
+          if (IsMicroString(field)) {
+            ABSL_DCHECK((std::is_same_v<T, internal::MicroString>)) << error();
+          } else {
+            ABSL_DCHECK((std::is_same_v<T, internal::ArenaStringPtr> ||
+                         std::is_same_v<T, RepeatedPtrField<std::string>>))
+                << error();
+          }
           break;
         case FieldDescriptor::CppStringType::kCord:
           if (field->real_containing_oneof() != nullptr) {

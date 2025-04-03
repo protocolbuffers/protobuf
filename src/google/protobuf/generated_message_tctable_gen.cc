@@ -285,7 +285,11 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (options.is_string_inlined) {
+      if (options.use_micro_string &&
+          field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
+        // TODO: Add fast parsers.
+        return false;
+      } else if (options.is_string_inlined) {
         ABSL_CHECK(!field->is_repeated());
         // For inlined strings, the donation state index is stored in the
         // `aux_idx` field of the fast parsing info. We need to check the range
@@ -684,7 +688,8 @@ uint16_t MakeTypeCardForField(
           type_card |= fl::kRepSString;
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
-          type_card |= fl::kRepAString;
+          type_card |=
+              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }

@@ -22,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
@@ -640,6 +641,18 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
                               const char* ptr, ParseContext* ctx) {
   UnknownFieldLiteParserHelper field_parser(unknown);
   return FieldParser(tag, field_parser, ptr, ctx);
+}
+
+const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
+                                                        int size,
+                                                        MicroString& str,
+                                                        Arena* arena) {
+  str.SetInChunks(size, arena, [&](auto append) {
+    ptr = AppendSize(ptr, size, [&](const char* p, int s) {
+      append(absl::string_view(p, s));
+    });
+  });
+  return ptr;
 }
 
 }  // namespace internal
