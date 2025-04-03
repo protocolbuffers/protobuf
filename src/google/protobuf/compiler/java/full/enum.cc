@@ -263,7 +263,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
         "    getDescriptorForType() {\n"
         "  return getDescriptor();\n"
         "}\n"
-        "public static final com.google.protobuf.Descriptors.EnumDescriptor\n"
+        "public static com.google.protobuf.Descriptors.EnumDescriptor\n"
         "    getDescriptor() {\n",
         "index_text", index_text);
 
