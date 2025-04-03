@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/hpb/context.h"
@@ -108,7 +109,11 @@ std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
 }
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return compiler::StripProto(file->name()) + ".upb.proto.h";
+  return absl::StrCat(compiler::StripProto(file->name()), ".hpb.h");
+}
+
+std::string CppHeaderFilenameLegacy(const google::protobuf::FileDescriptor* file) {
+  return absl::StrCat(compiler::StripProto(file->name()), ".upb.proto.h");
 }
 
 std::string CppConstType(const protobuf::FieldDescriptor* field) {
