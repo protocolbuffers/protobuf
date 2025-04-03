@@ -724,6 +724,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
         FileDescriptorProto::kMessageTypeFieldNumber, location, file);
   } else if (LookingAt("import")) {
     return ParseImport(file->mutable_dependency(),
+                       file->mutable_option_dependency(),
                        file->mutable_public_dependency(),
                        file->mutable_weak_dependency(), root_location, file);
   } else if (LookingAt("package")) {
@@ -2474,6 +2475,7 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
 }
 
 bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
+                         RepeatedPtrField<std::string>* option_dependency,
                          RepeatedField<int32_t>* public_dependency,
                          RepeatedField<int32_t>* weak_dependency,
                          const LocationRecorder& root_location,
@@ -2484,29 +2486,44 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
 
   DO(Consume("import"));
 
-  if (LookingAt("public")) {
-    LocationRecorder public_location(
-        root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
-        public_dependency->size());
-    DO(Consume("public"));
-    *public_dependency->Add() = dependency->size();
-  } else if (LookingAt("weak")) {
-    LocationRecorder weak_location(
-        root_location, FileDescriptorProto::kWeakDependencyFieldNumber,
-        weak_dependency->size());
-    weak_location.RecordLegacyImportLocation(containing_file, "weak");
-    DO(Consume("weak"));
-    *weak_dependency->Add() = dependency->size();
-  }
-
   std::string import_file;
-  DO(ConsumeString(&import_file,
-                   "Expected a string naming the file to import."));
-  *dependency->Add() = import_file;
+  if (LookingAt("option")) {
+    if (edition_ < Edition::EDITION_2024) {
+      RecordError("option import is not supported before edition 2024.");
+    }
+    DO(Consume("option"));
+    DO(ConsumeString(&import_file,
+                     "Expected a string naming the file to import."));
+    *option_dependency->Add() = import_file;
+    // BEGIN GOOGLE-INTERNAL
+    // TODO: Temporarily add to dependency list as
+    // well for compatibility with C++ runtime pre-import-option support.
+    *dependency->Add() = import_file;
+    // END GOOGLE-INTERNAL
+  } else {
+    if (!option_dependency->empty()) {
+      RecordError("imports should precede any option imports.");
+    }
+    if (LookingAt("public")) {
+      LocationRecorder public_location(
+          root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
+          public_dependency->size());
+      DO(Consume("public"));
+      *public_dependency->Add() = dependency->size();
+    } else if (LookingAt("weak")) {
+      LocationRecorder weak_location(
+          root_location, FileDescriptorProto::kWeakDependencyFieldNumber,
+          weak_dependency->size());
+      weak_location.RecordLegacyImportLocation(containing_file, "weak");
+      DO(Consume("weak"));
+      *weak_dependency->Add() = dependency->size();
+    }
+    DO(ConsumeString(&import_file,
+                     "Expected a string naming the file to import."));
+    *dependency->Add() = import_file;
+  }
   location.RecordLegacyImportLocation(containing_file, import_file);
-
   DO(ConsumeEndOfDeclaration(";", &location));
-
   return true;
 }
 

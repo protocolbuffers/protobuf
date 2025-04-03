@@ -1393,6 +1393,40 @@ TEST_F(ParseMiscTest, ParsePublicImports) {
       "public_dependency: 3 ");
 }
 
+TEST_F(ParseMiscTest, ParseOptionImports) {
+  ExpectParsesTo(
+      R"schema(
+    edition = "2024";
+    import "foo.proto";
+    import "bar.proto";
+    import option "baz.proto";
+    import option "qux.proto";
+  )schema",
+      R"pb(
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "foo.proto"
+        dependency: "bar.proto"
+        dependency: "baz.proto"
+        dependency: "qux.proto"
+        option_dependency: "baz.proto"
+        option_dependency: "qux.proto"
+      )pb");
+}
+
+TEST_F(ParseMiscTest, ParseImportsBadOrder) {
+  ExpectHasErrors(
+      R"schema(
+    edition = "2024";
+    import option "baz.proto";
+    import "foo.proto";
+    import public "bar.proto";
+    import option "qux.proto";
+  )schema",
+      "3:11: imports should precede any option imports.\n"
+      "4:11: imports should precede any option imports.\n");
+}
+
 TEST_F(ParseMiscTest, ParsePackage) {
   ExpectParsesTo("package foo.bar.baz;\n", "package: \"foo.bar.baz\"");
 }
@@ -2108,6 +2142,15 @@ TEST_F(ParseErrorTest, MultiplePackagesInFile) {
       "package foo;\n"
       "package bar;\n",
       "1:0: Multiple package definitions.\n");
+}
+
+TEST_F(ParseErrorTest, OptionImportBefore2024) {
+  ExpectHasErrors(
+      R"schema(
+    edition = "2023";
+    import option "foo.proto";
+  )schema",
+      "2:11: option import is not supported before edition 2024.\n");
 }
 
 // ===================================================================
