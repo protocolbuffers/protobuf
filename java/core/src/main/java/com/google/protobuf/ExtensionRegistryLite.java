@@ -125,25 +125,23 @@ public class ExtensionRegistryLite {
   public <ContainingType extends MessageLite>
       GeneratedMessageLite.GeneratedExtension<ContainingType, ?> findLiteExtensionByNumber(
           final ContainingType containingTypeDefaultInstance, final int fieldNumber) {
-    return (GeneratedMessageLite.GeneratedExtension<ContainingType, ?>)
+    return (ExtensionLite<ContainingType, ?>)
         extensionsByNumber.get(new ObjectIntPair(containingTypeDefaultInstance, fieldNumber));
   }
 
   /** Add an extension from a lite generated file to the registry. */
-  public final void add(final GeneratedMessageLite.GeneratedExtension<?, ?> extension) {
-    extensionsByNumber.put(
-        new ObjectIntPair(extension.getContainingTypeDefaultInstance(), extension.getNumber()),
-        extension);
-  }
+  // public final void add(final ExtensionLite<?, ?> extension) {
+  //   extensionsByNumber.put(
+  //       new ObjectIntPair(extension.getContainingTypeDefaultInstance(), extension.getNumber()),
+  //       extension);
+  // }
 
   /**
    * Add an extension from a lite generated file to the registry only if it is a non-lite extension
-   * i.e. {@link GeneratedMessageLite.GeneratedExtension}.
+   * i.e. {@link ExtensionLite}.
    */
   public final void add(ExtensionLite<?, ?> extension) {
-    if (GeneratedMessageLite.GeneratedExtension.class.isAssignableFrom(extension.getClass())) {
-      add((GeneratedMessageLite.GeneratedExtension<?, ?>) extension);
-    }
+    extensionsByNumber.put(new ObjectIntPair(extension, extension.getNumber()), extension);
     if (!Protobuf.assumeLiteRuntime && ExtensionRegistryFactory.isFullRegistry(this)) {
       try {
         this.getClass().getMethod("add", ExtensionClassHolder.INSTANCE).invoke(this, extension);
@@ -161,8 +159,7 @@ public class ExtensionRegistryLite {
   // this.
 
   ExtensionRegistryLite() {
-    this.extensionsByNumber =
-        new HashMap<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>();
+    this.extensionsByNumber = new HashMap<ObjectIntPair, ExtensionLite<?, ?>>();
   }
 
   static final ExtensionRegistryLite EMPTY_REGISTRY_LITE = new ExtensionRegistryLite(true);
@@ -175,8 +172,7 @@ public class ExtensionRegistryLite {
     }
   }
 
-  private final Map<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>
-      extensionsByNumber;
+  private final Map<ObjectIntPair, ExtensionLite<?, ?>> extensionsByNumber;
 
   ExtensionRegistryLite(boolean empty) {
     this.extensionsByNumber = Collections.emptyMap();

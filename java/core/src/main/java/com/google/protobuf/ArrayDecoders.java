@@ -789,7 +789,8 @@ final class ArrayDecoders {
       throws IOException {
     final int number = tag >>> 3;
     GeneratedMessageLite.GeneratedExtension<?, ?> extension =
-        registers.extensionRegistry.findLiteExtensionByNumber(defaultInstance, number);
+        (GeneratedMessageLite.GeneratedExtension<?, ?>)
+            registers.extensionRegistry.findLiteExtensionByNumber(defaultInstance, number);
     if (extension == null) {
       return decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
