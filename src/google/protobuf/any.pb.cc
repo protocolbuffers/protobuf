@@ -144,9 +144,9 @@ Any::Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Any& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Any& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         type_url_(arena, from.type_url_),
@@ -169,8 +169,8 @@ Any::Any(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         type_url_(arena),
         value_(arena) {}
