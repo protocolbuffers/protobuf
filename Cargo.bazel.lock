@@ -1,5 +1,5 @@
 {
-  "checksum": "1c2d7323790fa56253530c4ad5ac09639afa6de134dfeae8959f863aab3a6631",
+  "checksum": "93ba4d30a8d1e92826afecc6c6d8c601bdc8b2447d8cf3238cbf26a85760165b",
   "crates": {
     "aho-corasick 1.1.2": {
       "name": "aho-corasick",
@@ -133,7 +133,7 @@
             {
               "id": "syn 2.0.43",
               "target": "syn"
-             }
+            }
           ],
           "selects": {}
         },
@@ -1122,9 +1122,6 @@
     "wasm32-unknown-unknown": [
       "wasm32-unknown-unknown"
     ],
-    "wasm32-wasi": [
-      "wasm32-wasi"
-    ],
     "wasm32-wasip1": [
       "wasm32-wasip1"
     ],
@@ -1162,5 +1159,6 @@
     "quote 1.0.33",
     "syn 2.0.43"
   ],
-  "direct_dev_deps": []
+  "direct_dev_deps": [],
+  "unused_patches": []
 }

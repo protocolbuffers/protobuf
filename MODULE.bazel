@@ -17,6 +17,13 @@ module(
 bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 
+# Keep apple_support on 1.15.1 for now to avoid this issue:
+# https://github.com/bazelbuild/apple_support/issues/316
+single_version_override(
+    module_name = "apple_support",
+    version = "1.15.1",
+)
+
 #ifndef PROTO2_OPENSOURCE
 # LINT.IfChange
 #endif // PROTO2_OPENSOURCE
@@ -39,7 +46,7 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.51.0", dev_dependency = True)
+bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
 
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
