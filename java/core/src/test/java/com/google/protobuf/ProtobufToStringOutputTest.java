@@ -12,17 +12,19 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class ProtobufToStringOutputTest extends DebugFormatTest {
+  RedactedFields.Builder messageBuilder;
   RedactedFields message;
 
   @Before
   public void setupTest() {
-    message =
+    messageBuilder =
         RedactedFields.newBuilder()
             .setOptionalUnredactedString("foo")
             .setOptionalRedactedString("bar")
             .setOptionalRedactedMessage(
-                TestNestedMessageRedaction.newBuilder().setOptionalUnredactedNestedString("foobar"))
-            .build();
+                TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("foobar"));
+    message = messageBuilder.build();
   }
 
   @Test
@@ -98,6 +100,46 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
                       + "  optional_unredacted_nested_string: \"foobar\"\n"
                       + "\\}\n"
                       + "\\]");
+        });
+  }
+
+  @Test
+  public void builderToStringFormat_defaultFormat() {
+    assertThat(messageBuilder.toString())
+        .matches(
+            "optional_redacted_string: \"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n");
+  }
+
+  @Test
+  public void builderToStringFormat_testDebugFormat() {
+    ProtobufToStringOutput.callWithDebugFormat(
+        () ->
+            assertThat(messageBuilder.toString())
+                .matches(
+                    String.format(
+                        "%soptional_redacted_string: %s\n"
+                            + "optional_unredacted_string: \"foo\"\n"
+                            + "optional_redacted_message \\{\n"
+                            + "  %s\n"
+                            + "\\}\n",
+                        UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX)));
+  }
+
+  @Test
+  public void builderToStringFormat_testTextFormat() {
+    ProtobufToStringOutput.callWithTextFormat(
+        () -> {
+          assertThat(messageBuilder.toString())
+              .matches(
+                  "optional_redacted_string: \"bar\"\n"
+                      + "optional_unredacted_string: \"foo\"\n"
+                      + "optional_redacted_message \\{\n"
+                      + "  optional_unredacted_nested_string: \"foobar\"\n"
+                      + "\\}\n");
         });
   }
 }
