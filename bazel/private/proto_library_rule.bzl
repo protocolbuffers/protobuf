@@ -15,10 +15,14 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-STRICT_DEPS_FLAG_TEMPLATE = (
-    #
+DIRECT_DEPS_FLAG_TEMPLATE = (
     "--direct_dependencies_violation_msg=" +
-    "%%s is imported, but %s doesn't directly depend on a proto_library that 'srcs' it."
+    "%%s is imported, but %s doesn't have direct `deps` on a proto_library that 'srcs' it."
+)
+
+OPTION_DEPS_FLAG_TEMPLATE = (
+    "--option_dependencies_violation_msg=" +
+    "%%s is option imported, but %s doesn't have direct `option_deps` on a proto_library that 'srcs' it."
 )
 
 def _check_srcs_package(target_package, srcs):
@@ -63,6 +67,7 @@ def _proto_library_impl(ctx):
     _check_srcs_package(ctx.label.package, ctx.attr.srcs)
     srcs = ctx.files.srcs
     deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
+    option_deps = [dep[ProtoInfo] for dep in ctx.attr.option_deps]
     exports = [dep[ProtoInfo] for dep in ctx.attr.exports]
     import_prefix = _get_import_prefix(ctx)
     strip_import_prefix = _get_strip_import_prefix(ctx)
@@ -77,17 +82,19 @@ def _proto_library_impl(ctx):
 
     proto_path, virtual_srcs = _process_srcs(ctx, srcs, import_prefix, strip_import_prefix)
     descriptor_set = ctx.actions.declare_file(ctx.label.name + "-descriptor-set.proto.bin")
+
     proto_info = ProtoInfo(
         srcs = virtual_srcs,
         deps = deps,
         descriptor_set = descriptor_set,
+        option_deps = option_deps,
         proto_path = proto_path,
         workspace_root = ctx.label.workspace_root,
         bin_dir = ctx.bin_dir.path,
         allow_exports = ctx.attr.allow_exports,
     )
 
-    _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set)
+    _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descriptor_set)
 
     # We assume that the proto sources will not have conflicting artifacts
     # with the same root relative path
@@ -154,13 +161,13 @@ def _symlink_to_virtual_imports(ctx, srcs, import_prefix, strip_import_prefix):
         virtual_srcs.append(virtual_src)
     return proto_path, virtual_srcs
 
-def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
+def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descriptor_set):
     """Writes descriptor set."""
     if proto_info.direct_sources == []:
         ctx.actions.write(descriptor_set, "")
         return
 
-    dependencies_descriptor_sets = depset(transitive = [dep.transitive_descriptor_sets for dep in deps])
+    dependencies_descriptor_sets = depset(transitive = [dep.transitive_descriptor_sets for dep in deps + option_deps])
 
     args = ctx.actions.args()
 
@@ -191,7 +198,22 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
             args.add("--direct_dependencies=")
 
         # Set `-direct_dependencies_violation_msg=`
-        args.add(ctx.label, format = STRICT_DEPS_FLAG_TEMPLATE)
+        args.add(ctx.label, format = DIRECT_DEPS_FLAG_TEMPLATE)
+
+        # option_deps can't be set unless sources is non-empty.
+        option_importable_sources = depset(
+            direct = proto_info.direct_sources,
+            transitive = [dep.check_deps_sources for dep in option_deps],
+        )
+        args.add_joined(
+            "--option_dependencies",
+            option_importable_sources,
+            map_each = proto_common.get_import_path,
+            join_with = ":",
+        )
+
+        # Set `-option_dependencies_violation_msg=`
+        args.add(ctx.label, format = OPTION_DEPS_FLAG_TEMPLATE)
 
     strict_imports = ctx.attr._strict_public_imports[BuildSettingInfo].value
     if strict_imports:
@@ -206,6 +228,7 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
                 map_each = proto_common.get_import_path,
                 join_with = ":",
             )
+
     if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
         toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
         if not toolchain:
@@ -282,6 +305,13 @@ This pattern can be used to e.g. export a public api under a persistent name."""
             providers = [ProtoInfo],
             doc = """
 The list of other <code>proto_library</code> rules that the target depends upon.
+A <code>proto_library</code> may only depend on other <code>proto_library</code>
+targets. It may not depend on language-specific libraries.""",
+        ),
+        "option_deps": attr.label_list(
+            providers = [ProtoInfo],
+            doc = """
+The list of other <code>proto_library</code> rules that the target depends upon for options only.
 A <code>proto_library</code> may only depend on other <code>proto_library</code>
 targets. It may not depend on language-specific libraries.""",
         ),
