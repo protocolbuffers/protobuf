@@ -958,7 +958,7 @@ inline void Api::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
 
 // repeated .google.protobuf.Method methods = 2;
 inline int Api::_internal_methods_size() const {
-  return _internal_methods().size();
+  return static_cast<int>(_internal_methods().size());
 }
 inline int Api::methods_size() const {
   return _internal_methods_size();
@@ -1008,7 +1008,7 @@ Api::_internal_mutable_methods() {
 
 // repeated .google.protobuf.Option options = 3;
 inline int Api::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int Api::options_size() const {
   return _internal_options_size();
@@ -1212,7 +1212,7 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
 
 // repeated .google.protobuf.Mixin mixins = 6;
 inline int Api::_internal_mixins_size() const {
-  return _internal_mixins().size();
+  return static_cast<int>(_internal_mixins().size());
 }
 inline int Api::mixins_size() const {
   return _internal_mixins_size();
@@ -1533,7 +1533,7 @@ inline void Method::_internal_set_response_streaming(bool value) {
 
 // repeated .google.protobuf.Option options = 6;
 inline int Method::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int Method::options_size() const {
   return _internal_options_size();
