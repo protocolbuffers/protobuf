@@ -658,6 +658,7 @@ PROTOBUF_HEADERS = [
     "descriptor_visitor.h",
     "dynamic_message.h",
     "feature_resolver.h",
+    "internal_feature_helper.h",
     "field_access_listener.h",
     "generated_enum_reflection.h",
     "generated_message_bases.h",

@@ -38,11 +38,7 @@ namespace {
 const char* kOuterClassNameSuffix = "OuterClass";
 
 inline bool UseOldFileClassNameDefault(const FileDescriptor* file) {
-  // TODO b/373884685 - Clean up this check once when we have a way to query
-  // Java features in the C++ runtime.
-  if (JavaGenerator::GetEdition(*file) < EDITION_2024) return true;
-  return JavaGenerator::GetResolvedSourceFeatures(*file)
-      .GetExtension(pb::java)
+  return JavaGenerator::GetResolvedSourceFeatureExtension(*file, pb::java)
       .use_old_outer_classname_default();
 }
 
