@@ -306,7 +306,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   ABSL_CHECK(internal::cpp::HasHasbit(field));
 
   int32_t index = *idx / 32;
-  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
 
   absl::string_view has_bits = IsMapEntryMessage(field->containing_type())
                                    ? "_has_bits_"
@@ -333,7 +333,7 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
   int32_t index = *idx / 32;
-  std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
   vars.emplace_back("inlined_string_index", index);
   vars.emplace_back("inlined_string_mask", mask);
 

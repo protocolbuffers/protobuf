@@ -124,12 +124,12 @@ std::string GenerateConditionMaybeWithProbability(
     absl::optional<int> has_array_index) {
   std::string condition;
   if (use_cached_has_bits) {
-    condition = absl::StrFormat("(cached_has_bits & 0x%08xu) != 0", mask);
+    condition = absl::StrFormat("(cached_has_bits & 0x%08xU) != 0", mask);
   } else {
     // We only use has_array_index when use_cached_has_bits is false, make sure
     // we pas a valid index when we need it.
     ABSL_DCHECK(has_array_index.has_value());
-    condition = absl::StrFormat("(this_._impl_._has_bits_[%d] & 0x%08xu) != 0",
+    condition = absl::StrFormat("(this_._impl_._has_bits_[%d] & 0x%08xU) != 0",
                                 *has_array_index, mask);
   }
   if (probability.has_value()) {
@@ -559,7 +559,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                   )cc");
                 }
                 auto v =
-                    p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
+                    p->WithVars({{"mask", absl::StrFormat("0x%08xU", mask)}});
                 if (this_word == cached_has_word_index) {
                   p->Emit("(cached_has_bits & $mask$) != 0");
                 } else {
@@ -685,7 +685,7 @@ MessageGenerator::HasBitVars(const FieldDescriptor* field) const {
   ABSL_CHECK_NE(has_bit_index, kNoHasbit);
   return {
       {"has_array_index", absl::StrCat(has_bit_index / 32)},
-      {"has_mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))},
+      {"has_mask", absl::StrFormat("0x%08xU", 1u << (has_bit_index % 32))},
   };
 }
 
@@ -1379,7 +1379,7 @@ void MessageGenerator::EmitUpdateByteSizeV2ForNumerics(
   }
 
   p->Emit({{"mask",
-            absl::StrFormat("0x%08xu", GenChunkMask(fields, has_bit_indices_))},
+            absl::StrFormat("0x%08xU", GenChunkMask(fields, has_bit_indices_))},
            {"size", 1 + 4 + field_size},  // tag + field number + payload
            {"update_cached_has_bits",
             [&] {
@@ -5218,7 +5218,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
               if (std::optional<int> fsize = FixedSize(fields[0])) {
                 update_cached_has_bits(fields);
                 uint32_t mask = GenChunkMask(fields, has_bit_indices_);
-                p->Emit({{"mask", absl::StrFormat("0x%08xu", mask)},
+                p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
                          {"popcount", absl::has_single_bit(mask)
                                           ? "static_cast<bool>"
                                           : "::absl::popcount"},

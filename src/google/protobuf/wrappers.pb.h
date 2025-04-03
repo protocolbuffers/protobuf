@@ -1849,7 +1849,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolVal
 inline void DoubleValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline double DoubleValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DoubleValue.value)
@@ -1857,7 +1857,7 @@ inline double DoubleValue::value() const {
 }
 inline void DoubleValue::set_value(double value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
 }
 inline double DoubleValue::_internal_value() const {
@@ -1877,7 +1877,7 @@ inline void DoubleValue::_internal_set_value(double value) {
 inline void FloatValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline float FloatValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FloatValue.value)
@@ -1885,7 +1885,7 @@ inline float FloatValue::value() const {
 }
 inline void FloatValue::set_value(float value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
 }
 inline float FloatValue::_internal_value() const {
@@ -1905,7 +1905,7 @@ inline void FloatValue::_internal_set_value(float value) {
 inline void Int64Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::int64_t{0};
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
@@ -1913,7 +1913,7 @@ inline ::int64_t Int64Value::value() const {
 }
 inline void Int64Value::set_value(::int64_t value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
 inline ::int64_t Int64Value::_internal_value() const {
@@ -1933,7 +1933,7 @@ inline void Int64Value::_internal_set_value(::int64_t value) {
 inline void UInt64Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::uint64_t{0u};
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
@@ -1941,7 +1941,7 @@ inline ::uint64_t UInt64Value::value() const {
 }
 inline void UInt64Value::set_value(::uint64_t value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
 inline ::uint64_t UInt64Value::_internal_value() const {
@@ -1961,7 +1961,7 @@ inline void UInt64Value::_internal_set_value(::uint64_t value) {
 inline void Int32Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
@@ -1969,7 +1969,7 @@ inline ::int32_t Int32Value::value() const {
 }
 inline void Int32Value::set_value(::int32_t value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
 inline ::int32_t Int32Value::_internal_value() const {
@@ -1989,7 +1989,7 @@ inline void Int32Value::_internal_set_value(::int32_t value) {
 inline void UInt32Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0u;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
@@ -1997,7 +1997,7 @@ inline ::uint32_t UInt32Value::value() const {
 }
 inline void UInt32Value::set_value(::uint32_t value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
 inline ::uint32_t UInt32Value::_internal_value() const {
@@ -2017,7 +2017,7 @@ inline void UInt32Value::_internal_set_value(::uint32_t value) {
 inline void BoolValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = false;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline bool BoolValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.BoolValue.value)
@@ -2025,7 +2025,7 @@ inline bool BoolValue::value() const {
 }
 inline void BoolValue::set_value(bool value) {
   _internal_set_value(value);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
 }
 inline bool BoolValue::_internal_value() const {
@@ -2045,7 +2045,7 @@ inline void BoolValue::_internal_set_value(bool value) {
 inline void StringValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline const ::std::string& StringValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2055,7 +2055,7 @@ inline const ::std::string& StringValue::value() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
@@ -2071,21 +2071,21 @@ inline const ::std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL StringValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   return _impl_.value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
-  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+  if ((_impl_._has_bits_[0] & 0x00000001U) == 0) {
     return nullptr;
   }
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
   auto* released = _impl_.value_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.value_.Set("", GetArena());
@@ -2095,9 +2095,9 @@ inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
 inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000001U;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000001U;
   }
   _impl_.value_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
@@ -2114,7 +2114,7 @@ inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE va
 inline void BytesValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline const ::std::string& BytesValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2124,7 +2124,7 @@ inline const ::std::string& BytesValue::value() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
@@ -2140,21 +2140,21 @@ inline const ::std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL BytesValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   return _impl_.value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
-  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+  if ((_impl_._has_bits_[0] & 0x00000001U) == 0) {
     return nullptr;
   }
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
   auto* released = _impl_.value_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.value_.Set("", GetArena());
@@ -2164,9 +2164,9 @@ inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
 inline void BytesValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000001U;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000001U;
   }
   _impl_.value_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
