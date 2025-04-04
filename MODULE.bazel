@@ -40,7 +40,7 @@ bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
 bazel_dep(name = "rules_java", version = "8.6.1")
-bazel_dep(name = "rules_jvm_external", version = "6.3")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")

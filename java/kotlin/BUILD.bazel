@@ -73,7 +73,6 @@ protobuf_versioned_kt_jvm_library(
 kt_jvm_export(
     name = "kotlin_mvn",
     deploy_env = [
-        "@rules_kotlin//kotlin/compiler:kotlin-stdlib",
         "//java/core",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,
