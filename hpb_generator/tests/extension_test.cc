@@ -132,7 +132,7 @@ TEST(CppGeneratedCode, GetSetExtensionBool) {
 TEST(CppGeneratedCode, GetSetExtensionString) {
   TestModel model;
   EXPECT_EQ(false, hpb::HasExtension(&model, string_ext));
-  std::string_view val = "Hello World";
+  absl::string_view val = "Hello World";
   auto x = hpb::SetExtension(&model, string_ext, val);
   EXPECT_EQ(true, hpb::HasExtension(&model, string_ext));
   EXPECT_THAT(hpb::GetExtension(&model, string_ext), IsOkAndHolds(val));
