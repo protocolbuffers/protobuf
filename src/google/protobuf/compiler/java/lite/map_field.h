@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_MAP_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_MAP_FIELD_H__
 
 #include <cstdint>
 #include <string>
@@ -53,4 +53,4 @@ class ImmutableMapFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_MAP_FIELD_H__
