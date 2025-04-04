@@ -654,7 +654,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
         "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger_with_conditional);
+        "deprecation_trigger", deprecation_trigger,
+        "deprecation_trigger_with_conditional",
+        deprecation_trigger_with_conditional);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter
