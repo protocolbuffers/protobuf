@@ -24,8 +24,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
-#include "failure_list_trie_node.h"
+#include "conformance/failure_list_trie_node.h"
 #include "google/protobuf/descriptor.h"
 
 namespace conformance {
@@ -56,7 +57,7 @@ class ConformanceTestRunner {
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& test_name, uint32_t len,
+  virtual void RunTest(absl::string_view test_name, uint32_t len,
                        const std::string& input, std::string* output) = 0;
 };
 
@@ -68,7 +69,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
   static int Run(int argc, char* argv[],
                  const std::vector<ConformanceTestSuite*>& suites);
 
-  ForkPipeRunner(const std::string& executable,
+  ForkPipeRunner(absl::string_view executable,
                  const std::vector<std::string>& executable_args,
                  bool performance)
       : child_pid_(-1),
@@ -81,7 +82,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
 
   ~ForkPipeRunner() override = default;
 
-  void RunTest(const std::string& test_name, uint32_t len,
+  void RunTest(absl::string_view test_name, uint32_t len,
                const std::string& request, std::string* response) override;
 
  private:
