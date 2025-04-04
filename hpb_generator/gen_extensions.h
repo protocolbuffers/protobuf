@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
-#define PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_EXTENSIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_EXTENSIONS_H__
 
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/descriptor.h"
@@ -24,4 +24,4 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 
-#endif  // PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_EXTENSIONS_H__
