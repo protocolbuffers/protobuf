@@ -332,6 +332,15 @@ inline constexpr bool IsLazyParsingSupported() {
   return PtrIsAtLeast8BAligned();
 }
 
+#if defined(ABSL_IS_LITTLE_ENDIAN)
+constexpr bool IsLittleEndian() { return true; }
+#elif defined(ABSL_IS_BIG_ENDIAN)
+constexpr bool IsLittleEndian() { return false; }
+#else
+#error "Only little-endian and big-endian are supported"
+#endif
+constexpr bool IsBigEndian() { return !IsLittleEndian(); }
+
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
