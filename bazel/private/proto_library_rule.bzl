@@ -231,14 +231,13 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
         additional_args = args,
     )
 
+_extra_doc = ""
+
 proto_library = rule(
-    _proto_library_impl,
+    implementation = _proto_library_impl,
     # TODO: proto_common docs are missing
     # TODO: ProtoInfo link doesn't work and docs are missing
     doc = """
-<p>If using Bazel, please load the rule from <a href="https://github.com/bazelbuild/rules_proto">
-https://github.com/bazelbuild/rules_proto</a>.
-
 <p>Use <code>proto_library</code> to define libraries of protocol buffers which
 may be used from multiple languages. A <code>proto_library</code> may be listed
 in the <code>deps</code> clause of supported rules, such as
@@ -265,7 +264,8 @@ See documentation in <code>proto_info.bzl</code>.
 <li>A <code>[language]_proto_library</code> that wraps a <code>proto_library</code>
   named <code>foo_proto</code> should be called <code>foo_[language]_proto</code>,
   and be located in the same package.
-</ul>""",
+</ul>
+""" + _extra_doc,
     attrs = {
         "srcs": attr.label_list(
             allow_files = [".proto", ".protodevel"],
@@ -350,7 +350,9 @@ lang_proto_library that is not in one of the listed packages.""",
             default = configuration_field("proto", "proto_compiler"),
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
-    fragments = ["proto"],
+    fragments = [
+        "proto",
+    ],
     provides = [ProtoInfo],
     toolchains = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN),
 )
