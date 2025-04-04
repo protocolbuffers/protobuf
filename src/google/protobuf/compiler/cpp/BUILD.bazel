@@ -159,7 +159,10 @@ cc_library(
 proto_library(
     name = "test_bad_identifiers_proto",
     testonly = 1,
-    srcs = ["test_bad_identifiers.proto"],
+    srcs = [
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
+    ],
     strip_import_prefix = "/src",
 )
 
@@ -442,7 +445,8 @@ filegroup(
 filegroup(
     name = "test_proto_srcs",
     srcs = [
-        "test_bad_identifiers.proto",
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
         "test_large_enum_value.proto",
     ],
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
