@@ -234,6 +234,16 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
 
+  template <typename FuncT>
+  [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
+                                                 FuncT&& callback) {
+    if (size <= BytesAvailable(ptr)) {
+      callback(ptr, size);
+      return ptr + size;
+    }
+    return AppendSize(ptr, size, callback);
+  }
+
   template <typename Tag, typename T>
   [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Tag expected_tag,
                                               RepeatedField<T>* out);
