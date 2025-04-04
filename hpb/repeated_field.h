@@ -94,13 +94,13 @@ class RepeatedFieldProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::hpb::Ptr.
+  // Constructor used by hpb::Ptr.
   RepeatedFieldProxy(const RepeatedFieldProxy&) = default;
 
   // T::CProxy [] operator specialization.
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
-    return ::hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
+    return hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
@@ -118,8 +118,8 @@ class RepeatedFieldProxy
   void push_back(const T& t) {
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
-        ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
-        ::hpb::interop::upb::GetMiniTable(&t), this->arena_);
+        hpb::internal::PrivateAccess::GetInternalMsg(&t),
+        hpb::interop::upb::GetMiniTable(&t), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
@@ -128,8 +128,7 @@ class RepeatedFieldProxy
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val =
-        ::hpb::internal::PrivateAccess::GetInternalMsg(&msg);
+    message_value.msg_val = hpb::internal::PrivateAccess::GetInternalMsg(&msg);
     upb_Arena_Fuse(hpb::interop::upb::GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
@@ -147,7 +146,7 @@ class RepeatedFieldProxy
   reverse_iterator rend() const { return reverse_iterator(begin()); }
 
  private:
-  friend class ::hpb::Ptr<T>;
+  friend class hpb::Ptr<T>;
 };
 
 // RepeatedField proxy for repeated strings.
@@ -259,7 +258,7 @@ class RepeatedFieldScalarProxy
     }
     if (!kIsConst) {
       void* unsafe_ptr =
-          ::upb_Array_MutableDataPtr(const_cast<upb_Array*>(this->arr_));
+          upb_Array_MutableDataPtr(const_cast<upb_Array*>(this->arr_));
       return static_cast<T*>(unsafe_ptr);
     }
   }
