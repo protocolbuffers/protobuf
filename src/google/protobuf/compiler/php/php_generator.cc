@@ -239,6 +239,20 @@ std::string DefaultForField(const FieldDescriptor* field) {
   }
 }
 
+std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
+  if (field->is_repeated()) {
+    return absl::StrCat("$this->", field->name(), "->count() !== 0");
+  }
+  if (field->real_containing_oneof() != nullptr) {
+    return absl::StrCat("$this->hasOneof(", field->number(), ")");
+  }
+  if (field->has_presence()) {
+    return absl::StrCat("isset($this->", field->name(), ")");
+  }
+  return absl::StrCat("$this->", field->name(), " !== ",
+                      field->has_presence() ? "null" : DefaultForField(field));
+}
+
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
   absl::string_view proto_file = file->name();
@@ -579,6 +593,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
           ? absl::StrCat("@trigger_error('", field->name(),
                          " is deprecated.', E_USER_DEPRECATED);\n        ")
           : "";
+  std::string deprecation_trigger_with_conditional =
+      (field->options().deprecated())
+          ? absl::StrCat("if (" + DeprecatedConditionalForField(field),
+                         ") {\n            ", deprecation_trigger,
+                         "}\n        ")
+          : "";
 
   // Emit getter.
   if (oneof != NULL) {
@@ -589,7 +609,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -599,7 +619,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
         "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -608,7 +628,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   }
 
   // Emit hazzers/clear.
@@ -620,13 +640,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   } else if (field->has_presence()) {
     printer->Print(
         "public function has^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^return isset($this->^name^);\n"
-        "}\n\n"
+        "    ^deprecation_trigger_with_conditional^return isset($this->^name^);"
+        "\n}\n\n"
         "public function clear^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^unset($this->^name^);\n"
@@ -634,7 +654,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
         "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "deprecation_trigger_with_conditional",
+        deprecation_trigger_with_conditional);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter
@@ -650,7 +672,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "field_name", field->name(),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   }
 
   // Generate setter.
@@ -662,7 +684,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
 
   Indent(printer);
 
-  if (field->options().deprecated()) {
+  if (field->options().deprecated() && !field->is_map() &&
+      !field->is_repeated()) {
       printer->Print(
           "^deprecation_trigger^",
           "deprecation_trigger", deprecation_trigger
@@ -724,6 +747,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     printer->Print(
         "GPBUtil::check^type^($var);\n",
         "type", UnderscoresToCamelCase(field->cpp_type_name(), true));
+  }
+
+  if (field->options().deprecated() &&
+      (field->is_map() || field->is_repeated())) {
+    printer->Print("if ($arr->count() !== 0) {\n    ^deprecation_trigger^}\n",
+                   "deprecation_trigger", deprecation_trigger);
   }
 
   if (oneof != NULL) {
