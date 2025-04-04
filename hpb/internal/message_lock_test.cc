@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"

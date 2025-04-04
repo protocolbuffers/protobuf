@@ -8,7 +8,7 @@
 #include "google/protobuf/hpb/internal/template_help.h"
 
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
 
 namespace hpb_unittest::protos {
 
