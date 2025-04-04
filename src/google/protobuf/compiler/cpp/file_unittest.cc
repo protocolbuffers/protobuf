@@ -133,6 +133,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "FooResponse",
       "FooRequest",
       "FooClientMessage",
+      "FastParseTableCompression",
       "EnumsForBenchmark",
       "EnumParseTester",
       "BoolParseTester",
