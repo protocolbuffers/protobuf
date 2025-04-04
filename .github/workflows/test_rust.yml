@@ -18,21 +18,26 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "No bzlmod", flags: --noenable_bzlmod }
+          - { name: "No bzlmod", flags: --noenable_bzlmod --enable_workspace }
           - { name: "Bzlmod and Workspace", flags: --enable_bzlmod --enable_workspace }
           - { name: Optimized, flags: --config=opt }
           - { name: ASAN, flags: --config=asan }
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
           - bazel_cmd: "test"
 
           # Override cases with custom images
           - config: { name: Cargo }
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:7.1.2-1.74.0-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
+            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.74.0-b77fdae6d4771789dfc66a56bf8d806354e8011a"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
+
+          # rules_rust does not support workspace + bazel 8, so we test workspace + bazel 7
+          - name: "No bzlmod"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
+
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-22-4core
     steps:
