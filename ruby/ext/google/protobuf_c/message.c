@@ -17,6 +17,7 @@
 static VALUE cParseError = Qnil;
 static VALUE cAbstractMessage = Qnil;
 static ID descriptor_instancevar_interned;
+static VALUE not_provided = Qnil;
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
   return rb_funcall(klass, rb_intern("new"), 0);
@@ -676,11 +677,64 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   if (argc == 0) {
     return Qnil;
   }
+
   if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
   }
+
   Message_InitFromValue((upb_Message*)self->msg, self->msgdef, argv[0], arena);
+
   return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Message.create(*args) => new_message
+ *
+ * Creates a new instance of the given message class. The difference between
+ * this and the default constructor is this method takes positional arguments.
+ * Arguments should be passed in the order they are defined in the protobuf
+ * definition.  Benchmarking indicates this can be considerably faster than the
+ * default constructor due to avoiding the overhead rb_hash_foreach.  This is
+ * meant to be used in environments like custom protoc plugins where the
+ * protobuf field definitions are available.
+ *
+ * Note that no literal Message class exists. Only concrete classes per message
+ * type exist, as provided by the #msgclass method on Descriptors after they
+ * have been added to a pool. The method definitions described here on the
+ * Message class are provided on each concrete message class.
+ */
+static VALUE Message_create(int argc, VALUE* argv, VALUE klass_rb) {
+  VALUE message_rb = Message_alloc(klass_rb);
+
+  Message* message = ruby_to_Message(message_rb);
+  VALUE arena_rb = Arena_new();
+  upb_Arena* arena = Arena_get(arena_rb);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(message->msgdef);
+  upb_Message* message_upb = upb_Message_New(t, arena);
+
+  Message_InitPtr(message_rb, message_upb, arena_rb);
+
+  int field_count = upb_MessageDef_FieldCount(message->msgdef);
+
+  if (argc > field_count) {
+    rb_raise(rb_eArgError, "Too many arguments (given %d, expected %d)",
+             argc, field_count);
+  }
+
+  for (int i = 0; i < argc; i++) {
+    if(argv[i] == not_provided) {
+      continue;
+    }
+
+    // `upb_MesasgeDef_Field()` looks up the field by the order in which it's
+    // defined in the .proto, regardless of the field number.
+    const upb_FieldDef* f = upb_MessageDef_Field(message->msgdef, i);
+
+    Message_InitFieldFromValue(message_upb, f, argv[i], arena);
+  }
+
+  return message_rb;
 }
 
 /*
@@ -1410,12 +1464,18 @@ static void Message_define_class(VALUE klass) {
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
+  rb_define_singleton_method(klass, "create", Message_create, -1);
 }
 
 void Message_register(VALUE protobuf) {
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
   cAbstractMessage =
       rb_define_class_under(protobuf, "AbstractMessage", rb_cObject);
+
+  not_provided = rb_class_new_instance(0, NULL, rb_cObject);
+
+  rb_const_set(protobuf, rb_intern("VALUE_NOT_PROVIDED"), not_provided);
+
   Message_define_class(cAbstractMessage);
   rb_gc_register_address(&cAbstractMessage);
 
