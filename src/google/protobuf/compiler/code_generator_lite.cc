@@ -8,12 +8,12 @@
 #include "google/protobuf/compiler/code_generator_lite.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
-#include <string_view>
 #include "absl/strings/strip.h"
 
 namespace google {
@@ -24,10 +24,9 @@ namespace compiler {
 void ParseGeneratorParameter(
     std::string_view text,
     std::vector<std::pair<std::string, std::string> >* output) {
-  std::vector<std::string_view> parts =
-      absl::StrSplit(text, ',', absl::SkipEmpty());
+  auto parts = absl::StrSplit(text, ',', absl::SkipEmpty());
 
-  for (std::string_view part : parts) {
+  for (auto part : parts) {
     auto equals_pos = part.find_first_of('=');
     if (equals_pos == std::string_view::npos) {
       output->emplace_back(part, "");

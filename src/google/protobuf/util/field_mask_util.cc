@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "absl/container/btree_map.h"
@@ -19,7 +20,6 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/message.h"
 
@@ -38,8 +38,8 @@ std::string FieldMaskUtil::ToString(const FieldMask& mask) {
 
 void FieldMaskUtil::FromString(std::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string_view> paths = absl::StrSplit(str, ',');
-  for (std::string_view path : paths) {
+  auto paths = absl::StrSplit(str, ',');
+  for (auto path : paths) {
     if (path.empty()) continue;
     out->add_paths(path);
   }
@@ -240,9 +240,7 @@ class FieldMaskTree {
 
     ~Node() { ClearChildren(); }
 
-    void ClearChildren() {
-      children.clear();
-    }
+    void ClearChildren() { children.clear(); }
 
     absl::btree_map<std::string, std::unique_ptr<Node>> children;
   };
@@ -647,7 +645,7 @@ bool FieldMaskUtil::IsPathInFieldMask(std::string_view path,
     if (current == mask_path) {
       return true;
     }
-      // Also check whether mask.paths(i) is a prefix of path.
+    // Also check whether mask.paths(i) is a prefix of path.
     if (mask_path.length() < current.length() &&
         absl::ConsumePrefix(&current, mask_path) &&
         absl::ConsumePrefix(&current, ".")) {

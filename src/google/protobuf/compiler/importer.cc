@@ -24,13 +24,13 @@
 #include <sys/types.h>
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include <string_view>
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -233,7 +233,6 @@ void Importer::AddDirectInputFile(std::string_view file_name, bool is_error) {
 
 void Importer::ClearDirectInputFiles() { pool_.ClearDirectInputFiles(); }
 
-
 // ===================================================================
 
 SourceTree::~SourceTree() {}
@@ -281,7 +280,7 @@ static std::string CanonicalizePath(std::string_view path) {
 
   std::vector<std::string_view> canonical_parts;
   if (!path.empty() && path.front() == '/') canonical_parts.push_back("");
-  for (std::string_view part : absl::StrSplit(path, '/', absl::SkipEmpty())) {
+  for (auto part : absl::StrSplit(path, '/', absl::SkipEmpty())) {
     if (part == ".") {
       // Ignore.
     } else {
@@ -315,8 +314,7 @@ static inline bool ContainsParentReference(std::string_view path) {
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foobar", "foo", "baz", &result));
-static bool ApplyMapping(std::string_view filename,
-                         std::string_view old_prefix,
+static bool ApplyMapping(std::string_view filename, std::string_view old_prefix,
                          std::string_view new_prefix, std::string* result) {
   if (old_prefix.empty()) {
     // old_prefix matches any relative path.

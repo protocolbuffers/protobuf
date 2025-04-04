@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <string_view>
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
@@ -26,10 +27,9 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include <string_view>
 #include "absl/strings/substitute.h"
-#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -189,7 +189,7 @@ bool IsForbiddenKotlin(std::string_view field_name) {
 std::string EscapeKotlinKeywords(std::string name) {
   std::vector<std::string> escaped_packages;
   std::vector<std::string> packages = absl::StrSplit(name, ".");  // NOLINT
-  for (std::string_view package : packages) {
+  for (auto package : packages) {
     if (IsForbiddenKotlin(package)) {
       escaped_packages.push_back(absl::StrCat("`", package, "`"));
     } else {
@@ -226,7 +226,6 @@ std::string ExtraMessageInterfaces(const Descriptor* descriptor) {
   return absl::StrCat("// @@protoc_insertion_point(message_implements:",
                       descriptor->full_name(), ")");
 }
-
 
 std::string ExtraBuilderInterfaces(const Descriptor* descriptor) {
   return absl::StrCat("// @@protoc_insertion_point(builder_implements:",
@@ -679,7 +678,7 @@ bool IsReferenceType(JavaType type) {
 }
 
 std::string_view GetCapitalizedType(const FieldDescriptor* field,
-                                     bool immutable, Options options) {
+                                    bool immutable, Options options) {
   switch (GetType(field)) {
     case FieldDescriptor::TYPE_INT32:
       return "Int32";
@@ -921,7 +920,6 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
   ABSL_CHECK(message->options().map_entry());
   return message->map_value();
 }
-
 
 namespace {
 

@@ -113,7 +113,7 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (std::string_view split_piece :
+      for (auto split_piece :
            absl::StrSplit(options[i].second, ';', absl::SkipEmpty())) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));

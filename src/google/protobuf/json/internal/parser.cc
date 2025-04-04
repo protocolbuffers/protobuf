@@ -14,9 +14,9 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
-#include "google/protobuf/type.pb.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -29,7 +29,6 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include <string_view>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
@@ -42,8 +41,9 @@
 #include "google/protobuf/json/internal/parser_traits.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/util/type_resolver.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1014,7 +1014,7 @@ absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
 
   // google.protobuf.FieldMask has a single field with number 1.
   auto paths_field = Traits::MustHaveField(desc, 1);
-  for (std::string_view path : absl::StrSplit(paths, ',')) {
+  for (auto path : absl::StrSplit(paths, ',')) {
     std::string snake_path;
     // Assume approximately six-letter words, so add one extra space for an
     // underscore for every six bytes.
