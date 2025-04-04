@@ -4170,6 +4170,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
+
 // Returns true if x is a prefix of y.
 bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
   return x.size() <= y.size() && x == y.subspan(0, x.size());
