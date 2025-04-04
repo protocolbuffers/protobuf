@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_HEADER_H_
-#define THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_HEADER_H_
+#ifndef GOOGLE_UPB_UPB_GENERATOR_REFLECTION_HEADER_H__
+#define GOOGLE_UPB_UPB_GENERATOR_REFLECTION_HEADER_H__
 
 #include <string>
 
@@ -23,4 +23,4 @@ void GenerateReflectionHeader(upb::FileDefPtr file, const Options& options,
 
 }  // namespace upb::generator::reflection
 
-#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_HEADER_H_
+#endif  // GOOGLE_UPB_UPB_GENERATOR_REFLECTION_HEADER_H__

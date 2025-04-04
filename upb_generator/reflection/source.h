@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H
-#define THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H
+#ifndef GOOGLE_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H__
+#define GOOGLE_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H__
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "upb/reflection/def.hpp"
@@ -23,4 +23,4 @@ void GenerateReflectionSource(upb::FileDefPtr file, const Options& options,
 }  // namespace generator
 }  // namespace upb
 
-#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H
+#endif  // GOOGLE_UPB_UPB_GENERATOR_REFLECTION_SOURCE_H__

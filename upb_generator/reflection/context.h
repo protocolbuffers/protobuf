@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H_
-#define THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H_
+#ifndef GOOGLE_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H__
+#define GOOGLE_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H__
 
 #include <string>
 
@@ -55,4 +55,4 @@ class Context {
 }  // namespace generator
 }  // namespace upb
 
-#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H_
+#endif  // GOOGLE_UPB_UPB_GENERATOR_REFLECTION_CONTEXT_H__
