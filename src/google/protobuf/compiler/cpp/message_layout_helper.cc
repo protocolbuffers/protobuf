@@ -5,8 +5,9 @@
 #include <cstddef>
 #include <vector>
 
+#include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -15,6 +16,25 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+namespace {
+
+bool EndsWithMsgPtr(const std::vector<const FieldDescriptor*>& fields,
+                    const Options& options, MessageSCCAnalyzer* scc_analyzer) {
+  return fields.back()->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+         !IsLazy(fields.back(), options, scc_analyzer) &&
+         !fields.back()->is_repeated();
+}
+
+}  // namespace
+
+size_t FieldGroup::EstimateMemorySize() const {
+  size_t size = 0;
+  for (const auto* field : fields_) {
+    size += static_cast<size_t>(EstimateAlignmentSize(field));
+  }
+  return size;
+}
 
 void FieldGroup::Append(const FieldGroup& other) {
   UpdatePreferredLocationAndInsertOtherFields(other);
@@ -41,56 +61,15 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
   return true;
 }
 
-FieldPartitionArray MessageLayoutHelper::PartitionFields(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) const {
-  FieldPartitionArray field_partitions;
-
-  for (const auto* field : fields) {
-    if (ShouldSplit(field, options)) {
-      field_partitions[kSplit].push_back(field);
-    } else if (field->is_repeated()) {
-      field_partitions[kRepeated].push_back(field);
-    } else {
-      field_partitions[GetFieldHotness(field, options, scc_analyzer)].push_back(
-          field);
-    }
-  }
-
-  return field_partitions;
-}
-
-// Field layout policy slightly varies according to the type of proto fields
-// but all fields are ordered in descending hotness.
-//
-// (1) REPEATED
-// RepeatedFields and RepeatedPtrFields have their own constructors
-// and therefore compiler inserts code that initializes those fields
-// at three different constructors (default, copy, arena).
-//
-// As these fields can't be mixed with fields that are initialized in
-// SharedCtor, repeated fields are laid out before other types of fields.
-//
-// (2) MESSAGE and ZERO_INITIALIZABLE
-// Primitive fields, messages, etc. can be zero'ed at construction.
-// These fields are currently laid out adjacently and bulk-initialized
-// (memset zero'ed) in SharedCtor. Note that messages can't be cleared by memset
-// unlike primitive fields. So, two types are laid out separately.
-//
-// (3) OTHER (STRING, LAZY_MESSAGE, etc.)
-// Primitive fields with non-zero default values, lazy message, etc. are not
-// initialized in bulk (memset) and can be mixed to minimize
-// compartmentalization.
-//
-void MessageLayoutHelper::OptimizeLayoutByFamily(
+void MessageLayoutHelper::DoOptimizeLayout(
     std::vector<const FieldDescriptor*>& fields, const Options& options,
-    absl::Span<const FieldFamily> families, MessageSCCAnalyzer* scc_analyzer) {
-  // First divide fields into those that align to 1 byte, 4 bytes or 8 bytes.
-  std::vector<FieldGroup> aligned_to_1[kMaxFamily];
-  std::vector<FieldGroup> aligned_to_4[kMaxFamily];
-  std::vector<FieldGroup> aligned_to_8[kMaxFamily];
+    MessageSCCAnalyzer* scc_analyzer) const {
+  FieldPartitionArray aligned_to_1;
+  FieldPartitionArray aligned_to_4;
+  FieldPartitionArray aligned_to_8;
+
   for (const auto* field : fields) {
-    FieldFamily f = OTHER;
+    FieldFamily f;
     if (field->is_repeated()) {
       f = ShouldSplit(field, options) ? OTHER : REPEATED;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
@@ -99,85 +78,160 @@ void MessageLayoutHelper::OptimizeLayoutByFamily(
       f = MESSAGE;
     } else if (CanInitializeByZeroing(field, options, scc_analyzer)) {
       f = ZERO_INITIALIZABLE;
+    } else {
+      f = OTHER;
     }
 
-    // Use all types of access information to order within "fields".
+    FieldHotness hotness;
+    if (ShouldSplit(field, options)) {
+      hotness = kSplit;
+    } else if (field->is_repeated()) {
+      hotness = kRepeated;
+    } else {
+      hotness = GetFieldHotness(field, options, scc_analyzer);
+    }
+
     FieldGroup fg = SingleFieldGroup(field);
     switch (EstimateAlignmentSize(field)) {
       case 1:
-        aligned_to_1[f].push_back(fg);
+        aligned_to_1[f][hotness].push_back(fg);
         break;
       case 4:
-        aligned_to_4[f].push_back(fg);
+        aligned_to_4[f][hotness].push_back(fg);
         break;
       case 8:
-        aligned_to_8[f].push_back(fg);
+        aligned_to_8[f][hotness].push_back(fg);
         break;
       default:
         ABSL_LOG(FATAL) << "Unknown alignment size "
-                        << EstimateAlignmentSize(field) << "for a field "
+                        << EstimateAlignmentSize(field) << "for field "
                         << field->full_name() << ".";
     }
   }
 
   // For each family, group fields to optimize locality and padding.
   for (size_t f = 0; f < kMaxFamily; ++f) {
-    std::stable_sort(aligned_to_1[f].begin(), aligned_to_1[f].end());
+    auto& family_aligned_to_1 = aligned_to_1[f];
+    auto& family_aligned_to_4 = aligned_to_4[f];
+    auto& family_aligned_to_8 = aligned_to_8[f];
 
-    // Now group fields aligned to 1 byte into sets of 4, and treat those like a
-    // single field aligned to 4 bytes.
-    for (size_t i = 0; i < aligned_to_1[f].size(); i += 4) {
-      FieldGroup field_group;
-      for (size_t j = i; j < aligned_to_1[f].size() && j < i + 4; ++j) {
-        field_group.Append(aligned_to_1[f][j]);
-      }
-      aligned_to_4[f].push_back(field_group);
-    }
-    // Using stable_sort ensures that the output is consistent across runs.
-    std::stable_sort(aligned_to_4[f].begin(), aligned_to_4[f].end());
-
-    // Now group fields aligned to 4 bytes (or the 4-field groups created above)
-    // into pairs, and treat those like a single field aligned to 8 bytes.
-    for (size_t i = 0; i < aligned_to_4[f].size(); i += 2) {
-      FieldGroup field_group;
-      for (size_t j = i; j < aligned_to_4[f].size() && j < i + 2; ++j) {
-        field_group.Append(aligned_to_4[f][j]);
-      }
-
-      // `i` == `aligned_to_4[f].size() - 1` only if there are an odd number of
-      // 4-byte field groups. In this case, the last 4-byte field group is
-      // incomplete, and should be placed at the beginning or end.
-      if (i == aligned_to_4[f].size() - 1) {
-        // The goal is to minimize padding, and only ZERO_INITIALIZABLE and
-        // OTHER families can have primitive fields (alignment < 8). We lay out
-        // ZERO_INITIALIZABLE then OTHER, so only hoist the incomplete 4-byte
-        // block to the beginning if it's in the OTHER family, otherwise place
-        // it at the end.
-        if (f == OTHER) {
-          // Move incomplete 4-byte block to the beginning.  This is done to
-          // pair with the (possible) leftover blocks from the
-          // ZERO_INITIALIZABLE family.
-          field_group.SetPreferredLocation(-1);
-        } else {
-          // Move incomplete 4-byte block to the end.
-          field_group.SetPreferredLocation(double{FieldDescriptor::kMaxNumber});
-        }
-      }
-
-      aligned_to_8[f].push_back(field_group);
+    // Group single-byte fields into groups of 4 bytes and combine them with the
+    // existing 4-byte groups.
+    auto aligned_to_4 = ConsolidateAlignedFieldGroups(
+        family_aligned_to_1, /*alignment=*/1, /*target_alignment=*/4);
+    for (size_t h = 0; h < kMaxHotness; ++h) {
+      family_aligned_to_4[h].insert(family_aligned_to_4[h].end(),
+                                    aligned_to_4[h].begin(),
+                                    aligned_to_4[h].end());
     }
 
-    std::stable_sort(aligned_to_8[f].begin(), aligned_to_8[f].end());
+    // Group 4-byte fields into groups of 8 bytes and combine them with the
+    // existing 8-byte groups.
+    auto aligned_to_8 = ConsolidateAlignedFieldGroups(
+        family_aligned_to_4, /*alignment=*/4, /*target_alignment=*/8);
+    for (size_t h = 0; h < kMaxHotness; ++h) {
+      family_aligned_to_8[h].insert(family_aligned_to_8[h].end(),
+                                    aligned_to_8[h].begin(),
+                                    aligned_to_8[h].end());
+    }
   }
 
   // Now pull out all the FieldDescriptors in order.
+
+  enum { kZeroLast = 0, kZeroFirst = 1, kRecipeMax };
+  constexpr FieldFamily profiled_orders[kRecipeMax][kMaxFamily] = {
+      {REPEATED, STRING, OTHER, MESSAGE, ZERO_INITIALIZABLE},
+      {ZERO_INITIALIZABLE, MESSAGE, OTHER, STRING, REPEATED},
+  };
+  constexpr FieldFamily default_orders[kMaxFamily] = {
+      REPEATED, STRING, MESSAGE, ZERO_INITIALIZABLE, OTHER};
+
+  const bool has_profile = HasProfiledData();
   fields.clear();
-  for (auto f : families) {
-    for (const auto& aligned_fields : aligned_to_8[f]) {
-      fields.insert(fields.end(), aligned_fields.fields().begin(),
-                    aligned_fields.fields().end());
+  int recipe = kZeroLast;
+  bool incomplete_block_at_end = false;
+  for (size_t h = 0; h < kMaxHotness; ++h) {
+    for (auto f : has_profile ? profiled_orders[recipe] : default_orders) {
+      auto& partition = aligned_to_8[f][h];
+
+      // If there is an incomplete 4-byte block, it should be placed at the
+      // beginning or end.
+      auto it = absl::c_find_if(partition, [](const FieldGroup& fg) {
+        return fg.EstimateMemorySize() <= 4;
+      });
+      if (it != partition.end()) {
+        // There should be at most one incomplete 4-byte block, and it will
+        // always be the last element.
+        ABSL_CHECK(it + 1 == partition.end());
+
+        // The goal is to minimize padding, and only ZERO_INITIALIZABLE and
+        // OTHER families can have primitive fields (alignment < 8). We lay
+        // out ZERO_INITIALIZABLE then OTHER, so only hoist the incomplete
+        // 4-byte block to the beginning if it's in the OTHER family,
+        // otherwise place it at the end.
+        if (incomplete_block_at_end) {
+          // Move incomplete 4-byte block to the beginning.  This is done to
+          // pair with the (possible) leftover blocks from the
+          // ZERO_INITIALIZABLE family.
+          it->SetPreferredLocation(-1);
+          incomplete_block_at_end = false;
+        } else {
+          // Move incomplete 4-byte block to the end.
+          it->SetPreferredLocation(double{FieldDescriptor::kMaxNumber});
+          incomplete_block_at_end = true;
+        }
+      } else if (!partition.empty()) {
+        incomplete_block_at_end = false;
+      }
+
+      std::stable_sort(partition.begin(), partition.end());
+      for (const auto& aligned_fields : partition) {
+        fields.insert(fields.end(), aligned_fields.fields().begin(),
+                      aligned_fields.fields().end());
+      }
+
+      if (!fields.empty() &&
+          (EndsWithMsgPtr(fields, options, scc_analyzer) ||
+           CanInitializeByZeroing(fields.back(), options, scc_analyzer))) {
+        recipe = kZeroFirst;
+      } else {
+        recipe = kZeroLast;
+      }
     }
   }
+}
+
+std::array<std::vector<FieldGroup>, MessageLayoutHelper::kMaxHotness>
+MessageLayoutHelper::ConsolidateAlignedFieldGroups(
+    std::array<std::vector<FieldGroup>, kMaxHotness>& field_groups,
+    size_t alignment, size_t target_alignment) {
+  ABSL_CHECK_GT(target_alignment, alignment);
+  ABSL_CHECK_EQ(target_alignment % alignment, size_t{0});
+
+  const size_t size_inflation = target_alignment / alignment;
+  std::array<std::vector<FieldGroup>, kMaxHotness> partitions_aligned_to_target;
+
+  for (size_t h = 0; h < kMaxHotness; ++h) {
+    auto& partition = field_groups[h];
+    auto& target_partition = partitions_aligned_to_target[h];
+    target_partition.reserve((field_groups.size() + size_inflation - 1) /
+                             size_inflation);
+
+    // Using stable_sort ensures that the output is consistent across runs.
+    std::stable_sort(partition.begin(), partition.end());
+
+    // Group fields into groups of `size_inflation` fields, which will be
+    // aligned to `target_alignment`.
+    for (size_t i = 0; i < partition.size(); i += size_inflation) {
+      FieldGroup field_group;
+      for (size_t j = i; j < partition.size() && j < i + size_inflation; ++j) {
+        field_group.Append(partition[j]);
+      }
+      target_partition.push_back(field_group);
+    }
+  }
+
+  return partitions_aligned_to_target;
 }
 
 }  // namespace cpp

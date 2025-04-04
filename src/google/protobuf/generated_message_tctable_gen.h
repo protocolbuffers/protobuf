@@ -13,12 +13,14 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <utility>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/fast_parse_table_builder.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -31,15 +33,6 @@ enum class TcParseFunction : uint8_t;
 namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
-
-uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field);
-
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor);
-
-uint32_t FastParseTableSize(size_t num_fields,
-                            absl::optional<uint32_t> end_group_tag);
-
-bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
 
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
@@ -166,6 +159,62 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
   // Table size.
   int table_size_log2;
+};
+
+class GeneratedMessageFastParseTableBuilder final
+    : public FastParseTableBuilder<
+          std::pair<const TailCallTableInfo::FieldEntryInfo&,
+                    const TailCallTableInfo::FieldOptions&>,
+          TailCallTableInfo::FastFieldInfo> {
+  using EntryRef = std::pair<const TailCallTableInfo::FieldEntryInfo&,
+                             const TailCallTableInfo::FieldOptions&>;
+  using Output = TailCallTableInfo::FastFieldInfo;
+
+ public:
+  explicit GeneratedMessageFastParseTableBuilder(
+      const TailCallTableInfo::MessageOptions& message_options,
+      absl::Span<const TailCallTableInfo::FieldEntryInfo> field_entries,
+      absl::Span<const TailCallTableInfo::FieldOptions> ordered_fields)
+      : field_entries_(field_entries),
+        ordered_fields_(ordered_fields),
+        message_options_(message_options) {}
+
+  ~GeneratedMessageFastParseTableBuilder() override = default;
+
+ private:
+  size_t NumFields() const override { return field_entries_.size(); }
+
+  EntryRef GetEntry(size_t index) const override {
+    return std::make_pair(std::ref(field_entries_[index]),
+                          std::ref(ordered_fields_[index]));
+  }
+
+  const FieldDescriptor* GetField(EntryRef entry) override {
+    return entry.first.field;
+  }
+
+  static const TailCallTableInfo::FieldOptions& GetFieldOptions(
+      EntryRef entry) {
+    return entry.second;
+  }
+
+  bool IsFieldEligibleForFastParsing(EntryRef entry) override;
+
+  Output::Field MakeFastFieldEntry(EntryRef field_entry);
+
+  Output BuildOutputFromEntry(EntryRef entry, uint32_t tag) override;
+
+  Output BuildOutputFromEndGroupTag(uint32_t end_group_tag) override;
+
+  float PresenceProbability(EntryRef entry) override {
+    return GetFieldOptions(entry).presence_probability;
+  }
+
+  float OutputPresenceProbability(const Output& output) override;
+
+  absl::Span<const TailCallTableInfo::FieldEntryInfo> field_entries_;
+  absl::Span<const TailCallTableInfo::FieldOptions> ordered_fields_;
+  const TailCallTableInfo::MessageOptions& message_options_;
 };
 
 }  // namespace internal
