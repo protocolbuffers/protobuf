@@ -1563,7 +1563,8 @@ set(compiler_test_files
 
 # @//src/google/protobuf/compiler:test_proto_srcs
 set(compiler_test_protos_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers_editions.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers_proto2.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.proto
 )
