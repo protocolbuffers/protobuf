@@ -18,7 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
@@ -430,7 +430,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 }
 
 std::string MultipleSourceFilename(upb::FileDefPtr file,
-                                   absl::string_view full_name, int* i) {
+                                   std::string_view full_name, int* i) {
   *i += 1;
   return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/",
                       *i, ".upb.c");
@@ -498,7 +498,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 }
 
-bool ParseOptions(MiniTableOptions* options, absl::string_view parameter,
+bool ParseOptions(MiniTableOptions* options, std::string_view parameter,
                   std::string* error) {
   for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "bootstrap_stage") {

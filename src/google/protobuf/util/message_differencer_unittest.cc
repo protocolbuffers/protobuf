@@ -27,7 +27,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
@@ -2366,7 +2366,7 @@ TEST(MessageDifferencerTest, PrintMapKeysTest) {
       diff_with_any);
 }
 
-static constexpr absl::string_view kIgnoredFields[] = {"rm.b", "rm.m.b"};
+static constexpr std::string_view kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:

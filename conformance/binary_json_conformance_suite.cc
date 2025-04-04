@@ -24,7 +24,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "json/config.h"
 #include "json/reader.h"
@@ -62,7 +62,7 @@ using TestAllTypesProto3Editions =
 
 namespace {
 
-constexpr absl::string_view kTypeUrlPrefix = "type.googleapis.com";
+constexpr std::string_view kTypeUrlPrefix = "type.googleapis.com";
 
 // The number of repetitions to use for performance tests.
 // Corresponds approx to 500KB wireformat bytes.
@@ -853,7 +853,7 @@ template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestPrematureEOFForType(
     FieldDescriptor::Type type) {
   // Incomplete values for each wire type.
-  static constexpr absl::string_view incompletes[6] = {
+  static constexpr std::string_view incompletes[6] = {
       "\x80",     // VARINT
       "abcdefg",  // 64BIT
       "\x80",     // DELIMITED (partial length)
@@ -866,7 +866,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestPrematureEOFForType(
   const FieldDescriptor* rep_field = GetFieldForType(type, true);
   WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
       static_cast<WireFormatLite::FieldType>(type));
-  absl::string_view incomplete = incompletes[wire_type];
+  std::string_view incomplete = incompletes[wire_type];
   const std::string type_name =
       UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
 
@@ -1995,7 +1995,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
   const std::string type_name =
       UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
   const FieldDescriptor* field = GetFieldForType(type, true, Packed::kFalse);
-  const absl::string_view field_name = field->name();
+  const std::string_view field_name = field->name();
 
   std::string message_field =
       absl::StrCat("\"", field_name, "\": [", field_value, "]");
@@ -3698,8 +3698,8 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForType(
     }
   }
 
-  absl::string_view packed_string = "";
-  const absl::string_view repeated_string =
+  std::string_view packed_string = "";
+  const std::string_view repeated_string =
       repeated ? "Repeated " : "Singular ";
   if (packed == Packed::kTrue) {
     packed_string = "Packed ";

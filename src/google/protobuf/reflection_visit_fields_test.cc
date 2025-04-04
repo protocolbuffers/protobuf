@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map_test_util.h"
@@ -39,7 +39,7 @@ using ::proto2_unittest::TestPackedTypes;
 using ::proto2_wireformat_unittest::TestMessageSet;
 
 struct TestParam {
-  absl::string_view name;
+  std::string_view name;
   Message* (*create_message)(Arena& arena);
 };
 
@@ -183,7 +183,7 @@ void MutateNothingByVisit(Message& message) {
         if constexpr (info.is_cord) {
           info.Set(info.Get());
         } else {
-          absl::string_view view = info.Get();
+          std::string_view view = info.Get();
           info.Set({view.data(), view.size()});
         }
       } else {
@@ -418,7 +418,7 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 template <typename T>
-void MutateMapValue(TestMap& message, absl::string_view name, int index,
+void MutateMapValue(TestMap& message, std::string_view name, int index,
                     T&& callback) {
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();

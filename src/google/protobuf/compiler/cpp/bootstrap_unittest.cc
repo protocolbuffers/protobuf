@@ -42,7 +42,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 std::string FindWithDefault(
-    const absl::flat_hash_map<absl::string_view, std::string>& m,
+    const absl::flat_hash_map<std::string_view, std::string>& m,
     const std::string& k, const std::string& v) {
   auto it = m.find(k);
   if (it == m.end()) return v;
@@ -57,8 +57,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, int line, int column,
-                   absl::string_view message) override {
+  void RecordError(std::string_view filename, int line, int column,
+                   std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -119,8 +119,8 @@ const char* test_protos[][2] = {
 TEST(BootstrapTest, GeneratedFilesMatch) {
   // We need a mapping from the actual file to virtual and actual path
   // of the data to compare to.
-  absl::flat_hash_map<absl::string_view, std::string> vpath_map;
-  absl::flat_hash_map<absl::string_view, std::string> rpath_map;
+  absl::flat_hash_map<std::string_view, std::string> vpath_map;
+  absl::flat_hash_map<std::string_view, std::string> rpath_map;
 
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestUtil::TestSourceDir());

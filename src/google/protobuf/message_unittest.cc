@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/arena.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/explicitly_constructed.h"

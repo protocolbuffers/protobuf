@@ -63,7 +63,7 @@ TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
                    "/TestMessageWithManyExtensionRanges.java"),
       &java_source, true));
 
-  // Open-source codebase does not support constexpr absl::string_view.
+  // Open-source codebase does not support constexpr std::string_view.
   static constexpr const char kWriteUntilCall[] = "extensionWriter.writeUntil(";
 
   std::vector<std::string> range_ends;

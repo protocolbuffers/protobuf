@@ -27,7 +27,7 @@ namespace internal {
 namespace {
 
 bool EnumCompareByName(const EnumEntry& a, const EnumEntry& b) {
-  return absl::string_view(a.name) < absl::string_view(b.name);
+  return std::string_view(a.name) < std::string_view(b.name);
 }
 
 // Gets the numeric value of the EnumEntry at the given index, but returns a
@@ -44,7 +44,7 @@ int GetValue(const EnumEntry* enums, int i, int target) {
 }  // namespace
 
 bool LookUpEnumValue(const EnumEntry* enums, size_t size,
-                     absl::string_view name, int* value) {
+                     std::string_view name, int* value) {
   EnumEntry target{name, 0};
   auto it = std::lower_bound(enums, enums + size, target, EnumCompareByName);
   if (it != enums + size && it->name == name) {

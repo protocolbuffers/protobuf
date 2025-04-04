@@ -10,7 +10,7 @@
 #include <string>
 
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb_generator/minitable/names_internal.h"
 
 namespace upb {
@@ -18,37 +18,37 @@ namespace generator {
 
 namespace {
 
-std::string ToCIdent(absl::string_view str) {
+std::string ToCIdent(std::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }
 
-std::string MangleName(absl::string_view name) {
+std::string MangleName(std::string_view name) {
   return absl::StrReplaceAll(name, {{"_", "_0"}, {".", "__"}});
 }
 
 }  // namespace
 
-std::string MiniTableHeaderFilename(absl::string_view proto_filename) {
+std::string MiniTableHeaderFilename(std::string_view proto_filename) {
   return MiniTableHeaderFilename(proto_filename, false);
 }
 
-std::string MiniTableMessageVarName(absl::string_view full_name) {
+std::string MiniTableMessageVarName(std::string_view full_name) {
   return MangleName(full_name) + "_msg_init";
 }
 
-std::string MiniTableMessagePtrVarName(absl::string_view full_name) {
+std::string MiniTableMessagePtrVarName(std::string_view full_name) {
   return MiniTableMessageVarName(full_name) + "_ptr";
 }
 
-std::string MiniTableEnumVarName(absl::string_view full_name) {
+std::string MiniTableEnumVarName(std::string_view full_name) {
   return MangleName(full_name) + "_enum_init";
 }
 
-std::string MiniTableExtensionVarName(absl::string_view full_name) {
+std::string MiniTableExtensionVarName(std::string_view full_name) {
   return ToCIdent(full_name) + "_ext";
 }
 
-std::string MiniTableFileVarName(absl::string_view proto_filename) {
+std::string MiniTableFileVarName(std::string_view proto_filename) {
   return ToCIdent(proto_filename) + "_upb_file_layout";
 }
 

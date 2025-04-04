@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
@@ -234,11 +234,11 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->FindExtensionByName(absl::string_view(name, name_size));
+      pool->pool->FindExtensionByName(std::string_view(name, name_size));
   if (message_extension == nullptr) {
     // Is is the name of a message set extension?
     const Descriptor* message_descriptor =
-        pool->pool->FindMessageTypeByName(absl::string_view(name, name_size));
+        pool->pool->FindMessageTypeByName(std::string_view(name, name_size));
     if (message_descriptor) {
       message_extension = FindMessageSetExtension(message_descriptor);
     }

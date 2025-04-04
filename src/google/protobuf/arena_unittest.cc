@@ -28,7 +28,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -175,10 +175,10 @@ struct ArenaDtorBase {
 };
 
 template <bool arena_ctor, bool arena_dtor>
-void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
-                           std::vector<absl::string_view> copy,
-                           std::vector<absl::string_view> with_int) {
-  static auto& actions = *new std::vector<absl::string_view>;
+void TestCtorAndDtorTraits(std::vector<std::string_view> def,
+                           std::vector<std::string_view> copy,
+                           std::vector<std::string_view> with_int) {
+  static auto& actions = *new std::vector<std::string_view>;
   struct TraitsProber
       : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
         std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
@@ -536,7 +536,7 @@ class DispatcherTestProto : public Message {
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the
 // implementation of CreateMessage.
-absl::string_view hook_called;
+std::string_view hook_called;
 template <>
 void* Arena::DefaultConstruct<DispatcherTestProto>(Arena*) {
   hook_called = "default";

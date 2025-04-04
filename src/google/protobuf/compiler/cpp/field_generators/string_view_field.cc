@@ -232,13 +232,13 @@ void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
               )cc");
             }}},
           R"cc(
-            $DEPRECATED$ absl::string_view $name$() const;
+            $DEPRECATED$ std::string_view $name$() const;
             template <typename Arg_ = std::string&&>
             $DEPRECATED$ void $set_name$(Arg_&& arg);
 
             private:
             const std::string& _internal_$name$() const;
-            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(absl::string_view value);
+            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(std::string_view value);
             $donated$;
 
             public:
@@ -299,7 +299,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
            }},
       },
       R"cc(
-        inline absl::string_view $Msg$::$name$() const
+        inline std::string_view $Msg$::$name$() const
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_get$;
@@ -322,7 +322,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
           $check_hasbit$;
           return $field_$.Get();
         }
-        inline void $Msg$::_internal_set_$name_internal$(absl::string_view value) {
+        inline void $Msg$::_internal_set_$name_internal$(std::string_view value) {
           $TsanDetectConcurrentMutation$;
           $update_hasbit$;
           //~ Don't use $Set$ here; we always want the std::string variant
@@ -649,7 +649,7 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ absl::string_view $name$(int index) const;
+    $DEPRECATED$ std::string_view $name$(int index) const;
     template <typename Arg_ = std::string&&>
     $DEPRECATED$ void set_$name$(int index, Arg_&& value);
     template <typename Arg_ = std::string&&>
@@ -679,7 +679,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           {GetEmitRepeatedFieldMutableSub(*opts_, p)},
       },
       R"cc(
-        inline absl::string_view $Msg$::$name$(int index) const
+        inline std::string_view $Msg$::$name$(int index) const
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_get$;

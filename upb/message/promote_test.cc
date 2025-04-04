@@ -20,7 +20,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
@@ -132,7 +132,7 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_test_ModelExtension1* parsed_ex =
       (upb_test_ModelExtension1*)value.msg_val;
   upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
-  EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
+  EXPECT_EQ(std::string_view(field.data, field.size), "Everyone");
 
   upb_FindUnknownRet found = upb_Message_FindUnknown(
       UPB_UPCAST(parsed),

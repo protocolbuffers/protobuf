@@ -13,7 +13,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/rust/context.h"
 
 namespace google {
@@ -61,13 +61,13 @@ GetImportPathToCrateNameMap(const Options* opts) {
     return status;
   }
 
-  std::vector<absl::string_view> lines =
+  std::vector<std::string_view> lines =
       absl::StrSplit(mapping_contents, '\n', absl::SkipEmpty());
   size_t len = lines.size();
 
   size_t idx = 0;
   while (idx < len) {
-    absl::string_view crate_name = lines[idx++];
+    std::string_view crate_name = lines[idx++];
     size_t files_cnt;
     if (!absl::SimpleAtoi(lines[idx++], &files_cnt)) {
       return absl::InvalidArgumentError(

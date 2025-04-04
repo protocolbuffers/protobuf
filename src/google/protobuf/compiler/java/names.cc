@@ -15,7 +15,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -36,9 +36,9 @@ const char* DefaultPackage(Options options) {
   return options.opensource_runtime ? "" : "com.google.protos";
 }
 
-bool IsReservedName(absl::string_view name) {
+bool IsReservedName(std::string_view name) {
   static const auto& kReservedNames =
-      *new absl::flat_hash_set<absl::string_view>({
+      *new absl::flat_hash_set<std::string_view>({
           "abstract", "assert",     "boolean",  "break",     "byte",
           "case",     "catch",      "char",     "class",     "const",
           "continue", "default",    "do",       "double",    "else",
@@ -54,14 +54,14 @@ bool IsReservedName(absl::string_view name) {
   return kReservedNames.contains(name);
 }
 
-bool IsForbidden(absl::string_view field_name) {
+bool IsForbidden(std::string_view field_name) {
   // Names that should be avoided (in UpperCamelCase format).
   // Using them will cause the compiler to generate accessors whose names
   // collide with methods defined in base classes.
   // Keep this list in sync with specialFieldNames in
   // java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
   static const auto& kForbiddenNames =
-      *new absl::flat_hash_set<absl::string_view>({
+      *new absl::flat_hash_set<std::string_view>({
         // java.lang.Object:
           "Class",
           // com.google.protobuf.MessageLiteOrBuilder:

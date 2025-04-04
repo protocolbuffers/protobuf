@@ -15,7 +15,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
@@ -41,7 +41,7 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
                    pb::JavaFeatures::descriptor()->file()->DebugString());
   }
 
-  bool FileGenerated(absl::string_view filename) {
+  bool FileGenerated(std::string_view filename) {
     std::string path = absl::StrCat(temp_directory(), "/", filename);
     return File::Exists(path);
   }

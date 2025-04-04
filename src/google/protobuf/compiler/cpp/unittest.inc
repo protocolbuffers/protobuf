@@ -30,7 +30,7 @@
 #include "absl/base/attributes.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/compiler/cpp/unittest.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for
 // visual studio to compile (report internal errors).
@@ -80,8 +80,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, int line, int column,
-                   absl::string_view message) override {
+  void RecordError(std::string_view filename, int line, int column,
+                   std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -2073,12 +2073,12 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   UNITTEST::TestMutualRecursionA a;
   MessageSCCAnalyzer scc_analyzer((Options()));
   const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
-  std::vector<absl::string_view> names;
+  std::vector<std::string_view> names;
   names.reserve(scc->descriptors.size());
   for (int i = 0; i < scc->descriptors.size(); i++) {
     names.push_back(scc->descriptors[i]->full_name());
   }
-  const absl::string_view package = a.GetDescriptor()->file()->package();
+  const std::string_view package = a.GetDescriptor()->file()->package();
   EXPECT_THAT(names,
               UnorderedElementsAre(
                   absl::StrCat(package, ".TestMutualRecursionA"),

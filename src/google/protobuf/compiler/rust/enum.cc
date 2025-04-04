@@ -19,7 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -33,9 +33,9 @@ namespace rust {
 
 namespace {
 // Constructs input for `EnumValues` from an enum descriptor.
-std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
+std::vector<std::pair<std::string_view, int32_t>> EnumValuesInput(
     const EnumDescriptor& desc) {
-  std::vector<std::pair<absl::string_view, int32_t>> result;
+  std::vector<std::pair<std::string_view, int32_t>> result;
   result.reserve(static_cast<size_t>(desc.value_count()));
 
   for (int i = 0; i < desc.value_count(); ++i) {
@@ -97,8 +97,8 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
 }  // namespace
 
 std::vector<RustEnumValue> EnumValues(
-    absl::string_view enum_name,
-    absl::Span<const std::pair<absl::string_view, int32_t>> values) {
+    std::string_view enum_name,
+    absl::Span<const std::pair<std::string_view, int32_t>> values) {
   MultiCasePrefixStripper stripper(enum_name);
 
   absl::flat_hash_set<std::string> seen_by_name;

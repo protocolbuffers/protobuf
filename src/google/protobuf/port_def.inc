@@ -156,7 +156,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 
 // Introducing a future-breaking change guard for descriptor database migration.
-// This allows google3 to transition to absl::string_view while keeping OSS
+// This allows google3 to transition to std::string_view while keeping OSS
 // on std::string until the migration is fully completed.
 // The temporary macro enables incremental migration before permanently flipping
 // the switch.

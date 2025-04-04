@@ -64,7 +64,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -236,7 +236,7 @@ bool GetProtocAbsolutePath(std::string* path) {
 
 // Whether a path is where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-bool IsInstalledProtoPath(absl::string_view path) {
+bool IsInstalledProtoPath(std::string_view path) {
   // Checking the descriptor.proto file should be good enough.
   std::string file_path =
       absl::StrCat(path, "/google/protobuf/descriptor.proto");
@@ -254,7 +254,7 @@ void AddDefaultProtoPaths(
   if (!GetProtocAbsolutePath(&path_str)) {
     return;
   }
-  absl::string_view path(path_str);
+  std::string_view path(path_str);
   // Strip the binary name.
   size_t pos = path.find_last_of("/\\");
   if (pos == path.npos || pos == 0) {
@@ -285,8 +285,8 @@ void AddDefaultProtoPaths(
   }
 }
 
-std::string PluginName(absl::string_view plugin_prefix,
-                       absl::string_view directive) {
+std::string PluginName(std::string_view plugin_prefix,
+                       std::string_view directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
   return absl::StrCat(plugin_prefix, "gen-",
@@ -350,37 +350,37 @@ class CommandLineInterface::ErrorPrinter
   ~ErrorPrinter() override = default;
 
   // implements MultiFileErrorCollector ------------------------------
-  void RecordError(absl::string_view filename, int line, int column,
-                   absl::string_view message) override {
+  void RecordError(std::string_view filename, int line, int column,
+                   std::string_view message) override {
     found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
-  void RecordWarning(absl::string_view filename, int line, int column,
-                     absl::string_view message) override {
+  void RecordWarning(std::string_view filename, int line, int column,
+                     std::string_view message) override {
     found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
   // implements io::ErrorCollector -----------------------------------
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     RecordError("input", line, column, message);
   }
 
-  void RecordWarning(int line, int column, absl::string_view message) override {
+  void RecordWarning(int line, int column, std::string_view message) override {
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
-  void RecordError(absl::string_view filename, absl::string_view element_name,
+  void RecordError(std::string_view filename, std::string_view element_name,
                    const Message* descriptor, ErrorLocation location,
-                   absl::string_view message) override {
+                   std::string_view message) override {
     AddErrorOrWarning(filename, -1, -1, message, "error", std::cerr);
   }
 
-  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+  void RecordWarning(std::string_view filename, std::string_view element_name,
                      const Message* descriptor, ErrorLocation location,
-                     absl::string_view message) override {
+                     std::string_view message) override {
     AddErrorOrWarning(filename, -1, -1, message, "warning", std::clog);
   }
 
@@ -389,8 +389,8 @@ class CommandLineInterface::ErrorPrinter
   bool FoundWarnings() const { return found_warnings_; }
 
  private:
-  void AddErrorOrWarning(absl::string_view filename, int line, int column,
-                         absl::string_view message, absl::string_view type,
+  void AddErrorOrWarning(std::string_view filename, int line, int column,
+                         std::string_view message, std::string_view type,
                          std::ostream& out) {
     std::string dfile;
     if (
@@ -1033,7 +1033,7 @@ bool IsFieldCompatible(const FieldDescriptor& field,
 
 // Converts the OptionTargetType enum to a string suitable for use in error
 // messages.
-absl::string_view TargetTypeString(FieldOptions::OptionTargetType target_type) {
+std::string_view TargetTypeString(FieldOptions::OptionTargetType target_type) {
   switch (target_type) {
     case FieldOptions::TARGET_TYPE_FILE:
       return "file";
@@ -1062,7 +1062,7 @@ absl::string_view TargetTypeString(FieldOptions::OptionTargetType target_type) {
 // message) is compatible with the given target type.
 bool ValidateTargetConstraintsRecursive(
     const Message& m, DescriptorPool::ErrorCollector& error_collector,
-    absl::string_view file_name, FieldOptions::OptionTargetType target_type) {
+    std::string_view file_name, FieldOptions::OptionTargetType target_type) {
   std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = m.GetReflection();
   reflection->ListFields(m, &fields);
@@ -1104,7 +1104,7 @@ bool ValidateTargetConstraintsRecursive(
 bool ValidateTargetConstraints(const Message& options,
                                const DescriptorPool& pool,
                                DescriptorPool::ErrorCollector& error_collector,
-                               absl::string_view file_name,
+                               std::string_view file_name,
                                FieldOptions::OptionTargetType target_type) {
   const Descriptor* descriptor =
       pool.FindMessageTypeByName(options.GetTypeName());
@@ -3188,7 +3188,7 @@ void GatherOccupiedFieldRanges(
 // Utility function for PrintFreeFieldNumbers.
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
-void FormatFreeFieldNumbers(absl::string_view name,
+void FormatFreeFieldNumbers(std::string_view name,
                             const absl::btree_set<FieldRange>& ranges) {
   std::string output;
   absl::StrAppendFormat(&output, "%-35s free:", name);

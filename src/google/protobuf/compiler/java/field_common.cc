@@ -15,7 +15,7 @@ namespace java {
 
 void SetCommonFieldVariables(
     const FieldDescriptor* descriptor, const FieldGeneratorInfo* info,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   (*variables)["field_name"] = std::string(descriptor->name());
   (*variables)["name"] = info->name;
   (*variables)["classname"] =
@@ -89,7 +89,7 @@ std::string GetKotlinPropertyName(std::string capitalized_name) {
 
 void SetCommonOneofVariables(
     const FieldDescriptor* descriptor, const OneofGeneratorInfo* info,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
@@ -104,7 +104,7 @@ void SetCommonOneofVariables(
 }
 
 void PrintExtraFieldInfo(
-    const absl::flat_hash_map<absl::string_view, std::string>& variables,
+    const absl::flat_hash_map<std::string_view, std::string>& variables,
     io::Printer* printer) {
   auto it = variables.find("disambiguated_reason");
   if (it != variables.end() && !it->second.empty()) {

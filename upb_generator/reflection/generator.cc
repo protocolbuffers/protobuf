@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
@@ -33,7 +33,7 @@ void GenerateFile(upb::FileDefPtr file, const Options& options,
   GenerateReflectionSource(file, options, context);
 }
 
-bool ParseOptions(absl::string_view parameter, Options* options,
+bool ParseOptions(std::string_view parameter, Options* options,
                   std::string* error) {
   for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "dllexport_decl") {

@@ -20,7 +20,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
@@ -43,10 +43,10 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
   std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
   if (descriptor.file() != file_) {
     std::string module_alias;
-    const absl::string_view filename = descriptor.file()->name();
+    const std::string_view filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
-      std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
+      std::vector<std::string_view> tokens = absl::StrSplit(module_name, '.');
       module_alias = absl::StrCat("_", tokens.back());
     } else {
       module_alias = import_map_.at(filename);
@@ -76,7 +76,7 @@ struct ImportModules {
 };
 
 // Checks whether a descriptor name matches a well-known type.
-bool IsWellKnownType(const absl::string_view name) {
+bool IsWellKnownType(const std::string_view name) {
   // LINT.IfChange(wktbases)
   return (name == "google.protobuf.Any" ||
           name == "google.protobuf.Duration" ||
@@ -137,9 +137,9 @@ void CheckImportModules(const Descriptor* descriptor,
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
     bool* has_importlib) const {
-  const absl::string_view filename = desc.name();
+  const std::string_view filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
-  absl::string_view module_name(module_name_owned);
+  std::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
   std::string alias = absl::StrCat("_", module_name.substr(last_dot_pos + 1));
   // Generate a unique alias by adding _1 suffixes until we get an unused alias.
@@ -304,7 +304,7 @@ void PyiGenerator::Annotate(const std::string& label,
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  const absl::string_view enum_name = enum_descriptor.name();
+  const std::string_view enum_name = enum_descriptor.name();
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
       "    __slots__ = ()\n",
@@ -411,7 +411,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   if (!is_nested) {
     printer_->Print("\n");
   }
-  const absl::string_view class_name = message_descriptor.name();
+  const std::string_view class_name = message_descriptor.name();
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.

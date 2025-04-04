@@ -15,7 +15,7 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -30,7 +30,7 @@ namespace csharp {
 
 namespace {
 
-absl::string_view StripDotProto(absl::string_view proto_file) {
+std::string_view StripDotProto(std::string_view proto_file) {
   int lastindex = proto_file.find_last_of('.');
   return proto_file.substr(0, lastindex);
 }
@@ -38,18 +38,18 @@ absl::string_view StripDotProto(absl::string_view proto_file) {
 // Returns the Pascal-cased last part of the proto file. For example,
 // input of "google/protobuf/foo_bar.proto" would result in "FooBar".
 std::string GetFileNameBase(const FileDescriptor* descriptor) {
-  const absl::string_view proto_file = descriptor->name();
+  const std::string_view proto_file = descriptor->name();
   int lastslash = proto_file.find_last_of('/');
-  const absl::string_view base = proto_file.substr(lastslash + 1);
+  const std::string_view base = proto_file.substr(lastslash + 1);
   return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string ToCSharpName(absl::string_view name, const FileDescriptor* file) {
+std::string ToCSharpName(std::string_view name, const FileDescriptor* file) {
     std::string result = GetFileNamespace(file);
     if (!result.empty()) {
       result += '.';
     }
-    absl::string_view classname;
+    std::string_view classname;
     if (file->package().empty()) {
       classname = name;
     } else {
@@ -100,9 +100,9 @@ std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor) {
 }
 
 std::string GetOutputFile(const FileDescriptor* descriptor,
-                          absl::string_view file_extension,
+                          std::string_view file_extension,
                           bool generate_directories,
-                          absl::string_view base_namespace,
+                          std::string_view base_namespace,
                           std::string* error) {
   std::string relative_filename =
       absl::StrCat(GetFileNameBase(descriptor), file_extension);
@@ -110,7 +110,7 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
     return relative_filename;
   }
   std::string ns = GetFileNamespace(descriptor);
-  absl::string_view namespace_suffix = ns;
+  std::string_view namespace_suffix = ns;
   if (!base_namespace.empty()) {
     // Check that the base_namespace is either equal to or a leading part of
     // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
@@ -130,12 +130,12 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
                       namespace_suffix.empty() ? "" : "/", relative_filename);
 }
 
-std::string UnderscoresToPascalCase(absl::string_view input) {
+std::string UnderscoresToPascalCase(std::string_view input) {
   return UnderscoresToCamelCase(input, true);
 }
 
 // TODO: can we reuse a utility function?
-std::string UnderscoresToCamelCase(absl::string_view input,
+std::string UnderscoresToCamelCase(std::string_view input,
                                    bool cap_next_letter, bool preserve_period) {
   std::string result;
 

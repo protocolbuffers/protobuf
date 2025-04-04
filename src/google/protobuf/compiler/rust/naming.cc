@@ -20,7 +20,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -70,25 +70,25 @@ std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file) {
 
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
   auto basename = StripProto(file.name());
-  constexpr absl::string_view kCcGencodeExt = ".pb.h";
+  constexpr std::string_view kCcGencodeExt = ".pb.h";
 
   return absl::StrCat(basename, kCcGencodeExt);
 }
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
-                        absl::string_view key_t, absl::string_view op) {
+                        std::string_view key_t, std::string_view op) {
   return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
 }
 
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
-                        absl::string_view key_t, absl::string_view op) {
+                        std::string_view key_t, std::string_view op) {
   // Enums are always 32 bits.
   return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_i32_", op);
 }
 
 std::string ThunkName(Context& ctx, const FieldDescriptor& field,
-                      absl::string_view op) {
+                      std::string_view op) {
   ABSL_CHECK(ctx.is_cpp());
   return absl::StrCat("proto2_rust_thunk_",
                       UnderscoreDelimitFullName(ctx, field.full_name()), "_",
@@ -96,7 +96,7 @@ std::string ThunkName(Context& ctx, const FieldDescriptor& field,
 }
 
 std::string ThunkName(Context& ctx, const OneofDescriptor& field,
-                      absl::string_view op) {
+                      std::string_view op) {
   ABSL_CHECK(ctx.is_cpp());
   return absl::StrCat("proto2_rust_thunk_",
                       UnderscoreDelimitFullName(ctx, field.full_name()), "_",
@@ -104,8 +104,8 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 }
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
-                      absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_Message_" : "";
+                      std::string_view op) {
+  std::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_Message_" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);
 }
@@ -116,7 +116,7 @@ std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc) {
 }
 
 std::string UnderscoreDelimitFullName(Context& ctx,
-                                      absl::string_view full_name) {
+                                      std::string_view full_name) {
   std::string result = std::string(full_name);
   absl::StrReplaceAll({{".", "_"}}, &result);
   return result;
@@ -160,7 +160,7 @@ std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor) {
 }
 
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
-                       absl::string_view lifetime) {
+                       std::string_view lifetime) {
   switch (GetRustFieldType(field)) {
     case RustFieldType::BOOL:
     case RustFieldType::INT32:
@@ -247,7 +247,7 @@ std::string RustInternalModuleName(const FileDescriptor& file) {
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
-  absl::string_view label = field.is_repeated() ? "repeated" : "optional";
+  std::string_view label = field.is_repeated() ? "repeated" : "optional";
   std::string comment = absl::StrCat(field.name(), ": ", label, " ",
                                      FieldDescriptor::TypeName(field.type()));
 
@@ -261,18 +261,18 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
   return comment;
 }
 
-static constexpr absl::string_view kAccessorPrefixes[] = {"clear_", "has_",
+static constexpr std::string_view kAccessorPrefixes[] = {"clear_", "has_",
                                                           "set_"};
 
-static constexpr absl::string_view kAccessorSuffixes[] = {"_mut", "_opt"};
+static constexpr std::string_view kAccessorSuffixes[] = {"_mut", "_opt"};
 
 std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
-  absl::string_view name = field.name();
+  std::string_view name = field.name();
   const Descriptor& msg = *field.containing_type();
 
-  for (absl::string_view prefix : kAccessorPrefixes) {
+  for (std::string_view prefix : kAccessorPrefixes) {
     if (absl::StartsWith(name, prefix)) {
-      absl::string_view without_prefix = name;
+      std::string_view without_prefix = name;
       without_prefix.remove_prefix(prefix.size());
 
       if (msg.FindFieldByName(without_prefix) != nullptr) {
@@ -281,9 +281,9 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
     }
   }
 
-  for (absl::string_view suffix : kAccessorSuffixes) {
+  for (std::string_view suffix : kAccessorSuffixes) {
     if (absl::EndsWith(name, suffix)) {
-      absl::string_view without_suffix = name;
+      std::string_view without_suffix = name;
       without_suffix.remove_suffix(suffix.size());
 
       if (msg.FindFieldByName(without_suffix) != nullptr) {
@@ -295,7 +295,7 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
   return std::string(name);
 }
 
-std::string RsSafeName(absl::string_view name) {
+std::string RsSafeName(std::string_view name) {
   if (!IsLegalRawIdentifierName(name)) {
     return absl::StrCat(name,
                         "__mangled_because_ident_isnt_a_legal_raw_identifier");
@@ -316,7 +316,7 @@ std::string EnumValueRsName(const EnumValueDescriptor& value) {
 }
 
 std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
-                            absl::string_view value_name) {
+                            std::string_view value_name) {
   // Enum values may have a prefix of the name of the enum stripped from the
   // value names in the gencode. This prefix is flexible:
   // - It can be the original enum name, the name as UpperCamel, or snake_case.
@@ -349,7 +349,7 @@ std::string OneofCaseRsName(const FieldDescriptor& oneof_field) {
   return RsSafeName(SnakeToUpperCamelCase(oneof_field.name()));
 }
 
-std::string CamelToSnakeCase(absl::string_view input) {
+std::string CamelToSnakeCase(std::string_view input) {
   std::string result;
   result.reserve(input.size() + 4);  // No reallocation for 4 _
   bool is_first_character = true;
@@ -366,11 +366,11 @@ std::string CamelToSnakeCase(absl::string_view input) {
   return result;
 }
 
-std::string SnakeToUpperCamelCase(absl::string_view input) {
+std::string SnakeToUpperCamelCase(std::string_view input) {
   return cpp::UnderscoresToCamelCase(input, /*cap first letter=*/true);
 }
 
-std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
+std::string ScreamingSnakeToUpperCamelCase(std::string_view input) {
   std::string result;
   result.reserve(input.size());
   bool cap_next_letter = true;
@@ -392,17 +392,17 @@ std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
   return result;
 }
 
-MultiCasePrefixStripper::MultiCasePrefixStripper(absl::string_view prefix)
+MultiCasePrefixStripper::MultiCasePrefixStripper(std::string_view prefix)
     : prefixes_{
           std::string(prefix),
           ScreamingSnakeToUpperCamelCase(prefix),
           CamelToSnakeCase(prefix),
       } {}
 
-absl::string_view MultiCasePrefixStripper::StripPrefix(
-    absl::string_view name) const {
-  absl::string_view start_name = name;
-  for (absl::string_view prefix : prefixes_) {
+std::string_view MultiCasePrefixStripper::StripPrefix(
+    std::string_view name) const {
+  std::string_view start_name = name;
+  for (std::string_view prefix : prefixes_) {
     if (absl::StartsWithIgnoreCase(name, prefix)) {
       name.remove_prefix(prefix.size());
 

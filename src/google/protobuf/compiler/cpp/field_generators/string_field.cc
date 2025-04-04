@@ -16,7 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -440,7 +440,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       {"release_impl", [&] { ReleaseImpl(p); }},
       {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
   };
-  absl::string_view code =
+  std::string_view code =
       R"cc(
     inline const std::string& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {

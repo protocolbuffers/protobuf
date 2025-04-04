@@ -52,7 +52,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
@@ -861,7 +861,7 @@ template <typename Container>
 absl::Cord MakeFragmentedCord(const Container& c) {
   absl::Cord result;
   for (const auto& s : c) {
-    absl::string_view sv(s);
+    std::string_view sv(s);
     auto buffer = absl::CordBuffer::CreateWithDefaultLimit(sv.size());
     absl::Span<char> out = buffer.available_up_to(sv.size());
     memcpy(out.data(), sv.data(), out.size());
@@ -885,11 +885,11 @@ TEST_F(IoTest, FragmentedCordInput) {
       // Skip the -1 case.
       continue;
     }
-    absl::string_view str_piece = str;
+    std::string_view str_piece = str;
 
     // Create a fragmented cord by splitting the input into many cord
     // functions.
-    std::vector<absl::string_view> fragments;
+    std::vector<std::string_view> fragments;
     while (!str_piece.empty()) {
       size_t n = std::min<size_t>(str_piece.size(), block_size);
       fragments.push_back(str_piece.substr(0, n));
@@ -1014,7 +1014,7 @@ TEST(CordOutputStreamTest, DonateEmptyCordBuffer) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, std::string(static_cast<size_t>(size), 'a'));
   EXPECT_EQ(flat.data(), available_data);
 }
@@ -1029,7 +1029,7 @@ TEST(CordOutputStreamTest, DonatePartialCordBuffer) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, std::string(100, 'a'));
   EXPECT_EQ(flat.data(), available_data);
 }
@@ -1051,7 +1051,7 @@ TEST(CordOutputStreamTest, DonatePartialCordBufferAndUseExtraCapacity) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, std::string(100, 'a') +
                       std::string(static_cast<size_t>(size), 'b'));
   EXPECT_EQ(flat.data(), available_data);
@@ -1135,7 +1135,7 @@ TEST(CordOutputStreamTest, DonateFullCordBufferAndBackup) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat,
             std::string(available.size() - 100, 'a') + std::string(100, 'b'));
   EXPECT_EQ(flat.data(), available_data);
@@ -1177,7 +1177,7 @@ TEST(CordOutputStreamTest, ProperHintCreatesSingleFlatCord) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, std::string(2000, 'a'));
 }
 
@@ -1226,7 +1226,7 @@ TEST(CordOutputStreamTest, BackUpReusesPartialBuffer) {
 
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, absl::StrCat(std::string(100, '1'), std::string(200, '2'),
                                std::string(400, '3'), std::string(1300, '4')));
 }
@@ -1248,7 +1248,7 @@ TEST(CordOutputStreamTest, UsesPrivateCapacityInDonatedCord) {
 
   cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
 }
 
@@ -1274,7 +1274,7 @@ TEST(CordOutputStreamTest, UsesPrivateCapacityInAppendedCord) {
 
   cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
 }
 
@@ -1300,7 +1300,7 @@ TEST(CordOutputStreamTest, CapsSizeAtHintButUsesCapacityBeyondHint) {
   // We should have received the same buffer on each Next() call
   absl::Cord cord = output.Consume();
   ASSERT_TRUE(cord.TryFlat());
-  absl::string_view flat = *cord.TryFlat();
+  std::string_view flat = *cord.TryFlat();
   EXPECT_EQ(flat, absl::StrCat(std::string(size_hint, 'a'),
                                std::string(static_cast<size_t>(size), 'b')));
 }

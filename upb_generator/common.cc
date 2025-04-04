@@ -14,7 +14,7 @@
 #include <string>
 
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"

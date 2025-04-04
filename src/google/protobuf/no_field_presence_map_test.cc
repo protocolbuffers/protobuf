@@ -16,7 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"

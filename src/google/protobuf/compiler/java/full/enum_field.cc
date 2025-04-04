@@ -42,7 +42,7 @@ void SetEnumVariables(
     const FieldDescriptor* descriptor, int message_bit_index,
     int builder_bit_index, const FieldGeneratorInfo* info,
     ClassNameResolver* name_resolver,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
+    absl::flat_hash_map<std::string_view, std::string>* variables,
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 

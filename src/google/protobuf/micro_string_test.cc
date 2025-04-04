@@ -49,7 +49,7 @@ static constexpr auto kUnownedPayload =
     MicroString::MakeUnownedPayload("0123456789");
 
 static constexpr auto kInlineInput =
-    absl::string_view("0123456789").substr(0, MicroString::kInlineCapacity);
+    std::string_view("0123456789").substr(0, MicroString::kInlineCapacity);
 
 class MicroStringPrevTest
     : public testing::TestWithParam<std::tuple<bool, PreviousState>> {
@@ -87,7 +87,7 @@ class MicroStringPrevTest
         break;
 
       case kString: {
-        static constexpr absl::string_view value =
+        static constexpr std::string_view value =
             "This is a very long string too, which "
             "won't use std::string's inline rep.";
         str.Set(std::string(value), arena);
@@ -137,7 +137,7 @@ class MicroStringPrevTest
 };
 
 struct Printer {
-  static constexpr absl::string_view kNames[] = {"Inline",  "Micro",  "Owned",
+  static constexpr std::string_view kNames[] = {"Inline",  "Micro",  "Owned",
                                                  "Unowned", "String", "Alias"};
   static_assert(kNames[kInline] == "Inline");
   static_assert(kNames[kMicroRep] == "Micro");
@@ -219,7 +219,7 @@ void TestInline() {
   Arena arena;
   for (Arena* a : {static_cast<Arena*>(nullptr), &arena}) {
     for (size_t size = 0; size <= T::kInlineCapacity; ++size) {
-      const absl::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ", size);
+      const std::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ", size);
       T str;
       size_t used = arena.SpaceUsed();
       str.Set(input, a);
@@ -265,7 +265,7 @@ void SupportsExpectedInputType(T&& t) {
 template <typename S>
 void SupportsExpectedInputTypes() {
   std::string str = "Foo";
-  absl::string_view view = "Foo";
+  std::string_view view = "Foo";
 
   SupportsExpectedInputType<S>(view);
   // char array
@@ -340,14 +340,14 @@ TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
 
   // For MicroRep
   for (size_t i = 10; i < 20; ++i) {
-    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    str.Set(std::string_view(very_long).substr(0, i), nullptr);
     EXPECT_GE(str.Capacity(), i);
     EXPECT_EQ((str.Capacity() + kMicroRepSize) % sizeof(void*), 0);
   }
 
   // For OwnedRep
   for (size_t i = 300; i < 340; ++i) {
-    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    str.Set(std::string_view(very_long).substr(0, i), nullptr);
     EXPECT_GE(str.Capacity(), i);
     EXPECT_EQ((str.Capacity() + kLargeRepSize) % sizeof(void*), 0);
   }
@@ -374,14 +374,14 @@ TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
 TEST_P(MicroStringPrevTest, SetNullView) {
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.Set(absl::string_view(), arena());
+  str_.Set(std::string_view(), arena());
   EXPECT_EQ(str_.Get(), "");
   EXPECT_EQ(used, arena_space_used());
   EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
 
   // Again but with a non-constant size to avoid the CONSTANT_P path.
   size_t zero = time(nullptr) == 0;
-  str_.Set(absl::string_view(nullptr, zero), arena());
+  str_.Set(std::string_view(nullptr, zero), arena());
   EXPECT_EQ(str_.Get(), "");
   EXPECT_EQ(used, arena_space_used());
   EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
@@ -434,7 +434,7 @@ TEST_P(MicroStringPrevTest, SetInline) {
     GTEST_SKIP() << "Inline is not active";
   }
 
-  const absl::string_view input = kInlineInput;
+  const std::string_view input = kInlineInput;
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   str_.Set(input, arena());
@@ -447,7 +447,7 @@ TEST_P(MicroStringPrevTest, SetInline) {
 
 TEST_P(MicroStringPrevTest, SetMicro) {
   for (size_t size : {str_.kInlineCapacity + 1, size_t{30}}) {
-    const absl::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", size);
+    const std::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", size);
     const size_t used = arena_space_used();
     const size_t self_used = str_.SpaceUsedExcludingSelfLong();
     const bool will_reuse = str_.Capacity() >= input.size();
@@ -484,7 +484,7 @@ TEST_P(MicroStringPrevTest, SetAliasSmall) {
   if (!MicroString::kHasInlineBuffer) {
     GTEST_SKIP() << "Inline is not active";
   }
-  const absl::string_view input = kInlineInput;
+  const std::string_view input = kInlineInput;
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
@@ -508,7 +508,7 @@ TEST_P(MicroStringPrevTest, SetAliasSmall) {
 }
 
 TEST_P(MicroStringPrevTest, SetAliasLarge) {
-  const absl::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  const std::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
   const size_t used = arena_space_used();
   str_.SetAlias(input, arena());
@@ -625,7 +625,7 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrView) {
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
 
   str_.Set(str_.Get().substr(1), arena());
-  EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1));
+  EXPECT_EQ(str_.Get(), std::string_view(control).substr(1));
 
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -646,7 +646,7 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrViewConstantSize) {
   // The input is an aliasing substr that overlaps with the destination, but
   // with constant size to trigger the fastpath.
   str_.Set(str_.Get().substr(1, 2), arena());
-  EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1, 2));
+  EXPECT_EQ(str_.Get(), std::string_view(control).substr(1, 2));
 
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -667,10 +667,10 @@ TEST_P(MicroStringPrevTest, InternalSwap) {
 }
 
 TEST(MicroStringExtraTest, InternalSwap) {
-  constexpr absl::string_view lhs_value =
+  constexpr std::string_view lhs_value =
       "Very long string that is not SSO and unlikely to use the same capacity "
       "as the other value.";
-  constexpr absl::string_view rhs_value = "123456789012345";
+  constexpr std::string_view rhs_value = "123456789012345";
 
   MicroStringExtra<15> lhs, rhs;
   lhs.Set(lhs_value, nullptr);
@@ -828,7 +828,7 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetAlias) {
   if (!has_arena()) source.Destroy();
 }
 
-constexpr absl::string_view kPi =
+constexpr std::string_view kPi =
     "3."
     "141592653589793238462643383279502884197169399375105820974944592307816406"
     "286208998628034825342117067982148086513282306647093844609550582231725359"
@@ -928,7 +928,7 @@ TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
     constexpr size_t kChunks = 1000;
     const size_t kChunkSize = total.size() / kChunks;
     for (size_t i = 0; i < kChunks; ++i) {
-      append(absl::string_view(total).substr(kChunkSize * i, kChunkSize));
+      append(std::string_view(total).substr(kChunkSize * i, kChunkSize));
     }
   });
   EXPECT_EQ(str.Get(), total);
@@ -980,7 +980,7 @@ TEST(MicroStringExtraTest, CopyConstructWithinInline) {
   Arena arena;
   const size_t used = arena.SpaceUsed();
   MicroStringExtra<16> inline_str;
-  constexpr absl::string_view kStr10 = "1234567890";
+  constexpr std::string_view kStr10 = "1234567890";
   ABSL_CHECK_GT(kStr10.size(), MicroString::kInlineCapacity);
   ABSL_CHECK_LE(kStr10.size(), MicroStringExtra<16>::kInlineCapacity);
   inline_str.Set(kStr10, &arena);
@@ -1045,7 +1045,7 @@ TEST(MicroStringTest, MemoryUsageComparison) {
         micro_str_used, arena_str_used);
   };
   for (size_t i = 1; i < input.size(); ++i) {
-    absl::string_view this_input(input.data(), i);
+    std::string_view this_input(input.data(), i);
     micro_str.Set(this_input, &arena);
     arena_str.Set(this_input, &arena);
 
@@ -1081,19 +1081,19 @@ TEST(MicroStringTest, MemoryUsageComparison) {
 }  // namespace protobuf
 }  // namespace google
 
-absl::string_view CodegenMicroStringGet(google::protobuf::internal::MicroString& str) {
+std::string_view CodegenMicroStringGet(google::protobuf::internal::MicroString& str) {
   return str.Get();
 }
-absl::string_view CodegenArenaStringPtrGet(
+std::string_view CodegenArenaStringPtrGet(
     google::protobuf::internal::ArenaStringPtr& str) {
   return str.Get();
 }
 void CodegenMicroStringSet(google::protobuf::internal::MicroString& str,
-                           absl::string_view input) {
+                           std::string_view input) {
   str.Set(input, nullptr);
 }
 void CodegenArenaStringPtrSet(google::protobuf::internal::ArenaStringPtr& str,
-                              absl::string_view input) {
+                              std::string_view input) {
   str.Set(input, nullptr);
 }
 void CodegenMicroStringSetConstant(google::protobuf::internal::MicroString& str) {

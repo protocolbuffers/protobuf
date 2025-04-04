@@ -11,7 +11,7 @@
 #include <string>
 
 #include "absl/strings/ascii.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -39,7 +39,7 @@ namespace protobuf {
 namespace compiler {
 namespace php {
 
-bool IsReservedName(absl::string_view name) {
+bool IsReservedName(std::string_view name) {
   std::string lower = absl::AsciiStrToLower(name);
   for (int i = 0; i < kReservedNamesSize; i++) {
     if (lower == kReservedNames[i]) {
@@ -49,7 +49,7 @@ bool IsReservedName(absl::string_view name) {
   return false;
 }
 
-std::string ReservedNamePrefix(const absl::string_view classname,
+std::string ReservedNamePrefix(const std::string_view classname,
                                const FileDescriptor* file) {
   if (IsReservedName(classname)) {
     if (file->package() == "google.protobuf") {
@@ -65,7 +65,7 @@ std::string ReservedNamePrefix(const absl::string_view classname,
 namespace {
 
 template <typename DescriptorType>
-std::string ClassNamePrefixImpl(const absl::string_view classname,
+std::string ClassNamePrefixImpl(const std::string_view classname,
                                 const DescriptorType* desc) {
   const std::string& prefix = (desc->file()->options()).php_class_prefix();
   if (!prefix.empty()) {
@@ -89,7 +89,7 @@ std::string GeneratedClassNameImpl(const DescriptorType* desc) {
 }
 
 std::string GeneratedClassNameImpl(const ServiceDescriptor* desc) {
-  const absl::string_view classname = desc->name();
+  const std::string_view classname = desc->name();
   return absl::StrCat(ClassNamePrefixImpl(classname, desc), classname);
 }
 

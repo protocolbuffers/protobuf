@@ -26,7 +26,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -77,7 +77,7 @@ void File::ReadFileToStringOrDie(const std::string& name, std::string* output) {
   ABSL_CHECK_OK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
-absl::Status File::WriteStringToFile(absl::string_view contents,
+absl::Status File::WriteStringToFile(std::string_view contents,
                                      const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   if (file == nullptr) {
@@ -97,7 +97,7 @@ absl::Status File::WriteStringToFile(absl::string_view contents,
   return absl::OkStatus();
 }
 
-void File::WriteStringToFileOrDie(absl::string_view contents,
+void File::WriteStringToFileOrDie(std::string_view contents,
                                   const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   ABSL_CHECK(file != nullptr)
@@ -196,7 +196,7 @@ void File::DeleteRecursively(const std::string& name, void* dummy1,
 #endif
 }
 
-bool File::ChangeWorkingDirectory(absl::string_view new_working_directory) {
+bool File::ChangeWorkingDirectory(std::string_view new_working_directory) {
   return chdir(new_working_directory.data()) == 0;
 }
 

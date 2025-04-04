@@ -13,7 +13,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/port.h"
@@ -152,7 +152,7 @@ MicroString::StringRep* MicroString::AllocateStringRep(Arena* arena) {
   return h;
 }
 
-void MicroString::SetImpl(absl::string_view data, Arena* arena,
+void MicroString::SetImpl(std::string_view data, Arena* arena,
                           size_t inline_capacity) {
   // Reuse space if possible.
   if (is_micro_rep()) {
@@ -231,7 +231,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   memcpy(h->payload, data.data(), data.size());
 }
 
-void MicroString::SetAlias(absl::string_view data, Arena* arena,
+void MicroString::SetAlias(std::string_view data, Arena* arena,
                            size_t inline_capacity) {
   // If we already have an alias, reuse the block.
   if (is_large_rep() && large_rep_kind() == kAlias) {

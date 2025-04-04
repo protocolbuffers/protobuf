@@ -38,7 +38,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
@@ -70,31 +70,31 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-constexpr absl::string_view kAnyMessageName = "Any";
-constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
+constexpr std::string_view kAnyMessageName = "Any";
+constexpr std::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
-const absl::flat_hash_set<absl::string_view>& FileScopeKnownNames() {
+const absl::flat_hash_set<std::string_view>& FileScopeKnownNames() {
   static constexpr const char* kValue[] = {
       "swap",
   };
-  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+  static const auto* const methods = new absl::flat_hash_set<std::string_view>(
       std::begin(kValue), std::end(kValue));
   return *methods;
 }
 
-const absl::flat_hash_set<absl::string_view>& MessageKnownMethodsCamelCase() {
+const absl::flat_hash_set<std::string_view>& MessageKnownMethodsCamelCase() {
   static constexpr const char* kMessageKnownMethods[] = {
       "GetDescriptor", "GetReflection",   "default_instance",
       "Swap",          "UnsafeArenaSwap", "New",
       "CopyFrom",      "MergeFrom",       "IsInitialized",
       "GetMetadata",   "Clear",
   };
-  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+  static const auto* const methods = new absl::flat_hash_set<std::string_view>(
       std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
   return *methods;
 }
 
-const absl::flat_hash_set<absl::string_view>&
+const absl::flat_hash_set<std::string_view>&
 MessageKnownNullaryMethodsSnakeCase() {
   static constexpr const char* kMessageKnownMethods[] = {
       "unknown_fields",
@@ -102,17 +102,17 @@ MessageKnownNullaryMethodsSnakeCase() {
       "descriptor",
       "default_instance",
   };
-  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+  static const auto* const methods = new absl::flat_hash_set<std::string_view>(
       std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
   return *methods;
 }
 
-const absl::flat_hash_set<absl::string_view>&
+const absl::flat_hash_set<std::string_view>&
 MessageKnownNonNullaryMethodsSnakeCase() {
   static constexpr const char* kMessageKnownMethods[] = {
       "swap",
   };
-  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+  static const auto* const methods = new absl::flat_hash_set<std::string_view>(
       std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
   return *methods;
 }
@@ -216,9 +216,9 @@ static const char* const kKeywordList[] = {
     // clang-format on
 };
 
-const absl::flat_hash_set<absl::string_view>& Keywords() {
+const absl::flat_hash_set<std::string_view>& Keywords() {
   static const auto* keywords = [] {
-    auto* keywords = new absl::flat_hash_set<absl::string_view>();
+    auto* keywords = new absl::flat_hash_set<std::string_view>();
 
     for (const auto keyword : kKeywordList) {
       keywords->emplace(keyword);
@@ -228,7 +228,7 @@ const absl::flat_hash_set<absl::string_view>& Keywords() {
   return *keywords;
 }
 
-std::string IntTypeName(const Options& options, absl::string_view type) {
+std::string IntTypeName(const Options& options, std::string_view type) {
   return absl::StrCat("::", type, "_t");
 }
 
@@ -276,9 +276,9 @@ internal::field_layout::TransformValidation GetLazyStyle(
   return {};
 }
 
-absl::flat_hash_map<absl::string_view, std::string> MessageVars(
+absl::flat_hash_map<std::string_view, std::string> MessageVars(
     const Descriptor* desc) {
-  absl::string_view prefix = "_impl_.";
+  std::string_view prefix = "_impl_.";
   return {
       {"any_metadata", absl::StrCat(prefix, "_any_metadata_")},
       {"cached_size", absl::StrCat(prefix, "_cached_size_")},
@@ -296,13 +296,13 @@ absl::flat_hash_map<absl::string_view, std::string> MessageVars(
 
 void SetCommonMessageDataVariables(
     const Descriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   for (auto& pair : MessageVars(descriptor)) {
     variables->emplace(pair);
   }
 }
 
-absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
+absl::flat_hash_map<std::string_view, std::string> UnknownFieldsVars(
     const Descriptor* desc, const Options& opts) {
   std::string unknown_fields_type;
   std::string default_instance;
@@ -331,13 +331,13 @@ absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
 
 void SetUnknownFieldsVariable(
     const Descriptor* descriptor, const Options& options,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   for (auto& pair : UnknownFieldsVars(descriptor, options)) {
     variables->emplace(pair);
   }
 }
 
-std::string UnderscoresToCamelCase(absl::string_view input,
+std::string UnderscoresToCamelCase(std::string_view input,
                                    bool cap_next_letter) {
   std::string result;
   // Note:  I distrust ctype.h due to locales.
@@ -506,14 +506,14 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
-std::string ResolveKeyword(absl::string_view name) {
+std::string ResolveKeyword(std::string_view name) {
   if (Keywords().contains(name)) {
     return absl::StrCat(name, "_");
   }
   return std::string(name);
 }
 
-std::string ResolveKnownNameCollisions(absl::string_view name,
+std::string ResolveKnownNameCollisions(std::string_view name,
                                        NameContext name_context,
                                        NameKind name_kind) {
   const auto has_conflict = [&] {
@@ -545,7 +545,7 @@ std::string ResolveKnownNameCollisions(absl::string_view name,
   return std::string(name);
 }
 
-std::string Namespace(absl::string_view package) {
+std::string Namespace(std::string_view package) {
   if (package.empty()) return "";
 
   std::vector<std::string> scope =
@@ -654,8 +654,8 @@ std::string FieldName(const FieldDescriptor* field) {
 }
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
-  absl::string_view prefix = "_impl_.";
-  absl::string_view split_prefix = split ? "_split_->" : "";
+  std::string_view prefix = "_impl_.";
+  std::string_view split_prefix = split ? "_split_->" : "";
   if (field->real_containing_oneof() == nullptr) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
@@ -763,7 +763,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
   return QualifiedClassName(field->message_type(), options);
 }
 
-std::string StripProto(absl::string_view filename) {
+std::string StripProto(std::string_view filename) {
   /*
    * TODO remove this proxy method
    * once Google's internal codebase will become ready
@@ -974,7 +974,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
 }
 
 // Convert a file name into a valid identifier.
-std::string FilenameIdentifier(absl::string_view filename) {
+std::string FilenameIdentifier(std::string_view filename) {
   std::string result;
   for (size_t i = 0; i < filename.size(); ++i) {
     if (absl::ascii_isalnum(filename[i])) {
@@ -989,14 +989,14 @@ std::string FilenameIdentifier(absl::string_view filename) {
   return result;
 }
 
-std::string UniqueName(absl::string_view name, absl::string_view filename,
+std::string UniqueName(std::string_view name, std::string_view filename,
                        const Options& options) {
   return absl::StrCat(name, "_", FilenameIdentifier(filename));
 }
 
 // Return the qualified C++ name for a file level symbol.
 std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
-                                     absl::string_view name,
+                                     std::string_view name,
                                      const Options& options) {
   if (file->package().empty()) {
     return absl::StrCat("::", name);
@@ -1005,14 +1005,14 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(absl::string_view to_escape) {
+std::string EscapeTrigraphs(std::string_view to_escape) {
   return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
 }
 
 // Escaped function name to eliminate naming conflict.
 std::string SafeFunctionName(const Descriptor* descriptor,
                              const FieldDescriptor* field,
-                             absl::string_view prefix) {
+                             std::string_view prefix) {
   // Do not use FieldName() since it will escape keywords.
   std::string name = std::string(field->name());
   absl::AsciiStrToLower(&name);
@@ -1371,7 +1371,7 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files->find(file->name()) != well_known_files->end();
 }
 
-void NamespaceOpener::ChangeTo(absl::string_view name,
+void NamespaceOpener::ChangeTo(std::string_view name,
                                io::Printer::SourceLocation loc) {
   std::vector<std::string> new_stack =
       absl::StrSplit(name, "::", absl::SkipEmpty());
@@ -1402,9 +1402,9 @@ void NamespaceOpener::ChangeTo(absl::string_view name,
 
 static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  absl::string_view params,
-                                  absl::string_view strict_function,
-                                  absl::string_view verify_function) {
+                                  std::string_view params,
+                                  std::string_view strict_function,
+                                  std::string_view verify_function) {
   if (field->type() != FieldDescriptor::TYPE_STRING) return;
 
   auto v = p->WithVars({
@@ -1451,7 +1451,7 @@ static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    absl::string_view parameters,
+                                    std::string_view parameters,
                                     const Formatter& format) {
   GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField");
@@ -1459,7 +1459,7 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  absl::string_view parameters,
+                                  std::string_view parameters,
                                   const Formatter& format) {
   GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
                         "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
@@ -1468,14 +1468,14 @@ void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
 void GenerateUtf8CheckCodeForString(io::Printer* p,
                                     const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    absl::string_view parameters) {
+                                    std::string_view parameters) {
   GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField");
 }
 
 void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  absl::string_view parameters) {
+                                  std::string_view parameters) {
   GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
                         "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
 }
@@ -1666,7 +1666,7 @@ std::string StrongReferenceToType(const Descriptor* desc,
                          ProtobufNamespace(options), name, name);
 }
 
-std::string WeakDescriptorDataSection(absl::string_view prefix,
+std::string WeakDescriptorDataSection(std::string_view prefix,
                                       const Descriptor* descriptor,
                                       int index_in_file_messages,
                                       const Options& options) {
@@ -1821,7 +1821,7 @@ void ListAllTypesForServices(const FileDescriptor* fd,
   }
 }
 
-bool GetBootstrapBasename(const Options& options, absl::string_view basename,
+bool GetBootstrapBasename(const Options& options, std::string_view basename,
                           std::string* bootstrap_basename) {
   if (options.opensource_runtime) {
     return false;
@@ -1830,7 +1830,7 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
   static const auto* bootstrap_mapping =
       // TODO Replace these with string_view once we remove
       // StringPiece.
-      new absl::flat_hash_map<absl::string_view, std::string>{
+      new absl::flat_hash_map<std::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
@@ -2073,7 +2073,7 @@ bool HasMessageFieldOrExtension(const Descriptor* desc) {
 }
 
 std::vector<io::Printer::Sub> AnnotatedAccessors(
-    const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
+    const FieldDescriptor* field, absl::Span<const std::string_view> prefixes,
     absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
   auto field_name = FieldName(field);
 

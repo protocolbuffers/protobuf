@@ -21,7 +21,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -103,7 +103,7 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
   version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
 }
 
-bool CanSkipEditionCheck(absl::string_view filename) {
+bool CanSkipEditionCheck(std::string_view filename) {
   return absl::StartsWith(filename, "google/protobuf/") ||
          absl::StartsWith(filename, "upb/");
 }

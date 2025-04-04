@@ -22,7 +22,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -96,7 +96,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   // the outermost class in the file.  This way, they will be initialized in
   // a deterministic order.
 
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -140,7 +140,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
     io::Printer* printer) {
   int bytecode_estimate = 0;
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -177,7 +177,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
 
 void ImmutableMessageGenerator::GenerateFieldAccessorTable(
     io::Printer* printer, int* bytecode_estimate) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
     vars["private"] = "private ";
@@ -292,7 +292,7 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  absl::flat_hash_map<absl::string_view, std::string> variables;
+  absl::flat_hash_map<std::string_view, std::string> variables;
   variables["static"] = is_own_file ? "" : "static ";
   variables["classname"] = std::string(descriptor_->name());
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
@@ -392,7 +392,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   for (const auto& kv : oneofs_) {
     const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;

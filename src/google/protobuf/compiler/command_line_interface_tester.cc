@@ -22,7 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace google {
 namespace protobuf {
@@ -57,7 +57,7 @@ CommandLineInterfaceTester::~CommandLineInterfaceTester() {
   }
 }
 
-void CommandLineInterfaceTester::RunProtoc(absl::string_view command) {
+void CommandLineInterfaceTester::RunProtoc(std::string_view command) {
   RunProtocWithArgs(absl::StrSplit(command, ' ', absl::SkipEmpty()));
 }
 
@@ -88,12 +88,12 @@ void CommandLineInterfaceTester::RunProtocWithArgs(
 
 // -------------------------------------------------------------------
 
-void CommandLineInterfaceTester::CreateTempFile(absl::string_view name,
-                                                absl::string_view contents) {
+void CommandLineInterfaceTester::CreateTempFile(std::string_view name,
+                                                std::string_view contents) {
   // Create parent directory, if necessary.
   std::string::size_type slash_pos = name.find_last_of('/');
   if (slash_pos != std::string::npos) {
-    absl::string_view dir = name.substr(0, slash_pos);
+    std::string_view dir = name.substr(0, slash_pos);
     if (!FileExists(absl::StrCat(temp_directory_, "/", dir))) {
       ABSL_CHECK_OK(File::RecursivelyCreateDir(
           absl::StrCat(temp_directory_, "/", dir), 0777));
@@ -107,7 +107,7 @@ void CommandLineInterfaceTester::CreateTempFile(absl::string_view name,
       true));
 }
 
-void CommandLineInterfaceTester::CreateTempDir(absl::string_view name) {
+void CommandLineInterfaceTester::CreateTempDir(std::string_view name) {
   ABSL_CHECK_OK(File::RecursivelyCreateDir(
       absl::StrCat(temp_directory_, "/", name), 0777));
 }
@@ -128,7 +128,7 @@ void CommandLineInterfaceTester::ExpectNoErrors() {
 }
 
 void CommandLineInterfaceTester::ExpectErrorText(
-    absl::string_view expected_text) {
+    std::string_view expected_text) {
   EXPECT_NE(0, return_code_);
   EXPECT_THAT(captured_stderr_,
               HasSubstr(absl::StrReplaceAll(expected_text,
@@ -136,13 +136,13 @@ void CommandLineInterfaceTester::ExpectErrorText(
 }
 
 void CommandLineInterfaceTester::ExpectErrorSubstring(
-    absl::string_view expected_substring) {
+    std::string_view expected_substring) {
   EXPECT_NE(0, return_code_);
   EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 void CommandLineInterfaceTester::ExpectWarningSubstring(
-    absl::string_view expected_substring) {
+    std::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
   EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
@@ -156,26 +156,26 @@ bool CommandLineInterfaceTester::HasAlternateErrorSubstring(
 #endif  // _WIN32 && !__CYGWIN__
 
 void CommandLineInterfaceTester::ExpectCapturedStdout(
-    absl::string_view expected_text) {
+    std::string_view expected_text) {
   EXPECT_EQ(expected_text, captured_stdout_);
 }
 
 void CommandLineInterfaceTester::
     ExpectCapturedStdoutSubstringWithZeroReturnCode(
-        absl::string_view expected_substring) {
+        std::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
   EXPECT_THAT(captured_stdout_, HasSubstr(expected_substring));
 }
 
 void CommandLineInterfaceTester::
     ExpectCapturedStderrSubstringWithZeroReturnCode(
-        absl::string_view expected_substring) {
+        std::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
   EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
-void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,
-                                                   absl::string_view content) {
+void CommandLineInterfaceTester::ExpectFileContent(std::string_view filename,
+                                                   std::string_view content) {
   std::string path = absl::StrCat(temp_directory_, "/", filename);
   std::string file_contents;
   ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));

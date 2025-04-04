@@ -9,7 +9,7 @@
 #include <cstdint>
 
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
 #include "rust/test/cpp/interop/interop_test.pb.h"
@@ -49,7 +49,7 @@ extern "C" void* NewWithExtension() {
 
 extern "C" google::protobuf::rust::PtrAndLen GetBytesExtension(
     const InteropTestMessage* proto) {
-  absl::string_view bytes =
+  std::string_view bytes =
       proto->GetExtension(rust_cpp_interop_test::bytes_extension);
   return {bytes.data(), bytes.size()};
 }

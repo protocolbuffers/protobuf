@@ -66,7 +66,7 @@ class UnsetFieldsMetadataTextFormatTestUtil {
       const TextFormat::Parser::UnsetFieldsMetadata& metadata) {
     return metadata.ids_;
   }
-  static auto GetId(const Message& message, absl::string_view field) {
+  static auto GetId(const Message& message, std::string_view field) {
     return TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
         message, *message.GetDescriptor()->FindFieldByName(field));
   }
@@ -82,18 +82,18 @@ using ::testing::HasSubstr;
 using ::testing::UnorderedElementsAre;
 
 // A basic string with different escapable characters for testing.
-constexpr absl::string_view kEscapeTestString =
+constexpr std::string_view kEscapeTestString =
     "\"A string with ' characters \n and \r newlines and \t tabs and \001 "
     "slashes \\ and  multiple   spaces";
 
 // A representation of the above string with all the characters escaped.
-constexpr absl::string_view kEscapeTestStringEscaped =
+constexpr std::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
-constexpr absl::string_view value_replacement = "\\[REDACTED\\]";
+constexpr std::string_view value_replacement = "\\[REDACTED\\]";
 
-constexpr absl::string_view kTextMarkerRegex = "goo\\.gle/.+  +";
+constexpr std::string_view kTextMarkerRegex = "goo\\.gle/.+  +";
 
 class TextFormatTestBase : public testing::Test {
  public:
@@ -1065,7 +1065,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
 
   {
     no_op_fields = {};
-    const absl::string_view singular_int_parse_string = "optional_int32: 0";
+    const std::string_view singular_int_parse_string = "optional_int32: 0";
     EXPECT_TRUE(TextFormat::ParseFromString(singular_int_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(singular_int_parse_string, &proto));
     EXPECT_THAT(Peer::GetRawIds(no_op_fields),
@@ -1073,7 +1073,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view singular_bool_parse_string = "optional_bool: false";
+    const std::string_view singular_bool_parse_string = "optional_bool: false";
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_bool_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(singular_bool_parse_string, &proto));
@@ -1082,7 +1082,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view singular_string_parse_string =
+    const std::string_view singular_string_parse_string =
         "optional_string: ''";
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_string_parse_string, &proto));
@@ -1092,7 +1092,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view nested_message_parse_string =
+    const std::string_view nested_message_parse_string =
         "optional_nested_message { bb: 0 } ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(nested_message_parse_string, &proto));
@@ -1103,7 +1103,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view nested_message_parse_string =
+    const std::string_view nested_message_parse_string =
         "optional_nested_message { bb: 1 } ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(nested_message_parse_string, &proto));
@@ -1112,7 +1112,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view foreign_message_parse_string =
+    const std::string_view foreign_message_parse_string =
         "optional_foreign_message { c: 0 } ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(foreign_message_parse_string, &proto));
@@ -1123,7 +1123,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view nested_enum_parse_string =
+    const std::string_view nested_enum_parse_string =
         "optional_nested_enum: ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(nested_enum_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(nested_enum_parse_string, &proto));
@@ -1133,7 +1133,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view foreign_enum_parse_string =
+    const std::string_view foreign_enum_parse_string =
         "optional_foreign_enum: FOREIGN_ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(foreign_enum_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(foreign_enum_parse_string, &proto));
@@ -1143,7 +1143,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view string_piece_parse_string =
+    const std::string_view string_piece_parse_string =
         "optional_string_piece: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(string_piece_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(string_piece_parse_string, &proto));
@@ -1153,7 +1153,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view cord_parse_string = "optional_cord: '' ";
+    const std::string_view cord_parse_string = "optional_cord: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(cord_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(cord_parse_string, &proto));
     EXPECT_THAT(Peer::GetRawIds(no_op_fields),
@@ -1162,7 +1162,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   {
     no_op_fields = {};
     // Sanity check that repeated fields work the same.
-    const absl::string_view repeated_int32_parse_string = "repeated_int32: 0 ";
+    const std::string_view repeated_int32_parse_string = "repeated_int32: 0 ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_int32_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_int32_parse_string, &proto));
@@ -1170,7 +1170,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view repeated_bool_parse_string =
+    const std::string_view repeated_bool_parse_string =
         "repeated_bool: false  ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_bool_parse_string, &proto));
@@ -1179,7 +1179,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   }
   {
     no_op_fields = {};
-    const absl::string_view repeated_string_parse_string =
+    const std::string_view repeated_string_parse_string =
         "repeated_string: '' ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_string_parse_string, &proto));
@@ -1196,7 +1196,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   parser.OutputNoOpFields(&no_op_fields);
   {
     no_op_fields = {};
-    const absl::string_view parse_string = R"pb(
+    const std::string_view parse_string = R"pb(
       optional_int32: 0
       optional_uint32: 10
       optional_nested_message { bb: 0 }
@@ -1209,7 +1209,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     no_op_fields = {};
-    const absl::string_view parse_string = R"pb(
+    const std::string_view parse_string = R"pb(
       optional_bool: false
       optional_uint32: 10
       optional_nested_message { bb: 20 }
@@ -1222,7 +1222,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
     // The address returned by the field is a string_view, which is a separate
     // allocation. Check address directly.
     no_op_fields = {};
-    const absl::string_view parse_string = "optional_string: \"\"";
+    const std::string_view parse_string = "optional_string: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
     EXPECT_THAT(Peer::GetRawIds(no_op_fields),
                 UnorderedElementsAre(Peer::GetId(proto, "optional_string")));
@@ -1231,7 +1231,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
     // The address returned by the field is a string_view, which is a separate
     // allocation. Check address directly.
     no_op_fields = {};
-    const absl::string_view parse_string = "optional_bytes: \"\"";
+    const std::string_view parse_string = "optional_bytes: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
     EXPECT_THAT(Peer::GetRawIds(no_op_fields),
                 UnorderedElementsAre(Peer::GetId(proto, "optional_bytes")));
@@ -1482,7 +1482,7 @@ TEST_F(TextFormatTest, OptionalColon) {
 
 // Some platforms (e.g. Windows) insist on padding the exponent to three
 // digits when one or two would be just fine.
-static std::string RemoveRedundantZeros(absl::string_view text) {
+static std::string RemoveRedundantZeros(std::string_view text) {
   return absl::StrReplaceAll(text, {{"e+0", "e+"}, {"e-0", "e-"}});
 }
 
@@ -1852,13 +1852,13 @@ class TextFormatParserTest : public testing::Test {
     std::string text_;
 
     // implements ErrorCollector -------------------------------------
-    void RecordError(int line, int column, absl::string_view message) override {
+    void RecordError(int line, int column, std::string_view message) override {
       absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
                                 message);
     }
 
     void RecordWarning(int line, int column,
-                       absl::string_view message) override {
+                       std::string_view message) override {
       RecordError(line, column, absl::StrCat("WARNING:", message));
     }
   };

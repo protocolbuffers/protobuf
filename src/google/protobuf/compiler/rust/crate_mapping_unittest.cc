@@ -1,17 +1,18 @@
 #include "google/protobuf/compiler/rust/crate_mapping.h"
 
-#include <string>
-
-#include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <string>
+#include <string_view>
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
 
 using google::protobuf::compiler::rust::Options;
 using testing::Eq;
@@ -25,16 +26,16 @@ namespace rust {
 
 namespace {
 
-std::string WriteStringToTempFile(absl::string_view text) {
+std::string WriteStringToTempFile(std::string_view text) {
   std::string path = absl::StrCat(TestTempDir(), "crate_mapping");
   File::WriteStringToFileOrDie(text, path);
   return path;
 }
 
-std::string SkipLeadingWhitespace(absl::string_view text) {
+std::string SkipLeadingWhitespace(std::string_view text) {
   std::string result;
-  for (absl::string_view line : absl::StrSplit(text, '\n', absl::SkipEmpty())) {
-    absl::string_view stripped_line = absl::StripLeadingAsciiWhitespace(line);
+  for (auto line : absl::StrSplit(text, '\n', absl::SkipEmpty())) {
+    auto stripped_line = absl::StripLeadingAsciiWhitespace(line);
     // Deal with old libc++ on OSS Protobuf CI workers
     result.append(stripped_line.data(), stripped_line.size());
     result.append("\n");

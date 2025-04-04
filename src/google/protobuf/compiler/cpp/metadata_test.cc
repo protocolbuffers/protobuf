@@ -81,7 +81,7 @@ class CppMetadataTest : public ::testing::Test {
   }
 };
 
-constexpr absl::string_view kSmallTestFile =
+constexpr std::string_view kSmallTestFile =
     "syntax = \"proto2\";\n"
     "package foo;\n"
     "enum Enum { VALUE = 0; }\n"
@@ -135,7 +135,7 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
 }
 
 TEST_F(CppMetadataTest, RangeChecksWork) {
-  absl::string_view test = "test";
+  std::string_view test = "test";
   GeneratedCodeInfo::Annotation annotation;
   annotation.set_begin(-1);
   annotation.set_end(0);
@@ -153,7 +153,7 @@ TEST_F(CppMetadataTest, RangeChecksWork) {
   EXPECT_FALSE(atu::GetAnnotationSubstring(test, annotation).has_value());
 }
 
-constexpr absl::string_view kEnumFieldTestFile = R"(
+constexpr std::string_view kEnumFieldTestFile = R"(
   syntax = "proto2";
   package foo;
   enum Enum { VALUE = 0; }
@@ -208,7 +208,7 @@ TEST_F(CppMetadataTest, AnnotatesEnumSemantics) {
   }
 }
 
-constexpr absl::string_view kMapFieldTestFile = R"(
+constexpr std::string_view kMapFieldTestFile = R"(
   syntax = "proto2";
   package foo;
   message Message {
@@ -245,7 +245,7 @@ TEST_F(CppMetadataTest, AnnotatesMapSemantics) {
   }
 }
 
-constexpr absl::string_view kPrimFieldTestFile = R"(
+constexpr std::string_view kPrimFieldTestFile = R"(
   syntax = "proto2";
   package foo;
   message Message {
@@ -299,7 +299,7 @@ TEST_F(CppMetadataTest, AnnotatesPrimSemantics) {
   }
 }
 
-constexpr absl::string_view kCordFieldTestFile = R"(
+constexpr std::string_view kCordFieldTestFile = R"(
     syntax = "proto2";
     package foo;
     message Message {
@@ -356,7 +356,7 @@ TEST_F(CppMetadataTest, AnnotatesCordSemantics) {
   }
 }
 
-constexpr absl::string_view kStringPieceFieldTestFile = R"(
+constexpr std::string_view kStringPieceFieldTestFile = R"(
     syntax = "proto2";
     package foo;
     message Message {
@@ -417,7 +417,7 @@ TEST_F(CppMetadataTest, AnnotatesStringPieceSemantics) {
   }
 }
 
-constexpr absl::string_view kStringFieldTestFile = R"(
+constexpr std::string_view kStringFieldTestFile = R"(
     syntax = "proto2";
     package foo;
     message Message {
@@ -474,7 +474,7 @@ TEST_F(CppMetadataTest, AnnotatesStringSemantics) {
   }
 }
 
-constexpr absl::string_view kMessageFieldTestFile = R"(
+constexpr std::string_view kMessageFieldTestFile = R"(
     syntax = "proto2";
     package foo;
     message SMessage { }
@@ -554,7 +554,7 @@ TEST_F(CppMetadataTest, AnnotatesMessageSemantics) {
   }
 }
 
-constexpr absl::string_view kLazyMessageFieldTestFile = R"(
+constexpr std::string_view kLazyMessageFieldTestFile = R"(
     syntax = "proto2";
     package foo;
     message SMessage { }

@@ -1,13 +1,13 @@
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 
-absl::string_view ViewReceiver(AccessorCase accessor_case) {
+std::string_view ViewReceiver(AccessorCase accessor_case) {
   switch (accessor_case) {
     case AccessorCase::VIEW:
       return "self";
@@ -18,7 +18,7 @@ absl::string_view ViewReceiver(AccessorCase accessor_case) {
   return "";
 }
 
-absl::string_view ViewLifetime(AccessorCase accessor_case) {
+std::string_view ViewLifetime(AccessorCase accessor_case) {
   switch (accessor_case) {
     case AccessorCase::VIEW:
       return "'msg";

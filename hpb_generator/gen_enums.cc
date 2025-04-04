@@ -16,7 +16,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
@@ -31,7 +31,7 @@ namespace {
 
 std::string ContainingTypeNames(
     const protobuf::EnumDescriptor* enum_descriptor) {
-  std::deque<absl::string_view> containing_type_names;
+  std::deque<std::string_view> containing_type_names;
   auto containing_type = enum_descriptor->containing_type();
   while (containing_type != nullptr) {
     containing_type_names.push_front(containing_type->name());

@@ -18,7 +18,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb_generator/c/names_internal.h"
 
 namespace upb {
@@ -26,42 +26,42 @@ namespace generator {
 
 namespace {
 
-std::string ToCIdent(absl::string_view str) {
+std::string ToCIdent(std::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }
 
 }  // namespace
 
-std::string CApiHeaderFilename(absl::string_view proto_filename) {
+std::string CApiHeaderFilename(std::string_view proto_filename) {
   return CApiHeaderFilename(proto_filename, false);
 }
 
-std::string CApiMessageType(absl::string_view full_name) {
+std::string CApiMessageType(std::string_view full_name) {
   return ToCIdent(full_name);
 }
 
-std::string CApiEnumType(absl::string_view full_name) {
+std::string CApiEnumType(std::string_view full_name) {
   return ToCIdent(full_name);
 }
 
-std::string CApiEnumValueSymbol(absl::string_view full_name) {
+std::string CApiEnumValueSymbol(std::string_view full_name) {
   return ToCIdent(full_name);
 }
 
-std::string CApiExtensionIdentBase(absl::string_view full_name) {
+std::string CApiExtensionIdentBase(std::string_view full_name) {
   std::vector<std::string> parts = absl::StrSplit(full_name, '.');
   parts.pop_back();
   return ToCIdent(absl::StrJoin(parts, "."));
 }
 
-std::string CApiOneofIdentBase(absl::string_view full_name) {
+std::string CApiOneofIdentBase(std::string_view full_name) {
   return ToCIdent(full_name);
 }
 
 namespace {
 
 struct Prefix {
-  absl::string_view name;
+  std::string_view name;
   uint32_t conflict_set;
 };
 
@@ -77,7 +77,7 @@ static constexpr std::array<Prefix, 6> kPrefixes{
     Prefix{"has_", kAnyField},
 };
 
-bool HasConflict(absl::string_view name,
+bool HasConflict(std::string_view name,
                  const absl::flat_hash_map<std::string, FieldClass>& fields) {
   for (const auto& prefix : kPrefixes) {
     if (!absl::StartsWith(name, prefix.name)) continue;

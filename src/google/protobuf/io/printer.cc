@@ -28,7 +28,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -39,8 +39,8 @@ namespace io {
 namespace {
 template <typename T>
 absl::optional<T> LookupInFrameStack(
-    absl::string_view var,
-    absl::Span<std::function<absl::optional<T>(absl::string_view)>> frames) {
+    std::string_view var,
+    absl::Span<std::function<absl::optional<T>(std::string_view)>> frames) {
   for (size_t i = frames.size(); i >= 1; --i) {
     auto val = frames[i - 1](var);
     if (val.has_value()) {
@@ -54,7 +54,7 @@ absl::optional<T> LookupInFrameStack(
 struct Printer::Format {
   struct Chunk {
     // The chunk's text; if this is a variable, it does not include the $...$.
-    absl::string_view text;
+    std::string_view text;
 
     // Whether or not this is a variable name, i.e., a $...$.
     bool is_var;
@@ -75,7 +75,7 @@ struct Printer::Format {
   bool is_raw_string = false;
 };
 
-Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
+Printer::Format Printer::TokenizeFormat(std::string_view format_string,
                                         const PrintOptions& options) {
   Format format;
   size_t raw_string_indent = 0;
@@ -111,8 +111,8 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
     // detect that this is a multi-line raw string template, and as such this is
     // a while loop, not a do/while loop.
 
-    absl::string_view orig = format_string;
-    absl::string_view first_pp_directive;
+    std::string_view orig = format_string;
+    std::string_view first_pp_directive;
     while (absl::ConsumePrefix(&format_string, "\n")) {
       // clang-format will think a # at the beginning of the line in a raw
       // string is a preprocessor directive and put it at the start of the line,
@@ -125,7 +125,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
           first_pp_directive = format_string;
         }
         size_t next_newline_index = format_string.find('\n');
-        if (next_newline_index != absl::string_view::npos) {
+        if (next_newline_index != std::string_view::npos) {
           format_string = format_string.substr(next_newline_index);
           continue;
         }
@@ -174,10 +174,10 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   // Each line is itself split into chunks along the variable delimiters, e.g.
   // $...$.
   bool is_first = true;
-  for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
+  for (std::string_view line_text : absl::StrSplit(format_string, '\n')) {
     if (format.is_raw_string) {
       size_t comment_index = line_text.find(options_.ignored_comment_start);
-      if (comment_index != absl::string_view::npos) {
+      if (comment_index != std::string_view::npos) {
         line_text = line_text.substr(0, comment_index);
         if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
           // If the first line is part of an ignored comment, consider that a
@@ -201,7 +201,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
 
     bool is_var = false;
     size_t total_len = 0;
-    for (absl::string_view chunk :
+    for (std::string_view chunk :
          absl::StrSplit(line_text, options_.variable_delimiter)) {
       // The special _start and _end variables should actually glom the next
       // chunk into themselves, so as to be of the form _start$foo and _end$foo.
@@ -211,7 +211,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
           // The +1 below is to account for the $ in between them.
           // This string is safe, because prev.text and chunk are contiguous
           // by construction.
-          prev.text = absl::string_view(prev.text.data(),
+          prev.text = std::string_view(prev.text.data(),
                                         prev.text.size() + 1 + chunk.size());
 
           // Account for the foo$ part of $_start$foo$.
@@ -281,7 +281,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   return format;
 }
 
-constexpr absl::string_view Printer::kProtocCodegenTrace;
+constexpr std::string_view Printer::kProtocCodegenTrace;
 
 Printer::Printer(ZeroCopyOutputStream* output) : Printer(output, Options{}) {}
 
@@ -301,7 +301,7 @@ Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
                  AnnotationCollector* annotation_collector)
     : Printer(output, Options{variable_delimiter, annotation_collector}) {}
 
-absl::string_view Printer::LookupVar(absl::string_view var) {
+std::string_view Printer::LookupVar(std::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
   ABSL_CHECK(result.has_value()) << "could not find " << var;
 
@@ -325,7 +325,7 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
 }
 
 bool Printer::Validate(bool cond, Printer::PrintOptions opts,
-                       absl::string_view message) {
+                       std::string_view message) {
   return Validate(cond, opts, [=] { return std::string(message); });
 }
 
@@ -341,7 +341,7 @@ void Printer::Outdent() {
   indent_ -= options_.spaces_per_indent;
 }
 
-void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
+void Printer::Emit(absl::Span<const Sub> vars, std::string_view format,
                    SourceLocation loc) {
   PrintOptions opts;
   opts.strip_raw_string_indentation = true;
@@ -353,7 +353,7 @@ void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
 }
 
 absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
-    absl::string_view varname, PrintOptions opts) {
+    std::string_view varname, PrintOptions opts) {
   auto it = substitutions_.find(varname);
   if (!Validate(it != substitutions_.end(), opts, [varname] {
         return absl::StrCat("undefined variable in annotation: ", varname);
@@ -373,9 +373,9 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
   return range;
 }
 
-void Printer::Annotate(absl::string_view begin_varname,
-                       absl::string_view end_varname,
-                       absl::string_view file_path,
+void Printer::Annotate(std::string_view begin_varname,
+                       std::string_view end_varname,
+                       std::string_view file_path,
                        const std::vector<int>& path,
                        absl::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
@@ -509,7 +509,7 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
   return true;
 }
 
-void Printer::PrintImpl(absl::string_view format,
+void Printer::PrintImpl(std::string_view format,
                         absl::Span<const std::string> args, PrintOptions opts) {
   // Inside of this function, we set indentation as we print new lines from
   // the format string. No matter how we exit this function, we should fix up
@@ -519,7 +519,7 @@ void Printer::PrintImpl(absl::string_view format,
   auto unindent =
       absl::MakeCleanup([this, original_indent] { indent_ = original_indent; });
 
-  absl::string_view original = format;
+  std::string_view original = format;
 
   line_start_variables_.clear();
 
@@ -533,7 +533,7 @@ void Printer::PrintImpl(absl::string_view format,
   size_t arg_index = 0;
   bool skip_next_newline = false;
   std::vector<AnnotationCollector::Annotation> annot_stack;
-  std::vector<std::pair<absl::string_view, size_t>> annot_records;
+  std::vector<std::pair<std::string_view, size_t>> annot_records;
   for (size_t line_idx = 0; line_idx < fmt.lines.size(); ++line_idx) {
     const auto& line = fmt.lines[line_idx];
 
@@ -576,7 +576,7 @@ void Printer::PrintImpl(absl::string_view format,
 
       // If we get this far, we can conclude the chunk is a substitution
       // variable; we rename the `chunk` variable to make this clear below.
-      absl::string_view var = chunk.text;
+      std::string_view var = chunk.text;
       if (substitution_listener_ != nullptr) {
         substitution_listener_(var, opts.loc.value_or(SourceLocation()));
       }
@@ -623,7 +623,7 @@ void Printer::PrintImpl(absl::string_view format,
         continue;
       }
 
-      absl::string_view prefix, suffix;
+      std::string_view prefix, suffix;
       if (opts.strip_spaces_around_vars) {
         var = absl::StripLeadingAsciiWhitespace(var);
         prefix = chunk.text.substr(0, chunk.text.size() - var.size());
@@ -645,7 +645,7 @@ void Printer::PrintImpl(absl::string_view format,
           // Skip all whitespace immediately after a _start.
           ++chunk_idx;
           if (chunk_idx < line.chunks.size()) {
-            absl::string_view text = line.chunks[chunk_idx].text;
+            std::string_view text = line.chunks[chunk_idx].text;
             while (absl::ConsumePrefix(&text, " ")) {
             }
             PrintRaw(text);
@@ -728,7 +728,7 @@ void Printer::PrintImpl(absl::string_view format,
       size_t range_start = sink_.bytes_written();
       size_t range_end = sink_.bytes_written();
 
-      if (const absl::string_view* str = sub->AsString()) {
+      if (const std::string_view* str = sub->AsString()) {
         if (at_start_of_line_ && str->empty()) {
           line_start_variables_.emplace_back(var);
         }
@@ -785,9 +785,9 @@ void Printer::PrintImpl(absl::string_view format,
           !line.chunks[next_idx].is_var) {
         chunk_idx = next_idx;
 
-        absl::string_view text = line.chunks[chunk_idx].text;
+        std::string_view text = line.chunks[chunk_idx].text;
         for (char c : sub->consume_after) {
-          if (absl::ConsumePrefix(&text, absl::string_view(&c, 1))) {
+          if (absl::ConsumePrefix(&text, std::string_view(&c, 1))) {
             break;
           }
         }

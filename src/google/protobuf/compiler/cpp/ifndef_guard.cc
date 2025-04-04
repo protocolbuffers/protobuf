@@ -14,7 +14,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/printer.h"
 
@@ -25,7 +25,7 @@ namespace cpp {
 
 namespace {
 
-std::string MakeIfdefGuardIdentifier(const absl::string_view header_path) {
+std::string MakeIfdefGuardIdentifier(const std::string_view header_path) {
   return absl::StrCat(absl::AsciiStrToUpper(absl::StrReplaceAll(header_path,
                                                                 {
                                                                     {"/", "_"},
@@ -38,12 +38,12 @@ std::string MakeIfdefGuardIdentifier(const absl::string_view header_path) {
 }  // namespace
 
 IfdefGuardPrinter::IfdefGuardPrinter(google::protobuf::io::Printer* const p,
-                                     const absl::string_view filename)
+                                     const std::string_view filename)
     : IfdefGuardPrinter(p, filename, MakeIfdefGuardIdentifier) {}
 
 IfdefGuardPrinter::IfdefGuardPrinter(
-    google::protobuf::io::Printer* const p, const absl::string_view filename,
-    absl::AnyInvocable<std::string(absl::string_view)> make_ifdef_identifier)
+    google::protobuf::io::Printer* const p, const std::string_view filename,
+    absl::AnyInvocable<std::string(std::string_view)> make_ifdef_identifier)
     : p_(ABSL_DIE_IF_NULL(p)),
       ifdef_identifier_(make_ifdef_identifier(filename)) {
   // We can't use variable substitution, because we don't know what delimiter

@@ -138,7 +138,7 @@ class TestErrorCollector : public ErrorCollector {
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(int line, int column, absl::string_view message) override {
+  void RecordError(int line, int column, std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };

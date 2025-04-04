@@ -16,7 +16,7 @@
 #include "absl/numeric/int128.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 
@@ -115,7 +115,7 @@ std::string FormatNanos(int32_t nanos) {
 }
 
 std::string FormatTime(int64_t seconds, int32_t nanos) {
-  static constexpr absl::string_view kTimestampFormat = "%E4Y-%m-%dT%H:%M:%S";
+  static constexpr std::string_view kTimestampFormat = "%E4Y-%m-%dT%H:%M:%S";
 
   timespec spec;
   spec.tv_sec = seconds;
@@ -133,7 +133,7 @@ std::string FormatTime(int64_t seconds, int32_t nanos) {
   return result;
 }
 
-bool ParseTime(absl::string_view value, int64_t* seconds, int32_t* nanos) {
+bool ParseTime(std::string_view value, int64_t* seconds, int32_t* nanos) {
   absl::Time result;
   if (!absl::ParseTime(absl::RFC3339_full, value, &result, nullptr)) {
     return false;
@@ -185,7 +185,7 @@ std::string TimeUtil::ToString(const Timestamp& timestamp) {
   return FormatTime(timestamp.seconds(), timestamp.nanos());
 }
 
-bool TimeUtil::FromString(absl::string_view value, Timestamp* timestamp) {
+bool TimeUtil::FromString(std::string_view value, Timestamp* timestamp) {
   int64_t seconds;
   int32_t nanos;
   if (!ParseTime(value, &seconds, &nanos)) {
@@ -229,7 +229,7 @@ static int64_t Pow(int64_t x, int y) {
   return result;
 }
 
-bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
+bool TimeUtil::FromString(std::string_view value, Duration* duration) {
   if (value.length() <= 1 || value[value.length() - 1] != 's') {
     return false;
   }

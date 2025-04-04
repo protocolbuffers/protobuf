@@ -26,7 +26,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -44,11 +44,11 @@ namespace compiler {
 namespace cpp {
 namespace {
 
-std::string NumberedCcFileName(absl::string_view basename, int number) {
+std::string NumberedCcFileName(std::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".cc");
 }
 
-absl::flat_hash_map<absl::string_view, std::string> CommonVars(
+absl::flat_hash_map<std::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {
@@ -163,7 +163,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (key == "protos_for_field_listener_events") {
-      for (absl::string_view proto : absl::StrSplit(value, ':')) {
+      for (std::string_view proto : absl::StrSplit(value, ':')) {
         if (proto == file->name()) {
           file_options.field_listener_options.inject_field_listener_events =
               true;

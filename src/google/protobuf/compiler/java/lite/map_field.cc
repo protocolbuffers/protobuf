@@ -49,7 +49,7 @@ std::string WireType(const FieldDescriptor* field) {
 void SetMessageVariables(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     const FieldGeneratorInfo* info, Context* context,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+    absl::flat_hash_map<std::string_view, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   ClassNameResolver* name_resolver = context->GetNameResolver();

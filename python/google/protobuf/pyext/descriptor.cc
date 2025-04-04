@@ -20,7 +20,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -77,7 +77,7 @@ namespace python {
 // All descriptors are stored here.
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
-PyObject* PyString_FromCppString(absl::string_view str) {
+PyObject* PyString_FromCppString(std::string_view str) {
   return PyUnicode_FromStringAndSize(str.data(),
                                      static_cast<size_t>(str.size()));
 }
@@ -1809,7 +1809,7 @@ static PyObject* FindMethodByName(PyBaseDescriptor* self, PyObject* arg) {
 
   const MethodDescriptor* method_descriptor =
       _GetDescriptor(self)->FindMethodByName(
-          absl::string_view(name, static_cast<size_t>(name_size)));
+          std::string_view(name, static_cast<size_t>(name_size)));
   if (method_descriptor == nullptr) {
     PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
     return nullptr;

@@ -28,7 +28,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -419,8 +419,8 @@ absl::Status WriteField(JsonWriter& writer, const Msg<Traits>& msg,
     // seems to (incorrectly?) capitalize the first letter, which is the
     // behavior ESF defaults to. To fix this, if the original field name starts
     // with an uppercase letter, and the Json name does not, we uppercase it.
-    absl::string_view original_name = Traits::FieldName(field);
-    absl::string_view json_name = Traits::FieldJsonName(field);
+    std::string_view original_name = Traits::FieldName(field);
+    std::string_view json_name = Traits::FieldJsonName(field);
     if (writer.options().allow_legacy_syntax &&
         absl::ascii_isupper(original_name[0]) &&
         !absl::ascii_isupper(json_name[0])) {
@@ -681,7 +681,7 @@ absl::Status WriteDuration(JsonWriter& writer, const Msg<Traits>& msg,
     digits -= 3;
   }
 
-  absl::string_view sign = ((*secs < 0) || (*nanos < 0)) ? "-" : "";
+  std::string_view sign = ((*secs < 0) || (*nanos < 0)) ? "-" : "";
   writer.Write(absl::StrFormat(R"("%s%d.%.*ds")", sign, std::abs(*secs), digits,
                                frac_seconds));
   return absl::OkStatus();
@@ -756,9 +756,9 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
   return Traits::WithDynamicType(
       desc, std::string(*type_url),
       [&](const Desc<Traits>& any_desc) -> absl::Status {
-        absl::string_view any_bytes;
+        std::string_view any_bytes;
         if (has_value) {
-          absl::StatusOr<absl::string_view> bytes =
+          absl::StatusOr<std::string_view> bytes =
               Traits::GetString(value_field, writer.ScratchBuf(), msg);
           RETURN_IF_ERROR(bytes.status());
           any_bytes = *bytes;

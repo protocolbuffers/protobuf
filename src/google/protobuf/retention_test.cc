@@ -13,7 +13,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/dynamic_message.h"
@@ -165,7 +165,7 @@ class SimpleErrorCollector : public io::ErrorCollector {
  public:
   SimpleErrorCollector() = default;
   void RecordError(int line, io::ColumnNumber column,
-                   absl::string_view message) override{};
+                   std::string_view message) override{};
 };
 
 TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {

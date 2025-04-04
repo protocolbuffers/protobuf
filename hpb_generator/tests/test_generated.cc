@@ -414,7 +414,7 @@ TEST(CppGeneratedCode, SerializeUsingArena) {
   TestModel model;
   model.set_str1("Hello World");
   ::upb::Arena arena;
-  absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
+  auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
@@ -425,8 +425,7 @@ TEST(CppGeneratedCode, SerializeProxyUsingArena) {
   TestModel::Proxy model_proxy = ::hpb::CreateMessage<TestModel>(message_arena);
   model_proxy.set_str1("Hello World");
   ::upb::Arena arena;
-  absl::StatusOr<absl::string_view> bytes =
-      ::hpb::Serialize(&model_proxy, arena);
+  auto bytes = ::hpb::Serialize(&model_proxy, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
@@ -437,7 +436,7 @@ TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   model.mutable_recursive_child()->set_str1("Hello World");
   ::upb::Arena arena;
   ::hpb::Ptr<const TestModel> child = model.recursive_child();
-  absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(child, arena);
+  auto bytes = ::hpb::Serialize(child, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());

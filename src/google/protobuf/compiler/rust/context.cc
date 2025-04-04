@@ -14,7 +14,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
@@ -23,17 +23,17 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-static constexpr std::pair<absl::string_view, absl::string_view> kMagicValue = {
+static constexpr std::pair<std::string_view, std::string_view> kMagicValue = {
     "experimental-codegen",
     "enabled",
 };
 
-absl::StatusOr<Options> Options::Parse(absl::string_view param) {
+absl::StatusOr<Options> Options::Parse(std::string_view param) {
   std::vector<std::pair<std::string, std::string>> args;
   ParseGeneratorParameter(param, &args);
 
   bool has_experimental_value = absl::c_any_of(
-      args, [](std::pair<absl::string_view, absl::string_view> pair) {
+      args, [](std::pair<std::string_view, std::string_view> pair) {
         return pair == kMagicValue;
       });
 

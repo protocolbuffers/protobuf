@@ -123,7 +123,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
 #include "google/protobuf/hpb/repeated_field.h"
 
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
       )cc",
       ToPreproc(file->name()));
 
@@ -186,7 +186,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
       R"cc(
 #include <stddef.h>
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "$0"
       )cc",
       CppHeaderFilename(file));

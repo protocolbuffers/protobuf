@@ -8,7 +8,7 @@
 
 #include "absl/functional/overload.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/strings.h"
@@ -54,7 +54,7 @@ T AsViewType(T t) {
   return t;
 }
 
-absl::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
+std::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
 
 void InitializeMessageValue(void* raw_ptr, MessageLite* msg) {
   MessageLite* new_msg = internal::RustMapHelper::PlacementNew(msg, raw_ptr);

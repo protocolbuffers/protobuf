@@ -40,7 +40,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
 ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() {}
 
 void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars, context_);

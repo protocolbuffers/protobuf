@@ -187,7 +187,7 @@ void ImmutableServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["index"] = absl::StrCat(i);
     vars["method"] = UnderscoresToCamelCase(method);
     vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
@@ -234,7 +234,7 @@ void ImmutableServiceGenerator::GenerateCallBlockingMethod(
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["index"] = absl::StrCat(i);
     vars["method"] = UnderscoresToCamelCase(method);
     vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
@@ -279,7 +279,7 @@ void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["index"] = absl::StrCat(i);
     vars["type"] =
         (which == REQUEST)
@@ -334,7 +334,7 @@ void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
     printer->Print(" {\n");
     printer->Indent();
 
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["index"] = absl::StrCat(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
@@ -398,7 +398,7 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
     printer->Print(" {\n");
     printer->Indent();
 
-    absl::flat_hash_map<absl::string_view, std::string> vars;
+    absl::flat_hash_map<std::string_view, std::string> vars;
     vars["index"] = absl::StrCat(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
@@ -421,7 +421,7 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
 void ImmutableServiceGenerator::GenerateMethodSignature(
     io::Printer* printer, const MethodDescriptor* method,
     IsAbstract is_abstract) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["name"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);
@@ -435,7 +435,7 @@ void ImmutableServiceGenerator::GenerateMethodSignature(
 
 void ImmutableServiceGenerator::GenerateBlockingMethodSignature(
     io::Printer* printer, const MethodDescriptor* method) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   vars["method"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);

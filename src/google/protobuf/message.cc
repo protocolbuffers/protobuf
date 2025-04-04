@@ -28,7 +28,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
@@ -206,7 +206,7 @@ size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
-absl::string_view Message::GetTypeNameImpl(const internal::ClassData* data) {
+std::string_view Message::GetTypeNameImpl(const internal::ClassData* data) {
   return GetMetadataImpl(data->full()).descriptor->full_name();
 }
 
@@ -280,7 +280,7 @@ class GeneratedMessageFactory final : public MessageFactory {
   }
 
   const google::protobuf::internal::DescriptorTable* FindInFileMap(
-      absl::string_view name) {
+      std::string_view name) {
     auto it = files_.find(name);
     if (it == files_.end()) return nullptr;
     return *it;
@@ -289,10 +289,10 @@ class GeneratedMessageFactory final : public MessageFactory {
   struct DescriptorByNameHash {
     using is_transparent = void;
     size_t operator()(const google::protobuf::internal::DescriptorTable* t) const {
-      return absl::HashOf(absl::string_view{t->filename});
+      return absl::HashOf(std::string_view{t->filename});
     }
 
-    size_t operator()(absl::string_view name) const {
+    size_t operator()(std::string_view name) const {
       return absl::HashOf(name);
     }
   };
@@ -302,15 +302,15 @@ class GeneratedMessageFactory final : public MessageFactory {
                     const google::protobuf::internal::DescriptorTable* rhs) const {
       return lhs == rhs || (*this)(lhs->filename, rhs->filename);
     }
-    bool operator()(absl::string_view lhs,
+    bool operator()(std::string_view lhs,
                     const google::protobuf::internal::DescriptorTable* rhs) const {
       return (*this)(lhs, rhs->filename);
     }
     bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
-                    absl::string_view rhs) const {
+                    std::string_view rhs) const {
       return (*this)(lhs->filename, rhs);
     }
-    bool operator()(absl::string_view lhs, absl::string_view rhs) const {
+    bool operator()(std::string_view lhs, std::string_view rhs) const {
       return lhs == rhs;
     }
   };

@@ -16,6 +16,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -29,7 +30,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/plugin.pb.h"
@@ -56,7 +57,7 @@ namespace {
 // comma-separated string.
 std::string CommaSeparatedList(
     const std::vector<const FileDescriptor*>& all_files) {
-  std::vector<absl::string_view> names;
+  std::vector<std::string_view> names;
   names.reserve(all_files.size());
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
@@ -64,16 +65,16 @@ std::string CommaSeparatedList(
   return absl::StrJoin(names, ",");
 }
 
-static constexpr absl::string_view kFirstInsertionPointName =
+static constexpr std::string_view kFirstInsertionPointName =
     "first_mock_insertion_point";
-static constexpr absl::string_view kSecondInsertionPointName =
+static constexpr std::string_view kSecondInsertionPointName =
     "second_mock_insertion_point";
-static constexpr absl::string_view kFirstInsertionPoint =
+static constexpr std::string_view kFirstInsertionPoint =
     "# @@protoc_insertion_point(first_mock_insertion_point) is here\n";
-static constexpr absl::string_view kSecondInsertionPoint =
+static constexpr std::string_view kSecondInsertionPoint =
     "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
-absl::string_view GetTestCase() {
+std::string_view GetTestCase() {
   const char* c_key = getenv("TEST_CASE");
   if (c_key == nullptr) {
     // In Windows, setting 'TEST_CASE=' is equivalent to unsetting
@@ -85,8 +86,8 @@ absl::string_view GetTestCase() {
 
 }  // namespace
 
-MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
-  absl::string_view key = GetTestCase();
+MockCodeGenerator::MockCodeGenerator(std::string_view name) : name_(name) {
+  std::string_view key = GetTestCase();
   if (key == "no_editions") {
     suppressed_features_ |= CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
   } else if (key == "invalid_features") {
@@ -113,11 +114,11 @@ void MockCodeGenerator::SuppressFeatures(uint64_t features) {
 }
 
 void MockCodeGenerator::ExpectGenerated(
-    absl::string_view name, absl::string_view parameter,
-    absl::string_view insertions, absl::string_view file,
-    absl::string_view first_message_name,
-    absl::string_view first_parsed_file_name,
-    absl::string_view output_directory) {
+    std::string_view name, std::string_view parameter,
+    std::string_view insertions, std::string_view file,
+    std::string_view first_message_name,
+    std::string_view first_parsed_file_name,
+    std::string_view output_directory) {
   std::string content;
   ABSL_CHECK_OK(File::GetContents(
       absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
@@ -160,9 +161,9 @@ void MockCodeGenerator::ExpectGenerated(
 }
 
 namespace {
-void CheckSingleAnnotation(absl::string_view expected_file,
-                           absl::string_view expected_text,
-                           absl::string_view file_content,
+void CheckSingleAnnotation(std::string_view expected_file,
+                           std::string_view expected_text,
+                           std::string_view file_content,
                            const GeneratedCodeInfo::Annotation& annotation) {
   EXPECT_EQ(expected_file, annotation.source_file());
   ASSERT_GE(file_content.size(), annotation.begin());
@@ -175,8 +176,8 @@ void CheckSingleAnnotation(absl::string_view expected_file,
 }  // anonymous namespace
 
 void MockCodeGenerator::CheckGeneratedAnnotations(
-    absl::string_view name, absl::string_view file,
-    absl::string_view output_directory) {
+    std::string_view name, std::string_view file,
+    std::string_view output_directory) {
   std::string file_content;
   ABSL_CHECK_OK(File::GetContents(
       absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
@@ -222,7 +223,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  std::string* error) const {
   // Override minimum/maximum after generating the pool to simulate a plugin
   // that "works" but doesn't advertise support of the current edition.
-  absl::string_view test_case = GetTestCase();
+  std::string_view test_case = GetTestCase();
   if (test_case == "high_minimum") {
     minimum_edition_ = Edition::EDITION_99997_TEST_ONLY;
   } else if (test_case == "low_maximum") {
@@ -245,7 +246,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
   bool annotate = false;
   for (int i = 0; i < file->message_type_count(); i++) {
     if (absl::StartsWith(file->message_type(i)->name(), "MockCodeGenerator_")) {
-      absl::string_view command = absl::StripPrefix(
+      std::string_view command = absl::StripPrefix(
           file->message_type(i)->name(), "MockCodeGenerator_");
       if (command == "Error") {
         *error = "Saw message type MockCodeGenerator_Error.";
@@ -389,17 +390,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
 }
 
 std::string MockCodeGenerator::GetOutputFileName(
-    absl::string_view generator_name, const FileDescriptor* file) {
+    std::string_view generator_name, const FileDescriptor* file) {
   return GetOutputFileName(generator_name, file->name());
 }
 
 std::string MockCodeGenerator::GetOutputFileName(
-    absl::string_view generator_name, absl::string_view file) {
+    std::string_view generator_name, std::string_view file) {
   return absl::StrCat(file, ".MockCodeGenerator.", generator_name);
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    absl::string_view generator_name, absl::string_view parameter,
+    std::string_view generator_name, std::string_view parameter,
     const FileDescriptor* file, GeneratorContext* context) {
   std::vector<const FileDescriptor*> all_files;
   context->ListParsedFiles(&all_files);
@@ -410,9 +411,9 @@ std::string MockCodeGenerator::GetOutputFileContent(
 }
 
 std::string MockCodeGenerator::GetOutputFileContent(
-    absl::string_view generator_name, absl::string_view parameter,
-    absl::string_view file, absl::string_view parsed_file_list,
-    absl::string_view first_message_name) {
+    std::string_view generator_name, std::string_view parameter,
+    std::string_view file, std::string_view parsed_file_list,
+    std::string_view first_message_name) {
   return absl::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
                           file, first_message_name, parsed_file_list);
 }

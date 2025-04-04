@@ -16,11 +16,11 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 
 namespace {
-std::string EscapeTrigraphs(absl::string_view to_escape) {
+std::string EscapeTrigraphs(std::string_view to_escape) {
   return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
 }
 }  // namespace
@@ -114,7 +114,7 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
   return fields;
 }
 
-std::string ToCamelCase(const absl::string_view input, bool lower_first) {
+std::string ToCamelCase(const std::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
   result.reserve(input.size());

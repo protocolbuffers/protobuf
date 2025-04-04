@@ -43,9 +43,9 @@ ImmutableExtensionGenerator::~ImmutableExtensionGenerator() {}
 void ExtensionGenerator::InitTemplateVars(
     const FieldDescriptor* descriptor, const std::string& scope, bool immutable,
     ClassNameResolver* name_resolver,
-    absl::flat_hash_map<absl::string_view, std::string>* vars_pointer,
+    absl::flat_hash_map<std::string_view, std::string>* vars_pointer,
     Context* context) {
-  absl::flat_hash_map<absl::string_view, std::string>& vars = *vars_pointer;
+  absl::flat_hash_map<std::string_view, std::string>& vars = *vars_pointer;
   vars["scope"] = scope;
   vars["name"] = UnderscoresToCamelCaseCheckReserved(descriptor);
   vars["containing_type"] =
@@ -92,7 +92,7 @@ void ExtensionGenerator::InitTemplateVars(
 }
 
 void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<std::string_view, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars, context_);

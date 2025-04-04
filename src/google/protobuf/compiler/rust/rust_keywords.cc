@@ -10,14 +10,14 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 
-bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix) {
+bool IsLegalRawIdentifierName(std::string_view str_without_r_prefix) {
   // These keywords cannot be used even with an r# prefix.
   static const auto* illegal_raw_identifiers = new absl::flat_hash_set<
       std::string>{
@@ -28,7 +28,7 @@ bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix) {
   return !illegal_raw_identifiers->contains(str_without_r_prefix);
 }
 
-bool IsRustKeyword(absl::string_view str) {
+bool IsRustKeyword(std::string_view str) {
   // https://doc.rust-lang.org/reference/keywords.html
   static const auto* rust_keywords = new absl::flat_hash_set<std::string>{
       // strict keywords

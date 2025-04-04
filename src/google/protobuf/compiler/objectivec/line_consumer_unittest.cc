@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 #include "absl/base/macros.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
@@ -32,7 +32,7 @@ class TestLineCollector : public LineConsumer {
                              bool skip_msg = false)
       : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
 
-  bool ConsumeLine(absl::string_view line, std::string* out_error) override {
+  bool ConsumeLine(std::string_view line, std::string* out_error) override {
     if (reject_ && *reject_ == line) {
       if (!skip_msg_) {
         *out_error = absl::StrCat("Rejected '", *reject_, "'");

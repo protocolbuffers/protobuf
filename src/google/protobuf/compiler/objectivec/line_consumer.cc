@@ -16,7 +16,7 @@
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -44,21 +44,21 @@ namespace {
 
 bool ascii_isnewline(char c) { return c == '\n' || c == '\r'; }
 
-bool ReadLine(absl::string_view* input, absl::string_view* line) {
+bool ReadLine(std::string_view* input, std::string_view* line) {
   for (size_t len = 0; len < input->size(); ++len) {
     if (ascii_isnewline((*input)[len])) {
-      *line = absl::string_view(input->data(), len);
+      *line = std::string_view(input->data(), len);
       ++len;  // advance over the newline
-      *input = absl::string_view(input->data() + len, input->size() - len);
+      *input = std::string_view(input->data() + len, input->size() - len);
       return true;
     }
   }
   return false;  // Ran out of input with no newline.
 }
 
-void RemoveComment(absl::string_view* input) {
+void RemoveComment(std::string_view* input) {
   size_t offset = input->find('#');
-  if (offset != absl::string_view::npos) {
+  if (offset != std::string_view::npos) {
     input->remove_suffix(input->length() - offset);
   }
 }
@@ -70,7 +70,7 @@ class Parser {
 
   // Feeds in some input, parse what it can, returning success/failure. Calling
   // again after an error is undefined.
-  bool ParseChunk(absl::string_view chunk, std::string* out_error);
+  bool ParseChunk(std::string_view chunk, std::string* out_error);
 
   // Should be called to finish parsing (after all input has been provided via
   // successful calls to ParseChunk(), calling after a ParseChunk() failure is
@@ -85,16 +85,16 @@ class Parser {
   std::string leftover_;
 };
 
-bool Parser::ParseChunk(absl::string_view chunk, std::string* out_error) {
-  absl::string_view full_chunk;
+bool Parser::ParseChunk(std::string_view chunk, std::string* out_error) {
+  std::string_view full_chunk;
   if (!leftover_.empty()) {
     leftover_ += std::string(chunk);
-    full_chunk = absl::string_view(leftover_);
+    full_chunk = std::string_view(leftover_);
   } else {
     full_chunk = chunk;
   }
 
-  absl::string_view line;
+  std::string_view line;
   while (ReadLine(&full_chunk, &line)) {
     ++line_;
     RemoveComment(&line);
@@ -132,7 +132,7 @@ bool Parser::Finish(std::string* out_error) {
 
 }  // namespace
 
-bool ParseSimpleFile(absl::string_view path, LineConsumer* line_consumer,
+bool ParseSimpleFile(std::string_view path, LineConsumer* line_consumer,
                      std::string* out_error) {
   int fd;
   do {
@@ -150,7 +150,7 @@ bool ParseSimpleFile(absl::string_view path, LineConsumer* line_consumer,
 }
 
 bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
-                       absl::string_view stream_name,
+                       std::string_view stream_name,
                        LineConsumer* line_consumer, std::string* out_error) {
   std::string local_error;
   Parser parser(line_consumer);
@@ -162,7 +162,7 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
     }
 
     if (!parser.ParseChunk(
-            absl::string_view(static_cast<const char*>(buf), (size_t)buf_len),
+            std::string_view(static_cast<const char*>(buf), (size_t)buf_len),
             &local_error)) {
       *out_error = absl::StrCat("error: ", stream_name, " Line ",
                                 parser.last_line(), ", ", local_error);

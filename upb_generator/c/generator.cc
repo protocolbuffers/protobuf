@@ -30,7 +30,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
@@ -158,7 +158,7 @@ std::string DoubleToCLiteral(double value) {
 }
 
 // Escape trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(absl::string_view to_escape) {
+std::string EscapeTrigraphs(std::string_view to_escape) {
   return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
 }
 
@@ -171,7 +171,7 @@ std::string FieldDefault(upb::FieldDefPtr field) {
       upb_StringView str = field.default_value().str_val;
       return absl::Substitute("upb_StringView_FromString(\"$0\")",
                               EscapeTrigraphs(absl::CEscape(
-                                  absl::string_view(str.data, str.size))));
+                                  std::string_view(str.data, str.size))));
     }
     case kUpb_CType_Int32:
       return absl::Substitute("(int32_t)$0", field.default_value().int32_val);
@@ -230,18 +230,18 @@ std::string MapValueCTypeConst(upb::FieldDefPtr map_field) {
   return CTypeConst(map_field.message_type().map_value());
 }
 
-std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
+std::string MapKeyValueSize(upb_CType ctype, std::string_view expr) {
   return ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes
              ? "0"
              : absl::StrCat("sizeof(", expr, ")");
 }
 
-std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
+std::string MapKeySize(upb::FieldDefPtr map_field, std::string_view expr) {
   const upb_CType ctype = map_field.message_type().map_key().ctype();
   return MapKeyValueSize(ctype, expr);
 }
 
-std::string MapValueSize(upb::FieldDefPtr map_field, absl::string_view expr) {
+std::string MapValueSize(upb::FieldDefPtr map_field, std::string_view expr) {
   const upb_CType ctype = map_field.message_type().map_value().ctype();
   return MapKeyValueSize(ctype, expr);
 }
@@ -400,7 +400,7 @@ void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
 }
 
 void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
-                           absl::string_view msg_name, const Options& options,
+                           std::string_view msg_name, const Options& options,
                            Output& output) {
   std::string fullname = CApiOneofIdentBase(oneof.full_name());
   output("typedef enum {\n");
@@ -430,7 +430,7 @@ void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
 }
 
 void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
-                    absl::string_view msg_name, const NameMangler& mangler,
+                    std::string_view msg_name, const NameMangler& mangler,
                     const Options& options, Output& output) {
   std::string resolved_name = mangler.ResolveFieldName(field.name());
   if (field.has_presence()) {
@@ -446,7 +446,7 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
-                   absl::string_view msg_name, const NameMangler& mangler,
+                   std::string_view msg_name, const NameMangler& mangler,
                    const Options& options, Output& output) {
   if (field == field.containing_type().map_key() ||
       field == field.containing_type().map_value()) {
@@ -465,7 +465,7 @@ void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                        absl::string_view msg_name, const NameMangler& mangler,
+                        std::string_view msg_name, const NameMangler& mangler,
                         const Options& options, Output& output) {
   std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
@@ -530,7 +530,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                             absl::string_view msg_name,
+                             std::string_view msg_name,
                              const NameMangler& mangler, const Options& options,
                              Output& output) {
   // Generate getter returning first item and size.
@@ -592,7 +592,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                           absl::string_view msg_name,
+                           std::string_view msg_name,
                            const NameMangler& mangler, const Options& Options,
                            Output& output) {
   std::string field_name = mangler.ResolveFieldName(field.name());
@@ -612,7 +612,7 @@ void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                     absl::string_view msg_name, const NameMangler& mangler,
+                     std::string_view msg_name, const NameMangler& mangler,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapGetters(field, pools, msg_name, mangler, options, output);
@@ -624,7 +624,7 @@ void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                        absl::string_view msg_name, const NameMangler& mangler,
+                        std::string_view msg_name, const NameMangler& mangler,
                         const Options& options, Output& output) {
   std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
@@ -664,7 +664,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                             absl::string_view msg_name,
+                             std::string_view msg_name,
                              const NameMangler& mangler, const Options& options,
                              Output& output) {
   std::string resolved_name = mangler.ResolveFieldName(field.name());
@@ -738,7 +738,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 
 void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
                                 const DefPoolPair& pools,
-                                absl::string_view msg_name,
+                                std::string_view msg_name,
                                 const NameMangler& mangler,
                                 const Options& options, Output& output) {
   std::string field_name = mangler.ResolveFieldName(field.name());
@@ -772,7 +772,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 }
 
 void GenerateSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                     absl::string_view msg_name, const NameMangler& mangler,
+                     std::string_view msg_name, const NameMangler& mangler,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapSetters(field, pools, msg_name, mangler, options, output);
@@ -948,8 +948,8 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     GenerateExtensionInHeader(pools, ext, options, output);
   }
 
-  if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||
-      absl::string_view(file.name()) == "net/proto2/proto/descriptor.proto") {
+  if (std::string_view(file.name()) == "google/protobuf/descriptor.proto" ||
+      std::string_view(file.name()) == "net/proto2/proto/descriptor.proto") {
     // This is gratuitously inefficient with how many times it rebuilds
     // MessageLayout objects for the same message. But we only do this for one
     // proto (descriptor.proto) so we don't worry about it.
@@ -1156,7 +1156,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 }
 
-bool ParseOptions(absl::string_view parameter, Options* options,
+bool ParseOptions(std::string_view parameter, Options* options,
                   std::string* error) {
   for (const auto& pair : ParseGeneratorParameter(parameter)) {
     if (pair.first == "bootstrap_stage") {

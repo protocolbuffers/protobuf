@@ -14,7 +14,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -117,7 +117,7 @@ bool ZeroCopyBufferedStream::ReadChunk() {
     return false;
   }
 
-  last_chunk_ = absl::string_view(static_cast<const char*>(data),
+  last_chunk_ = std::string_view(static_cast<const char*>(data),
                                   static_cast<size_t>(len));
   if (using_buf_) {
     absl::c_copy(last_chunk_, std::back_inserter(buf_));

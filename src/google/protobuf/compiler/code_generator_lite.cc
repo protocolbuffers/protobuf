@@ -8,12 +8,12 @@
 #include "google/protobuf/compiler/code_generator_lite.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 
 namespace google {
@@ -22,14 +22,13 @@ namespace compiler {
 
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(
-    absl::string_view text,
+    std::string_view text,
     std::vector<std::pair<std::string, std::string> >* output) {
-  std::vector<absl::string_view> parts =
-      absl::StrSplit(text, ',', absl::SkipEmpty());
+  auto parts = absl::StrSplit(text, ',', absl::SkipEmpty());
 
-  for (absl::string_view part : parts) {
+  for (auto part : parts) {
     auto equals_pos = part.find_first_of('=');
-    if (equals_pos == absl::string_view::npos) {
+    if (equals_pos == std::string_view::npos) {
       output->emplace_back(part, "");
     } else {
       output->emplace_back(part.substr(0, equals_pos),
@@ -39,7 +38,7 @@ void ParseGeneratorParameter(
 }
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(absl::string_view filename) {
+std::string StripProto(std::string_view filename) {
   if (absl::EndsWith(filename, ".protodevel")) {
     return std::string(absl::StripSuffix(filename, ".protodevel"));
   } else {
@@ -47,7 +46,7 @@ std::string StripProto(absl::string_view filename) {
   }
 }
 
-bool IsKnownFeatureProto(absl::string_view filename) {
+bool IsKnownFeatureProto(std::string_view filename) {
   if (filename == "google/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/java_features.proto") {
     return true;

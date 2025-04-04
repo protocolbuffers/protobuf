@@ -8,7 +8,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/default_value.h"
@@ -176,7 +176,7 @@ void SingularString::InThunkCc(Context& ctx,
       },
       R"cc(
         ::google::protobuf::rust::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
-          absl::string_view val = msg->$field$();
+          std::string_view val = msg->$field$();
           return ::google::protobuf::rust::PtrAndLen{val.data(), val.size()};
         }
         void $setter_thunk$($QualifiedMsg$* msg, std::string* s) {

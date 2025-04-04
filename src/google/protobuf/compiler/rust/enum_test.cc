@@ -4,7 +4,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace {
 
@@ -17,13 +17,13 @@ using ::testing::Field;
 using ::testing::IsEmpty;
 
 template <class Aliases>
-auto EnumValue(absl::string_view name, int32_t number, Aliases aliases) {
+auto EnumValue(std::string_view name, int32_t number, Aliases aliases) {
   return AllOf(Field("name", &RustEnumValue::name, Eq(name)),
                Field("number", &RustEnumValue::number, Eq(number)),
                Field("aliases", &RustEnumValue::aliases, aliases));
 }
 
-auto EnumValue(absl::string_view name, int32_t number) {
+auto EnumValue(std::string_view name, int32_t number) {
   return EnumValue(name, number, IsEmpty());
 }
 

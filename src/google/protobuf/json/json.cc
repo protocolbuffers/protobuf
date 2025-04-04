@@ -10,7 +10,7 @@
 #include <string>
 
 #include "absl/status/status.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/json/internal/parser.h"
 #include "google/protobuf/json/internal/unparser.h"
@@ -73,7 +73,7 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
 
 absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
                                 const std::string& type_url,
-                                absl::string_view json_input,
+                                std::string_view json_input,
                                 std::string* binary_output,
                                 const ParseOptions& options) {
   io::ArrayInputStream input_stream(json_input.data(), json_input.size());
@@ -105,7 +105,7 @@ absl::Status MessageToJsonStream(const Message& message,
   return google::protobuf::json_internal::MessageToJsonStream(message, json_output, opts);
 }
 
-absl::Status JsonStringToMessage(absl::string_view input, Message* message,
+absl::Status JsonStringToMessage(std::string_view input, Message* message,
                                  const ParseOptions& options) {
   io::ArrayInputStream input_stream(input.data(), input.size());
   return JsonStreamToMessage(&input_stream, message, options);

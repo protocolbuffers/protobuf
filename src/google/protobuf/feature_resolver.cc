@@ -25,7 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/span.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -54,7 +54,7 @@ absl::Status Error(Args... args) {
 }
 
 absl::Status ValidateFeatureSupport(const FieldOptions::FeatureSupport& support,
-                                    absl::string_view full_name) {
+                                    std::string_view full_name) {
   if (support.has_edition_deprecated()) {
     if (support.edition_deprecated() < support.edition_introduced()) {
       return Error("Feature ", full_name,
@@ -124,7 +124,7 @@ absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field) {
 
 absl::Status ValidateValueFeatureSupport(
     const FieldOptions::FeatureSupport& parent,
-    const EnumValueDescriptor& value, absl::string_view field_name) {
+    const EnumValueDescriptor& value, std::string_view field_name) {
   if (!value.options().has_feature_support()) {
     // We allow missing support windows on feature values, and they'll inherit
     // from the feature spec.
@@ -363,7 +363,7 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
 }
 
 void ValidateSingleFeatureLifetimes(
-    Edition edition, absl::string_view full_name,
+    Edition edition, std::string_view full_name,
     const FieldOptions::FeatureSupport& support,
     FeatureResolver::ValidationResults& results) {
   // Skip fields that don't have feature support specified.

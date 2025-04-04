@@ -11,7 +11,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
@@ -32,7 +32,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-absl::StatusOr<FeatureSetDefaults> ReadDefaults(absl::string_view name) {
+absl::StatusOr<FeatureSetDefaults> ReadDefaults(std::string_view name) {
   auto runfiles = absl::WrapUnique(bazel::tools::cpp::runfiles::Runfiles::CreateForTest());
   std::string file = runfiles->Rlocation(absl::StrCat(
       "com_google_protobuf/editions/",
@@ -168,7 +168,7 @@ TEST(DefaultsTest, EmbeddedBase64) {
   FeatureSetDefaults defaults;
   std::string data;
   ASSERT_TRUE(absl::Base64Unescape(
-      absl::string_view{DEFAULTS_TEST_EMBEDDED_BASE64,
+      std::string_view{DEFAULTS_TEST_EMBEDDED_BASE64,
                         sizeof(DEFAULTS_TEST_EMBEDDED_BASE64) - 1},
       &data));
   ASSERT_TRUE(defaults.ParseFromString(data));

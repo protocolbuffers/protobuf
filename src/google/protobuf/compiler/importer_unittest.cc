@@ -48,14 +48,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, int line, int column,
-                   absl::string_view message) override {
+  void RecordError(std::string_view filename, int line, int column,
+                   std::string_view message) override {
     absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 
-  void RecordWarning(absl::string_view filename, int line, int column,
-                     absl::string_view message) override {
+  void RecordWarning(std::string_view filename, int line, int column,
+                     std::string_view message) override {
     absl::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
                               column, message);
   }
@@ -69,12 +69,12 @@ class MockSourceTree : public SourceTree {
   MockSourceTree() {}
   ~MockSourceTree() override {}
 
-  void AddFile(absl::string_view name, const char* contents) {
+  void AddFile(std::string_view name, const char* contents) {
     files_[name] = contents;
   }
 
   // implements SourceTree -------------------------------------------
-  io::ZeroCopyInputStream* Open(absl::string_view filename) override {
+  io::ZeroCopyInputStream* Open(std::string_view filename) override {
     auto it = files_.find(filename);
     if (it == files_.end()) return nullptr;
     return new io::ArrayInputStream(it->second,

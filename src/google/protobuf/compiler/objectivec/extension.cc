@@ -14,7 +14,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/options.h"
@@ -30,7 +30,7 @@ namespace objectivec {
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 ExtensionGenerator::ExtensionGenerator(
-    absl::string_view root_or_message_class_name,
+    std::string_view root_or_message_class_name,
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : root_or_message_class_name_(root_or_message_class_name),

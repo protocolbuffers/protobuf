@@ -9,13 +9,13 @@
 
 #include <string>
 
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb_generator/common/names.h"
 
 namespace upb {
 namespace generator {
 
-std::string CApiHeaderFilename(absl::string_view proto_filename,
+std::string CApiHeaderFilename(std::string_view proto_filename,
                                bool bootstrap) {
   if (bootstrap) {
     if (IsDescriptorProto(proto_filename)) {

@@ -27,7 +27,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "conformance/conformance.pb.h"
 #include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
@@ -137,8 +137,8 @@ static TestStatus FormatFailureMessage(const TestStatus& input) {
 }
 
 bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
-                   absl::string_view write_to_file, absl::string_view msg,
-                   absl::string_view output_dir, std::string* output) {
+                   std::string_view write_to_file, std::string_view msg,
+                   std::string_view output_dir, std::string* output) {
   if (set_to_check.empty()) return true;
 
   absl::StrAppendFormat(output, "\n");
@@ -151,7 +151,7 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 
   if (!write_to_file.empty()) {
     std::string full_filename;
-    absl::string_view filename = write_to_file;
+    std::string_view filename = write_to_file;
     if (!output_dir.empty()) {
       full_filename = std::string(output_dir);
       absl::StrAppend(&full_filename, write_to_file);

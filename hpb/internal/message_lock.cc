@@ -12,7 +12,7 @@
 #include <cstdint>
 
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
@@ -72,7 +72,7 @@ bool GetOrPromoteExtension(const upb_Message* msg,
   return ext_status == kUpb_GetExtension_Ok;
 }
 
-absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
+absl::StatusOr<std::string_view> Serialize(const upb_Message* message,
                                             const upb_MiniTable* mini_table,
                                             upb_Arena* arena, int options) {
   MessageLock msg_lock(message);
@@ -81,7 +81,7 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
   upb_EncodeStatus status =
       upb_Encode(message, mini_table, options, arena, &ptr, &len);
   if (status == kUpb_EncodeStatus_Ok) {
-    return absl::string_view(ptr, len);
+    return std::string_view(ptr, len);
   }
   return MessageEncodeError(status);
 }

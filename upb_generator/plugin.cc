@@ -12,7 +12,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -26,8 +26,8 @@
 namespace upb {
 namespace generator {
 
-absl::string_view ToStringView(upb_StringView str) {
-  return absl::string_view(str.data, str.size);
+std::string_view ToStringView(upb_StringView str) {
+  return std::string_view(str.data, str.size);
 }
 
 void PopulateDefPool(const google::protobuf::FileDescriptor* file, upb::Arena* arena,
@@ -46,7 +46,7 @@ void PopulateDefPool(const google::protobuf::FileDescriptor* file, upb::Arena* a
     upb::Status status;
     upb::FileDefPtr upb_file = pools->AddFile(file_proto, &status);
     if (!upb_file) {
-      absl::string_view name =
+      std::string_view name =
           ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
       ABSL_LOG(FATAL) << "Couldn't add file " << name
                       << " to DefPool: " << status.error_message();

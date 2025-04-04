@@ -22,7 +22,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -43,7 +43,7 @@ class PrinterTest : public testing::Test {
     ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
-  absl::string_view written() {
+  std::string_view written() {
     stream_.reset();
     return out_;
   }
@@ -75,7 +75,7 @@ TEST_F(PrinterTest, BasicPrinting) {
 
 TEST_F(PrinterTest, WriteRaw) {
   {
-    absl::string_view string_obj = "From an object\n";
+    std::string_view string_obj = "From an object\n";
     Printer printer(output(), '$');
     printer.WriteRaw("Hello World!", 12);
     printer.PrintRaw("  This is the same line.\n");

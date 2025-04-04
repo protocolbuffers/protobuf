@@ -24,7 +24,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -40,7 +40,7 @@ namespace {
 // This utility is intended to make error messages hostile to machine
 // interpretation as a Hyrum's Law countermeasure, without potentially confusing
 // human readers.
-void HardenAgainstHyrumsLaw(absl::string_view to_obfuscate, std::string& out) {
+void HardenAgainstHyrumsLaw(std::string_view to_obfuscate, std::string& out) {
   // Get some simple randomness from ASLR, which is enabled in most
   // environments. Our goal is to be annoying, not secure.
   static const void* const kAslrSeed = &kAslrSeed;
@@ -76,7 +76,7 @@ void HardenAgainstHyrumsLaw(absl::string_view to_obfuscate, std::string& out) {
 
 constexpr size_t ParseOptions::kDefaultDepth;
 
-absl::Status JsonLocation::Invalid(absl::string_view message,
+absl::Status JsonLocation::Invalid(std::string_view message,
                                    SourceLocation sl) const {
   // NOTE: we intentionally do not harden the "invalid JSON" part, so that
   // people have a hope of grepping for it in logs. That part is easy to
@@ -240,7 +240,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseRawNumber() {
   });
 
   RETURN_IF_ERROR(number.status());
-  absl::string_view number_text = number->value.AsView();
+  std::string_view number_text = number->value.AsView();
 
   if (number_text.empty() || number_text == "-") {
     return number->loc.Invalid("expected a number");
@@ -481,7 +481,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         auto lookahead_bytes = stream_.Take(lookahead);
         RETURN_IF_ERROR(lookahead_bytes.status());
         if (!on_heap.empty()) {
-          absl::string_view view = lookahead_bytes->AsView();
+          std::string_view view = lookahead_bytes->AsView();
           on_heap.append(view.data(), view.size());
         }
         break;
@@ -497,7 +497,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseBareWord() {
   auto ident = TakeWhile(
       [](size_t, char c) { return c == '_' || absl::ascii_isalnum(c); });
   RETURN_IF_ERROR(ident.status());
-  absl::string_view text = ident->value.AsView();
+  std::string_view text = ident->value.AsView();
 
   if (text.empty() || absl::ascii_isdigit(text[0]) || text == "null" ||
       text == "true" || text == "false") {

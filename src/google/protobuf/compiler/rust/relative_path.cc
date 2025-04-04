@@ -16,14 +16,14 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 
-std::vector<absl::string_view> RelativePath::Segments() const {
+std::vector<std::string_view> RelativePath::Segments() const {
   return absl::StrSplit(this->path_, '/', absl::SkipWhitespace());
 }
 
@@ -34,7 +34,7 @@ bool RelativePath::IsDirectory() const {
 std::string RelativePath::Relative(const RelativePath& dest) const {
   ABSL_CHECK(!dest.IsDirectory())
       << "`dest` has to be a file path, but is a directory.";
-  std::vector<absl::string_view> current_segments = this->Segments();
+  std::vector<std::string_view> current_segments = this->Segments();
 
   if (!current_segments.empty() && !this->IsDirectory()) {
     // `this` represents a file path, skip the last segment to get its
@@ -42,7 +42,7 @@ std::string RelativePath::Relative(const RelativePath& dest) const {
     current_segments.pop_back();
   }
 
-  std::vector<absl::string_view> dest_segments = dest.Segments();
+  std::vector<std::string_view> dest_segments = dest.Segments();
 
   // Find the lowest common ancestor.
   absl::c_reverse(current_segments);
@@ -57,7 +57,7 @@ std::string RelativePath::Relative(const RelativePath& dest) const {
   }
 
   // Construct the relative path in reverse order.
-  std::vector<absl::string_view> result;
+  std::vector<std::string_view> result;
   result.reserve(current_segments.size() + dest_segments.size());
   // Push the segments from the `dest` to the common ancestor.
   for (const auto& segment : dest_segments) {

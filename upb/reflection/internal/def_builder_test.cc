@@ -8,14 +8,14 @@
 #include "upb/reflection/internal/def_builder.h"
 
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb/mem/arena.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 struct IdentTestData {
-  absl::string_view text;
+  std::string_view text;
   bool ok;
 };
 

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
@@ -47,7 +47,7 @@ std::vector<std::string> PathsToText(upb_FieldPathEntry* entry) {
 template <typename T>
 class RequiredFieldsTest : public testing::Test {
  public:
-  void CheckRequired(absl::string_view json,
+  void CheckRequired(std::string_view json,
                      const std::vector<std::string>& missing) {
     upb::Arena arena;
     upb::DefPool defpool;

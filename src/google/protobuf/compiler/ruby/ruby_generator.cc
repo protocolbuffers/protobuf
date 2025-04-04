@@ -17,7 +17,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
@@ -33,12 +33,12 @@ namespace ruby {
 // Forward declarations.
 template <class numeric_type>
 std::string NumberToString(numeric_type value);
-std::string GetRequireName(absl::string_view proto_file);
+std::string GetRequireName(std::string_view proto_file);
 std::string LabelForField(FieldDescriptor* field);
 std::string TypeName(FieldDescriptor* field);
-void GenerateMessageAssignment(absl::string_view prefix,
+void GenerateMessageAssignment(std::string_view prefix,
                                const Descriptor* message, io::Printer* printer);
-void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
+void GenerateEnumAssignment(std::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
 
@@ -49,12 +49,12 @@ std::string NumberToString(numeric_type value) {
   return os.str();
 }
 
-std::string GetRequireName(absl::string_view proto_file) {
+std::string GetRequireName(std::string_view proto_file) {
   size_t lastindex = proto_file.find_last_of('.');
   return absl::StrCat(proto_file.substr(0, lastindex), "_pb");
 }
 
-std::string GetOutputFilename(absl::string_view proto_file) {
+std::string GetOutputFilename(std::string_view proto_file) {
   return absl::StrCat(GetRequireName(proto_file), ".rb");
 }
 
@@ -71,7 +71,7 @@ char UpperChar(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
 // names must be PascalCased.
 //
 //   foo_bar_baz -> FooBarBaz
-std::string PackageToModule(absl::string_view name) {
+std::string PackageToModule(std::string_view name) {
   bool next_upper = true;
   std::string result;
   result.reserve(name.size());
@@ -96,7 +96,7 @@ std::string PackageToModule(absl::string_view name) {
 // since there is nothing enforcing this we need to ensure that they are valid
 // Ruby constants.  That mainly means making sure that the first character is
 // an upper-case letter.
-std::string RubifyConstant(absl::string_view name) {
+std::string RubifyConstant(std::string_view name) {
   std::string ret(name);
   if (!ret.empty()) {
     if (IsLower(ret[0])) {
@@ -115,7 +115,7 @@ std::string RubifyConstant(absl::string_view name) {
   return ret;
 }
 
-void GenerateMessageAssignment(absl::string_view prefix,
+void GenerateMessageAssignment(std::string_view prefix,
                                const Descriptor* message,
                                io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the Ruby extension's native
@@ -141,7 +141,7 @@ void GenerateMessageAssignment(absl::string_view prefix,
   }
 }
 
-void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
+void GenerateEnumAssignment(std::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer) {
   printer->Print("$prefix$$name$ = ", "prefix", prefix, "name",
                  RubifyConstant(en->name()));
@@ -259,7 +259,7 @@ namespace {
 // This is needed because Ruby double-quoted string literals interpolate the
 // contents of the string, and the hashmark character is used in the
 // interpolation syntax. Informed by MRI Ruby's implementation of String#dump.
-std::string RubyEscape(absl::string_view s) {
+std::string RubyEscape(std::string_view s) {
   std::string c_escaped = absl::CHexEscape(s);
   std::string result;
   result.reserve(c_escaped.length());

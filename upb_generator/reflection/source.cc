@@ -12,7 +12,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/io/printer.h"
@@ -62,10 +62,10 @@ void WriteDefPoolFwdDecls(upb::FileDefPtr file, Context& ctx) {
   ctx.Emit("\n");
 }
 
-void WriteStringArrayLine(absl::string_view data, Context& ctx) {
+void WriteStringArrayLine(std::string_view data, Context& ctx) {
   std::string line = absl::StrJoin(data, ", ", [](std::string* out, char ch) {
     absl::StrAppendFormat(out, "'%v'",
-                          absl::CEscape(absl::string_view(&ch, 1)));
+                          absl::CEscape(std::string_view(&ch, 1)));
   });
   ctx.Emit({{"line", line}},
            R"cc(
@@ -73,7 +73,7 @@ void WriteStringArrayLine(absl::string_view data, Context& ctx) {
            )cc");
 }
 
-void WriteStringArray(absl::string_view data, Context& ctx) {
+void WriteStringArray(std::string_view data, Context& ctx) {
   const size_t kMaxLineLength = 12;
   for (size_t i = 0; i < data.size(); i += kMaxLineLength) {
     WriteStringArrayLine(data.substr(i, kMaxLineLength), ctx);
@@ -87,7 +87,7 @@ void WriteDescriptor(upb::FileDefPtr file, Context& ctx) {
   size_t serialized_size;
   const char* serialized = google_protobuf_FileDescriptorProto_serialize(
       file_proto, arena.ptr(), &serialized_size);
-  absl::string_view file_data(serialized, serialized_size);
+  std::string_view file_data(serialized, serialized_size);
 
   ctx.Emit({{"serialized_size", file_data.size()},
             {"contents", [&] { WriteStringArray(file_data, ctx); }}},

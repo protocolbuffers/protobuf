@@ -1,17 +1,16 @@
 #include "utf8_validity.h"
 
 #include <gtest/gtest.h>
-#include "absl/strings/string_view.h"
 
 namespace utf8_range {
 
 TEST(Utf8Validity, SpanStructurallyValid) {
   // Test simple good strings
   EXPECT_EQ(4, SpanStructurallyValid("abcd"));
-  EXPECT_EQ(4, SpanStructurallyValid(absl::string_view("a\0cd", 4)));  // NULL
-  EXPECT_EQ(4, SpanStructurallyValid("ab\xc2\x81"));                   // 2-byte
-  EXPECT_EQ(4, SpanStructurallyValid("a\xe2\x81\x81"));                // 3-byte
-  EXPECT_EQ(4, SpanStructurallyValid("\xf2\x81\x81\x81"));             // 4
+  EXPECT_EQ(4, SpanStructurallyValid(std::string_view("a\0cd", 4)));  // NULL
+  EXPECT_EQ(4, SpanStructurallyValid("ab\xc2\x81"));                  // 2-byte
+  EXPECT_EQ(4, SpanStructurallyValid("a\xe2\x81\x81"));               // 3-byte
+  EXPECT_EQ(4, SpanStructurallyValid("\xf2\x81\x81\x81"));            // 4
 
   // Test simple bad strings
   EXPECT_EQ(3, SpanStructurallyValid("abc\x80"));           // bad char
@@ -42,10 +41,10 @@ TEST(Utf8Validity, SpanStructurallyValid) {
 TEST(Utf8Validity, IsStructurallyValid) {
   // Test simple good strings
   EXPECT_TRUE(IsStructurallyValid("abcd"));
-  EXPECT_TRUE(IsStructurallyValid(absl::string_view("a\0cd", 4)));  // NULL
-  EXPECT_TRUE(IsStructurallyValid("ab\xc2\x81"));                   // 2-byte
-  EXPECT_TRUE(IsStructurallyValid("a\xe2\x81\x81"));                // 3-byte
-  EXPECT_TRUE(IsStructurallyValid("\xf2\x81\x81\x81"));             // 4
+  EXPECT_TRUE(IsStructurallyValid(std::string_view("a\0cd", 4)));  // NULL
+  EXPECT_TRUE(IsStructurallyValid("ab\xc2\x81"));                  // 2-byte
+  EXPECT_TRUE(IsStructurallyValid("a\xe2\x81\x81"));               // 3-byte
+  EXPECT_TRUE(IsStructurallyValid("\xf2\x81\x81\x81"));            // 4
 
   // Test simple bad strings
   EXPECT_FALSE(IsStructurallyValid("abc\x80"));           // bad char

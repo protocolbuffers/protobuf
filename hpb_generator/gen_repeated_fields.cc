@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_accessors.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
@@ -29,8 +29,8 @@ namespace protobuf = ::proto2;
 
 // Adds using accessors to reuse base Access class members from a Proxy/CProxy.
 void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
-                                      absl::string_view class_name,
-                                      absl::string_view resolved_field_name,
+                                      std::string_view class_name,
+                                      std::string_view resolved_field_name,
                                       Context& ctx, bool read_only) {
   if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     ctx.EmitLegacy(
@@ -70,8 +70,8 @@ void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
 
 void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
                                         const protobuf::FieldDescriptor* field,
-                                        absl::string_view resolved_field_name,
-                                        absl::string_view resolved_upbc_name,
+                                        std::string_view resolved_field_name,
+                                        std::string_view resolved_upbc_name,
                                         Context& ctx) {
   ctx.EmitLegacy(
       R"cc(
@@ -132,11 +132,11 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
 
 void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
                                   const protobuf::FieldDescriptor* field,
-                                  const absl::string_view resolved_field_name,
-                                  const absl::string_view class_name,
+                                  const std::string_view resolved_field_name,
+                                  const std::string_view class_name,
                                   Context& ctx) {
   const char arena_expression[] = "arena_";
-  absl::string_view upbc_name = field->name();
+  std::string_view upbc_name = field->name();
   ctx.EmitLegacy(
       R"cc(
         $1 $0::$2(size_t index) const {
@@ -215,10 +215,10 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
 
 void WriteRepeatedStringAccessor(const protobuf::Descriptor* desc,
                                  const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
+                                 const std::string_view resolved_field_name,
+                                 const std::string_view class_name,
                                  Context& ctx) {
-  absl::string_view upbc_name = field->name();
+  std::string_view upbc_name = field->name();
   ctx.EmitLegacy(
       R"cc(
         $1 $0::$2(size_t index) const {
@@ -284,10 +284,10 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* desc,
 
 void WriteRepeatedScalarAccessor(const protobuf::Descriptor* desc,
                                  const protobuf::FieldDescriptor* field,
-                                 const absl::string_view resolved_field_name,
-                                 const absl::string_view class_name,
+                                 const std::string_view resolved_field_name,
+                                 const std::string_view class_name,
                                  Context& ctx) {
-  absl::string_view upbc_name = field->name();
+  std::string_view upbc_name = field->name();
   ctx.EmitLegacy(
       R"cc(
         $1 $0::$2(size_t index) const {

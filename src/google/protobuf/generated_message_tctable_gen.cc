@@ -17,7 +17,7 @@
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
@@ -394,7 +394,7 @@ std::vector<uint8_t> GenerateFieldNames(
       // We only need field names for reporting UTF-8 parsing errors, so we only
       // emit them for string fields with Utf8 transform specified.
       if (entry.utf8_check_mode != cpp::Utf8CheckMode::kNone) {
-        with_name(absl::string_view(entry.field->name()));
+        with_name(std::string_view(entry.field->name()));
       } else {
         no_name();
       }
@@ -409,7 +409,7 @@ std::vector<uint8_t> GenerateFieldNames(
     return {};
   }
 
-  const absl::string_view message_name = descriptor->full_name();
+  const std::string_view message_name = descriptor->full_name();
   uint8_t message_name_size =
       static_cast<uint8_t>(std::min(message_name.size(), kMaxNameLength));
   size_t total_byte_size =
@@ -436,7 +436,7 @@ std::vector<uint8_t> GenerateFieldNames(
   // align to an 8-byte boundary
   out_it += -count & 7;
 
-  const auto append = [&](absl::string_view str) {
+  const auto append = [&](std::string_view str) {
     if (!str.empty()) {
       memcpy(out_it, str.data(), str.size());
       out_it += str.size();

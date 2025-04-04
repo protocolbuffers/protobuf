@@ -23,7 +23,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -86,7 +86,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true, "OrBuilder");
 
-  absl::flat_hash_map<absl::string_view, std::string> variables = {
+  absl::flat_hash_map<std::string_view, std::string> variables = {
       {"{", ""},
       {"}", ""},
       {"deprecation",
@@ -143,7 +143,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  absl::flat_hash_map<absl::string_view, std::string> variables = {{"{", ""},
+  absl::flat_hash_map<std::string_view, std::string> variables = {{"{", ""},
                                                                    {"}", ""}};
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = std::string(descriptor_->name());
@@ -213,7 +213,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars = {{"{", ""},
+  absl::flat_hash_map<std::string_view, std::string> vars = {{"{", ""},
                                                               {"}", ""}};
   for (auto& kv : oneofs_) {
     const OneofDescriptor* oneof = kv.second;

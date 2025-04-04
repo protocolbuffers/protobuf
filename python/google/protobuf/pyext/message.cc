@@ -32,7 +32,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
@@ -343,7 +343,7 @@ static PyObject* GetClassAttribute(CMessageClass* self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      absl::EndsWith(absl::string_view(attr, attr_size), kSuffix)) {
+      absl::EndsWith(std::string_view(attr, attr_size), kSuffix)) {
     std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
@@ -679,7 +679,7 @@ bool CheckAndSetString(PyObject* arg, Message* message,
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const absl::string_view value) {
+                         const std::string_view value) {
   if (descriptor->type() != FieldDescriptor::TYPE_STRING) {
     return PyBytes_FromStringAndSize(value.data(), value.length());
   }
@@ -840,7 +840,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       return nullptr;
     }
     const EnumValueDescriptor* enum_value_descriptor =
-        enum_descriptor->FindValueByName(absl::string_view(enum_label, size));
+        enum_descriptor->FindValueByName(std::string_view(enum_label, size));
     if (enum_value_descriptor == nullptr) {
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return nullptr;
@@ -1324,7 +1324,7 @@ int HasFieldByDescriptor(CMessage* self,
 }
 
 const FieldDescriptor* FindFieldWithOneofs(const Message* message,
-                                           absl::string_view field_name,
+                                           std::string_view field_name,
                                            bool* in_oneof) {
   *in_oneof = false;
   const Descriptor* descriptor = message->GetDescriptor();
@@ -1379,7 +1379,7 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
 
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      message, absl::string_view(field_name, size), &is_in_oneof);
+      message, std::string_view(field_name, size), &is_in_oneof);
   if (field_descriptor == nullptr) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
@@ -1563,7 +1563,7 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      self->message, absl::string_view(field_name, field_size), &is_in_oneof);
+      self->message, std::string_view(field_name, field_size), &is_in_oneof);
   if (field_descriptor == nullptr) {
     if (is_in_oneof) {
       // We gave the name of a oneof, and none of its fields are set.
@@ -1886,7 +1886,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   const char* ptr;
   internal::ParseContext ctx(
       depth, false, &ptr,
-      absl::string_view(static_cast<const char*>(data.buf), data.len));
+      std::string_view(static_cast<const char*>(data.buf), data.len));
   PyBuffer_Release(&data);
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
@@ -1953,7 +1953,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (PyString_AsStringAndSize(arg, &name_data, &name_size) < 0) return nullptr;
   const OneofDescriptor* oneof_desc =
       self->message->GetDescriptor()->FindOneofByName(
-          absl::string_view(name_data, name_size));
+          std::string_view(name_data, name_size));
   if (oneof_desc == nullptr) {
     PyErr_Format(PyExc_ValueError,
                  "Protocol message has no oneof \"%s\" field.", name_data);
@@ -1965,7 +1965,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (field_in_oneof == nullptr) {
     Py_RETURN_NONE;
   } else {
-    const absl::string_view name = field_in_oneof->name();
+    const std::string_view name = field_in_oneof->name();
     return PyUnicode_FromStringAndSize(name.data(), name.size());
   }
 }

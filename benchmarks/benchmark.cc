@@ -212,7 +212,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     protobuf::Arena arena;
     protobuf::DescriptorPool pool;
     for (auto file : serialized_files) {
-      absl::string_view input(file.data, file.size);
+      std::string_view input(file.data, file.size);
       auto proto =
           protobuf::Arena::Create<protobuf::FileDescriptorProto>(&arena);
       bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
@@ -327,7 +327,7 @@ void BM_Parse_Proto2(benchmark::State& state) {
   for (auto _ : state) {
     Proto2Factory<AMode, P> proto_factory;
     auto proto = proto_factory.GetProto();
-    absl::string_view input(descriptor.data, descriptor.size);
+    std::string_view input(descriptor.data, descriptor.size);
     bool ok = proto->template ParseFrom<kParseFlags>(input);
     if (!ok) {
       printf("Failed to parse.\n");
@@ -381,14 +381,14 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
 }
 BENCHMARK(BM_SerializeDescriptor_Upb);
 
-static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
+static std::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
                                        const upb_MessageDef* md,
                                        upb_Arena* arena) {
   size_t size =
       upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, nullptr, 0, nullptr);
   char* buf = reinterpret_cast<char*>(upb_Arena_Malloc(arena, size + 1));
   upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, buf, size, nullptr);
-  return absl::string_view(buf, size);
+  return std::string_view(buf, size);
 }
 
 static void BM_JsonParse_Upb(benchmark::State& state) {
@@ -420,7 +420,7 @@ BENCHMARK(BM_JsonParse_Upb);
 
 static void BM_JsonParse_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
-  absl::string_view input(descriptor.data, descriptor.size);
+  std::string_view input(descriptor.data, descriptor.size);
   proto.ParseFromString(input);
   std::string json;
   ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
@@ -459,7 +459,7 @@ BENCHMARK(BM_JsonSerialize_Upb);
 
 static void BM_JsonSerialize_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
-  absl::string_view input(descriptor.data, descriptor.size);
+  std::string_view input(descriptor.data, descriptor.size);
   proto.ParseFromString(input);
   std::string json;
   for (auto _ : state) {

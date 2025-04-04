@@ -8,7 +8,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
-#include "absl/strings/string_view.h"
+#include <string_view>
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/default_value.h"
@@ -249,7 +249,7 @@ void SingularCord::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
         }
         ::google::protobuf::rust::PtrAndLen $borrowed_getter_thunk$($QualifiedMsg$* msg) {
           const absl::Cord& cord = msg->$field$();
-          absl::string_view s = cord.TryFlat().value();
+          std::string_view s = cord.TryFlat().value();
           return ::google::protobuf::rust::PtrAndLen{s.data(), s.size()};
         }
         std::string* $owned_getter_thunk$($QualifiedMsg$* msg) {
