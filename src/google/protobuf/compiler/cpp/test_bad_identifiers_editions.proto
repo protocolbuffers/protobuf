@@ -12,6 +12,8 @@
 
 edition = "2023";
 
+import "google/protobuf/cpp_features.proto";
+
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
 package edition_unittest;
@@ -22,24 +24,24 @@ option features.utf8_validation = NONE;
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
-option cc_generic_services = true; // auto-added
+option cc_generic_services = true;  // auto-added
 
 // Test that fields can have names like "input" and "i" which are also used
 // internally by the code generator for local variables.
 message TestConflictingSymbolNames {
-  message BuildDescriptors {
-  }
+  message BuildDescriptors {}
 
-  message TypeTraits {
-  }
+  message TypeTraits {}
+
+  // Use common namespaces to make sure we are properly qualifying
+  message std {}
+  message absl {}
 
   int32 input = 1;
   int32 output = 2;
   string length = 3;
   repeated int32 i = 4;
-  repeated string new_element = 5 [
-    ctype = STRING_PIECE
-  ];
+  repeated string new_element = 5 [ctype = STRING_PIECE];
 
   int32 total_size = 6;
   int32 tag = 7;
@@ -65,15 +67,11 @@ message TestConflictingSymbolNames {
   }
 
   message Data5 {
-    repeated string data = 1 [
-      ctype = STRING_PIECE
-    ];
+    repeated string data = 1 [ctype = STRING_PIECE];
   }
 
   message Data6 {
-    repeated string data = 1 [
-      ctype = CORD
-    ];
+    repeated string data = 1 [ctype = CORD];
   }
 
   int32 source = 8;
@@ -117,19 +115,15 @@ message TestConflictingSymbolNames {
   uint32 offsets = 26;
   uint32 reflection = 27;
 
-  message Cord {
-  }
+  message Cord {}
 
-  string some_cord = 28 [
-    ctype = CORD
-  ];
+  string some_cord = 28 [ctype = CORD];
 
-  message StringPiece {
-  }
+  message StringPiece {}
 
-  string some_string_piece = 29 [
-    ctype = STRING_PIECE
-  ];
+  string some_string_piece = 29 [ctype = STRING_PIECE];
+
+  string some_view = 57 [features.(pb.cpp).string_type = VIEW];
 
   // Some keywords.
   uint32 int = 30;
@@ -154,35 +148,25 @@ message TestConflictingSymbolNames {
   }
 
   message BadKnownNamesTypes {
-    message GetDescriptor {
-    }
+    message GetDescriptor {}
 
-    message GetReflection {
-    }
+    message GetReflection {}
 
-    message Swap {
-    }
+    message Swap {}
 
-    message UnsafeArenaSwap {
-    }
+    message UnsafeArenaSwap {}
 
-    message New {
-    }
+    message New {}
 
-    message CopyFrom {
-    }
+    message CopyFrom {}
 
-    message MergeFrom {
-    }
+    message MergeFrom {}
 
-    message GetMetadata {
-    }
+    message GetMetadata {}
 
-    message Clear {
-    }
+    message Clear {}
 
-    message IsInitialized {
-    }
+    message IsInitialized {}
   }
 
   message BadKnownNamesValues {
@@ -198,8 +182,7 @@ message TestConflictingSymbolNames {
   }
 
   // The generator used to #define a macro called "DO" inside the .cc file.
-  message DO {
-  }
+  message DO {}
 
   DO do = 32;
 
@@ -228,35 +211,25 @@ message TestConflictingSymbolNames {
 }
 
 // Special names as above, but at file scope.
-message GetDescriptor {
-}
+message GetDescriptor {}
 
-message GetReflection {
-}
+message GetReflection {}
 
-message Swap {
-}
+message Swap {}
 
-message UnsafeArenaSwap {
-}
+message UnsafeArenaSwap {}
 
-message New {
-}
+message New {}
 
-message CopyFrom {
-}
+message CopyFrom {}
 
-message MergeFrom {
-}
+message MergeFrom {}
 
-message GetMetadata {
-}
+message GetMetadata {}
 
-message Clear {
-}
+message Clear {}
 
-message IsInitialized {
-}
+message IsInitialized {}
 
 extend TestConflictingSymbolNames.BadKnownNamesValues {
   int32 unknown_fields = 11;
@@ -268,9 +241,8 @@ extend TestConflictingSymbolNames.BadKnownNamesValues {
 
 message TestConflictingSymbolNamesExtension {
   extend TestConflictingSymbolNames {
-    repeated int32 repeated_int32_ext = 20423638 [
-      features.repeated_field_encoding = PACKED
-    ];
+    repeated int32 repeated_int32_ext = 20423638
+        [features.repeated_field_encoding = PACKED];
   }
 }
 
@@ -284,7 +256,8 @@ message TestConflictingEnumNames {
     XOR = 5;
   }
 
-  while conflicting_enum = 1;
+  while
+    conflicting_enum = 1;
 }
 
 enum bool {
@@ -294,8 +267,7 @@ enum bool {
   return = 3;
 }
 
-message DummyMessage {
-}
+message DummyMessage {}
 
 message NULL {
   int32 int = 1;
@@ -306,11 +278,9 @@ extend TestConflictingSymbolNames {
 }
 
 // Message names that could conflict.
-message Shutdown {
-}
+message Shutdown {}
 
-message TableStruct {
-}
+message TableStruct {}
 
 service TestConflictingMethodNames {
   rpc Closure(DummyMessage) returns (DummyMessage);
