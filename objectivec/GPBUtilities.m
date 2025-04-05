@@ -1522,6 +1522,10 @@ static void AppendStringEscaped(NSString *toPrint, NSMutableString *destStr) {
 
 static void AppendBufferAsString(NSData *buffer, NSMutableString *destStr) {
   const char *src = (const char *)[buffer bytes];
+  if (src == nil) {
+    [destStr appendString:@"\"\""];
+    return;
+  }
   size_t srcLen = [buffer length];
   [destStr appendString:@"\""];
   for (const char *srcEnd = src + srcLen; src < srcEnd; src++) {
