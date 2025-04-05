@@ -75,7 +75,8 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-          field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
+          not field.is_required and
+          not field.is_repeated)
 
 _edition_defaults_lock = threading.Lock()
 
