@@ -4327,7 +4327,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
         if (field->is_repeated()) {
           generator.GenerateMergingCode(p);
-        } else if (field->is_optional() && !HasHasbit(field)) {
+        } else if (!field->is_required() && !field->is_repeated() &&
+                   !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           MayEmitMutableIfNonDefaultCheck(
@@ -4608,7 +4609,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
             $body$;
           }
         )cc");
-  } else if (field->is_optional()) {
+  } else if (!field->is_required() && !field->is_repeated()) {
     MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
   } else {
@@ -5121,7 +5122,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
-        return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
+        return a->is_required() == b->is_required() &&
+               a->is_repeated() == b->is_repeated() &&
+               HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });

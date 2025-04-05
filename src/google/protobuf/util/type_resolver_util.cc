@@ -219,16 +219,12 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
                             const FieldDescriptor& descriptor,
                             const FieldDescriptorProto& proto, Field* field) {
   field->set_kind(static_cast<Field::Kind>(descriptor.type()));
-  switch (descriptor.label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      field->set_cardinality(Field::CARDINALITY_OPTIONAL);
-      break;
-    case FieldDescriptor::LABEL_REPEATED:
-      field->set_cardinality(Field::CARDINALITY_REPEATED);
-      break;
-    case FieldDescriptor::LABEL_REQUIRED:
-      field->set_cardinality(Field::CARDINALITY_REQUIRED);
-      break;
+  if (descriptor.is_required()) {
+    field->set_cardinality(Field::CARDINALITY_REQUIRED);
+  } else if (descriptor.is_repeated()) {
+    field->set_cardinality(Field::CARDINALITY_REPEATED);
+  } else {
+    field->set_cardinality(Field::CARDINALITY_OPTIONAL);
   }
   field->set_number(descriptor.number());
   field->set_name(descriptor.name());

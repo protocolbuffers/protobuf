@@ -2523,7 +2523,8 @@ const FieldDescriptor* DescriptorPool::FindExtensionByPrintableName(
         const FieldDescriptor* extension = type->extension(i);
         if (extension->containing_type() == extendee &&
             extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-            extension->is_optional() && extension->message_type() == type) {
+            !extension->is_required() && !extension->is_repeated() &&
+            extension->message_type() == type) {
           // Found it.
           return extension;
         }
@@ -3107,7 +3108,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
         absl::implicit_cast<int>(LABEL_OPTIONAL)));
   } else {
     proto->set_label(static_cast<FieldDescriptorProto::Label>(
-        absl::implicit_cast<int>(label())));
+        absl::implicit_cast<int>(static_cast<Label>(label_))));
   }
   if (type() == TYPE_GROUP && !IsLegacyEdition(file()->edition())) {
     // Editions files have no group keyword, and we only set this label
@@ -3723,15 +3724,16 @@ void FieldDescriptor::DebugString(
     field_type = FieldTypeNameDebugString();
   }
 
-  std::string label = absl::StrCat(kLabelToName[this->label()], " ");
+  std::string label =
+      absl::StrCat(kLabelToName[static_cast<Label>(label_)], " ");
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
-      (is_optional() && !has_optional_keyword())) {
+      (!is_required() && !is_repeated() && !has_optional_keyword())) {
     label.clear();
   }
   // Label is omitted for optional and required fields under editions.
-  if ((is_optional() || is_required()) && !IsLegacyEdition(file()->edition())) {
+  if (!is_repeated() && !IsLegacyEdition(file()->edition())) {
     label.clear();
   }
 
@@ -4049,8 +4051,9 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
 }
 
 bool FieldDescriptor::has_optional_keyword() const {
-  return proto3_optional_ || (file()->edition() == Edition::EDITION_PROTO2 &&
-                              is_optional() && !containing_oneof());
+  return proto3_optional_ ||
+         (file()->edition() == Edition::EDITION_PROTO2 && !is_required() &&
+          !is_repeated() && !containing_oneof());
 }
 
 FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
@@ -6737,7 +6740,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->label_ = proto.label();
   result->is_repeated_ = result->label_ == FieldDescriptor::LABEL_REPEATED;
 
-  if (result->label() == FieldDescriptor::LABEL_REQUIRED) {
+  if (result->label_ == FieldDescriptor::LABEL_REQUIRED) {
     // An extension cannot have a required field (b/13365836).
     if (result->is_extension_) {
       AddError(result->full_name(), proto,
@@ -7574,7 +7577,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
   }
 
   if (field->containing_oneof() != nullptr) {
-    if (field->label() != FieldDescriptor::LABEL_OPTIONAL) {
+    if (field->label_ != FieldDescriptor::LABEL_OPTIONAL) {
       // Note that this error will never happen when parsing .proto files.
       // It can only happen if you manually construct a FileDescriptorProto
       // that is incorrect.
@@ -8137,7 +8140,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
           &MessageOptions::default_instance() &&
       field->containing_type()->options().message_set_wire_format()) {
     if (field->is_extension()) {
-      if (!field->is_optional() ||
+      if ((field->is_required() || field->is_repeated()) ||
           field->type() != FieldDescriptor::TYPE_MESSAGE) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
@@ -8598,7 +8601,7 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
   if (  // Must not contain extensions, extension range or nested message or
         // enums
       message->extension_count() != 0 ||
-      field->label() != FieldDescriptor::LABEL_REPEATED ||
+      field->label_ != FieldDescriptor::LABEL_REPEATED ||
       message->extension_range_count() != 0 ||
       message->nested_type_count() != 0 || message->enum_type_count() != 0 ||
       // Must contain exactly two fields
@@ -8613,11 +8616,11 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
 
   const FieldDescriptor* key = message->map_key();
   const FieldDescriptor* value = message->map_value();
-  if (key->label() != FieldDescriptor::LABEL_OPTIONAL || key->number() != 1 ||
+  if (key->label_ != FieldDescriptor::LABEL_OPTIONAL || key->number() != 1 ||
       key->name() != "key") {
     return false;
   }
-  if (value->label() != FieldDescriptor::LABEL_OPTIONAL ||
+  if (value->label_ != FieldDescriptor::LABEL_OPTIONAL ||
       value->number() != 2 || value->name() != "value") {
     return false;
   }
@@ -9772,7 +9775,7 @@ class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
         const FieldDescriptor* extension = foreign_type->extension(i);
         if (extension->containing_type() == descriptor &&
             extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-            extension->is_optional() &&
+            extension->label_ == FieldDescriptor::LABEL_OPTIONAL &&
             extension->message_type() == foreign_type) {
           // Found it.
           return extension;
@@ -10055,8 +10058,8 @@ absl::string_view FieldDescriptor::PrintableNameForExtension() const {
   const bool is_message_set_extension =
       is_extension() &&
       containing_type()->options().message_set_wire_format() &&
-      type() == FieldDescriptor::TYPE_MESSAGE && is_optional() &&
-      extension_scope() == message_type();
+      type() == FieldDescriptor::TYPE_MESSAGE && !is_required() &&
+      !is_repeated() && extension_scope() == message_type();
   return is_message_set_extension ? message_type()->full_name() : full_name();
 }
 

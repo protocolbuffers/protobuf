@@ -2897,7 +2897,13 @@ inline const Descriptor* FieldDescriptor::extension_scope() const {
 }
 
 inline FieldDescriptor::Label FieldDescriptor::label() const {
-  return static_cast<Label>(label_);
+  if (is_required()) {
+    return LABEL_REQUIRED;
+  } else if (is_repeated()) {
+    return LABEL_REPEATED;
+  } else {
+    return LABEL_OPTIONAL;
+  }
 }
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {
@@ -2905,11 +2911,11 @@ inline FieldDescriptor::Type FieldDescriptor::type() const {
 }
 
 inline bool FieldDescriptor::is_optional() const {
-  return label() == LABEL_OPTIONAL;
+  return static_cast<Label>(label_) == LABEL_OPTIONAL;
 }
 
 inline bool FieldDescriptor::is_repeated() const {
-  ABSL_DCHECK_EQ(is_repeated_, label() == LABEL_REPEATED);
+  ABSL_DCHECK_EQ(is_repeated_, static_cast<Label>(label_) == LABEL_REPEATED);
   return is_repeated_;
 }
 

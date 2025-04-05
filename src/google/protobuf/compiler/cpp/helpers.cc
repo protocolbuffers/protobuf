@@ -1180,7 +1180,7 @@ const FieldDescriptor* FindHottestField(
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (descriptor->field(i)->label() == FieldDescriptor::LABEL_REPEATED) {
+    if (descriptor->field(i)->is_repeated()) {
       return true;
     }
   }
