@@ -334,6 +334,53 @@ TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
   EXPECT_EQ(str.Get(), input);
 }
 
+TEST(MicroStringTest, PoisonsTheUnusedCapacity) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning is not enabled.";
+  }
+
+  MicroString str;
+
+  std::string buf(500, 'x');
+
+  const auto check = [&](size_t size) {
+    SCOPED_TRACE(size);
+    if (size != 0) {
+      EXPECT_FALSE(internal::IsMemoryPoisoned(str.Get().data() + size - 1));
+    }
+    EXPECT_TRUE(internal::IsMemoryPoisoned(str.Get().data() + size));
+  };
+  const auto set = [&](size_t size) {
+    str.Set(absl::string_view(buf).substr(0, size), nullptr);
+    check(size);
+  };
+
+  set(10);
+  // grow a bit on the existing buffer
+  set(11);
+  // shrink a bit
+  set(5);
+  // clear
+  str.Clear();
+  check(0);
+  // and grow again
+  set(6);
+
+  // Now grow to large rep
+  set(301);
+  // and grow more
+  set(302);
+  // and shrink
+  set(250);
+  // clear
+  str.Clear();
+  check(0);
+  // and grow again
+  set(275);
+
+  str.Destroy();
+}
+
 TEST_P(MicroStringPrevTest, SetNullView) {
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();

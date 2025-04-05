@@ -77,6 +77,24 @@ class PROTOBUF_EXPORT MicroString {
       ABSL_DCHECK_GE(capacity, kOwned);
       return reinterpret_cast<char*>(this + 1);
     }
+
+    void SetExternalBuffer(absl::string_view buffer) {
+      payload = const_cast<char*>(buffer.data());
+      size = buffer.size();
+    }
+
+    void SetInitialSize(size_t size) {
+      PoisonMemoryRegion(owned_head() + size, capacity - size);
+      this->size = size;
+    }
+
+    void Unpoison() { UnpoisonMemoryRegion(owned_head(), capacity); }
+
+    void ChangeSize(size_t new_size) {
+      PoisonMemoryRegion(owned_head() + new_size, capacity - new_size);
+      UnpoisonMemoryRegion(owned_head(), new_size);
+      size = new_size;
+    }
   };
 
  public:
@@ -241,10 +259,7 @@ class PROTOBUF_EXPORT MicroString {
 
   struct StringRep : LargeRep {
     std::string str;
-    void ResetBase() {
-      payload = str.data();
-      size = str.size();
-    }
+    void ResetBase() { SetExternalBuffer(str); }
   };
 
   static_assert(alignof(void*) >= 4, "We need two tag bits from pointers.");
@@ -279,9 +294,23 @@ class PROTOBUF_EXPORT MicroString {
   struct MicroRep {
     uint8_t size;
     uint8_t capacity;
+
     char* data() { return reinterpret_cast<char*>(this + 1); }
     const char* data() const { return reinterpret_cast<const char*>(this + 1); }
     absl::string_view view() const { return {data(), size}; }
+
+    void SetInitialSize(uint8_t size) {
+      PoisonMemoryRegion(data() + size, capacity - size);
+      this->size = size;
+    }
+
+    void Unpoison() { UnpoisonMemoryRegion(data(), capacity); }
+
+    void ChangeSize(uint8_t new_size) {
+      PoisonMemoryRegion(data() + new_size, capacity - new_size);
+      UnpoisonMemoryRegion(data(), new_size);
+      size = new_size;
+    }
   };
   // Micro-optimization: by using kIsMicroRepTag as 2, the MicroRep `rep_`
   // pointer (with the tag) is already pointing into the data buffer.
@@ -410,13 +439,13 @@ class PROTOBUF_EXPORT MicroString {
 
   void DestroySlow();
 
-  // Allocate the corresponding rep, and sets its capacity.
+  // Allocate the corresponding rep, and sets its size and capacity.
   // The actual capacity might be larger than the requested one.
-  // The size and data bytes are uninitialized.
+  // The data bytes are uninitialized.
   // rep_ is updated to point to the new rep without any cleanup of the old
   // value.
-  MicroRep* AllocateMicroRep(size_t capacity, Arena* arena);
-  LargeRep* AllocateOwnedRep(size_t capacity, Arena* arena);
+  MicroRep* AllocateMicroRep(size_t size, Arena* arena);
+  LargeRep* AllocateOwnedRep(size_t size, Arena* arena);
   StringRep* AllocateStringRep(Arena* arena);
 
   void* rep_;
@@ -442,12 +471,12 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
 
   const auto do_micro = [&](MicroRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
-    r->size = invoke_setter(r->data());
+    r->ChangeSize(invoke_setter(r->data()));
   };
 
   const auto do_owned = [&](LargeRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
-    r->size = invoke_setter(r->owned_head());
+    r->ChangeSize(invoke_setter(r->owned_head()));
   };
 
   const auto do_string = [&](StringRep* r) {
