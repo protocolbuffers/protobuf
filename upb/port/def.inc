@@ -397,33 +397,27 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__SANITIZE_THREAD__) || UPB_CLANG_TSAN
-#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published;
-#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
-#define UPB_TSAN_PUBLISH 1
-#define UPB_TSAN_CHECK_READ(member) \
-  __asm__ volatile("" ::"r"(*(char *)&(member)))
-#define UPB_TSAN_CHECK_WRITE(member)                                   \
-  do {                                                                 \
-    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
-    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
-    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
-    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
-  } while (false)
+#define UPB_TSAN_SYNTHETIC_MEMBER \
+  uintptr_t UPB_PRIVATE(upb_tsan_synthetic_member);
+#define UPB_TSAN_INIT(ptr) \
+  (ptr)->UPB_PRIVATE(upb_tsan_synthetic_member) = 0x5AFE
+#define UPB_TSAN_ACCESS_READONLY(ptr)                                     \
+  do {                                                                    \
+    volatile uintptr_t v = (ptr)->UPB_PRIVATE(upb_tsan_synthetic_member); \
+    UPB_UNUSED(v);                                                        \
+  } while (0)
+#define UPB_TSAN_ACCESS_READWRITE(ptr) \
+  UPB_TSAN_ACCESS_READONLY(ptr);       \
+  UPB_TSAN_INIT(ptr)
+#define UPB_TSAN_PUBLISH 2
+#define UPB_TSAN 1
 #else
-#define UPB_TSAN_PUBLISHED_MEMBER
-#define UPB_TSAN_INIT_PUBLISHED(ptr)
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  do {                                \
-  } while (false && (ptr))
+#define UPB_TSAN_SYNTHETIC_MEMBER
+#define UPB_TSAN_INIT(ptr) UPB_UNUSED(ptr)
+#define UPB_TSAN_ACCESS_READONLY(ptr) UPB_UNUSED(ptr)
+#define UPB_TSAN_ACCESS_READWRITE(ptr) UPB_UNUSED(ptr)
 #define UPB_TSAN_PUBLISH 0
-#define UPB_TSAN_CHECK_READ(member) \
-  do {                              \
-  } while (false && (member))
-#define UPB_TSAN_CHECK_WRITE(member) \
-  do {                               \
-  } while (false && (member))
+#define UPB_TSAN 0
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
