@@ -30,6 +30,7 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -37,6 +38,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -49,6 +51,7 @@
 #include "google/protobuf/compiler/cpp/tracker.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1695,6 +1698,13 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
   ABSL_DCHECK(!need_to_emit_cached_size);
 }
 
+namespace {
+bool ShouldGenerateLanguageFeatureDefaults(absl::string_view filename,
+                                           bool opensource_runtime) {
+  return filename == "google/protobuf/compiler/java/java_features.proto";
+}
+}  // namespace
+
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
@@ -2157,6 +2167,38 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   R"cc(
                     friend struct $split_default$;
                   )cc");
+        }},
+       {"feature_default_constant",
+        [&] {
+          if (ShouldGenerateLanguageFeatureDefaults(
+                  descriptor_->file()->name(), options_.opensource_runtime) &&
+              !descriptor_->containing_type()) {
+            auto pool = descriptor_->file()->pool();
+            const Descriptor* feature_set =
+                pool->FindMessageTypeByName("google.protobuf.FeatureSet");
+            std::vector<const FieldDescriptor*> extensions;
+            pool->FindAllExtensions(feature_set, &extensions);
+            absl::string_view extension_type_name = descriptor_->full_name();
+            extensions.erase(
+                std::remove_if(
+                    extensions.begin(), extensions.end(),
+                    [extension_type_name](const FieldDescriptor* extension) {
+                      return extension->message_type()->full_name() !=
+                             extension_type_name;
+                    }),
+                extensions.end());
+            absl::StatusOr<FeatureSetDefaults> defaults =
+                FeatureResolver::CompileDefaults(feature_set, extensions,
+                                                 ProtocMinimumEdition(),
+                                                 MaximumKnownEdition());
+            ABSL_CHECK_OK(defaults);
+            p->Emit({{"feature_defaults", EscapeTrigraphs(absl::CEscape(
+                                              defaults->SerializeAsString()))}},
+                    R"cc(
+                      static constexpr char kFeatureDefaults[] =
+                          "$feature_defaults$";
+                    )cc");
+          }
         }}},
       R"cc(
         class $dllexport_decl $$classname$ final : public $superclass$
@@ -2208,6 +2250,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             return $mutable_unknown_fields$;
           }
 
+          $feature_default_constant$;
           $descriptor_accessor$;
           $get_descriptor$;
           static const $classname$& default_instance() {

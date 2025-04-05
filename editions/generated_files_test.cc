@@ -12,6 +12,7 @@
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "editions/proto/test_editions_default_features.pb.h"
+#include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/test_textproto.h"
 
 // These tests provide some basic minimal coverage that protos work as expected.

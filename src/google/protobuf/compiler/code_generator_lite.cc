@@ -49,7 +49,7 @@ std::string StripProto(absl::string_view filename) {
 
 bool IsKnownFeatureProto(absl::string_view filename) {
   if (filename == "google/protobuf/cpp_features.proto" ||
-      filename == "google/protobuf/java_features.proto") {
+      filename == "google/protobuf/compiler/java/java_features.proto") {
     return true;
   }
   return false;

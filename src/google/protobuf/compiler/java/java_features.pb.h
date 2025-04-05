@@ -364,6 +364,16 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
+  static constexpr char kFeatureDefaults[] =
+      "\n%\030\204\007\"\003\312>\000*\033\010\001\020\002\030\002 "
+      "\003(\0010\0028\002@\001\312>\010\010\001\020\001 "
+      "\001(\003\n%\030\347\007\"\003\312>\000*\033\010\002\020\001\030\001 "
+      "\002(\0010\0018\002@\001\312>\010\010\000\020\001 "
+      "\001(\003\n%\030\350\007\"\023\010\001\020\001\030\001 "
+      "\002(\0010\001\312>\004\010\000\020\001*\0138\002@\001\312>\004 "
+      "\001(\003\n%\030\351\007\"\031\010\001\020\001\030\001 "
+      "\002(\0010\0018\001@\002\312>\006\010\000\020\001(\001*\005\312>\002 "
+      "\000 \346\007(\351\007";
   static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }

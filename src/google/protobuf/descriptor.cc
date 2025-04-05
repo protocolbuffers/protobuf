@@ -77,6 +77,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/message.h"
@@ -10245,9 +10246,6 @@ Edition FileDescriptor::edition() const { return edition_; }
 namespace internal {
 absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
-}
-Edition InternalFeatureHelper::GetEdition(const FileDescriptor& desc) {
-  return desc.edition();
 }
 }  // namespace internal
 
