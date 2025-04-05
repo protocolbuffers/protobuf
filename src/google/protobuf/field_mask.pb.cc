@@ -115,9 +115,9 @@ FieldMask::FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::FieldMask& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::FieldMask& from_msg)
       : paths_{visibility, arena, from.paths_},
         _cached_size_{0} {}
 
@@ -138,8 +138,8 @@ FieldMask::FieldMask(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : paths_{visibility, arena},
         _cached_size_{0} {}
 
