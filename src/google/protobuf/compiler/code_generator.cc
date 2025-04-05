@@ -105,7 +105,8 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
 
 bool CanSkipEditionCheck(absl::string_view filename) {
   return absl::StartsWith(filename, "google/protobuf/") ||
-         absl::StartsWith(filename, "upb/");
+         absl::StartsWith(filename, "upb/") ||
+         absl::StartsWith(filename, "com/google/protobuf/");
 }
 
 }  // namespace compiler

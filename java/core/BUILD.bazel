@@ -625,6 +625,8 @@ junit_tests(
             "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
             "src/test/java/com/google/protobuf/FieldPresenceTest.java",
             "src/test/java/com/google/protobuf/UnredactedDebugFormatForTestTest.java",
+            "src/test/java/com/google/protobuf/LargeEnumTest.java",
+            "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
@@ -675,6 +677,8 @@ junit_tests(
             "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
             "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
             "src/test/java/com/google/protobuf/FieldPresenceTest.java",
+            "src/test/java/com/google/protobuf/LargeEnumTest.java",
+            "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",

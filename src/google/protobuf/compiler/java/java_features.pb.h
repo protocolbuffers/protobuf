@@ -489,6 +489,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   enum : int {
     kUtf8ValidationFieldNumber = 2,
     kLegacyClosedEnumFieldNumber = 1,
+    kLargeEnumFieldNumber = 3,
     kUseOldOuterClassnameDefaultFieldNumber = 4,
     kNestInFileClassFieldNumber = 5,
   };
@@ -512,6 +513,17 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   private:
   bool _internal_legacy_closed_enum() const;
   void _internal_set_legacy_closed_enum(bool value);
+
+  public:
+  // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool has_large_enum() const;
+  void clear_large_enum() ;
+  bool large_enum() const;
+  void set_large_enum(bool value);
+
+  private:
+  bool _internal_large_enum() const;
+  void _internal_set_large_enum(bool value);
 
   public:
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -540,7 +552,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4,
+  static const ::google::protobuf::internal::TcParseTable<3, 5,
                                    2, 0,
                                    2>
       _table_;
@@ -564,6 +576,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
     ::google::protobuf::internal::CachedSize _cached_size_;
     int utf8_validation_;
     bool legacy_closed_enum_;
+    bool large_enum_;
     bool use_old_outer_classname_default_;
     int nest_in_file_class_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -658,15 +671,43 @@ inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8V
                                           _impl_.utf8_validation_ = value;
 }
 
+// optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+inline bool JavaFeatures::has_large_enum() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void JavaFeatures::clear_large_enum() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.large_enum_ = false;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline bool JavaFeatures::large_enum() const {
+  // @@protoc_insertion_point(field_get:pb.JavaFeatures.large_enum)
+  return _internal_large_enum();
+}
+inline void JavaFeatures::set_large_enum(bool value) {
+  _internal_set_large_enum(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
+  // @@protoc_insertion_point(field_set:pb.JavaFeatures.large_enum)
+}
+inline bool JavaFeatures::_internal_large_enum() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.large_enum_;
+}
+inline void JavaFeatures::_internal_set_large_enum(bool value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.large_enum_ = value;
+}
+
 // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_use_old_outer_classname_default() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void JavaFeatures::clear_use_old_outer_classname_default() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.use_old_outer_classname_default_ = false;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool JavaFeatures::use_old_outer_classname_default() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.use_old_outer_classname_default)
@@ -674,7 +715,7 @@ inline bool JavaFeatures::use_old_outer_classname_default() const {
 }
 inline void JavaFeatures::set_use_old_outer_classname_default(bool value) {
   _internal_set_use_old_outer_classname_default(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.use_old_outer_classname_default)
 }
 inline bool JavaFeatures::_internal_use_old_outer_classname_default() const {
@@ -688,13 +729,13 @@ inline void JavaFeatures::_internal_set_use_old_outer_classname_default(bool val
 
 // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
 inline bool JavaFeatures::has_nest_in_file_class() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void JavaFeatures::clear_nest_in_file_class() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nest_in_file_class_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::nest_in_file_class() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.nest_in_file_class)
@@ -702,7 +743,7 @@ inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::n
 }
 inline void JavaFeatures::set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value) {
   _internal_set_nest_in_file_class(value);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.nest_in_file_class)
 }
 inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::_internal_nest_in_file_class() const {
