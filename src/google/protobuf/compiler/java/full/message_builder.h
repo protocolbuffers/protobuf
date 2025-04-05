@@ -63,6 +63,8 @@ class MessageBuilderGenerator {
                                        const FieldDescriptor* field);
   void GenerateBuilderPackedFieldParsingCase(io::Printer* printer,
                                              const FieldDescriptor* field);
+  void GenerateBuilderDelimitedFieldParsingCase(io::Printer* printer,
+                                                const FieldDescriptor* field);
   void GenerateIsInitialized(io::Printer* printer);
 
   const Descriptor* descriptor_;

@@ -191,6 +191,7 @@ message TestAllTypesEdition2023 {
   }
   GroupLikeType groupliketype = 201;
   GroupLikeType delimited_field = 202;
+  TestAllTypesEdition2023 recursive_group = 203;
 }
 
 message ForeignMessageEdition2023 {
