@@ -1348,7 +1348,7 @@ inline void Version::set_allocated_suffix(std::string* PROTOBUF_NULLABLE value) 
 
 // repeated string file_to_generate = 1;
 inline int CodeGeneratorRequest::_internal_file_to_generate_size() const {
-  return _internal_file_to_generate().size();
+  return static_cast<int>(_internal_file_to_generate().size());
 }
 inline int CodeGeneratorRequest::file_to_generate_size() const {
   return _internal_file_to_generate_size();
@@ -1481,7 +1481,7 @@ inline void CodeGeneratorRequest::set_allocated_parameter(std::string* PROTOBUF_
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
 inline int CodeGeneratorRequest::_internal_proto_file_size() const {
-  return _internal_proto_file().size();
+  return static_cast<int>(_internal_proto_file().size());
 }
 inline int CodeGeneratorRequest::proto_file_size() const {
   return _internal_proto_file_size();
@@ -1527,7 +1527,7 @@ CodeGeneratorRequest::_internal_mutable_proto_file() {
 
 // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
 inline int CodeGeneratorRequest::_internal_source_file_descriptors_size() const {
-  return _internal_source_file_descriptors().size();
+  return static_cast<int>(_internal_source_file_descriptors().size());
 }
 inline int CodeGeneratorRequest::source_file_descriptors_size() const {
   return _internal_source_file_descriptors_size();
@@ -2132,7 +2132,7 @@ inline void CodeGeneratorResponse::_internal_set_maximum_edition(::int32_t value
 
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
 inline int CodeGeneratorResponse::_internal_file_size() const {
-  return _internal_file().size();
+  return static_cast<int>(_internal_file().size());
 }
 inline int CodeGeneratorResponse::file_size() const {
   return _internal_file_size();

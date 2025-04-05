@@ -880,7 +880,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Value_c
 
 // map<string, .google.protobuf.Value> fields = 1;
 inline int Struct::_internal_fields_size() const {
-  return _internal_fields().size();
+  return static_cast<int>(_internal_fields().size());
 }
 inline int Struct::fields_size() const {
   return _internal_fields_size();
@@ -1272,7 +1272,7 @@ inline Value::KindCase Value::kind_case() const {
 
 // repeated .google.protobuf.Value values = 1;
 inline int ListValue::_internal_values_size() const {
-  return _internal_values().size();
+  return static_cast<int>(_internal_values().size());
 }
 inline int ListValue::values_size() const {
   return _internal_values_size();

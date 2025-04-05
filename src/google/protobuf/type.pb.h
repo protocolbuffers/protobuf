@@ -1722,7 +1722,7 @@ inline void Type::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
 
 // repeated .google.protobuf.Field fields = 2;
 inline int Type::_internal_fields_size() const {
-  return _internal_fields().size();
+  return static_cast<int>(_internal_fields().size());
 }
 inline int Type::fields_size() const {
   return _internal_fields_size();
@@ -1772,7 +1772,7 @@ Type::_internal_mutable_fields() {
 
 // repeated string oneofs = 3;
 inline int Type::_internal_oneofs_size() const {
-  return _internal_oneofs().size();
+  return static_cast<int>(_internal_oneofs().size());
 }
 inline int Type::oneofs_size() const {
   return _internal_oneofs_size();
@@ -1836,7 +1836,7 @@ Type::_internal_mutable_oneofs() {
 
 // repeated .google.protobuf.Option options = 4;
 inline int Type::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int Type::options_size() const {
   return _internal_options_size();
@@ -2322,7 +2322,7 @@ inline void Field::_internal_set_packed(bool value) {
 
 // repeated .google.protobuf.Option options = 9;
 inline int Field::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int Field::options_size() const {
   return _internal_options_size();
@@ -2571,7 +2571,7 @@ inline void Enum::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
 
 // repeated .google.protobuf.EnumValue enumvalue = 2;
 inline int Enum::_internal_enumvalue_size() const {
-  return _internal_enumvalue().size();
+  return static_cast<int>(_internal_enumvalue().size());
 }
 inline int Enum::enumvalue_size() const {
   return _internal_enumvalue_size();
@@ -2621,7 +2621,7 @@ Enum::_internal_mutable_enumvalue() {
 
 // repeated .google.protobuf.Option options = 3;
 inline int Enum::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int Enum::options_size() const {
   return _internal_options_size();
@@ -2946,7 +2946,7 @@ inline void EnumValue::_internal_set_number(::int32_t value) {
 
 // repeated .google.protobuf.Option options = 3;
 inline int EnumValue::_internal_options_size() const {
-  return _internal_options().size();
+  return static_cast<int>(_internal_options().size());
 }
 inline int EnumValue::options_size() const {
   return _internal_options_size();
