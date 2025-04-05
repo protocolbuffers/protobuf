@@ -49,11 +49,11 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.1.2' }}-2c05f44c25a209933743ddf0296ef0c1e583d2c3
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-b77fdae6d4771789dfc66a56bf8d806354e8011a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           # TODO: Enable bzlmod once python headers are supported for python dist.
-          bazel: test --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
+          bazel: test --noenable_bzlmod --enable_workspace --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   linux-gcc:
@@ -69,11 +69,11 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-7.5-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
           bazel: >-
-            test --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
+            test --noenable_bzlmod --enable_workspace --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
             --copt="-Wno-error=maybe-uninitialized" --java_runtime_version=remotejdk_11
             //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
 
@@ -92,8 +92,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test --noenable_bzlmod --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/...
-          version: 7.1.2
+          bazel: test --noenable_bzlmod --enable_workspace --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/...
+          version: 8.0.1 # Bazel version
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
   macos:
@@ -121,8 +121,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
-          version: 7.1.2
+          bazel: ${{ matrix.config.bazel-command }} --noenable_bzlmod --enable_workspace --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+          version: 8.0.1 # Bazel version
 
   no-python:
     strategy:
@@ -137,14 +137,14 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-no-python"
           bash: >-
             which python3 &&
             mv `which python3` /tmp &&
             ! which python3 &&
-            bazel test $BAZEL_FLAGS --noenable_bzlmod --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel -//python:aarch64_test -//python:x86_64_test -//python:google/protobuf/pyext/_message.so -//python:proto_api
+            bazel test $BAZEL_FLAGS --noenable_bzlmod --enable_workspace --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel -//python:aarch64_test -//python:x86_64_test -//python:google/protobuf/pyext/_message.so -//python:proto_api
 
   build_wheels:
     name: Build Wheels
@@ -158,10 +158,10 @@ jobs:
       - name: Build Wheels
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:7.1.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:8.0.1-b77fdae6d4771789dfc66a56bf8d806354e8011a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
-          bazel: build --noenable_bzlmod --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg --incompatible_enable_cc_toolchain_resolution=false //python/dist //python/dist:test_wheel //python/dist:source_wheel
+          bazel: build --noenable_bzlmod --enable_workspace --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg --incompatible_enable_cc_toolchain_resolution=false //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
