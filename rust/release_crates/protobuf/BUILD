@@ -10,7 +10,7 @@ pkg_tar(
         "//rust:rust_protobuf_libupb_src",
         "//rust:rust_protobuf_src_dir",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
@@ -31,5 +31,5 @@ filegroup(
         "README.md",
         "build.rs",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
