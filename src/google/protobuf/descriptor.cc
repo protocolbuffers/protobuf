@@ -498,7 +498,7 @@ class FlatAllocatorImpl {
   const std::string* AllocateStrings(In&&... in) {
     std::string* strings = AllocateArray<std::string>(sizeof...(in));
     std::string* res = strings;
-    Fold({(*strings++ = std::string(std::forward<In>(in)))...});
+    Fold({(*strings++ = std::forward<In>(in))...});
     return res;
   }
 
@@ -3407,7 +3407,7 @@ class SourceLocationCommentPrinter {
     }
   }
   void AddPostComment(std::string* output) {
-    if (have_source_loc_ && source_loc_.trailing_comments.size() > 0) {
+    if (have_source_loc_ && !source_loc_.trailing_comments.empty()) {
       absl::StrAppend(output, FormatComment(source_loc_.trailing_comments));
     }
   }
