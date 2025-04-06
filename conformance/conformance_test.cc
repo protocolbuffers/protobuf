@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "absl/container/btree_map.h"
