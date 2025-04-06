@@ -7,14 +7,10 @@
 
 #include "google/protobuf/json/internal/unparser.h"
 
-#include <cfloat>
 #include <cmath>
-#include <complex>
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -31,7 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_sink.h"
 #include "google/protobuf/io/zero_copy_stream.h"

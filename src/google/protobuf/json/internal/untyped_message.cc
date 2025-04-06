@@ -8,10 +8,9 @@
 #include "google/protobuf/json/internal/untyped_message.h"
 
 #include <algorithm>
-#include <cfloat>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -19,10 +18,13 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
+#include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
