@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__
 
+#include "google/protobuf/descriptor.h"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
