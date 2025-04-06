@@ -985,7 +985,7 @@ template <class T>
 }
 
 [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint64_t
-RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
+RotRight7AndReplaceLowByte(uint64_t res, const char byte) {
   // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
