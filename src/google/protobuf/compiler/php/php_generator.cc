@@ -319,16 +319,12 @@ std::string IntToString(int32_t value) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      return "optional";
-    case FieldDescriptor::LABEL_REQUIRED:
-      return "required";
-    case FieldDescriptor::LABEL_REPEATED:
-      return "repeated";
-    default:
-      assert(false);
-      return "";
+  if (field->is_required()) {
+    return "required";
+  } else if (field->is_repeated()) {
+    return "repeated";
+  } else {
+    return "optional";
   }
 }
 

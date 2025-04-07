@@ -1194,7 +1194,7 @@ inline void TestUtil::ReflectionTester::
 
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
-    if (!field->is_optional() ||
+    if (field->is_required() || field->is_repeated() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
       continue;
 
@@ -1214,7 +1214,7 @@ inline void TestUtil::ReflectionTester::
 
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
-    if (!field->is_optional() ||
+    if (field->is_required() || field->is_repeated() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)
       continue;
 

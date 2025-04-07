@@ -63,12 +63,13 @@
 //     const FieldDescriptor* text_field = descriptor->FindFieldByName("text");
 //     assert(text_field != nullptr);
 //     assert(text_field->type() == FieldDescriptor::TYPE_STRING);
-//     assert(text_field->label() == FieldDescriptor::LABEL_OPTIONAL);
+//     assert(!text_field->is_required());
+//     assert(!text_field->is_repeated());
 //     const FieldDescriptor* numbers_field = descriptor->
 //                                            FindFieldByName("numbers");
 //     assert(numbers_field != nullptr);
 //     assert(numbers_field->type() == FieldDescriptor::TYPE_INT32);
-//     assert(numbers_field->label() == FieldDescriptor::LABEL_REPEATED);
+//     assert(numbers_field->is_repeated());
 //
 //     // Parse the message.
 //     foo->ParseFromString(data);

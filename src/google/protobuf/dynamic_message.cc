@@ -182,7 +182,7 @@ inline bool InRealOneof(const FieldDescriptor* field) {
 // Compute the byte size of the in-memory representation of the field.
 int FieldSpaceUsed(const FieldDescriptor* field) {
   typedef FieldDescriptor FD;  // avoid line wrapping
-  if (field->label() == FD::LABEL_REPEATED) {
+  if (field->is_repeated()) {
     switch (field->cpp_type()) {
       case FD::CPPTYPE_INT32:
         return sizeof(RepeatedField<int32_t>);

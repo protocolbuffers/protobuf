@@ -317,11 +317,11 @@ static void ReportReflectionUsageEnumTypeError(
 #define USAGE_CHECK_MESSAGE_TYPE(METHOD)                        \
   USAGE_CHECK_EQ(field->containing_type(), descriptor_, METHOD, \
                  "Field does not match message type.");
-#define USAGE_CHECK_SINGULAR(METHOD)                                      \
-  USAGE_CHECK_NE(field->label(), FieldDescriptor::LABEL_REPEATED, METHOD, \
+#define USAGE_CHECK_SINGULAR(METHOD)                 \
+  USAGE_CHECK_NE(field->is_repeated(), true, METHOD, \
                  "Field is repeated; the method requires a singular field.")
-#define USAGE_CHECK_REPEATED(METHOD)                                      \
-  USAGE_CHECK_EQ(field->label(), FieldDescriptor::LABEL_REPEATED, METHOD, \
+#define USAGE_CHECK_REPEATED(METHOD)                 \
+  USAGE_CHECK_EQ(field->is_repeated(), true, METHOD, \
                  "Field is singular; the method requires a repeated field.")
 
 #define USAGE_CHECK_ALL(METHOD, LABEL, CPPTYPE) \
