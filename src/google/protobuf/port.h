@@ -17,10 +17,13 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <new>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+
+#include "absl/base/optimization.h"
 
 
 #include "absl/base/config.h"
@@ -341,30 +344,198 @@ constexpr bool IsLittleEndian() { return false; }
 #endif
 constexpr bool IsBigEndian() { return !IsLittleEndian(); }
 
+//----------------------- Cache-prefetching utilities --------------------------
+
+struct PrefetchOpts {
+  enum Locality : int { kNta = 0, kLow = 1, kMedium = 2, kHigh = 3 };
+  enum MemOp : int { kRead = 0, kWrite = 1 };
+  enum Unit : int { kBytes, kLines, kObjects };
+
+  struct Amount {
+    const size_t num = 1;
+    const Unit unit = Unit::kLines;
+
+    // Scales this amount to bytes. If `unit` is `kObjects`, `T` must be a valid
+    // pointed-to type. If it is not, an invalid zero amount is returned.
+    template <typename T>
+    constexpr Amount ToBytes() const {
+      switch (unit) {
+        case Unit::kBytes:
+          return *this;
+        case Unit::kLines:
+          return {num * ABSL_CACHELINE_SIZE, Unit::kBytes};
+        case Unit::kObjects:
+          if constexpr (!std::is_same_v<T, void>) {
+            return {num * sizeof(T), Unit::kBytes};
+          } else {
+            // Can't use `assert()` or `__builtin_trap()` here because they're
+            // not constexpr. Just return an invalid amount instead.
+            return {0};
+          }
+      }
+    }
+
+    // Scales this amount to whole cache lines, rounding up. If `unit` is
+    // `kObjects`, `T` must be a valid pointed-to type. If it is not, an invalid
+    // zero amount is returned.
+    template <typename T>
+    constexpr Amount ToLines() const {
+      switch (unit) {
+        case Unit::kBytes:
+          return {
+              (num + ABSL_CACHELINE_SIZE - 1) / ABSL_CACHELINE_SIZE,
+              Unit::kLines,
+          };
+        case Unit::kLines:
+          return *this;
+        case Unit::kObjects:
+          if constexpr (!std::is_same_v<T, void>) {
+            return {
+                (num * sizeof(T) + ABSL_CACHELINE_SIZE - 1) /
+                    ABSL_CACHELINE_SIZE,
+                Unit::kLines,
+            };
+          } else {
+            // Can't use `assert()` or `__builtin_trap()` here because they're
+            // not constexpr. Just return an invalid amount instead.
+            return {0};
+          }
+      }
+    }
+  };
+
+  const Amount num = {1, kLines};
+  const Amount from = {0, kBytes};
+  const Locality locality = kHigh;
+  const MemOp mem_op = kRead;
+};
+
+namespace detail {
+
+#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+// NOTE: GCC fails to compile this with -O0 because inlining is off and it's
+// not smart enough to figure out that the 2nd and 3rd args of
+// `__builtin_prefetch` are propagated compile-time constants. To be on the safe
+// side, enable the whole thing for Clang only.
+
+// Prefetches a single cache line. To form the address to prefetch, the base
+// `ptr` is first offset by `kOpts.from.num` bytes and furthermore by `line`
+// cache lines (note that `line` overrides `kOpts.num.num`).
+template <const PrefetchOpts& kOpts>
+PROTOBUF_ALWAYS_INLINE void PrefetchLine(const void* ptr, size_t line) {
+  static_assert(kOpts.from.unit == PrefetchOpts::kBytes);
+  const ptrdiff_t offset = kOpts.from.num + (line * ABSL_CACHELINE_SIZE);
+  // In debug builds, guard against potential UB (ptr + offset overflow).This is
+  // a best-effort check to catch obvious mistakes (e.g. a huge offsets or
+  // num/unit mismatches). NOTE: Using `assert()`, not CHECKs, for lean
+  // implementation.
+#if !defined(NDEBUG)
+  static constexpr uintptr_t kMaxPtr = std::numeric_limits<uintptr_t>::max();
+  assert(kMaxPtr - offset >= reinterpret_cast<uintptr_t>(ptr));
+#endif
+  // However, overflows don't matter for prefetching, because the prefetch
+  // instruction is just a no-op for invalid addresses. To formally avoid UB,
+  // we perform the arithmetic in uintptr_t.
+  const auto* prefetch_ptr =
+      reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(ptr) + offset);
+  __builtin_prefetch(prefetch_ptr, kOpts.mem_op, kOpts.locality);
+}
+
+#else  // !defined(__clang__) || !ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+// A no-op for non-Clang compilers.
+template <const PrefetchOpts& kOpts>
+PROTOBUF_ALWAYS_INLINE void PrefetchLine(const void*, size_t) {}
+
+#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+}  // namespace detail
+
+// Prefetches a sequence of `kOpts.num` cache lines, starting at `ptr` base
+// pointer furthermore offset by `kOpts.from.ToBytes()` bytes, with
+// `kOpts.locality` cache locality and `kOpts.operation` memory access.
+//
+// The `kOpts` template parameter must be a compile-time constant, which means
+// either `inline constexpr` in the global scope or `static constexpr` in a
+// function.
+//
+// When `kOpts.num.unit` or `kOpts.from.unit` is `kObjects`, the `T` template
+// parameter must be explicitly specified and sizeof(T) must be valid and
+// non-zero (i.e. T must be a non-void, complete type): it is used to scale
+// `kOpts.num.num` and/or `kOpts.from.num` to bytes and lines.
+//
+// The `U` template parameter doesn't need to be explicitly specified: it is
+// deduced from `ptr` and, if non-void and `T` is also non-void, checked for
+// compatibility with `T` to prevent accidental pointed-to and prefetched type
+// mismatches.
+//
+// WARNING: Do not default `T` to `U` or vice versa: that may hide subtle errors
+// at call sites, e.g. when `ptr` points at the base class of the actual object.
+//
+// TODO: Simplify definition/usages after C++20 per the bug.
+template <const PrefetchOpts& kOpts, typename T = void, typename U>
+PROTOBUF_ALWAYS_INLINE void Prefetch(const U* ptr) {
+  static_assert(kOpts.num.num > 0);
+  if constexpr (kOpts.num.unit == PrefetchOpts::kObjects ||
+                kOpts.from.unit == PrefetchOpts::kObjects) {
+    static_assert(sizeof(T) > 0, "Need explicit, non-void, complete T");
+  }
+  if constexpr (!std::is_void_v<T> && !std::is_void_v<U>) {
+    // Prevent accidental mistakes, but only when it's matters.
+    static_assert(std::is_convertible_v<T*, U*>, "Type mismatch");
+  }
+  static constexpr PrefetchOpts kScaledOpts = {
+      kOpts.num.ToLines<T>(),
+      kOpts.from.ToBytes<T>(),
+      kOpts.locality,
+      kOpts.mem_op,
+  };
+  // Unroll the loop iterations by blocks of 16 in optimized builds.
+#pragma unroll 16
+  for (size_t line = 0; line < kScaledOpts.num.num; ++line) {
+    detail::PrefetchLine<kScaledOpts>(ptr, line);
+  }
+}
+
+// Legacy prefetch functions.
+// TODO: Replace calls to these functions and remove them per the
+// bug.
+
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
 // faster, single cache line prefetch is ~12% faster, increasing
 // decreasing distance makes results 2-4% worse. Important note,
 // prefetch doesn't require a valid address, so it is ok to prefetch
-// past the end of message/valid memory, however we are doing this
-// inside inline asm block, since computing the invalid pointer
-// is a potential UB. Only insert prefetch once per function,
+// past the end of message/valid memory. Only insert prefetch once per function.
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 640);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{5, PrefetchOpts::kLines},
+      /*from=*/{7, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
 }
 
 // Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 320);
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{5, PrefetchOpts::kLines},
+      /*from=*/{1, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
+}
+
+// This trampoline allows calling from codegen without needing a #include to
+// absl. It simplifies IWYU and deps.
+inline void PrefetchToLocalCache(const void* ptr) {
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{1, PrefetchOpts::kLines},
+      /*from=*/{0, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
 }
 
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
@@ -435,12 +606,6 @@ PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
 PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
-
-// This trampoline allows calling from codegen without needing a #include to
-// absl. It simplifies IWYU and deps.
-inline void PrefetchToLocalCache(const void* ptr) {
-  absl::PrefetchToLocalCache(ptr);
-}
 
 template <typename T>
 constexpr T* Launder(T* p) {
