@@ -249,6 +249,7 @@ archive_override(
         "@com_google_protobuf//:patches/protobuf_v25/0004-Add-utf8_range-dependency.patch",
         "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
         "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0007-Java-bazel8.patch",
     ],
     strip_prefix = "protobuf-25.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
