@@ -107,14 +107,14 @@ class RepeatedFieldProxy
 
   // TODO : Audit/Finalize based on Iterator Design.
   // T::Proxy [] operator specialization.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   typename T::Proxy operator[](size_t n) {
     return hpb::interop::upb::MakeHandle<T>(this->GetMessage(n), this->arena_);
   }
 
   // Mutable message reference specialization.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(const T& t) {
     upb_MessageValue message_value;
@@ -125,7 +125,7 @@ class RepeatedFieldProxy
   }
 
   // Mutable message add using move.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
@@ -180,7 +180,7 @@ class RepeatedFieldStringProxy
 
   reference operator[](size_t n) const { return begin()[n]; }
 
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T t) {
     upb_MessageValue message_value;
@@ -232,7 +232,7 @@ class RepeatedFieldScalarProxy
     return val;
   }
 
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T t) {
     upb_MessageValue message_value;
