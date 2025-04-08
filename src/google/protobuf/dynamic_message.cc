@@ -745,8 +745,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field->options().weak() && !InRealOneof(field) &&
-        !field->is_repeated()) {
+        !InRealOneof(field) && !field->is_repeated()) {
       void* field_ptr = MutableRaw(i);
       // For fields with message types, we need to cross-link with the
       // prototype for the field's type.
@@ -927,7 +926,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   }
 
   type_info->weak_field_map_offset = -1;
-
   type_info->class_data.message_creator =
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
 

@@ -1719,9 +1719,6 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       if (field->is_required()) {
         result.contains_required = true;
       }
-      if (field->options().weak()) {
-        result.contains_weak = true;
-      }
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
         case FieldDescriptor::TYPE_BYTES: {

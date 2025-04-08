@@ -3414,7 +3414,6 @@ INSTANTIATE_TEST_SUITE_P(
             },
             /*is_extension=*/true}));
 
-
 // ===================================================================
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
 
