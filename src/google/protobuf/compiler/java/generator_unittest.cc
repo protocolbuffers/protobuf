@@ -271,6 +271,79 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassEnumFeatureEdition2024) {
                              "proto2_unittest/NestedInFileClassEnum.java"));
 }
 
+TEST_F(JavaGeneratorTest, LargeClosedEnumDisallowedEdition2024) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+
+    import "third_party/java/protobuf/java_features.proto";
+
+    option features.enum_type = CLOSED;
+
+    enum Bar {
+      option features.(pb.java).large_enum = true;
+
+      AAA = 0;
+      BBB = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto "
+      "--experimental_editions");
+
+  ExpectErrorSubstring(
+      "foo.proto: Bar is a closed enum and can not be used with the large_enum "
+      "feature.  Please migrate to an open enum first, which is a better fit "
+      "for extremely large enums.");
+}
+
+TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+
+    import "third_party/java/protobuf/java_features.proto";
+
+    enum Bar {
+      option features.(pb.java).large_enum = true;
+
+      AAA = 0;
+      BBB = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "foo.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+}
+TEST_F(JavaGeneratorTest, LargeEnumDisallowedEdition2023) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+edition = "2023";
+
+import "third_party/java/protobuf/java_features.proto";
+
+enum Bar {
+option features.(pb.java).large_enum = true;
+
+AAA = 0;
+BBB = 1;
+}
+)schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto "
+      "--experimental_editions");
+
+  ExpectErrorSubstring(
+      "foo.proto:6:6: Feature pb.JavaFeatures.large_enum wasn't introduced "
+      "until edition 2024 and can't be used in edition 2023");
+}
+
 
 }  // namespace
 }  // namespace java
