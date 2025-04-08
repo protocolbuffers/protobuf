@@ -54,7 +54,7 @@ void WriteUsingEnumsInHeader(
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Context& ctx);
 
-// Writes message class declarations into .upb.proto.h.
+// Writes message class declarations into .hpb.h.
 //
 // For each proto Foo, FooAccess and FooProxy/FooCProxy are generated
 // that are exposed to users as Foo , Ptr<Foo> and Ptr<const Foo>.
