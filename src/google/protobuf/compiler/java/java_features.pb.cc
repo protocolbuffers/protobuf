@@ -286,7 +286,7 @@ JavaFeatures_NestInFileClassFeature::_table_ = {
 class JavaFeatures::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<JavaFeatures>()._impl_._has_bits_);
+      decltype(::std::declval<JavaFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
 };
@@ -590,7 +590,7 @@ void JavaFeatures::CopyFrom(const JavaFeatures& from) {
 
 
 void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<

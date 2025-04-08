@@ -131,7 +131,7 @@ PROTOBUF_CONSTINIT const uint32_t CppFeatures_StringType_internal_data_[] = {
 class CppFeatures::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<CppFeatures>()._impl_._has_bits_);
+      decltype(::std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
 };
@@ -395,7 +395,7 @@ void CppFeatures::CopyFrom(const CppFeatures& from) {
 
 
 void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<

@@ -164,6 +164,7 @@ proto_library(
         "test_bad_identifiers_proto2.proto",
     ],
     strip_import_prefix = "/src",
+    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 cc_proto_library(

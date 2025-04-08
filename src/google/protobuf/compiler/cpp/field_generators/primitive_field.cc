@@ -613,7 +613,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
              auto fixed_size = FixedSize(field_->type());
              if (fixed_size.has_value()) {
                p->Emit({{"kFixed", *fixed_size}}, R"cc(
-                 std::size_t{$kFixed$} *
+                 ::size_t{$kFixed$} *
                      ::_pbi::FromIntSize(this_._internal_$name$_size());
                )cc");
              } else {
@@ -634,15 +634,15 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                )cc");
              } else {
                p->Emit(R"cc(
-                 std::size_t{$kTagBytes$} *
+                 ::size_t{$kTagBytes$} *
                      ::_pbi::FromIntSize(this_._internal_$name$_size());
                )cc");
              }
            }},
       },
       R"cc(
-        std::size_t data_size = $data_size$;
-        std::size_t tag_size = $tag_size$;
+        ::size_t data_size = $data_size$;
+        ::size_t tag_size = $tag_size$;
         total_size += tag_size + data_size;
       )cc");
 }

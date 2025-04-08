@@ -2521,7 +2521,7 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitializedImpl(
 }
 
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.file_.InternalSwap(&other->_impl_.file_);
@@ -2535,7 +2535,7 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT PROTOB
 class FileDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FileDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<FileDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
 };
@@ -2899,7 +2899,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -2907,7 +2907,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 
   // optional string package = 2;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_package();
+    const ::std::string& _s = this_._internal_package();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileDescriptorProto.package");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -2995,7 +2995,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 
   // optional string syntax = 12;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_syntax();
+    const ::std::string& _s = this_._internal_syntax();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileDescriptorProto.syntax");
     target = stream->WriteStringMaybeAliased(12, _s, target);
@@ -3080,17 +3080,17 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
     }
     // repeated int32 public_dependency = 10;
     {
-      std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+      ::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
           this_._internal_public_dependency());
-      std::size_t tag_size = std::size_t{1} *
+      ::size_t tag_size = ::size_t{1} *
           ::_pbi::FromIntSize(this_._internal_public_dependency_size());
       total_size += tag_size + data_size;
     }
     // repeated int32 weak_dependency = 11;
     {
-      std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
+      ::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
           this_._internal_weak_dependency());
-      std::size_t tag_size = std::size_t{1} *
+      ::size_t tag_size = ::size_t{1} *
           ::_pbi::FromIntSize(this_._internal_weak_dependency_size());
       total_size += tag_size + data_size;
     }
@@ -3225,7 +3225,7 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitializedImpl(
 }
 
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -3257,7 +3257,7 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PR
 class DescriptorProto_ExtensionRange::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
+      decltype(::std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
 };
@@ -3571,7 +3571,7 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitializedImpl(
 }
 
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
@@ -3590,7 +3590,7 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 class DescriptorProto_ReservedRange::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
+      decltype(::std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
 };
@@ -3838,7 +3838,7 @@ void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange
 
 
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
@@ -3857,7 +3857,7 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 class DescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<DescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<DescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
 };
@@ -4185,7 +4185,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.DescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -4470,7 +4470,7 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitializedImpl(
 }
 
 void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -4500,7 +4500,7 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_N
 class ExtensionRangeOptions_Declaration::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
+      decltype(::std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
 };
@@ -4730,7 +4730,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 
   // optional string full_name = 2;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_full_name();
+    const ::std::string& _s = this_._internal_full_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.ExtensionRangeOptions.Declaration.full_name");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -4738,7 +4738,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 
   // optional string type = 3;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_type();
+    const ::std::string& _s = this_._internal_type();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.ExtensionRangeOptions.Declaration.type");
     target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -4844,7 +4844,7 @@ void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Dec
 
 
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -4867,7 +4867,7 @@ void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Decla
 class ExtensionRangeOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
+      decltype(::std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
 };
@@ -5249,7 +5249,7 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitializedImpl(
 }
 
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -5271,7 +5271,7 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRIC
 class FieldDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FieldDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<FieldDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
 };
@@ -5571,7 +5571,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -5579,7 +5579,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional string extendee = 2;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_extendee();
+    const ::std::string& _s = this_._internal_extendee();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldDescriptorProto.extendee");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -5608,7 +5608,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional string type_name = 6;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_type_name();
+    const ::std::string& _s = this_._internal_type_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldDescriptorProto.type_name");
     target = stream->WriteStringMaybeAliased(6, _s, target);
@@ -5616,7 +5616,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional string default_value = 7;
   if ((cached_has_bits & 0x00000008u) != 0) {
-    const std::string& _s = this_._internal_default_value();
+    const ::std::string& _s = this_._internal_default_value();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldDescriptorProto.default_value");
     target = stream->WriteStringMaybeAliased(7, _s, target);
@@ -5638,7 +5638,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 
   // optional string json_name = 10;
   if ((cached_has_bits & 0x00000010u) != 0) {
-    const std::string& _s = this_._internal_json_name();
+    const ::std::string& _s = this_._internal_json_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldDescriptorProto.json_name");
     target = stream->WriteStringMaybeAliased(10, _s, target);
@@ -5808,7 +5808,7 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitializedImpl(
 }
 
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -5834,7 +5834,7 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT 
 class OneofDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<OneofDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<OneofDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
 };
@@ -6023,7 +6023,7 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.OneofDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -6121,7 +6121,7 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitializedImpl(
 }
 
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -6138,7 +6138,7 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT 
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
+      decltype(::std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
 };
@@ -6386,7 +6386,7 @@ void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_E
 
 
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
@@ -6405,7 +6405,7 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 class EnumDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<EnumDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
 };
@@ -6660,7 +6660,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.EnumDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -6835,7 +6835,7 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitializedImpl(
 }
 
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -6860,7 +6860,7 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PR
 class EnumValueDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
 };
@@ -7063,7 +7063,7 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.EnumValueDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -7176,7 +7176,7 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitializedImpl(
 }
 
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -7198,7 +7198,7 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_R
 class ServiceDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
 };
@@ -7410,7 +7410,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.ServiceDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -7532,7 +7532,7 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitializedImpl(
 }
 
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -7550,7 +7550,7 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTR
 class MethodDescriptorProto::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<MethodDescriptorProto>()._impl_._has_bits_);
+      decltype(::std::declval<MethodDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
 };
@@ -7794,7 +7794,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.MethodDescriptorProto.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -7802,7 +7802,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 
   // optional string input_type = 2;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_input_type();
+    const ::std::string& _s = this_._internal_input_type();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.MethodDescriptorProto.input_type");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -7810,7 +7810,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 
   // optional string output_type = 3;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_output_type();
+    const ::std::string& _s = this_._internal_output_type();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.MethodDescriptorProto.output_type");
     target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -7945,7 +7945,7 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitializedImpl(
 }
 
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -7969,7 +7969,7 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRIC
 class FileOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FileOptions>()._impl_._has_bits_);
+      decltype(::std::declval<FileOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
 };
@@ -8394,7 +8394,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string java_package = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_java_package();
+    const ::std::string& _s = this_._internal_java_package();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.java_package");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -8402,7 +8402,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string java_outer_classname = 8;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_java_outer_classname();
+    const ::std::string& _s = this_._internal_java_outer_classname();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.java_outer_classname");
     target = stream->WriteStringMaybeAliased(8, _s, target);
@@ -8424,7 +8424,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string go_package = 11;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_go_package();
+    const ::std::string& _s = this_._internal_go_package();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.go_package");
     target = stream->WriteStringMaybeAliased(11, _s, target);
@@ -8481,7 +8481,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string objc_class_prefix = 36;
   if ((cached_has_bits & 0x00000008u) != 0) {
-    const std::string& _s = this_._internal_objc_class_prefix();
+    const ::std::string& _s = this_._internal_objc_class_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.objc_class_prefix");
     target = stream->WriteStringMaybeAliased(36, _s, target);
@@ -8489,7 +8489,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string csharp_namespace = 37;
   if ((cached_has_bits & 0x00000010u) != 0) {
-    const std::string& _s = this_._internal_csharp_namespace();
+    const ::std::string& _s = this_._internal_csharp_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.csharp_namespace");
     target = stream->WriteStringMaybeAliased(37, _s, target);
@@ -8497,7 +8497,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string swift_prefix = 39;
   if ((cached_has_bits & 0x00000020u) != 0) {
-    const std::string& _s = this_._internal_swift_prefix();
+    const ::std::string& _s = this_._internal_swift_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.swift_prefix");
     target = stream->WriteStringMaybeAliased(39, _s, target);
@@ -8505,7 +8505,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string php_class_prefix = 40;
   if ((cached_has_bits & 0x00000040u) != 0) {
-    const std::string& _s = this_._internal_php_class_prefix();
+    const ::std::string& _s = this_._internal_php_class_prefix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_class_prefix");
     target = stream->WriteStringMaybeAliased(40, _s, target);
@@ -8513,7 +8513,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string php_namespace = 41;
   if ((cached_has_bits & 0x00000080u) != 0) {
-    const std::string& _s = this_._internal_php_namespace();
+    const ::std::string& _s = this_._internal_php_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_namespace");
     target = stream->WriteStringMaybeAliased(41, _s, target);
@@ -8521,7 +8521,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string php_metadata_namespace = 44;
   if ((cached_has_bits & 0x00000100u) != 0) {
-    const std::string& _s = this_._internal_php_metadata_namespace();
+    const ::std::string& _s = this_._internal_php_metadata_namespace();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.php_metadata_namespace");
     target = stream->WriteStringMaybeAliased(44, _s, target);
@@ -8529,7 +8529,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 
   // optional string ruby_package = 45;
   if ((cached_has_bits & 0x00000200u) != 0) {
-    const std::string& _s = this_._internal_ruby_package();
+    const ::std::string& _s = this_._internal_ruby_package();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FileOptions.ruby_package");
     target = stream->WriteStringMaybeAliased(45, _s, target);
@@ -8773,7 +8773,7 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
 }
 
 void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -8806,7 +8806,7 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class MessageOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<MessageOptions>()._impl_._has_bits_);
+      decltype(::std::declval<MessageOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
 };
@@ -9218,7 +9218,7 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitializedImpl(
 }
 
 void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -9239,7 +9239,7 @@ void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 class FieldOptions_EditionDefault::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
+      decltype(::std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
 };
@@ -9419,7 +9419,7 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string value = 2;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_value();
+    const ::std::string& _s = this_._internal_value();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldOptions.EditionDefault.value");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -9503,7 +9503,7 @@ void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& fr
 
 
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -9520,7 +9520,7 @@ void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROT
 class FieldOptions_FeatureSupport::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
+      decltype(::std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
 };
@@ -9743,7 +9743,7 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
 
   // optional string deprecation_warning = 3;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_deprecation_warning();
+    const ::std::string& _s = this_._internal_deprecation_warning();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.FieldOptions.FeatureSupport.deprecation_warning");
     target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -9843,7 +9843,7 @@ void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& fr
 
 
 void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -9865,7 +9865,7 @@ void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROT
 class FieldOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FieldOptions>()._impl_._has_bits_);
+      decltype(::std::declval<FieldOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
 };
@@ -10322,9 +10322,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
    {
     // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
     {
-      std::size_t data_size =
+      ::size_t data_size =
           ::_pbi::WireFormatLite::EnumSize(this_._internal_targets());
-      std::size_t tag_size = std::size_t{2} *
+      ::size_t tag_size = ::size_t{2} *
           ::_pbi::FromIntSize(this_._internal_targets_size());
       total_size += data_size + tag_size;
     }
@@ -10468,7 +10468,7 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitializedImpl(
 }
 
 void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -10491,7 +10491,7 @@ void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 class OneofOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<OneofOptions>()._impl_._has_bits_);
+      decltype(::std::declval<OneofOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
 };
@@ -10808,7 +10808,7 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitializedImpl(
 }
 
 void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -10824,7 +10824,7 @@ void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 class EnumOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumOptions>()._impl_._has_bits_);
+      decltype(::std::declval<EnumOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
 };
@@ -11206,7 +11206,7 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitializedImpl(
 }
 
 void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -11227,7 +11227,7 @@ void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class EnumValueOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumValueOptions>()._impl_._has_bits_);
+      decltype(::std::declval<EnumValueOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
 };
@@ -11632,7 +11632,7 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitializedImpl(
 }
 
 void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -11653,7 +11653,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT PROTOBUF
 class ServiceOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<ServiceOptions>()._impl_._has_bits_);
+      decltype(::std::declval<ServiceOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
 };
@@ -11997,7 +11997,7 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitializedImpl(
 }
 
 void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -12018,7 +12018,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 class MethodOptions::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<MethodOptions>()._impl_._has_bits_);
+      decltype(::std::declval<MethodOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
 };
@@ -12397,7 +12397,7 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitializedImpl(
 }
 
 void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -12418,7 +12418,7 @@ void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT PROTOBUF_NONNU
 class UninterpretedOption_NamePart::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
+      decltype(::std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
   static bool MissingRequiredFields(const HasBits& has_bits) {
@@ -12599,7 +12599,7 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // required string name_part = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name_part();
+    const ::std::string& _s = this_._internal_name_part();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.UninterpretedOption.NamePart.name_part");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -12687,7 +12687,7 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitializedImpl(
 }
 
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -12704,7 +12704,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PR
 class UninterpretedOption::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<UninterpretedOption>()._impl_._has_bits_);
+      decltype(::std::declval<UninterpretedOption>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
 };
@@ -12971,7 +12971,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string identifier_value = 3;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_identifier_value();
+    const ::std::string& _s = this_._internal_identifier_value();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.UninterpretedOption.identifier_value");
     target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -13000,13 +13000,13 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 
   // optional bytes string_value = 7;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_string_value();
+    const ::std::string& _s = this_._internal_string_value();
     target = stream->WriteBytesMaybeAliased(7, _s, target);
   }
 
   // optional string aggregate_value = 8;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_aggregate_value();
+    const ::std::string& _s = this_._internal_aggregate_value();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.UninterpretedOption.aggregate_value");
     target = stream->WriteStringMaybeAliased(8, _s, target);
@@ -13129,7 +13129,7 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitializedImpl(
 }
 
 void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -13261,7 +13261,7 @@ FeatureSet_VisibilityFeature::_table_ = {
 class FeatureSet::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FeatureSet>()._impl_._has_bits_);
+      decltype(::std::declval<FeatureSet>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
 };
@@ -13691,7 +13691,7 @@ PROTOBUF_NOINLINE bool FeatureSet::IsInitializedImpl(
 }
 
 void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -13711,7 +13711,7 @@ void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
+      decltype(::std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
 };
@@ -14035,7 +14035,7 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialize
 }
 
 void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
@@ -14054,7 +14054,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefault
 class FeatureSetDefaults::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FeatureSetDefaults>()._impl_._has_bits_);
+      decltype(::std::declval<FeatureSetDefaults>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
 };
@@ -14372,7 +14372,7 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitializedImpl(
 }
 
 void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.defaults_.InternalSwap(&other->_impl_.defaults_);
@@ -14392,7 +14392,7 @@ void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT PROT
 class SourceCodeInfo_Location::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
+      decltype(::std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
 };
@@ -14649,7 +14649,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string leading_comments = 3;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_leading_comments();
+    const ::std::string& _s = this_._internal_leading_comments();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.SourceCodeInfo.Location.leading_comments");
     target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -14657,7 +14657,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
 
   // optional string trailing_comments = 4;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_trailing_comments();
+    const ::std::string& _s = this_._internal_trailing_comments();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.SourceCodeInfo.Location.trailing_comments");
     target = stream->WriteStringMaybeAliased(4, _s, target);
@@ -14770,7 +14770,7 @@ void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
 
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -15047,7 +15047,7 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitializedImpl(
 }
 
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.location_.InternalSwap(&other->_impl_.location_);
@@ -15061,7 +15061,7 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NON
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
+      decltype(::std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
 };
@@ -15303,7 +15303,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string source_file = 2;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_source_file();
+    const ::std::string& _s = this_._internal_source_file();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.GeneratedCodeInfo.Annotation.source_file");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -15427,7 +15427,7 @@ void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& 
 
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -15687,7 +15687,7 @@ void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
 
 
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
 }
