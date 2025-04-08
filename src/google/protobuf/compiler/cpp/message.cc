@@ -851,7 +851,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 typename = typename _proto_TypeTraits::Singular>
-      inline bool HasExtension(
+      [[nodiscard]] inline bool HasExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
         $WeakDescriptorSelfPin$;
@@ -872,7 +872,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 typename = typename _proto_TypeTraits::Repeated>
-      inline int ExtensionSize(
+      [[nodiscard]] inline int ExtensionSize(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
         $WeakDescriptorSelfPin$;
@@ -883,7 +883,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
-      inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      [[nodiscard]] inline typename _proto_TypeTraits::Singular::ConstType
+      GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
         $WeakDescriptorSelfPin$;
@@ -894,9 +895,9 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
-      inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) const
+      [[nodiscard]] inline typename _proto_TypeTraits::Singular::ConstType
+      GetExtension(const $pbi$::ExtensionIdentifier<
+                   $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id) const
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
@@ -958,7 +959,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed>
-      inline typename _proto_TypeTraits::Singular::MutableType
+      [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
       UnsafeArenaReleaseExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
@@ -971,10 +972,10 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
-      inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id,
-          int index) const {
+      [[nodiscard]] inline typename _proto_TypeTraits::Repeated::ConstType
+      GetExtension(const $pbi$::ExtensionIdentifier<
+                       $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id,
+                   int index) const {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, index);
@@ -983,10 +984,10 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
                 std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
-      inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id,
-          int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      [[nodiscard]] inline typename _proto_TypeTraits::Repeated::ConstType
+      GetExtension(const $pbi$::ExtensionIdentifier<
+                       $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id,
+                   int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, index);
@@ -1041,11 +1042,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed>
-      inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
-      GetRepeatedExtension(
-          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
-                                           _field_type, _is_packed>& id) const
-          ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      [[nodiscard]] inline const typename _proto_TypeTraits::Repeated::
+          RepeatedFieldType&
+          GetRepeatedExtension(
+              const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                               _field_type, _is_packed>& id)
+              const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list$;
         return _proto_TypeTraits::GetRepeated(id.number(), $extensions$);
