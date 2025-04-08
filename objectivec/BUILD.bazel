@@ -1,5 +1,8 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 load(":defs.bzl", "objc_proto_camel_case_name")
