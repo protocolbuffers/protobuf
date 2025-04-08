@@ -841,7 +841,7 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
     return PyErr_Format(PyExc_RuntimeError, "Map cleared during iteration.");
   }
 
-  if (self->iter.get() == nullptr) {
+  if (self->iter == nullptr) {
     return nullptr;
   }
 
