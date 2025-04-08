@@ -71,6 +71,9 @@ using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 static constexpr int kNoHasbit = -1;
+// Fields with presence probability higher than this threshold will be assigned
+// hasbits first, followed by all remaining fields.
+static constexpr float kImportantFieldPresenceThreshold = 0.05f;
 
 // Create an expression that evaluates to
 //  "for all i, (_has_bits_[i] & masks[i]) == masks[i]"
@@ -639,7 +642,8 @@ MessageGenerator::MessageGenerator(
 
   // This message has hasbits iff one or more fields need one.
   for (auto field : optimized_order_) {
-    if (HasHasbit(field)) {
+    if (HasHasbit(field) && GetPresenceProbability(field, options_) >
+                                kImportantFieldPresenceThreshold) {
       if (has_bit_indices_.empty()) {
         has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
       }
@@ -654,6 +658,15 @@ MessageGenerator::MessageGenerator(
       }
 
       inlined_string_indices_[field->index()] = max_inlined_string_index_++;
+    }
+  }
+  for (auto field : optimized_order_) {
+    if (HasHasbit(field) && GetPresenceProbability(field, options_) <=
+                                kImportantFieldPresenceThreshold) {
+      if (has_bit_indices_.empty()) {
+        has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
+      }
+      has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
   }
   field_generators_.Build(options_, scc_analyzer_, has_bit_indices_,
