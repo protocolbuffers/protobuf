@@ -373,7 +373,7 @@ namespace protobuf {
 class DoubleValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<DoubleValue>()._impl_._has_bits_);
+      decltype(::std::declval<DoubleValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._has_bits_);
 };
@@ -592,7 +592,7 @@ void DoubleValue::CopyFrom(const DoubleValue& from) {
 
 
 void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -606,7 +606,7 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class FloatValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<FloatValue>()._impl_._has_bits_);
+      decltype(::std::declval<FloatValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._has_bits_);
 };
@@ -825,7 +825,7 @@ void FloatValue::CopyFrom(const FloatValue& from) {
 
 
 void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -839,7 +839,7 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 class Int64Value::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Int64Value>()._impl_._has_bits_);
+      decltype(::std::declval<Int64Value>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._has_bits_);
 };
@@ -1059,7 +1059,7 @@ void Int64Value::CopyFrom(const Int64Value& from) {
 
 
 void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -1073,7 +1073,7 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 class UInt64Value::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<UInt64Value>()._impl_._has_bits_);
+      decltype(::std::declval<UInt64Value>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._has_bits_);
 };
@@ -1293,7 +1293,7 @@ void UInt64Value::CopyFrom(const UInt64Value& from) {
 
 
 void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -1307,7 +1307,7 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class Int32Value::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Int32Value>()._impl_._has_bits_);
+      decltype(::std::declval<Int32Value>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._has_bits_);
 };
@@ -1527,7 +1527,7 @@ void Int32Value::CopyFrom(const Int32Value& from) {
 
 
 void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -1541,7 +1541,7 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 class UInt32Value::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<UInt32Value>()._impl_._has_bits_);
+      decltype(::std::declval<UInt32Value>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._has_bits_);
 };
@@ -1761,7 +1761,7 @@ void UInt32Value::CopyFrom(const UInt32Value& from) {
 
 
 void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -1775,7 +1775,7 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class BoolValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<BoolValue>()._impl_._has_bits_);
+      decltype(::std::declval<BoolValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._has_bits_);
 };
@@ -1994,7 +1994,7 @@ void BoolValue::CopyFrom(const BoolValue& from) {
 
 
 void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   swap(_impl_.value_, other->_impl_.value_);
@@ -2008,7 +2008,7 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 class StringValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<StringValue>()._impl_._has_bits_);
+      decltype(::std::declval<StringValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(StringValue, _impl_._has_bits_);
 };
@@ -2178,7 +2178,7 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
   // string value = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_value().empty()) {
-      const std::string& _s = this_._internal_value();
+      const ::std::string& _s = this_._internal_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.StringValue.value");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -2253,7 +2253,7 @@ void StringValue::CopyFrom(const StringValue& from) {
 
 
 void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -2269,7 +2269,7 @@ void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 class BytesValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<BytesValue>()._impl_._has_bits_);
+      decltype(::std::declval<BytesValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._has_bits_);
 };
@@ -2436,7 +2436,7 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
   // bytes value = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_value().empty()) {
-      const std::string& _s = this_._internal_value();
+      const ::std::string& _s = this_._internal_value();
       target = stream->WriteBytesMaybeAliased(1, _s, target);
     }
   }
@@ -2509,7 +2509,7 @@ void BytesValue::CopyFrom(const BytesValue& from) {
 
 
 void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

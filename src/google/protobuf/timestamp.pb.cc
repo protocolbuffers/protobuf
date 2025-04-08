@@ -110,7 +110,7 @@ namespace protobuf {
 class Timestamp::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Timestamp>()._impl_._has_bits_);
+      decltype(::std::declval<Timestamp>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._has_bits_);
 };
@@ -370,7 +370,7 @@ void Timestamp::CopyFrom(const Timestamp& from) {
 
 
 void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<

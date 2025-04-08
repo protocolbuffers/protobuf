@@ -575,7 +575,7 @@ void Struct::CopyFrom(const Struct& from) {
 
 
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
 }
@@ -874,7 +874,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
       break;
     }
     case kStringValue: {
-      const std::string& _s = this_._internal_string_value();
+      const ::std::string& _s = this_._internal_string_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Value.string_value");
       target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -1038,7 +1038,7 @@ void Value::CopyFrom(const Value& from) {
 
 
 void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_.kind_, other->_impl_.kind_);
   swap(_impl_._oneof_case_[0], other->_impl_._oneof_case_[0]);
@@ -1290,7 +1290,7 @@ void ListValue::CopyFrom(const ListValue& from) {
 
 
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.values_.InternalSwap(&other->_impl_.values_);
 }

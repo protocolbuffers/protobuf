@@ -341,7 +341,7 @@ void FieldMask::CopyFrom(const FieldMask& from) {
 
 
 void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
