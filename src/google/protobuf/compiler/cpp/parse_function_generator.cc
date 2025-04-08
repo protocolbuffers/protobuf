@@ -68,27 +68,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       ordered_fields_(GetOrderedFields(descriptor_)),
       num_hasbits_(max_has_bit_index),
       index_in_file_messages_(index_in_file_messages) {
-  std::vector<TailCallTableInfo::FieldOptions> fields;
-  fields.reserve(ordered_fields_.size());
-  for (size_t i = 0; i < ordered_fields_.size(); ++i) {
-    auto* field = ordered_fields_[i];
-    ABSL_CHECK_GE(field->index(), 0);
-    size_t index = static_cast<size_t>(field->index());
-    fields.push_back({
-        field,
-        index < has_bit_indices.size() ? has_bit_indices[index] : -1,
-        // When not present, we're not sure how likely "field" is present.
-        // Assign a 50% probability to avoid pessimizing it.
-        GetPresenceProbability(field, options_).value_or(0.5f),
-        GetLazyStyle(field, options_, scc_analyzer_),
-        IsStringInlined(field, options_),
-        IsImplicitWeakField(field, options_, scc_analyzer_),
-        /* use_direct_tcparser_table */ true,
-        ShouldSplit(field, options_),
-        index < inlined_string_indices.size() ? inlined_string_indices[index]
-                                              : -1,
-    });
-  }
+  auto fields =
+      BuildFieldOptions(descriptor_, ordered_fields_, options_, scc_analyzer_,
+                        has_bit_indices, inlined_string_indices_);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
       descriptor_,
       TailCallTableInfo::MessageOptions{
@@ -100,6 +82,37 @@ ParseFunctionGenerator::ParseFunctionGenerator(
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
+}
+
+std::vector<internal::TailCallTableInfo::FieldOptions>
+ParseFunctionGenerator::BuildFieldOptions(
+    const Descriptor* descriptor,
+    absl::Span<const FieldDescriptor* const> ordered_fields,
+    const Options& options, MessageSCCAnalyzer* scc_analyzer,
+    absl::Span<const int> has_bit_indices,
+    absl::Span<const int> inlined_string_indices) {
+  std::vector<TailCallTableInfo::FieldOptions> fields;
+  fields.reserve(ordered_fields.size());
+  for (size_t i = 0; i < ordered_fields.size(); ++i) {
+    auto* field = ordered_fields[i];
+    ABSL_CHECK_GE(field->index(), 0);
+    size_t index = static_cast<size_t>(field->index());
+    fields.push_back({
+        field,
+        index < has_bit_indices.size() ? has_bit_indices[index] : -1,
+        // When not present, we're not sure how likely "field" is present.
+        // Assign a 50% probability to avoid pessimizing it.
+        GetPresenceProbability(field, options).value_or(0.5f),
+        GetLazyStyle(field, options, scc_analyzer),
+        IsStringInlined(field, options),
+        IsImplicitWeakField(field, options, scc_analyzer),
+        /* use_direct_tcparser_table */ true,
+        ShouldSplit(field, options),
+        index < inlined_string_indices.size() ? inlined_string_indices[index]
+                                              : -1,
+    });
+  }
+  return fields;
 }
 
 struct SkipEntry16 {

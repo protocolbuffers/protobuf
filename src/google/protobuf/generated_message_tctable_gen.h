@@ -64,6 +64,14 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool use_micro_string;
   };
 
+  struct FieldEntryInfo;
+  struct AuxEntry;
+
+  static std::vector<FieldEntryInfo> BuildFieldEntries(
+      const Descriptor* descriptor, const MessageOptions& message_options,
+      absl::Span<const FieldOptions> ordered_fields,
+      std::vector<AuxEntry>& aux_entries);
+
   TailCallTableInfo(const Descriptor* descriptor,
                     const MessageOptions& message_options,
                     absl::Span<const FieldOptions> ordered_fields);

@@ -38,6 +38,13 @@ class ParseFunctionGenerator {
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
 
+  static std::vector<internal::TailCallTableInfo::FieldOptions>
+  BuildFieldOptions(const Descriptor* descriptor,
+                    absl::Span<const FieldDescriptor* const> ordered_fields,
+                    const Options& options, MessageSCCAnalyzer* scc_analyzer,
+                    absl::Span<const int> has_bit_indices,
+                    absl::Span<const int> inlined_string_indices);
+
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);
 
