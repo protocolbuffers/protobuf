@@ -161,25 +161,19 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
 void PrintPresenceCheck(const FieldDescriptor* field,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index, const Options& options) {
-  if (!field->options().weak()) {
-    int has_bit_index = has_bit_indices[field->index()];
-    if (*cached_has_word_index != (has_bit_index / 32)) {
-      *cached_has_word_index = (has_bit_index / 32);
-      p->Emit({{"index", *cached_has_word_index}},
-              R"cc(
-                cached_has_bits = $has_bits$[$index$];
-              )cc");
-    }
-    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options)}},
+  int has_bit_index = has_bit_indices[field->index()];
+  if (*cached_has_word_index != (has_bit_index / 32)) {
+    *cached_has_word_index = (has_bit_index / 32);
+    p->Emit({{"index", *cached_has_word_index}},
             R"cc(
-              if ($condition$) {
+              cached_has_bits = $has_bits$[$index$];
             )cc");
-  } else {
-    p->Emit(R"cc(
-      if (has_$name$()) {
-    )cc");
   }
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options)}},
+          R"cc(
+            if ($condition$) {
+          )cc");
 }
 
 struct FieldOrderingByNumber {
@@ -735,7 +729,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                         optimized_order_.end());
 
   for (auto field : FieldRange(descriptor_)) {
-    if (!field->real_containing_oneof() && !field->options().weak()) {
+    if (!field->real_containing_oneof()) {
       continue;
     }
     ordered_fields.push_back(field);
@@ -1092,17 +1086,6 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  if (field->options().weak()) {
-    p->Emit(
-        R"cc(
-          inline bool $classname$::has_$name$() const {
-            $WeakDescriptorSelfPin$;
-            $annotate_has$;
-            return $weak_field_map$.Has($number$);
-          }
-        )cc");
-    return;
-  }
   if (GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit) {
     auto v = p->WithVars(HasBitVars(field));
     p->Emit(
@@ -1301,15 +1284,6 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
                              /*with_enclosing_braces_always=*/true);
     return;
   }
-  if (field->options().weak()) {
-    p->Emit({{"emit_body", [&] { emit_body(); }}},
-            R"cc(
-              if (has_$name$()) {
-                $emit_body$;
-              }
-            )cc");
-    return;
-  }
 
   int has_bit_index = has_bit_indices_[field->index()];
   p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -1332,7 +1306,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
-  if (!HasHasbit(field) || field->options().weak()) return;
+  if (!HasHasbit(field)) return;
 
   int has_bit_index = has_bit_indices_[field->index()];
 
@@ -2115,8 +2089,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           for (auto field : FieldRange(descriptor_)) {
             // set_has_***() generated in all oneofs.
-            if (!field->is_repeated() && !field->options().weak() &&
-                field->real_containing_oneof()) {
+            if (!field->is_repeated() && field->real_containing_oneof()) {
               p->Emit({{"field_name", FieldName(field)}}, R"cc(
                 void set_has_$field_name$();
               )cc");
@@ -2652,7 +2625,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
-    if (field->options().weak() || field->real_containing_oneof()) {
+    if (field->real_containing_oneof()) {
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
@@ -4335,8 +4308,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
               p, "from.", field, ShouldSplit(field, options_),
               /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
               /*with_enclosing_braces_always=*/true);
-        } else if (field->options().weak() ||
-                   cached_has_word_index != HasWordIndex(field)) {
+        } else if (cached_has_word_index != HasWordIndex(field)) {
           // Check hasbit, not using cached bits.
           auto v = p->WithVars(HasBitVars(field));
           format(
@@ -4579,12 +4551,6 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   auto emit_body = [&] {
     field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
   };
-
-  if (field->options().weak()) {
-    emit_body();
-    p->Emit("\n");
-    return;
-  }
 
   PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field)) {
@@ -4883,13 +4849,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
                  re.Flush(no_more_extensions);
-                 if (field->options().weak()) {
-                   largest_weak_field.ReplaceIfLarger(field);
-                   PrintFieldComment(Formatter{p}, field, options_);
-                 } else {
-                   e.EmitIfNotNull(largest_weak_field.Release());
-                   e.Emit(field);
-                 }
+                 e.EmitIfNotNull(largest_weak_field.Release());
+                 e.Emit(field);
                } else {
                  e.EmitIfNotNull(largest_weak_field.Release());
                  e.Flush();
