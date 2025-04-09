@@ -13,7 +13,6 @@
 
 #include "google/protobuf/compiler/parser.h"
 
-
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -699,18 +698,27 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility = SymbolVisibility::VISIBILITY_UNSET;
+  if (LookingAt("export") || LookingAt("local")) {
+    DO(ParseVisibility(file, &visibility));
+  }
+
+  if (LookingAt("message")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
     // Maximum depth allowed by the DescriptorPool.
     recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
-    return ParseMessageDefinition(file->add_message_type(), location, file);
+    return ParseMessageDefinition(file->add_message_type(), visibility,
+                                  location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kEnumTypeFieldNumber,
                               file->enum_type_size());
-    return ParseEnumDefinition(file->add_enum_type(), location, file);
+    return ParseEnumDefinition(file->add_enum_type(), visibility, location,
+                               file);
   } else if (LookingAt("service")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kServiceFieldNumber,
@@ -780,7 +788,8 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
 }
 
 bool Parser::ParseMessageDefinition(
-    DescriptorProto* message, const LocationRecorder& message_location,
+    DescriptorProto* message, const SymbolVisibility& visibility,
+    const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
   const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
   if (--recursion_depth_ <= 0) {
@@ -800,6 +809,10 @@ bool Parser::ParseMessageDefinition(
 
   if (syntax_identifier_ == "proto3") {
     GenerateSyntheticOneofs(message);
+  }
+
+  if (visibility != SymbolVisibility::VISIBILITY_UNSET) {
+    message->set_visibility(visibility);
   }
 
   return true;
@@ -891,17 +904,24 @@ bool Parser::ParseMessageStatement(DescriptorProto* message,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility = SymbolVisibility::VISIBILITY_UNSET;
+  if (LookingAt("export") || LookingAt("local")) {
+    DO(ParseVisibility(containing_file, &visibility));
+  }
+
+  if (LookingAt("message")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kNestedTypeFieldNumber,
                               message->nested_type_size());
-    return ParseMessageDefinition(message->add_nested_type(), location,
-                                  containing_file);
+    return ParseMessageDefinition(message->add_nested_type(), visibility,
+                                  location, containing_file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kEnumTypeFieldNumber,
                               message->enum_type_size());
-    return ParseEnumDefinition(message->add_enum_type(), location,
+    return ParseEnumDefinition(message->add_enum_type(), visibility, location,
                                containing_file);
   } else if (LookingAt("extensions")) {
     LocationRecorder location(message_location,
@@ -2087,6 +2107,7 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 // Enums
 
 bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
+                                 const SymbolVisibility& visibility,
                                  const LocationRecorder& enum_location,
                                  const FileDescriptorProto* containing_file) {
   DO(Consume("enum"));
@@ -2102,6 +2123,10 @@ bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
   DO(ParseEnumBlock(enum_type, enum_location, containing_file));
 
   DO(ValidateEnum(enum_type));
+
+  if (visibility != SymbolVisibility::VISIBILITY_UNSET) {
+    enum_type->set_visibility(visibility);
+  }
 
   return true;
 }
@@ -2506,6 +2531,37 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
   location.RecordLegacyImportLocation(containing_file, import_file);
 
   DO(ConsumeEndOfDeclaration(";", &location));
+
+  return true;
+}
+
+bool Parser::ParseVisibility(const FileDescriptorProto* containing_file,
+                             SymbolVisibility* out) {
+  if (containing_file == nullptr || out == nullptr) {
+    return false;
+  }
+
+  // Bail out of visiblity checks if < 2024
+  if (containing_file->edition() <= Edition::EDITION_2023) {
+    return true;
+  }
+
+  if (TryConsume("export")) {
+    *out = SymbolVisibility::VISIBILITY_EXPORT;
+  } else if (TryConsume("local")) {
+    *out = SymbolVisibility::VISIBILITY_LOCAL;
+  }
+
+  // If we set a visibility make sure it's OK.
+  if (*out != SymbolVisibility::VISIBILITY_UNSET) {
+    if (!LookingAt("message") && !LookingAt("enum")) {
+      RecordError(
+          "'local' and 'export' visibility modifiers are valid only on "
+          "'message' "
+          "and 'enum'");
+      return false;
+    }
+  }
 
   return true;
 }

@@ -83,8 +83,10 @@ class DescriptorPool;
 // Defined in descriptor.proto
 #ifndef SWIG
 enum Edition : int;
+enum SymbolVisibility : int;
 #else   // !SWIG
 typedef int Edition;
+typedef int SymbolVisibility;
 #endif  // !SWIG
 class DescriptorProto;
 class DescriptorProto_ExtensionRange;
@@ -746,12 +748,17 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  // visibility declared on the message
+  SymbolVisibility visibility_keyword() const;
+
   // True if this is a placeholder for an unknown type.
   bool is_placeholder_ : 1;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_ : 1;
   // Well known type.  Stored like this to conserve space.
   uint8_t well_known_type_ : 5;
+  // bitfield representation of SymbolVisibility, which only requires 2 bits
+  uint8_t visibility_ : 2;
 
   // This points to the last field _number_ that is part of the sequence
   // starting at 1, where
@@ -806,7 +813,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class FileDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 152);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 160);
 
 // Describes a single field of a message.  To get the descriptor for a given
 // field, first get the Descriptor for the message in which it is defined,
@@ -1530,10 +1537,16 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  // visibility declared on the enum
+  SymbolVisibility visibility_keyword() const;
+
   // True if this is a placeholder for an unknown type.
   bool is_placeholder_ : 1;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_ : 1;
+
+  // bitfield representation of SymbolVisibility, which only requires 2 bits
+  uint8_t visibility_ : 2;
 
   // This points to the last value _index_ that is part of the sequence starting
   // with the first label, where
@@ -3039,6 +3052,15 @@ inline const FileDescriptor* FileDescriptor::public_dependency(
 
 inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
+}
+
+// BitField handling of SymbolVisibility in message/enum
+inline SymbolVisibility Descriptor::visibility_keyword() const {
+  return static_cast<SymbolVisibility>(visibility_);
+}
+
+inline SymbolVisibility EnumDescriptor::visibility_keyword() const {
+  return static_cast<SymbolVisibility>(visibility_);
 }
 
 namespace internal {
