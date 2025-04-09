@@ -307,6 +307,13 @@ bool IsViewValidUTF8WithLeftover(absl::string_view fragment,
 
 }  // namespace
 
+const char* EpsCopyInputStream::VerifyUTF8(const char* ptr, size_t size) {
+  if (size <= static_cast<size_t>(BytesAvailable(ptr))) {
+    return utf8_range::IsStructurallyValid({ptr, size}) ? ptr + size : nullptr;
+  }
+  return VerifyUTF8Fallback(ptr, size);
+}
+
 const char* EpsCopyInputStream::VerifyUTF8Fallback(const char* ptr,
                                                    size_t size) {
   // Copied the implementation of CordIsValid().

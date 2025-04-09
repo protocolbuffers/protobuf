@@ -38,7 +38,6 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -206,13 +205,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return AppendStringFallback(ptr, size, s);
   }
 
-  [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size) {
-    if (size <= static_cast<size_t>(BytesAvailable(ptr))) {
-      return utf8_range::IsStructurallyValid({ptr, size}) ? ptr + size
-                                                          : nullptr;
-    }
-    return VerifyUTF8Fallback(ptr, size);
-  }
+  [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
                                             Arena* arena);
