@@ -258,7 +258,7 @@ enum FieldType : uint16_t {
 [[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
                                             std::uintptr_t address);
 inline void AlignFail(std::integral_constant<size_t, 1>,
-                      std::uintptr_t address) {}
+                      std::uintptr_t /*address*/) {}
 #endif
 
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(fn) \

@@ -2297,11 +2297,11 @@ class PROTOBUF_EXPORT DescriptorPool {
     // descriptor - Descriptor of the erroneous element.
     // location - One of the location constants, above.
     // message - Human-readable error message.
-    virtual void RecordWarning(absl::string_view filename,
-                               absl::string_view element_name,
-                               const Message* descriptor,
-                               ErrorLocation location,
-                               absl::string_view message) {
+    virtual void RecordWarning(absl::string_view /*filename*/,
+                               absl::string_view /*element_name*/,
+                               const Message* /*descriptor*/,
+                               ErrorLocation /*location*/,
+                               absl::string_view /*message*/) {
     }
 
   };
