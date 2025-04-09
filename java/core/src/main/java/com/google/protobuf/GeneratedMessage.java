@@ -2143,7 +2143,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Get the FieldAccessor for a particular field. */
     private FieldAccessor getField(final FieldDescriptor field) {
       if (field.getContainingType() != descriptor) {
-        throw new IllegalArgumentException("FieldDescriptor does not match message type.");
+        throw new IllegalArgumentException(
+            "FieldDescriptor does not match message type: "
+                + field.getContainingType().getFullName()
+                + " : "
+                + descriptor.getFullName());
       } else if (field.isExtension()) {
         // If this type had extensions, it would subclass ExtendableMessage,
         // which overrides the reflection interface to handle extensions.
