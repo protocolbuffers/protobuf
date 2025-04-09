@@ -205,6 +205,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return AppendStringFallback(ptr, size, s);
   }
 
+  [[nodiscard]] const char* ReadArray(const char* ptr, int size, char* dst);
+
   [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
@@ -400,6 +402,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
+  const char* ReadArrayFallback(const char* ptr, int size, char* dst);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
