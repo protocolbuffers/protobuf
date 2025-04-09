@@ -790,24 +790,22 @@ TailCallTableInfo::BuildFieldEntries(
     return options.presence_probability >= 0.005;
   };
   size_t num_non_cold_subtables = 0;
-  if (message_options.should_profile_driven_cluster_aux_subtable) {
-    // We found that clustering non-cold subtables to the top of aux_entries
-    // achieves the best load tests results than other strategies (e.g.,
-    // clustering all non-cold entries).
-    const auto is_non_cold_subtable = [&](const FieldOptions& options) {
-      auto* field = options.field;
-      // In the following code where we assign kSubTable to aux entries, only
-      // the following typed fields are supported.
-      return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-              field->type() == FieldDescriptor::TYPE_GROUP) &&
-             !field->is_map() && !field->options().weak() &&
-             !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-             options.use_direct_tcparser_table && is_non_cold(options);
-    };
-    for (const FieldOptions& options : ordered_fields) {
-      if (is_non_cold_subtable(options)) {
-        num_non_cold_subtables++;
-      }
+  // We found that clustering non-cold subtables to the top of aux_entries
+  // achieves the best load tests results than other strategies (e.g.,
+  // clustering all non-cold entries).
+  const auto is_non_cold_subtable = [&](const FieldOptions& options) {
+    auto* field = options.field;
+    // In the following code where we assign kSubTable to aux entries, only
+    // the following typed fields are supported.
+    return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+            field->type() == FieldDescriptor::TYPE_GROUP) &&
+           !field->is_map() && !field->options().weak() &&
+           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
+           options.use_direct_tcparser_table && is_non_cold(options);
+  };
+  for (const FieldOptions& options : ordered_fields) {
+    if (is_non_cold_subtable(options)) {
+      num_non_cold_subtables++;
     }
   }
 
@@ -860,8 +858,7 @@ TailCallTableInfo::BuildFieldEntries(
         AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
                        : options.use_direct_tcparser_table ? kSubTable
                                                            : kSubMessage;
-        if (message_options.should_profile_driven_cluster_aux_subtable &&
-            type == kSubTable && is_non_cold(options)) {
+        if (type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
           entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;

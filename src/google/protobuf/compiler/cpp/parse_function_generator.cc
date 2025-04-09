@@ -76,8 +76,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       TailCallTableInfo::MessageOptions{
           /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
               FileOptions::LITE_RUNTIME,
-          /* uses_codegen */ true,
-          options_.profile_driven_cluster_aux_subtable},
+          /* uses_codegen */ true},
       fields);
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);

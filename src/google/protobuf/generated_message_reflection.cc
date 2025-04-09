@@ -3644,7 +3644,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       {
           /* is_lite */ false,
           /* uses_codegen */ false,
-          /* should_profile_driven_cluster_aux_table */ false,
       },
       fields);
 
