@@ -1,5 +1,7 @@
 package com.google.protobuf;
 
+import javax.annotation.Nullable;
+
 /**
  * The legacy APIs preserve the existing toString() behavior (output TextFormat), which allows us to
  * migrate toString callers that expect TextFormat output off toString. Eventually, we will make
@@ -60,7 +62,7 @@ public final class LegacyUnredactedTextFormat {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String legacyUnredactedStringValueOf(Object object) {
+  public static String legacyUnredactedStringValueOf(@Nullable Object object) {
     return (object == null) ? String.valueOf(object) : legacyUnredactedToString(object);
   }
 }
