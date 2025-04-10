@@ -611,11 +611,10 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         }
       }
     } else if (!stop_after_syntax_identifier_) {
-      ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
-                        << file->name()
-                        << ". Please use 'syntax = \"proto2\";' "
-                        << "or 'syntax = \"proto3\";' to specify a syntax "
-                        << "version. (Defaulted to proto2 syntax.)";
+      ABSL_LOG(WARNING) << "No edition or syntax specified for the proto file: "
+                        << file->name() << ". Please use 'edition = \"YYYY\";' "
+                        << " to specify a valid edition "
+                        << "version. (Defaulted to \"syntax = \"proto2\";\".)";
       syntax_identifier_ = "proto2";
     }
 

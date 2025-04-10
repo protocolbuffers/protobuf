@@ -231,7 +231,7 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmitted) {
   FileDescriptorProto file;
   CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
+  EXPECT_TRUE(GetCapturedTestStderr().find("No edition or syntax specified") !=
               std::string::npos);
 }
 
