@@ -196,7 +196,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Timestamp_class_data_ =
         Timestamp::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Timestamp::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Timestamp::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Timestamp_class_data_.tc_table);
   return Timestamp_class_data_.base();

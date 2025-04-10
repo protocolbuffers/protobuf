@@ -196,7 +196,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Duration_class_data_ =
         Duration::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Duration::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Duration_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Duration_class_data_.tc_table);
   return Duration_class_data_.base();

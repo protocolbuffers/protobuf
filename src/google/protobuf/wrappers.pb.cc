@@ -454,7 +454,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_ =
         DoubleValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL DoubleValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+DoubleValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DoubleValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(DoubleValue_class_data_.tc_table);
   return DoubleValue_class_data_.base();
@@ -687,7 +688,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull FloatValue_class_data_ =
         FloatValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FloatValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+FloatValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FloatValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(FloatValue_class_data_.tc_table);
   return FloatValue_class_data_.base();
@@ -920,7 +922,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Int64Value_class_data_ =
         Int64Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Int64Value::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Int64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int64Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Int64Value_class_data_.tc_table);
   return Int64Value_class_data_.base();
@@ -1154,7 +1157,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_ =
         UInt64Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UInt64Value::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+UInt64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt64Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(UInt64Value_class_data_.tc_table);
   return UInt64Value_class_data_.base();
@@ -1388,7 +1392,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Int32Value_class_data_ =
         Int32Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Int32Value::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Int32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int32Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Int32Value_class_data_.tc_table);
   return Int32Value_class_data_.base();
@@ -1622,7 +1627,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_ =
         UInt32Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL UInt32Value::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+UInt32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt32Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(UInt32Value_class_data_.tc_table);
   return UInt32Value_class_data_.base();
@@ -1856,7 +1862,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull BoolValue_class_data_ =
         BoolValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL BoolValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+BoolValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BoolValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(BoolValue_class_data_.tc_table);
   return BoolValue_class_data_.base();
@@ -2103,7 +2110,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull StringValue_class_data_ =
         StringValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL StringValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+StringValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&StringValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(StringValue_class_data_.tc_table);
   return StringValue_class_data_.base();
@@ -2364,7 +2372,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull BytesValue_class_data_ =
         BytesValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL BytesValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+BytesValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BytesValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(BytesValue_class_data_.tc_table);
   return BytesValue_class_data_.base();

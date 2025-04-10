@@ -256,7 +256,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_ =
         Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct_FieldsEntry_DoNotUse::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Struct_FieldsEntry_DoNotUse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_FieldsEntry_DoNotUse_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Struct_FieldsEntry_DoNotUse_class_data_.tc_table);
   return Struct_FieldsEntry_DoNotUse_class_data_.base();
@@ -416,7 +417,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Struct_class_data_ =
         Struct::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Struct::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Struct_class_data_.tc_table);
   return Struct_class_data_.base();
@@ -776,7 +778,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Value_class_data_ =
         Value::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Value::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Value_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Value_class_data_.tc_table);
   return Value_class_data_.base();
@@ -1153,7 +1156,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull ListValue_class_data_ =
         ListValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ListValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+ListValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ListValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(ListValue_class_data_.tc_table);
   return ListValue_class_data_.base();
