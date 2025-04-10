@@ -66,6 +66,7 @@ static const char kFileDescriptorCacheKey = 0;
 
 static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageFields)
     __attribute__((ns_returns_retained));
+GPB_INLINE void CheckRuntimeSupported(const int32_t *runtimeSupport);
 
 static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageFields) {
   NSMutableArray *result = [[NSMutableArray alloc] init];
@@ -75,6 +76,15 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     }
   }
   return result;
+}
+
+GPB_INLINE void CheckRuntimeSupported(const int32_t *runtimeSupport) {
+  if (runtimeSupport != &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311 &&
+      runtimeSupport != &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
+    [NSException raise:NSInternalInconsistencyException
+                format:@"Proto generation source appears to have been from a version newer than "
+                       @"this runtime."];
+  }
 }
 
 @implementation GPBDescriptor {
@@ -99,11 +109,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                              fieldCount:(uint32_t)fieldCount
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags {
-  if (runtimeSupport != &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Proto generation source appears to have been from a version newer than "
-                       @"this runtime."];
-  }
+  CheckRuntimeSupported(runtimeSupport);
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
@@ -142,11 +148,20 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // No real value in checking all the fields individually, just check the combined flags at the
   // end.
-  GPBFieldFlags unknownFieldFlags =
-      (GPBFieldFlags)(~(GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldOptional |
-                        GPBFieldHasDefaultValue | GPBFieldClearHasIvarOnZero |
-                        GPBFieldTextFormatNameCustom | GPBFieldMapKeyMask));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  GPBFieldFlags unknownFieldFlags = (GPBFieldFlags)(~(
+      GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldHasDefaultValue |
+      GPBFieldClearHasIvarOnZero | GPBFieldTextFormatNameCustom | GPBFieldMapKeyMask));
+#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 40310
+#error "Time to remove these methods"
+#else
+  if (runtimeSupport == &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
+    unknownFieldFlags &= ~GPBFieldOptional;  // Allow 40310 to still have GPBFieldOptional.
+  }
+#endif
   NSAssert((mergedFieldFlags & unknownFieldFlags) == 0, @"Internal error: unknown field flags set");
+#pragma clang diagnostic pop
 #endif  // defined(DEBUG) && DEBUG
 
   BOOL wireFormat = (flags & GPBDescriptorInitializationFlag_WireFormat) != 0;
@@ -196,6 +211,10 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     } else {
       coreDesc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    coreDesc->flags &= ~GPBFieldOptional;  // Flag longer being used.
+#pragma clang diagnostic pop
     if ((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0) {
       // Clear the flag, no longer used.
       coreDesc->flags &= ~GPBFieldHasEnumDescriptor;
@@ -223,7 +242,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
   return [self allocDescriptorForClass:messageClass
                            messageName:messageName
-                        runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                        runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311
                        fileDescription:(GPBFilePackageAndPrefix *)fileDescription
                                 fields:fieldDescriptions
                             fieldCount:fieldCount
@@ -611,9 +630,12 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return (description_->flags & GPBFieldRequired) != 0;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (BOOL)isOptional {
-  return (description_->flags & GPBFieldOptional) != 0;
+  return self.fieldType == GPBFieldTypeSingle && !self.isRequired;
 }
+#pragma clang diagnostic pop
 
 - (GPBFieldType)fieldType {
   GPBFieldFlags flags = description_->flags;
@@ -777,11 +799,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
                                  flags:(GPBEnumDescriptorInitializationFlags)flags {
-  if (runtimeSupport != &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Proto generation source appears to have been from a version newer than "
-                       @"this runtime."];
-  }
+  CheckRuntimeSupported(runtimeSupport);
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
@@ -832,7 +850,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                                  flags:(GPBEnumDescriptorInitializationFlags)flags {
   // This is the 30007 api point. Nothing to do, just bridge to the current version.
   return [self allocDescriptorForName:name
-                       runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                       runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311
                            valueNames:valueNames
                                values:values
                                 count:valueCount
@@ -849,7 +867,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
                    extraTextFormatInfo:(const char *)extraTextFormatInfo {
   // This is the 30007 api point. Nothing to do, just bridge to the current version.
   return [self allocDescriptorForName:name
-                       runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                       runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311
                            valueNames:valueNames
                                values:values
                                 count:valueCount
@@ -1042,11 +1060,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
                               runtimeSupport:(const int32_t *)runtimeSupport {
-  if (runtimeSupport != &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Proto generation source appears to have been from a version newer than "
-                       @"this runtime."];
-  }
+  CheckRuntimeSupported(runtimeSupport);
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Compute the unknown options by this version of the runtime and then check the passed in
   // descriptor's options (from the generated code). If this does fire either something was
@@ -1096,7 +1110,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   desc->options = (GPBExtensionOptions)(desc->options & ~flagsToClear);
 
   return [self initWithExtensionDescription:desc
-                             runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310];
+                             runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311];
 }
 
 #endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007

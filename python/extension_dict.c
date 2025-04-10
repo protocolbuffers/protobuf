@@ -101,6 +101,7 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   if (!msg) return 0;
   if (upb_FieldDef_IsRepeated(f)) {
     upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+    if (!val.array_val) return 0;
     return upb_Array_Size(val.array_val) > 0;
   } else {
     return upb_Message_HasFieldByDef(msg, f);

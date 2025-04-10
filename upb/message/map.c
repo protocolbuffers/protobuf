@@ -17,6 +17,7 @@
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/value.h"
@@ -50,6 +51,16 @@ size_t upb_Map_Size(const upb_Map* map) { return _upb_Map_Size(map); }
 bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
                  upb_MessageValue* val) {
   return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
+}
+
+struct upb_Message* upb_Map_GetMutable(upb_Map* map, upb_MessageValue key) {
+  UPB_ASSERT(map->val_size == sizeof(upb_Message*));
+  upb_Message* val = NULL;
+  if (_upb_Map_Get(map, &key, map->key_size, &val, sizeof(upb_Message*))) {
+    return val;
+  } else {
+    return NULL;
+  }
 }
 
 void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
@@ -169,10 +180,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
-  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING &&
-      value_size <= 4) {
-    // Use the inttable for primitive keys with small values, as inttable
-    // currently does not support UINT64_MAX in the array part.
+  if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
     if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {

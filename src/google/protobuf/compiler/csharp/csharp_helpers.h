@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__
 
 #include <string>
 
@@ -140,4 +140,4 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__

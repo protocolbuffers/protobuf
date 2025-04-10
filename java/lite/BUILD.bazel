@@ -76,8 +76,8 @@ junit_tests(
         "//java/core:java_test_protos_java_proto_lite",
         "//java/core:lite_test_protos_java_proto_lite",
         "//java/core:test_util_lite",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 

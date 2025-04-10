@@ -13,9 +13,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/requires.h"
 
@@ -24,7 +24,6 @@ using ::hpb::internal::Requires;
 
 using ::hpb_unittest::protos::container_ext;
 using ::hpb_unittest::protos::ContainerExtension;
-using ::hpb_unittest::protos::other_ext;
 using ::hpb_unittest::protos::TestModel;
 using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
@@ -619,6 +618,11 @@ TEST(CppGeneratedCode, GetExtensionRepeatedString) {
   EXPECT_EQ(res->size(), 2);
   EXPECT_EQ((*res)[0], "hello");
   EXPECT_EQ((*res)[1], "world");
+}
+
+TEST(CppGeneratedCode, ConstExprExtensionNumber) {
+  constexpr auto ext_num = hpb::ExtensionNumber(int32_ext);
+  EXPECT_EQ(ext_num, 13002);
 }
 
 }  // namespace

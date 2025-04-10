@@ -5,9 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_DOC_COMMENT_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_DOC_COMMENT_H__
 
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/descriptor.h"
@@ -31,4 +30,4 @@ void WriteMethodDocComment(io::Printer* printer, const Options* options,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_DOC_COMMENT_H__

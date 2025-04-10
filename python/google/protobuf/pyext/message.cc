@@ -851,6 +851,42 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
   return value;
 }
 
+void DeleteLastRepeatedWithSize(CMessage* self,
+                                const FieldDescriptor* field_descriptor,
+                                Py_ssize_t n) {
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
+  ABSL_DCHECK(reflection->FieldSize(*message, field_descriptor) >= n);
+  Arena* arena = message->GetArena();
+  ABSL_DCHECK_EQ(arena, nullptr)
+      << "python protobuf is expected to be allocated from heap";
+  for (; n > 0; n--) {
+    // It seems that RemoveLast() is less efficient for sub-messages, and
+    // the memory is not completely released. Prefer ReleaseLast().
+    //
+    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
+    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
+    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
+    // it).
+    //
+    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
+    // redundant. The current approach takes extra cautious path not to disrupt
+    // production.
+    Message* sub_message =
+        (arena == nullptr)
+            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
+            : reflection->ReleaseLast(message, field_descriptor);
+    // If there is a live weak reference to an item being removed, we "Release"
+    // it, and it takes ownership of the message.
+    if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
+      released->message = sub_message;
+    } else {
+      // sub_message was not transferred, delete it.
+      delete sub_message;
+    }
+  }
+}
+
 // Delete a slice from a repeated field.
 // The only way to remove items in C++ protos is to delete the last one,
 // so we swap items to move the deleted ones at the end, and then strip the
@@ -911,37 +947,14 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
     }
   }
 
-  Arena* arena = message->GetArena();
-  ABSL_DCHECK_EQ(arena, nullptr)
-      << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
-  for (; length > to; length--) {
-    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    DeleteLastRepeatedWithSize(self, field_descriptor, length - to);
+  } else {
+    ABSL_DCHECK_EQ(message->GetArena(), nullptr)
+        << "python protobuf is expected to be allocated from heap";
+    for (; length > to; length--) {
       reflection->RemoveLast(message, field_descriptor);
-      continue;
-    }
-    // It seems that RemoveLast() is less efficient for sub-messages, and
-    // the memory is not completely released. Prefer ReleaseLast().
-    //
-    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
-    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
-    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
-    // it).
-    //
-    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
-    // redundant. The current approach takes extra cautious path not to disrupt
-    // production.
-    Message* sub_message =
-        (arena == nullptr)
-            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
-            : reflection->ReleaseLast(message, field_descriptor);
-    // If there is a live weak reference to an item being removed, we "Release"
-    // it, and it takes ownership of the message.
-    if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
-      released->message = sub_message;
-    } else {
-      // sub_message was not transferred, delete it.
-      delete sub_message;
     }
   }
 
@@ -1030,7 +1043,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           return -1;
         }
       }
-    } else if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+    } else if (descriptor->is_repeated()) {
       ScopedPyObjectPtr container(GetFieldValue(self, descriptor));
       if (container == nullptr) {
         return -1;
@@ -1302,7 +1315,7 @@ int HasFieldByDescriptor(CMessage* self,
   if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return -1;
   }
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_SetString(PyExc_KeyError,
                     "Field is repeated. A singular method is required.");
     return -1;
@@ -1331,7 +1344,7 @@ const FieldDescriptor* FindFieldWithOneofs(const Message* message,
 
 bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
   auto message_name = std::string(field_descriptor->containing_type()->name());
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_Format(
         PyExc_ValueError, "Protocol message %s has no singular \"%s\" field.",
         message_name.c_str(), std::string(field_descriptor->name()).c_str());
@@ -2619,7 +2632,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                  std::string(field_descriptor->full_name()).c_str(),
                  Py_TYPE(self)->tp_name);
     return -1;
-  } else if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  } else if (field_descriptor->is_repeated()) {
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to repeated "
                  "field \"%s\" in protocol message object.",

@@ -146,30 +146,6 @@ bool WireFormat::SkipMessage(io::CodedInputStream* input,
   }
 }
 
-bool WireFormat::ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
-                                                uint32_t field_number,
-                                                bool (*is_valid)(int),
-                                                UnknownFieldSet* unknown_fields,
-                                                RepeatedField<int>* values) {
-  uint32_t length;
-  if (!input->ReadVarint32(&length)) return false;
-  io::CodedInputStream::Limit limit = input->PushLimit(length);
-  while (input->BytesUntilLimit() > 0) {
-    int value;
-    if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
-            input, &value)) {
-      return false;
-    }
-    if (is_valid == nullptr || is_valid(value)) {
-      values->Add(value);
-    } else {
-      unknown_fields->AddVarint(field_number, value);
-    }
-  }
-  input->PopLimit(limit);
-  return true;
-}
-
 uint8_t* WireFormat::InternalSerializeUnknownFieldsToArray(
     const UnknownFieldSet& unknown_fields, uint8_t* target,
     io::EpsCopyOutputStream* stream) {

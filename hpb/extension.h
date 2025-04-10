@@ -194,12 +194,11 @@ class ExtensionIdentifier {
  private:
   constexpr explicit ExtensionIdentifier(
       const upb_MiniTableExtension* mte,
-      typename UpbExtensionTrait<ExtensionType>::DefaultType val)
-      : mini_table_ext_(mte), default_val_(val) {}
+      typename UpbExtensionTrait<ExtensionType>::DefaultType val,
+      uint32_t number)
+      : mini_table_ext_(mte), default_val_(val), number_(number) {}
 
-  constexpr uint32_t number() const {
-    return upb_MiniTableExtension_Number(mini_table_ext_);
-  }
+  constexpr uint32_t number() const { return number_; }
 
   const upb_MiniTableExtension* mini_table_ext_;
 
@@ -212,6 +211,8 @@ class ExtensionIdentifier {
   }
 
   typename UpbExtensionTrait<ExtensionType>::DefaultType default_val_;
+
+  uint32_t number_;
 
   friend struct PrivateAccess;
 };
@@ -312,7 +313,7 @@ void ClearExtension(
  *  For rvalue references, if the arenas match, the extension is moved.
  *  If the arenas differ, a deep copy is performed.
  */
-template <int&... DeductionBlocker, typename T, typename Extension,
+template <int&... DeductionBarrier, typename T, typename Extension,
           typename Input>
 auto SetExtension(
     hpb::internal::PtrOrRawMutable<T> message,

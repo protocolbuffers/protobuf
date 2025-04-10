@@ -91,22 +91,6 @@ cc_library(
 
 bootstrap_cc_binary(
     name = "protoc-gen-upb_minitable",
-    bootstrap_deps = [
-        ":generator_with_main",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = [
-        "//editions/codegen_tests:__pkg__",
-        "//net/proto2/contrib/protoc_explorer:__pkg__",
-        "//rust:__subpackages__",
-        "//third_party/prototiller/transformer:__pkg__",
-    ],
-)
-
-# TODO: This wrapper lib is a hack that we need because of how CcInfo works in Bazel 6.
-# In Bazel 7, our cmake dependency scraping works fine with cc_binary.
-bootstrap_cc_library(
-    name = "generator_with_main",
     srcs = ["main.cc"],
     bootstrap_deps = [
         ":generator",
@@ -116,7 +100,12 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//editions/codegen_tests:__pkg__",
+        "//net/proto2/contrib/protoc_explorer:__pkg__",
+        "//rust:__subpackages__",
+        "//third_party/prototiller/transformer:__pkg__",
+    ],
     deps = [
         ":names",
         ":names_internal",
@@ -143,7 +132,6 @@ proto_lang_toolchain(
     plugin = ":protoc-gen-upb_minitable_stage1",
     plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
     progress_message = "Generating upb minitables",
-    runtime = "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    # TODO: Restrict to "//bazel:__pkg__" once we are on Bazel >=6.5.
-    visibility = ["//visibility:public"],
+    runtime = "//upb:generated_code_support",
+    visibility = ["//bazel:__pkg__"],
 )

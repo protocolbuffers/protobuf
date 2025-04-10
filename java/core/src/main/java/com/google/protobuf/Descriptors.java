@@ -537,6 +537,7 @@ public final class Descriptors {
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
     private final DescriptorPool pool;
+    private volatile boolean featuresResolved;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
@@ -547,6 +548,7 @@ public final class Descriptors {
       this.pool = pool;
       this.proto = proto;
       this.dependencies = dependencies.clone();
+      this.featuresResolved = false;
       HashMap<String, FileDescriptor> nameToFileMap = new HashMap<>();
       for (FileDescriptor file : dependencies) {
         nameToFileMap.put(file.getName(), file);
@@ -618,6 +620,7 @@ public final class Descriptors {
               .build();
       this.dependencies = new FileDescriptor[0];
       this.publicDependencies = new FileDescriptor[0];
+      this.featuresResolved = false;
 
       messageTypes = new Descriptor[] {message};
       enumTypes = EMPTY_ENUM_DESCRIPTORS;
@@ -641,12 +644,12 @@ public final class Descriptors {
      * and all of its children.
      */
     private void resolveAllFeaturesInternal() throws DescriptorValidationException {
-      if (this.features != null) {
+      if (this.featuresResolved) {
         return;
       }
 
       synchronized (this) {
-        if (this.features != null) {
+        if (this.featuresResolved) {
           return;
         }
         resolveFeatures(proto.getOptions().getFeatures());
@@ -666,6 +669,7 @@ public final class Descriptors {
         for (FieldDescriptor extension : extensions) {
           extension.resolveAllFeatures();
         }
+        this.featuresResolved = true;
       }
     }
 
@@ -1347,7 +1351,12 @@ public final class Descriptors {
           == DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED;
     }
 
-    /** Is this field declared optional? */
+    /**
+     * Is this field declared optional? *
+     *
+     * <p>This method is deprecated. Use !isRequired() && !isRepeated() instead.
+     */
+    @Deprecated
     public boolean isOptional() {
       return proto.getLabel() == FieldDescriptorProto.Label.LABEL_OPTIONAL
           && getFeatures().getFieldPresence()
@@ -1446,7 +1455,8 @@ public final class Descriptors {
     boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getEdition() == Edition.EDITION_PROTO2
-              && isOptional()
+              && !isRequired()
+              && !isRepeated()
               && getContainingOneof() == null);
     }
 
@@ -1933,9 +1943,9 @@ public final class Descriptors {
       if (containingType != null
           && containingType.toProto().getOptions().getMessageSetWireFormat()) {
         if (isExtension()) {
-          if (!isOptional() || getType() != Type.MESSAGE) {
+          if (isRequired() || isRepeated() || getType() != Type.MESSAGE) {
             throw new DescriptorValidationException(
-                this, "Extensions of MessageSets must be optional messages.");
+                this, "Extensions of MessageSets may not be required or repeated messages.");
           }
         }
       }
@@ -2934,10 +2944,7 @@ public final class Descriptors {
       }
       if (this.features == null) {
         throw new NullPointerException(
-            String.format(
-                "Features not yet loaded for %s. This may be caused by a known issue for proto2"
-                    + " dependency descriptors obtained from proto1 (b/362326130)",
-                getFullName()));
+            String.format("Features not yet loaded for %s.", getFullName()));
       }
       return this.features;
     }

@@ -152,7 +152,7 @@ static void _upb_TextEncode_Map(txtenc* e, const upb_Map* map,
       intptr_t iter = UPB_INTTABLE_BEGIN;
       while ((size_t)++iter < map->t.inttable.array_size) {
         upb_value value = map->t.inttable.array[iter];
-        if (!upb_inttable_is_sentinel(value)) {
+        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
           upb_MessageValue key, val;
           memcpy(&key, &iter, sizeof(iter));
           _upb_map_fromvalue(value, &val, map->val_size);

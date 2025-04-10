@@ -19,7 +19,7 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   GPBFieldRequired = 1 << 0,
   GPBFieldRepeated = 1 << 1,
   GPBFieldPacked = 1 << 2,
-  GPBFieldOptional = 1 << 3,
+  GPBFieldOptional __attribute__((deprecated)) = 1 << 3,
   GPBFieldHasDefaultValue = 1 << 4,
 
   // Indicate that the field should "clear" when set to zero value. This is the

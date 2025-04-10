@@ -100,7 +100,7 @@ class TestInputStream : public ZeroCopyInputStream {
  public:
   TestInputStream(const void* data, int size, int block_size)
       : array_stream_(data, size, block_size), counter_(0) {}
-  ~TestInputStream() {}
+  ~TestInputStream() override {}
 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size) override {
@@ -133,7 +133,7 @@ class TestInputStream : public ZeroCopyInputStream {
 class TestErrorCollector : public ErrorCollector {
  public:
   TestErrorCollector() {}
-  ~TestErrorCollector() {}
+  ~TestErrorCollector() override {}
 
   std::string text_;
 

@@ -138,13 +138,41 @@ UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
+UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
+    struct upb_Message* msg, const char* data, size_t len, upb_Arena* arena,
+    bool alias);
+
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
 // If alias is set, will keep a view to the provided data; otherwise a copy is
 // made.
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
-                                          const char* data, size_t len,
-                                          upb_Arena* arena, bool alias);
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
+                                                     const char* data,
+                                                     size_t len,
+                                                     upb_Arena* arena,
+                                                     bool alias) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  if (alias) {
+    // Aliasing parse of a message with sequential unknown fields is a simple
+    // pointer bump, so inline it.
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (in && in->size) {
+      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
+        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+        bool was_aliased = upb_TaggedAuxPtr_IsUnknownAliased(ptr);
+        // Fast path if the field we're adding is immediately after the last
+        // added unknown field.
+        if (was_aliased && existing->data + existing->size == data) {
+          existing->size += len;
+          return true;
+        }
+      }
+    }
+  }
+  return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(msg, data, len, arena,
+                                                      alias);
+}
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance. Data when concatenated together

@@ -5,8 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load(
     "//editions:defaults.bzl",
     "compile_edition_defaults",
@@ -32,18 +30,6 @@ bootstrap_upb_proto_library(
     src_files = ["google/protobuf/descriptor.proto"],
     src_rules = ["//:descriptor_proto_srcs"],
     strip_prefix = "third_party/protobuf/github/bootstrap/src",
-)
-
-upb_proto_reflection_library(
-    name = "descriptor_upb_proto_reflection",
-    visibility = ["//upb:friends"],
-    deps = ["//:descriptor_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "descriptor_upb_minitable_proto",
-    visibility = ["//visibility:public"],
-    deps = ["//:descriptor_proto"],
 )
 
 bootstrap_cc_library(
@@ -146,7 +132,7 @@ bootstrap_cc_library(
 )
 
 cc_library(
-    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_reflection_support",
     hdrs = [
         "def.h",
         "internal/def_pool.h",
@@ -155,7 +141,7 @@ cc_library(
     textual_hdrs = [
         "//upb:port_inc",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//upb:__pkg__"],
     deps = [
         ":internal",
         "//upb:mem",
@@ -176,6 +162,8 @@ cc_test(
         ":internal",
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
         "//upb/hash",

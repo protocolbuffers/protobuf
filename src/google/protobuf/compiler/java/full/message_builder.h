@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_BUILDER_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_BUILDER_H__
 
 #include <memory>
 #include <string>
@@ -77,4 +77,4 @@ class MessageBuilderGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_BUILDER_H__

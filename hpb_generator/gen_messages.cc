@@ -49,10 +49,6 @@ void WriteInternalForwardDeclarationsInHeader(
     const protobuf::Descriptor* message, Context& ctx);
 void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
                                 Context& ctx);
-void WriteExtensionIdentifiersImplementation(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx);
 void WriteUsingEnumsInHeader(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
@@ -480,8 +476,6 @@ void WriteMessageImplementation(
           }
         )cc",
         ClassName(descriptor));
-
-    WriteExtensionIdentifiersImplementation(descriptor, file_exts, ctx);
   }
 }
 
@@ -505,18 +499,6 @@ void WriteExtensionIdentifiersInClassHeader(
     if (ext->extension_scope() &&
         ext->extension_scope()->full_name() == message->full_name()) {
       WriteExtensionIdentifierHeader(ext, ctx);
-    }
-  }
-}
-
-void WriteExtensionIdentifiersImplementation(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx) {
-  for (auto* ext : file_exts) {
-    if (ext->extension_scope() &&
-        ext->extension_scope()->full_name() == message->full_name()) {
-      WriteExtensionIdentifier(ext, ctx);
     }
   }
 }

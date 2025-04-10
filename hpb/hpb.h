@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_HPB_HPB_H_
-#define PROTOBUF_HPB_HPB_H_
+#ifndef GOOGLE_PROTOBUF_HPB_HPB_H__
+#define GOOGLE_PROTOBUF_HPB_HPB_H__
 
 #include <type_traits>
 
@@ -32,20 +32,20 @@
 namespace hpb {
 
 #ifdef HPB_BACKEND_UPB
-namespace backend = ::hpb::internal::backend::upb;
+namespace backend = internal::backend::upb;
 #endif
 
 template <typename T>
-typename T::Proxy CreateMessage(hpb::Arena& arena) {
+typename T::Proxy CreateMessage(Arena& arena) {
   return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
                            arena.ptr());
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
-  return hpb::internal::PrivateAccess::Proxy<T>(
-      hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
-                               T::minitable(), arena.ptr()),
+typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+  return internal::PrivateAccess::Proxy<T>(
+      internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
+                          arena.ptr()),
       arena.ptr());
 }
 
@@ -54,19 +54,18 @@ typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
 template <typename T>
 [[deprecated("Use CloneMessage(Ptr<T>, hpb::Arena&) instead.")]]
 typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
-  return ::hpb::internal::PrivateAccess::Proxy<T>(
-      ::hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
-                                 T::minitable(), arena),
+  return internal::PrivateAccess::Proxy<T>(
+      internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
+                          arena),
       arena);
 }
 
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
-  ::hpb::internal::DeepCopy(hpb::interop::upb::GetMessage(target_message),
-                            hpb::interop::upb::GetMessage(source_message),
-                            T::minitable(),
-                            hpb::interop::upb::GetArena(target_message));
+  internal::DeepCopy(interop::upb::GetMessage(target_message),
+                     interop::upb::GetMessage(source_message), T::minitable(),
+                     interop::upb::GetArena(target_message));
 }
 
 template <typename T>
@@ -82,36 +81,36 @@ void DeepCopy(const T* source_message, T* target_message) {
 }
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
+void ClearMessage(internal::PtrOrRawMutable<T> message) {
   backend::ClearMessage(message);
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(
-    internal::PtrOrRaw<T> message, absl::string_view bytes,
-    const ::hpb::ExtensionRegistry& extension_registry =
-        hpb::ExtensionRegistry::EmptyRegistry()) {
+ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
+                                absl::string_view bytes,
+                                const ExtensionRegistry& extension_registry =
+                                    ExtensionRegistry::EmptyRegistry()) {
   static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = hpb::interop::upb::GetArena(message);
+  upb_Message_Clear(interop::upb::GetMessage(message),
+                    interop::upb::GetMiniTable(message));
+  auto* arena = interop::upb::GetArena(message);
   return upb_Decode(bytes.data(), bytes.size(),
-                    hpb::interop::upb::GetMessage(message),
-                    ::hpb::interop::upb::GetMiniTable(message),
-                    hpb::internal::GetUpbExtensions(extension_registry),
+                    interop::upb::GetMessage(message),
+                    interop::upb::GetMiniTable(message),
+                    internal::GetUpbExtensions(extension_registry),
                     /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::hpb::ExtensionRegistry& extension_registry =
-                            hpb::ExtensionRegistry::EmptyRegistry()) {
+                        const ExtensionRegistry& extension_registry =
+                            ExtensionRegistry::EmptyRegistry()) {
   T message;
-  auto* arena = hpb::interop::upb::GetArena(&message);
+  auto* arena = interop::upb::GetArena(&message);
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::interop::upb::GetMiniTable(&message),
-                 hpb::internal::GetUpbExtensions(extension_registry),
+                 interop::upb::GetMiniTable(&message),
+                 internal::GetUpbExtensions(extension_registry),
                  /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
@@ -121,12 +120,10 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
-                                            hpb::Arena& arena) {
-  return ::hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
-                                    ::hpb::interop::upb::GetMiniTable(message),
-                                    arena.ptr(), 0);
+                                            Arena& arena) {
+  return backend::Serialize(message, arena);
 }
 
 }  // namespace hpb
 
-#endif  // PROTOBUF_HPB_HPB_H_
+#endif  // GOOGLE_PROTOBUF_HPB_HPB_H__

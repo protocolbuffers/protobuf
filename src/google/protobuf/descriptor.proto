@@ -113,6 +113,10 @@ message FileDescriptorProto {
   // For Google-internal migration only. Do not use.
   repeated int32 weak_dependency = 11;
 
+  // Names of files imported by this file purely for the purpose of providing
+  // option extensions. These are excluded from the dependency list above.
+  repeated string option_dependency = 15;
+
   // All top-level definitions in this file.
   repeated DescriptorProto message_type = 4;
   repeated EnumDescriptorProto enum_type = 5;
@@ -176,6 +180,9 @@ message DescriptorProto {
   // Reserved field names, which may not be used by fields in the same message.
   // A given name may only be reserved once.
   repeated string reserved_name = 10;
+
+  // Support for `export` and `local` keywords on enums.
+  optional SymbolVisibility visibility = 11;
 }
 
 message ExtensionRangeOptions {
@@ -372,6 +379,9 @@ message EnumDescriptorProto {
   // Reserved enum value names, which may not be reused. A given name may only
   // be reserved once.
   repeated string reserved_name = 5;
+
+  // Support for `export` and `local` keywords on enums.
+  optional SymbolVisibility visibility = 6;
 }
 
 // Describes a value within an enum.
@@ -1121,6 +1131,37 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
   ];
 
+  message VisibilityFeature {
+    enum DefaultSymbolVisibility {
+      DEFAULT_SYMBOL_VISIBILITY_UNKNOWN = 0;
+
+      // Default pre-EDITION_2024, all UNSET visibility are export.
+      EXPORT_ALL = 1;
+
+      // All top-level symbols default to export, nested default to local.
+      EXPORT_TOP_LEVEL = 2;
+
+      // All symbols default to local.
+      LOCAL_ALL = 3;
+
+      // All symbols local by default. Nested types cannot be exported.
+      // With special case caveat for message { enum {} reserved 1 to max; }
+      // This is the recommended setting for new protos.
+      STRICT = 4;
+    }
+    reserved 1 to max;
+  }
+  optional VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility =
+      8 [
+        retention = RETENTION_SOURCE,
+        targets = TARGET_TYPE_FILE,
+        feature_support = {
+          edition_introduced: EDITION_2024,
+        },
+        edition_defaults = { edition: EDITION_LEGACY, value: "EXPORT_ALL" },
+        edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" }
+      ];
+
   reserved 999;
 
   extensions 1000 to 9994 [
@@ -1362,4 +1403,15 @@ message GeneratedCodeInfo {
     }
     optional Semantic semantic = 5;
   }
+}
+
+// Describes the 'visibility' of a symbol with respect to the proto import
+// system. Symbols can only be imported when the visibility rules do not prevent
+// it (ex: local symbols cannot be imported).  Visibility modifiers can only set
+// on `message` and `enum` as they are the only types available to be referenced
+// from other files.
+enum SymbolVisibility {
+  VISIBILITY_UNSET = 0;
+  VISIBILITY_LOCAL = 1;
+  VISIBILITY_EXPORT = 2;
 }

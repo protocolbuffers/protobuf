@@ -39,33 +39,29 @@
        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 
 #if PY_VERSION_HEX < 0x030900B1 && !defined(PYPY_VERSION)
-static PyCodeObject* PyFrame_GetCode(PyFrameObject *frame)
-{
-    Py_INCREF(frame->f_code);
-    return frame->f_code;
+static PyCodeObject* PyFrame_GetCode(PyFrameObject* frame) {
+  Py_INCREF(frame->f_code);
+  return frame->f_code;
 }
 
-static PyFrameObject* PyFrame_GetBack(PyFrameObject *frame)
-{
-    Py_XINCREF(frame->f_back);
-    return frame->f_back;
+static PyFrameObject* PyFrame_GetBack(PyFrameObject* frame) {
+  Py_XINCREF(frame->f_back);
+  return frame->f_back;
 }
 #endif
 
 #if PY_VERSION_HEX < 0x030B00A7 && !defined(PYPY_VERSION)
-static PyObject* PyFrame_GetLocals(PyFrameObject *frame)
-{
-    if (PyFrame_FastToLocalsWithError(frame) < 0) {
-        return NULL;
-    }
-    Py_INCREF(frame->f_locals);
-    return frame->f_locals;
+static PyObject* PyFrame_GetLocals(PyFrameObject* frame) {
+  if (PyFrame_FastToLocalsWithError(frame) < 0) {
+    return NULL;
+  }
+  Py_INCREF(frame->f_locals);
+  return frame->f_locals;
 }
 
-static PyObject* PyFrame_GetGlobals(PyFrameObject *frame)
-{
-    Py_INCREF(frame->f_globals);
-    return frame->f_globals;
+static PyObject* PyFrame_GetGlobals(PyFrameObject* frame) {
+  Py_INCREF(frame->f_globals);
+  return frame->f_globals;
 }
 #endif
 
@@ -82,7 +78,8 @@ namespace python {
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
 PyObject* PyString_FromCppString(absl::string_view str) {
-  return PyUnicode_FromStringAndSize(str.data(), str.size());
+  return PyUnicode_FromStringAndSize(str.data(),
+                                     static_cast<size_t>(str.size()));
 }
 
 // Check that the calling Python code is the global scope of a _pb2.py module.
@@ -133,8 +130,8 @@ bool _CalledFromGeneratedFile(int stacklevel) {
   }
   char* filename;
   Py_ssize_t filename_size;
-  if (PyString_AsStringAndSize(frame_code->co_filename,
-                               &filename, &filename_size) < 0) {
+  if (PyString_AsStringAndSize(frame_code->co_filename, &filename,
+                               &filename_size) < 0) {
     // filename is not a string.
     PyErr_Clear();
     goto exit;
@@ -177,8 +174,8 @@ static int CheckCalledFromGeneratedFile(const char* attr_name) {
   if (_CalledFromGeneratedFile(0)) {
     return 0;
   }
-  PyErr_Format(PyExc_AttributeError,
-               "attribute is not writable: %s", attr_name);
+  PyErr_Format(PyExc_AttributeError, "attribute is not writable: %s",
+               attr_name);
   return -1;
 }
 
@@ -194,29 +191,29 @@ static int CheckCalledFromGeneratedFile(const char* attr_name) {
 // Helper functions for descriptor objects.
 
 // A set of templates to retrieve the C++ FileDescriptor of any descriptor.
-template<class DescriptorClass>
+template <class DescriptorClass>
 const FileDescriptor* GetFileDescriptor(const DescriptorClass* descriptor) {
   return descriptor->file();
 }
-template<>
+template <>
 const FileDescriptor* GetFileDescriptor(const FileDescriptor* descriptor) {
   return descriptor;
 }
-template<>
+template <>
 const FileDescriptor* GetFileDescriptor(const EnumValueDescriptor* descriptor) {
   return descriptor->type()->file();
 }
-template<>
+template <>
 const FileDescriptor* GetFileDescriptor(const OneofDescriptor* descriptor) {
   return descriptor->containing_type()->file();
 }
-template<>
+template <>
 const FileDescriptor* GetFileDescriptor(const MethodDescriptor* descriptor) {
   return descriptor->service()->file();
 }
 
-bool Reparse(
-    PyMessageFactory* message_factory, const Message& from, Message* to) {
+bool Reparse(PyMessageFactory* message_factory, const Message& from,
+             Message* to) {
   // Reparse message.
   std::string serialized;
   from.SerializeToString(&serialized);
@@ -330,9 +327,9 @@ static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
 // Copy the C++ descriptor to a Python message.
 // The Python message is an instance of descriptor_pb2.DescriptorProto
 // or similar.
-template<class DescriptorProtoClass, class DescriptorClass>
-static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
-                                   PyObject *target) {
+template <class DescriptorProtoClass, class DescriptorClass>
+static PyObject* CopyToPythonProto(const DescriptorClass* descriptor,
+                                   PyObject* target) {
   const Descriptor* self_descriptor =
       DescriptorProtoClass::default_instance().GetDescriptor();
   CMessage* message = reinterpret_cast<CMessage*>(target);
@@ -363,14 +360,13 @@ static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
 typedef struct PyBaseDescriptor {
   PyObject_HEAD
 
-  // Pointer to the C++ proto2 descriptor.
-  // Like all descriptors, it is owned by the global DescriptorPool.
-  const void* descriptor;
+      // Pointer to the C++ proto2 descriptor.
+      // Like all descriptors, it is owned by the global DescriptorPool.
+      const void* descriptor;
 
   // Owned reference to the DescriptorPool, to ensure it is kept alive.
   PyDescriptorPool* pool;
 } PyBaseDescriptor;
-
 
 // FileDescriptor structure "inherits" from the base descriptor.
 typedef struct PyFileDescriptor {
@@ -378,9 +374,8 @@ typedef struct PyFileDescriptor {
 
   // The cached version of serialized pb. Either null, or a Bytes string.
   // We own the reference.
-  PyObject *serialized_pb;
+  PyObject* serialized_pb;
 } PyFileDescriptor;
-
 
 namespace descriptor {
 
@@ -390,7 +385,7 @@ namespace descriptor {
 // 'was_created' is an optional pointer to a bool, and is set to true if a new
 // object was allocated.
 // Always return a new reference.
-template<class DescriptorClass>
+template <class DescriptorClass>
 PyObject* NewInternedDescriptor(PyTypeObject* type,
                                 const DescriptorClass* descriptor,
                                 bool* was_created) {
@@ -411,8 +406,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
     return it->second;
   }
   // Create a new descriptor object
-  PyBaseDescriptor* py_descriptor = PyObject_GC_New(
-      PyBaseDescriptor, type);
+  PyBaseDescriptor* py_descriptor = PyObject_GC_New(PyBaseDescriptor, type);
   if (py_descriptor == nullptr) {
     return nullptr;
   }
@@ -423,8 +417,8 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
       std::make_pair(descriptor, reinterpret_cast<PyObject*>(py_descriptor)));
 
   // Ensures that the DescriptorPool stays alive.
-  PyDescriptorPool* pool = GetDescriptorPool_FromPool(
-      GetFileDescriptor(descriptor)->pool());
+  PyDescriptorPool* pool =
+      GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   if (pool == nullptr) {
     // Don't DECREF, the object is not fully initialized.
     PyObject_Del(py_descriptor);
@@ -519,27 +513,27 @@ static const Descriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const Descriptor*>(self->descriptor);
 }
 
-static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetFile(PyBaseDescriptor* self, void* closure) {
   return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
-static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetConcreteClass(PyBaseDescriptor* self, void* closure) {
   // Returns the canonical class for the given descriptor.
   // This is the class that was registered with the primary descriptor pool
   // which contains this descriptor.
   // This might not be the one you expect! For example the returned object does
   // not know about extensions defined in a custom pool.
   CMessageClass* concrete_class(message_factory::GetMessageClass(
-      GetDescriptorPool_FromPool(
-          _GetDescriptor(self)->file()->pool())->py_message_factory,
+      GetDescriptorPool_FromPool(_GetDescriptor(self)->file()->pool())
+          ->py_message_factory,
       _GetDescriptor(self)));
 
   if (concrete_class == nullptr) {
@@ -551,60 +545,60 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
   return concrete_class->AsPyObject();
 }
 
-static PyObject* GetFieldsByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFieldsByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageFieldsByName(_GetDescriptor(self));
 }
 
 static PyObject* GetFieldsByCamelcaseName(PyBaseDescriptor* self,
-                                          void *closure) {
+                                          void* closure) {
   return NewMessageFieldsByCamelcaseName(_GetDescriptor(self));
 }
 
-static PyObject* GetFieldsByNumber(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFieldsByNumber(PyBaseDescriptor* self, void* closure) {
   return NewMessageFieldsByNumber(_GetDescriptor(self));
 }
 
-static PyObject* GetFieldsSeq(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFieldsSeq(PyBaseDescriptor* self, void* closure) {
   return NewMessageFieldsSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetNestedTypesByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetNestedTypesByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageNestedTypesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetNestedTypesSeq(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetNestedTypesSeq(PyBaseDescriptor* self, void* closure) {
   return NewMessageNestedTypesSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetExtensionsByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetExtensionsByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageExtensionsByName(_GetDescriptor(self));
 }
 
-static PyObject* GetExtensions(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetExtensions(PyBaseDescriptor* self, void* closure) {
   return NewMessageExtensionsSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumsSeq(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumsSeq(PyBaseDescriptor* self, void* closure) {
   return NewMessageEnumsSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumTypesByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumTypesByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageEnumsByName(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumValuesByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumValuesByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageEnumValuesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetOneofsByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetOneofsByName(PyBaseDescriptor* self, void* closure) {
   return NewMessageOneofsByName(_GetDescriptor(self));
 }
 
-static PyObject* GetOneofsSeq(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetOneofsSeq(PyBaseDescriptor* self, void* closure) {
   return NewMessageOneofsSeq(_GetDescriptor(self));
 }
 
-static PyObject* IsExtendable(PyBaseDescriptor *self, void *closure) {
+static PyObject* IsExtendable(PyBaseDescriptor* self, void* closure) {
   if (_GetDescriptor(self)->extension_range_count() > 0) {
     Py_RETURN_TRUE;
   } else {
@@ -612,7 +606,7 @@ static PyObject* IsExtendable(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetExtensionRanges(PyBaseDescriptor* self, void* closure) {
   const Descriptor* descriptor = _GetDescriptor(self);
   PyObject* range_list = PyList_New(descriptor->extension_range_count());
 
@@ -626,9 +620,8 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
   return range_list;
 }
 
-static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
-  const Descriptor* containing_type =
-      _GetDescriptor(self)->containing_type();
+static PyObject* GetContainingType(PyBaseDescriptor* self, void* closure) {
+  const Descriptor* containing_type = _GetDescriptor(self)->containing_type();
   if (containing_type) {
     return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
@@ -636,12 +629,12 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetContainingType(PyBaseDescriptor *self, PyObject *value,
-                             void *closure) {
+static int SetContainingType(PyBaseDescriptor* self, PyObject* value,
+                             void* closure) {
   return CheckCalledFromGeneratedFile("containing_type");
 }
 
-static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   const MessageOptions& options(_GetDescriptor(self)->options());
   if (&options != &MessageOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -649,12 +642,12 @@ static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
     Py_RETURN_FALSE;
   }
 }
-static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
-                             void *closure) {
+static int SetHasOptions(PyBaseDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -662,32 +655,30 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyBaseDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyBaseDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyBaseDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
-static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+static PyObject* CopyToProto(PyBaseDescriptor* self, PyObject* target) {
   return CopyToPythonProto<DescriptorProto>(_GetDescriptor(self), target);
 }
 
-static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
-  const char *enum_name;
+static PyObject* EnumValueName(PyBaseDescriptor* self, PyObject* args) {
+  const char* enum_name;
   int number;
   if (!PyArg_ParseTuple(args, "si", &enum_name, &number)) return nullptr;
-  const EnumDescriptor *enum_type =
+  const EnumDescriptor* enum_type =
       _GetDescriptor(self)->FindEnumTypeByName(enum_name);
   if (enum_type == nullptr) {
     PyErr_SetString(PyExc_KeyError, enum_name);
     return nullptr;
   }
-  const EnumValueDescriptor *enum_value =
-      enum_type->FindValueByNumber(number);
+  const EnumValueDescriptor* enum_value = enum_type->FindValueByNumber(number);
   if (enum_value == nullptr) {
     PyErr_Format(PyExc_KeyError, "%d", number);
     return nullptr;
@@ -800,56 +791,63 @@ const Descriptor* PyMessageDescriptor_AsDescriptor(PyObject* obj) {
 namespace field_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const FieldDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const FieldDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const FieldDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetCamelcaseName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetCamelcaseName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->camelcase_name());
 }
 
-static PyObject* GetJsonName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetJsonName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->json_name());
 }
 
-static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetFile(PyBaseDescriptor* self, void* closure) {
   return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
-static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetType(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->type());
 }
 
-static PyObject* GetCppType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetCppType(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->cpp_type());
 }
 
-static PyObject* GetLabel(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetLabel(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->label());
 }
 
-static PyObject* GetNumber(PyBaseDescriptor *self, void *closure) {
+static PyObject* IsRequired(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_required());
+}
+
+static PyObject* IsRepeated(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_repeated());
+}
+
+static PyObject* GetNumber(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->number());
 }
 
-static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetIndex(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
-static PyObject* GetID(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetID(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromVoidPtr(self);
 }
 
-static PyObject* IsExtension(PyBaseDescriptor *self, void *closure) {
+static PyObject* IsExtension(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_extension());
 }
 
@@ -857,17 +855,16 @@ static PyObject* IsPacked(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_packed());
 }
 
-static PyObject* HasDefaultValue(PyBaseDescriptor *self, void *closure) {
+static PyObject* HasDefaultValue(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->has_default_value());
 }
 
-static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
-  PyObject *result;
+static PyObject* GetDefaultValue(PyBaseDescriptor* self, void* closure) {
+  PyObject* result;
 
   if (_GetDescriptor(self)->is_repeated()) {
     return PyList_New(0);
   }
-
 
   switch (_GetDescriptor(self)->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
@@ -928,12 +925,12 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
   return result;
 }
 
-static PyObject* GetCDescriptor(PyObject *self, void *closure) {
+static PyObject* GetCDescriptor(PyObject* self, void* closure) {
   Py_INCREF(self);
   return self;
 }
 
-static PyObject *GetEnumType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetEnumType(PyBaseDescriptor* self, void* closure) {
   const EnumDescriptor* enum_type = _GetDescriptor(self)->enum_type();
   if (enum_type) {
     return PyEnumDescriptor_FromDescriptor(enum_type);
@@ -942,11 +939,11 @@ static PyObject *GetEnumType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetEnumType(PyBaseDescriptor *self, PyObject *value, void *closure) {
+static int SetEnumType(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("enum_type");
 }
 
-static PyObject *GetMessageType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetMessageType(PyBaseDescriptor* self, void* closure) {
   const Descriptor* message_type = _GetDescriptor(self)->message_type();
   if (message_type) {
     return PyMessageDescriptor_FromDescriptor(message_type);
@@ -955,14 +952,13 @@ static PyObject *GetMessageType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetMessageType(PyBaseDescriptor *self, PyObject *value,
-                          void *closure) {
+static int SetMessageType(PyBaseDescriptor* self, PyObject* value,
+                          void* closure) {
   return CheckCalledFromGeneratedFile("message_type");
 }
 
-static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
-  const Descriptor* containing_type =
-      _GetDescriptor(self)->containing_type();
+static PyObject* GetContainingType(PyBaseDescriptor* self, void* closure) {
+  const Descriptor* containing_type = _GetDescriptor(self)->containing_type();
   if (containing_type) {
     return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
@@ -970,12 +966,12 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetContainingType(PyBaseDescriptor *self, PyObject *value,
-                             void *closure) {
+static int SetContainingType(PyBaseDescriptor* self, PyObject* value,
+                             void* closure) {
   return CheckCalledFromGeneratedFile("containing_type");
 }
 
-static PyObject* GetExtensionScope(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetExtensionScope(PyBaseDescriptor* self, void* closure) {
   const auto* desc = _GetDescriptor(self);
   const Descriptor* extension_scope =
       desc->is_extension() ? desc->extension_scope() : nullptr;
@@ -986,7 +982,7 @@ static PyObject* GetExtensionScope(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static PyObject* GetContainingOneof(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetContainingOneof(PyBaseDescriptor* self, void* closure) {
   const OneofDescriptor* containing_oneof =
       _GetDescriptor(self)->containing_oneof();
   if (containing_oneof) {
@@ -996,12 +992,12 @@ static PyObject* GetContainingOneof(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetContainingOneof(PyBaseDescriptor *self, PyObject *value,
-                              void *closure) {
+static int SetContainingOneof(PyBaseDescriptor* self, PyObject* value,
+                              void* closure) {
   return CheckCalledFromGeneratedFile("containing_oneof");
 }
 
-static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   const FieldOptions& options(_GetDescriptor(self)->options());
   if (&options != &FieldOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -1009,8 +1005,8 @@ static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
     Py_RETURN_FALSE;
   }
 }
-static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
-                         void *closure) {
+static int SetHasOptions(PyBaseDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
@@ -1022,7 +1018,7 @@ static PyObject* GetHasPresence(PyBaseDescriptor* self, void* closure) {
   }
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1030,13 +1026,12 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyBaseDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyBaseDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyBaseDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
@@ -1049,6 +1044,8 @@ static PyGetSetDef Getters[] = {
     {"type", (getter)GetType, nullptr, "C++ Type"},
     {"cpp_type", (getter)GetCppType, nullptr, "C++ Type"},
     {"label", (getter)GetLabel, nullptr, "Label"},
+    {"is_required", (getter)IsRequired, nullptr, "Is Required"},
+    {"is_repeated", (getter)IsRepeated, nullptr, "Is Repeated"},
     {"number", (getter)GetNumber, nullptr, "Number"},
     {"index", (getter)GetIndex, nullptr, "Index"},
     {"default_value", (getter)GetDefaultValue, nullptr, "Default Value"},
@@ -1140,38 +1137,36 @@ const FieldDescriptor* PyFieldDescriptor_AsDescriptor(PyObject* obj) {
 namespace enum_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const EnumDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const EnumDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const EnumDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetFile(PyBaseDescriptor* self, void* closure) {
   return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
-static PyObject* GetEnumvaluesByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumvaluesByName(PyBaseDescriptor* self, void* closure) {
   return NewEnumValuesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumvaluesByNumber(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumvaluesByNumber(PyBaseDescriptor* self, void* closure) {
   return NewEnumValuesByNumber(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumvaluesSeq(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetEnumvaluesSeq(PyBaseDescriptor* self, void* closure) {
   return NewEnumValuesSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
-  const Descriptor* containing_type =
-      _GetDescriptor(self)->containing_type();
+static PyObject* GetContainingType(PyBaseDescriptor* self, void* closure) {
+  const Descriptor* containing_type = _GetDescriptor(self)->containing_type();
   if (containing_type) {
     return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
@@ -1179,13 +1174,12 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetContainingType(PyBaseDescriptor *self, PyObject *value,
-                             void *closure) {
+static int SetContainingType(PyBaseDescriptor* self, PyObject* value,
+                             void* closure) {
   return CheckCalledFromGeneratedFile("containing_type");
 }
 
-
-static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   const EnumOptions& options(_GetDescriptor(self)->options());
   if (&options != &EnumOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -1198,12 +1192,12 @@ static PyObject* GetIsClosed(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_closed());
 }
 
-static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
-                         void *closure) {
+static int SetHasOptions(PyBaseDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1211,17 +1205,16 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyBaseDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyBaseDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyBaseDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
-static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+static PyObject* CopyToProto(PyBaseDescriptor* self, PyObject* target) {
   return CopyToPythonProto<EnumDescriptorProto>(_GetDescriptor(self), target);
 }
 
@@ -1311,28 +1304,27 @@ const EnumDescriptor* PyEnumDescriptor_AsDescriptor(PyObject* obj) {
 namespace enumvalue_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const EnumValueDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const EnumValueDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const EnumValueDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetNumber(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetNumber(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->number());
 }
 
-static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetIndex(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
-static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetType(PyBaseDescriptor* self, void* closure) {
   return PyEnumDescriptor_FromDescriptor(_GetDescriptor(self)->type());
 }
 
-static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   const EnumValueOptions& options(_GetDescriptor(self)->options());
   if (&options != &EnumValueOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -1340,12 +1332,12 @@ static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
     Py_RETURN_FALSE;
   }
 }
-static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
-                         void *closure) {
+static int SetHasOptions(PyBaseDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1353,13 +1345,12 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyBaseDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyBaseDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyBaseDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
@@ -1432,7 +1423,7 @@ PyObject* PyEnumValueDescriptor_FromDescriptor(
 namespace file_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const FileDescriptor* _GetDescriptor(PyFileDescriptor *self) {
+static const FileDescriptor* _GetDescriptor(PyFileDescriptor* self) {
   return reinterpret_cast<const FileDescriptor*>(self->base.descriptor);
 }
 
@@ -1441,23 +1432,23 @@ static void Dealloc(PyFileDescriptor* self) {
   descriptor::Dealloc(reinterpret_cast<PyObject*>(self));
 }
 
-static PyObject* GetPool(PyFileDescriptor *self, void *closure) {
+static PyObject* GetPool(PyFileDescriptor* self, void* closure) {
   PyObject* pool = reinterpret_cast<PyObject*>(
       GetDescriptorPool_FromPool(_GetDescriptor(self)->pool()));
   Py_XINCREF(pool);
   return pool;
 }
 
-static PyObject* GetName(PyFileDescriptor *self, void *closure) {
+static PyObject* GetName(PyFileDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetPackage(PyFileDescriptor *self, void *closure) {
+static PyObject* GetPackage(PyFileDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->package());
 }
 
-static PyObject* GetSerializedPb(PyFileDescriptor *self, void *closure) {
-  PyObject *serialized_pb = self->serialized_pb;
+static PyObject* GetSerializedPb(PyFileDescriptor* self, void* closure) {
+  PyObject* serialized_pb = self->serialized_pb;
   if (serialized_pb != nullptr) {
     Py_INCREF(serialized_pb);
     return serialized_pb;
@@ -1467,7 +1458,7 @@ static PyObject* GetSerializedPb(PyFileDescriptor *self, void *closure) {
   std::string contents;
   file_proto.SerializePartialToString(&contents);
   self->serialized_pb = PyBytes_FromStringAndSize(
-      contents.c_str(), contents.size());
+      contents.c_str(), static_cast<size_t>(contents.size()));
   if (self->serialized_pb == nullptr) {
     return nullptr;
   }
@@ -1475,31 +1466,31 @@ static PyObject* GetSerializedPb(PyFileDescriptor *self, void *closure) {
   return self->serialized_pb;
 }
 
-static PyObject* GetMessageTypesByName(PyFileDescriptor* self, void *closure) {
+static PyObject* GetMessageTypesByName(PyFileDescriptor* self, void* closure) {
   return NewFileMessageTypesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetEnumTypesByName(PyFileDescriptor* self, void *closure) {
+static PyObject* GetEnumTypesByName(PyFileDescriptor* self, void* closure) {
   return NewFileEnumTypesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetExtensionsByName(PyFileDescriptor* self, void *closure) {
+static PyObject* GetExtensionsByName(PyFileDescriptor* self, void* closure) {
   return NewFileExtensionsByName(_GetDescriptor(self));
 }
 
-static PyObject* GetServicesByName(PyFileDescriptor* self, void *closure) {
+static PyObject* GetServicesByName(PyFileDescriptor* self, void* closure) {
   return NewFileServicesByName(_GetDescriptor(self));
 }
 
-static PyObject* GetDependencies(PyFileDescriptor* self, void *closure) {
+static PyObject* GetDependencies(PyFileDescriptor* self, void* closure) {
   return NewFileDependencies(_GetDescriptor(self));
 }
 
-static PyObject* GetPublicDependencies(PyFileDescriptor* self, void *closure) {
+static PyObject* GetPublicDependencies(PyFileDescriptor* self, void* closure) {
   return NewFilePublicDependencies(_GetDescriptor(self));
 }
 
-static PyObject* GetHasOptions(PyFileDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyFileDescriptor* self, void* closure) {
   const FileOptions& options(_GetDescriptor(self)->options());
   if (&options != &FileOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -1507,12 +1498,12 @@ static PyObject* GetHasOptions(PyFileDescriptor *self, void *closure) {
     Py_RETURN_FALSE;
   }
 }
-static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
-                         void *closure) {
+static int SetHasOptions(PyFileDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetOptions(PyFileDescriptor *self) {
+static PyObject* GetOptions(PyFileDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1520,17 +1511,16 @@ static PyObject* GetFeatures(PyFileDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyFileDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyFileDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyFileDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
-static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
+static PyObject* CopyToProto(PyFileDescriptor* self, PyObject* target) {
   return CopyToPythonProto<FileDescriptorProto>(_GetDescriptor(self), target);
 }
 
@@ -1621,7 +1611,7 @@ PyObject* PyFileDescriptor_FromDescriptor(
 }
 
 PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
-    const FileDescriptor* file_descriptor, PyObject *serialized_pb) {
+    const FileDescriptor* file_descriptor, PyObject* serialized_pb) {
   bool was_created;
   PyObject* py_descriptor = descriptor::NewInternedDescriptor(
       &PyFileDescriptor_Type, file_descriptor, &was_created);
@@ -1652,30 +1642,28 @@ const FileDescriptor* PyFileDescriptor_AsDescriptor(PyObject* obj) {
 namespace oneof_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const OneofDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const OneofDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const OneofDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetIndex(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
-static PyObject* GetFields(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFields(PyBaseDescriptor* self, void* closure) {
   return NewOneofFieldsSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
-  const Descriptor* containing_type =
-      _GetDescriptor(self)->containing_type();
+static PyObject* GetContainingType(PyBaseDescriptor* self, void* closure) {
+  const Descriptor* containing_type = _GetDescriptor(self)->containing_type();
   if (containing_type) {
     return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
@@ -1683,7 +1671,7 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   const OneofOptions& options(_GetDescriptor(self)->options());
   if (&options != &OneofOptions::default_instance()) {
     Py_RETURN_TRUE;
@@ -1692,12 +1680,12 @@ static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
   }
 }
 
-static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
-                         void *closure) {
+static int SetHasOptions(PyBaseDescriptor* self, PyObject* value,
+                         void* closure) {
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1705,13 +1693,12 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static int SetOptions(PyBaseDescriptor *self, PyObject *value,
-                      void *closure) {
+static int SetOptions(PyBaseDescriptor* self, PyObject* value, void* closure) {
   return CheckCalledFromGeneratedFile("_options");
 }
 
-static int SetSerializedOptions(PyBaseDescriptor *self, PyObject *value,
-                                void *closure) {
+static int SetSerializedOptions(PyBaseDescriptor* self, PyObject* value,
+                                void* closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
@@ -1785,36 +1772,35 @@ PyObject* PyOneofDescriptor_FromDescriptor(
 namespace service_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const ServiceDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const ServiceDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const ServiceDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetFile(PyBaseDescriptor* self, void* closure) {
   return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
-static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetIndex(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
-static PyObject* GetMethods(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetMethods(PyBaseDescriptor* self, void* closure) {
   return NewServiceMethodsSeq(_GetDescriptor(self));
 }
 
-static PyObject* GetMethodsByName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetMethodsByName(PyBaseDescriptor* self, void* closure) {
   return NewServiceMethodsByName(_GetDescriptor(self));
 }
 
-static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
+static PyObject* FindMethodByName(PyBaseDescriptor* self, PyObject* arg) {
   Py_ssize_t name_size;
   char* name;
   if (PyString_AsStringAndSize(arg, &name, &name_size) < 0) {
@@ -1823,7 +1809,7 @@ static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
 
   const MethodDescriptor* method_descriptor =
       _GetDescriptor(self)->FindMethodByName(
-          absl::string_view(name, name_size));
+          absl::string_view(name, static_cast<size_t>(name_size)));
   if (method_descriptor == nullptr) {
     PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
     return nullptr;
@@ -1841,7 +1827,7 @@ static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   }
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1849,7 +1835,7 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+static PyObject* CopyToProto(PyBaseDescriptor* self, PyObject* target) {
   return CopyToPythonProto<ServiceDescriptorProto>(_GetDescriptor(self),
                                                    target);
 }
@@ -1932,35 +1918,33 @@ const ServiceDescriptor* PyServiceDescriptor_AsDescriptor(PyObject* obj) {
 namespace method_descriptor {
 
 // Unchecked accessor to the C++ pointer.
-static const MethodDescriptor* _GetDescriptor(
-    PyBaseDescriptor *self) {
+static const MethodDescriptor* _GetDescriptor(PyBaseDescriptor* self) {
   return reinterpret_cast<const MethodDescriptor*>(self->descriptor);
 }
 
-static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
 
-static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+static PyObject* GetFullName(PyBaseDescriptor* self, void* closure) {
   return PyString_FromCppString(_GetDescriptor(self)->full_name());
 }
 
-static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetIndex(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
-static PyObject* GetContainingService(PyBaseDescriptor *self, void *closure) {
-  const ServiceDescriptor* containing_service =
-      _GetDescriptor(self)->service();
+static PyObject* GetContainingService(PyBaseDescriptor* self, void* closure) {
+  const ServiceDescriptor* containing_service = _GetDescriptor(self)->service();
   return PyServiceDescriptor_FromDescriptor(containing_service);
 }
 
-static PyObject* GetInputType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetInputType(PyBaseDescriptor* self, void* closure) {
   const Descriptor* input_type = _GetDescriptor(self)->input_type();
   return PyMessageDescriptor_FromDescriptor(input_type);
 }
 
-static PyObject* GetOutputType(PyBaseDescriptor *self, void *closure) {
+static PyObject* GetOutputType(PyBaseDescriptor* self, void* closure) {
   const Descriptor* output_type = _GetDescriptor(self)->output_type();
   return PyMessageDescriptor_FromDescriptor(output_type);
 }
@@ -1982,7 +1966,7 @@ static PyObject* GetHasOptions(PyBaseDescriptor* self, void* closure) {
   }
 }
 
-static PyObject* GetOptions(PyBaseDescriptor *self) {
+static PyObject* GetOptions(PyBaseDescriptor* self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
@@ -1990,7 +1974,7 @@ static PyObject* GetFeatures(PyBaseDescriptor* self) {
   return GetFeaturesImpl(_GetDescriptor(self));
 }
 
-static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+static PyObject* CopyToProto(PyBaseDescriptor* self, PyObject* target) {
   return CopyToPythonProto<MethodDescriptorProto>(_GetDescriptor(self), target);
 }
 
@@ -2064,7 +2048,7 @@ PyObject* PyMethodDescriptor_FromDescriptor(
 }
 
 // Add a enum values to a type dictionary.
-static bool AddEnumValues(PyTypeObject *type,
+static bool AddEnumValues(PyTypeObject* type,
                           const EnumDescriptor* enum_descriptor) {
   for (int i = 0; i < enum_descriptor->value_count(); ++i) {
     const EnumValueDescriptor* value = enum_descriptor->value(i);
@@ -2080,7 +2064,7 @@ static bool AddEnumValues(PyTypeObject *type,
   return true;
 }
 
-static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
+static bool AddIntConstant(PyTypeObject* type, const char* name, int value) {
   ScopedPyObjectPtr obj(PyLong_FromLong(value));
   if (PyDict_SetItemString(type->tp_dict, name, obj.get()) < 0) {
     return false;
@@ -2088,13 +2072,10 @@ static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
   return true;
 }
 
-
 bool InitDescriptor() {
-  if (PyType_Ready(&PyMessageDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyMessageDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyFieldDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyFieldDescriptor_Type) < 0) return false;
 
   if (!AddEnumValues(&PyFieldDescriptor_Type,
                      FieldDescriptorProto::Label_descriptor())) {
@@ -2104,8 +2085,8 @@ bool InitDescriptor() {
                      FieldDescriptorProto::Type_descriptor())) {
     return false;
   }
-#define ADD_FIELDDESC_CONSTANT(NAME) AddIntConstant( \
-    &PyFieldDescriptor_Type, #NAME, FieldDescriptor::NAME)
+#define ADD_FIELDDESC_CONSTANT(NAME) \
+  AddIntConstant(&PyFieldDescriptor_Type, #NAME, FieldDescriptor::NAME)
   if (!ADD_FIELDDESC_CONSTANT(CPPTYPE_INT32) ||
       !ADD_FIELDDESC_CONSTANT(CPPTYPE_INT64) ||
       !ADD_FIELDDESC_CONSTANT(CPPTYPE_UINT32) ||
@@ -2120,26 +2101,19 @@ bool InitDescriptor() {
   }
 #undef ADD_FIELDDESC_CONSTANT
 
-  if (PyType_Ready(&PyEnumDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyEnumDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyEnumValueDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyEnumValueDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyFileDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyFileDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyOneofDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyOneofDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyServiceDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyServiceDescriptor_Type) < 0) return false;
 
-  if (PyType_Ready(&PyMethodDescriptor_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyMethodDescriptor_Type) < 0) return false;
 
-  if (!InitDescriptorMappingTypes())
-    return false;
+  if (!InitDescriptorMappingTypes()) return false;
 
   // Initialize globals defined in this file.
   interned_descriptors = new std::unordered_map<const void*, PyObject*>;

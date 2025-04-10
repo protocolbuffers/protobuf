@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
-#define PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_KEYWORDS_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_KEYWORDS_H__
 
 #include <string>
 
@@ -20,4 +20,4 @@ std::string ResolveKeywordConflict(absl::string_view name);
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 
-#endif  // PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_KEYWORDS_H__

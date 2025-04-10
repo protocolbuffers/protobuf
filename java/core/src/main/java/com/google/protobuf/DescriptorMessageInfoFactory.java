@@ -539,7 +539,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
       return messageType.getDeclaredField(fieldName);
     } catch (Exception e) {
       throw new IllegalArgumentException(
-          "Unable to find field " + fieldName + " in message class " + messageType.getName());
+          "Unable to find field " + fieldName + " in message class " + messageType.getName(), e);
     }
   }
 

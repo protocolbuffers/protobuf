@@ -61,6 +61,7 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
 
   using CodeGenerator::GetEdition;
   using CodeGenerator::GetResolvedSourceFeatures;
+  using CodeGenerator::GetUnresolvedSourceFeatures;
 
  private:
   bool opensource_runtime_ = google::protobuf::internal::IsOss();

@@ -173,7 +173,8 @@ __attribute__((objc_subclassing_restricted))
 /** Whether this field is required. Only valid for proto2 fields. */
 @property(nonatomic, readonly, getter=isRequired) BOOL required;
 /** Whether this field is optional. */
-@property(nonatomic, readonly, getter=isOptional) BOOL optional;
+@property(nonatomic, readonly, getter=isOptional) BOOL optional DEPRECATED_MSG_ATTRIBUTE(
+    "Check if fieldType is GPBFieldTypeSingle and that it is NOT required.");
 /** Type of field (single, repeated, map). */
 @property(nonatomic, readonly) GPBFieldType fieldType;
 /** Type of the key if the field is a map. The value's type is -dataType. */

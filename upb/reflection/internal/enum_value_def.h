@@ -27,7 +27,7 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
     bool* is_sorted);
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
-                                                   int n, upb_Arena* a);
+                                                   size_t n, upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */

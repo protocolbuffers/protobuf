@@ -78,14 +78,21 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     }
   }
 
-  // Write model.upb.proto.h
+  // Write model.hpb.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
   Context hdr_ctx(file, header_output_stream.get(),
                   Options{.backend = Backend::UPB});
   WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
-  // Write model.upb.proto.cc
+  // Write model.upb.proto.h, will go away once we LSC it away
+  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream_legacy(
+      context->Open(CppHeaderFilenameLegacy(file)));
+  Context hdr_ctx_legacy(file, header_output_stream_legacy.get(),
+                         Options{.backend = Backend::UPB});
+  WriteHeader(file, hdr_ctx_legacy, strip_nonfunctional_codegen);
+
+  // Write model.hpb.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   auto cc_ctx =
@@ -196,9 +203,6 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
 
   WrapNamespace(file, ctx, [&]() {
     WriteMessageImplementations(file, ctx);
-    const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
-        SortedExtensions(file);
-    WriteExtensionIdentifiers(this_file_exts, ctx);
   });
 
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");

@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
@@ -23,7 +24,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -146,14 +146,14 @@ class UntypedMessage final {
  public:
   // New nominal type instead of `bool` to avoid vector<bool> shenanigans.
   enum Bool : unsigned char { kTrue, kFalse };
-  using Value = absl::variant<Bool, int32_t, uint32_t, int64_t, uint64_t, float,
-                              double, std::string, UntypedMessage,
-                              //
-                              std::vector<Bool>, std::vector<int32_t>,
-                              std::vector<uint32_t>, std::vector<int64_t>,
-                              std::vector<uint64_t>, std::vector<float>,
-                              std::vector<double>, std::vector<std::string>,
-                              std::vector<UntypedMessage>>;
+  using Value = std::variant<Bool, int32_t, uint32_t, int64_t, uint64_t, float,
+                             double, std::string, UntypedMessage,
+                             //
+                             std::vector<Bool>, std::vector<int32_t>,
+                             std::vector<uint32_t>, std::vector<int64_t>,
+                             std::vector<uint64_t>, std::vector<float>,
+                             std::vector<double>, std::vector<std::string>,
+                             std::vector<UntypedMessage>>;
 
   UntypedMessage(const UntypedMessage&) = delete;
   UntypedMessage& operator=(const UntypedMessage&) = delete;
@@ -177,7 +177,7 @@ class UntypedMessage final {
       return 0;
     }
 
-    return absl::visit(SizeVisitor{}, it->second);
+    return std::visit(SizeVisitor{}, it->second);
   }
 
   // Returns the contents of a field by number.
@@ -193,9 +193,9 @@ class UntypedMessage final {
       return {};
     }
 
-    if (auto* val = absl::get_if<T>(&it->second)) {
+    if (auto* val = std::get_if<T>(&it->second)) {
       return absl::Span<const T>(val, 1);
-    } else if (auto* vec = absl::get_if<std::vector<T>>(&it->second)) {
+    } else if (auto* vec = std::get_if<std::vector<T>>(&it->second)) {
       return *vec;
     } else {
       ABSL_CHECK(false) << "wrong type for UntypedMessage::Get(" << field_number

@@ -15,8 +15,8 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
-    ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, MutProxy, Proxied,
+    Proxy, View, ViewProxy,
     __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
 };
@@ -163,6 +163,36 @@ where
         self.as_view().get(index)
     }
 
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index > len`.
+    #[inline]
+    pub fn get_mut<'r>(&'r mut self, index: usize) -> Option<Mut<'msg, T>>
+    where
+        T: Message,
+        'r: 'msg,
+    {
+        if index >= self.len() {
+            return None;
+        }
+        // SAFETY: `index` has been checked to be in-bounds
+        Some(unsafe { self.get_mut_unchecked(index) })
+    }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    #[inline]
+    pub unsafe fn get_mut_unchecked<'r>(&'r mut self, index: usize) -> Mut<'msg, T>
+    where
+        T: Message,
+        'r: 'msg,
+    {
+        // SAFETY: in-bounds as promised
+        unsafe { T::repeated_get_mut_unchecked(self.as_mut(), index) }
+    }
+
     /// Gets the value at `index` without bounds-checking.
     ///
     /// # Safety
@@ -274,7 +304,7 @@ where
 /// # Safety
 /// - It must be sound to call `*_unchecked*(x)` with an `index` less than
 ///   `repeated_len(x)`.
-pub unsafe trait ProxiedInRepeated: Proxied {
+pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
     fn repeated_new(_private: Private) -> Repeated<Self>;
@@ -298,6 +328,16 @@ pub unsafe trait ProxiedInRepeated: Proxied {
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
     unsafe fn repeated_get_unchecked(repeated: View<Repeated<Self>>, index: usize) -> View<Self>;
+
+    /// # Safety
+    /// `index` must be less than `Self::repeated_len(repeated)`
+    #[allow(unused_variables)]
+    unsafe fn repeated_get_mut_unchecked(repeated: Mut<Repeated<Self>>, index: usize) -> Mut<Self>
+    where
+        Self: Message,
+    {
+        panic!("repeated_get_mut_unchecked is only implemented for messages");
+    }
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`

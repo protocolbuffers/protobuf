@@ -359,23 +359,104 @@ TEST(IntTableTest, BoolKeys) {
   upb_inttable_clear(&t);
 }
 
+TEST(IntTableTest, EnumValues) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_int32(0), arena.ptr());
+  upb_inttable_insert(&t, -1, upb_value_int32(-1), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  int32_t key_int32;
+
+  // First element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  memcpy(&key_int32, &key, sizeof(key_int32));
+  EXPECT_EQ(key_int32, 0);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), 0);
+  EXPECT_EQ(val.val, 0);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, 0);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Second element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  memcpy(&key_int32, &key, sizeof(key_int32));
+  EXPECT_EQ(key_int32, -1);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), -1);
+  EXPECT_EQ(val.val, -1);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, -1);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Done with the iteration.
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+
+  upb_inttable_clear(&t);
+}
+
 INSTANTIATE_TEST_SUITE_P(IntTableParams, IntTableTest,
                          testing::Values(8, 64, 512, -32));
 
-/*
- * This test can't pass right now because the table can't store a value of
- * (uint64_t)-1.
- */
 TEST(Table, MaxValue) {
-  /*
-    typedef upb::TypedIntTable<uint64_t> Table;
-    Table table;
-    uintptr_t uint64_max = (uint64_t)-1;
-    table.Insert(1, uint64_max);
-    std::pair<bool, uint64_t> found = table.Lookup(1);
-    ASSERT(found.first);
-    ASSERT(found.second == uint64_max);
-  */
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  uint64_t uint64_max = (uint64_t)-1;
+  upb_inttable_insert(&t, 0, upb_value_uint64(uint64_max), arena.ptr());
+  upb_inttable_insert(&t, 1, upb_value_uint64(uint64_max), arena.ptr());
+  upb_inttable_insert(&t, 2, upb_value_uint64(uint64_max), arena.ptr());
+  upb_value val;
+  EXPECT_TRUE(upb_inttable_lookup(&t, 0, &val));
+  EXPECT_EQ(val.val, uint64_max);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
+  EXPECT_EQ(val.val, uint64_max);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
+  EXPECT_EQ(val.val, uint64_max);
+
+  upb_inttable_compact(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_lookup(&t, 0, &val));
+  EXPECT_EQ(val.val, uint64_max);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
+  EXPECT_EQ(val.val, uint64_max);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
+  EXPECT_EQ(val.val, uint64_max);
+
+  upb_inttable_remove(&t, 0, nullptr);
+  upb_inttable_remove(&t, 1, nullptr);
+  upb_inttable_remove(&t, 2, nullptr);
+  EXPECT_FALSE(upb_inttable_lookup(&t, 0, &val));
+  EXPECT_FALSE(upb_inttable_lookup(&t, 1, &val));
+  EXPECT_FALSE(upb_inttable_lookup(&t, 2, &val));
+}
+
+TEST(Table, MaxValueWithLargeArray) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  uint64_t uint64_max = (uint64_t)-1;
+  for (int i = 1; i < 121; i++) {
+    upb_inttable_insert(&t, i, upb_value_uint64(uint64_max), arena.ptr());
+  }
+  upb_value val;
+  for (int i = 1; i < 121; i++) {
+    EXPECT_TRUE(upb_inttable_lookup(&t, i, &val));
+    EXPECT_EQ(val.val, uint64_max);
+  }
+
+  upb_inttable_compact(&t, arena.ptr());
+  for (int i = 1; i < 121; i++) {
+    EXPECT_TRUE(upb_inttable_lookup(&t, i, &val));
+    EXPECT_EQ(val.val, uint64_max);
+  }
+
+  for (int i = 1; i < 121; i++) {
+    upb_inttable_remove(&t, i, nullptr);
+  }
+  for (int i = 1; i < 121; i++) {
+    EXPECT_FALSE(upb_inttable_lookup(&t, i, &val));
+  }
 }
 
 TEST(IntTableTest, Delete) {

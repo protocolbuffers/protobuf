@@ -89,19 +89,19 @@ inline bool CppFeatures_StringType_IsValid(int value) {
 inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
 template <typename T>
-const std::string& CppFeatures_StringType_Name(T value) {
-  static_assert(std::is_same<T, CppFeatures_StringType>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& CppFeatures_StringType_Name(T value) {
+  static_assert(::std::is_same<T, CppFeatures_StringType>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to StringType_Name().");
   return CppFeatures_StringType_Name(static_cast<CppFeatures_StringType>(value));
 }
 template <>
-inline const std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
+inline const ::std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 inline bool CppFeatures_StringType_Parse(
-    absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(CppFeatures_StringType_descriptor(), name,
                                            value);
 }
@@ -129,7 +129,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
   inline CppFeatures(CppFeatures&& from) noexcept
-      : CppFeatures(nullptr, std::move(from)) {}
+      : CppFeatures(nullptr, ::std::move(from)) {}
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -266,11 +266,11 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
     return CppFeatures_StringType_descriptor();
   }
   template <typename T>
-  static inline const std::string& StringType_Name(T value) {
+  static inline const ::std::string& StringType_Name(T value) {
     return CppFeatures_StringType_Name(value);
   }
   static inline bool StringType_Parse(
-      absl::string_view name, StringType* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, StringType* PROTOBUF_NONNULL value) {
     return CppFeatures_StringType_Parse(name, value);
   }
 

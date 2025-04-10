@@ -285,30 +285,6 @@ void CodedOutputStreamFieldSkipper::SkipUnknownEnum(int field_number,
   unknown_fields_->WriteVarint64(value);
 }
 
-bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
-    io::CodedInputStream* input, int field_number, bool (*is_valid)(int),
-    io::CodedOutputStream* unknown_fields_stream, RepeatedField<int>* values) {
-  uint32_t length;
-  if (!input->ReadVarint32(&length)) return false;
-  io::CodedInputStream::Limit limit = input->PushLimit(length);
-  while (input->BytesUntilLimit() > 0) {
-    int value;
-    if (!ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(input, &value)) {
-      return false;
-    }
-    if (is_valid == nullptr || is_valid(value)) {
-      values->Add(value);
-    } else {
-      uint32_t tag = WireFormatLite::MakeTag(field_number,
-                                             WireFormatLite::WIRETYPE_VARINT);
-      unknown_fields_stream->WriteVarint32(tag);
-      unknown_fields_stream->WriteVarint32(value);
-    }
-  }
-  input->PopLimit(limit);
-  return true;
-}
-
 #if !defined(ABSL_IS_LITTLE_ENDIAN)
 
 namespace {
@@ -575,13 +551,6 @@ inline static bool ReadBytesToString(io::CodedInputStream* input,
 bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
                                std::string* value) {
   return ReadBytesToString(input, value);
-}
-
-bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
-  if (*p == &GetEmptyStringAlreadyInited()) {
-    *p = new std::string();
-  }
-  return ReadBytesToString(input, *p);
 }
 
 void PrintUTF8ErrorLog(absl::string_view message_name,

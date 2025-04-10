@@ -1437,7 +1437,7 @@ bool WriteMessage(const char* value, T* message, std::string* wire_buffer) {
   message->set_data(value);
   wire_buffer->clear();
   message->AppendToString(wire_buffer);
-  return (wire_buffer->size() > 0);
+  return (!wire_buffer->empty());
 }
 
 template <typename T>

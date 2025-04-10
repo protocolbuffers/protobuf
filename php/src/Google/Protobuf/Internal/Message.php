@@ -16,7 +16,6 @@ namespace Google\Protobuf\Internal;
 use Google\Protobuf\Internal\CodedInputStream;
 use Google\Protobuf\Internal\CodedOutputStream;
 use Google\Protobuf\Internal\DescriptorPool;
-use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\MapEntry;
@@ -105,7 +104,7 @@ class Message
                         $this->$setter($map_field);
                         break;
                 }
-            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+            } else if ($field->isRepeated()) {
                 switch ($field->getType()) {
                     case GPBType::MESSAGE:
                     case GPBType::GROUP:
@@ -129,7 +128,7 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
-            } else if ($field->getLabel() === GPBLabel::OPTIONAL &&
+            } else if (!$field->isRequired() && !$field->isRepeated() &&
                        PHP_INT_SIZE == 4) {
                 switch ($field->getType()) {
                     case GPBType::INT64:
@@ -557,7 +556,7 @@ class Message
                         $this->$setter($map_field);
                         break;
                 }
-            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+            } else if ($field->isRepeated()) {
                 switch ($field->getType()) {
                     case GPBType::MESSAGE:
                     case GPBType::GROUP:
@@ -581,7 +580,7 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
-            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+            } else if (!$field->isRequired() && !$field->isRepeated()) {
                 switch ($field->getType()) {
                     case GPBType::DOUBLE   :
                     case GPBType::FLOAT    :
@@ -652,13 +651,13 @@ class Message
                 foreach ($map as $key => $value) {
                     $value->discardUnknownFields();
                 }
-            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+            } else if ($field->isRepeated()) {
                 $getter = $field->getGetter();
                 $arr = $this->$getter();
                 foreach ($arr as $sub) {
                     $sub->discardUnknownFields();
                 }
-            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+            } else if (!$field->isRequired() && !$field->isRepeated()) {
                 $getter = $field->getGetter();
                 $sub = $this->$getter();
                 if (!is_null($sub)) {
@@ -706,7 +705,7 @@ class Message
                         }
                     }
                 }
-            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+            } else if ($field->isRepeated()) {
                 if (count($msg->$getter()) != 0) {
                     foreach ($msg->$getter() as $tmp) {
                         if ($field->getType() == GPBType::MESSAGE) {
@@ -719,7 +718,7 @@ class Message
                         }
                     }
                 }
-            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+            } else if (!$field->isRequired() && !$field->isRepeated()) {
                 if($msg->$getter() !== $this->defaultValue($field)) {
                     $tmp = $msg->$getter();
                     if ($field->getType() == GPBType::MESSAGE) {

@@ -51,6 +51,10 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {</code>
      */
     protected $enforce_naming_style = null;
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
+     */
+    protected $default_symbol_visibility = null;
 
     /**
      * Constructor.
@@ -65,6 +69,7 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      *     @type int $message_encoding
      *     @type int $json_format
      *     @type int $enforce_naming_style
+     *     @type int $default_symbol_visibility
      * }
      */
     public function __construct($data = NULL) {
@@ -292,6 +297,38 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\EnforceNamingStyle::class);
         $this->enforce_naming_style = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
+     * @return int
+     */
+    public function getDefaultSymbolVisibility()
+    {
+        return isset($this->default_symbol_visibility) ? $this->default_symbol_visibility : 0;
+    }
+
+    public function hasDefaultSymbolVisibility()
+    {
+        return isset($this->default_symbol_visibility);
+    }
+
+    public function clearDefaultSymbolVisibility()
+    {
+        unset($this->default_symbol_visibility);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setDefaultSymbolVisibility($var)
+    {
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FeatureSet\VisibilityFeature\DefaultSymbolVisibility::class);
+        $this->default_symbol_visibility = $var;
 
         return $this;
     }

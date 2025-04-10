@@ -1902,6 +1902,13 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(222, ext2[1].bb)
     self.assertEqual(333, ext2[2].bb)
 
+  def testRepeatedExtensionsIn(self):
+    msg = more_extensions_pb2.ExtendedMessage()
+    ext = more_extensions_pb2.repeated_int_extension
+    self.assertNotIn(ext, msg.Extensions)
+    msg.Extensions[ext].append(123)
+    self.assertIn(ext, msg.Extensions)
+
   def testCopyFromBadType(self):
     proto1 = unittest_pb2.TestAllTypes()
     proto2 = unittest_pb2.TestAllExtensions()

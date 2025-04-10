@@ -496,6 +496,16 @@ module BasicTest
       assert_equal expected_result, m.to_h
     end
 
+    def test_to_hash
+      m = TestMessage.new(
+        :optional_bool => true,
+        :optional_double => -10.100001,
+        :optional_string => 'foo',
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_msg => [TestMessage2.new(:foo => 100)]
+      )
+      assert_equal m.to_hash, m.to_h
+    end
 
     def test_json_maps
       m = MapMessage.new(:map_string_int32 => {"a" => 1})

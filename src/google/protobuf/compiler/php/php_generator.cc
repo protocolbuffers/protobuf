@@ -319,16 +319,12 @@ std::string IntToString(int32_t value) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      return "optional";
-    case FieldDescriptor::LABEL_REQUIRED:
-      return "required";
-    case FieldDescriptor::LABEL_REPEATED:
-      return "repeated";
-    default:
-      assert(false);
-      return "";
+  if (field->is_required()) {
+    return "required";
+  } else if (field->is_repeated()) {
+    return "repeated";
+  } else {
+    return "optional";
   }
 }
 
@@ -380,7 +376,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, "[]|");
     }
-    type = absl::StrCat(type, "[]");
+    absl::StrAppend(&type, "[]");
   }
   return type;
 }
@@ -2063,13 +2059,13 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   Options options;
 
-  for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
+  for (const auto& option : absl::StrSplit(parameter, ',', absl::SkipEmpty())) {
     const std::vector<std::string> option_pair =
-        absl::StrSplit(option, "=", absl::SkipEmpty());
+        absl::StrSplit(option, '=', absl::SkipEmpty());
     if (absl::StartsWith(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix :
-           absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
+           absl::StrSplit(option_pair[1], '#', absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
         ABSL_LOG(INFO) << prefix;
       }

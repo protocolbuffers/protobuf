@@ -252,10 +252,9 @@ constexpr auto Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Struct_FieldsEntry_DoNotUse_class_data_ =
-            Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Struct_FieldsEntry_DoNotUse_class_data_ =
+        Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct_FieldsEntry_DoNotUse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_FieldsEntry_DoNotUse_class_data_);
@@ -413,10 +412,9 @@ constexpr auto Struct::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Struct_class_data_ =
-            Struct::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Struct_class_data_ =
+        Struct::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Struct::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Struct_class_data_);
@@ -577,7 +575,7 @@ void Struct::CopyFrom(const Struct& from) {
 
 
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
 }
@@ -774,10 +772,9 @@ constexpr auto Value::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Value_class_data_ =
-            Value::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Value_class_data_ =
+        Value::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Value_class_data_);
@@ -877,7 +874,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
       break;
     }
     case kStringValue: {
-      const std::string& _s = this_._internal_string_value();
+      const ::std::string& _s = this_._internal_string_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Value.string_value");
       target = stream->WriteStringMaybeAliased(3, _s, target);
@@ -1041,7 +1038,7 @@ void Value::CopyFrom(const Value& from) {
 
 
 void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_.kind_, other->_impl_.kind_);
   swap(_impl_._oneof_case_[0], other->_impl_._oneof_case_[0]);
@@ -1152,10 +1149,9 @@ constexpr auto ListValue::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        ListValue_class_data_ =
-            ListValue::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ListValue_class_data_ =
+        ListValue::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL ListValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&ListValue_class_data_);
@@ -1294,7 +1290,7 @@ void ListValue::CopyFrom(const ListValue& from) {
 
 
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.values_.InternalSwap(&other->_impl_.values_);
 }

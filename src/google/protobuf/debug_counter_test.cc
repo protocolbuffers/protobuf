@@ -99,6 +99,32 @@ TEST(DebugCounterTest, MacroProvidesReportAtExitDependingOnBuild) {
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
+template <typename T>
+void CounterOnATemplate() {
+  static google::protobuf::internal::RealDebugCounter counter("Foo.Bar");
+  counter.Inc();
+}
+
+// Regression test for counters on templates.
+// It used to be that duplicate names would clobber each other so the total for
+// the counter would only take one instantiation into account and undercount.
+TEST(DebugCounterTest, DuplicateNamesWorkTogether) {
+  EXPECT_EXIT(
+      {
+        static google::protobuf::internal::RealDebugCounter counter("Foo.Baz");
+        CounterOnATemplate<int>();
+        CounterOnATemplate<int>();
+        CounterOnATemplate<double>();
+        counter.Inc();
+        counter.Inc();
+        exit(0);
+      },
+      ExitedWithCode(0),
+      AllOf(HasSubstr("  Bar       :          3 (60.00%)"),
+            HasSubstr("  Baz       :          2 (40.00%)"),
+            HasSubstr("  Total     :          5")));
+}
+
 }  // namespace
 
 #include "google/protobuf/port_undef.inc"

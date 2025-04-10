@@ -491,14 +491,14 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
             {"byte_size",
              [&] {
                if (has_cached_size_) {
-                 p->Emit(R"cc(std::size_t byte_size =
-                                  this_.$cached_size_$.Get();)cc");
+                 p->Emit(
+                     R"cc(::size_t byte_size = this_.$cached_size_$.Get();)cc");
                } else {
                  p->Emit(R"cc(
-                   std::size_t byte_size = 0;
-                   auto count = static_cast<std::size_t>(this_._internal_$name$_size());
+                   ::size_t byte_size = 0;
+                   auto count = static_cast<::size_t>(this_._internal_$name$_size());
 
-                   for (std::size_t i = 0; i < count; ++i) {
+                   for (::size_t i = 0; i < count; ++i) {
                      byte_size += ::_pbi::WireFormatLite::EnumSize(
                          this_._internal_$name$().Get(static_cast<int>(i)));
                    }
@@ -549,16 +549,16 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
                )cc");
              } else {
                p->Emit(R"cc(
-                 std::size_t{$kTagBytes$} *
+                 ::size_t{$kTagBytes$} *
                      ::_pbi::FromIntSize(this_._internal_$name$_size());
                )cc");
              }
            }},
       },
       R"cc(
-        std::size_t data_size =
+        ::size_t data_size =
             ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
-        std::size_t tag_size = $tag_size$;
+        ::size_t tag_size = $tag_size$;
         total_size += data_size + tag_size;
       )cc");
 }

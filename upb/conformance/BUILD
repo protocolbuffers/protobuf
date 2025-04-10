@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",

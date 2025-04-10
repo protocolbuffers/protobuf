@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_PRIMITIVE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_PRIMITIVE_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_PRIMITIVE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_PRIMITIVE_FIELD_H__
 
 #include <string>
 
@@ -140,4 +140,4 @@ class RepeatedImmutablePrimitiveFieldGenerator
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_PRIMITIVE_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_PRIMITIVE_FIELD_H__

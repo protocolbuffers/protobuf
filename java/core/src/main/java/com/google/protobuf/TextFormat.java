@@ -159,8 +159,9 @@ public final class TextFormat {
       DEBUG_MULTILINE(9),
       DEBUG_SINGLE_LINE(10),
       ABSTRACT_TO_STRING(11),
-      ABSTRACT_MUTABLE_TO_STRING(12),
-      REPORT_NONE(13);
+      ABSTRACT_BUILDER_TO_STRING(12),
+      ABSTRACT_MUTABLE_TO_STRING(13),
+      REPORT_NONE(14);
       private final int index;
 
       FieldReporterLevel(int index) {
@@ -657,8 +658,7 @@ public final class TextFormat {
      * Generates a human readable form of this message, useful for debugging and other purposes,
      * with no newline characters.
      *
-     * @deprecated Use {@code
-     *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
+     * @deprecated Use {@code this.emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
     @Deprecated
     public String shortDebugString(final MessageOrBuilder message) {

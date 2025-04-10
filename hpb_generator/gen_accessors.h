@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
-#define PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
 
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
@@ -27,4 +27,4 @@ void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 
-#endif  // PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__

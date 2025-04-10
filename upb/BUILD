@@ -8,10 +8,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load(
-    "//upb/bazel:amalgamation.bzl",
-    "upb_amalgamation",
-)
+load("//upb/bazel:amalgamation.bzl", "upb_amalgamation")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
@@ -70,13 +67,17 @@ package_group(
 # upb_c_proto_library() only. This interface is not stable and by using it you
 # give up any backward compatibility guarantees.
 cc_library(
-    name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_code_support",
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         ":port_inc",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//upb/reflection:__pkg__",
+        "//upb_generator:__subpackages__",
+    ],
     deps = [
         ":base",
         ":mem",
@@ -90,12 +91,12 @@ cc_library(
 
 # Common support code for C++ generated code.
 cc_library(
-    name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_cpp_support",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         ":port_inc",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//hpb/bazel:__pkg__"],
 )
 
 # Aliases ######################################################################
@@ -108,9 +109,9 @@ alias(
 )
 
 alias(
-    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    actual = "//upb/reflection:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    visibility = ["//visibility:public"],
+    name = "generated_reflection_support",
+    actual = "//upb/reflection:generated_reflection_support",
+    visibility = ["//upb:friends"],
 )
 
 alias(
@@ -232,7 +233,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":eps_copy_input_stream",
-        ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        ":generated_code_support",
         ":mem",
         ":message",
         ":message_compare",
@@ -281,7 +282,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":eps_copy_input_stream",
-        ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        ":generated_code_support",
         ":json",
         ":mem",
         ":message",
@@ -331,7 +332,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":eps_copy_input_stream",
-        ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        ":generated_code_support",
         ":json",
         ":mem",
         ":message",
@@ -370,14 +371,6 @@ cc_library(
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
     deps = ["//third_party/utf8_range"],
-)
-
-exports_files(
-    [
-        "third_party/lunit/console.lua",
-        "third_party/lunit/lunit.lua",
-    ],
-    visibility = ["//lua:__pkg__"],
 )
 
 filegroup(

@@ -65,7 +65,7 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
     upb_StringView key = upb_key_strview(tabent->key);
     _upb_map_fromkey(key, &ent->k, map->key_size);
   } else {
-    uintptr_t key = tabent->key;
+    uintptr_t key = tabent->key.num;
     memcpy(&ent->k, &key, map->key_size);
   }
   upb_value val = {tabent->val.val};

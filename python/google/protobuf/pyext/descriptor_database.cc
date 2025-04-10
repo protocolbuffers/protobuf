@@ -146,6 +146,14 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     return false;
   }
   Py_ssize_t size = PyList_Size(py_list.get());
+  if (size == -1) {
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "FindAllExtensionNumbers() on fall back DB must return a list, not %S",
+        py_list.get());
+    PyErr_Print();
+    return false;
+  }
   int64_t item_value;
   for (Py_ssize_t i = 0 ; i < size; ++i) {
     ScopedPyObjectPtr item(PySequence_GetItem(py_list.get(), i));

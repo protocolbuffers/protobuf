@@ -43,7 +43,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 40310;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 40311;
 
 const char* kHeaderExtension = ".pbobjc.h";
 

@@ -169,7 +169,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
     }
   }
   // Add a trailing "_" if the name should be altered.
-  if (input.size() > 0 && input[input.size() - 1] == '#') {
+  if (!input.empty() && input[input.size() - 1] == '#') {
     result += '_';
   }
 
@@ -184,10 +184,9 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   // start with a digit.
   // Note: not preserving leading underscores for all otherwise valid identifiers
   // so as to not break anything that relies on the existing behaviour
-  if (result.size() > 0 && ('0' <= result[0] && result[0] <= '9')
-      && input.size() > 0 && input[0] == '_')
-  {
-      result.insert(0, 1, '_');
+  if (!result.empty() && ('0' <= result[0] && result[0] <= '9') &&
+      !input.empty() && input[0] == '_') {
+    result.insert(0, 1, '_');
   }
   return result;
 }

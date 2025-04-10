@@ -30,20 +30,19 @@ jobs:
         include:
           - name: OpenJDK 8
             cache_key: '8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-8-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-8-b77fdae6d4771789dfc66a56bf8d806354e8011a
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
-            targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
-            # TODO: b/393604460 - enable bzlmod once coursier error is fixed.
-            flags: --java_language_version=8 --noenable_bzlmod
+            targets: //java/... //java/internal:java_version --features=-layering_check
+            flags: --java_language_version=8
           - name: OpenJDK 11
             cache_key: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-11-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-11-b77fdae6d4771789dfc66a56bf8d806354e8011a
             targets: //java/... //java/internal:java_version //compatibility/...
             continuous-only: true
           - name: OpenJDK 17
             cache_key: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-17-641278a52587c01f44525819b76499db35c2804d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-17-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: Bazel7
             cache_key: 'bazel7bzlmod'
@@ -107,7 +106,7 @@ jobs:
     - name: Generate maven artifacts with bazel and install using maven
       uses: protocolbuffers/protobuf-ci/bazel-docker@v4
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:7.1.2-11-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-11-b77fdae6d4771789dfc66a56bf8d806354e8011a
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |

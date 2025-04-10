@@ -87,7 +87,7 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
 
   inline Duration(const Duration& from) : Duration(nullptr, from) {}
   inline Duration(Duration&& from) noexcept
-      : Duration(nullptr, std::move(from)) {}
+      : Duration(nullptr, ::std::move(from)) {}
   inline Duration& operator=(const Duration& from) {
     CopyFrom(from);
     return *this;

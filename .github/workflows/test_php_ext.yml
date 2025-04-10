@@ -35,7 +35,7 @@ jobs:
       - name: Package extension
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
-          version: 7.1.2 # Bazel version
+          version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_ext/${{ matrix.version }}
           bash: >

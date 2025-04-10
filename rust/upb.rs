@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private, SealedInternal};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
@@ -129,6 +129,13 @@ impl<'msg> MutatorMessageRef<'msg> {
 
     pub fn arena(&self) -> &Arena {
         self.arena
+    }
+
+    /// # Safety
+    /// - `msg` must be a valid `RawMessage`
+    /// - `arena` must hold the memory for `msg`
+    pub unsafe fn from_raw_parts(msg: RawMessage, arena: &'msg Arena) -> Self {
+        MutatorMessageRef { msg, arena }
     }
 }
 
@@ -353,6 +360,12 @@ impl<'msg, T> RepeatedMut<'msg, T> {
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
         self.inner.arena.raw()
     }
+
+    // Returns an `Arena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn arena(&self, _private: Private) -> &'msg Arena {
+        self.inner.arena
+    }
 }
 
 impl_repeated_primitives!(
@@ -505,6 +518,12 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
         self.inner.arena.raw()
     }
+
+    // Returns an `Arena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn arena(&self, _private: Private) -> &'msg Arena {
+        self.inner.arena
+    }
 }
 
 #[derive(Debug)]
@@ -568,6 +587,17 @@ pub trait UpbTypeConversions: Proxied {
     /// - `msg` must be the correct variant for `Self`.
     /// - `msg` pointers must point to memory valid for `'msg` lifetime.
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self>;
+
+    /// # Safety
+    /// - `msg` must be the correct variant for `Self`.
+    /// - `msg` pointers must point to memory valid for `'msg` lifetime.
+    #[allow(unused_variables)]
+    unsafe fn from_message_mut<'msg>(msg: *mut upb_Message, arena: &'msg Arena) -> Mut<'msg, Self>
+    where
+        Self: Message,
+    {
+        panic!("mut_from_message_value is only implemented for messages.")
+    }
 }
 
 macro_rules! impl_upb_type_conversions_for_scalars {
@@ -751,6 +781,24 @@ where
             return None;
         }
         Some(unsafe { <Self as UpbTypeConversions>::from_message_value(val.assume_init()) })
+    }
+
+    fn map_get_mut<'a>(mut map: MapMut<'a, Key, Self>, key: View<'_, Key>) -> Option<Mut<'a, Self>>
+    where
+        Self: Message,
+    {
+        // SAFETY: The map is valid as promised by the caller.
+        let val = unsafe {
+            upb_Map_GetMutable(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+            )
+        };
+        if val.is_null() {
+            return None;
+        }
+        // SAFETY: The lifetime of the MapMut is guaranteed to outlive the returned Mut.
+        Some(unsafe { <Self as UpbTypeConversions>::from_message_mut(val, map.arena(Private)) })
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {

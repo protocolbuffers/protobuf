@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -877,6 +877,17 @@ pub trait CppMapTypeConversions: Proxied {
     ///   message, then `value` must store a message of the same type.
     /// - The value must be valid for `'a` lifetime.
     unsafe fn from_map_value<'a>(value: MapValue) -> View<'a, Self>;
+
+    /// # Safety
+    /// - `value` must store a message of the same type as `Self`.
+    /// - `value` must be valid and have exclusive mutable access for `'a` lifetime.
+    #[allow(unused_variables)]
+    unsafe fn mut_from_map_value<'a>(value: MapValue) -> Mut<'a, Self>
+    where
+        Self: Message,
+    {
+        panic!("mut_from_map_value is only implemented for messages")
+    }
 }
 
 impl CppMapTypeConversions for u32 {
@@ -1128,6 +1139,21 @@ where
             return None;
         }
         unsafe { Some(Self::from_map_value(value.assume_init())) }
+    }
+
+    fn map_get_mut<'a>(mut map: MapMut<'a, Key, Self>, key: View<'_, Key>) -> Option<Mut<'a, Self>>
+    where
+        Value: Message,
+    {
+        let mut value = std::mem::MaybeUninit::uninit();
+        let found = unsafe { Key::get(map.as_raw(Private), key, value.as_mut_ptr()) };
+        if !found {
+            return None;
+        }
+        // SAFETY: `value` has been initialized because it was found.
+        // - `value` is a message as required by the trait.
+        // - `value` is valid for the `'a` lifetime of the `MapMut`.
+        unsafe { Some(Self::mut_from_map_value(value.assume_init())) }
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {

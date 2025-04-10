@@ -452,7 +452,12 @@ public abstract class AbstractMessage
 
     @Override
     public String toString() {
-      return TextFormat.printer().printToString(this);
+      TextFormat.Printer printer =
+          ProtobufToStringOutput.shouldOutputDebugFormat()
+              ? TextFormat.debugFormatPrinter()
+              : TextFormat.printer();
+      return printer.printToString(
+          this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_BUILDER_TO_STRING);
     }
 
     /** Construct an UninitializedMessageException reporting missing fields in the given message. */

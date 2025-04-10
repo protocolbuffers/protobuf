@@ -14,8 +14,15 @@ module(
 # Thus the highest version in their module graph is resolved.
 
 # These dependencies must be declared before the other rules dependencies.
-bazel_dep(name = "rules_apple", version = "3.13.0", repo_name = "build_bazel_rules_apple")
+bazel_dep(name = "rules_apple", version = "3.16.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
+
+# Keep apple_support on 1.15.1 for now to avoid this issue:
+# https://github.com/bazelbuild/apple_support/issues/316
+single_version_override(
+    module_name = "apple_support",
+    version = "1.15.1",
+)
 
 #ifndef PROTO2_OPENSOURCE
 # LINT.IfChange
@@ -32,15 +39,26 @@ bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 bazel_dep(name = "bazel_features", version = "1.23.0", repo_name = "proto_bazel_features")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "jsoncpp", version = "1.9.6")
-bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "8.6.1")
-bazel_dep(name = "rules_jvm_external", version = "6.3")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
-bazel_dep(name = "rules_rust", version = "0.51.0")
-bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency=True)
+
+bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
+bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
+
+# Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
+# rules_fuzzing 0.5.3 is not yet available in BCR.
+bazel_dep(name = "rules_fuzzing", version = "0.5.3", dev_dependency = True)
+archive_override(
+    module_name = "rules_fuzzing",
+    integrity = "sha256-CCdEIsQ4NBbfX5gpQ+QNWBQfdJwJAIu3gEQO7OaxE+Q=",
+    strip_prefix = "rules_fuzzing-0.5.3",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.5.3.tar.gz"],
+)
+
 # Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
 # Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
 # delete Disable_bundle_install.patch and single_version_override() below.
@@ -52,11 +70,12 @@ single_version_override(
     ],
     version = "0.17.3",
 )
+
 bazel_dep(name = "rules_shell", version = "0.2.0")
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Ruby toolchains
-ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency=True)
+ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby", dev_dependency = True)
 ruby.toolchain(
     name = "ruby",
     version = "system",
@@ -74,13 +93,17 @@ ruby.bundle_fetch(
         "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
         "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
         "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
-        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221"
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221",
     },
     gemfile = "//ruby:Gemfile",
     gemfile_lock = "//ruby:Gemfile.lock",
 )
 use_repo(ruby, "protobuf_bundle", "ruby_toolchains")
-register_toolchains("@ruby_toolchains//:all", dev_dependency=True)
+
+register_toolchains(
+    "@ruby_toolchains//:all",
+    dev_dependency = True,
+)
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
@@ -106,6 +129,11 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
+use_repo(
+    python,
+    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+)
+
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
 [
@@ -128,13 +156,45 @@ crate.spec(
     package = "paste",
     version = ">=1",
 )
+crate.spec(
+    package = "quote",
+    version = ">=1",
+)
+crate.spec(
+    package = "syn",
+    version = ">=2",
+)
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
-protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+PROTOBUF_MAVEN_ARTIFACTS = [
+    "com.google.code.findbugs:jsr305:3.0.2",
+    "com.google.code.gson:gson:2.8.9",
+    "com.google.errorprone:error_prone_annotations:2.5.1",
+    "com.google.j2objc:j2objc-annotations:2.8",
+    "com.google.guava:guava:32.0.1-jre",
+]
+
+protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 protobuf_maven.install(
     name = "protobuf_maven",
-    artifacts = [
+    artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+    lock_file = "//:maven_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+use_repo(protobuf_maven, "protobuf_maven")
+
+# Temporarily pin transitive dependency for https://github.com/bazelbuild/bazel/issues/24426
+bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
+
+# Development dependencies
+protobuf_maven_dev = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+protobuf_maven_dev.install(
+    name = "protobuf_maven_dev",
+    artifacts = PROTOBUF_MAVEN_ARTIFACTS + [
         "com.google.caliper:caliper:1.0-beta-3",
         "com.google.guava:guava-testlib:32.0.1-jre",
         "com.google.testparameterinjector:test-parameter-injector:1.18",
@@ -144,34 +204,17 @@ protobuf_maven.install(
         "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
         "info.picocli:picocli:4.6.3",
     ],
+    lock_file = "//:maven_dev_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(protobuf_maven, "protobuf_maven")
+use_repo(protobuf_maven_dev, "protobuf_maven_dev")
 
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-maven.install(
-    name = "maven",
-    artifacts = [
-        "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.8.9",
-        "com.google.errorprone:error_prone_annotations:2.5.1",
-        "com.google.j2objc:j2objc-annotations:2.8",
-        "com.google.guava:guava:32.0.1-jre",
-    ],
-    repositories = [
-        "https://repo1.maven.org/maven2",
-        "https://repo.maven.apache.org/maven2",
-    ],
-)
-use_repo(maven, "maven")
-
-# Development dependencies
 bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
-bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.8.0", dev_dependency = True)
 bazel_dep(
     name = "abseil-py",
     version = "2.1.0",
@@ -183,5 +226,43 @@ bazel_dep(
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
 use_repo(cc_configure, "local_config_cc")
 
-# rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
+# rules_proto are needed for @com_google_protobuf_v25 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)
+
+# For the Lua upb implementation
+bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
+
+# For benchmarks
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", dev_dependency = True)
+bazel_dep(name = "google_benchmark", version = "1.9.2", dev_dependency = True)
+
+# For testing runtime against old gencode from a previous major version.
+bazel_dep(name = "com_google_protobuf_v25", version = "25.0", dev_dependency = True)
+archive_override(
+    module_name = "com_google_protobuf_v25",
+    integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/protobuf_v25/0001-Add-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0002-Examples-MODULE.bazel.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0003-relative-labels.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0004-Add-utf8_range-dependency.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0006-Add-repo_name.patch",
+        "@com_google_protobuf//:patches/protobuf_v25/0007-Java-bazel8.patch",
+    ],
+    strip_prefix = "protobuf-25.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
+)
+
+bazel_dep(name = "com_google_protobuf_previous_release", version = "29.0", dev_dependency = True)
+archive_override(
+    module_name = "com_google_protobuf_previous_release",
+    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/protobuf_v29/0001-Update-module-name.patch",
+    ],
+    strip_prefix = "protobuf-29.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
+)

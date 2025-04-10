@@ -17,6 +17,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
@@ -37,7 +38,7 @@ namespace internal {
 // upb_Array* for the message when the RepeatedFieldProxy is constructed.
 template <class T>
 class RepeatedFieldProxyBase {
-  using Array = hpb::internal::add_const_if_T_is_const<T, upb_Array>;
+  using Array = add_const_if_T_is_const<T, upb_Array>;
 
  public:
   explicit RepeatedFieldProxyBase(Array* arr, upb_Arena* arena)
@@ -94,43 +95,42 @@ class RepeatedFieldProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::hpb::Ptr.
+  // Constructor used by hpb::Ptr.
   RepeatedFieldProxy(const RepeatedFieldProxy&) = default;
 
   // T::CProxy [] operator specialization.
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
-    return ::hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
+    return hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
   // TODO : Audit/Finalize based on Iterator Design.
   // T::Proxy [] operator specialization.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   typename T::Proxy operator[](size_t n) {
     return hpb::interop::upb::MakeHandle<T>(this->GetMessage(n), this->arena_);
   }
 
   // Mutable message reference specialization.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(const T& t) {
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
-        ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
-        ::hpb::interop::upb::GetMiniTable(&t), this->arena_);
+        PrivateAccess::GetInternalMsg(&t), hpb::interop::upb::GetMiniTable(&t),
+        this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
   // Mutable message add using move.
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val =
-        ::hpb::internal::PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(hpb::interop::upb::GetArena(&msg), this->arena_);
+    message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
+    upb_Arena_Fuse(interop::upb::GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }
@@ -147,7 +147,7 @@ class RepeatedFieldProxy
   reverse_iterator rend() const { return reverse_iterator(begin()); }
 
  private:
-  friend class ::hpb::Ptr<T>;
+  friend class hpb::Ptr<T>;
 };
 
 // RepeatedField proxy for repeated strings.
@@ -180,7 +180,7 @@ class RepeatedFieldStringProxy
 
   reference operator[](size_t n) const { return begin()[n]; }
 
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T t) {
     upb_MessageValue message_value;
@@ -232,7 +232,7 @@ class RepeatedFieldScalarProxy
     return val;
   }
 
-  template <int&... DeductionBlocker, bool b = !kIsConst,
+  template <int&... DeductionBarrier, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   void push_back(T t) {
     upb_MessageValue message_value;
@@ -259,7 +259,7 @@ class RepeatedFieldScalarProxy
     }
     if (!kIsConst) {
       void* unsafe_ptr =
-          ::upb_Array_MutableDataPtr(const_cast<upb_Array*>(this->arr_));
+          upb_Array_MutableDataPtr(const_cast<upb_Array*>(this->arr_));
       return static_cast<T*>(unsafe_ptr);
     }
   }
@@ -284,11 +284,10 @@ class RepeatedField {
   // TODO: T supports incomplete type from fwd.h forwarding headers
   // We would like to reference T::CProxy. Validate forwarding header design.
   using ValueProxy = std::conditional_t<
-      kIsScalar, T,
-      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<T>>>;
+      kIsScalar, T, std::conditional_t<kIsString, absl::string_view, Ptr<T>>>;
   using ValueCProxy = std::conditional_t<
       kIsScalar, const T,
-      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<const T>>>;
+      std::conditional_t<kIsString, absl::string_view, Ptr<const T>>>;
   using Access = std::conditional_t<
       kIsScalar, internal::RepeatedFieldScalarProxy<T>,
       std::conditional_t<kIsString, internal::RepeatedFieldStringProxy<T>,

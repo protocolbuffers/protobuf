@@ -217,7 +217,7 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=0"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support",
             "//upb:mini_table",
         ] + [dep + "_stage0" for dep in deps],
         **kwargs
@@ -234,7 +234,7 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support",
         ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs
     )
@@ -245,7 +245,7 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support",
             ":" + name + "_minitable_stage1",
         ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs

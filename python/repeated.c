@@ -530,6 +530,15 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
   Py_RETURN_NONE;
 }
 
+static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
+  if (size > 0) {
+    upb_Array_Delete(self->ptr.arr, 0, size);
+  }
+  Py_RETURN_NONE;
+}
+
 static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
                                                    PyObject* args) {
   return PyUpb_RepeatedContainer_Extend(_self, args);
@@ -638,6 +647,8 @@ static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Adds objects to the repeated container."},
     {NULL, NULL}};
@@ -734,6 +745,8 @@ static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Merges a repeated container into the current container."},
     {NULL, NULL}};

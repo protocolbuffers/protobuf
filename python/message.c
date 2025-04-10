@@ -1110,6 +1110,7 @@ static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
       upb_Message* msg = PyUpb_Message_GetMsg(self);
       const upb_FieldDef* f = upb_MessageDef_FindFieldByName(msgdef, "fields");
       const upb_Map* map = upb_Message_GetFieldByDef(msg, f).map_val;
+      if (!map || upb_Map_Size(map) == 0) Py_RETURN_FALSE;
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
       const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
       upb_MessageValue u_key;

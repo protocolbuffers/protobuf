@@ -50,6 +50,13 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     private $weak_dependency;
     /**
+     * Names of files imported by this file purely for the purpose of providing
+     * option extensions. These are excluded from the dependency list above.
+     *
+     * Generated from protobuf field <code>repeated string option_dependency = 15;</code>
+     */
+    private $option_dependency;
+    /**
      * All top-level definitions in this file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
@@ -118,6 +125,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *     @type int[] $weak_dependency
      *           Indexes of the weak imported files in the dependency list.
      *           For Google-internal migration only. Do not use.
+     *     @type string[] $option_dependency
+     *           Names of files imported by this file purely for the purpose of providing
+     *           option extensions. These are excluded from the dependency list above.
      *     @type \Google\Protobuf\Internal\DescriptorProto[] $message_type
      *           All top-level definitions in this file.
      *     @type \Google\Protobuf\Internal\EnumDescriptorProto[] $enum_type
@@ -296,6 +306,34 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->weak_dependency = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Names of files imported by this file purely for the purpose of providing
+     * option extensions. These are excluded from the dependency list above.
+     *
+     * Generated from protobuf field <code>repeated string option_dependency = 15;</code>
+     * @return RepeatedField<string>
+     */
+    public function getOptionDependency()
+    {
+        return $this->option_dependency;
+    }
+
+    /**
+     * Names of files imported by this file purely for the purpose of providing
+     * option extensions. These are excluded from the dependency list above.
+     *
+     * Generated from protobuf field <code>repeated string option_dependency = 15;</code>
+     * @param string[] $var
+     * @return $this
+     */
+    public function setOptionDependency($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->option_dependency = $arr;
 
         return $this;
     }

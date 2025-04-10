@@ -59,9 +59,9 @@ bzl_library(
 )
 
 bzl_library(
-    name = "bazel_proto_library_rule_bzl",
+    name = "proto_library_rule_bzl",
     srcs = [
-        "bazel_proto_library_rule.bzl",
+        "proto_library_rule.bzl",
     ],
     visibility = ["//bazel:__subpackages__"],
     deps = [

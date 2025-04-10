@@ -114,7 +114,7 @@
 // Current library runtime version.
 // - Gets bumped when the runtime makes changes to the interfaces between the
 //   generated code and runtime (things added/removed, etc).
-#define GOOGLE_PROTOBUF_OBJC_VERSION 40310
+#define GOOGLE_PROTOBUF_OBJC_VERSION 40311
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
@@ -132,6 +132,7 @@ extern "C" {
 // The values are only removed when GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION
 // is updated to make them no longer valid.
 extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310;  // NOLINT
+extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311;  // NOLINT
 
 #if defined(__cplusplus)
 }  // extern "C"

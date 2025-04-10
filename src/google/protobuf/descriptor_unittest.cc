@@ -634,6 +634,104 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
   }
 }
 
+TEST_F(FileDescriptorTest, DebugStringRoundTripVisibility) {
+  DescriptorPool pool;
+
+  // warning load-bearing whitespace below.  This tests the round-trip of
+  // content string -> Parse -> Descriptor -> DebugString and asserts the input
+  // content is identical to the output debugstring (white-space included).
+  absl::string_view content = R"schema(edition = "2024";
+
+package ed2024.visibility.unittest;
+
+local message VisibilityLocalMessage {
+  local message NestedLocalMessage {
+    local message InnerNestedLocalMessage {
+    }
+  }
+  export message NestedExportMessage {
+    export message InnerNestedExportMessage {
+    }
+  }
+  local enum NestedLocalEnum {
+    YES = 0;
+  }
+  export enum NestedExportEnum {
+    NO = 0;
+  }
+}
+
+export message VisibilityExportMessage {
+  local message NestedLocalMessage {
+    local message InnerNestedLocalMessage {
+    }
+  }
+  export message NestedExportMessage {
+    export message InnerNestedExportMessage {
+    }
+  }
+  local enum NestedLocalEnum {
+    UP = 0;
+  }
+  export enum NestedExportEnum {
+    DOWN = 0;
+  }
+}
+
+)schema";
+
+  io::ArrayInputStream input_stream(content.data(), content.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << content;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("google/protobuf/unittest_visibility_edition_2024.proto");
+  const FileDescriptor* descriptor = pool.BuildFile(proto);
+  ASSERT_TRUE(descriptor != nullptr) << error_collector.last_error();
+  EXPECT_EQ(content, descriptor->DebugString());
+}
+
+TEST_F(FileDescriptorTest, CopyToRoundTripVisibility) {
+  DescriptorPool pool;
+
+  std::string content = R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2024
+    message_type {
+      name: "ExportMessage"
+      visibility: VISIBILITY_EXPORT
+
+      nested_type { name: "LocalMessage" visibility: VISIBILITY_EXPORT }
+      enum_type {
+        name: "LocalEnum"
+        value { name: "DEFAULT" number: 0 }
+        visibility: VISIBILITY_LOCAL
+      }
+    }
+    enum_type {
+      name: "ExportEnum"
+      value { name: "DEFAULT" number: 0 }
+      visibility: VISIBILITY_EXPORT
+    }
+  )pb";
+
+  FileDescriptorProto proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(content, &proto));
+  const FileDescriptor* descriptor = pool.BuildFile(proto);
+  ASSERT_NE(descriptor, nullptr);
+
+  FileDescriptorProto other;
+  descriptor->CopyTo(&other);
+
+  EXPECT_THAT(other, EqualsProto(content));
+}
+
 TEST_F(FileDescriptorTest, AbslStringifyWorks) {
   std::string s = absl::StrFormat(
       "%v",
@@ -4483,18 +4581,18 @@ class ValidationErrorTest : public testing::Test {
   // Add file_proto to the DescriptorPool. Expect errors to be produced which
   // match the given error text.
   void BuildFileWithErrors(const FileDescriptorProto& file_proto,
-                           const std::string& expected_errors) {
+                           testing::Matcher<std::string> expected_errors) {
     MockErrorCollector error_collector;
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
                 nullptr);
-    EXPECT_EQ(expected_errors, error_collector.text_);
+    EXPECT_THAT(error_collector.text_, expected_errors);
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given error text.
   void BuildFileWithErrors(const std::string& file_text,
-                           const std::string& expected_errors) {
+                           testing::Matcher<std::string> expected_errors) {
     FileDescriptorProto file_proto;
     ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     BuildFileWithErrors(file_proto, expected_errors);
@@ -5355,15 +5453,91 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
 
 TEST_F(ValidationErrorTest, FieldNumberConflict) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name: \"bar\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
-
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
       "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
-      "\"Foo\" by field \"foo\".\n");
+      "\"Foo\" by field \"foo\". Next available field number is 2.\n");
+
+  // Now we add other fields, extension ranges, reserved fields, etc.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "baz" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          extension_range { start: 3 end: 6 }
+          field { name: "bak" number: 6 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          extension_range { start: 7 end: 10 }
+          field { name: "bm" number: 10 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          reserved_range { start: 11 end: 20 }
+          field { name: "bt" number: 20 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "br" number: 22 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
+      "\"Foo\" by field \"foo\". Next available field number is 21.\n");
+
+  // Now there are no available numbers.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: "bar" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          reserved_range { start: 2 end: 536870913 }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NUMBER: Field number 1 has already been used in "
+      "\"Foo\" by field \"foo\". There are no available field numbers.\n");
+
+  // Overflow check. Exhaust the whole range, and make the field number INT_MAX.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 2147483647 type: TYPE_INT32 }
+          field { name: "bar" number: 2147483647 type: TYPE_INT32 }
+          reserved_range { start: 1 end: 2147483647 }
+        }
+      )pb",
+      HasSubstr("There are no available field numbers."));
+  // Overflow check. Exhaust the whole range, and make ranges INT_MAX, INT_MIN.
+  // The input is invalid, so we only care that it doesn't trigger a sanitizer
+  // failure.
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 type: TYPE_INT32 }
+          field { name: "bar" number: 1 type: TYPE_INT32 }
+          extension_range { start: 2 end: 2147483647 }
+          extension_range { start: 2 end: -2147483648 }
+        }
+      )pb",
+      HasSubstr("field number"));
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 type: TYPE_INT32 }
+          field { name: "bar" number: 1 type: TYPE_INT32 }
+          reserved_range { start: 2 end: 2147483647 }
+          reserved_range { start: 2 end: -2147483648 }
+        }
+      )pb",
+      HasSubstr("field number"));
 }
 
 TEST_F(ValidationErrorTest, BadMessageSetExtensionType) {
@@ -6548,6 +6722,80 @@ TEST_F(ValidationErrorTest, JsonNameEmbeddedNull) {
       "}",
       "foo.proto: foo.Foo.value: OPTION_NAME: json_name cannot have embedded "
       "null characters.\n");
+}
+
+void TestNameSizeLimit(const FileDescriptorProto& file, std::string& name,
+                       absl::string_view element) {
+  const std::string orig = name;
+
+  // The exact threshold is not fixed, so find it.
+  size_t success = 10;
+  size_t fail = 70000;
+
+  const auto test = [&](size_t size) {
+    name.assign(size, 'x');
+    MockErrorCollector error_collector;
+    DescriptorPool pool;
+    auto* out = pool.BuildFileCollectingErrors(file, &error_collector);
+    if (out == nullptr) {
+      EXPECT_THAT(error_collector.text_, HasSubstr("too long")) << element;
+    }
+    return out != nullptr;
+  };
+
+  while (fail - success > 1) {
+    size_t mid = (fail + success) / 2;
+    if (test(mid)) {
+      success = mid;
+    } else {
+      fail = mid;
+    }
+  }
+
+  ABSL_LOG(INFO) << "First failure on " << fail << " for " << element;
+  for (size_t i = success - 5; i <= success; ++i) {
+    EXPECT_TRUE(test(i)) << element;
+  }
+  for (size_t i = fail; i <= fail + 5; ++i) {
+    EXPECT_FALSE(test(i)) << element;
+  }
+
+  // Reset the name for the next test.
+  name = orig;
+}
+
+TEST_F(ValidationErrorTest, TooLongNamesCauseABuildError) {
+  FileDescriptorProto file_proto;
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "name" number: 1 type: TYPE_STRING }
+        }
+      )pb",
+      &file_proto));
+
+  // Grow package.
+  TestNameSizeLimit(file_proto, *file_proto.mutable_package(), "package");
+
+  // Grow message name.
+  TestNameSizeLimit(file_proto,
+                    *file_proto.mutable_message_type(0)->mutable_name(),
+                    "message");
+
+  // Grow field name.
+  TestNameSizeLimit(
+      file_proto,
+      *file_proto.mutable_message_type(0)->mutable_field(0)->mutable_name(),
+      "field");
+
+  // Grow field json_name.
+  TestNameSizeLimit(file_proto,
+                    *file_proto.mutable_message_type(0)
+                         ->mutable_field(0)
+                         ->mutable_json_name(),
+                    "json_name");
 }
 
 TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
@@ -8015,6 +8263,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8028,6 +8277,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8041,6 +8291,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -8119,6 +8370,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8132,6 +8384,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8313,6 +8566,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8397,6 +8651,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
+                default_symbol_visibility: EXPORT_TOP_LEVEL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -8431,6 +8686,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8460,6 +8716,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8829,6 +9086,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8863,6 +9121,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -8945,6 +9204,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9057,6 +9317,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9443,6 +9704,51 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
               NotNull());
 }
 
+TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
+  BuildDescriptorMessagesInTestPool();
+
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      local enum Inner {
+        VAL_1 = 0;
+      }
+    }
+
+    export message ExportOuter {
+      enum Inner {
+        VAL_1 = 0;
+      }
+    }
+  )schema"),
+              NotNull());
+}
+
+TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
+  BuildDescriptorMessagesInTestPool();
+
+  ParseAndBuildFileWithErrorSubstr(
+      "vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema",
+      "\"Inner\" is a nested message and cannot be `export` with STRICT "
+      "default_symbol_visibility. It must be moved to top-level, ideally in "
+      "its own file "
+      "in order to be `export`.");
+}
+
 TEST_F(FeaturesTest, BadPackageName) {
   BuildDescriptorMessagesInTestPool();
 
@@ -9718,6 +10024,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9834,6 +10141,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9934,6 +10242,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10043,6 +10352,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10137,6 +10447,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10208,6 +10519,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11306,6 +11618,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -12027,6 +12340,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -12050,6 +12364,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
               )pb"));
 }
 
@@ -12065,6 +12380,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -12093,6 +12409,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
+                default_symbol_visibility: EXPORT_ALL
               )pb"));
 }
 
@@ -12116,10 +12433,9 @@ TEST_F(DescriptorPoolFeaturesTest, ResolvesFeaturesFor) {
 
 class DescriptorPoolMemoizationTest : public ::testing::Test {
  protected:
-  template <typename Func>
-  const auto& MemoizeProjection(const DescriptorPool* pool,
-                                const FieldDescriptor* field, Func func) {
-    return pool->MemoizeProjection(field, func);
+  template <typename Desc, typename Func>
+  const auto& MemoizeProjection(const Desc* descriptor, Func func) {
+    return DescriptorPool::MemoizeProjection(descriptor, func);
   };
 };
 
@@ -12129,13 +12445,12 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
     counter++;
     return field->full_name();
   };
-  proto2_unittest::TestAllTypes message;
-  const Descriptor* descriptor = message.GetDescriptor();
+  const Descriptor* descriptor = proto2_unittest::TestAllTypes::descriptor();
 
   const auto& name = DescriptorPoolMemoizationTest::MemoizeProjection(
-      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+      descriptor->field(0), name_lambda);
   const auto& dupe_name = DescriptorPoolMemoizationTest::MemoizeProjection(
-      descriptor->file()->pool(), descriptor->field(0), name_lambda);
+      descriptor->field(0), name_lambda);
 
   ASSERT_EQ(counter, 1);
   ASSERT_EQ(name, "proto2_unittest.TestAllTypes.optional_int32");
@@ -12143,14 +12458,38 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionBasic) {
 
   // Check that they are references aliasing the same object.
   EXPECT_TRUE(
-      (std::is_same_v<decltype(name), const decltype(descriptor->name()) &>));
+      (std::is_same_v<decltype(name), const decltype(descriptor->name())&>));
   EXPECT_EQ(&name, &dupe_name);
 
   auto other_name = DescriptorPoolMemoizationTest::MemoizeProjection(
-      descriptor->file()->pool(), descriptor->field(1), name_lambda);
+      descriptor->field(1), name_lambda);
 
   ASSERT_EQ(counter, 2);
   ASSERT_NE(other_name, "proto2_unittest.TestAllTypes.optional_int32");
+}
+
+TEST_F(DescriptorPoolMemoizationTest, SupportsDifferentDescriptorTypes) {
+  static int counter;
+  counter = 0;
+  auto name_lambda = [](const auto* field) {
+    counter++;
+    return field->full_name();
+  };
+
+  const Descriptor* descriptor = proto2_unittest::TestAllTypes::descriptor();
+
+  // Different descriptor types should be accepted and return the appropriate
+  // result, even when reusing the same lambda type.
+  EXPECT_EQ("proto2_unittest.TestAllTypes.optional_int32",
+            DescriptorPoolMemoizationTest::MemoizeProjection(
+                descriptor->field(0), name_lambda));
+  EXPECT_EQ("proto2_unittest.TestAllTypes",
+            DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                             name_lambda));
+  EXPECT_EQ("proto2_unittest.TestAllTypes.NestedMessage",
+            DescriptorPoolMemoizationTest::MemoizeProjection(
+                descriptor->nested_type(0), name_lambda));
+  EXPECT_EQ(counter, 3);
 }
 
 TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
@@ -12163,9 +12502,9 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     threads.emplace_back([this, name_lambda, descriptor, i]() {
       auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
-          descriptor->file()->pool(), descriptor->field(i), name_lambda);
+          descriptor->field(i), name_lambda);
       auto first_name = DescriptorPoolMemoizationTest::MemoizeProjection(
-          descriptor->file()->pool(), descriptor->field(0), name_lambda);
+          descriptor->field(0), name_lambda);
       ASSERT_THAT(name, HasSubstr("proto2_unittest.TestAllTypes"));
       if (i != 0) {
         ASSERT_NE(name, "proto2_unittest.TestAllTypes.optional_int32");
@@ -12189,7 +12528,7 @@ TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionInsertionRace) {
     for (int j = 0; j < 3; ++j) {
       threads.emplace_back([this, name_lambda, descriptor, i]() {
         auto name = DescriptorPoolMemoizationTest::MemoizeProjection(
-            descriptor->file()->pool(), descriptor->field(i), name_lambda);
+            descriptor->field(i), name_lambda);
         ASSERT_THAT(name, HasSubstr("proto2_unittest.TestAllTypes"));
       });
     }
@@ -12392,6 +12731,108 @@ TEST_F(ValidationErrorTest, ExtensionDeclarationsFullNameMissingLeadingDot) {
       )pb",
       "foo.proto: Foo: NAME: \"bar\" must have a leading dot to indicate the "
       "fully-qualified scope.\n");
+}
+
+TEST_F(ValidationErrorTest, VisibilityFromSame) {
+  ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+          LocalMessage foo = 1;
+        }
+        )schema");
+}
+
+TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
+  ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "importer.proto",
+      R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.LocalMessage foo = 1;
+        }
+      )schema",
+      "importer.proto: BadImport.foo: TYPE: Symbol \"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible from \"importer.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
+}
+
+TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
+  ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        message TopLevelMessage {
+          message NestedMessage {
+          }
+        }
+        )schema");
+
+  ParseAndBuildFile("good_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message GoodImport {
+          vis.test.TopLevelMessage foo = 1;
+        }
+        )schema");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.TopLevelMessage.NestedMessage foo = 1;
+        }
+        )schema",
+
+      "bad_importer.proto: BadImport.foo: TYPE: Symbol "
+      "\"vis.test.TopLevelMessage.NestedMessage\", defined in \"vis.proto\"  "
+      "is not visible from \"bad_importer.proto\". It defaulted to local from "
+      "file-level 'option features.default_symbol_visibility = "
+      "'EXPORT_TOP_LEVEL'; and cannot be accessed outside its own file\n");
+}
+
+TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
+  ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalExtendee {
+          extensions 1 to 100;
+        }
+        )schema");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        extend vis.test.LocalExtendee {
+          string bar = 1;
+        }
+      )schema",
+      "bad_importer.proto: bar: EXTENDEE: Symbol \"vis.test.LocalExtendee\", "
+      "defined in \"vis.proto\" target of extend is not visible from "
+      "\"bad_importer.proto\". It is explicitly marked 'local' and cannot be "
+      "accessed outside its own file\n");
 }
 
 struct ExtensionDeclarationsTestParams {

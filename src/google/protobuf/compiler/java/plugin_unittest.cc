@@ -103,7 +103,7 @@ TEST(JavaPluginTest, PluginTest) {
   ABSL_CHECK_OK(
       File::GetContents(absl::StrCat(::testing::TempDir(), "/Test.java"),
                         &output, true));
-  std::vector<std::string> lines = absl::StrSplit(output, "\n");
+  std::vector<std::string> lines = absl::StrSplit(output, '\n');
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;
   for (const auto& line : lines) {

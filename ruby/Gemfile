@@ -19,6 +19,6 @@ end
 
 group :development do
   gem "rake", ">= 13"
-  gem "rake-compiler", "~> 1.1.0"
-  gem "rake-compiler-dock", "= 1.2.1"
+  gem "rake-compiler", "~> 1.2"
+  gem "rake-compiler-dock", "~> 1.9"
 end

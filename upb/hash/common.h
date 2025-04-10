@@ -100,27 +100,24 @@ UPB_INLINE upb_value upb_value_double(double cval) {
 
 /* upb_key *****************************************************************/
 
-/* Either:
- *   1. an actual integer key, or
- *   2. a pointer to a string prefixed by its uint32_t length, owned by us.
- *
- * ...depending on whether this is a string table or an int table.  We would
- * make this a union of those two types, but C89 doesn't support statically
- * initializing a non-first union member. */
-typedef uintptr_t upb_key;
+// A uint32 size followed by that number of bytes stored contiguously.
+typedef struct {
+  uint32_t size;
+  const char data[];
+} upb_SizePrefixString;
 
-UPB_INLINE char* upb_key_cstr(upb_key key, uint32_t* len) {
-  char* mem = (char*)key;
-  if (len) memcpy(len, mem, sizeof(*len));
-  return mem + sizeof(*len);
-}
+/* Either:
+ *   1. an actual integer key
+ *   2. a SizePrefixString*, owned by us.
+ *
+ * ...depending on whether this is a string table or an int table. */
+typedef union {
+  uintptr_t num;
+  const upb_SizePrefixString* str;
+} upb_key;
 
 UPB_INLINE upb_StringView upb_key_strview(upb_key key) {
-  upb_StringView ret;
-  uint32_t len;
-  ret.data = upb_key_cstr(key, &len);
-  ret.size = len;
-  return ret;
+  return upb_StringView_FromDataAndSize(key.str->data, key.str->size);
 }
 
 /* upb_table ******************************************************************/
@@ -149,7 +146,23 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
 // Internal-only functions, in .h file only out of necessity.
 
-UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
+UPB_INLINE upb_key upb_key_empty(void) {
+  upb_key ret;
+  memset(&ret, 0, sizeof(upb_key));
+  return ret;
+}
+
+UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) {
+  upb_key key = e->key;
+  UPB_ASSERT(sizeof(key.num) == sizeof(key.str));
+  uintptr_t val;
+  memcpy(&val, &key, sizeof(val));
+  // Note: for upb_inttables a tab_key is a true integer key value, but the
+  // inttable maintains the invariant that 0 value is always stored in the
+  // compact table and never as a upb_tabent* so we can always use the 0
+  // key value to identify an empty tabent.
+  return val == 0;
+}
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 

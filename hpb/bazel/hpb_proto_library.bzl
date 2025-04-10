@@ -51,11 +51,16 @@ def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     srcs = []
     srcs += proto_common.declare_generated_files(
         ctx.actions,
-        extension = ".upb.proto.cc",
+        extension = ".hpb.cc",
         proto_info = proto_info,
     )
 
     hdrs = []
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".hpb.h",
+        proto_info = proto_info,
+    )
     hdrs += proto_common.declare_generated_files(
         ctx.actions,
         extension = ".upb.proto.h",
@@ -149,7 +154,7 @@ _upb_cc_proto_library_aspect = aspect(
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
-                "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb:generated_cpp_support",
                 "//hpb:generated_hpb_support",
                 "@abseil-cpp//absl/log:absl_check",
                 "@abseil-cpp//absl/strings",

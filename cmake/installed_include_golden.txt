@@ -12,9 +12,11 @@ google/protobuf/arenaz_sampler.h
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h
+google/protobuf/compiler/cpp/generator.h
 google/protobuf/compiler/cpp/helpers.h
 google/protobuf/compiler/cpp/names.h
 google/protobuf/compiler/cpp/options.h
+google/protobuf/compiler/csharp/csharp_generator.h
 google/protobuf/compiler/csharp/names.h
 google/protobuf/compiler/importer.h
 google/protobuf/compiler/java/context.h
@@ -25,7 +27,9 @@ google/protobuf/compiler/java/java_features.pb.h
 google/protobuf/compiler/java/name_resolver.h
 google/protobuf/compiler/java/names.h
 google/protobuf/compiler/java/options.h
+google/protobuf/compiler/kotlin/generator.h
 google/protobuf/compiler/notices.h
+google/protobuf/compiler/objectivec/generator.h
 google/protobuf/compiler/objectivec/line_consumer.h
 google/protobuf/compiler/objectivec/names.h
 google/protobuf/compiler/objectivec/nsobject_methods.h
@@ -35,7 +39,10 @@ google/protobuf/compiler/php/php_generator.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
+google/protobuf/compiler/python/generator.h
+google/protobuf/compiler/python/pyi_generator.h
 google/protobuf/compiler/retention.h
+google/protobuf/compiler/ruby/ruby_generator.h
 google/protobuf/compiler/scc.h
 google/protobuf/compiler/subprocess.h
 google/protobuf/compiler/versions.h
@@ -98,6 +105,7 @@ google/protobuf/message.h
 google/protobuf/message_lite.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
+google/protobuf/micro_string.h
 google/protobuf/parse_context.h
 google/protobuf/port.h
 google/protobuf/port_def.inc

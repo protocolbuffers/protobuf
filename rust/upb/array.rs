@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::opaque_pointee::opaque_pointee;
-use super::{upb_MessageValue, upb_MutableMessageValue, CType, RawArena};
+use super::{upb_MessageValue, upb_MutableMessageValue, CType, RawArena, RawMessage};
 use core::ptr::NonNull;
 
 opaque_pointee!(upb_Array);
@@ -22,7 +22,7 @@ extern "C" {
     pub fn upb_Array_Reserve(arr: RawArray, size: usize, arena: RawArena) -> bool;
     pub fn upb_Array_MutableDataPtr(arr: RawArray) -> *mut core::ffi::c_void;
     pub fn upb_Array_DataPtr(arr: RawArray) -> *const core::ffi::c_void;
-    pub fn upb_Array_GetMutable(arr: RawArray, i: usize) -> upb_MutableMessageValue;
+    pub fn upb_Array_GetMutable(arr: RawArray, i: usize) -> RawMessage;
 }
 
 #[cfg(test)]

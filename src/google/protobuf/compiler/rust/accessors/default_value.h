@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_HELPERS_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_HELPERS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_DEFAULT_VALUE_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_DEFAULT_VALUE_H__
 
 #include <string>
 
@@ -30,4 +30,4 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field);
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_HELPERS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_DEFAULT_VALUE_H__

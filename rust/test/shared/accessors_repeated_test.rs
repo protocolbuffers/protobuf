@@ -229,6 +229,12 @@ fn test_repeated_message() {
         elements_are![predicate(|m: protobuf::View<NestedMessage>| m.bb() == 2)],
     );
 
+    msg.repeated_nested_message_mut().get_mut(0).unwrap().set_bb(3);
+    assert_that!(
+        msg.repeated_nested_message(),
+        elements_are![predicate(|m: protobuf::View<NestedMessage>| m.bb() == 3)],
+    );
+
     drop(msg);
 
     assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));

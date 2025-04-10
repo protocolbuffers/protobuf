@@ -577,7 +577,7 @@ def internal_py_proto_library(
 
     NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
     be removed in the next minor release.  Users should migrate to the py_proto_library rule from
-    rules_python instead.
+    bazel/py_proto_library.bzl instead.
 
     Args:
       name: the name of the py_proto_library.

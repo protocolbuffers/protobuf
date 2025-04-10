@@ -87,7 +87,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
   inline Empty(Empty&& from) noexcept
-      : Empty(nullptr, std::move(from)) {}
+      : Empty(nullptr, ::std::move(from)) {}
   inline Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;

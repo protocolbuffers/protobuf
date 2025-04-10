@@ -36,4 +36,27 @@ public final class UnredactedDebugFormatForTest {
   public static String unredactedSingleLineString(UnknownFieldSet fields) {
     return TextFormat.printer().emittingSingleLine(true).printToString(fields);
   }
+
+  /**
+   * Return object.toString() with the guarantee that any Protobuf Message.toString() invoked under
+   * this call always returns TextFormat (except for Message.toString() calls that are also under
+   * ProtobufToStringOutput.callWithDebugFormat). This is particularly useful for toString calls on
+   * objects that contain Protobuf messages (e.g collections) and existing code expects toString()
+   * on these objects to contain Message.toString() outputs in TextFormat.
+   */
+  public static String unredactedToString(Object object) {
+    return LegacyUnredactedTextFormat.legacyUnredactedToString(object);
+  }
+
+  /**
+   * Return String.valueOf() with the guarantee that any Protobuf Message.toString() invoked under
+   * this call always returns TextFormat (except for Message.toString() calls that are also under
+   * ProtobufToStringOutput.callWithDebugFormat). This is particularly useful for explicit and
+   * implicit String.valueOf() calls on objects that contain Protobuf messages (e.g collections) and
+   * may be null, and existing code expects toString() on these objects to contain
+   * Message.toString() outputs in TextFormat.
+   */
+  public static String unredactedStringValueOf(Object object) {
+    return LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(object);
+  }
 }

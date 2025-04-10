@@ -30,9 +30,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82' }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82' }
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, continuous-only: true }
+          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
+          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
@@ -52,7 +51,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-{0}-90d207f4e749b54c8792bbe974dfc70323b6566e', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -78,55 +77,54 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75 #TODO: b/409557730 - upgrade to bazel 8.0.1
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
-          image: i386/ruby:3.0.2-buster
+          image: i386/ruby:3.1.6-bullseye
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.13;
+            gem install bundler -v 2.6.6;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
             rake clobber_package gem;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
-  # TODO: Re-enable once aarch64 is fixed.
-  # linux-aarch64:
-  #   name: Linux aarch64
-  #   runs-on: ubuntu-22-4core
-  #   steps:
-  #     - name: Checkout pending changes
-  #       uses: protocolbuffers/protobuf-ci/checkout@v4
-  #       with:
-  #         ref: ${{ inputs.safe-checkout }}
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-22-4core
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
 
-  #     - name: Cross compile protoc for aarch64
-  #       id: cross-compile
-  #       uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
-  #       with:
-  #         image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
-  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-  #         architecture: linux-aarch64
+      - name: Cross compile protoc for aarch64
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75 #TODO: b/409557730 - upgrade to bazel 8.0.1
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-aarch64
 
-  #     - name: Run tests
-  #       uses: protocolbuffers/protobuf-ci/docker@v4
-  #       with:
-  #         image: arm64v8/ruby:3.0.2-buster
-  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-  #         command: >-
-  #           /bin/bash -cex '
-  #           gem install bundler -v 2.5.13;
-  #           cd /workspace/ruby;
-  #           bundle;
-  #           PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
-  #           rake clobber_package gem;
-  #           PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v4
+        with:
+          image: arm64v8/ruby:3.1.4-buster
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            gem install bundler -v 2.6.6;
+            cd /workspace/ruby;
+            bundle;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
+            rake clobber_package gem;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
   macos:
     strategy:
@@ -136,9 +134,8 @@ jobs:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby.
         # Quote versions numbers otherwise 3.0 will render as 3
-        - { version: "3.0", ffi: NATIVE }
-        - { version: "3.0", ffi: FFI, continuous-only: true }
-        - { version: "3.1", continuous-only: true }
+        - { version: "3.1", ffi: NATIVE }
+        - { version: "3.1", ffi: FFI }
         - { version: "3.2", continuous-only: true }
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE }
@@ -167,7 +164,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
-          version: 7.1.2 # Bazel version
+          version: 8.0.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -180,9 +177,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby.
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82', continuous-only: true}
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-ruby-3.0.2-d9624f2aa83cba3eaf906f751d75b36aacb9aa82', continuous-only: true}
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, continuous-only: true}
+          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
+          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true}
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true}
           - { name: Ruby 3.4, ruby: ruby-3.4.1, ffi: NATIVE }
@@ -201,7 +197,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-{0}-90d207f4e749b54c8792bbe974dfc70323b6566e', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.0.1-{0}-b77fdae6d4771789dfc66a56bf8d806354e8011a', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >

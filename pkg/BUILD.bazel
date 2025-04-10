@@ -225,8 +225,15 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
-        # TODO Make this private once gRPC migrates off it.
+        # TODO Make these private in the next breaking C++ release.
+        "//src/google/protobuf/compiler/cpp:generator_headers",
+        "//src/google/protobuf/compiler/csharp:generator_headers",
+        "//src/google/protobuf/compiler/java:generator_headers",
+        "//src/google/protobuf/compiler/kotlin:generator_headers",
+        "//src/google/protobuf/compiler/objectivec:generator_headers",
         "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python:generator_headers",
+        "//src/google/protobuf/compiler/ruby:generator_headers",
     ],
 )
 
@@ -234,7 +241,7 @@ cc_dist_library(
     name = "upb",
     tags = ["manual"],
     deps = [
-        "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//upb:generated_code_support",
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
@@ -253,7 +260,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/c:generator_with_main",
+        "//upb_generator/c:protoc-gen-upb",
     ],
 )
 
@@ -264,7 +271,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/reflection:generator_with_main",
+        "//upb_generator/reflection:protoc-gen-upbdefs",
     ],
 )
 

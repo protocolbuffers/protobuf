@@ -165,6 +165,11 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension);
 CMessage* InternalGetSubMessage(CMessage* self,
                                 const FieldDescriptor* field_descriptor);
 
+// Delete the last n items in a repeated field.
+void DeleteLastRepeatedWithSize(CMessage* self,
+                                const FieldDescriptor* field_descriptor,
+                                Py_ssize_t n);
+
 // Deletes a range of items in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
 //

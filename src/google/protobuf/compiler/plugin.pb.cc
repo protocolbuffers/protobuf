@@ -288,7 +288,7 @@ PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[]
 class Version::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Version>()._impl_._has_bits_);
+      decltype(::std::declval<Version>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
 };
@@ -392,10 +392,9 @@ constexpr auto Version::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Version_class_data_ =
-            Version::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Version_class_data_ =
+        Version::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Version::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Version_class_data_);
@@ -516,7 +515,7 @@ PROTOBUF_NOINLINE void Version::Clear() {
 
   // optional string suffix = 4;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_suffix();
+    const ::std::string& _s = this_._internal_suffix();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.Version.suffix");
     target = stream->WriteStringMaybeAliased(4, _s, target);
@@ -609,7 +608,7 @@ void Version::CopyFrom(const Version& from) {
 
 
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -631,7 +630,7 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 class CodeGeneratorRequest::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
+      decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
 };
@@ -762,10 +761,9 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        CodeGeneratorRequest_class_data_ =
-            CodeGeneratorRequest::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_ =
+        CodeGeneratorRequest::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorRequest::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorRequest_class_data_);
@@ -889,7 +887,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string parameter = 2;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_parameter();
+    const ::std::string& _s = this_._internal_parameter();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorRequest.parameter");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -1040,7 +1038,7 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
 }
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1060,7 +1058,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
+      decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
 };
@@ -1168,10 +1166,9 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        CodeGeneratorResponse_File_class_data_ =
-            CodeGeneratorResponse_File::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_ =
+        CodeGeneratorResponse_File::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorResponse_File::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_File_class_data_);
@@ -1282,7 +1279,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string name = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_name();
+    const ::std::string& _s = this_._internal_name();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorResponse.File.name");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -1290,7 +1287,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 
   // optional string insertion_point = 2;
   if ((cached_has_bits & 0x00000002u) != 0) {
-    const std::string& _s = this_._internal_insertion_point();
+    const ::std::string& _s = this_._internal_insertion_point();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -1298,7 +1295,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 
   // optional string content = 15;
   if ((cached_has_bits & 0x00000004u) != 0) {
-    const std::string& _s = this_._internal_content();
+    const ::std::string& _s = this_._internal_content();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorResponse.File.content");
     target = stream->WriteStringMaybeAliased(15, _s, target);
@@ -1404,7 +1401,7 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
 
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1423,7 +1420,7 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
 class CodeGeneratorResponse::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
+      decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
 };
@@ -1541,10 +1538,9 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        CodeGeneratorResponse_class_data_ =
-            CodeGeneratorResponse::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_ =
+        CodeGeneratorResponse::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorResponse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_class_data_);
@@ -1656,7 +1652,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string error = 1;
   if ((cached_has_bits & 0x00000001u) != 0) {
-    const std::string& _s = this_._internal_error();
+    const ::std::string& _s = this_._internal_error();
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
                                 "google.protobuf.compiler.CodeGeneratorResponse.error");
     target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -1792,7 +1788,7 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

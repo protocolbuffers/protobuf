@@ -40,8 +40,7 @@ message JavaFeatures {
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
 
-  // The UTF8 validation strategy to use.  See go/editions-utf8-validation for
-  // more information on this feature.
+  // The UTF8 validation strategy to use.
   enum Utf8Validation {
     // Invalid default, which should never be used.
     UTF8_VALIDATION_UNKNOWN = 0;
@@ -68,6 +67,18 @@ message JavaFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "DEFAULT" }
   ];
 
+  // Allows creation of large Java enums, extending beyond the standard
+  // constant limits imposed by the Java language.
+  optional bool large_enum = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" }
+  ];
+
   // Whether to use the old default outer class name scheme, or the new feature
   // which adds a "Proto" suffix to the outer class name.
   //
@@ -83,5 +94,37 @@ message JavaFeatures {
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "true" },
     edition_defaults = { edition: EDITION_2024, value: "false" }
+  ];
+
+  message NestInFileClassFeature {
+    enum NestInFileClass {
+      // Invalid default, which should never be used.
+      NEST_IN_FILE_CLASS_UNKNOWN = 0;
+      // Do not nest the generated class in the file class.
+      NO = 1;
+      // Nest the generated class in the file class.
+      YES = 2;
+      // Fall back to the `java_multiple_files` option. Users won't be able to
+      // set this option.
+      LEGACY = 3 [feature_support = {
+        edition_introduced: EDITION_2024
+        edition_removed: EDITION_2024
+      }];
+    }
+    reserved 1 to max;
+  }
+
+  // Whether to nest the generated class in the generated file class. This is
+  // only applicable to *top-level* messages, enums, and services.
+  optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_SERVICE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "NO" }
   ];
 }

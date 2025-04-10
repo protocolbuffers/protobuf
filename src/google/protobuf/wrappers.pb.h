@@ -119,7 +119,7 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
 
   inline UInt64Value(const UInt64Value& from) : UInt64Value(nullptr, from) {}
   inline UInt64Value(UInt64Value&& from) noexcept
-      : UInt64Value(nullptr, std::move(from)) {}
+      : UInt64Value(nullptr, ::std::move(from)) {}
   inline UInt64Value& operator=(const UInt64Value& from) {
     CopyFrom(from);
     return *this;
@@ -310,7 +310,7 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
 
   inline UInt32Value(const UInt32Value& from) : UInt32Value(nullptr, from) {}
   inline UInt32Value(UInt32Value&& from) noexcept
-      : UInt32Value(nullptr, std::move(from)) {}
+      : UInt32Value(nullptr, ::std::move(from)) {}
   inline UInt32Value& operator=(const UInt32Value& from) {
     CopyFrom(from);
     return *this;
@@ -501,7 +501,7 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
 
   inline StringValue(const StringValue& from) : StringValue(nullptr, from) {}
   inline StringValue(StringValue&& from) noexcept
-      : StringValue(nullptr, std::move(from)) {}
+      : StringValue(nullptr, ::std::move(from)) {}
   inline StringValue& operator=(const StringValue& from) {
     CopyFrom(from);
     return *this;
@@ -630,17 +630,17 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   };
   // string value = 1;
   void clear_value() ;
-  const std::string& value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_value();
-  void set_allocated_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
+  void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.StringValue)
@@ -697,7 +697,7 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
 
   inline Int64Value(const Int64Value& from) : Int64Value(nullptr, from) {}
   inline Int64Value(Int64Value&& from) noexcept
-      : Int64Value(nullptr, std::move(from)) {}
+      : Int64Value(nullptr, ::std::move(from)) {}
   inline Int64Value& operator=(const Int64Value& from) {
     CopyFrom(from);
     return *this;
@@ -888,7 +888,7 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
 
   inline Int32Value(const Int32Value& from) : Int32Value(nullptr, from) {}
   inline Int32Value(Int32Value&& from) noexcept
-      : Int32Value(nullptr, std::move(from)) {}
+      : Int32Value(nullptr, ::std::move(from)) {}
   inline Int32Value& operator=(const Int32Value& from) {
     CopyFrom(from);
     return *this;
@@ -1079,7 +1079,7 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
 
   inline FloatValue(const FloatValue& from) : FloatValue(nullptr, from) {}
   inline FloatValue(FloatValue&& from) noexcept
-      : FloatValue(nullptr, std::move(from)) {}
+      : FloatValue(nullptr, ::std::move(from)) {}
   inline FloatValue& operator=(const FloatValue& from) {
     CopyFrom(from);
     return *this;
@@ -1270,7 +1270,7 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
 
   inline DoubleValue(const DoubleValue& from) : DoubleValue(nullptr, from) {}
   inline DoubleValue(DoubleValue&& from) noexcept
-      : DoubleValue(nullptr, std::move(from)) {}
+      : DoubleValue(nullptr, ::std::move(from)) {}
   inline DoubleValue& operator=(const DoubleValue& from) {
     CopyFrom(from);
     return *this;
@@ -1461,7 +1461,7 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
 
   inline BytesValue(const BytesValue& from) : BytesValue(nullptr, from) {}
   inline BytesValue(BytesValue&& from) noexcept
-      : BytesValue(nullptr, std::move(from)) {}
+      : BytesValue(nullptr, ::std::move(from)) {}
   inline BytesValue& operator=(const BytesValue& from) {
     CopyFrom(from);
     return *this;
@@ -1590,17 +1590,17 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   };
   // bytes value = 1;
   void clear_value() ;
-  const std::string& value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_value();
-  void set_allocated_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
+  void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.BytesValue)
@@ -1657,7 +1657,7 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
 
   inline BoolValue(const BoolValue& from) : BoolValue(nullptr, from) {}
   inline BoolValue(BoolValue&& from) noexcept
-      : BoolValue(nullptr, std::move(from)) {}
+      : BoolValue(nullptr, ::std::move(from)) {}
   inline BoolValue& operator=(const BoolValue& from) {
     CopyFrom(from);
     return *this;
@@ -2047,7 +2047,7 @@ inline void StringValue::clear_value() {
   _impl_.value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& StringValue::value() const
+inline const ::std::string& StringValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.StringValue.value)
   return _internal_value();
@@ -2059,27 +2059,27 @@ PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg, Args_... args) {
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
-inline std::string* PROTOBUF_NONNULL StringValue::mutable_value()
+inline ::std::string* PROTOBUF_NONNULL StringValue::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_value();
+  ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.StringValue.value)
   return _s;
 }
-inline const std::string& StringValue::_internal_value() const {
+inline const ::std::string& StringValue::_internal_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
-inline void StringValue::_internal_set_value(const std::string& value) {
+inline void StringValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL StringValue::_internal_mutable_value() {
+inline ::std::string* PROTOBUF_NONNULL StringValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE StringValue::release_value() {
+inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -2092,7 +2092,7 @@ inline std::string* PROTOBUF_NULLABLE StringValue::release_value() {
   }
   return released;
 }
-inline void StringValue::set_allocated_value(std::string* PROTOBUF_NULLABLE value) {
+inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -2116,7 +2116,7 @@ inline void BytesValue::clear_value() {
   _impl_.value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& BytesValue::value() const
+inline const ::std::string& BytesValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.BytesValue.value)
   return _internal_value();
@@ -2128,27 +2128,27 @@ PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg, Args_... args) {
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
-inline std::string* PROTOBUF_NONNULL BytesValue::mutable_value()
+inline ::std::string* PROTOBUF_NONNULL BytesValue::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_value();
+  ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.BytesValue.value)
   return _s;
 }
-inline const std::string& BytesValue::_internal_value() const {
+inline const ::std::string& BytesValue::_internal_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
-inline void BytesValue::_internal_set_value(const std::string& value) {
+inline void BytesValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL BytesValue::_internal_mutable_value() {
+inline ::std::string* PROTOBUF_NONNULL BytesValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
+inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -2161,7 +2161,7 @@ inline std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
   }
   return released;
 }
-inline void BytesValue::set_allocated_value(std::string* PROTOBUF_NULLABLE value) {
+inline void BytesValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;

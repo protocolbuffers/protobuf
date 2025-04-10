@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:defs.bzl", "py_library")
 
 licenses(["notice"])
 

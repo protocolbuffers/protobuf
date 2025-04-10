@@ -11,11 +11,12 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -31,13 +32,20 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
+uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field);
+
+absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor);
+
+uint32_t FastParseTableSize(size_t num_fields,
+                            absl::optional<uint32_t> end_group_tag);
+
+bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
+
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;
-    // TODO: remove this after A/B test is done.
-    bool should_profile_driven_cluster_aux_subtable;
   };
   struct FieldOptions {
     const FieldDescriptor* field;
@@ -51,7 +59,16 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool use_direct_tcparser_table;
     bool should_split;
     int inlined_string_index;
+    bool use_micro_string;
   };
+
+  struct FieldEntryInfo;
+  struct AuxEntry;
+
+  static std::vector<FieldEntryInfo> BuildFieldEntries(
+      const Descriptor* descriptor, const MessageOptions& message_options,
+      absl::Span<const FieldOptions> ordered_fields,
+      std::vector<AuxEntry>& aux_entries);
 
   TailCallTableInfo(const Descriptor* descriptor,
                     const MessageOptions& message_options,
@@ -77,11 +94,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       uint16_t coded_tag;
       uint16_t nonfield_info;
     };
-    absl::variant<Empty, Field, NonField> data;
+    std::variant<Empty, Field, NonField> data;
 
-    bool is_empty() const { return absl::holds_alternative<Empty>(data); }
-    const Field* AsField() const { return absl::get_if<Field>(&data); }
-    const NonField* AsNonField() const { return absl::get_if<NonField>(&data); }
+    bool is_empty() const { return std::holds_alternative<Empty>(data); }
+    const Field* AsField() const { return std::get_if<Field>(&data); }
+    const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -116,8 +133,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct AuxEntry {
     AuxType type;
     struct EnumRange {
-      int16_t start;
-      uint16_t size;
+      int32_t first;
+      int32_t last;
     };
     union {
       const FieldDescriptor* field;

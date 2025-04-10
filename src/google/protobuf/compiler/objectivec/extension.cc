@@ -27,6 +27,8 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 ExtensionGenerator::ExtensionGenerator(
     absl::string_view root_or_message_class_name,
     const FieldDescriptor* descriptor,
@@ -50,7 +52,7 @@ ExtensionGenerator::ExtensionGenerator(
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   printer->Emit(
-      {{"method_name", method_name_},
+      {Sub("method_name", method_name_).AnnotatedAs(descriptor_),
        {"comments",
         [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"storage_attribute",

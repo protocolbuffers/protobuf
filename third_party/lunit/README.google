@@ -1,9 +1,0 @@
-URL: https://github.com/dcurrie/lunit
-Version: 0.5
-License: MIT
-License File: LICENSE
-Description:
-A unit testing library for Lua.
-
-Local Modifications:
-Extracted the two file we actually need from the distribution.

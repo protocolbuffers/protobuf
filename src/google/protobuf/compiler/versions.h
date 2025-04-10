@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_VERSIONS_H__
-#define GOOGLE_PROTOBUF_VERSIONS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_VERSIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_VERSIONS_H__
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/plugin.pb.h"
@@ -75,4 +75,4 @@ const Version& GetProtobufPythonVersion(bool oss_runtime);
 }  // namespace protobuf
 }  // namespace google
 #include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_VERSIONS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_VERSIONS_H__

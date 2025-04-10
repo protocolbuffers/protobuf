@@ -205,17 +205,17 @@ public abstract class GeneratedMessageLite<
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   protected final <
-          MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-          BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
-      BuilderType createBuilder() {
-    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+          MessageType2 extends GeneratedMessageLite<MessageType2, BuilderType2>,
+          BuilderType2 extends GeneratedMessageLite.Builder<MessageType2, BuilderType2>>
+      BuilderType2 createBuilder() {
+    return (BuilderType2) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
   }
 
   protected final <
-          MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-          BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
-      BuilderType createBuilder(MessageType prototype) {
-    return ((BuilderType) createBuilder()).mergeFrom(prototype);
+          MessageType2 extends GeneratedMessageLite<MessageType2, BuilderType2>,
+          BuilderType2 extends GeneratedMessageLite.Builder<MessageType2, BuilderType2>>
+      BuilderType2 createBuilder(MessageType2 prototype) {
+    return ((BuilderType2) createBuilder()).mergeFrom(prototype);
   }
 
   @Override
@@ -604,8 +604,8 @@ public abstract class GeneratedMessageLite<
      *
      * @return {@code true} unless the tag is an end-group tag.
      */
-    protected <MessageType extends MessageLite> boolean parseUnknownField(
-        MessageType defaultInstance,
+    protected <MessageType2 extends MessageLite> boolean parseUnknownField(
+        MessageType2 defaultInstance,
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         int tag)
@@ -614,7 +614,7 @@ public abstract class GeneratedMessageLite<
 
       // TODO: How much bytecode would be saved by not requiring the generated code to
       //     provide the default instance?
-      GeneratedExtension<MessageType, ?> extension =
+      GeneratedExtension<MessageType2, ?> extension =
           extensionRegistry.findLiteExtensionByNumber(defaultInstance, fieldNumber);
 
       return parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
@@ -734,8 +734,8 @@ public abstract class GeneratedMessageLite<
      *
      * @return {@code true} unless the tag is an end-group tag.
      */
-    protected <MessageType extends MessageLite> boolean parseUnknownFieldAsMessageSet(
-        MessageType defaultInstance,
+    protected <MessageType2 extends MessageLite> boolean parseUnknownFieldAsMessageSet(
+        MessageType2 defaultInstance,
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         int tag)
@@ -764,8 +764,8 @@ public abstract class GeneratedMessageLite<
      * @param input the stream to parse from
      * @param extensionRegistry the registry to use when parsing
      */
-    private <MessageType extends MessageLite> void mergeMessageSetExtensionFromCodedStream(
-        MessageType defaultInstance,
+    private <MessageType2 extends MessageLite> void mergeMessageSetExtensionFromCodedStream(
+        MessageType2 defaultInstance,
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry)
         throws IOException {

@@ -7,11 +7,16 @@
 
 #include "google/protobuf/compiler/cpp/tools/analyze_profile_proto.h"
 
+#include <sys/types.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -33,13 +38,20 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "third_party/re2/re2.h"
+#include "thread/threadpool.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 namespace google {
 namespace protobuf {
@@ -56,6 +68,7 @@ struct PDProtoAnalysis {
   uint64_t presence_count = 0;
   uint64_t usage_count = 0;
   float presence_probability = 0.0;
+  std::optional<AccessInfoMap::ElementStats> element_stats;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
@@ -140,6 +153,8 @@ class PDProtoAnalyzer {
         analysis.usage = PDProtoScale::kRarely;
       }
     }
+
+    analysis.element_stats = info_map_.RepeatedElementStats(field);
 
     return analysis;
   }
@@ -312,6 +327,9 @@ struct Stats {
   uint64_t repeated_lazy_num = 0;
   uint64_t max_pcount = 0;
   uint64_t max_ucount = 0;
+  // Element count stats, if the field is repeated. Otherwise, the all-zeros
+  // default value is used.
+  AccessInfoMap::ElementStats repeated_elem_stats;
 };
 
 void Aggregate(const FieldDescriptor* field, const PDProtoAnalysis& analysis,
@@ -325,6 +343,9 @@ void Aggregate(const FieldDescriptor* field, const PDProtoAnalysis& analysis,
   if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
     if (field->is_repeated()) {
       stats.repeated_total_pcount += analysis.presence_count;
+      if (analysis.element_stats.has_value()) {
+        stats.repeated_elem_stats = *analysis.element_stats;
+      }
     } else {
       stats.singular_total_pcount += analysis.presence_count;
     }
@@ -342,6 +363,11 @@ void Aggregate(const FieldDescriptor* field, const PDProtoAnalysis& analysis,
       }
     }
   }
+  if (field->is_repeated() && analysis.element_stats.has_value()) {
+    ABSL_LOG(INFO) << "Repeated field: " << field->full_name()
+                   << " has element stats: " << analysis.element_stats->mean;
+    stats.repeated_elem_stats += *analysis.element_stats;
+  }
 }
 
 void Aggregate(const Stats& in, Stats& out) {
@@ -355,6 +381,7 @@ void Aggregate(const Stats& in, Stats& out) {
   out.repeated_lazy_pcount += in.repeated_lazy_pcount;
   out.max_pcount = std::max(out.max_pcount, in.max_pcount);
   out.max_ucount = std::max(out.max_ucount, in.max_ucount);
+  out.repeated_elem_stats += in.repeated_elem_stats;
 }
 
 std::ostream& operator<<(std::ostream& s, Stats stats) {
@@ -390,6 +417,13 @@ std::ostream& operator<<(std::ostream& s, Stats stats) {
     << "repeated_lazy_pcount/repeated_total_pcount="
     << static_cast<double>(stats.repeated_lazy_pcount) /
            static_cast<double>(stats.repeated_total_pcount)
+    << std::endl
+    << "repeated_num_elements_histogram=["
+    << absl::StrJoin(stats.repeated_elem_stats.histogram, ", ") << "]"
+    << std::endl
+    << "repeated_num_elements_mean=" << stats.repeated_elem_stats.mean
+    << std::endl
+    << "repeated_num_elements_stdev=" << stats.repeated_elem_stats.stddev
     << std::endl;
   return s;
 }
@@ -424,46 +458,55 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
   Stats stats;
   for (const MessageAccessInfo* message : SortMessages(*access_info)) {
     if (RE2::PartialMatch(message->name(), regex)) {
-      if (const Descriptor* descriptor =
-              FindMessageTypeByCppName(pool, message->name())) {
-        analyzer.SetFile(descriptor->file());
-        if (analyzer.HasProfile(descriptor)) {
-          bool message_header = false;
-          for (int i = 0; i < descriptor->field_count(); ++i) {
-            const FieldDescriptor* field = descriptor->field(i);
-            PDProtoAnalysis analysis = analyzer.AnalyzeField(field);
-            PDProtoOptimization optimized = analyzer.OptimizeField(field);
-            Aggregate(field, analysis, optimized, stats);
-            if (options.print_all_fields || options.print_analysis ||
-                (options.print_optimized &&
-                 (optimized != PDProtoOptimization::kNone))) {
-              if (!message_header) {
-                message_header = true;
-                stream << "Message "
-                       << absl::StrReplaceAll(descriptor->full_name(),
-                                              {{".", "::"}})
-                       << "\n";
-              }
-              stream << "  " << TypeName(field) << " " << field->name() << ":";
+      const Descriptor* descriptor =
+          FindMessageTypeByCppName(pool, message->name());
 
-              if (options.print_analysis) {
-                if (analysis.presence != PDProtoScale::kDefault ||
-                    options.print_analysis_all) {
-                  stream << " " << analysis.presence << "_PRESENT"
-                         << absl::StrFormat(
-                                "(%.2f%%)",
-                                analysis.presence_probability * 100);
-                }
-                if (analysis.usage != PDProtoScale::kDefault) {
-                  stream << " " << analysis.usage << "_USED("
-                         << analysis.usage_count << ")";
-                }
-              }
-              if (optimized != PDProtoOptimization::kNone) {
-                stream << " " << optimized;
-              }
-              stream << "\n";
+      if (descriptor == nullptr) continue;
+
+      analyzer.SetFile(descriptor->file());
+      if (analyzer.HasProfile(descriptor)) {
+        bool message_header = false;
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const FieldDescriptor* field = descriptor->field(i);
+          PDProtoAnalysis analysis = analyzer.AnalyzeField(field);
+          PDProtoOptimization optimized = analyzer.OptimizeField(field);
+          Aggregate(field, analysis, optimized, stats);
+          if (options.print_all_fields || options.print_analysis ||
+              (options.print_optimized &&
+               (optimized != PDProtoOptimization::kNone))) {
+            if (!message_header) {
+              message_header = true;
+              stream << "Message "
+                     << absl::StrReplaceAll(descriptor->full_name(),
+                                            {{".", "::"}})
+                     << "\n";
             }
+            stream << "  " << TypeName(field) << " " << field->name() << ":";
+
+            if (options.print_analysis) {
+              if (analysis.presence != PDProtoScale::kDefault ||
+                  options.print_analysis_all) {
+                stream << " " << analysis.presence << "_PRESENT"
+                       << absl::StrFormat("(%.2f%%)",
+                                          analysis.presence_probability * 100);
+              }
+              if (analysis.usage != PDProtoScale::kDefault) {
+                stream << " " << analysis.usage << "_USED("
+                       << analysis.usage_count << ")";
+              }
+              if (analysis.element_stats.has_value()) {
+                stream << " NUM_ELEMS_HISTO["
+                       << absl::StrJoin(analysis.element_stats->histogram, ", ")
+                       << "]"
+                       << " NUM_ELEMS_MEAN=" << analysis.element_stats->mean
+                       << " NUM_ELEMS_STDDEV="
+                       << analysis.element_stats->stddev;
+              }
+            }
+            if (optimized != PDProtoOptimization::kNone) {
+              stream << " " << optimized;
+            }
+            stream << "\n";
           }
         }
       }
@@ -481,9 +524,11 @@ absl::Status AnalyzeProfileProtoToText(
   return AnalyzeProfileProto(stream, proto_profile, options).status();
 }
 
-absl::Status AnalyzeAndAggregateProfileProtosToText(
-    std::ostream& stream, absl::string_view root,
-    const AnalyzeProfileProtoOptions& options) {
+namespace {
+
+absl::StatusOr<std::vector<std::string>> FindProtoProfileFiles(
+    absl::string_view root) {
+  std::vector<std::string> paths;
   FileYielder yielder;
   int errors = 0;
   yielder.Start({file::JoinPath(root, "*")}, file::MATCH_DEFAULT,
@@ -491,18 +536,107 @@ absl::Status AnalyzeAndAggregateProfileProtosToText(
   if (errors > 0) {
     return absl::InternalError(absl::StrCat("Failed to traverse path: ", root));
   }
-  Stats merged;
   for (; !yielder.Done(); yielder.Next()) {
     const std::string& full_path = yielder.FullPathName();
-    if (!absl::EndsWith(full_path, "proto.profile")) {
-      continue;
+    if (absl::EndsWith(full_path, "proto.profile")) {
+      paths.push_back(full_path);
     }
-    stream << full_path << std::endl;
-    auto stats = *AnalyzeProfileProto(stream, full_path, options);
-    Aggregate(stats, merged);
   }
-  stream << merged;
-  return absl::OkStatus();
+  return paths;
+}
+
+struct ParallelRunResults {
+  size_t num_done = 0;
+  size_t num_succeeded = 0;
+  size_t num_failed = 0;
+  absl::Status status = absl::OkStatus();
+};
+
+ParallelRunResults RunInParallel(
+    size_t num_runs, size_t num_workers,
+    const std::function<std::string(size_t i)>& get_run_id,
+    const std::function<absl::Status(size_t i)>& do_work) {
+  absl::Mutex mu;
+  ParallelRunResults results;
+  {
+    ThreadPool threads{static_cast<int>(std::min(num_runs, num_workers))};
+    threads.StartWorkers();
+    for (size_t i = 0; i < num_runs; ++i) {
+      threads.Schedule([i, num_runs, get_run_id, do_work, &results, &mu]() {
+        // Asynchronous section.
+        const auto run_id = get_run_id(i);
+        ABSL_LOG(INFO) << "STARTING: " << run_id << " ...";
+        const absl::Time start = absl::Now();
+        const auto status = do_work(i);
+        const absl::Duration duration = absl::Now() - start;
+
+        // Synchronous section.
+        absl::MutexLock lock(&mu);
+        ++results.num_done;
+        ++(status.ok() ? results.num_succeeded : results.num_failed);
+        results.status.Update(status);
+        ABSL_LOG(INFO) << "FINISHED " << results.num_done << " OF " << num_runs
+                       << " (" << (status.ok() ? "SUCCESS IN " : "FAILURE IN ")
+                       << duration << "): " << run_id;
+      });
+    }
+  }  // Threads joins here.
+
+  ABSL_LOG(INFO) << "TOTAL SUCCEEDED: " << results.num_succeeded << " OF "
+                 << num_runs;
+  ABSL_LOG(INFO) << "TOTAL FAILED: " << results.num_failed << " OF "
+                 << num_runs;
+
+  return results;
+}
+
+}  // namespace
+
+absl::Status AnalyzeAndAggregateProfileProtosToText(
+    std::ostream& stream, absl::string_view root,
+    const AnalyzeProfileProtoOptions& options) {
+  // Find files.
+  ASSIGN_OR_RETURN(const auto paths, FindProtoProfileFiles(root));
+
+  // Process files in parallel.
+  absl::Mutex mu;
+  std::vector<std::stringstream> substreams{paths.size()};
+  Stats merged_stats;
+  const auto results = RunInParallel(
+      /*num_runs=*/paths.size(),
+      /*num_workers=*/static_cast<size_t>(options.parallelism),
+      /*get_run_id=*/
+      [&paths, &root](size_t i) {
+        return std::string{absl::StripPrefix(paths[i], root)};
+      },
+      /*do_work=*/
+      [&paths, &substreams, &stream, &merged_stats, &options, &mu](size_t i) {
+        const auto& path = paths[i];
+        auto& substream = substreams[i];
+        // Asynchronous section.
+        substream << "PROFILE " << path << ":\n";
+        ASSIGN_OR_RETURN(const auto stats,
+                         AnalyzeProfileProto(substream, path, options));
+
+        // Synchronous section.
+        absl::MutexLock lock(&mu);
+        Aggregate(stats, merged_stats);
+        if (!options.sort_output_by_file_name) {
+          stream << substream.str() << std::endl;
+          substream.clear();
+        }
+        return absl::OkStatus();
+      });
+
+  // Print the results, unless already printed asynchronously.
+  if (options.sort_output_by_file_name) {
+    for (auto& substream : substreams) {
+      stream << substream.str() << std::endl;
+    }
+  }
+  stream << merged_stats;
+
+  return results.status;
 }
 
 }  // namespace tools

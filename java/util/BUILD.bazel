@@ -14,11 +14,11 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//java/core",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_code_gson_gson",
-        "@maven//:com_google_errorprone_error_prone_annotations",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_j2objc_j2objc_annotations",
+        "@protobuf_maven//:com_google_code_findbugs_jsr305",
+        "@protobuf_maven//:com_google_code_gson_gson",
+        "@protobuf_maven//:com_google_errorprone_error_prone_annotations",
+        "@protobuf_maven//:com_google_guava_guava",
+        "@protobuf_maven//:com_google_j2objc_j2objc_annotations",
     ],
 )
 
@@ -91,11 +91,11 @@ junit_tests(
         ":util",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
-        "@protobuf_maven//:com_google_code_gson_gson",
-        "@protobuf_maven//:com_google_guava_guava",
-        "@protobuf_maven//:com_google_j2objc_j2objc_annotations",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_code_gson_gson",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_j2objc_j2objc_annotations",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 

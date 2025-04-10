@@ -164,14 +164,18 @@ const char* lupb_checkstring(lua_State* L, int narg, size_t* len) {
  * the actual value is integral. */
 #define INTCHECK(type, ctype, min, max)                                        \
   ctype lupb_check##type(lua_State* L, int narg) {                             \
-    double n;                                                                  \
     if (lua_isinteger(L, narg)) {                                              \
-      return lua_tointeger(L, narg);                                           \
+      lua_Integer i = lua_tointeger(L, narg);                                  \
+      if (i < min || i > max) {                                                \
+        luaL_error(                                                            \
+            L, "number %d was not an integer or out of range for " #type, i);  \
+      }                                                                        \
+      return i;                                                                \
     }                                                                          \
                                                                                \
     /* Prevent implicit conversion from string. */                             \
     luaL_checktype(L, narg, LUA_TNUMBER);                                      \
-    n = lua_tonumber(L, narg);                                                 \
+    double n = lua_tonumber(L, narg);                                          \
                                                                                \
     /* Check this double has no fractional part and remains in bounds.         \
      * Consider INT64_MIN and INT64_MAX:                                       \

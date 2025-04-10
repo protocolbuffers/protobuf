@@ -103,12 +103,12 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
-  if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+    vars["private"] = "private ";
+  } else {
     // We can only make these package-private since the classes that use them
     // are in separate files.
     vars["private"] = "";
-  } else {
-    vars["private"] = "private ";
   }
   if (*bytecode_estimate <= kMaxStaticSize) {
     vars["final"] = "final ";
@@ -179,12 +179,12 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
     io::Printer* printer, int* bytecode_estimate) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+    vars["private"] = "private ";
+  } else {
     // We can only make these package-private since the classes that use them
     // are in separate files.
     vars["private"] = "";
-  } else {
-    vars["private"] = "private ";
   }
   if (*bytecode_estimate <= kMaxStaticSize) {
     vars["final"] = "final ";
@@ -877,53 +877,49 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
     const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
     if (GetJavaType(field) == JAVATYPE_MESSAGE &&
         HasRequiredFields(field->message_type())) {
-      switch (field->label()) {
-        case FieldDescriptor::LABEL_REQUIRED:
+      if (field->is_required()) {
+        printer->Print(
+            "if (!get$name$().isInitialized()) {\n"
+            "  memoizedIsInitialized = 0;\n"
+            "  return false;\n"
+            "}\n",
+            "type",
+            name_resolver_->GetImmutableClassName(field->message_type()),
+            "name", info->capitalized_name);
+      } else if (field->is_repeated()) {
+        if (IsMapEntry(field->message_type())) {
           printer->Print(
-              "if (!get$name$().isInitialized()) {\n"
-              "  memoizedIsInitialized = 0;\n"
-              "  return false;\n"
-              "}\n",
-              "type",
-              name_resolver_->GetImmutableClassName(field->message_type()),
-              "name", info->capitalized_name);
-          break;
-        case FieldDescriptor::LABEL_OPTIONAL:
-          printer->Print(
-              "if (has$name$()) {\n"
-              "  if (!get$name$().isInitialized()) {\n"
+              "for ($type$ item : get$name$Map().values()) {\n"
+              "  if (!item.isInitialized()) {\n"
               "    memoizedIsInitialized = 0;\n"
               "    return false;\n"
               "  }\n"
               "}\n",
+              "type",
+              MapValueImmutableClassdName(field->message_type(),
+                                          name_resolver_),
               "name", info->capitalized_name);
-          break;
-        case FieldDescriptor::LABEL_REPEATED:
-          if (IsMapEntry(field->message_type())) {
-            printer->Print(
-                "for ($type$ item : get$name$Map().values()) {\n"
-                "  if (!item.isInitialized()) {\n"
-                "    memoizedIsInitialized = 0;\n"
-                "    return false;\n"
-                "  }\n"
-                "}\n",
-                "type",
-                MapValueImmutableClassdName(field->message_type(),
-                                            name_resolver_),
-                "name", info->capitalized_name);
-          } else {
-            printer->Print(
-                "for (int i = 0; i < get$name$Count(); i++) {\n"
-                "  if (!get$name$(i).isInitialized()) {\n"
-                "    memoizedIsInitialized = 0;\n"
-                "    return false;\n"
-                "  }\n"
-                "}\n",
-                "type",
-                name_resolver_->GetImmutableClassName(field->message_type()),
-                "name", info->capitalized_name);
-          }
-          break;
+        } else {
+          printer->Print(
+              "for (int i = 0; i < get$name$Count(); i++) {\n"
+              "  if (!get$name$(i).isInitialized()) {\n"
+              "    memoizedIsInitialized = 0;\n"
+              "    return false;\n"
+              "  }\n"
+              "}\n",
+              "type",
+              name_resolver_->GetImmutableClassName(field->message_type()),
+              "name", info->capitalized_name);
+        }
+      } else {
+        printer->Print(
+            "if (has$name$()) {\n"
+            "  if (!get$name$().isInitialized()) {\n"
+            "    memoizedIsInitialized = 0;\n"
+            "    return false;\n"
+            "  }\n"
+            "}\n",
+            "name", info->capitalized_name);
       }
     }
   }

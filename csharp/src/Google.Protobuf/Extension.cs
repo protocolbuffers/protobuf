@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -12,8 +12,12 @@ using System;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Represents a non-generic extension definition. This API is experimental and subject to change.
+    /// Represents a non-generic extension definition.
     /// </summary>
+    /// <remarks>
+    /// Most users will not use this abstract class directly, instead using the generated instances
+    /// of the concrete subclasses.
+    /// </remarks>
     public abstract class Extension
     {
         internal abstract Type TargetType { get; }
@@ -37,8 +41,7 @@ namespace Google.Protobuf
     }
 
     /// <summary>
-    /// Represents a type-safe extension identifier used for getting and setting single extension values in <see cref="IExtendableMessage{T}"/> instances. 
-    /// This API is experimental and subject to change.
+    /// Represents a type-safe extension identifier used for getting and setting single extension values in <see cref="IExtendableMessage{T}"/> instances.
     /// </summary>
     /// <typeparam name="TTarget">The message type this field applies to</typeparam>
     /// <typeparam name="TValue">The field value type of this extension</typeparam>
@@ -68,7 +71,6 @@ namespace Google.Protobuf
 
     /// <summary>
     /// Represents a type-safe extension identifier used for getting repeated extension values in <see cref="IExtendableMessage{T}"/> instances.
-    /// This API is experimental and subject to change.
     /// </summary>
     /// <typeparam name="TTarget">The message type this field applies to</typeparam>
     /// <typeparam name="TValue">The repeated field value type of this extension</typeparam>

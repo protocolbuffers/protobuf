@@ -44,6 +44,7 @@ WKT_GENERATED_FILES = [
 ]
 
 DESCRIPTOR_GENERATED_FILES = [
+    "src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php",
     "src/Google/Protobuf/Internal/DescriptorProto.php",
     "src/Google/Protobuf/Internal/DescriptorProto/ExtensionRange.php",
     "src/Google/Protobuf/Internal/DescriptorProto/ReservedRange.php",
@@ -57,13 +58,15 @@ DESCRIPTOR_GENERATED_FILES = [
     "src/Google/Protobuf/Internal/ExtensionRangeOptions/Declaration.php",
     "src/Google/Protobuf/Internal/ExtensionRangeOptions/VerificationState.php",
     "src/Google/Protobuf/Internal/FeatureSet.php",
-    "src/Google/Protobuf/Internal/FeatureSet/EnumType.php",
     "src/Google/Protobuf/Internal/FeatureSet/EnforceNamingStyle.php",
+    "src/Google/Protobuf/Internal/FeatureSet/EnumType.php",
     "src/Google/Protobuf/Internal/FeatureSet/FieldPresence.php",
     "src/Google/Protobuf/Internal/FeatureSet/JsonFormat.php",
     "src/Google/Protobuf/Internal/FeatureSet/MessageEncoding.php",
     "src/Google/Protobuf/Internal/FeatureSet/RepeatedFieldEncoding.php",
     "src/Google/Protobuf/Internal/FeatureSet/Utf8Validation.php",
+    "src/Google/Protobuf/Internal/FeatureSet/VisibilityFeature.php",
+    "src/Google/Protobuf/Internal/FeatureSet/VisibilityFeature/DefaultSymbolVisibility.php",
     "src/Google/Protobuf/Internal/FeatureSetDefaults.php",
     "src/Google/Protobuf/Internal/FeatureSetDefaults/FeatureSetEditionDefault.php",
     "src/Google/Protobuf/Internal/FieldDescriptorProto.php",
@@ -93,7 +96,7 @@ DESCRIPTOR_GENERATED_FILES = [
     "src/Google/Protobuf/Internal/ServiceOptions.php",
     "src/Google/Protobuf/Internal/SourceCodeInfo.php",
     "src/Google/Protobuf/Internal/SourceCodeInfo/Location.php",
+    "src/Google/Protobuf/Internal/SymbolVisibility.php",
     "src/Google/Protobuf/Internal/UninterpretedOption.php",
     "src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php",
-    "src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php",
 ]

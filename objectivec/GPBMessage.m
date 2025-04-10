@@ -1119,7 +1119,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
     descriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMessage class]
                                    messageName:@"GPBMessage"
-                                runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310
+                                runtimeSupport:&GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311
                                fileDescription:&fileDescription
                                         fields:NULL
                                     fieldCount:0
@@ -1428,8 +1428,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
             return NO;
           }
         } else {
-          NSAssert(field.isOptional, @"%@: Single message field %@ not required or optional?",
-                   [self class], field.name);
           if (GPBGetHasIvarField(self, field)) {
             GPBMessage *message = GPBGetMessageMessageField(self, field);
             if (!message.initialized) {

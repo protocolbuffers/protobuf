@@ -495,6 +495,9 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                                        size_t len) {
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
+  if (SIZE_MAX / sizeof(*d->fields) < len) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Out of memory");
+  }
   d->fields = upb_Arena_Malloc(d->arena, sizeof(*d->fields) * len);
   upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
 

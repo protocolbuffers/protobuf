@@ -20,10 +20,13 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
+#include "absl/base/casts.h"
 #include "absl/base/const_init.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
@@ -37,6 +40,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -45,6 +49,7 @@
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/reflection_visit_fields.h"
@@ -68,6 +73,7 @@ using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
+using google::protobuf::internal::MicroString;
 using google::protobuf::internal::MigrationSchema;
 using google::protobuf::internal::OnShutdownDelete;
 using google::protobuf::internal::ReflectionSchema;
@@ -311,11 +317,11 @@ static void ReportReflectionUsageEnumTypeError(
 #define USAGE_CHECK_MESSAGE_TYPE(METHOD)                        \
   USAGE_CHECK_EQ(field->containing_type(), descriptor_, METHOD, \
                  "Field does not match message type.");
-#define USAGE_CHECK_SINGULAR(METHOD)                                      \
-  USAGE_CHECK_NE(field->label(), FieldDescriptor::LABEL_REPEATED, METHOD, \
+#define USAGE_CHECK_SINGULAR(METHOD)                 \
+  USAGE_CHECK_NE(field->is_repeated(), true, METHOD, \
                  "Field is repeated; the method requires a singular field.")
-#define USAGE_CHECK_REPEATED(METHOD)                                      \
-  USAGE_CHECK_EQ(field->label(), FieldDescriptor::LABEL_REPEATED, METHOD, \
+#define USAGE_CHECK_REPEATED(METHOD)                 \
+  USAGE_CHECK_EQ(field->is_repeated(), true, METHOD, \
                  "Field is singular; the method requires a repeated field.")
 
 #define USAGE_CHECK_ALL(METHOD, LABEL, CPPTYPE) \
@@ -489,6 +495,9 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
                 const std::string* ptr =
                     &GetField<InlinedStringField>(message, field).GetNoArena();
                 total_size += StringSpaceUsedExcludingSelfLong(*ptr);
+              } else if (IsMicroString(field)) {
+                total_size += GetField<MicroString>(message, field)
+                                  .SpaceUsedExcludingSelfLong();
               } else {
                 // Initially, the string points to the default value stored
                 // in the prototype. Only count the string if it has been
@@ -537,72 +546,70 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   }
 }
 
-namespace {
-
-template <bool unsafe_shallow_swap>
-struct OneofFieldMover {
-  template <typename FromType, typename ToType>
-  void operator()(const FieldDescriptor* field, FromType* from, ToType* to) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_INT32:
-        to->SetInt32(from->GetInt32());
+template <bool unsafe_shallow_swap, typename FromType, typename ToType>
+void Reflection::InternalMoveOneofField(const FieldDescriptor* field,
+                                        FromType* from, ToType* to) const {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      to->SetInt32(from->GetInt32());
+      break;
+    case FieldDescriptor::CPPTYPE_INT64:
+      to->SetInt64(from->GetInt64());
+      break;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      to->SetUint32(from->GetUint32());
+      break;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      to->SetUint64(from->GetUint64());
+      break;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      to->SetFloat(from->GetFloat());
+      break;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      to->SetDouble(from->GetDouble());
+      break;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      to->SetBool(from->GetBool());
+      break;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      to->SetEnum(from->GetEnum());
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      if (!unsafe_shallow_swap) {
+        to->SetMessage(from->GetMessage());
+      } else {
+        to->UnsafeSetMessage(from->UnsafeGetMessage());
+      }
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (!unsafe_shallow_swap) {
+        to->SetString(from->GetString());
         break;
-      case FieldDescriptor::CPPTYPE_INT64:
-        to->SetInt64(from->GetInt64());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        to->SetUint32(from->GetUint32());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        to->SetUint64(from->GetUint64());
-        break;
-      case FieldDescriptor::CPPTYPE_FLOAT:
-        to->SetFloat(from->GetFloat());
-        break;
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-        to->SetDouble(from->GetDouble());
-        break;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        to->SetBool(from->GetBool());
-        break;
-      case FieldDescriptor::CPPTYPE_ENUM:
-        to->SetEnum(from->GetEnum());
-        break;
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (!unsafe_shallow_swap) {
-          to->SetMessage(from->GetMessage());
-        } else {
-          to->UnsafeSetMessage(from->UnsafeGetMessage());
-        }
-        break;
-      case FieldDescriptor::CPPTYPE_STRING:
-        if (!unsafe_shallow_swap) {
-          to->SetString(from->GetString());
-          break;
-        }
-        switch (field->cpp_string_type()) {
+      }
+      switch (field->cpp_string_type()) {
           case FieldDescriptor::CppStringType::kCord:
             to->SetCord(from->GetCord());
             break;
           case FieldDescriptor::CppStringType::kView:
           case FieldDescriptor::CppStringType::kString:
-            to->SetArenaStringPtr(from->GetArenaStringPtr());
+            if (IsMicroString(field)) {
+              to->SetMicroString(from->GetMicroString());
+            } else {
+              to->SetArenaStringPtr(from->GetArenaStringPtr());
+            }
             break;
-        }
+      }
         break;
       default:
         ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
-    }
+  }
     if (unsafe_shallow_swap) {
       // Not clearing oneof case after move may cause unwanted "ClearOneof"
       // where the residual message or string value is deleted and causes
       // use-after-free (only for unsafe swap).
       from->ClearOneofCase();
     }
-  }
-};
-
-}  // namespace
+}
 
 namespace internal {
 
@@ -737,6 +744,20 @@ void SwapFieldHelper::SwapStringField(const Reflection* r, Message* lhs,
       if (r->IsInlined(field)) {
         SwapFieldHelper::SwapInlinedStrings<unsafe_shallow_swap>(r, lhs, rhs,
                                                                  field);
+      } else if (r->IsMicroString(field)) {
+        auto* lhs_string = r->MutableRaw<MicroString>(lhs, field);
+        auto* rhs_string = r->MutableRaw<MicroString>(rhs, field);
+        auto* lhs_arena = lhs->GetArena();
+        auto* rhs_arena = rhs->GetArena();
+        if (unsafe_shallow_swap || lhs_arena == rhs_arena) {
+          lhs_string->InternalSwap(rhs_string);
+        } else {
+          MicroString tmp;
+          tmp.Set(*lhs_string, rhs_arena);
+          lhs_string->Set(*rhs_string, lhs_arena);
+          if (rhs_arena == nullptr) rhs_string->Destroy();
+          *rhs_string = tmp;
+        }
       } else {
         SwapFieldHelper::SwapNonInlinedStrings<unsafe_shallow_swap>(r, lhs, rhs,
                                                                     field);
@@ -959,6 +980,15 @@ void Reflection::UnsafeShallowSwapField(Message* message1, Message* message2,
   }
 }
 
+namespace {
+// This type is defined outside of SwapOneofField to workaround
+//   https://github.com/llvm/llvm-project/issues/59706
+using SwapOneofFieldVariant =
+    std::variant<int32_t, int64_t, uint32_t, uint64_t, float, double, bool,
+                 Message*, ArenaStringPtr, MicroString, absl::Cord*,
+                 std::string>;
+}  // namespace
+
 // Swaps oneof field between lhs and rhs. If unsafe_shallow_swap is true, it
 // directly swaps oneof values; otherwise, it may involve copy/delete. Note that
 // two messages may have different oneof cases. So, it has to be done in three
@@ -968,63 +998,48 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
                                 const OneofDescriptor* oneof_descriptor) const {
   // Wraps a local variable to temporarily store oneof value.
   struct LocalVarWrapper {
-#define LOCAL_VAR_ACCESSOR(type, var, name)               \
-  type Get##name() const { return oneof_val.type_##var; } \
-  void Set##name(type v) { oneof_val.type_##var = v; }
+#define LOCAL_VAR_ACCESSOR(type, name)                   \
+  type Get##name() const { return std::get<type>(val); } \
+  void Set##name(type v) { val.emplace<type>(v); }
 
-    LOCAL_VAR_ACCESSOR(int32_t, int32, Int32);
-    LOCAL_VAR_ACCESSOR(int64_t, int64, Int64);
-    LOCAL_VAR_ACCESSOR(uint32_t, uint32, Uint32);
-    LOCAL_VAR_ACCESSOR(uint64_t, uint64, Uint64);
-    LOCAL_VAR_ACCESSOR(float, float, Float);
-    LOCAL_VAR_ACCESSOR(double, double, Double);
-    LOCAL_VAR_ACCESSOR(bool, bool, Bool);
-    LOCAL_VAR_ACCESSOR(int, enum, Enum);
-    LOCAL_VAR_ACCESSOR(Message*, message, Message);
-    LOCAL_VAR_ACCESSOR(ArenaStringPtr, arena_string_ptr, ArenaStringPtr);
-    LOCAL_VAR_ACCESSOR(absl::Cord*, cord, Cord);
-    const std::string& GetString() const { return string_val; }
-    void SetString(const std::string& v) { string_val = v; }
+    LOCAL_VAR_ACCESSOR(int32_t, Int32);
+    LOCAL_VAR_ACCESSOR(int64_t, Int64);
+    LOCAL_VAR_ACCESSOR(uint32_t, Uint32);
+    LOCAL_VAR_ACCESSOR(uint64_t, Uint64);
+    LOCAL_VAR_ACCESSOR(float, Float);
+    LOCAL_VAR_ACCESSOR(double, Double);
+    LOCAL_VAR_ACCESSOR(bool, Bool);
+    LOCAL_VAR_ACCESSOR(int, Enum);
+    LOCAL_VAR_ACCESSOR(Message*, Message);
+    LOCAL_VAR_ACCESSOR(ArenaStringPtr, ArenaStringPtr);
+    LOCAL_VAR_ACCESSOR(MicroString, MicroString);
+    LOCAL_VAR_ACCESSOR(absl::Cord*, Cord);
+    LOCAL_VAR_ACCESSOR(std::string, String);
     Message* UnsafeGetMessage() const { return GetMessage(); }
     void UnsafeSetMessage(Message* v) { SetMessage(v); }
     void ClearOneofCase() {}
-
-    union {
-      int32_t type_int32;
-      int64_t type_int64;
-      uint32_t type_uint32;
-      uint64_t type_uint64;
-      float type_float;
-      double type_double;
-      bool type_bool;
-      int type_enum;
-      Message* type_message;
-      internal::ArenaStringPtr type_arena_string_ptr;
-      absl::Cord* type_cord;
-    } oneof_val;
-
-    // std::string cannot be in union.
-    std::string string_val;
+    SwapOneofFieldVariant val;
   };
 
   // Wraps a message pointer to read and write a field.
   struct MessageWrapper {
-#define MESSAGE_FIELD_ACCESSOR(type, var, name)         \
+#define MESSAGE_FIELD_ACCESSOR(type, name)              \
   type Get##name() const {                              \
     return reflection->GetField<type>(*message, field); \
   }                                                     \
   void Set##name(type v) { reflection->SetField<type>(message, field, v); }
 
-    MESSAGE_FIELD_ACCESSOR(int32_t, int32, Int32);
-    MESSAGE_FIELD_ACCESSOR(int64_t, int64, Int64);
-    MESSAGE_FIELD_ACCESSOR(uint32_t, uint32, Uint32);
-    MESSAGE_FIELD_ACCESSOR(uint64_t, uint64, Uint64);
-    MESSAGE_FIELD_ACCESSOR(float, float, Float);
-    MESSAGE_FIELD_ACCESSOR(double, double, Double);
-    MESSAGE_FIELD_ACCESSOR(bool, bool, Bool);
-    MESSAGE_FIELD_ACCESSOR(int, enum, Enum);
-    MESSAGE_FIELD_ACCESSOR(ArenaStringPtr, arena_string_ptr, ArenaStringPtr);
-    MESSAGE_FIELD_ACCESSOR(absl::Cord*, cord, Cord);
+    MESSAGE_FIELD_ACCESSOR(int32_t, Int32);
+    MESSAGE_FIELD_ACCESSOR(int64_t, Int64);
+    MESSAGE_FIELD_ACCESSOR(uint32_t, Uint32);
+    MESSAGE_FIELD_ACCESSOR(uint64_t, Uint64);
+    MESSAGE_FIELD_ACCESSOR(float, Float);
+    MESSAGE_FIELD_ACCESSOR(double, Double);
+    MESSAGE_FIELD_ACCESSOR(bool, Bool);
+    MESSAGE_FIELD_ACCESSOR(int, Enum);
+    MESSAGE_FIELD_ACCESSOR(ArenaStringPtr, ArenaStringPtr);
+    MESSAGE_FIELD_ACCESSOR(MicroString, MicroString);
+    MESSAGE_FIELD_ACCESSOR(absl::Cord*, Cord);
     std::string GetString() const {
       return reflection->GetString(*message, field);
     }
@@ -1059,26 +1074,25 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
   LocalVarWrapper temp;
   MessageWrapper lhs_wrapper, rhs_wrapper;
   const FieldDescriptor* field_lhs = nullptr;
-  OneofFieldMover<unsafe_shallow_swap> mover;
   // lhs --> temp
   if (oneof_case_lhs > 0) {
     field_lhs = descriptor_->FindFieldByNumber(oneof_case_lhs);
     lhs_wrapper = {this, lhs, field_lhs};
-    mover(field_lhs, &lhs_wrapper, &temp);
+    InternalMoveOneofField<unsafe_shallow_swap>(field_lhs, &lhs_wrapper, &temp);
   }
   // rhs --> lhs
   if (oneof_case_rhs > 0) {
     const FieldDescriptor* f = descriptor_->FindFieldByNumber(oneof_case_rhs);
     lhs_wrapper = {this, lhs, f};
     rhs_wrapper = {this, rhs, f};
-    mover(f, &rhs_wrapper, &lhs_wrapper);
+    InternalMoveOneofField<unsafe_shallow_swap>(f, &rhs_wrapper, &lhs_wrapper);
   } else if (!unsafe_shallow_swap) {
     ClearOneof(lhs, oneof_descriptor);
   }
   // temp --> rhs
   if (oneof_case_lhs > 0) {
     rhs_wrapper = {this, rhs, field_lhs};
-    mover(field_lhs, &temp, &rhs_wrapper);
+    InternalMoveOneofField<unsafe_shallow_swap>(field_lhs, &temp, &rhs_wrapper);
   } else if (!unsafe_shallow_swap) {
     ClearOneof(rhs, oneof_descriptor);
   }
@@ -1491,6 +1505,14 @@ void Reflection::ClearField(Message* message,
                 // Currently, string with default value can't be inlined. So we
                 // don't have to handle default value here.
                 MutableRaw<InlinedStringField>(message, field)->ClearToEmpty();
+              } else if (IsMicroString(field)) {
+                if (field->has_default_value()) {
+                  // TODO: Use an unowned block instead.
+                  MutableRaw<MicroString>(message, field)
+                      ->Set(field->default_value_string(), message->GetArena());
+                } else {
+                  MutableRaw<MicroString>(message, field)->Clear();
+                }
               } else {
                 auto* str = MutableRaw<ArenaStringPtr>(message, field);
                 str->Destroy();
@@ -1898,6 +1920,8 @@ std::string Reflection::GetString(const Message& message,
       case FieldDescriptor::CppStringType::kString:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
+        } else if (IsMicroString(field)) {
+          return std::string(GetField<MicroString>(message, field).Get());
         } else {
           const auto& str = GetField<ArenaStringPtr>(message, field);
           return str.IsDefault() ? std::string(field->default_value_string())
@@ -1933,6 +1957,9 @@ const std::string& Reflection::GetStringReference(const Message& message,
       case FieldDescriptor::CppStringType::kString:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
+        } else if (IsMicroString(field)) {
+          *scratch = std::string(GetField<MicroString>(message, field).Get());
+          return *scratch;
         } else {
           const auto& str = GetField<ArenaStringPtr>(message, field);
           return str.IsDefault() ? internal::DefaultValueStringAsString(field)
@@ -1965,6 +1992,8 @@ absl::Cord Reflection::GetCord(const Message& message,
         if (IsInlined(field)) {
           return absl::Cord(
               GetField<InlinedStringField>(message, field).GetNoArena());
+        } else if (IsMicroString(field)) {
+          return absl::Cord(GetField<MicroString>(message, field).Get());
         } else {
           const auto& str = GetField<ArenaStringPtr>(message, field);
           return absl::Cord(str.IsDefault() ? field->default_value_string()
@@ -2041,6 +2070,14 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
                     IsInlinedStringDonated(*message, field), states, mask,
                     message);
           break;
+        } else if (IsMicroString(field)) {
+          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            MutableField<MicroString>(message, field)->InitDefault();
+          }
+          MutableField<MicroString>(message, field)
+              ->Set(std::move(value), message->GetArena());
+          break;
         }
 
         // Oneof string fields are never set as a default instance.
@@ -2082,14 +2119,6 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         break;
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString: {
-        // Oneof string fields are never set as a default instance.
-        // We just need to pass some arbitrary default string to make it work.
-        // This allows us to not have the real default accessible from
-        // reflection.
-        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
-          ClearOneof(message, field->containing_oneof());
-          MutableField<ArenaStringPtr>(message, field)->InitDefault();
-        }
         if (IsInlined(field)) {
           auto* str = MutableField<InlinedStringField>(message, field);
           const uint32_t index = schema_.InlinedStringIndex(field);
@@ -2100,7 +2129,18 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           str->Set(std::string(value), message->GetArena(),
                    IsInlinedStringDonated(*message, field), states, mask,
                    message);
+        } else if (IsMicroString(field)) {
+          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            MutableField<MicroString>(message, field)->InitDefault();
+          }
+          auto* str = MutableField<MicroString>(message, field);
+          str->Set(std::string(value), message->GetArena());
         } else {
+          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            MutableField<ArenaStringPtr>(message, field)->InitDefault();
+          }
           auto* str = MutableField<ArenaStringPtr>(message, field);
           str->Set(std::string(value), message->GetArena());
         }
@@ -3037,11 +3077,11 @@ bool Reflection::IsSingularFieldNonEmpty(const Message& message,
     case FieldDescriptor::CPPTYPE_FLOAT:
       static_assert(sizeof(uint32_t) == sizeof(float),
                     "Code assumes uint32_t and float are the same size.");
-      return GetRaw<uint32_t>(message, field) != 0;
+      return absl::bit_cast<uint32_t>(GetRaw<float>(message, field)) != 0;
     case FieldDescriptor::CPPTYPE_DOUBLE:
       static_assert(sizeof(uint64_t) == sizeof(double),
                     "Code assumes uint64_t and double are the same size.");
-      return GetRaw<uint64_t>(message, field) != 0;
+      return absl::bit_cast<uint64_t>(GetRaw<double>(message, field)) != 0;
     case FieldDescriptor::CPPTYPE_ENUM:
       return GetRaw<int>(message, field) != 0;
     case FieldDescriptor::CPPTYPE_STRING:
@@ -3054,6 +3094,8 @@ bool Reflection::IsSingularFieldNonEmpty(const Message& message,
             return !GetField<InlinedStringField>(message, field)
                         .GetNoArena()
                         .empty();
+          } else if (IsMicroString(field)) {
+            return !GetField<MicroString>(message, field).Get().empty();
           }
 
           return !GetField<ArenaStringPtr>(message, field).Get().empty();
@@ -3219,14 +3261,17 @@ void Reflection::ClearOneof(Message* message,
               delete *MutableRaw<absl::Cord*>(message, field);
               break;
             case FieldDescriptor::CppStringType::kView:
-            case FieldDescriptor::CppStringType::kString: {
-              // Oneof string fields are never set as a default instance.
-              // We just need to pass some arbitrary default string to make it
-              // work. This allows us to not have the real default accessible
-              // from reflection.
-              MutableField<ArenaStringPtr>(message, field)->Destroy();
+            case FieldDescriptor::CppStringType::kString:
+              if (IsMicroString(field)) {
+                MutableField<MicroString>(message, field)->Destroy();
+              } else {
+                // Oneof string fields are never set as a default instance.
+                // We just need to pass some arbitrary default string to make it
+                // work. This allows us to not have the real default accessible
+                // from reflection.
+                MutableField<ArenaStringPtr>(message, field)->Destroy();
+              }
               break;
-            }
           }
           break;
         }
@@ -3475,34 +3520,35 @@ static void PopulateTcParseLookupTable(
   *lookup_table++ = 0xFFFF;
 }
 
+static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
+  std::vector<int> numbers;
+  numbers.reserve(desc->value_count());
+  for (int i = 0; i < desc->value_count(); ++i) {
+    numbers.push_back(desc->value(i)->number());
+  }
+
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+  return internal::GenerateEnumData(numbers);
+}
+
 void Reflection::PopulateTcParseEntries(
     internal::TailCallTableInfo& table_info,
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->type() == field->TYPE_ENUM &&
-        (entry.type_card & internal::field_layout::kTvMask) ==
-            internal::field_layout::kTvEnum &&
-        table_info.aux_entries[entry.aux_idx].type ==
-            internal::TailCallTableInfo::kEnumValidator) {
-      // Mini parse can't handle it. Fallback to reflection.
-      *entries = {};
-      table_info.aux_entries[entry.aux_idx] = {};
+    const OneofDescriptor* oneof = field->real_containing_oneof();
+    entries->offset = schema_.GetFieldOffset(field);
+    if (oneof != nullptr) {
+      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+    } else if (schema_.HasHasbits()) {
+      entries->has_idx =
+          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
-      entries->offset = schema_.GetFieldOffset(field);
-      if (oneof != nullptr) {
-        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
-      } else if (schema_.HasHasbits()) {
-        entries->has_idx =
-            static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
-      } else {
-        entries->has_idx = 0;
-      }
-      entries->aux_idx = entry.aux_idx;
-      entries->type_card = entry.type_card;
+      entries->has_idx = 0;
     }
-
+    entries->aux_idx = entry.aux_idx;
+    entries->type_card = entry.type_card;
     ++entries;
   }
 }
@@ -3544,11 +3590,15 @@ void Reflection::PopulateTcParseFieldAux(
             GetDefaultMessageInstance(aux_entry.field);
         break;
       case internal::TailCallTableInfo::kEnumRange:
-        field_aux++->enum_range = {aux_entry.enum_range.start,
-                                   aux_entry.enum_range.size};
+        field_aux++->enum_range = {aux_entry.enum_range.first,
+                                   aux_entry.enum_range.last};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
-        ABSL_LOG(FATAL) << "Not supported.";
+        field_aux++->enum_data =
+            DescriptorPool::MemoizeProjection(
+                aux_entry.field->enum_type(),
+                [](auto* e) { return MakeEnumValidatorData(e); })
+                .data();
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
@@ -3581,6 +3631,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         schema_.IsSplit(field),
         is_inlined ? static_cast<int>(schema_.InlinedStringIndex(field))
                    : kNoHasbit,
+        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+            IsMicroString(field),
     });
   }
   std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {
@@ -3592,7 +3644,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       {
           /* is_lite */ false,
           /* uses_codegen */ false,
-          /* should_profile_driven_cluster_aux_table */ false,
       },
       fields);
 

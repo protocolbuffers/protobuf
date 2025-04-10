@@ -23,6 +23,20 @@ cc_library(
 )
 
 cc_library(
+    name = "generator_headers",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
     name = "names_internal",
     srcs = [
         "helpers.cc",
@@ -79,6 +93,7 @@ cc_library(
         "generator.cc",
         "ifndef_guard.cc",
         "message.cc",
+        "message_layout_helper.cc",
         "namespace_printer.cc",
         "padding_optimizer.cc",
         "parse_function_generator.cc",
@@ -144,8 +159,12 @@ cc_library(
 proto_library(
     name = "test_bad_identifiers_proto",
     testonly = 1,
-    srcs = ["test_bad_identifiers.proto"],
+    srcs = [
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
+    ],
     strip_import_prefix = "/src",
+    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 cc_proto_library(
@@ -427,7 +446,8 @@ filegroup(
 filegroup(
     name = "test_proto_srcs",
     srcs = [
-        "test_bad_identifiers.proto",
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
         "test_large_enum_value.proto",
     ],
     visibility = ["//src/google/protobuf/compiler:__pkg__"],

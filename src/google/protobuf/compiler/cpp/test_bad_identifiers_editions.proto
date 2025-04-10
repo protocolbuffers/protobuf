@@ -1,0 +1,287 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// This file tests that various identifiers work as field and type names even
+// though the same identifiers are used internally by the C++ code generator.
+
+// LINT: LEGACY_NAMES
+
+edition = "2023";
+
+import "google/protobuf/cpp_features.proto";
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+package edition_unittest;
+
+option features.enum_type = CLOSED;
+option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
+
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;  // auto-added
+
+// Test that fields can have names like "input" and "i" which are also used
+// internally by the code generator for local variables.
+message TestConflictingSymbolNames {
+  message BuildDescriptors {}
+
+  message TypeTraits {}
+
+  // Use common namespaces to make sure we are properly qualifying
+  message std {}
+
+
+  int32 input = 1;
+  int32 output = 2;
+  string length = 3;
+  repeated int32 i = 4;
+  repeated string new_element = 5 [ctype = STRING_PIECE];
+
+  int32 total_size = 6;
+  int32 tag = 7;
+
+  enum TestEnum {
+    FOO = 0;
+  }
+
+  message Data1 {
+    repeated int32 data = 1;
+  }
+
+  message Data2 {
+    repeated TestEnum data = 1;
+  }
+
+  message Data3 {
+    repeated string data = 1;
+  }
+
+  message Data4 {
+    repeated Data4 data = 1;
+  }
+
+  message Data5 {
+    repeated string data = 1 [ctype = STRING_PIECE];
+  }
+
+  message Data6 {
+    repeated string data = 1 [ctype = CORD];
+  }
+
+  int32 source = 8;
+  int32 value = 9;
+  int32 file = 10;
+  int32 from = 11;
+  int32 handle_uninterpreted = 12;
+  repeated int32 index = 13;
+  int32 controller = 14;
+  int32 already_here = 15;
+
+  // Integral types
+  uint32 uint8 = 47;
+  uint32 uint8_t = 48;
+  uint32 uint16 = 49;
+  uint32 uint16_t = 50;
+  uint32 uint32 = 16;
+  uint32 uint32_t = 41;
+  uint64 uint64 = 17;
+  uint32 uint64_t = 42;
+  uint32 int8 = 51;
+  uint32 int8_t = 52;
+  uint32 int16 = 53;
+  uint32 int16_t = 54;
+  int32 int32 = 20;
+  int32 int32_t = 43;
+  int64 int64 = 21;
+  int64 int64_t = 44;
+  int64 size_t = 45;
+  int64 ssize_t = 55;
+  int64 intptr_t = 46;
+  int64 uintptr_t = 56;
+  string string = 18;
+  int32 memset = 19;
+
+  // Internal identifier
+  uint32 cached_size = 22;
+  uint32 extensions = 23;
+  uint32 bit = 24;
+  uint32 bits = 25;
+  uint32 offsets = 26;
+  uint32 reflection = 27;
+
+  message Cord {}
+
+  string some_cord = 28 [ctype = CORD];
+
+  message StringPiece {}
+
+  string some_string_piece = 29 [ctype = STRING_PIECE];
+
+  string some_view = 57 [features.(pb.cpp).string_type = VIEW];
+
+  // Some keywords.
+  uint32 int = 30;
+  uint32 friend = 31;
+  uint32 class = 37;
+  uint32 typedecl = 39;
+  uint32 auto = 40;
+
+  // Methods generated in the parent type
+  message BadKnownNamesFields {
+    int32 unknown_fields = 1;
+    int32 mutable_unknown_fields = 2;
+    int32 descriptor = 3;
+    int32 default_instance = 4;
+    int32 swap = 5;
+  }
+
+  message BadKnownNamesFieldsNoStandardDescriptor {
+    option no_standard_descriptor_accessor = true;
+
+    int32 descriptor = 3;
+  }
+
+  message BadKnownNamesTypes {
+    message GetDescriptor {}
+
+    message GetReflection {}
+
+    message Swap {}
+
+    message UnsafeArenaSwap {}
+
+    message New {}
+
+    message CopyFrom {}
+
+    message MergeFrom {}
+
+    message GetMetadata {}
+
+    message Clear {}
+
+    message IsInitialized {}
+  }
+
+  message BadKnownNamesValues {
+    extensions 1 to 100;
+
+    extend BadKnownNamesValues {
+      int32 unknown_fields = 1;
+      int32 mutable_unknown_fields = 2;
+      int32 descriptor = 3;
+      int32 default_instance = 4;
+      int32 swap = 5;
+    }
+  }
+
+  // The generator used to #define a macro called "DO" inside the .cc file.
+  message DO {}
+
+  DO do = 32;
+
+  // Some template parameter names for extensions.
+  int32 field_type = 33;
+  bool is_packed = 34;
+
+  // test conflicting release_$name$. "length" and "do" field in this message
+  // must remain string or message fields to make the test valid.
+  string release_length = 35;
+
+  // A more extreme case, the field name "do" here is a keyword, which will be
+  // escaped to "do_" already. Test there is no conflict even with escaped field
+  // names.
+  DO release_do = 36;
+
+  // For clashing local variables in Serialize and ByteSize calculation.
+  string target = 38;
+
+  // clang-format off
+  extensions 1000 to max [
+    verification = UNVERIFIED
+  ];
+
+  // clang-format on
+}
+
+// Special names as above, but at file scope.
+message GetDescriptor {}
+
+message GetReflection {}
+
+message Swap {}
+
+message UnsafeArenaSwap {}
+
+message New {}
+
+message CopyFrom {}
+
+message MergeFrom {}
+
+message GetMetadata {}
+
+message Clear {}
+
+message IsInitialized {}
+
+extend TestConflictingSymbolNames.BadKnownNamesValues {
+  int32 unknown_fields = 11;
+  int32 mutable_unknown_fields = 12;
+  int32 descriptor = 13;
+  int32 default_instance = 14;
+  int32 swap = 15;
+}
+
+message TestConflictingSymbolNamesExtension {
+  extend TestConflictingSymbolNames {
+    repeated int32 repeated_int32_ext = 20423638
+        [features.repeated_field_encoding = PACKED];
+  }
+}
+
+message TestConflictingEnumNames {
+  enum while {
+    default = 0;
+    and = 1;
+    class = 2;
+    int = 3;
+    typedef = 4;
+    XOR = 5;
+  }
+
+  while
+    conflicting_enum = 1;
+}
+
+enum bool {
+  default = 0;
+  NOT_EQ = 1;
+  volatile = 2;
+  return = 3;
+}
+
+message DummyMessage {}
+
+message NULL {
+  int32 int = 1;
+}
+
+extend TestConflictingSymbolNames {
+  int32 void = 314253;
+}
+
+// Message names that could conflict.
+message Shutdown {}
+
+message TableStruct {}
+
+service TestConflictingMethodNames {
+  rpc Closure(DummyMessage) returns (DummyMessage);
+}

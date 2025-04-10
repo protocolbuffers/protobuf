@@ -818,7 +818,9 @@ TEST_F(ParseMessageTest, NestedMessage) {
 
       "message_type {"
       "  name: \"TestMessage\""
-      "  nested_type { name: \"Nested\" }"
+      "  nested_type { "
+      "    name: \"Nested\""
+      "  }"
       "  field { name:\"test_nested\" label:LABEL_OPTIONAL number:1"
       "          type_name: \"Nested\" }"
       "}");
@@ -833,7 +835,9 @@ TEST_F(ParseMessageTest, NestedEnum) {
 
       "message_type {"
       "  name: \"TestMessage\""
-      "  enum_type { name: \"NestedEnum\" }"
+      "  enum_type {"
+      "    name: \"NestedEnum\""
+      "  }"
       "  field { name:\"test_enum\" label:LABEL_OPTIONAL number:1"
       "          type_name: \"NestedEnum\" }"
       "}");
@@ -2732,7 +2736,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   FileDescriptorProto parsed;
   parser_->Parse(input_.get(), &parsed);
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2780,7 +2784,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   std::string debug_string = original_file->DebugString();
 
   // Parse the debug string
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   FileDescriptorProto parsed;
   parser_->Parse(input_.get(), &parsed);
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2926,7 +2930,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     }
 
     // Result of DebugStringWithOptions should be parseable.
-    SetupParser(debug_string.c_str());
+    SetupParser(debug_string);
     FileDescriptorProto parsed;
     parser_->Parse(input_.get(), &parsed);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
@@ -2959,7 +2963,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;
-  SetupParser(debug_string.c_str());
+  SetupParser(debug_string);
   parsed.set_name("foo.proto");
   ASSERT_TRUE(parser_->Parse(input_.get(), &parsed));
 
@@ -3086,7 +3090,7 @@ class SourceInfoTest : public ParserTest {
   // all the source location spans in its SourceCodeInfo table.
   bool Parse(const char* text) {
     ExtractMarkers(text);
-    SetupParser(text_without_markers_.c_str());
+    SetupParser(text_without_markers_);
     if (!parser_->Parse(input_.get(), &file_)) {
       return false;
     }
@@ -4469,6 +4473,192 @@ TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
         })schema",
       "1:8: Features are only valid under editions.\n"
       "4:17: Features are only valid under editions.\n");
+}
+
+// ===================================================================
+
+typedef ParserTest ParseVisibilityTest;
+
+TEST_F(ParseVisibilityTest, Edition2023) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        export message A {
+          int32 b = 1;
+        })schema",
+      "2:8: Expected top-level statement (e.g. \"message\").\n");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictExportMessage) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        export message A {
+          local enum NestedEnum {
+            A_VAL = 0;
+          }
+          export message NestedMessage {
+          }
+        })schema",
+      R"pb(message_type {
+             name: "A"
+             enum_type {
+               name: "NestedEnum"
+               value { name: "A_VAL" number: 0 }
+               visibility: VISIBILITY_LOCAL
+             }
+             nested_type { name: "NestedMessage" visibility: VISIBILITY_EXPORT }
+             visibility: VISIBILITY_EXPORT
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictLocalMessage) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        local message B {
+          export enum NestedEnum {
+            B_VAL = 0;
+          }
+          local message NestedMessage {
+          }
+        }
+        )schema",
+      R"pb(message_type {
+             name: "B"
+             enum_type {
+               name: "NestedEnum"
+               value { name: "B_VAL" number: 0 }
+               visibility: VISIBILITY_EXPORT
+             }
+             nested_type { name: "NestedMessage" visibility: VISIBILITY_LOCAL }
+             visibility: VISIBILITY_LOCAL
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictExportEnum) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        export enum C {
+          C_VAL = 0;
+        }
+        )schema",
+      R"pb(enum_type {
+             name: "C"
+             visibility: VISIBILITY_EXPORT
+             value { name: "C_VAL" number: 0 }
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NonStrictLocalEnum) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        local enum D {
+          D_VAL = 0;
+        }
+        )schema",
+      R"pb(enum_type {
+             name: "D"
+             visibility: VISIBILITY_LOCAL
+             value { name: "D_VAL" number: 0 }
+           }
+           syntax: "editions"
+           edition: EDITION_2024
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NoServiceVisibility) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        local service Foo {
+        }
+        )schema",
+      "2:14: 'local' and 'export' visibility modifiers are valid only on "
+      "'message' and 'enum'\n");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NoextendVisibility) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        export extend Foo {
+          optional string yes = 12;
+        }
+        )schema",
+      "2:15: 'local' and 'export' visibility modifiers are valid only on "
+      "'message' and 'enum'\n");
+}
+
+TEST_F(ParseVisibilityTest, Edition2023NestedKeywordName) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2023";
+        message MySimpleMessage {
+          local.pkg_name.SomeMessage msg = 1;
+          export.other_pkg_name.SomeMessage other_msg = 2;
+        }
+        )schema",
+      R"pb(
+        message_type {
+          name: "MySimpleMessage"
+          field {
+            name: "msg"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "local.pkg_name.SomeMessage"
+          }
+          field {
+            name: "other_msg"
+            number: 2
+            label: LABEL_OPTIONAL
+            type_name: "export.other_pkg_name.SomeMessage"
+          }
+        }
+        syntax: "editions"
+        edition: EDITION_2023
+      )pb");
+}
+
+TEST_F(ParseVisibilityTest, Edition2024NestedKeywordName) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        message MySimpleMessage {
+          .local.pkg_name.SomeMessage msg = 1;
+          .export.other_pkg_name.SomeMessage other_msg = 2;
+        }
+        )schema",
+      R"pb(
+        message_type {
+          name: "MySimpleMessage"
+          field {
+            name: "msg"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: ".local.pkg_name.SomeMessage"
+          }
+          field {
+            name: "other_msg"
+            number: 2
+            label: LABEL_OPTIONAL
+            type_name: ".export.other_pkg_name.SomeMessage"
+          }
+        }
+        syntax: "editions"
+        edition: EDITION_2024
+      )pb");
 }
 
 

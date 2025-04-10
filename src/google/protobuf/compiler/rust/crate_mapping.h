@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_MAPPING_FILE_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_MAPPING_FILE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CRATE_MAPPING_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_CRATE_MAPPING_H__
 
 #include <string>
 
@@ -39,4 +39,4 @@ GetImportPathToCrateNameMap(const Options* opts);
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_MAPPING_FILE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_CRATE_MAPPING_H__

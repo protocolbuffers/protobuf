@@ -38,7 +38,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
   // be a child node of a summary element, not part of an attribute.
   comments = absl::StrReplaceAll(comments, {{"&", "&amp;"}, {"<", "&lt;"}});
   std::vector<std::string> lines;
-  lines = absl::StrSplit(comments, "\n", absl::AllowEmpty());
+  lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
   // TODO: We really should work out which part to put in the summary and which
   // to put in the remarks... but that needs to be part of a bigger effort to
   // understand the markdown better anyway.

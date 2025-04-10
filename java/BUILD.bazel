@@ -1,4 +1,5 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 # Run Linkage Monitor
 sh_test(

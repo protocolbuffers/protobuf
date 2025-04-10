@@ -129,7 +129,7 @@ bool Any::ParseAnyTypeUrl(
 class Any::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Any>()._impl_._has_bits_);
+      decltype(::std::declval<Any>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_);
 };
@@ -223,10 +223,9 @@ constexpr auto Any::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Any_class_data_ =
-            Any::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Any_class_data_ =
+        Any::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Any::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Any_class_data_);
@@ -314,7 +313,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
   // string type_url = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_type_url().empty()) {
-      const std::string& _s = this_._internal_type_url();
+      const ::std::string& _s = this_._internal_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -324,7 +323,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
   // bytes value = 2;
   if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!this_._internal_value().empty()) {
-      const std::string& _s = this_._internal_value();
+      const ::std::string& _s = this_._internal_value();
       target = stream->WriteBytesMaybeAliased(2, _s, target);
     }
   }
@@ -416,7 +415,7 @@ void Any::CopyFrom(const Any& from) {
 
 
 void Any::InternalSwap(Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

@@ -1067,6 +1067,7 @@ public class MapTest {
   }
 
   @Test
+  @SuppressWarnings("SelfAssertion")
   public void testGetMap() {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValuesUsingAccessors(builder);

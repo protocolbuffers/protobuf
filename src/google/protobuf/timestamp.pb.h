@@ -87,7 +87,7 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
 
   inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
   inline Timestamp(Timestamp&& from) noexcept
-      : Timestamp(nullptr, std::move(from)) {}
+      : Timestamp(nullptr, ::std::move(from)) {}
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;

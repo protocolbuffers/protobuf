@@ -194,6 +194,7 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 //    code and runtime library match.
 
 const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310 = 40310;
+const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311 = 40311;
 
 #if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
 #error "Time to remove this and GPB_DEBUG_CHECK_RUNTIME_VERSIONS()"

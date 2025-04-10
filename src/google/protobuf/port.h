@@ -249,6 +249,14 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
+inline constexpr bool EnableExperimentalMicroString() {
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -323,6 +331,15 @@ inline constexpr bool IsLazyParsingSupported() {
   // We need 3 bits for pointer tagging in lazy parsing.
   return PtrIsAtLeast8BAligned();
 }
+
+#if defined(ABSL_IS_LITTLE_ENDIAN)
+constexpr bool IsLittleEndian() { return true; }
+#elif defined(ABSL_IS_BIG_ENDIAN)
+constexpr bool IsLittleEndian() { return false; }
+#else
+#error "Only little-endian and big-endian are supported"
+#endif
+constexpr bool IsBigEndian() { return !IsLittleEndian(); }
 
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
@@ -496,20 +513,27 @@ class NoopDebugCounter {
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
-#if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
+
 // Take advantage of C++20 constexpr support in std::string.
-class alignas(8) GlobalEmptyString {
+class alignas(8) GlobalEmptyStringConstexpr {
  public:
   const std::string& get() const { return value_; }
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
+  template <typename T = std::string, bool = (T(), true)>
+  static constexpr std::true_type HasConstexprDefaultConstructor(int) {
+    return {};
+  }
+  static constexpr std::false_type HasConstexprDefaultConstructor(char) {
+    return {};
+  }
+
  private:
   std::string value_;
 };
-PROTOBUF_EXPORT extern const GlobalEmptyString fixed_address_empty_string;
-#else
-class alignas(8) GlobalEmptyString {
+
+class alignas(8) GlobalEmptyStringDynamicInit {
  public:
   const std::string& get() const {
     return *reinterpret_cast<const std::string*>(internal::Launder(buffer_));
@@ -521,8 +545,12 @@ class alignas(8) GlobalEmptyString {
  private:
   alignas(std::string) char buffer_[sizeof(std::string)];
 };
+
+using GlobalEmptyString = std::conditional_t<
+    GlobalEmptyStringConstexpr::HasConstexprDefaultConstructor(0),
+    const GlobalEmptyStringConstexpr, GlobalEmptyStringDynamicInit>;
+
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
-#endif
 
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 

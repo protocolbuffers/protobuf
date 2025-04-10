@@ -138,6 +138,7 @@ GPB_FINAL @interface Message30007_SubMessage : GPBMessage
 NS_ASSUME_NONNULL_END
 
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
 
 GPBObjCClassDeclaration(Message30007);

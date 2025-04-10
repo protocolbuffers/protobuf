@@ -10,18 +10,11 @@ https://developers.google.com/open-source/licenses/bsd
 --]]--------------------------------------------------------------------------
 
 local upb = require "lupb"
-local lunit = require "lunit"
 local upb_test = require "lua.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
 local test_messages_proto2 = require "google.protobuf.test_messages_proto2_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
 local empty = require "google.protobuf.empty_pb"
-
-if _VERSION >= 'Lua 5.2' then
-  _ENV = lunit.module("testupb", "seeall")
-else
-  module("testupb", lunit.testcase, package.seeall)
-end
 
 function iter_to_array(iter)
   local arr = {}
@@ -29,6 +22,36 @@ function iter_to_array(iter)
     arr[#arr + 1] = v
   end
   return arr
+end
+
+function assert_equal(a, b)
+  assert(a == b)
+end
+
+function assert_not_equal(a, b)
+  assert(a ~= b)
+end
+
+function assert_nil(x)
+  assert(x == nil)
+end
+
+function assert_not_nil(x)
+  assert(x ~= nil)
+end
+
+function assert_true(x)
+  assert(x)
+end
+
+function assert_error(f)
+  assert(not pcall(f))
+end
+
+function assert_error_match(expected, f)
+  local status, err = pcall(f)
+  assert(not status)
+  assert(string.find(err, expected) ~= nil)
 end
 
 function test_def_readers()
@@ -173,7 +196,7 @@ function test_utf8()
   -- Decoding invalid UTF-8 succeeds in proto2.
   upb.decode(test_messages_proto2.TestAllTypesProto2, serialized)
 
-  -- Decoding invalid UTF-8 fails in proto2.
+  -- Decoding invalid UTF-8 fails in proto3.
   assert_error_match("Error decoding protobuf", function()
     upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   end)
@@ -207,7 +230,7 @@ function test_string_double_map()
   assert_equal(2.5, msg2.map_string_double["two point five"])
 end
 
-function test_string_double_map()
+function test_packed_repeated()
   local function fill_msg(msg)
     msg.i32_packed[1] = 100
     msg.i32_packed[2] = 200
@@ -439,22 +462,6 @@ local numeric_types = {
     valid_val = 10^101
   },
 }
-
-function test_utf8()
-  local invalid_utf8 = "\xff"
-  local proto2_msg = test_messages_proto2.TestAllTypesProto2{
-    optional_string = invalid_utf8,
-  }
-
-  -- As proto2, invalid UTF-8 parses and serializes fine.
-  local serialized = upb.encode(proto2_msg)
-  local proto2_msg2 = upb.decode(test_messages_proto2.TestAllTypesProto2, serialized)
-
-  -- Decoding as proto3 fails.
-  assert_error(function()
-    upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
-  end)
-end
 
 function test_msg_primitives()
   local msg = test_messages_proto3.TestAllTypesProto3{
@@ -822,8 +829,33 @@ function test_b9440()
   assert_equal(8, m.id)
 end
 
-local stats = lunit.main()
-
-if stats.failed > 0 or stats.errors > 0 then
-  error("One or more errors in test suite")
-end
+-- Run all tests
+test_def_readers()
+test_msg_map()
+test_map_sorting()
+test_utf8()
+test_string_double_map()
+test_packed_repeated()
+test_msg_string_map()
+test_msg_array()
+test_array_append()
+test_msg_submsg()
+test_finalizer()
+test_msg_primitives()
+test_string_array()
+test_numeric_array()
+test_numeric_map()
+test_unknown()
+test_foo()
+test_descriptor()
+test_descriptor_error()
+test_duplicate_enumval()
+test_duplicate_filename_error()
+test_encode_skipunknown()
+test_json_emit_defaults()
+test_json_locale()
+test_encode_depth_limit()
+test_large_field_number()
+test_timestamp_minutes()
+test_gc()
+test_b9440()

@@ -429,6 +429,18 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get(f.as_raw($pbi$::Private), i) };
             $pb$::View::<Self>::new($pbi$::Private, msg)
           }
+
+          unsafe fn repeated_get_mut_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::Mut<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            // - `i < len(f)` is promised by caller.
+            let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get_mut(f.as_raw($pbi$::Private), i) };
+            $pb$::Mut::<Self> { inner: $pbr$::MutatorMessageRef::from_raw_msg(&msg) }
+          }
+
           fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
             // SAFETY:
             // - `f.as_raw()` is a valid `RepeatedPtrField*`.
@@ -525,6 +537,18 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             $pb$::View::<Self>::new($pbi$::Private, msg_ptr)
           }
 
+          unsafe fn repeated_get_mut_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::Mut<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            // - `f` is a an array of message-valued elements.
+            // - `i < len(f)` is promised by the caller.
+            let msg_ptr = unsafe { $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i) };
+            unsafe {$pb$::Mut::<Self> { inner: $pbr$::MutatorMessageRef::from_raw_parts(msg_ptr, f.arena($pbi$::Private)) } }
+          }
+
           fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
             // SAFETY:
             // - `f.as_raw()` is a valid `upb_Array*`.
@@ -592,6 +616,15 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                   debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
                   unsafe { $Msg$View::new($pbi$::Private, value.val.m) }
               }
+
+              unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+                  unsafe {
+                    $Msg$Mut {
+                      inner: $pbr$::MutatorMessageRef::from_raw_msg(&value.val.m)
+                    }
+                  }
+              }
           }
           )rs");
       return;
@@ -628,6 +661,15 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                         $pbi$::Private,
                         unsafe { msg.msg_val }
                             .expect("expected present message value in map"))
+                }
+
+                unsafe fn from_message_mut<'msg>(msg: *mut $pbr$::upb_Message, arena: &'msg $pbr$::Arena)
+                    -> $Msg$Mut<'msg> {
+                    $Msg$Mut {
+                      inner: unsafe {
+                        $pbr$::MutatorMessageRef::from_raw_parts(std::ptr::NonNull::new(msg).expect("expected present message value in map"), arena)
+                      }
+                    }
                 }
             }
             )rs");

@@ -98,7 +98,10 @@ class Amalgamator:
     include = parse_include(line)
     if not include:
       return False
-    if not (include.startswith("upb") or include.startswith("google")):
+    if not (
+        include.startswith("upb")
+        or include.startswith("google")
+    ):
       return False
     if include and (include.endswith("port/def.inc") or include.endswith("port/undef.inc")):
       # Skip, we handle this separately

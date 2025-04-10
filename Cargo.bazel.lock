@@ -1,5 +1,5 @@
 {
-  "checksum": "422d164988d36886ae9aef8b60e233d67aac121356b66f1452c469f912cc0148",
+  "checksum": "93ba4d30a8d1e92826afecc6c6d8c601bdc8b2447d8cf3238cbf26a85760165b",
   "crates": {
     "aho-corasick 1.1.2": {
       "name": "aho-corasick",
@@ -125,6 +125,14 @@
             {
               "id": "googletest 0.12.0",
               "target": "googletest"
+            },
+            {
+              "id": "quote 1.0.33",
+              "target": "quote"
+            },
+            {
+              "id": "syn 2.0.43",
+              "target": "syn"
             }
           ],
           "selects": {}
@@ -919,13 +927,55 @@
             "clone-impls",
             "default",
             "derive",
-            "full",
             "parsing",
             "printing",
             "proc-macro",
             "quote"
           ],
-          "selects": {}
+          "selects": {
+            "aarch64-apple-darwin": [
+              "full"
+            ],
+            "aarch64-pc-windows-msvc": [
+              "full"
+            ],
+            "aarch64-unknown-linux-gnu": [
+              "full"
+            ],
+            "aarch64-unknown-nixos-gnu": [
+              "full"
+            ],
+            "arm-unknown-linux-gnueabi": [
+              "full"
+            ],
+            "i686-pc-windows-msvc": [
+              "full"
+            ],
+            "i686-unknown-linux-gnu": [
+              "full"
+            ],
+            "powerpc-unknown-linux-gnu": [
+              "full"
+            ],
+            "s390x-unknown-linux-gnu": [
+              "full"
+            ],
+            "x86_64-apple-darwin": [
+              "full"
+            ],
+            "x86_64-pc-windows-msvc": [
+              "full"
+            ],
+            "x86_64-unknown-freebsd": [
+              "full"
+            ],
+            "x86_64-unknown-linux-gnu": [
+              "full"
+            ],
+            "x86_64-unknown-nixos-gnu": [
+              "full"
+            ]
+          }
         },
         "deps": {
           "common": [
@@ -1072,9 +1122,6 @@
     "wasm32-unknown-unknown": [
       "wasm32-unknown-unknown"
     ],
-    "wasm32-wasi": [
-      "wasm32-wasi"
-    ],
     "wasm32-wasip1": [
       "wasm32-wasip1"
     ],
@@ -1108,7 +1155,10 @@
   },
   "direct_deps": [
     "googletest 0.12.0",
-    "paste 1.0.14"
+    "paste 1.0.14",
+    "quote 1.0.33",
+    "syn 2.0.43"
   ],
-  "direct_dev_deps": []
+  "direct_dev_deps": [],
+  "unused_patches": []
 }

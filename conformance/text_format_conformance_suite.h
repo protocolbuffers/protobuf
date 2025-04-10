@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef TEXT_FORMAT_CONFORMANCE_SUITE_H_
-#define TEXT_FORMAT_CONFORMANCE_SUITE_H_
+#ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
+#define GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__
 
 #include <string>
 
@@ -79,4 +79,4 @@ class TextFormatConformanceTestSuiteImpl {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // TEXT_FORMAT_CONFORMANCE_SUITE_H_
+#endif  // GOOGLE_PROTOBUF_CONFORMANCE_TEXT_FORMAT_CONFORMANCE_SUITE_H__

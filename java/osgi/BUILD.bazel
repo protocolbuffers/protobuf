@@ -9,8 +9,8 @@ java_binary(
     srcs = ["OsgiWrapper.java"],
     main_class = "com.google.protobuf.osgi.OsgiWrapper",
     deps = [
-        "@protobuf_maven//:biz_aQute_bnd_biz_aQute_bndlib",
-        "@protobuf_maven//:com_google_guava_guava",
-        "@protobuf_maven//:info_picocli_picocli",
+        "@protobuf_maven_dev//:biz_aQute_bnd_biz_aQute_bndlib",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:info_picocli_picocli",
     ],
 )

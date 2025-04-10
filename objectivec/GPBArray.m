@@ -2212,6 +2212,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
                         usingBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))
                                        block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
+  if (!_values || _count == 0) {
+    return;
+  }
   BOOL stop = NO;
   GPBEnumValidationFunc func = _validationFunc;
   if ((opts & NSEnumerationReverse) == 0) {

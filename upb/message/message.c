@@ -34,25 +34,20 @@ upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
   return _upb_Message_New(m, a);
 }
 
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
-                                          size_t len, upb_Arena* arena,
-                                          bool alias) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
+                                                               const char* data,
+                                                               size_t len,
+                                                               upb_Arena* arena,
+                                                               bool alias) {
   {
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (in && in->size) {
+    // Alias fast path was already checked in the inline function that calls
+    // this one
+    if (!alias && in && in->size) {
       upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
       if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
         upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
-        bool was_aliased = upb_TaggedAuxPtr_IsUnknownAliased(ptr);
-        if (alias) {
-          // Fast path if the field we're adding is immediately after the last
-          // added unknown field.
-          if (was_aliased && existing->data + existing->size == data) {
-            existing->size += len;
-            return true;
-          }
-        } else if (!was_aliased) {
+        if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           // If part of the existing field was deleted at the beginning, we can
           // reconstruct it by comparing the address of the end with the address
           // of the entry itself; having the non-aliased tag means that the
@@ -74,7 +69,6 @@ bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
       }
     }
   }
-
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {

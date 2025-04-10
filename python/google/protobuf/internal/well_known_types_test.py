@@ -706,6 +706,11 @@ class TimeUtilTest(TimeUtilTestBase):
 
 class StructTest(unittest.TestCase):
 
+  def testEmptyDict(self):
+    # in operator for empty initialized struct
+    msg = well_known_types_test_pb2.WKTMessage(optional_struct={})
+    self.assertNotIn('key', msg.optional_struct)
+
   def testStruct(self):
     struct = struct_pb2.Struct()
     self.assertIsInstance(struct, collections_abc.Mapping)

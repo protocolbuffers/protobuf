@@ -1,0 +1,13 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 400186b53..1194db9ca 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -2,7 +2,7 @@
+ # https://github.com/protocolbuffers/protobuf/issues/14313
+ 
+ module(
+-    name = "protobuf",
++    name = "com_google_protobuf_previous_release",
+     version = "29.0",  # Automatically updated on release
+     compatibility_level = 1,
+     repo_name = "com_google_protobuf",

@@ -148,6 +148,11 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT 1
 
+// Removes google::protobuf::util::MessageDifferencer::AddIgnoreCriteria that takes a
+// raw pointer as an argument in favor of the overload that takes a unique_ptr.
+// Owner: mkruskal@, natebrennan@
+#define PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA 1
+
 #endif
 
 // Introducing a future-breaking change guard for descriptor database migration.

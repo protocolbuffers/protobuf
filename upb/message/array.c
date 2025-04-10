@@ -13,9 +13,8 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -35,12 +34,14 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   return ret;
 }
 
-upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i) {
+upb_Message* upb_Array_GetMutable(upb_Array* arr, size_t i) {
   UPB_ASSERT(i < upb_Array_Size(arr));
-  upb_MutableMessageValue ret;
+  size_t elem_size = sizeof(upb_Message*);
+  UPB_ASSERT(elem_size == (1 << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr)));
   char* data = upb_Array_MutableDataPtr(arr);
-  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
-  memcpy(&ret, data + (i << lg2), 1 << lg2);
+  upb_Message* ret;
+  memcpy(&ret, data + (i * elem_size), elem_size);
+  UPB_ASSERT(!upb_Message_IsFrozen(ret));
   return ret;
 }
 

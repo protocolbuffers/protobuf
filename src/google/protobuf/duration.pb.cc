@@ -110,7 +110,7 @@ namespace protobuf {
 class Duration::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Duration>()._impl_._has_bits_);
+      decltype(::std::declval<Duration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Duration, _impl_._has_bits_);
 };
@@ -192,10 +192,9 @@ constexpr auto Duration::InternalGenerateClassData_() {
   };
 }
 
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
-        Duration_class_data_ =
-            Duration::InternalGenerateClassData_();
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull Duration_class_data_ =
+        Duration::InternalGenerateClassData_();
 
 const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Duration_class_data_);
@@ -371,7 +370,7 @@ void Duration::CopyFrom(const Duration& from) {
 
 
 void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<

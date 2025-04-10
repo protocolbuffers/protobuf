@@ -129,4 +129,55 @@ public final class UnredactedDebugFormatForTestTest {
                 + " 15: 0xabcd1234"
                 + " 15: 0xabcdef1234567890");
   }
+
+  @Test
+  public void unredactedToString_returnsTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            UnredactedDebugFormatForTest.unredactedToString(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void unredactedStringValueOf_returnsTextFormatForNonNullObject() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            UnredactedDebugFormatForTest.unredactedStringValueOf(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void unredactedStringValueOf_returnsEmptyStringForNullObject() {
+    UnittestProto.RedactedFields message = null;
+    assertThat(UnredactedDebugFormatForTest.unredactedStringValueOf(message))
+        .isEqualTo(String.valueOf(message));
+  }
 }

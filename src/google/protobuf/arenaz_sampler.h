@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
-#define GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
+#ifndef GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
+#define GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
 
 #include <array>
 #include <atomic>
@@ -136,7 +136,7 @@ class ThreadSafeArenaStatsHandle {
   ThreadSafeArenaStats* MutableStats() { return info_; }
 
   friend void swap(ThreadSafeArenaStatsHandle& lhs,
-                   ThreadSafeArenaStatsHandle& rhs) {
+                   ThreadSafeArenaStatsHandle& rhs) noexcept {
     std::swap(lhs.info_, rhs.info_);
   }
 
@@ -235,4 +235,4 @@ void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_SRC_PROTOBUF_ARENAZ_SAMPLER_H__
+#endif  // GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__

@@ -79,7 +79,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   std::vector<std::string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
-  if (descriptor->is_optional()) field_flags.push_back("GPBFieldOptional");
   if (descriptor->is_packed()) field_flags.push_back("GPBFieldPacked");
 
   // ObjC custom flags.
