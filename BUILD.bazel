@@ -173,6 +173,12 @@ alias(
 )
 
 alias(
+    name = "api_upb_proto",
+    actual = "//src/google/protobuf:api_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "duration_upb_proto",
     actual = "//src/google/protobuf:duration_upb_proto",
     visibility = ["//visibility:public"],
@@ -191,14 +197,82 @@ alias(
 )
 
 alias(
+    name = "source_context_upb_proto",
+    actual = "//src/google/protobuf:source_context_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "struct_upb_proto",
     actual = "//src/google/protobuf:struct_upb_proto",
     visibility = ["//visibility:public"],
 )
 
 alias(
+    name = "type_upb_proto",
+    actual = "//src/google/protobuf:type_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "wrappers_upb_proto",
     actual = "//src/google/protobuf:wrappers_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+# upb reflection targets for some of the well-known types
+
+alias(
+    name = "any_upb_reflection_proto",
+    actual = "//src/google/protobuf:any_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "api_upb_reflection_proto",
+    actual = "//src/google/protobuf:api_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "duration_upb_reflection_proto",
+    actual = "//src/google/protobuf:duration_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "empty_upb_reflection_proto",
+    actual = "//src/google/protobuf:empty_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_upb_reflection_proto",
+    actual = "//src/google/protobuf:field_mask_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "source_context_upb_reflection_proto",
+    actual = "//src/google/protobuf:source_context_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "struct_upb_reflection_proto",
+    actual = "//src/google/protobuf:struct_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_upb_reflection_proto",
+    actual = "//src/google/protobuf:type_upb_reflection_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wrappers_upb_reflection_proto",
+    actual = "//src/google/protobuf:wrappers_upb_reflection_proto",
     visibility = ["//visibility:public"],
 )
 

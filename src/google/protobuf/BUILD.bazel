@@ -36,6 +36,11 @@ upb_c_proto_library(
     deps = [":any_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "any_upb_reflection_proto",
+    deps = [":any_proto"],
+)
+
 proto_library(
     name = "api_proto",
     srcs = ["api.proto"],
@@ -48,6 +53,16 @@ proto_library(
 
 cc_proto_library(
     name = "api_cc_proto",
+    deps = [":api_proto"],
+)
+
+upb_c_proto_library(
+    name = "api_upb_proto",
+    deps = [":api_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "api_upb_reflection_proto",
     deps = [":api_proto"],
 )
 
@@ -67,6 +82,11 @@ upb_c_proto_library(
     deps = [":duration_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "duration_upb_reflection_proto",
+    deps = [":duration_proto"],
+)
+
 proto_library(
     name = "empty_proto",
     srcs = ["empty.proto"],
@@ -80,6 +100,11 @@ cc_proto_library(
 
 upb_c_proto_library(
     name = "empty_upb_proto",
+    deps = [":empty_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "empty_upb_reflection_proto",
     deps = [":empty_proto"],
 )
 
@@ -105,6 +130,16 @@ cc_proto_library(
     deps = [":source_context_proto"],
 )
 
+upb_c_proto_library(
+    name = "source_context_upb_proto",
+    deps = [":source_context_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "source_context_upb_reflection_proto",
+    deps = [":source_context_proto"],
+)
+
 proto_library(
     name = "struct_proto",
     srcs = ["struct.proto"],
@@ -118,6 +153,11 @@ cc_proto_library(
 
 upb_c_proto_library(
     name = "struct_upb_proto",
+    deps = [":struct_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "struct_upb_reflection_proto",
     deps = [":struct_proto"],
 )
 
@@ -137,6 +177,11 @@ upb_c_proto_library(
     deps = [":timestamp_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "timestamp_upb_reflection_proto",
+    deps = [":timestamp_proto"],
+)
+
 proto_library(
     name = "type_proto",
     srcs = ["type.proto"],
@@ -149,6 +194,16 @@ proto_library(
 
 cc_proto_library(
     name = "type_cc_proto",
+    deps = [":type_proto"],
+)
+
+upb_c_proto_library(
+    name = "type_upb_proto",
+    deps = [":type_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "type_upb_reflection_proto",
     deps = [":type_proto"],
 )
 
@@ -165,6 +220,11 @@ cc_proto_library(
 
 upb_c_proto_library(
     name = "wrappers_upb_proto",
+    deps = [":wrappers_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "wrappers_upb_reflection_proto",
     deps = [":wrappers_proto"],
 )
 
