@@ -1596,8 +1596,7 @@ class DescriptorPool::DeferredValidation {
   // reported errors won't be able to safely reference a location in the
   // original proto file.
   FileDescriptorProto& CreateProto() {
-    owned_protos_.push_back(Arena::Create<FileDescriptorProto>(&arena_));
-    return *owned_protos_.back();
+    return *Arena::Create<FileDescriptorProto>(&arena_);
   }
 
   bool Validate() {
@@ -1650,7 +1649,6 @@ class DescriptorPool::DeferredValidation {
   ErrorCollector* error_collector_;
   absl::flat_hash_map<const FileDescriptor*, std::vector<LifetimesInfo>>
       lifetimes_info_map_;
-  std::vector<FileDescriptorProto*> owned_protos_;
 };
 
 // ===================================================================
