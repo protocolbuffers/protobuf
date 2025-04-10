@@ -336,3 +336,16 @@ load("@rules_buf//buf:repositories.bzl", "rules_buf_dependencies", "rules_buf_to
 rules_buf_dependencies()
 
 rules_buf_toolchains(version = "v1.32.1")
+
+register_toolchains(
+    "//toolchain:osx-x86_64-toolchain",
+    "//toolchain:osx-aarch_64-toolchain",
+    "//toolchain:linux-aarch_64-toolchain",
+    "//toolchain:linux-ppcle_64-toolchain",
+    "//toolchain:linux-s390_64-toolchain",
+    "//toolchain:linux-x86_32-toolchain",
+    "//toolchain:linux-x86_64-toolchain",
+    "//toolchain:win32-toolchain",
+    "//toolchain:win64-toolchain",
+    "//toolchain:k8-toolchain",
+)
