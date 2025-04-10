@@ -1,0 +1,12 @@
+from "google/protobuf/field_mask_pyclif.h" import *
+
+from "third_party/protobuf/util/field_mask_util.h":
+  namespace `proto2::util`:
+    class FieldMaskUtil:
+      class MergeOptions:
+        def __init__(self)
+        replace_message_fields: bool = property(`replace_message_fields`, `set_replace_message_fields`)
+        replace_repeated_fields: bool = property(`replace_repeated_fields`, `set_replace_repeated_fields`)
+
+      @classmethod
+      def MergeMessageTo(cls, source: proto2_Message, mask: FieldMask, options: MergeOptions, destination: proto2_Message)
