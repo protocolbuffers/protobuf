@@ -239,7 +239,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_ =
         JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+JavaFeatures_NestInFileClassFeature::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_NestInFileClassFeature_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(JavaFeatures_NestInFileClassFeature_class_data_.tc_table);
   return JavaFeatures_NestInFileClassFeature_class_data_.base();
@@ -372,7 +373,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_ =
         JavaFeatures::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL JavaFeatures::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+JavaFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(JavaFeatures_class_data_.tc_table);
   return JavaFeatures_class_data_.base();

@@ -396,7 +396,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Version_class_data_ =
         Version::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Version::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Version::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Version_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Version_class_data_.tc_table);
   return Version_class_data_.base();
@@ -765,7 +766,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_ =
         CodeGeneratorRequest::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorRequest::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CodeGeneratorRequest::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorRequest_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(CodeGeneratorRequest_class_data_.tc_table);
   return CodeGeneratorRequest_class_data_.base();
@@ -1170,7 +1172,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_ =
         CodeGeneratorResponse_File::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorResponse_File::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CodeGeneratorResponse_File::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_File_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(CodeGeneratorResponse_File_class_data_.tc_table);
   return CodeGeneratorResponse_File_class_data_.base();
@@ -1542,7 +1545,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_ =
         CodeGeneratorResponse::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CodeGeneratorResponse::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CodeGeneratorResponse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(CodeGeneratorResponse_class_data_.tc_table);
   return CodeGeneratorResponse_class_data_.base();

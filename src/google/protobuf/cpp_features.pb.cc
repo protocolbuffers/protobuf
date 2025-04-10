@@ -217,7 +217,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_ =
         CppFeatures::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL CppFeatures::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+CppFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CppFeatures_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(CppFeatures_class_data_.tc_table);
   return CppFeatures_class_data_.base();

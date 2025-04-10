@@ -4178,7 +4178,15 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pbi$::ClassDataFull $classname$_class_data_ =
                   $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $nonnull$ $classname$::GetClassData() const {
+          //~ This function needs to be marked as weak to avoid significantly
+          //~ slowing down compilation times.  This breaks up LLVM's SCC
+          //~ in the .pb.cc translation units. Large translation units see a
+          //~ reduction of roughly 50% of walltime for optimized builds.
+          //~ Without the weak attribute all the messages in the file, including
+          //~ all the vtables and everything they use become part of the same
+          //~ SCC.
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $classname$::GetClassData() const {
             $pin_weak_descriptor$;
             $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
             $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
@@ -4221,7 +4229,15 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $nonnull$ $classname$::GetClassData() const {
+          //~ This function needs to be marked as weak to avoid significantly
+          //~ slowing down compilation times.  This breaks up LLVM's SCC
+          //~ in the .pb.cc translation units. Large translation units see a
+          //~ reduction of roughly 50% of walltime for optimized builds.
+          //~ Without the weak attribute all the messages in the file, including
+          //~ all the vtables and everything they use become part of the same
+          //~ SCC.
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $classname$::GetClassData() const {
             return $classname$_class_data_.base();
           }
         )cc");
