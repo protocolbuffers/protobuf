@@ -60,6 +60,7 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
   }
 
   using CodeGenerator::GetEdition;
+  using CodeGenerator::GetResolvedSourceFeatureExtension;
   using CodeGenerator::GetResolvedSourceFeatures;
   using CodeGenerator::GetUnresolvedSourceFeatures;
 

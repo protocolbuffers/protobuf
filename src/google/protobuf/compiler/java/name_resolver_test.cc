@@ -45,11 +45,6 @@ class SimpleErrorCollector : public io::ErrorCollector {
 class NameResolverTest : public testing::Test {
  protected:
   void SetUp() override {
-    // Set the Java FeatureSet defaults from JavaGenerator.
-    JavaGenerator generator;
-    ASSERT_OK(
-        pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
-
     // Parse and build built-in protos.
     BuildFileAndPopulatePool(
         "google/protobuf/descriptor.proto",

@@ -49,6 +49,9 @@ class PROTOBUF_EXPORT FeatureResolver {
   static absl::StatusOr<FeatureResolver> Create(
       Edition edition, const FeatureSetDefaults& defaults);
 
+  static absl::StatusOr<FeatureSet> GetEditionFeatureSetDefaults(
+      Edition edition, const FeatureSetDefaults& defaults);
+
   // Creates a new feature set using inheritance and default behavior. This is
   // designed to be called recursively, and the parent feature set is expected
   // to be a fully merged one.  The returned FeatureSet will be fully resolved
@@ -83,6 +86,7 @@ class PROTOBUF_EXPORT FeatureResolver {
 }  // namespace protobuf
 }  // namespace google
 
+#include "google/protobuf/port_undef.inc"
+
 #endif  // GOOGLE_PROTOBUF_FEATURE_RESOLVER_H__
 
-#include "google/protobuf/port_undef.inc"

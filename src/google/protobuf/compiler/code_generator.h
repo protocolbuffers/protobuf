@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/code_generator_lite.h"  // IWYU pragma: export
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/internal_feature_helper.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -140,6 +141,19 @@ class PROTOC_EXPORT CodeGenerator {
   template <typename DescriptorT>
   static const FeatureSet& GetResolvedSourceFeatures(const DescriptorT& desc) {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
+  }
+
+  // Returns the resolved FeatureSet for the language extension. It is
+  // guaranteed that the result is fully aware of the language feature set
+  // defaults.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static auto GetResolvedSourceFeatureExtension(
+      const DescriptorT& desc,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return ::google::protobuf::internal::InternalFeatureHelper::
+        GetResolvedFeatureExtension(desc, extension);
   }
 
   // Retrieves the unresolved source features for a given descriptor.  These

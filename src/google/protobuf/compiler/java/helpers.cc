@@ -929,15 +929,12 @@ namespace {
 // generated class should be nested in the generated proto file Java class.
 template <typename Descriptor>
 inline bool NestInFileClass(const Descriptor& descriptor) {
-  auto nest_in_file_class = JavaGenerator::GetResolvedSourceFeatures(descriptor)
-                                .GetExtension(pb::java)
-                                .nest_in_file_class();
-  ABSL_CHECK(
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
+          .nest_in_file_class();
+  ABSL_DCHECK(
       nest_in_file_class !=
-      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN)
-      << "Unknown value for nest_in_file_class feature. Try populating the "
-         "Java feature set defaults in your generator plugin or custom "
-         "descriptor pool.";
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
 
   if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
     return !descriptor.file()->options().java_multiple_files();

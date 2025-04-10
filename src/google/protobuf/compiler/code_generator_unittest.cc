@@ -67,6 +67,7 @@ class TestGenerator : public CodeGenerator {
   }
 
   // Expose the protected methods for testing.
+  using CodeGenerator::GetResolvedSourceFeatureExtension;
   using CodeGenerator::GetResolvedSourceFeatures;
   using CodeGenerator::GetUnresolvedSourceFeatures;
 
@@ -244,6 +245,35 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   EXPECT_EQ(ext.multiple_feature(), pb::EnumFeature::VALUE5);
   EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
   EXPECT_EQ(ext.source_feature2(), pb::EnumFeature::VALUE3);
+}
+
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtension) {
+  // Make sure feature set defaults are empty.
+  TestGenerator generator;
+  generator.set_feature_extensions({});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.field_presence = EXPLICIT;  // 2023 default
+    option features.enum_type = CLOSED;         // override
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+
+  const pb::TestFeatures& ext =
+      TestGenerator::GetResolvedSourceFeatureExtension(*file, pb::test);
+
+  EXPECT_EQ(ext.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext.field_feature(), pb::EnumFeature::VALUE1);
 }
 
 // TODO: Use the gtest versions once that's available in OSS.
