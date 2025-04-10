@@ -314,6 +314,40 @@ class FieldMaskTest(unittest.TestCase):
     self.assertEqual(dst.a['src level 1'], src_level_2)
     self.assertEqual(dst.a['dst level 1'], empty_map)
 
+  def testMergeMessageWithUnsetFields(self):
+    # Test merging each empty field one at a time.
+    src = unittest_pb2.TestAllTypes()
+    for field in src.DESCRIPTOR.fields:
+      if field.containing_oneof:
+        continue
+      field_name = field.name
+      dst = unittest_pb2.TestAllTypes()
+      # Only set one path to mask.
+      mask = field_mask_pb2.FieldMask()
+      mask.paths.append(field_name)
+      mask.MergeMessage(src, dst)
+      # Nothing should be merged.
+      self.assertEqual(unittest_pb2.TestAllTypes(), dst)
+
+    # Test merge clears previously set fields when source is unset.
+    dst_template = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(dst_template)
+    for field in src.DESCRIPTOR.fields:
+      if field.containing_oneof:
+        continue
+      dst = unittest_pb2.TestAllTypes()
+      dst.CopyFrom(dst_template)
+      # Only set one path to mask.
+      mask = field_mask_pb2.FieldMask()
+      mask.paths.append(field.name)
+      mask.MergeMessage(
+          src, dst, replace_message_field=True, replace_repeated_field=True
+      )
+      msg = unittest_pb2.TestAllTypes()
+      msg.CopyFrom(dst_template)
+      msg.ClearField(field.name)
+      self.assertEqual(msg, dst)
+
   def testMergeErrors(self):
     src = unittest_pb2.TestAllTypes()
     dst = unittest_pb2.TestAllTypes()
