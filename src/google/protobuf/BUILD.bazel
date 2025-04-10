@@ -1278,13 +1278,11 @@ cc_library(
     name = "lite_test_util",
     testonly = 1,
     srcs = [
-        "map_lite_test_util.cc",
         "test_util_lite.cc",
     ],
     hdrs = [
         "arena_test_util.h",
-        "map_lite_test_util.h",
-        "map_test_util_impl.h",
+        "map_test_util.h",
         "proto3_lite_unittest.inc",
         "test_util_lite.h",
     ],
@@ -1311,8 +1309,6 @@ cc_library(
     ],
     hdrs = [
         "map_test.inc",
-        "map_test_util.h",
-        "map_test_util.inc",
         "message_unittest.inc",
         "message_unittest_legacy_apis.inc",
         "reflection_tester.h",
