@@ -7,31 +7,31 @@ module Google
 
       # Returns the name of this method
       # @return [String]
-      # @!method name
+      def name; end
 
       # Returns the {MethodOptions} for this {MethodDescriptor}.
       # @return [MethodOptions]
-      # @!method options
+      def options; end
 
       # Returns the {Descriptor} for the request message type of this method
       # @return [Descriptor]
-      # @!method input_type
+      def input_type; end
 
       # Returns the {Descriptor} for the response message type of this method
       # @return [Descriptor]
-      # @!method output_type
+      def output_type; end
 
       # Returns whether or not this is a streaming request method
       # @return [Boolean]
-      # @!method client_streaming
+      def client_streaming; end
 
       # Returns the {MethodDescriptorProto} of this {MethodDescriptor}.
       # @return [MethodDescriptorProto]
-      # @!method to_proto
+      def to_proto; end
 
       # Returns whether or not this is a streaming response method
       # @return [Boolean]
-      # @!method server_streaming
+      def server_streaming; end
     end
   end
 end

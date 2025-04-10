@@ -6,24 +6,24 @@ module Google
 
       # Returns the name of this service.
       # @return [String]
-      # @!method name
+      def name; end
 
       # Returns the {FileDescriptor} object this service belongs to.
       # @return [FileDescriptor]
-      # @!method file_descriptor
+      def file_descriptor; end
 
       # Iterates over methods in this service, yielding to the block on each one.
       # @yield [MethodDescriptor]
       # @return [nil]
-      # @!method each
+      def each(&block); end
 
       # @return [ServiceOptions]
       # Returns the {ServiceOptions} for this {ServiceDescriptor}.
-      # @!method options
+      def options; end
 
       # @return [ServiceDescriptorProto]
       # Returns the {ServiceDescriptorProto} of this {ServiceDescriptor}.
-      # @!method to_proto
+      def to_proto; end
     end
   end
 end

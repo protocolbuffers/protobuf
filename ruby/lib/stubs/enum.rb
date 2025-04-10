@@ -11,21 +11,18 @@ module Google
       # value by number and returns its name as a Ruby symbol, or nil if not found.
       # @param number [Integer]
       # @return [String]
-      # @!scope class
-      # @!method lookup(number)
+      def self.lookup(number); end
 
       # This module method, provided on each generated enum module, looks up an enum
       # value by name (as a Ruby symbol) and returns its name, or nil if not found.
       # @param name [String]
       # @return [Integer]
-      # @!scope class
-      # @!method resolve(name)
+      def self.resolve(name); end
 
       # This module method, provided on each generated enum module, returns the
       # {EnumDescriptor} corresponding to this enum type.
       # @return [EnumDescriptor]
-      # @!scope class
-      # @!method descriptor
+      def self.descriptor; end
     end
   end
 end

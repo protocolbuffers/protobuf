@@ -6,24 +6,24 @@ module Google
 
       # Creates a new, empty, oneof descriptor. The oneof may only be modified prior
       # to being added to a message descriptor which is subsequently added to a pool.
-      # @!method initialize
+      def initialize; end
 
       # Returns the name of this oneof.
       # @return [String]
-      # @!method name
+      def name; end
 
       # Iterates through fields in this oneof, yielding to the block on each one.
       # @yield [FieldDescriptor]
       # @return [nil]
-      # @!method each
+      def each; end
 
       # Returns the {OneofOptions} for this {OneofDescriptor}.
       # @return [OneofOptions]
-      # @!method options
+      def options; end
 
       # Returns the {OneofDescriptorProto} of this {OneofDescriptor}.
       # @return [OneofDescriptorProto]
-      # @!method to_proto
+      def to_proto; end
 
     end
   end

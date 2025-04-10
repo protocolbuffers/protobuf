@@ -6,15 +6,15 @@ module Google
 
       # Returns the name of the file.
       # @return [String]
-      # @!method name
+      def name; end
 
       # Returns the {FileOptions} for this {FileDescriptor}.
       # @return [FileOptions]
-      # @!method options
+      def options; end
 
       # Returns the {FileDescriptorProto} of this {FileDescriptor}.
       # @return [FileDescriptorProto]
-      # @!method to_proto
+      def to_proto; end
     end
   end
 end

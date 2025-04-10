@@ -4,14 +4,12 @@ module Google
     # unknown fields in submessages.
     # @param msg [AbstractMessage]
     # @return [nil]
-    # @!scope class
-    # @!method discard_unknown
+    def self.discard_unknown(msg); end
 
     # Performs a deep copy of a {RepeatedField} instance, a {Map} instance, or a
     # message object, recursively copying its members.
     # @param obj [Map,AbstractMessage]
     # @return [Map,AbstractMessage]
-    # @!scope class
-    # @!method deep_copy(obj)
+    def self.deep_copy(obj); end
   end
 end

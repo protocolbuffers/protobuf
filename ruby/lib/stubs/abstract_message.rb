@@ -26,11 +26,11 @@ module Google
       # Creates a new instance of the given message class. Keyword arguments may be
       # provided with keywords corresponding to field names.
       # @param kwargs the list of field keys and values.
-      # @!method new(**kwargs)
+      def initialize(**kwargs); end
 
       # Performs a shallow copy of this message and returns the new copy.
       # @return [AbstractMessage]
-      # @!method dup
+      def dup; end
 
       # Performs a deep comparison of this message with another. Messages are equal
       # if they have the same type and if each field is equal according to the :==
@@ -38,45 +38,45 @@ module Google
       # field is of a primitive type).
       # @param other [AbstractMessage]
       # @return [Boolean]
-      # @!method ==(other)
+      def ==(other); end
 
       # Returns a hash value that represents this message's field values.
       # @return [Integer]
-      # @!method hash
+      def hash; end
 
       # Returns a human-readable string representing this message. It will be
       # formatted as "<MessageType: field1: value1, field2: value2, ...>". Each
       # field's value is represented according to its own #inspect method.
       # @return [String]
-      # @!method inspect
+      def inspect; end
 
       # Returns the message as a Ruby Hash object, with keys as symbols.
       # @return [Hash]
-      # @!method to_h
+      def to_h; end
 
       # Returns true if the message is frozen in either Ruby or the underlying
       # representation. Freezes the Ruby message object if it is not already frozen
       # in Ruby but it is frozen in the underlying representation.
       # @return [Boolean]
-      # @!method frozen?
+      def frozen?; end
 
       # Freezes the message object. We have to intercept this so we can freeze the
       # underlying representation, not just the Ruby wrapper.
       # @return [self]
-      # @!method freeze
+      def freeze; end
 
       # Accesses a field's value by field name. The provided field name should be a
       # string.
       # @param index [Integer]
       # @return [Object]
-      # @!method [](index)
+      def [](index); end
 
       # Sets a field's value by field name. The provided field name should be a
       # string.
       # @param index [Integer]
       # @param value [Object]
       # @return [nil]
-      # @!method []=(index, value)
+      def []=(index, value); end
 
       # Decodes the given data (as a string containing bytes in protocol buffers wire
       # format) under the interpretation given by this message class's definition
@@ -85,8 +85,7 @@ module Google
       # @param options [Hash]
       # @option recursion_limit [Integer] set to maximum decoding depth for message (default is 64)
       # @return [AbstractMessage]
-      # @!scope class
-      # @!method decode(data, options={})
+      def self.decode(data, options={}); end
 
       # Decodes the given data (as a string containing bytes in protocol buffers wire
       # format) under the interpretation given by this message class's definition
@@ -95,8 +94,7 @@ module Google
       # @param options [Hash]
       # @option ignore_unknown_fields [Boolean] set true to ignore unknown fields (default is to
       #    raise an error)
-      # @!scope class
-      # @!method decode_json(data, options={})
+      def self.decode_json(data, options={}); end
 
       # Encodes the given message object to its serialized form in protocol buffers
       # wire format.
@@ -104,8 +102,7 @@ module Google
       # @param options [Hash]
       # @option recursion_limit [Integer] set to maximum encoding depth for message (default is 64)
       # @return [String]
-      # @!scope class
-      # @!method encode(msg, options={})
+      def self.encode(msg, options={}); end
 
       # Encodes the given message object into its serialized JSON representation.
       # @param msg [AbstractMessage]
@@ -114,14 +111,12 @@ module Google
       # to camelCase)
       # @option emit_defaults [Boolean] set true to emit 0/false values (default is to omit them)
       # @return [String]
-      # @!scope class
-      # @!method encode_json(msg, options={})
+      def self.encode_json(msg, options={}); end
 
       # Class method that returns the {Descriptor} instance corresponding to this
       # message class's type.
       # @return [Descriptor]
-      # @!scope class
-      # @!method descriptor
+      def self.descriptor; end
     end
 
   end

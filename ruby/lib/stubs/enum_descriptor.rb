@@ -6,45 +6,45 @@ module Google
 
       # Returns the {FileDescriptor} object this enum belongs to.
       # @return [FileDescriptor]
-      # @!method file_descriptor
+      def file_descriptor; end
 
       # Returns whether this enum is open or closed.
       # @return [Boolean]
-      # @!method is_closed?
+      def is_closed?; end
 
       # Returns the name of this enum type.
       # @return [String]
-      # @!method name
+      def name; end
 
       # Returns the numeric value corresponding to the given key name (as a Ruby
       # symbol), or nil if none.
       # @param name [Symbol]
       # @return [Integer,nil]
-      # @!method lookup(name)
+      def lookup(name); end
 
       # Returns the key name (as a Ruby symbol) corresponding to the integer value,
       # or nil if none.
       # @param name [Integer]
       # @return [Symbol,nil]
-      # @!method lookup_value(name)
+      def lookup_value(name); end
 
       # Iterates over key => value mappings in this enum's definition, yielding to
       # the block with (key, value) arguments for each one.
       # @yield [Symbol, Integer]
       # @return [nil]
-      # @!method each
+      def each(&block); end
 
       # Returns the Ruby module corresponding to this enum type.
       # @return [Module]
-      # @!method enummodule
+      def enummodule; end
 
       # Returns the {EnumOptions} for this {EnumDescriptor}.
       # @return [EnumOptions]
-      # @!method options
+      def options; end
 
       # Returns the {EnumDescriptorProto} of this {EnumDescriptor}.
       # @return [EnumDescriptorProto]
-      # @!method to_proto
+      def to_proto; end
     end
   end
 end
