@@ -28,6 +28,7 @@
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest_import.pb.h"
 
 #define MESSAGE_TEST_NAME EditionMessageTest
@@ -38,7 +39,6 @@
 
 // Must include after the above macros.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/message_unittest.inc"
 // clang-format on
 
