@@ -8,6 +8,7 @@ package(
 
 proto_lang_toolchain(
     name = "toolchain",
+    allowlist_different_package = ":lang_proto_library_allowed_in_different_package",
     blacklisted_protos = [":denied"],
     command_line = "--java_out=param1,param2:$(OUT)",
     mnemonic = "MyMnemonic",
@@ -33,6 +34,14 @@ proto_lang_toolchain(
         "manual",
         "nobuilder",
         "notap",
+    ],
+)
+
+package_group(
+    name = "lang_proto_library_allowed_in_different_package",
+    packages = [
+        "-//bazel/tests/testdata/different_package_disallowed",
+        "//bazel/tests/testdata/different_package_allowed",
     ],
 )
 
@@ -87,6 +96,54 @@ filegroup(
         "nobuilder",
         "notap",
     ],
+)
+
+proto_library(
+    name = "simple_proto",
+    srcs = [
+        "A.proto",
+    ],
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+proto_library(
+    name = "allow_exports_proto",
+    srcs = [
+        "A.proto",
+    ],
+    allow_exports = ":allow_exports",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+package_group(
+    name = "allow_exports",
+    packages = ["//bazel/tests/testdata/different_package_allowed"],
+)
+
+proto_library(
+    name = "disallow_exports_proto",
+    srcs = [
+        "A.proto",
+    ],
+    allow_exports = ":disallow_exports",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+package_group(
+    name = "disallow_exports",
+    packages = [],
 )
 
 proto_library(

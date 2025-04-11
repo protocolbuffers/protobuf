@@ -36,6 +36,7 @@ def proto_common_compile_test_suite(name):
             _test_compile_protoc_opts,
             _test_compile_direct_generated_protos,
             _test_compile_indirect_generated_protos,
+            _test_compile_override_progress_message,
         ],
     )
 
@@ -366,3 +367,22 @@ def _test_compile_indirect_generated_protos_impl(env, target):
             matching.str_endswith("/A.proto"),
         ],
     )
+
+# Verifies usage of `proto_common.compile` with `experimental_progress_message` parameter
+def _test_compile_override_progress_message(name):
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        progress_message = "My custom progress message %{label}",
+        proto_dep = ":simple_proto",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        impl = _test_compile_override_progress_message_impl,
+    )
+
+def _test_compile_override_progress_message_impl(env, target):
+    action = env.expect.that_target(target).action_named("MyMnemonic")
+    env.expect.that_str(repr(action.actual)).contains("My custom progress message //")
