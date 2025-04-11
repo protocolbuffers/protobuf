@@ -91,7 +91,11 @@ static void Message_dtor(zend_object* obj) {
  */
 static const upb_FieldDef* get_field(Message* msg, zend_string* member) {
   if (!msg || !msg->desc || !msg->desc->msgdef) {
-    zend_throw_exception_ex(NULL, 0, "Couldn't find descriptor.");
+
+    zend_throw_exception_ex(
+      NULL, 0,
+      "Couldn't find descriptor. "
+      "The message constructor was likely bypassed, resulting in an uninitialized descriptor.");
 
     return NULL;
   }

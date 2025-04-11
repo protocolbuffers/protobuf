@@ -1924,8 +1924,27 @@ class GeneratedClassTest extends TestBase
         }
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage(
+            "Couldn't find descriptor. " .
+            "The message constructor was likely bypassed, resulting in an uninitialized descriptor."
+        );
 
         $m = new TestMessageMockProxy(['optional_int32' => 123]);
+
+        /**
+         * At this point the message constructor was bypassed and the descriptor is not initialized.
+         * This is a common PHP pattern where a proxy/mock class extends a concrete class,
+         * frequently used in frameworks like PHPUnit, phpspec, and Mockery.
+         *
+         * When this happens, the message's internal descriptor is never initialized.
+         *
+         * Without proper handling, accessing properties via getters (like $this->getOptionalInt32())
+         * would cause the C extension to segfault when trying to access the uninitialized descriptor.
+         *
+         * Instead of segfaulting, we now detect this uninitialized state and throw an exception.
+         *
+         * See: https://github.com/protocolbuffers/protobuf/issues/19978
+         */
 
         $m->getOptionalInt32();
     }
