@@ -64,6 +64,30 @@ class TimestampTest(unittest.TestCase):
         optional_timestamp=datetime.datetime.today()
     )
 
+  def test_timestamp_sub_annotation(self):
+    t1 = timestamp_pb2.Timestamp()
+    t2 = timestamp_pb2.Timestamp()
+    dt = datetime.datetime.now()
+    td = datetime.timedelta(hours=0)
+    msg = well_known_types_test_pb2.WKTMessage(optional_duration=td)
+    # Timestamp - datetime
+    self.assertEqual(t1 - dt, t2 - dt)
+    # Timestamp - Timestamp
+    self.assertEqual(t1 - t2, t2 - t1)
+    # datetime - Timestamp
+    self.assertEqual(dt - t1, dt - t2)
+    # Timestamp - timedelta and Timestamp - Duration
+    self.assertEqual(t1 - td, t2 - msg.optional_duration)
+
+  def test_timestamp_add_annotation(self):
+    ts = timestamp_pb2.Timestamp()
+    td = datetime.timedelta(hours=0)
+    msg = well_known_types_test_pb2.WKTMessage(optional_duration=td)
+    # Timestamp + timedelta and timedelta + Timestamp
+    self.assertEqual(ts + td, td + ts)
+    # Timestamp + Duration and Duration + Timestamp
+    self.assertEqual(ts + msg.optional_duration, msg.optional_duration + ts)
+
 
 if __name__ == '__main__':
   unittest.main()
