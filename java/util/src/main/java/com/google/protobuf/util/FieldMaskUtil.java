@@ -138,9 +138,7 @@ public final class FieldMaskUtil {
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (Integer fieldNumber : fieldNumbers) {
       FieldDescriptor field = descriptor.findFieldByNumber(fieldNumber);
-      checkArgument(
-          field != null,
-          String.format("%s is not a valid field number for %s.", fieldNumber, type));
+      checkArgument(field != null, "%s is not a valid field number for %s.", fieldNumber, type);
       builder.addPaths(field.getName());
     }
     return builder.build();
