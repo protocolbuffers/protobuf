@@ -1913,7 +1913,8 @@ class GeneratedClassTest extends TestBase
         new TestMessage(['optional_int32' => $this->throwIntendedException()]);
     }
 
-    public function testNoSegfaultWithContructorBypass() {
+    public function testNoSegfaultWithContructorBypass()
+    {
         if (!extension_loaded('protobuf')) {
             $this->markTestSkipped('PHP Protobuf extension is not loaded');
         }
