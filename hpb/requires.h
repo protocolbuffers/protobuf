@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_HPB_REQUIRES_H_
-#define PROTOBUF_HPB_REQUIRES_H_
+#ifndef GOOGLE_PROTOBUF_HPB_REQUIRES_H__
+#define GOOGLE_PROTOBUF_HPB_REQUIRES_H__
 
 #include <type_traits>
 namespace hpb::internal {
@@ -21,4 +21,4 @@ constexpr bool Requires(F) {
 }
 }  // namespace hpb::internal
 
-#endif  // PROTOBUF_HPB_REQUIRES_H_
+#endif  // GOOGLE_PROTOBUF_HPB_REQUIRES_H__
