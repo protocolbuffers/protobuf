@@ -7,6 +7,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
@@ -363,6 +364,18 @@ public abstract class AbstractMessage
     }
 
     BuilderType mergeFrom(final Message other, Map<FieldDescriptor, Object> allFields) {
+      System.out.println(
+          "xxxx getDescriptorForType().getFullName() "
+              + getDescriptorForType().getFullName()
+              + ", "
+              + this.getClass());
+      System.out.println(
+          "xxxx other.getDescriptorForType().getFullName() "
+              + other.getDescriptorForType().getFullName()
+              + ", "
+              + other.getClass());
+
+      Descriptor thisDescriptor = getDescriptorForType();
       if (other.getDescriptorForType() != getDescriptorForType()) {
         throw new IllegalArgumentException(
             "mergeFrom(Message) can only merge messages of the same type.");
