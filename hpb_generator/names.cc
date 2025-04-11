@@ -112,10 +112,6 @@ std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
   return absl::StrCat(compiler::StripProto(file->name()), ".hpb.h");
 }
 
-std::string CppHeaderFilenameLegacy(const google::protobuf::FileDescriptor* file) {
-  return absl::StrCat(compiler::StripProto(file->name()), ".upb.proto.h");
-}
-
 std::string CppConstType(const protobuf::FieldDescriptor* field) {
   return CppTypeInternal(field, /* is_const= */ true,
                          /* is_type_parameter= */ false);
