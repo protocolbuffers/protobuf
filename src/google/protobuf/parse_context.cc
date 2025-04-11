@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <memory>
@@ -202,14 +203,15 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   return {p, false};
 }
 
-const char* EpsCopyInputStream::SkipFallback(const char* ptr, int size) {
+const char* EpsCopyInputStream::SkipFallback(const char* ptr, int64_t size) {
   return AppendSize(ptr, size, [](const char* /*p*/, int /*s*/) {});
 }
 
-const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
+const char* EpsCopyInputStream::ReadStringFallback(const char* ptr,
+                                                   int64_t size,
                                                    std::string* str) {
   str->clear();
-  if (ABSL_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+  if (ABSL_PREDICT_TRUE(size <= BytesUntilLimit(ptr))) {
     // Reserve the string up to a static safe size. If strings are bigger than
     // this we proceed by growing the string as needed. This protects against
     // malicious payloads making protobuf hold on to a lot of memory.
@@ -336,9 +338,10 @@ const char* EpsCopyInputStream::VerifyUTF8Fallback(const char* ptr,
   return leftover.empty() ? ptr : nullptr;
 }
 
-const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
+const char* EpsCopyInputStream::AppendStringFallback(const char* ptr,
+                                                     int64_t size,
                                                      std::string* str) {
-  if (ABSL_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+  if (ABSL_PREDICT_TRUE(size <= BytesUntilLimit(ptr))) {
     // Reserve the string up to a static safe size. If strings are bigger than
     // this we proceed by growing the string as needed. This protects against
     // malicious payloads making protobuf hold on to a lot of memory.
@@ -348,11 +351,10 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
                     [str](const char* p, int s) { str->append(p, s); });
 }
 
-const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
+const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int64_t size,
                                                  absl::Cord* cord) {
   if (zcis_ == nullptr) {
-    int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
-    if (size <= bytes_from_buffer) {
+    if (size <= BytesAvailable(ptr)) {
       *cord = absl::string_view(ptr, size);
       return ptr + size;
     }
@@ -360,10 +362,10 @@ const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
       cord->Append(absl::string_view(p, s));
     });
   }
-  int new_limit = buffer_end_ - ptr + limit_;
+  int new_limit = BytesUntilLimit(ptr);
   if (size > new_limit) return nullptr;
   new_limit -= size;
-  int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
+  int bytes_from_buffer = BytesAvailable(ptr);
   const bool in_patch_buf = reinterpret_cast<uintptr_t>(ptr) -
                                 reinterpret_cast<uintptr_t>(patch_buffer_) <=
                             kPatchBufferSize;
@@ -705,7 +707,7 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 }
 
 const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
-                                                        int size,
+                                                        int64_t size,
                                                         MicroString& str,
                                                         Arena* arena) {
   str.SetInChunks(size, arena, [&](auto append) {
