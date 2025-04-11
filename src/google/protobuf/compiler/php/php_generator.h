@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_PHP_PHP_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_PHP_PHP_GENERATOR_H__
 
 #include <cstdint>
 #include <string>
@@ -64,4 +64,4 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_PHP_PHP_GENERATOR_H__
