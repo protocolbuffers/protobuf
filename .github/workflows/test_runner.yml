@@ -9,6 +9,8 @@ name: Tests
 # we start testing.  This will be immediately removed, so that further commits
 # require their own stamp to test.
 
+run-name: fail-fast true for exit code 1 yet false positive
+
 on:
   # continuous
   schedule:
