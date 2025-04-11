@@ -1,3 +1,6 @@
+#ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_UNTYPED_MESSAGE_H__
+#define GOOGLE_PROTOBUF_JSON_INTERNAL_UNTYPED_MESSAGE_H__
+
 #include "absl/log/absl_check.h"
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
@@ -235,3 +238,5 @@ class UntypedMessage final {
 
 #include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_UITL_UNTYPED_MESSAGE_H__
+
+#endif  // GOOGLE_PROTOBUF_JSON_INTERNAL_UNTYPED_MESSAGE_H__

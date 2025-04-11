@@ -509,4 +509,4 @@ struct Proto3Type {
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_JSON_INTERNAL_DESCRIPTOR_TRAITS_INTERNAL_H__
+#endif  // GOOGLE_PROTOBUF_JSON_INTERNAL_DESCRIPTOR_TRAITS_H__
