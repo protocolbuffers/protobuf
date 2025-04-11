@@ -65,7 +65,6 @@ inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
 inline constexpr uint32_t kLazyMask = 0x1u;
 inline constexpr uint32_t kInlinedMask = 0x1u;
-inline constexpr uint32_t kMicroStringMask = 0x2u;
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -143,7 +142,10 @@ struct ReflectionSchema {
   }
 
   bool IsFieldMicroString(const FieldDescriptor* field) const {
-    return IsMicroString(offsets_[field->index()], field->type());
+    return internal::EnableExperimentalMicroString() && !field->is_repeated() &&
+           !field->is_extension() &&
+           field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+           field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
   }
 
   uint32_t GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
@@ -265,8 +267,7 @@ struct ReflectionSchema {
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
-             ~kMicroStringMask;
+      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask;
     }
     return v & (~kSplitFieldOffsetMask);
   }
@@ -279,13 +280,6 @@ struct ReflectionSchema {
       // Non string/byte fields are not inlined.
       return false;
     }
-  }
-
-  static bool IsMicroString(uint32_t v, FieldDescriptor::Type type) {
-    ABSL_DCHECK(type == FieldDescriptor::TYPE_STRING ||
-                type == FieldDescriptor::TYPE_BYTES)
-        << type;
-    return (v & kMicroStringMask) != 0u;
   }
 };
 

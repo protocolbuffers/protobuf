@@ -121,10 +121,13 @@ class PROTOBUF_EXPORT MicroString {
   union UnownedPayload {
     LargeRep payload;
     // We use a union to be able to get an unaligned pointer for the
-    // payload in the constexpr contructor. `for_tag + kIsLargeRepTag` is
+    // payload in the constexpr constructor. `for_tag + kIsLargeRepTag` is
     // equivalent to `reinterpret_cast<uintptr_t>(&payload) | kIsLargeRepTag`
     // but works during constant evaluation.
     char for_tag[1];
+
+    // To match the LazyString API.
+    auto get() const { return payload.view(); }
   };
   explicit constexpr MicroString(const UnownedPayload& unowned_input)
       : rep_(const_cast<char*>(unowned_input.for_tag + kIsLargeRepTag)) {}
@@ -198,6 +201,12 @@ class PROTOBUF_EXPORT MicroString {
   // Set the payload to `unowned`. Will not allocate memory, but might free
   // memory if already set.
   void SetUnowned(const UnownedPayload& unowned_input, Arena* arena);
+
+  // To match the API of ArenaStringPtr.
+  // It resets the value to the passed default, trying to keep preexisting
+  // buffer if we are on an arena. This reduces arena bloat when reusing a
+  // message.
+  void ClearToDefault(const UnownedPayload& unowned_input, Arena* arena);
 
   // Set the string, but the input comes in individual chunks.
   // This function is designed to be called from the parser.

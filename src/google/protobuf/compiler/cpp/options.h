@@ -69,6 +69,11 @@ struct Options {
   bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
   bool strip_nonfunctional_codegen = false;
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  bool experimental_use_micro_string = true;
+#else
+  bool experimental_use_micro_string = false;
+#endif
 };
 
 }  // namespace cpp
