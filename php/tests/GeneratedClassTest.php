@@ -42,6 +42,31 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test isset / property_exists
+    #########################################################
+
+    public function testIsset()
+    {
+        $message = new TestMessage();
+
+        $this->assertTrue(property_exists(TestMessage::class, 'optional_string'));
+        $this->assertTrue(property_exists($message, 'optional_string'));
+        $this->assertFalse(isset($message->optional_string));
+
+        $message->setOptionalString('bar');
+
+        $this->assertTrue(property_exists(TestMessage::class, 'optional_string'));
+        $this->assertFalse(property_exists(TestMessage::class, 'foo'));
+
+        $this->assertTrue(property_exists($message, 'optional_string'));
+        $this->assertFalse(property_exists($message, 'foo'));
+
+        // isset() should return false for attributes that are not public.
+        $this->assertFalse(isset($message->optional_string));
+        $this->assertFalse(isset($message->foo));
+    }
+
+    #########################################################
     # Test int32 field.
     #########################################################
 
