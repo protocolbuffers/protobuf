@@ -21,17 +21,21 @@ use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
 # This is not allowed, but we at least shouldn't crash.
-class C extends \Google\Protobuf\Internal\Message {
-    public function __construct($data = null) {
+class C extends \Google\Protobuf\Internal\Message
+{
+    public function __construct($data = null)
+    {
         parent::__construct($data);
     }
 }
 
 # This is not allowed, but we at least shouldn't crash.
-class TestMessageMockProxy extends TestMessage {
+class TestMessageMockProxy extends TestMessage
+{
     public $_proxy_data = null;
 
-    public function __construct($data = null) {
+    public function __construct($data = null)
+    {
         $this->_proxy_data = $data;
         // bypass parent constructor
         // This is common behavior by phpunit ond other mock/proxy libraries
