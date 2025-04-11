@@ -513,7 +513,6 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     std::string AsString(const SymbolEntry& entry) const {
       return entry.AsString(index);
     }
-    static absl::string_view AsString(absl::string_view str) { return str; }
 
     std::pair<absl::string_view, absl::string_view> GetParts(
         const SymbolEntry& entry) const {
@@ -521,13 +520,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       if (package.empty()) return {entry.symbol(index), absl::string_view{}};
       return {package, entry.symbol(index)};
     }
-    std::pair<absl::string_view, absl::string_view> GetParts(
-        absl::string_view str) const {
-      return {str, {}};
-    }
 
-    template <typename T, typename U>
-    bool operator()(const T& lhs, const U& rhs) const {
+    bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
       auto lhs_parts = GetParts(lhs);
       auto rhs_parts = GetParts(rhs);
 
@@ -541,6 +535,23 @@ class EncodedDescriptorDatabase::DescriptorIndex {
         return lhs_parts.second < rhs_parts.second;
       }
       return AsString(lhs) < AsString(rhs);
+    }
+
+    bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
+      auto p = rhs.package(index);
+      if (!p.empty()) {
+        absl::string_view lhs_part = lhs.substr(0, p.size());
+        lhs.remove_prefix(lhs_part.size());
+        if (int res = lhs_part.compare(p); res != 0) return res < 0;
+        // If compare returned 0 is because we consumed all of `p` and it
+        // matched.
+
+        // Compare the implicit `.`
+        if (lhs.empty() || lhs[0] < '.') return true;
+        if (lhs[0] > '.') return false;
+        lhs.remove_prefix(1);
+      }
+      return lhs < rhs.symbol(index);
     }
   };
   absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
