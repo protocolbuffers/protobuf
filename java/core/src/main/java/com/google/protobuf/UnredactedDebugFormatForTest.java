@@ -1,5 +1,7 @@
 package com.google.protobuf;
 
+import javax.annotation.Nullable;
+
 /**
  * These APIs are restricted to test-only targets, and are suitable for test purposes where it is
  * impractical to compare protos directly via ProtoTruth (e.g. log output).
@@ -56,7 +58,7 @@ public final class UnredactedDebugFormatForTest {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String unredactedStringValueOf(Object object) {
+  public static String unredactedStringValueOf(@Nullable Object object) {
     return LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(object);
   }
 }
