@@ -27,6 +27,17 @@ class C extends \Google\Protobuf\Internal\Message {
     }
 }
 
+# This is not allowed, but we at least shouldn't crash.
+class TestMessageMockProxy extends TestMessage {
+    public $_proxy_data = null;
+
+    public function __construct($data = null) {
+        $this->_proxy_data = $data;
+        // bypass parent constructor
+        // This is common behavior by phpunit ond other mock/proxy libraries
+    }
+}
+
 class GeneratedClassTest extends TestBase
 {
 
@@ -1900,6 +1911,18 @@ class GeneratedClassTest extends TestBase
         $this->expectException(Exception::class);
 
         new TestMessage(['optional_int32' => $this->throwIntendedException()]);
+    }
+
+    public function testNoSegfaultWithContructorBypass() {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped('PHP Protobuf extension is not loaded');
+        }
+
+        $this->expectException(Exception::class);
+
+        $m = new TestMessageMockProxy(['optional_int32' => 123]);
+
+        $m->getOptionalInt32();
     }
 
     public function testNoExceptionWithVarDump()
