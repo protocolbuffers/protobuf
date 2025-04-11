@@ -1045,11 +1045,13 @@ class PROTOBUF_EXPORT Reflection final {
   // not initialized), the inferred LazyField is eagerly verified to avoid lazy
   // parsing error at the cost of lower efficiency. When reflecting a message
   // field, use this API instead of checking field->options().lazy().
+ public:
   bool IsLazyField(const FieldDescriptor* field) const {
     return IsLazilyVerifiedLazyField(field) ||
            IsEagerlyVerifiedLazyField(field);
   }
 
+ private:
   // Returns true if the field is lazy extension. It is meant to allow python
   // reparse lazy field until b/157559327 is fixed.
   bool IsLazyExtension(const Message& message,

@@ -18,8 +18,9 @@ namespace internal {
 
 template <typename T>
 const char* ExtensionSet::ParseFieldWithExtensionInfo(
-    int number, bool was_packed_on_wire, const ExtensionInfo& extension,
-    InternalMetadata* metadata, const char* ptr, internal::ParseContext* ctx) {
+    int number, int wire_type, bool was_packed_on_wire,
+    const ExtensionInfo& extension, InternalMetadata* metadata, const char* ptr,
+    internal::ParseContext* ctx) {
   if (was_packed_on_wire) {
     switch (extension.type) {
 #define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                                \
@@ -147,30 +148,30 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         return ctx->ReadString(ptr, size, value);
       }
 
-      case WireFormatLite::TYPE_GROUP: {
-        MessageLite* value =
-            extension.is_repeated
-                ? AddMessage(number, WireFormatLite::TYPE_GROUP,
-                             *extension.message_info.prototype,
-                             extension.descriptor)
-                : MutableMessage(number, WireFormatLite::TYPE_GROUP,
-                                 *extension.message_info.prototype,
-                                 extension.descriptor);
-        uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
-        return ctx->ParseGroup(value, ptr, tag);
-      }
-
-      case WireFormatLite::TYPE_MESSAGE: {
-        MessageLite* value =
-            extension.is_repeated
-                ? AddMessage(number, WireFormatLite::TYPE_MESSAGE,
-                             *extension.message_info.prototype,
-                             extension.descriptor)
-                : MutableMessage(number, WireFormatLite::TYPE_MESSAGE,
-                                 *extension.message_info.prototype,
-                                 extension.descriptor);
-        return ctx->ParseMessage(value, ptr);
-      }
+      case WireFormatLite::TYPE_MESSAGE:
+      case WireFormatLite::TYPE_GROUP:
+        if (wire_type == WireFormatLite::WIRETYPE_START_GROUP) {
+          MessageLite* value =
+              extension.is_repeated
+                  ? AddMessage(number, extension.type,
+                               *extension.message_info.prototype,
+                               extension.descriptor)
+                  : MutableMessage(number, extension.type,
+                                   *extension.message_info.prototype,
+                                   extension.descriptor);
+          uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
+          return ctx->ParseGroup(value, ptr, tag);
+        } else {
+          MessageLite* value =
+              extension.is_repeated
+                  ? AddMessage(number, extension.type,
+                               *extension.message_info.prototype,
+                               extension.descriptor)
+                  : MutableMessage(number, extension.type,
+                                   *extension.message_info.prototype,
+                                   extension.descriptor);
+          return ctx->ParseMessage(value, ptr);
+        }
     }
   }
   return ptr;

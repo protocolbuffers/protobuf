@@ -2468,43 +2468,34 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   const uint16_t type_card = entry.type_card;
   const uint16_t card = type_card & field_layout::kFcMask;
 
+  const uint32_t decoded_tag = data.tag();
+  const uint32_t decoded_wiretype = decoded_tag & 7;
+
   // Check for repeated parsing:
   if (card == field_layout::kFcRepeated) {
-    const uint16_t rep = type_card & field_layout::kRepMask;
-    switch (rep) {
-      case field_layout::kRepMessage:
+    switch (decoded_wiretype) {
+      case WireFormatLite::WIRETYPE_LENGTH_DELIMITED:
         PROTOBUF_MUSTTAIL return MpRepeatedMessageOrGroup<is_split, false>(
             PROTOBUF_TC_PARAM_PASS);
-      case field_layout::kRepGroup:
+      case WireFormatLite::WIRETYPE_START_GROUP:
         PROTOBUF_MUSTTAIL return MpRepeatedMessageOrGroup<is_split, true>(
             PROTOBUF_TC_PARAM_PASS);
       default:
         PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   }
-
-  const uint32_t decoded_tag = data.tag();
-  const uint32_t decoded_wiretype = decoded_tag & 7;
   const uint16_t rep = type_card & field_layout::kRepMask;
-  const bool is_group = rep == field_layout::kRepGroup;
+  // note that we solely rely on wiretype for parsing messages (schema ignored)
+  const bool is_group =
+      decoded_wiretype == WireFormatLite::WIRETYPE_START_GROUP;
 
-  // Validate wiretype:
-  switch (rep) {
-    case field_layout::kRepMessage:
-      if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-        goto fallback;
-      }
-      break;
-    case field_layout::kRepGroup:
-      if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
-        goto fallback;
-      }
-      break;
-    default: {
-    fallback:
-      PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-    }
+  // If we don't see a wiretype of START_GROUP or DELIM even though we're in the
+  // entry point for MpMessage, something is wrong. Bail out!
+  if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP &&
+      decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
+
 
   const bool is_oneof = card == field_layout::kFcOneof;
   bool need_init = false;
@@ -2541,14 +2532,10 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
 
   // Validate wiretype:
   if (!is_group) {
-    ABSL_DCHECK_EQ(type_card & field_layout::kRepMask,
-                   static_cast<uint16_t>(field_layout::kRepMessage));
     if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
   } else {
-    ABSL_DCHECK_EQ(type_card & field_layout::kRepMask,
-                   static_cast<uint16_t>(field_layout::kRepGroup));
     if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }

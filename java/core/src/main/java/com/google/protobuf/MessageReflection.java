@@ -1158,7 +1158,9 @@ class MessageReflection {
         && wireType
             == FieldSet.getWireFormatForFieldType(field.getLiteType(), /* isPacked= */ true)) {
       packed = true;
-    } else {
+    } else if (field.getJavaType() != Descriptors.FieldDescriptor.JavaType.MESSAGE
+        || (wireType != WireFormat.WIRETYPE_LENGTH_DELIMITED
+            && wireType != WireFormat.WIRETYPE_START_GROUP)) {
       unknown = true; // Unknown wire type.
     }
 
@@ -1205,12 +1207,11 @@ class MessageReflection {
       final Object value;
       switch (field.getType()) {
         case GROUP:
-          {
+        case MESSAGE:
+          if (wireType == WireFormat.WIRETYPE_START_GROUP) {
             target.mergeGroup(input, extensionRegistry, field, defaultInstance);
             return true;
-          }
-        case MESSAGE:
-          {
+          } else {
             target.mergeMessage(input, extensionRegistry, field, defaultInstance);
             return true;
           }

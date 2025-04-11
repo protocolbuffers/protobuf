@@ -251,11 +251,13 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
             value = reader.readString();
             break;
           case GROUP:
-            value = reader.readGroup(extension.defaultInstance.getClass(), extensionRegistry);
-            break;
-
           case MESSAGE:
-            value = reader.readMessage(extension.defaultInstance.getClass(), extensionRegistry);
+            final int wireType = reader.getTag() & 0x7;
+            if (wireType == WireFormat.WIRETYPE_START_GROUP) {
+              value = reader.readGroup(extension.defaultInstance.getClass(), extensionRegistry);
+            } else {
+              value = reader.readMessage(extension.defaultInstance.getClass(), extensionRegistry);
+            }
             break;
 
           case ENUM:
