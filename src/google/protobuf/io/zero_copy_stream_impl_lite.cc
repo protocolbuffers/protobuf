@@ -356,7 +356,7 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
     if (size <= out_size) {
       std::memcpy(out, data, size);
       BackUp(out_size - size);
-      return true;
+      break;
     }
 
     std::memcpy(out, data, out_size);
