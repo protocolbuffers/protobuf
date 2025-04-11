@@ -1,0 +1,24 @@
+from "google/protobuf/field_mask_pyclif.h" import *
+
+from "third_party/protobuf/util/python/field_mask_util_clif_aux.h":
+  namespace `proto2::util`:
+    class FieldMaskUtil:
+      class MergeOptions:
+        def __init__(self)
+        # When merging message fields, the default behavior is to merge the
+        # content of two message fields together. If you instead want to use
+        # the field from the source message to replace the corresponding field
+        # in the destination message, set this flag to true. When this flag is set,
+        # specified submessage fields that are missing in source will be cleared in
+        # destination.
+        replace_message_fields: bool = property(`replace_message_fields`, `set_replace_message_fields`)
+
+        # The default merging behavior will append entries from the source
+        # repeated field to the destination repeated field. If you only want
+        # to keep the entries from the source repeated field, set this flag
+        # to true.
+        replace_repeated_fields: bool = property(`replace_repeated_fields`, `set_replace_repeated_fields`)
+
+    # Implementation detail that field_mask_util.py uses to call the C++
+    # MergeMessageTo function.
+    def MergeMessageToBytes(source: proto2_Message, mask: FieldMask, options: FieldMaskUtil.MergeOptions, destination: proto2_Message) -> object
