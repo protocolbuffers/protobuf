@@ -208,6 +208,24 @@ const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
                     [str](const char* p, int s) { str->append(p, s); });
 }
 
+const char* EpsCopyInputStream::ReadArray(const char* ptr, int size,
+                                          char* dst) {
+  if (size <= BytesAvailable(ptr)) {
+    memcpy(dst, ptr, size);
+    return ptr + size;
+  }
+  return ReadArrayFallback(ptr, size, dst);
+}
+
+const char* EpsCopyInputStream::ReadArrayFallback(const char* ptr, int size,
+                                                  char* dst) {
+  return AppendSize(ptr, size, [&dst](const char* p, int s) {
+    memcpy(dst, p, s);
+    dst += s;
+  });
+}
+
+
 namespace {
 
 // A valid UTF8 ranges in [1, 4]: https://en.wikipedia.org/wiki/UTF-8
