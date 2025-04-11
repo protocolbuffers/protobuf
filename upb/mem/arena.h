@@ -65,7 +65,7 @@ UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
 // Returns the upb_alloc used by the arena.
-UPB_API upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a);
+UPB_API upb_alloc* upb_Arena_GetUpbAlloc(const upb_Arena* a);
 
 // This operation is safe to use concurrently from multiple threads.
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
