@@ -128,7 +128,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
 // with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) || defined(__MSYS2__)
   return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
@@ -943,7 +943,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
 // ===================================================================
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && !defined(__MSYS2__)
 const char* const CommandLineInterface::kPathSeparator = ";";
 #else
 const char* const CommandLineInterface::kPathSeparator = ":";
@@ -2061,16 +2061,30 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
+    std::string value_split = value;
+#if defined(__CYGWIN__) || defined(__MSYS_) || defined(__MSYS2__)
+    if (IsWindowsAbsolutePath(value_split)) {
+      value_split[1] = value_split[0];
+      value_split[0] = '/';
+    }
+#endif
+
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
     std::vector<std::string> parts = absl::StrSplit(
-        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        value_split, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
         absl::SkipEmpty());
 
     for (size_t i = 0; i < parts.size(); ++i) {
       std::string virtual_path;
       std::string disk_path;
+
+#if defined(__CYGWIN__) || defined(__MSYS_) || defined(__MSYS2__)
+      if (parts[i] == value_split) {
+        parts[i] = value;
+      }
+#endif
 
       std::string::size_type equals_pos = parts[i].find_first_of('=');
       if (equals_pos == std::string::npos) {
