@@ -898,6 +898,11 @@ class Symbol {
   }
 
   SymbolVisibility GetEffectiveVisibility() const {
+    // Only Types have visibility
+    if (!IsType()) {
+      return SymbolVisibility::VISIBILITY_UNSET;
+    }
+
     SymbolVisibility effective_visibility = visibility_keyword();
 
     // If our visibility is specifically set we can return that.  We'll validate
@@ -939,6 +944,11 @@ class Symbol {
       return false;
     }
 
+    // Only Types (message/enum) have visibility.
+    if (!IsType()) {
+      return true;
+    }
+
     // If we're dealing with a placeholder then just stop now, visibility can't
     // be determined and we have to rely on the proto-compiler previously having
     // checked the validity.
@@ -957,6 +967,16 @@ class Symbol {
 
   std::string GetVisibilityError(FileDescriptor* other,
                                  absl::string_view usage = "") const {
+    const absl::string_view file_path =
+        GetFile() != nullptr ? GetFile()->name() : "unknown_file";
+    const absl::string_view symbol_name = full_name();
+
+    if (!IsType()) {
+      return absl::StrCat(
+          "Attempt to get a visibility error for a non-message/enum symbol ",
+          symbol_name, "\", defined in \"", file_path);
+    }
+
     SymbolVisibility explicit_visibility = visibility_keyword();
 
     std::string reason =
@@ -968,10 +988,6 @@ class Symbol {
                   FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(
                       features().default_symbol_visibility()),
                   "';");
-
-    const absl::string_view file_path =
-        GetFile() != nullptr ? GetFile()->name() : "unknown_file";
-    const absl::string_view symbol_name = full_name();
 
     return absl::StrCat("Symbol \"", symbol_name, "\", defined in \"",
                         file_path, "\" ", usage,
