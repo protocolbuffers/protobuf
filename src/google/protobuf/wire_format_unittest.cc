@@ -15,8 +15,8 @@
 #include <cstdint>
 #include <string>
 
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
