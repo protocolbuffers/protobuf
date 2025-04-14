@@ -585,7 +585,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   const float& GetRefFloat(int number, const float& default_value) const;
   const double& GetRefDouble(int number, const double& default_value) const;
   const bool& GetRefBool(int number, const bool& default_value) const;
-  const int& GetRefEnum(int number, const int& default_value) const;
+  const int& GetRefEnum(int number, int default_value) const;
   const int32_t& GetRefRepeatedInt32(int number, int index) const;
   const int64_t& GetRefRepeatedInt64(int number, int index) const;
   const uint32_t& GetRefRepeatedUInt32(int number, int index) const;
