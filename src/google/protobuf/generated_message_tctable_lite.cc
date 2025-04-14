@@ -647,8 +647,11 @@ MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
 template <typename TagType, bool group_coding, bool aux_is_table>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  static constexpr PrefetchOpts kPrefetchOpts = {
+      .num = {2, PrefetchOpts::kLines},
+      .from = {3, PrefetchOpts::kLines},
+      .locality = PrefetchOpts::kHigh};
+  Prefetch<kPrefetchOpts>(ptr);
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
@@ -732,7 +735,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  static constexpr PrefetchOpts kPrefetchOpts = {
+      .num = {1, PrefetchOpts::kLines},
+      .from = {3, PrefetchOpts::kLines},
+      .locality = PrefetchOpts::kHigh,
+  };
+  Prefetch<kPrefetchOpts>(ptr);
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
