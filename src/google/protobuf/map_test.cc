@@ -11,7 +11,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -25,10 +27,10 @@
 #include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
+#include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 
 
 #define UNITTEST ::proto2_unittest
