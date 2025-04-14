@@ -15,9 +15,7 @@
 // the shared tests. Keep the shared unit tests (message_unittest.inc)
 // representative without sacrificing test coverage.
 
-#include <functional>
 #include <string>
-#include <utility>
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -28,8 +26,9 @@
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
-#include "google/protobuf/unittest_import.pb.h"
 
 #define MESSAGE_TEST_NAME EditionMessageTest
 #define MESSAGE_FACTORY_TEST_NAME EditionMessageFactoryTest
