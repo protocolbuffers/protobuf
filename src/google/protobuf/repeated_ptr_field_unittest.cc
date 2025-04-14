@@ -1127,7 +1127,7 @@ TEST(RepeatedPtrFieldTest, CheckedGetOrAbortTest) {
   EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
 }
 
-TEST(RepeatedPtrFieldTest, CheckedMutableOrAbortTest) {
+TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
