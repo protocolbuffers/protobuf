@@ -347,7 +347,7 @@ void SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllFileNames(
 
 bool SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
   FileDescriptorProto* new_file = new FileDescriptorProto;
-  new_file->CopyFrom(file);
+  *new_file = file;
   return AddAndOwn(new_file);
 }
 
@@ -394,7 +394,7 @@ bool SimpleDescriptorDatabase::MaybeCopy(
     const FileDescriptorProto* PROTOBUF_NULLABLE file,
     FileDescriptorProto* PROTOBUF_NONNULL output) {
   if (file == nullptr) return false;
-  output->CopyFrom(*file);
+  *output = *file;
   return true;
 }
 
