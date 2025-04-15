@@ -96,6 +96,7 @@ cc_test(
         ":message_differencer_unittest_proto3_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:lite_test_util",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/stubs",

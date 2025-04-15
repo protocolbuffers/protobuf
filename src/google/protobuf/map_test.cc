@@ -25,6 +25,7 @@
 #include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
+#include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
 #include "google/protobuf/unittest.pb.h"
@@ -37,7 +38,6 @@
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
-#include "google/protobuf/map_test_util.inc"
 #include "google/protobuf/map_test.inc"
 // clang-format on
 
