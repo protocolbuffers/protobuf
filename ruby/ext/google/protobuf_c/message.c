@@ -398,7 +398,7 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       upb_MessageValue msgval =
           upb_Message_GetFieldByDef(Message_Get(_self, NULL), f);
 
-      if (upb_FieldDef_Label(f) == kUpb_Label_Repeated) {
+      if (upb_FieldDef_IsRepeated(f)) {
         // Map repeated fields to a new type with ints
         VALUE arr = rb_ary_new();
         size_t i, n = upb_Array_Size(msgval.array_val);
@@ -592,7 +592,7 @@ static void Message_InitFieldFromValue(upb_Message* msg, const upb_FieldDef* f,
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
     Map_InitFromValue(map, f, val, arena);
-  } else if (upb_FieldDef_Label(f) == kUpb_Label_Repeated) {
+  } else if (upb_FieldDef_IsRepeated(f)) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
     RepeatedField_InitFromValue(arr, f, val, arena);
   } else if (upb_FieldDef_IsSubMessage(f)) {

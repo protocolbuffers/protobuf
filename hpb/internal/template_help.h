@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
-#define GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
+#ifndef GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__
+#define GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__
 
 #include <type_traits>
 
@@ -72,4 +72,4 @@ using add_const_if_T_is_const =
 }  // namespace internal
 }  // namespace hpb
 
-#endif  // GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
+#endif  // GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__

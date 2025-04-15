@@ -383,7 +383,7 @@ PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
 class Type::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Type>()._impl_._has_bits_);
+      decltype(::std::declval<Type>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
 };
@@ -524,7 +524,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Type_class_data_ =
         Type::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Type::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Type::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Type_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Type_class_data_.tc_table);
   return Type_class_data_.base();
@@ -655,7 +656,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
   // string name = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_name().empty()) {
-      const std::string& _s = this_._internal_name();
+      const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.name");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -712,7 +713,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
   // string edition = 7;
   if ((cached_has_bits & 0x00000002u) != 0) {
     if (!this_._internal_edition().empty()) {
-      const std::string& _s = this_._internal_edition();
+      const ::std::string& _s = this_._internal_edition();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
       target = stream->WriteStringMaybeAliased(7, _s, target);
@@ -862,7 +863,7 @@ void Type::CopyFrom(const Type& from) {
 
 
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -888,7 +889,7 @@ void Type::InternalSwap(Type* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 class Field::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Field>()._impl_._has_bits_);
+      decltype(::std::declval<Field>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Field, _impl_._has_bits_);
 };
@@ -1019,7 +1020,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Field_class_data_ =
         Field::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Field::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Field::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Field_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Field_class_data_.tc_table);
   return Field_class_data_.base();
@@ -1204,7 +1206,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   // string name = 4;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_name().empty()) {
-      const std::string& _s = this_._internal_name();
+      const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.name");
       target = stream->WriteStringMaybeAliased(4, _s, target);
@@ -1214,7 +1216,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   // string type_url = 6;
   if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!this_._internal_type_url().empty()) {
-      const std::string& _s = this_._internal_type_url();
+      const ::std::string& _s = this_._internal_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.type_url");
       target = stream->WriteStringMaybeAliased(6, _s, target);
@@ -1253,7 +1255,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   // string json_name = 10;
   if ((this_._impl_._has_bits_[0] & 0x00000004u) != 0) {
     if (!this_._internal_json_name().empty()) {
-      const std::string& _s = this_._internal_json_name();
+      const ::std::string& _s = this_._internal_json_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.json_name");
       target = stream->WriteStringMaybeAliased(10, _s, target);
@@ -1263,7 +1265,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   // string default_value = 11;
   if ((this_._impl_._has_bits_[0] & 0x00000008u) != 0) {
     if (!this_._internal_default_value().empty()) {
-      const std::string& _s = this_._internal_default_value();
+      const ::std::string& _s = this_._internal_default_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.default_value");
       target = stream->WriteStringMaybeAliased(11, _s, target);
@@ -1461,7 +1463,7 @@ void Field::CopyFrom(const Field& from) {
 
 
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1487,7 +1489,7 @@ void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 class Enum::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Enum>()._impl_._has_bits_);
+      decltype(::std::declval<Enum>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
 };
@@ -1622,7 +1624,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Enum_class_data_ =
         Enum::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Enum::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Enum::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Enum_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Enum_class_data_.tc_table);
   return Enum_class_data_.base();
@@ -1746,7 +1749,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   // string name = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_name().empty()) {
-      const std::string& _s = this_._internal_name();
+      const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.name");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -1795,7 +1798,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   // string edition = 6;
   if ((cached_has_bits & 0x00000002u) != 0) {
     if (!this_._internal_edition().empty()) {
-      const std::string& _s = this_._internal_edition();
+      const ::std::string& _s = this_._internal_edition();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
       target = stream->WriteStringMaybeAliased(6, _s, target);
@@ -1935,7 +1938,7 @@ void Enum::CopyFrom(const Enum& from) {
 
 
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1960,7 +1963,7 @@ void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 class EnumValue::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<EnumValue>()._impl_._has_bits_);
+      decltype(::std::declval<EnumValue>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._has_bits_);
 };
@@ -2071,7 +2074,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull EnumValue_class_data_ =
         EnumValue::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL EnumValue::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+EnumValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&EnumValue_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(EnumValue_class_data_.tc_table);
   return EnumValue_class_data_.base();
@@ -2163,7 +2167,7 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   // string name = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_name().empty()) {
-      const std::string& _s = this_._internal_name();
+      const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.EnumValue.name");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -2284,7 +2288,7 @@ void EnumValue::CopyFrom(const EnumValue& from) {
 
 
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -2302,7 +2306,7 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 class Option::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<Option>()._impl_._has_bits_);
+      decltype(::std::declval<Option>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
 };
@@ -2408,7 +2412,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull Option_class_data_ =
         Option::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL Option::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+Option::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Option_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(Option_class_data_.tc_table);
   return Option_class_data_.base();
@@ -2497,7 +2502,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
   // string name = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_name().empty()) {
-      const std::string& _s = this_._internal_name();
+      const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Option.name");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -2597,7 +2602,7 @@ void Option::CopyFrom(const Option& from) {
 
 
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

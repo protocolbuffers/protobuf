@@ -20,6 +20,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/types/span.h"
@@ -177,8 +178,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"Option", "::std::option::Option"},
   });
 
-  auto expected_runtime_version =
-      std::string(absl::StripSuffix(PROTOBUF_RUST_VERSION_STRING, "-dev"));
+  std::string expected_runtime_version = absl::StrReplaceAll(
+      PROTOBUF_RUST_VERSION_STRING, {{"-dev", ""}, {"-rc", "-rc."}});
   if (!absl::StrContains(expected_runtime_version, "-rc")) {
     expected_runtime_version.append("-release");
   }

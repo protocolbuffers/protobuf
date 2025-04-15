@@ -58,6 +58,11 @@ def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     hdrs = []
     hdrs += proto_common.declare_generated_files(
         ctx.actions,
+        extension = ".hpb.h",
+        proto_info = proto_info,
+    )
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
         extension = ".upb.proto.h",
         proto_info = proto_info,
     )

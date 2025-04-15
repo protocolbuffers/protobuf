@@ -109,7 +109,7 @@ namespace protobuf {
 class SourceContext::_Internal {
  public:
   using HasBits =
-      decltype(std::declval<SourceContext>()._impl_._has_bits_);
+      decltype(::std::declval<SourceContext>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._has_bits_);
 };
@@ -204,7 +204,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull SourceContext_class_data_ =
         SourceContext::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL SourceContext::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+SourceContext::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&SourceContext_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(SourceContext_class_data_.tc_table);
   return SourceContext_class_data_.base();
@@ -279,7 +280,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   // string file_name = 1;
   if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!this_._internal_file_name().empty()) {
-      const std::string& _s = this_._internal_file_name();
+      const ::std::string& _s = this_._internal_file_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.SourceContext.file_name");
       target = stream->WriteStringMaybeAliased(1, _s, target);
@@ -354,7 +355,7 @@ void SourceContext::CopyFrom(const SourceContext& from) {
 
 
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

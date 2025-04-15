@@ -87,7 +87,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
   inline FieldMask(FieldMask&& from) noexcept
-      : FieldMask(nullptr, std::move(from)) {}
+      : FieldMask(nullptr, ::std::move(from)) {}
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;
@@ -221,19 +221,19 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 
   public:
   void clear_paths() ;
-  const std::string& paths(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_paths(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& paths(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_paths(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_paths(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_paths();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_paths();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_paths(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& paths() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_paths();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& paths() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_paths();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_paths() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
@@ -260,7 +260,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const FieldMask& from_msg);
-    ::google::protobuf::RepeatedPtrField<std::string> paths_;
+    ::google::protobuf::RepeatedPtrField<::std::string> paths_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -297,26 +297,26 @@ inline void FieldMask::clear_paths() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.paths_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL FieldMask::add_paths()
+inline ::std::string* PROTOBUF_NONNULL FieldMask::add_paths()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_paths()->Add();
+  ::std::string* _s = _internal_mutable_paths()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return _s;
 }
-inline const std::string& FieldMask::paths(int index) const
+inline const ::std::string& FieldMask::paths(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldMask.paths)
   return _internal_paths().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL FieldMask::mutable_paths(int index)
+inline ::std::string* PROTOBUF_NONNULL FieldMask::mutable_paths(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldMask.paths)
   return _internal_mutable_paths()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void FieldMask::set_paths(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_paths()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_paths()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
@@ -324,27 +324,27 @@ template <typename Arg_, typename... Args_>
 inline void FieldMask::add_paths(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_paths(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& FieldMask::paths() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& FieldMask::paths()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldMask.paths)
   return _internal_paths();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FieldMask::mutable_paths() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldMask.paths)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_paths();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 FieldMask::_internal_paths() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.paths_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FieldMask::_internal_mutable_paths() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.paths_;

@@ -89,6 +89,14 @@ Then build the Gem:
     $ rake clobber_package gem
     $ gem install `ls pkg/google-protobuf-*.gem`
 
+If you intend to debug the protobuf_c Ruby bindings with `gdb`, you can also
+build a version with debug symbols enabled by setting the `PROTOBUF_CONFIG`
+enviroment variable when you build the native extension:
+
+```
+$ PROTOBUF_CONFIG=dbg rake
+```
+
 To run the specs:
 
     $ rake test

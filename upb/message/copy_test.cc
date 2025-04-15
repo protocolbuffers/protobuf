@@ -47,6 +47,7 @@ const char kTestStr1[] = "Hello1";
 const char kTestStr2[] = "HelloWorld2";
 const int32_t kTestInt32 = 567;
 const int32_t kTestNestedInt32 = 123;
+const int32_t kTestNestedInt64 = 123456789;
 
 const upb_MiniTableField* find_proto2_field(int field_number) {
   return upb_MiniTable_FindFieldByNumber(
@@ -167,6 +168,9 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
   protobuf_test_messages_proto2_TestAllTypesProto2* msg =
       protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
   ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_bool_set(
+          msg, 0, true, source_arena));
+  ASSERT_TRUE(
       protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_double_set(
           msg, 12, 1200.5, source_arena));
   ASSERT_TRUE(
@@ -178,6 +182,14 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
           source_arena);
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
       nested, kTestNestedInt32);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage* nested2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
+          source_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
+      nested2, kTestNestedInt64);
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_set(
+          msg, 1, nested2, source_arena));
   ASSERT_TRUE(
       protobuf_test_messages_proto2_TestAllTypesProto2_map_string_nested_message_set(
           msg, upb_StringView_FromString("nestedkey1"), nested, source_arena));
@@ -191,6 +203,23 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(nested,
                                                                        0);
   upb_Arena_Free(source_arena);
+  // Test map<int32, bool>.
+  {
+    int32_t key;
+    bool value;
+    size_t iter = kUpb_Map_Begin;
+
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_bool_next(
+            clone, &key, &value, &iter));
+    EXPECT_EQ(key, 0);
+    EXPECT_EQ(value, true);
+
+    ASSERT_FALSE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_bool_next(
+            clone, &key, &value, &iter));
+  }
+
   // Test map<int32, double>.
   {
     int32_t key;
@@ -202,6 +231,28 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
             clone, &key, &value, &iter));
     EXPECT_EQ(key, 12);
     EXPECT_EQ(value, 1200.5);
+
+    ASSERT_FALSE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_double_next(
+            clone, &key, &value, &iter));
+  }
+
+  // Test map<int32, NestedMessage>.
+  {
+    int32_t key;
+    const protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage* value;
+    size_t iter = kUpb_Map_Begin;
+    ASSERT_TRUE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_next(
+            clone, &key, &value, &iter));
+    EXPECT_EQ(key, 1);
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(
+        protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(value),
+        kTestNestedInt64);
+    ASSERT_FALSE(
+        protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_nested_message_next(
+            clone, &key, &value, &iter));
   }
 
   // Test map<string, string>.

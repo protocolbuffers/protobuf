@@ -52,6 +52,19 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
          descriptor->file()->options().java_string_check_utf8();
 }
 
+inline bool CheckLargeEnum(const EnumDescriptor* descriptor) {
+  return JavaGenerator::GetResolvedSourceFeatures(*descriptor)
+      .GetExtension(pb::java)
+      .large_enum();
+}
+
+void GenerateLarge(
+    io::Printer* printer, const EnumDescriptor* descriptor,
+    std::vector<const EnumValueDescriptor*> canonical_values,
+    std::vector<
+        std::pair<const EnumValueDescriptor*, const EnumValueDescriptor*>>
+        aliases,
+    bool immutable_api, Context* context, ClassNameResolver* name_resolver);
 
 // Only the lowest two bytes of the return value are used. The lowest byte
 // is the integer value of a j/c/g/protobuf/FieldType enum. For the other

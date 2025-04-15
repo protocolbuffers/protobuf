@@ -1,16 +1,3 @@
 # This is a WORKSPACE file used by bzlmod in combination with MODULE.bazel.
 # It's used for a gradual migration and it should be empty.
 # Don't remove this file. If the file doesn't exist, bzlmod falls back to WORKSPACE file.
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-# Following are just needed to run conformance tests, not really needed to support them via MODULE.bazel
-
-# Needed for checking breaking changes from the previous release version.
-load("//:protobuf_version.bzl", "PROTOBUF_PREVIOUS_RELEASE")
-
-http_archive(
-    name = "com_google_protobuf_previous_release",
-    strip_prefix = "protobuf-" + PROTOBUF_PREVIOUS_RELEASE,
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
-)

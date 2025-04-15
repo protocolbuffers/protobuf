@@ -319,16 +319,12 @@ std::string IntToString(int32_t value) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      return "optional";
-    case FieldDescriptor::LABEL_REQUIRED:
-      return "required";
-    case FieldDescriptor::LABEL_REPEATED:
-      return "repeated";
-    default:
-      assert(false);
-      return "";
+  if (field->is_required()) {
+    return "required";
+  } else if (field->is_repeated()) {
+    return "repeated";
+  } else {
+    return "optional";
   }
 }
 
@@ -380,7 +376,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, "[]|");
     }
-    type = absl::StrCat(type, "[]");
+    absl::StrAppend(&type, "[]");
   }
   return type;
 }

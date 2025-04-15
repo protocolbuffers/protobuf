@@ -699,7 +699,6 @@ class PROTOBUF_EXPORT MessageLite {
   bool MergePartialFromString(absl::string_view data);
   bool MergePartialFromString(const absl::Cord& data);
 
-
   // Serialization ---------------------------------------------------
   // Methods for serializing in protocol buffer format.  Most of these
   // are just simple wrappers around ByteSize() and SerializeWithCachedSizes().

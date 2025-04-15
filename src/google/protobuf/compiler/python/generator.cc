@@ -1176,7 +1176,6 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
   m["number"] = absl::StrCat(field.number());
   m["type"] = absl::StrCat(field.type());
   m["cpp_type"] = absl::StrCat(field.cpp_type());
-  m["label"] = absl::StrCat(field.label());
   m["has_default_value"] = field.has_default_value() ? "True" : "False";
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = field.is_extension() ? "True" : "False";
@@ -1184,6 +1183,13 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
   m["json_name"] = field.has_json_name()
                        ? absl::StrCat(", json_name='", field.json_name(), "'")
                        : "";
+  if (field.is_required()) {
+    m["label"] = absl::StrCat(FieldDescriptor::Label::LABEL_REQUIRED);
+  } else if (field.is_repeated()) {
+    m["label"] = absl::StrCat(FieldDescriptor::Label::LABEL_REPEATED);
+  } else {
+    m["label"] = absl::StrCat(FieldDescriptor::Label::LABEL_OPTIONAL);
+  }
   // We always set message_type and enum_type to None at this point, and then
   // these fields in correctly after all referenced descriptors have been
   // defined and/or imported (see FixForeignFieldsInDescriptors()).

@@ -11,10 +11,10 @@
 
 #include <initializer_list>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "absl/types/variant.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/base/internal/endian.h"
 #include "upb/base/upcast.h"
@@ -55,7 +55,7 @@ struct Group {
 
 struct UnknownField {
   uint32_t field_number;
-  absl::variant<Varint, LongVarint, Delimited, Fixed64, Fixed32, Group> value;
+  std::variant<Varint, LongVarint, Delimited, Fixed64, Fixed32, Group> value;
 };
 
 Group::Group(std::initializer_list<UnknownField> _val) : val(_val) {}
@@ -73,27 +73,27 @@ std::string ToBinaryPayload(const UnknownFields& fields) {
   std::string ret;
 
   for (const auto& field : fields) {
-    if (const auto* val = absl::get_if<Varint>(&field.value)) {
+    if (const auto* val = std::get_if<Varint>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_Varint, &ret);
       EncodeVarint(val->val, &ret);
-    } else if (const auto* val = absl::get_if<LongVarint>(&field.value)) {
+    } else if (const auto* val = std::get_if<LongVarint>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_Varint, &ret);
       EncodeVarint(val->val, &ret);
       ret.back() |= 0x80;
       ret.push_back(0);
-    } else if (const auto* val = absl::get_if<Delimited>(&field.value)) {
+    } else if (const auto* val = std::get_if<Delimited>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_Delimited, &ret);
       EncodeVarint(val->val.size(), &ret);
       ret.append(val->val);
-    } else if (const auto* val = absl::get_if<Fixed64>(&field.value)) {
+    } else if (const auto* val = std::get_if<Fixed64>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_64Bit, &ret);
       uint64_t swapped = upb_BigEndian64(val->val);
       ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
-    } else if (const auto* val = absl::get_if<Fixed32>(&field.value)) {
+    } else if (const auto* val = std::get_if<Fixed32>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_32Bit, &ret);
       uint32_t swapped = upb_BigEndian32(val->val);
       ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
-    } else if (const auto* val = absl::get_if<Group>(&field.value)) {
+    } else if (const auto* val = std::get_if<Group>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_StartGroup, &ret);
       ret.append(ToBinaryPayload(val->val));
       EncodeVarint(field.field_number << 3 | kUpb_WireType_EndGroup, &ret);

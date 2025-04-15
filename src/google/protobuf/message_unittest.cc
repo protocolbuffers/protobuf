@@ -40,7 +40,6 @@
 
 // Must include after the above macros.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/message_unittest.inc"
 #include "google/protobuf/message_unittest_legacy_apis.inc"
 // clang-format on

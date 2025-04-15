@@ -205,7 +205,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull FieldMask_class_data_ =
         FieldMask::InternalGenerateClassData_();
 
-const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL FieldMask::GetClassData() const {
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+FieldMask::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldMask_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(FieldMask_class_data_.tc_table);
   return FieldMask_class_data_.base();
@@ -341,7 +342,7 @@ void FieldMask::CopyFrom(const FieldMask& from) {
 
 
 void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using std::swap;
+  using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }

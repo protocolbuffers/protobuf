@@ -70,7 +70,6 @@ protobuf_versioned_kt_jvm_library(
 kt_jvm_export(
     name = "kotlin-lite_mvn",
     deploy_env = [
-        "@rules_kotlin//kotlin/compiler:kotlin-stdlib",
         "//java/lite",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,

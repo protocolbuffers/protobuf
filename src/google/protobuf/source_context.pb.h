@@ -87,7 +87,7 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
 
   inline SourceContext(const SourceContext& from) : SourceContext(nullptr, from) {}
   inline SourceContext(SourceContext&& from) noexcept
-      : SourceContext(nullptr, std::move(from)) {}
+      : SourceContext(nullptr, ::std::move(from)) {}
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;
@@ -216,17 +216,17 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
   };
   // string file_name = 1;
   void clear_file_name() ;
-  const std::string& file_name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& file_name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_file_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_file_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_file_name();
-  void set_allocated_file_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_file_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_file_name();
+  void set_allocated_file_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_file_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_file_name();
+  const ::std::string& _internal_file_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_file_name();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
@@ -286,7 +286,7 @@ inline void SourceContext::clear_file_name() {
   _impl_.file_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& SourceContext::file_name() const
+inline const ::std::string& SourceContext::file_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return _internal_file_name();
@@ -298,27 +298,27 @@ PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg, Args_... ar
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
-inline std::string* PROTOBUF_NONNULL SourceContext::mutable_file_name()
+inline ::std::string* PROTOBUF_NONNULL SourceContext::mutable_file_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_file_name();
+  ::std::string* _s = _internal_mutable_file_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return _s;
 }
-inline const std::string& SourceContext::_internal_file_name() const {
+inline const ::std::string& SourceContext::_internal_file_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.file_name_.Get();
 }
-inline void SourceContext::_internal_set_file_name(const std::string& value) {
+inline void SourceContext::_internal_set_file_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.file_name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL SourceContext::_internal_mutable_file_name() {
+inline ::std::string* PROTOBUF_NONNULL SourceContext::_internal_mutable_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.file_name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
+inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -331,7 +331,7 @@ inline std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
   }
   return released;
 }
-inline void SourceContext::set_allocated_file_name(std::string* PROTOBUF_NULLABLE value) {
+inline void SourceContext::set_allocated_file_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;

@@ -71,10 +71,10 @@ class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
     return new SimpleDescriptorDatabaseTestCase;
   }
 
-  virtual ~SimpleDescriptorDatabaseTestCase() {}
+  ~SimpleDescriptorDatabaseTestCase() override {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  DescriptorDatabase* GetDatabase() override { return &database_; }
+  bool AddToDatabase(const FileDescriptorProto& file) override {
     return database_.Add(file);
   }
 
@@ -89,10 +89,10 @@ class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
     return new EncodedDescriptorDatabaseTestCase;
   }
 
-  virtual ~EncodedDescriptorDatabaseTestCase() {}
+  ~EncodedDescriptorDatabaseTestCase() override {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  DescriptorDatabase* GetDatabase() override { return &database_; }
+  bool AddToDatabase(const FileDescriptorProto& file) override {
     std::string data;
     file.SerializeToString(&data);
     return database_.AddCopy(data.data(), data.size());
@@ -110,10 +110,10 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
   }
 
   DescriptorPoolDatabaseTestCase() : database_(pool_) {}
-  virtual ~DescriptorPoolDatabaseTestCase() {}
+  ~DescriptorPoolDatabaseTestCase() override {}
 
-  virtual DescriptorDatabase* GetDatabase() { return &database_; }
-  virtual bool AddToDatabase(const FileDescriptorProto& file) {
+  DescriptorDatabase* GetDatabase() override { return &database_; }
+  bool AddToDatabase(const FileDescriptorProto& file) override {
     return pool_.BuildFile(file);
   }
 
@@ -127,7 +127,7 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
 class DescriptorDatabaseTest
     : public testing::TestWithParam<DescriptorDatabaseTestCaseFactory*> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     test_case_.reset(GetParam()());
     database_ = test_case_->GetDatabase();
   }

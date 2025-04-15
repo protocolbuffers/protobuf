@@ -318,19 +318,19 @@ inline bool ExtensionRangeOptions_VerificationState_IsValid(int value) {
 inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL ExtensionRangeOptions_VerificationState_descriptor();
 template <typename T>
-const std::string& ExtensionRangeOptions_VerificationState_Name(T value) {
-  static_assert(std::is_same<T, ExtensionRangeOptions_VerificationState>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& ExtensionRangeOptions_VerificationState_Name(T value) {
+  static_assert(::std::is_same<T, ExtensionRangeOptions_VerificationState>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to VerificationState_Name().");
   return ExtensionRangeOptions_VerificationState_Name(static_cast<ExtensionRangeOptions_VerificationState>(value));
 }
 template <>
-inline const std::string& ExtensionRangeOptions_VerificationState_Name(ExtensionRangeOptions_VerificationState value) {
+inline const ::std::string& ExtensionRangeOptions_VerificationState_Name(ExtensionRangeOptions_VerificationState value) {
   return ::google::protobuf::internal::NameOfDenseEnum<ExtensionRangeOptions_VerificationState_descriptor, 0, 1>(
       static_cast<int>(value));
 }
 inline bool ExtensionRangeOptions_VerificationState_Parse(
-    absl::string_view name, ExtensionRangeOptions_VerificationState* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, ExtensionRangeOptions_VerificationState* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<ExtensionRangeOptions_VerificationState>(ExtensionRangeOptions_VerificationState_descriptor(), name,
                                            value);
 }
@@ -366,19 +366,19 @@ inline bool FieldDescriptorProto_Type_IsValid(int value) {
 inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Type_descriptor();
 template <typename T>
-const std::string& FieldDescriptorProto_Type_Name(T value) {
-  static_assert(std::is_same<T, FieldDescriptorProto_Type>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldDescriptorProto_Type_Name(T value) {
+  static_assert(::std::is_same<T, FieldDescriptorProto_Type>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to Type_Name().");
   return FieldDescriptorProto_Type_Name(static_cast<FieldDescriptorProto_Type>(value));
 }
 template <>
-inline const std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
+inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Type_descriptor, 1, 18>(
       static_cast<int>(value));
 }
 inline bool FieldDescriptorProto_Type_Parse(
-    absl::string_view name, FieldDescriptorProto_Type* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldDescriptorProto_Type* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldDescriptorProto_Type>(FieldDescriptorProto_Type_descriptor(), name,
                                            value);
 }
@@ -399,19 +399,19 @@ inline bool FieldDescriptorProto_Label_IsValid(int value) {
 inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Label_descriptor();
 template <typename T>
-const std::string& FieldDescriptorProto_Label_Name(T value) {
-  static_assert(std::is_same<T, FieldDescriptorProto_Label>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldDescriptorProto_Label_Name(T value) {
+  static_assert(::std::is_same<T, FieldDescriptorProto_Label>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to Label_Name().");
   return FieldDescriptorProto_Label_Name(static_cast<FieldDescriptorProto_Label>(value));
 }
 template <>
-inline const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
+inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Label_descriptor, 1, 3>(
       static_cast<int>(value));
 }
 inline bool FieldDescriptorProto_Label_Parse(
-    absl::string_view name, FieldDescriptorProto_Label* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldDescriptorProto_Label* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldDescriptorProto_Label>(FieldDescriptorProto_Label_descriptor(), name,
                                            value);
 }
@@ -432,19 +432,19 @@ inline bool FileOptions_OptimizeMode_IsValid(int value) {
 inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FileOptions_OptimizeMode_descriptor();
 template <typename T>
-const std::string& FileOptions_OptimizeMode_Name(T value) {
-  static_assert(std::is_same<T, FileOptions_OptimizeMode>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FileOptions_OptimizeMode_Name(T value) {
+  static_assert(::std::is_same<T, FileOptions_OptimizeMode>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to OptimizeMode_Name().");
   return FileOptions_OptimizeMode_Name(static_cast<FileOptions_OptimizeMode>(value));
 }
 template <>
-inline const std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
+inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FileOptions_OptimizeMode_descriptor, 1, 3>(
       static_cast<int>(value));
 }
 inline bool FileOptions_OptimizeMode_Parse(
-    absl::string_view name, FileOptions_OptimizeMode* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FileOptions_OptimizeMode* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FileOptions_OptimizeMode>(FileOptions_OptimizeMode_descriptor(), name,
                                            value);
 }
@@ -465,19 +465,19 @@ inline bool FieldOptions_CType_IsValid(int value) {
 inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_CType_descriptor();
 template <typename T>
-const std::string& FieldOptions_CType_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_CType>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldOptions_CType_Name(T value) {
+  static_assert(::std::is_same<T, FieldOptions_CType>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to CType_Name().");
   return FieldOptions_CType_Name(static_cast<FieldOptions_CType>(value));
 }
 template <>
-inline const std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
+inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_CType_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FieldOptions_CType_Parse(
-    absl::string_view name, FieldOptions_CType* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldOptions_CType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldOptions_CType>(FieldOptions_CType_descriptor(), name,
                                            value);
 }
@@ -498,19 +498,19 @@ inline bool FieldOptions_JSType_IsValid(int value) {
 inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_JSType_descriptor();
 template <typename T>
-const std::string& FieldOptions_JSType_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_JSType>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldOptions_JSType_Name(T value) {
+  static_assert(::std::is_same<T, FieldOptions_JSType>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to JSType_Name().");
   return FieldOptions_JSType_Name(static_cast<FieldOptions_JSType>(value));
 }
 template <>
-inline const std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
+inline const ::std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_JSType_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FieldOptions_JSType_Parse(
-    absl::string_view name, FieldOptions_JSType* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldOptions_JSType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldOptions_JSType>(FieldOptions_JSType_descriptor(), name,
                                            value);
 }
@@ -531,19 +531,19 @@ inline bool FieldOptions_OptionRetention_IsValid(int value) {
 inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionRetention_descriptor();
 template <typename T>
-const std::string& FieldOptions_OptionRetention_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_OptionRetention>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldOptions_OptionRetention_Name(T value) {
+  static_assert(::std::is_same<T, FieldOptions_OptionRetention>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to OptionRetention_Name().");
   return FieldOptions_OptionRetention_Name(static_cast<FieldOptions_OptionRetention>(value));
 }
 template <>
-inline const std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionRetention value) {
+inline const ::std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionRetention value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionRetention_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FieldOptions_OptionRetention_Parse(
-    absl::string_view name, FieldOptions_OptionRetention* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldOptions_OptionRetention* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldOptions_OptionRetention>(FieldOptions_OptionRetention_descriptor(), name,
                                            value);
 }
@@ -571,19 +571,19 @@ inline bool FieldOptions_OptionTargetType_IsValid(int value) {
 inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionTargetType_descriptor();
 template <typename T>
-const std::string& FieldOptions_OptionTargetType_Name(T value) {
-  static_assert(std::is_same<T, FieldOptions_OptionTargetType>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FieldOptions_OptionTargetType_Name(T value) {
+  static_assert(::std::is_same<T, FieldOptions_OptionTargetType>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to OptionTargetType_Name().");
   return FieldOptions_OptionTargetType_Name(static_cast<FieldOptions_OptionTargetType>(value));
 }
 template <>
-inline const std::string& FieldOptions_OptionTargetType_Name(FieldOptions_OptionTargetType value) {
+inline const ::std::string& FieldOptions_OptionTargetType_Name(FieldOptions_OptionTargetType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionTargetType_descriptor, 0, 9>(
       static_cast<int>(value));
 }
 inline bool FieldOptions_OptionTargetType_Parse(
-    absl::string_view name, FieldOptions_OptionTargetType* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FieldOptions_OptionTargetType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FieldOptions_OptionTargetType>(FieldOptions_OptionTargetType_descriptor(), name,
                                            value);
 }
@@ -604,19 +604,19 @@ inline bool MethodOptions_IdempotencyLevel_IsValid(int value) {
 inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_IdempotencyLevel_descriptor();
 template <typename T>
-const std::string& MethodOptions_IdempotencyLevel_Name(T value) {
-  static_assert(std::is_same<T, MethodOptions_IdempotencyLevel>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& MethodOptions_IdempotencyLevel_Name(T value) {
+  static_assert(::std::is_same<T, MethodOptions_IdempotencyLevel>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to IdempotencyLevel_Name().");
   return MethodOptions_IdempotencyLevel_Name(static_cast<MethodOptions_IdempotencyLevel>(value));
 }
 template <>
-inline const std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
+inline const ::std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
   return ::google::protobuf::internal::NameOfDenseEnum<MethodOptions_IdempotencyLevel_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool MethodOptions_IdempotencyLevel_Parse(
-    absl::string_view name, MethodOptions_IdempotencyLevel* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, MethodOptions_IdempotencyLevel* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(MethodOptions_IdempotencyLevel_descriptor(), name,
                                            value);
 }
@@ -639,19 +639,19 @@ inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_IsValid(int val
 inline constexpr int FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_ARRAYSIZE = 4 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
 template <typename T>
-const std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to DefaultSymbolVisibility_Name().");
   return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(value));
 }
 template <>
-inline const std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
+inline const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor, 0, 4>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(
-    absl::string_view name, FeatureSet_VisibilityFeature_DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_VisibilityFeature_DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor(), name,
                                            value);
 }
@@ -673,19 +673,19 @@ inline bool FeatureSet_FieldPresence_IsValid(int value) {
 inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor();
 template <typename T>
-const std::string& FeatureSet_FieldPresence_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_FieldPresence>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_FieldPresence_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_FieldPresence>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to FieldPresence_Name().");
   return FeatureSet_FieldPresence_Name(static_cast<FeatureSet_FieldPresence>(value));
 }
 template <>
-inline const std::string& FeatureSet_FieldPresence_Name(FeatureSet_FieldPresence value) {
+inline const ::std::string& FeatureSet_FieldPresence_Name(FeatureSet_FieldPresence value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_FieldPresence_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_FieldPresence_Parse(
-    absl::string_view name, FeatureSet_FieldPresence* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_FieldPresence* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_FieldPresence>(FeatureSet_FieldPresence_descriptor(), name,
                                            value);
 }
@@ -706,19 +706,19 @@ inline bool FeatureSet_EnumType_IsValid(int value) {
 inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor();
 template <typename T>
-const std::string& FeatureSet_EnumType_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_EnumType>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_EnumType_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_EnumType>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to EnumType_Name().");
   return FeatureSet_EnumType_Name(static_cast<FeatureSet_EnumType>(value));
 }
 template <>
-inline const std::string& FeatureSet_EnumType_Name(FeatureSet_EnumType value) {
+inline const ::std::string& FeatureSet_EnumType_Name(FeatureSet_EnumType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_EnumType_Parse(
-    absl::string_view name, FeatureSet_EnumType* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_EnumType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_EnumType>(FeatureSet_EnumType_descriptor(), name,
                                            value);
 }
@@ -739,19 +739,19 @@ inline bool FeatureSet_RepeatedFieldEncoding_IsValid(int value) {
 inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor();
 template <typename T>
-const std::string& FeatureSet_RepeatedFieldEncoding_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_RepeatedFieldEncoding>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_RepeatedFieldEncoding>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to RepeatedFieldEncoding_Name().");
   return FeatureSet_RepeatedFieldEncoding_Name(static_cast<FeatureSet_RepeatedFieldEncoding>(value));
 }
 template <>
-inline const std::string& FeatureSet_RepeatedFieldEncoding_Name(FeatureSet_RepeatedFieldEncoding value) {
+inline const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(FeatureSet_RepeatedFieldEncoding value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_RepeatedFieldEncoding_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_RepeatedFieldEncoding_Parse(
-    absl::string_view name, FeatureSet_RepeatedFieldEncoding* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_RepeatedFieldEncoding* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_RepeatedFieldEncoding>(FeatureSet_RepeatedFieldEncoding_descriptor(), name,
                                            value);
 }
@@ -772,19 +772,19 @@ inline bool FeatureSet_Utf8Validation_IsValid(int value) {
 inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor();
 template <typename T>
-const std::string& FeatureSet_Utf8Validation_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_Utf8Validation>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_Utf8Validation_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_Utf8Validation>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to Utf8Validation_Name().");
   return FeatureSet_Utf8Validation_Name(static_cast<FeatureSet_Utf8Validation>(value));
 }
 template <>
-inline const std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
+inline const ::std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_Utf8Validation_Parse(
-    absl::string_view name, FeatureSet_Utf8Validation* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_Utf8Validation* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_Utf8Validation>(FeatureSet_Utf8Validation_descriptor(), name,
                                            value);
 }
@@ -805,19 +805,19 @@ inline bool FeatureSet_MessageEncoding_IsValid(int value) {
 inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor();
 template <typename T>
-const std::string& FeatureSet_MessageEncoding_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_MessageEncoding>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_MessageEncoding_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_MessageEncoding>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to MessageEncoding_Name().");
   return FeatureSet_MessageEncoding_Name(static_cast<FeatureSet_MessageEncoding>(value));
 }
 template <>
-inline const std::string& FeatureSet_MessageEncoding_Name(FeatureSet_MessageEncoding value) {
+inline const ::std::string& FeatureSet_MessageEncoding_Name(FeatureSet_MessageEncoding value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_MessageEncoding_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_MessageEncoding_Parse(
-    absl::string_view name, FeatureSet_MessageEncoding* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_MessageEncoding* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_MessageEncoding>(FeatureSet_MessageEncoding_descriptor(), name,
                                            value);
 }
@@ -838,19 +838,19 @@ inline bool FeatureSet_JsonFormat_IsValid(int value) {
 inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor();
 template <typename T>
-const std::string& FeatureSet_JsonFormat_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_JsonFormat>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_JsonFormat_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_JsonFormat>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to JsonFormat_Name().");
   return FeatureSet_JsonFormat_Name(static_cast<FeatureSet_JsonFormat>(value));
 }
 template <>
-inline const std::string& FeatureSet_JsonFormat_Name(FeatureSet_JsonFormat value) {
+inline const ::std::string& FeatureSet_JsonFormat_Name(FeatureSet_JsonFormat value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_JsonFormat_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_JsonFormat_Parse(
-    absl::string_view name, FeatureSet_JsonFormat* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_JsonFormat* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_JsonFormat>(FeatureSet_JsonFormat_descriptor(), name,
                                            value);
 }
@@ -871,19 +871,19 @@ inline bool FeatureSet_EnforceNamingStyle_IsValid(int value) {
 inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnforceNamingStyle_descriptor();
 template <typename T>
-const std::string& FeatureSet_EnforceNamingStyle_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_EnforceNamingStyle>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& FeatureSet_EnforceNamingStyle_Name(T value) {
+  static_assert(::std::is_same<T, FeatureSet_EnforceNamingStyle>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to EnforceNamingStyle_Name().");
   return FeatureSet_EnforceNamingStyle_Name(static_cast<FeatureSet_EnforceNamingStyle>(value));
 }
 template <>
-inline const std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
+inline const ::std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_EnforceNamingStyle_Parse(
-    absl::string_view name, FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_EnforceNamingStyle>(FeatureSet_EnforceNamingStyle_descriptor(), name,
                                            value);
 }
@@ -904,19 +904,19 @@ inline bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
 inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor();
 template <typename T>
-const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(T value) {
-  static_assert(std::is_same<T, GeneratedCodeInfo_Annotation_Semantic>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(T value) {
+  static_assert(::std::is_same<T, GeneratedCodeInfo_Annotation_Semantic>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to Semantic_Name().");
   return GeneratedCodeInfo_Annotation_Semantic_Name(static_cast<GeneratedCodeInfo_Annotation_Semantic>(value));
 }
 template <>
-inline const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value) {
+inline const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value) {
   return ::google::protobuf::internal::NameOfDenseEnum<GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(
-    absl::string_view name, GeneratedCodeInfo_Annotation_Semantic* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, GeneratedCodeInfo_Annotation_Semantic* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<GeneratedCodeInfo_Annotation_Semantic>(GeneratedCodeInfo_Annotation_Semantic_descriptor(), name,
                                            value);
 }
@@ -945,14 +945,14 @@ inline bool Edition_IsValid(int value) {
 }
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor();
 template <typename T>
-const std::string& Edition_Name(T value) {
-  static_assert(std::is_same<T, Edition>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& Edition_Name(T value) {
+  static_assert(::std::is_same<T, Edition>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to Edition_Name().");
   return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
 }
 inline bool Edition_Parse(
-    absl::string_view name, Edition* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, Edition* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<Edition>(Edition_descriptor(), name,
                                            value);
 }
@@ -973,19 +973,19 @@ inline bool SymbolVisibility_IsValid(int value) {
 inline constexpr int SymbolVisibility_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor();
 template <typename T>
-const std::string& SymbolVisibility_Name(T value) {
-  static_assert(std::is_same<T, SymbolVisibility>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& SymbolVisibility_Name(T value) {
+  static_assert(::std::is_same<T, SymbolVisibility>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to SymbolVisibility_Name().");
   return SymbolVisibility_Name(static_cast<SymbolVisibility>(value));
 }
 template <>
-inline const std::string& SymbolVisibility_Name(SymbolVisibility value) {
+inline const ::std::string& SymbolVisibility_Name(SymbolVisibility value) {
   return ::google::protobuf::internal::NameOfDenseEnum<SymbolVisibility_descriptor, 0, 2>(
       static_cast<int>(value));
 }
 inline bool SymbolVisibility_Parse(
-    absl::string_view name, SymbolVisibility* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, SymbolVisibility* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<SymbolVisibility>(SymbolVisibility_descriptor(), name,
                                            value);
 }
@@ -1013,7 +1013,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 
   inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : UninterpretedOption_NamePart(nullptr, from) {}
   inline UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
-      : UninterpretedOption_NamePart(nullptr, std::move(from)) {}
+      : UninterpretedOption_NamePart(nullptr, ::std::move(from)) {}
   inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
     CopyFrom(from);
     return *this;
@@ -1149,17 +1149,17 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   // required string name_part = 1;
   bool has_name_part() const;
   void clear_name_part() ;
-  const std::string& name_part() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name_part() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name_part(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name_part();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name_part();
-  void set_allocated_name_part(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name_part();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name_part();
+  void set_allocated_name_part(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name_part() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name_part();
+  const ::std::string& _internal_name_part() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name_part();
 
   public:
   // required bool is_extension = 2;
@@ -1228,7 +1228,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : SourceCodeInfo_Location(nullptr, from) {}
   inline SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
-      : SourceCodeInfo_Location(nullptr, std::move(from)) {}
+      : SourceCodeInfo_Location(nullptr, ::std::move(from)) {}
   inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
     CopyFrom(from);
     return *this;
@@ -1402,51 +1402,51 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   public:
   void clear_leading_detached_comments() ;
-  const std::string& leading_detached_comments(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_leading_detached_comments(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& leading_detached_comments(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_leading_detached_comments(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_leading_detached_comments(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_leading_detached_comments();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_leading_detached_comments();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_leading_detached_comments(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& leading_detached_comments() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_leading_detached_comments();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& leading_detached_comments() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_leading_detached_comments();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_leading_detached_comments() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_leading_detached_comments();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_leading_detached_comments() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_leading_detached_comments();
 
   public:
   // optional string leading_comments = 3;
   bool has_leading_comments() const;
   void clear_leading_comments() ;
-  const std::string& leading_comments() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& leading_comments() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_leading_comments(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_leading_comments();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_leading_comments();
-  void set_allocated_leading_comments(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_leading_comments();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_leading_comments();
+  void set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_leading_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
+  const ::std::string& _internal_leading_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
 
   public:
   // optional string trailing_comments = 4;
   bool has_trailing_comments() const;
   void clear_trailing_comments() ;
-  const std::string& trailing_comments() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& trailing_comments() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_trailing_comments(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_trailing_comments();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_trailing_comments();
-  void set_allocated_trailing_comments(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_trailing_comments();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_trailing_comments();
+  void set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_trailing_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
+  const ::std::string& _internal_trailing_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
@@ -1479,7 +1479,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::RepeatedField<::int32_t> span_;
     ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
-    ::google::protobuf::RepeatedPtrField<std::string> leading_detached_comments_;
+    ::google::protobuf::RepeatedPtrField<::std::string> leading_detached_comments_;
     ::google::protobuf::internal::ArenaStringPtr leading_comments_;
     ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1509,7 +1509,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : GeneratedCodeInfo_Annotation(nullptr, from) {}
   inline GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
-      : GeneratedCodeInfo_Annotation(nullptr, std::move(from)) {}
+      : GeneratedCodeInfo_Annotation(nullptr, ::std::move(from)) {}
   inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
     CopyFrom(from);
     return *this;
@@ -1645,11 +1645,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     return GeneratedCodeInfo_Annotation_Semantic_descriptor();
   }
   template <typename T>
-  static inline const std::string& Semantic_Name(T value) {
+  static inline const ::std::string& Semantic_Name(T value) {
     return GeneratedCodeInfo_Annotation_Semantic_Name(value);
   }
   static inline bool Semantic_Parse(
-      absl::string_view name, Semantic* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, Semantic* PROTOBUF_NONNULL value) {
     return GeneratedCodeInfo_Annotation_Semantic_Parse(name, value);
   }
 
@@ -1682,17 +1682,17 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   // optional string source_file = 2;
   bool has_source_file() const;
   void clear_source_file() ;
-  const std::string& source_file() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& source_file() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_source_file(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_source_file();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_source_file();
-  void set_allocated_source_file(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_source_file();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_source_file();
+  void set_allocated_source_file(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_source_file() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_source_file();
+  const ::std::string& _internal_source_file() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_source_file();
 
   public:
   // optional int32 begin = 3;
@@ -1787,7 +1787,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   inline FieldOptions_FeatureSupport(const FieldOptions_FeatureSupport& from) : FieldOptions_FeatureSupport(nullptr, from) {}
   inline FieldOptions_FeatureSupport(FieldOptions_FeatureSupport&& from) noexcept
-      : FieldOptions_FeatureSupport(nullptr, std::move(from)) {}
+      : FieldOptions_FeatureSupport(nullptr, ::std::move(from)) {}
   inline FieldOptions_FeatureSupport& operator=(const FieldOptions_FeatureSupport& from) {
     CopyFrom(from);
     return *this;
@@ -1920,17 +1920,17 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   // optional string deprecation_warning = 3;
   bool has_deprecation_warning() const;
   void clear_deprecation_warning() ;
-  const std::string& deprecation_warning() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& deprecation_warning() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_deprecation_warning(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_deprecation_warning();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_deprecation_warning();
-  void set_allocated_deprecation_warning(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_deprecation_warning();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_deprecation_warning();
+  void set_allocated_deprecation_warning(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_deprecation_warning() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_deprecation_warning();
+  const ::std::string& _internal_deprecation_warning() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_deprecation_warning();
 
   public:
   // optional .google.protobuf.Edition edition_introduced = 1;
@@ -2023,7 +2023,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 
   inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : FieldOptions_EditionDefault(nullptr, from) {}
   inline FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
-      : FieldOptions_EditionDefault(nullptr, std::move(from)) {}
+      : FieldOptions_EditionDefault(nullptr, ::std::move(from)) {}
   inline FieldOptions_EditionDefault& operator=(const FieldOptions_EditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -2154,17 +2154,17 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   // optional string value = 2;
   bool has_value() const;
   void clear_value() ;
-  const std::string& value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_value();
-  void set_allocated_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
+  void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
 
   public:
   // optional .google.protobuf.Edition edition = 3;
@@ -2232,7 +2232,7 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
 
   inline FeatureSet_VisibilityFeature(const FeatureSet_VisibilityFeature& from) : FeatureSet_VisibilityFeature(nullptr, from) {}
   inline FeatureSet_VisibilityFeature(FeatureSet_VisibilityFeature&& from) noexcept
-      : FeatureSet_VisibilityFeature(nullptr, std::move(from)) {}
+      : FeatureSet_VisibilityFeature(nullptr, ::std::move(from)) {}
   inline FeatureSet_VisibilityFeature& operator=(const FeatureSet_VisibilityFeature& from) {
     CopyFrom(from);
     return *this;
@@ -2343,11 +2343,11 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
     return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
   }
   template <typename T>
-  static inline const std::string& DefaultSymbolVisibility_Name(T value) {
+  static inline const ::std::string& DefaultSymbolVisibility_Name(T value) {
     return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(value);
   }
   static inline bool DefaultSymbolVisibility_Parse(
-      absl::string_view name, DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
     return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(name, value);
   }
 
@@ -2402,7 +2402,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   inline FeatureSet(const FeatureSet& from) : FeatureSet(nullptr, from) {}
   inline FeatureSet(FeatureSet&& from) noexcept
-      : FeatureSet(nullptr, std::move(from)) {}
+      : FeatureSet(nullptr, ::std::move(from)) {}
   inline FeatureSet& operator=(const FeatureSet& from) {
     CopyFrom(from);
     return *this;
@@ -2545,11 +2545,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_FieldPresence_descriptor();
   }
   template <typename T>
-  static inline const std::string& FieldPresence_Name(T value) {
+  static inline const ::std::string& FieldPresence_Name(T value) {
     return FeatureSet_FieldPresence_Name(value);
   }
   static inline bool FieldPresence_Parse(
-      absl::string_view name, FieldPresence* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, FieldPresence* PROTOBUF_NONNULL value) {
     return FeatureSet_FieldPresence_Parse(name, value);
   }
   using EnumType = FeatureSet_EnumType;
@@ -2566,11 +2566,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_EnumType_descriptor();
   }
   template <typename T>
-  static inline const std::string& EnumType_Name(T value) {
+  static inline const ::std::string& EnumType_Name(T value) {
     return FeatureSet_EnumType_Name(value);
   }
   static inline bool EnumType_Parse(
-      absl::string_view name, EnumType* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, EnumType* PROTOBUF_NONNULL value) {
     return FeatureSet_EnumType_Parse(name, value);
   }
   using RepeatedFieldEncoding = FeatureSet_RepeatedFieldEncoding;
@@ -2587,11 +2587,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_RepeatedFieldEncoding_descriptor();
   }
   template <typename T>
-  static inline const std::string& RepeatedFieldEncoding_Name(T value) {
+  static inline const ::std::string& RepeatedFieldEncoding_Name(T value) {
     return FeatureSet_RepeatedFieldEncoding_Name(value);
   }
   static inline bool RepeatedFieldEncoding_Parse(
-      absl::string_view name, RepeatedFieldEncoding* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, RepeatedFieldEncoding* PROTOBUF_NONNULL value) {
     return FeatureSet_RepeatedFieldEncoding_Parse(name, value);
   }
   using Utf8Validation = FeatureSet_Utf8Validation;
@@ -2608,11 +2608,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_Utf8Validation_descriptor();
   }
   template <typename T>
-  static inline const std::string& Utf8Validation_Name(T value) {
+  static inline const ::std::string& Utf8Validation_Name(T value) {
     return FeatureSet_Utf8Validation_Name(value);
   }
   static inline bool Utf8Validation_Parse(
-      absl::string_view name, Utf8Validation* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, Utf8Validation* PROTOBUF_NONNULL value) {
     return FeatureSet_Utf8Validation_Parse(name, value);
   }
   using MessageEncoding = FeatureSet_MessageEncoding;
@@ -2629,11 +2629,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_MessageEncoding_descriptor();
   }
   template <typename T>
-  static inline const std::string& MessageEncoding_Name(T value) {
+  static inline const ::std::string& MessageEncoding_Name(T value) {
     return FeatureSet_MessageEncoding_Name(value);
   }
   static inline bool MessageEncoding_Parse(
-      absl::string_view name, MessageEncoding* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, MessageEncoding* PROTOBUF_NONNULL value) {
     return FeatureSet_MessageEncoding_Parse(name, value);
   }
   using JsonFormat = FeatureSet_JsonFormat;
@@ -2650,11 +2650,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_JsonFormat_descriptor();
   }
   template <typename T>
-  static inline const std::string& JsonFormat_Name(T value) {
+  static inline const ::std::string& JsonFormat_Name(T value) {
     return FeatureSet_JsonFormat_Name(value);
   }
   static inline bool JsonFormat_Parse(
-      absl::string_view name, JsonFormat* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, JsonFormat* PROTOBUF_NONNULL value) {
     return FeatureSet_JsonFormat_Parse(name, value);
   }
   using EnforceNamingStyle = FeatureSet_EnforceNamingStyle;
@@ -2671,11 +2671,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     return FeatureSet_EnforceNamingStyle_descriptor();
   }
   template <typename T>
-  static inline const std::string& EnforceNamingStyle_Name(T value) {
+  static inline const ::std::string& EnforceNamingStyle_Name(T value) {
     return FeatureSet_EnforceNamingStyle_Name(value);
   }
   static inline bool EnforceNamingStyle_Parse(
-      absl::string_view name, EnforceNamingStyle* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, EnforceNamingStyle* PROTOBUF_NONNULL value) {
     return FeatureSet_EnforceNamingStyle_Parse(name, value);
   }
 
@@ -2806,7 +2806,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -2815,7 +2815,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -2878,7 +2878,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -2888,7 +2888,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -3017,7 +3017,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ExtensionRangeOptions_Declaration(nullptr, from) {}
   inline ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
-      : ExtensionRangeOptions_Declaration(nullptr, std::move(from)) {}
+      : ExtensionRangeOptions_Declaration(nullptr, ::std::move(from)) {}
   inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
     CopyFrom(from);
     return *this;
@@ -3151,33 +3151,33 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   // optional string full_name = 2;
   bool has_full_name() const;
   void clear_full_name() ;
-  const std::string& full_name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& full_name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_full_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_full_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_full_name();
-  void set_allocated_full_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_full_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_full_name();
+  void set_allocated_full_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_full_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_full_name();
+  const ::std::string& _internal_full_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_full_name();
 
   public:
   // optional string type = 3;
   bool has_type() const;
   void clear_type() ;
-  const std::string& type() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& type() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_type(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_type();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_type();
-  void set_allocated_type(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_type();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_type();
+  void set_allocated_type(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_type();
+  const ::std::string& _internal_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type();
 
   public:
   // optional int32 number = 1;
@@ -3271,7 +3271,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 
   inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from) : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
   inline EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
-      : EnumDescriptorProto_EnumReservedRange(nullptr, std::move(from)) {}
+      : EnumDescriptorProto_EnumReservedRange(nullptr, ::std::move(from)) {}
   inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -3476,7 +3476,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 
   inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from) : DescriptorProto_ReservedRange(nullptr, from) {}
   inline DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
-      : DescriptorProto_ReservedRange(nullptr, std::move(from)) {}
+      : DescriptorProto_ReservedRange(nullptr, ::std::move(from)) {}
   inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -3681,7 +3681,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   inline UninterpretedOption(const UninterpretedOption& from) : UninterpretedOption(nullptr, from) {}
   inline UninterpretedOption(UninterpretedOption&& from) noexcept
-      : UninterpretedOption(nullptr, std::move(from)) {}
+      : UninterpretedOption(nullptr, ::std::move(from)) {}
   inline UninterpretedOption& operator=(const UninterpretedOption& from) {
     CopyFrom(from);
     return *this;
@@ -3840,49 +3840,49 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   // optional string identifier_value = 3;
   bool has_identifier_value() const;
   void clear_identifier_value() ;
-  const std::string& identifier_value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& identifier_value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_identifier_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_identifier_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_identifier_value();
-  void set_allocated_identifier_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_identifier_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_identifier_value();
+  void set_allocated_identifier_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_identifier_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_identifier_value();
+  const ::std::string& _internal_identifier_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_identifier_value();
 
   public:
   // optional bytes string_value = 7;
   bool has_string_value() const;
   void clear_string_value() ;
-  const std::string& string_value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& string_value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_string_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_string_value();
-  void set_allocated_string_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_string_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_string_value();
+  void set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_string_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
+  const ::std::string& _internal_string_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
 
   public:
   // optional string aggregate_value = 8;
   bool has_aggregate_value() const;
   void clear_aggregate_value() ;
-  const std::string& aggregate_value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& aggregate_value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_aggregate_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_aggregate_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_aggregate_value();
-  void set_allocated_aggregate_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_aggregate_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_aggregate_value();
+  void set_allocated_aggregate_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_aggregate_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_aggregate_value();
+  const ::std::string& _internal_aggregate_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_aggregate_value();
 
   public:
   // optional uint64 positive_int_value = 4;
@@ -3978,7 +3978,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   inline SourceCodeInfo(const SourceCodeInfo& from) : SourceCodeInfo(nullptr, from) {}
   inline SourceCodeInfo(SourceCodeInfo&& from) noexcept
-      : SourceCodeInfo(nullptr, std::move(from)) {}
+      : SourceCodeInfo(nullptr, ::std::move(from)) {}
   inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -4156,7 +4156,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4165,7 +4165,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -4228,7 +4228,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -4238,7 +4238,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -4359,7 +4359,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
 
   inline GeneratedCodeInfo(const GeneratedCodeInfo& from) : GeneratedCodeInfo(nullptr, from) {}
   inline GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
-      : GeneratedCodeInfo(nullptr, std::move(from)) {}
+      : GeneratedCodeInfo(nullptr, ::std::move(from)) {}
   inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -4557,7 +4557,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from) : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
   inline FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
-      : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, std::move(from)) {}
+      : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, ::std::move(from)) {}
   inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -4788,7 +4788,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   inline ServiceOptions(const ServiceOptions& from) : ServiceOptions(nullptr, from) {}
   inline ServiceOptions(ServiceOptions&& from) noexcept
-      : ServiceOptions(nullptr, std::move(from)) {}
+      : ServiceOptions(nullptr, ::std::move(from)) {}
   inline ServiceOptions& operator=(const ServiceOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4993,7 +4993,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5002,7 +5002,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -5065,7 +5065,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5075,7 +5075,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5199,7 +5199,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   inline OneofOptions(const OneofOptions& from) : OneofOptions(nullptr, from) {}
   inline OneofOptions(OneofOptions&& from) noexcept
-      : OneofOptions(nullptr, std::move(from)) {}
+      : OneofOptions(nullptr, ::std::move(from)) {}
   inline OneofOptions& operator=(const OneofOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5392,7 +5392,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5401,7 +5401,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -5464,7 +5464,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5474,7 +5474,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5597,7 +5597,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   inline MethodOptions(const MethodOptions& from) : MethodOptions(nullptr, from) {}
   inline MethodOptions(MethodOptions&& from) noexcept
-      : MethodOptions(nullptr, std::move(from)) {}
+      : MethodOptions(nullptr, ::std::move(from)) {}
   inline MethodOptions& operator=(const MethodOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5738,11 +5738,11 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     return MethodOptions_IdempotencyLevel_descriptor();
   }
   template <typename T>
-  static inline const std::string& IdempotencyLevel_Name(T value) {
+  static inline const ::std::string& IdempotencyLevel_Name(T value) {
     return MethodOptions_IdempotencyLevel_Name(value);
   }
   static inline bool IdempotencyLevel_Parse(
-      absl::string_view name, IdempotencyLevel* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, IdempotencyLevel* PROTOBUF_NONNULL value) {
     return MethodOptions_IdempotencyLevel_Parse(name, value);
   }
 
@@ -5835,7 +5835,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5844,7 +5844,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -5907,7 +5907,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5917,7 +5917,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -6042,7 +6042,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   inline MessageOptions(const MessageOptions& from) : MessageOptions(nullptr, from) {}
   inline MessageOptions(MessageOptions&& from) noexcept
-      : MessageOptions(nullptr, std::move(from)) {}
+      : MessageOptions(nullptr, ::std::move(from)) {}
   inline MessageOptions& operator=(const MessageOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6295,7 +6295,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6304,7 +6304,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -6367,7 +6367,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -6377,7 +6377,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -6505,7 +6505,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   inline FileOptions(const FileOptions& from) : FileOptions(nullptr, from) {}
   inline FileOptions(FileOptions&& from) noexcept
-      : FileOptions(nullptr, std::move(from)) {}
+      : FileOptions(nullptr, ::std::move(from)) {}
   inline FileOptions& operator=(const FileOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6646,11 +6646,11 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     return FileOptions_OptimizeMode_descriptor();
   }
   template <typename T>
-  static inline const std::string& OptimizeMode_Name(T value) {
+  static inline const ::std::string& OptimizeMode_Name(T value) {
     return FileOptions_OptimizeMode_Name(value);
   }
   static inline bool OptimizeMode_Parse(
-      absl::string_view name, OptimizeMode* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, OptimizeMode* PROTOBUF_NONNULL value) {
     return FileOptions_OptimizeMode_Parse(name, value);
   }
 
@@ -6698,161 +6698,161 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   // optional string java_package = 1;
   bool has_java_package() const;
   void clear_java_package() ;
-  const std::string& java_package() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& java_package() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_java_package(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_java_package();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_java_package();
-  void set_allocated_java_package(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_java_package();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_java_package();
+  void set_allocated_java_package(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_java_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_java_package();
+  const ::std::string& _internal_java_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_package();
 
   public:
   // optional string java_outer_classname = 8;
   bool has_java_outer_classname() const;
   void clear_java_outer_classname() ;
-  const std::string& java_outer_classname() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& java_outer_classname() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_java_outer_classname(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_java_outer_classname();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_java_outer_classname();
-  void set_allocated_java_outer_classname(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_java_outer_classname();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_java_outer_classname();
+  void set_allocated_java_outer_classname(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_java_outer_classname() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_java_outer_classname();
+  const ::std::string& _internal_java_outer_classname() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_outer_classname();
 
   public:
   // optional string go_package = 11;
   bool has_go_package() const;
   void clear_go_package() ;
-  const std::string& go_package() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& go_package() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_go_package(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_go_package();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_go_package();
-  void set_allocated_go_package(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_go_package();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_go_package();
+  void set_allocated_go_package(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_go_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_go_package();
+  const ::std::string& _internal_go_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_go_package();
 
   public:
   // optional string objc_class_prefix = 36;
   bool has_objc_class_prefix() const;
   void clear_objc_class_prefix() ;
-  const std::string& objc_class_prefix() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& objc_class_prefix() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_objc_class_prefix(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_objc_class_prefix();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_objc_class_prefix();
-  void set_allocated_objc_class_prefix(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_objc_class_prefix();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_objc_class_prefix();
+  void set_allocated_objc_class_prefix(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_objc_class_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_objc_class_prefix();
+  const ::std::string& _internal_objc_class_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_objc_class_prefix();
 
   public:
   // optional string csharp_namespace = 37;
   bool has_csharp_namespace() const;
   void clear_csharp_namespace() ;
-  const std::string& csharp_namespace() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& csharp_namespace() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_csharp_namespace(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_csharp_namespace();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_csharp_namespace();
-  void set_allocated_csharp_namespace(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_csharp_namespace();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_csharp_namespace();
+  void set_allocated_csharp_namespace(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_csharp_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_csharp_namespace();
+  const ::std::string& _internal_csharp_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_csharp_namespace();
 
   public:
   // optional string swift_prefix = 39;
   bool has_swift_prefix() const;
   void clear_swift_prefix() ;
-  const std::string& swift_prefix() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& swift_prefix() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_swift_prefix(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_swift_prefix();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_swift_prefix();
-  void set_allocated_swift_prefix(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_swift_prefix();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_swift_prefix();
+  void set_allocated_swift_prefix(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_swift_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_swift_prefix();
+  const ::std::string& _internal_swift_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_swift_prefix();
 
   public:
   // optional string php_class_prefix = 40;
   bool has_php_class_prefix() const;
   void clear_php_class_prefix() ;
-  const std::string& php_class_prefix() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& php_class_prefix() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_php_class_prefix(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_php_class_prefix();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_php_class_prefix();
-  void set_allocated_php_class_prefix(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_php_class_prefix();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_class_prefix();
+  void set_allocated_php_class_prefix(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_php_class_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_php_class_prefix();
+  const ::std::string& _internal_php_class_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_class_prefix();
 
   public:
   // optional string php_namespace = 41;
   bool has_php_namespace() const;
   void clear_php_namespace() ;
-  const std::string& php_namespace() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& php_namespace() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_php_namespace(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_php_namespace();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_php_namespace();
-  void set_allocated_php_namespace(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_php_namespace();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_namespace();
+  void set_allocated_php_namespace(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_php_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_php_namespace();
+  const ::std::string& _internal_php_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_namespace();
 
   public:
   // optional string php_metadata_namespace = 44;
   bool has_php_metadata_namespace() const;
   void clear_php_metadata_namespace() ;
-  const std::string& php_metadata_namespace() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& php_metadata_namespace() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_php_metadata_namespace(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_php_metadata_namespace();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_php_metadata_namespace();
-  void set_allocated_php_metadata_namespace(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_php_metadata_namespace();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_metadata_namespace();
+  void set_allocated_php_metadata_namespace(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_php_metadata_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_php_metadata_namespace();
+  const ::std::string& _internal_php_metadata_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_metadata_namespace();
 
   public:
   // optional string ruby_package = 45;
   bool has_ruby_package() const;
   void clear_ruby_package() ;
-  const std::string& ruby_package() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& ruby_package() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_ruby_package(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_ruby_package();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_ruby_package();
-  void set_allocated_ruby_package(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_ruby_package();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_ruby_package();
+  void set_allocated_ruby_package(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_ruby_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_ruby_package();
+  const ::std::string& _internal_ruby_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_ruby_package();
 
   public:
   // optional .google.protobuf.FeatureSet features = 50;
@@ -6997,7 +6997,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7006,7 +7006,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -7069,7 +7069,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7079,7 +7079,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7221,7 +7221,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   inline FieldOptions(const FieldOptions& from) : FieldOptions(nullptr, from) {}
   inline FieldOptions(FieldOptions&& from) noexcept
-      : FieldOptions(nullptr, std::move(from)) {}
+      : FieldOptions(nullptr, ::std::move(from)) {}
   inline FieldOptions& operator=(const FieldOptions& from) {
     CopyFrom(from);
     return *this;
@@ -7364,11 +7364,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     return FieldOptions_CType_descriptor();
   }
   template <typename T>
-  static inline const std::string& CType_Name(T value) {
+  static inline const ::std::string& CType_Name(T value) {
     return FieldOptions_CType_Name(value);
   }
   static inline bool CType_Parse(
-      absl::string_view name, CType* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, CType* PROTOBUF_NONNULL value) {
     return FieldOptions_CType_Parse(name, value);
   }
   using JSType = FieldOptions_JSType;
@@ -7385,11 +7385,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     return FieldOptions_JSType_descriptor();
   }
   template <typename T>
-  static inline const std::string& JSType_Name(T value) {
+  static inline const ::std::string& JSType_Name(T value) {
     return FieldOptions_JSType_Name(value);
   }
   static inline bool JSType_Parse(
-      absl::string_view name, JSType* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, JSType* PROTOBUF_NONNULL value) {
     return FieldOptions_JSType_Parse(name, value);
   }
   using OptionRetention = FieldOptions_OptionRetention;
@@ -7406,11 +7406,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     return FieldOptions_OptionRetention_descriptor();
   }
   template <typename T>
-  static inline const std::string& OptionRetention_Name(T value) {
+  static inline const ::std::string& OptionRetention_Name(T value) {
     return FieldOptions_OptionRetention_Name(value);
   }
   static inline bool OptionRetention_Parse(
-      absl::string_view name, OptionRetention* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, OptionRetention* PROTOBUF_NONNULL value) {
     return FieldOptions_OptionRetention_Parse(name, value);
   }
   using OptionTargetType = FieldOptions_OptionTargetType;
@@ -7434,11 +7434,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     return FieldOptions_OptionTargetType_descriptor();
   }
   template <typename T>
-  static inline const std::string& OptionTargetType_Name(T value) {
+  static inline const ::std::string& OptionTargetType_Name(T value) {
     return FieldOptions_OptionTargetType_Name(value);
   }
   static inline bool OptionTargetType_Parse(
-      absl::string_view name, OptionTargetType* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, OptionTargetType* PROTOBUF_NONNULL value) {
     return FieldOptions_OptionTargetType_Parse(name, value);
   }
 
@@ -7669,7 +7669,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7678,7 +7678,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -7741,7 +7741,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7751,7 +7751,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7886,7 +7886,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   inline FeatureSetDefaults(const FeatureSetDefaults& from) : FeatureSetDefaults(nullptr, from) {}
   inline FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
-      : FeatureSetDefaults(nullptr, std::move(from)) {}
+      : FeatureSetDefaults(nullptr, ::std::move(from)) {}
   inline FeatureSetDefaults& operator=(const FeatureSetDefaults& from) {
     CopyFrom(from);
     return *this;
@@ -8116,7 +8116,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   inline ExtensionRangeOptions(const ExtensionRangeOptions& from) : ExtensionRangeOptions(nullptr, from) {}
   inline ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
-      : ExtensionRangeOptions(nullptr, std::move(from)) {}
+      : ExtensionRangeOptions(nullptr, ::std::move(from)) {}
   inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
     CopyFrom(from);
     return *this;
@@ -8257,11 +8257,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     return ExtensionRangeOptions_VerificationState_descriptor();
   }
   template <typename T>
-  static inline const std::string& VerificationState_Name(T value) {
+  static inline const ::std::string& VerificationState_Name(T value) {
     return ExtensionRangeOptions_VerificationState_Name(value);
   }
   static inline bool VerificationState_Parse(
-      absl::string_view name, VerificationState* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, VerificationState* PROTOBUF_NONNULL value) {
     return ExtensionRangeOptions_VerificationState_Parse(name, value);
   }
 
@@ -8360,7 +8360,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -8369,7 +8369,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -8432,7 +8432,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -8442,7 +8442,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -8567,7 +8567,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   inline EnumValueOptions(const EnumValueOptions& from) : EnumValueOptions(nullptr, from) {}
   inline EnumValueOptions(EnumValueOptions&& from) noexcept
-      : EnumValueOptions(nullptr, std::move(from)) {}
+      : EnumValueOptions(nullptr, ::std::move(from)) {}
   inline EnumValueOptions& operator=(const EnumValueOptions& from) {
     CopyFrom(from);
     return *this;
@@ -8800,7 +8800,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -8809,7 +8809,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -8872,7 +8872,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -8882,7 +8882,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -9008,7 +9008,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   inline EnumOptions(const EnumOptions& from) : EnumOptions(nullptr, from) {}
   inline EnumOptions(EnumOptions&& from) noexcept
-      : EnumOptions(nullptr, std::move(from)) {}
+      : EnumOptions(nullptr, ::std::move(from)) {}
   inline EnumOptions& operator=(const EnumOptions& from) {
     CopyFrom(from);
     return *this;
@@ -9237,7 +9237,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -9246,7 +9246,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -9309,7 +9309,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -9319,7 +9319,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -9445,7 +9445,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 
   inline OneofDescriptorProto(const OneofDescriptorProto& from) : OneofDescriptorProto(nullptr, from) {}
   inline OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
-      : OneofDescriptorProto(nullptr, std::move(from)) {}
+      : OneofDescriptorProto(nullptr, ::std::move(from)) {}
   inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9581,17 +9581,17 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional .google.protobuf.OneofOptions options = 2;
@@ -9664,7 +9664,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   inline MethodDescriptorProto(const MethodDescriptorProto& from) : MethodDescriptorProto(nullptr, from) {}
   inline MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
-      : MethodDescriptorProto(nullptr, std::move(from)) {}
+      : MethodDescriptorProto(nullptr, ::std::move(from)) {}
   inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9804,49 +9804,49 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional string input_type = 2;
   bool has_input_type() const;
   void clear_input_type() ;
-  const std::string& input_type() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& input_type() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_input_type(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_input_type();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_input_type();
-  void set_allocated_input_type(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_input_type();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_input_type();
+  void set_allocated_input_type(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_input_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_input_type();
+  const ::std::string& _internal_input_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_input_type();
 
   public:
   // optional string output_type = 3;
   bool has_output_type() const;
   void clear_output_type() ;
-  const std::string& output_type() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& output_type() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_output_type(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_output_type();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_output_type();
-  void set_allocated_output_type(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_output_type();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_output_type();
+  void set_allocated_output_type(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_output_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_output_type();
+  const ::std::string& _internal_output_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_output_type();
 
   public:
   // optional .google.protobuf.MethodOptions options = 4;
@@ -9945,7 +9945,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   inline FieldDescriptorProto(const FieldDescriptorProto& from) : FieldDescriptorProto(nullptr, from) {}
   inline FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
-      : FieldDescriptorProto(nullptr, std::move(from)) {}
+      : FieldDescriptorProto(nullptr, ::std::move(from)) {}
   inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -10101,11 +10101,11 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     return FieldDescriptorProto_Type_descriptor();
   }
   template <typename T>
-  static inline const std::string& Type_Name(T value) {
+  static inline const ::std::string& Type_Name(T value) {
     return FieldDescriptorProto_Type_Name(value);
   }
   static inline bool Type_Parse(
-      absl::string_view name, Type* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, Type* PROTOBUF_NONNULL value) {
     return FieldDescriptorProto_Type_Parse(name, value);
   }
   using Label = FieldDescriptorProto_Label;
@@ -10122,11 +10122,11 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     return FieldDescriptorProto_Label_descriptor();
   }
   template <typename T>
-  static inline const std::string& Label_Name(T value) {
+  static inline const ::std::string& Label_Name(T value) {
     return FieldDescriptorProto_Label_Name(value);
   }
   static inline bool Label_Parse(
-      absl::string_view name, Label* PROTOBUF_NONNULL value) {
+      ::absl::string_view name, Label* PROTOBUF_NONNULL value) {
     return FieldDescriptorProto_Label_Parse(name, value);
   }
 
@@ -10147,81 +10147,81 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional string extendee = 2;
   bool has_extendee() const;
   void clear_extendee() ;
-  const std::string& extendee() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& extendee() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_extendee(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_extendee();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_extendee();
-  void set_allocated_extendee(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_extendee();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_extendee();
+  void set_allocated_extendee(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_extendee() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_extendee();
+  const ::std::string& _internal_extendee() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_extendee();
 
   public:
   // optional string type_name = 6;
   bool has_type_name() const;
   void clear_type_name() ;
-  const std::string& type_name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& type_name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_type_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_type_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_type_name();
-  void set_allocated_type_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_type_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_type_name();
+  void set_allocated_type_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_type_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_type_name();
+  const ::std::string& _internal_type_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_name();
 
   public:
   // optional string default_value = 7;
   bool has_default_value() const;
   void clear_default_value() ;
-  const std::string& default_value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& default_value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_default_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_default_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_default_value();
-  void set_allocated_default_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_default_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_default_value();
+  void set_allocated_default_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_default_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
+  const ::std::string& _internal_default_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
 
   public:
   // optional string json_name = 10;
   bool has_json_name() const;
   void clear_json_name() ;
-  const std::string& json_name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& json_name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_json_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_json_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_json_name();
-  void set_allocated_json_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_json_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_json_name();
+  void set_allocated_json_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_json_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
+  const ::std::string& _internal_json_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
 
   public:
   // optional .google.protobuf.FieldOptions options = 8;
@@ -10358,7 +10358,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : EnumValueDescriptorProto(nullptr, from) {}
   inline EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
-      : EnumValueDescriptorProto(nullptr, std::move(from)) {}
+      : EnumValueDescriptorProto(nullptr, ::std::move(from)) {}
   inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -10495,17 +10495,17 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional .google.protobuf.EnumValueOptions options = 3;
@@ -10590,7 +10590,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : DescriptorProto_ExtensionRange(nullptr, from) {}
   inline DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
-      : DescriptorProto_ExtensionRange(nullptr, std::move(from)) {}
+      : DescriptorProto_ExtensionRange(nullptr, ::std::move(from)) {}
   inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
     CopyFrom(from);
     return *this;
@@ -10817,7 +10817,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   inline ServiceDescriptorProto(const ServiceDescriptorProto& from) : ServiceDescriptorProto(nullptr, from) {}
   inline ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
-      : ServiceDescriptorProto(nullptr, std::move(from)) {}
+      : ServiceDescriptorProto(nullptr, ::std::move(from)) {}
   inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -10971,17 +10971,17 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional .google.protobuf.ServiceOptions options = 3;
@@ -11055,7 +11055,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   inline EnumDescriptorProto(const EnumDescriptorProto& from) : EnumDescriptorProto(nullptr, from) {}
   inline EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
-      : EnumDescriptorProto(nullptr, std::move(from)) {}
+      : EnumDescriptorProto(nullptr, ::std::move(from)) {}
   inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -11234,35 +11234,35 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   void clear_reserved_name() ;
-  const std::string& reserved_name(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& reserved_name(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_reserved_name(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_reserved_name();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_reserved_name();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_reserved_name(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_reserved_name();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_reserved_name();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
 
   public:
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional .google.protobuf.EnumOptions options = 3;
@@ -11319,7 +11319,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange > reserved_range_;
-    ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
+    ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE options_;
     int visibility_;
@@ -11350,7 +11350,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   inline DescriptorProto(const DescriptorProto& from) : DescriptorProto(nullptr, from) {}
   inline DescriptorProto(DescriptorProto&& from) noexcept
-      : DescriptorProto(nullptr, std::move(from)) {}
+      : DescriptorProto(nullptr, ::std::move(from)) {}
   inline DescriptorProto& operator=(const DescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -11620,35 +11620,35 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   public:
   void clear_reserved_name() ;
-  const std::string& reserved_name(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& reserved_name(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_reserved_name(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_reserved_name();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_reserved_name();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_reserved_name(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_reserved_name();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_reserved_name();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
 
   public:
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional .google.protobuf.MessageOptions options = 7;
@@ -11710,7 +11710,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto > oneof_decl_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange > reserved_range_;
-    ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
+    ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE options_;
     int visibility_;
@@ -11741,7 +11741,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   inline FileDescriptorProto(const FileDescriptorProto& from) : FileDescriptorProto(nullptr, from) {}
   inline FileDescriptorProto(FileDescriptorProto&& from) noexcept
-      : FileDescriptorProto(nullptr, std::move(from)) {}
+      : FileDescriptorProto(nullptr, ::std::move(from)) {}
   inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -11893,19 +11893,19 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   void clear_dependency() ;
-  const std::string& dependency(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_dependency(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& dependency(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_dependency(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_dependency(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_dependency();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_dependency();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_dependency(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& dependency() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_dependency();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_dependency();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_dependency() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_dependency();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_dependency();
 
   public:
   // repeated .google.protobuf.DescriptorProto message_type = 4;
@@ -12019,67 +12019,67 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   void clear_option_dependency() ;
-  const std::string& option_dependency(int index) const;
-  std::string* PROTOBUF_NONNULL mutable_option_dependency(int index);
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& option_dependency(int index) const;
+  ::std::string* PROTOBUF_NONNULL mutable_option_dependency(int index);
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_option_dependency(int index, Arg_&& value, Args_... args);
-  std::string* PROTOBUF_NONNULL add_option_dependency();
-  template <typename Arg_ = const std::string&, typename... Args_>
+  ::std::string* PROTOBUF_NONNULL add_option_dependency();
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_option_dependency(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<std::string>& option_dependency() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL mutable_option_dependency();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& option_dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_option_dependency();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<std::string>& _internal_option_dependency() const;
-  ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_option_dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
 
   public:
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_name(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
   // optional string package = 2;
   bool has_package() const;
   void clear_package() ;
-  const std::string& package() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& package() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_package(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_package();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_package();
-  void set_allocated_package(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_package();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_package();
+  void set_allocated_package(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_package();
+  const ::std::string& _internal_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_package();
 
   public:
   // optional string syntax = 12;
   bool has_syntax() const;
   void clear_syntax() ;
-  const std::string& syntax() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& syntax() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_syntax(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_syntax();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_syntax();
-  void set_allocated_syntax(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_syntax();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_syntax();
+  void set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_syntax() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
+  const ::std::string& _internal_syntax() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
 
   public:
   // optional .google.protobuf.FileOptions options = 8;
@@ -12149,14 +12149,14 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
         const FileDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField<std::string> dependency_;
+    ::google::protobuf::RepeatedPtrField<::std::string> dependency_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > message_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto > service_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
     ::google::protobuf::RepeatedField<::int32_t> public_dependency_;
     ::google::protobuf::RepeatedField<::int32_t> weak_dependency_;
-    ::google::protobuf::RepeatedPtrField<std::string> option_dependency_;
+    ::google::protobuf::RepeatedPtrField<::std::string> option_dependency_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr package_;
     ::google::protobuf::internal::ArenaStringPtr syntax_;
@@ -12190,7 +12190,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   inline FileDescriptorSet(const FileDescriptorSet& from) : FileDescriptorSet(nullptr, from) {}
   inline FileDescriptorSet(FileDescriptorSet&& from) noexcept
-      : FileDescriptorSet(nullptr, std::move(from)) {}
+      : FileDescriptorSet(nullptr, ::std::move(from)) {}
   inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
     CopyFrom(from);
     return *this;
@@ -12367,7 +12367,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -12376,7 +12376,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
@@ -12439,7 +12439,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -12449,7 +12449,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
-            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+            ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -12631,7 +12631,7 @@ inline void FileDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FileDescriptorProto::name() const
+inline const ::std::string& FileDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.name)
   return _internal_name();
@@ -12643,27 +12643,27 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg, Args_... a
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.name)
   return _s;
 }
-inline const std::string& FileDescriptorProto::_internal_name() const {
+inline const ::std::string& FileDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void FileDescriptorProto::_internal_set_name(const std::string& value) {
+inline void FileDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -12676,7 +12676,7 @@ inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_name() {
   }
   return released;
 }
-inline void FileDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void FileDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -12700,7 +12700,7 @@ inline void FileDescriptorProto::clear_package() {
   _impl_.package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& FileDescriptorProto::package() const
+inline const ::std::string& FileDescriptorProto::package() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.package)
   return _internal_package();
@@ -12712,27 +12712,27 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg, Args_..
   _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.package)
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_package()
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_package();
+  ::std::string* _s = _internal_mutable_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.package)
   return _s;
 }
-inline const std::string& FileDescriptorProto::_internal_package() const {
+inline const ::std::string& FileDescriptorProto::_internal_package() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.package_.Get();
 }
-inline void FileDescriptorProto::_internal_set_package(const std::string& value) {
+inline void FileDescriptorProto::_internal_set_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.package_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_package() {
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.package_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_package() {
+inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -12745,7 +12745,7 @@ inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_package() {
   }
   return released;
 }
-inline void FileDescriptorProto::set_allocated_package(std::string* PROTOBUF_NULLABLE value) {
+inline void FileDescriptorProto::set_allocated_package(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -12770,26 +12770,26 @@ inline void FileDescriptorProto::clear_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.dependency_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::add_dependency()
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_dependency()->Add();
+  ::std::string* _s = _internal_mutable_dependency()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
 }
-inline const std::string& FileDescriptorProto::dependency(int index) const
+inline const ::std::string& FileDescriptorProto::dependency(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.dependency)
   return _internal_dependency().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_dependency(int index)
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_dependency(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _internal_mutable_dependency()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::set_dependency(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_dependency()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_dependency()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
@@ -12797,27 +12797,27 @@ template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::add_dependency(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_dependency(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& FileDescriptorProto::dependency() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptorProto::dependency()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.dependency)
   return _internal_dependency();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::mutable_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_dependency();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 FileDescriptorProto::_internal_dependency() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.dependency_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::_internal_mutable_dependency() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.dependency_;
@@ -12926,26 +12926,26 @@ inline void FileDescriptorProto::clear_option_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.option_dependency_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::add_option_dependency()
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_option_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_option_dependency()->Add();
+  ::std::string* _s = _internal_mutable_option_dependency()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.option_dependency)
   return _s;
 }
-inline const std::string& FileDescriptorProto::option_dependency(int index) const
+inline const ::std::string& FileDescriptorProto::option_dependency(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.option_dependency)
   return _internal_option_dependency().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_option_dependency(int index)
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_option_dependency(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.option_dependency)
   return _internal_mutable_option_dependency()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::set_option_dependency(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_option_dependency()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_option_dependency()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.option_dependency)
 }
@@ -12953,27 +12953,27 @@ template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::add_option_dependency(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_option_dependency(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.option_dependency)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& FileDescriptorProto::option_dependency() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptorProto::option_dependency()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.option_dependency)
   return _internal_option_dependency();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::mutable_option_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.option_dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_option_dependency();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 FileDescriptorProto::_internal_option_dependency() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.option_dependency_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::_internal_mutable_option_dependency() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.option_dependency_;
@@ -13385,7 +13385,7 @@ inline void FileDescriptorProto::clear_syntax() {
   _impl_.syntax_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& FileDescriptorProto::syntax() const
+inline const ::std::string& FileDescriptorProto::syntax() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.syntax)
   return _internal_syntax();
@@ -13397,27 +13397,27 @@ PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg, Args_...
   _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.syntax)
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_syntax()
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::mutable_syntax()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_syntax();
+  ::std::string* _s = _internal_mutable_syntax();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.syntax)
   return _s;
 }
-inline const std::string& FileDescriptorProto::_internal_syntax() const {
+inline const ::std::string& FileDescriptorProto::_internal_syntax() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.syntax_.Get();
 }
-inline void FileDescriptorProto::_internal_set_syntax(const std::string& value) {
+inline void FileDescriptorProto::_internal_set_syntax(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.syntax_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_syntax() {
+inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.syntax_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_syntax() {
+inline ::std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -13430,7 +13430,7 @@ inline std::string* PROTOBUF_NULLABLE FileDescriptorProto::release_syntax() {
   }
   return released;
 }
-inline void FileDescriptorProto::set_allocated_syntax(std::string* PROTOBUF_NULLABLE value) {
+inline void FileDescriptorProto::set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -13707,7 +13707,7 @@ inline void DescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& DescriptorProto::name() const
+inline const ::std::string& DescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.name)
   return _internal_name();
@@ -13719,27 +13719,27 @@ PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg, Args_... args)
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL DescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL DescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.name)
   return _s;
 }
-inline const std::string& DescriptorProto::_internal_name() const {
+inline const ::std::string& DescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void DescriptorProto::_internal_set_name(const std::string& value) {
+inline void DescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE DescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE DescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -13752,7 +13752,7 @@ inline std::string* PROTOBUF_NULLABLE DescriptorProto::release_name() {
   }
   return released;
 }
-inline void DescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void DescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -14225,26 +14225,26 @@ inline void DescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL DescriptorProto::add_reserved_name()
+inline ::std::string* PROTOBUF_NONNULL DescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_reserved_name()->Add();
+  ::std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
 }
-inline const std::string& DescriptorProto::reserved_name(int index) const
+inline const ::std::string& DescriptorProto::reserved_name(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.reserved_name)
   return _internal_reserved_name().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL DescriptorProto::mutable_reserved_name(int index)
+inline ::std::string* PROTOBUF_NONNULL DescriptorProto::mutable_reserved_name(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _internal_mutable_reserved_name()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void DescriptorProto::set_reserved_name(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
@@ -14252,27 +14252,27 @@ template <typename Arg_, typename... Args_>
 inline void DescriptorProto::add_reserved_name(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& DescriptorProto::reserved_name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& DescriptorProto::reserved_name()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.DescriptorProto.reserved_name)
   return _internal_reserved_name();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 DescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 DescriptorProto::_internal_reserved_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_name_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 DescriptorProto::_internal_mutable_reserved_name() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_name_;
@@ -14351,7 +14351,7 @@ inline void ExtensionRangeOptions_Declaration::clear_full_name() {
   _impl_.full_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& ExtensionRangeOptions_Declaration::full_name() const
+inline const ::std::string& ExtensionRangeOptions_Declaration::full_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
   return _internal_full_name();
@@ -14363,27 +14363,27 @@ PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg
   _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
 }
-inline std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_full_name()
+inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_full_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_full_name();
+  ::std::string* _s = _internal_mutable_full_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
   return _s;
 }
-inline const std::string& ExtensionRangeOptions_Declaration::_internal_full_name() const {
+inline const ::std::string& ExtensionRangeOptions_Declaration::_internal_full_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.full_name_.Get();
 }
-inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const std::string& value) {
+inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.full_name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
+inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.full_name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_full_name() {
+inline ::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_full_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -14396,7 +14396,7 @@ inline std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release
   }
   return released;
 }
-inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::string* PROTOBUF_NULLABLE value) {
+inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -14420,7 +14420,7 @@ inline void ExtensionRangeOptions_Declaration::clear_type() {
   _impl_.type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& ExtensionRangeOptions_Declaration::type() const
+inline const ::std::string& ExtensionRangeOptions_Declaration::type() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.Declaration.type)
   return _internal_type();
@@ -14432,27 +14432,27 @@ PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& a
   _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
-inline std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_type()
+inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::mutable_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_type();
+  ::std::string* _s = _internal_mutable_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.Declaration.type)
   return _s;
 }
-inline const std::string& ExtensionRangeOptions_Declaration::_internal_type() const {
+inline const ::std::string& ExtensionRangeOptions_Declaration::_internal_type() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.type_.Get();
 }
-inline void ExtensionRangeOptions_Declaration::_internal_set_type(const std::string& value) {
+inline void ExtensionRangeOptions_Declaration::_internal_set_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_type() {
+inline ::std::string* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_internal_mutable_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.type_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_type() {
+inline ::std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.type)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -14465,7 +14465,7 @@ inline std::string* PROTOBUF_NULLABLE ExtensionRangeOptions_Declaration::release
   }
   return released;
 }
-inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* PROTOBUF_NULLABLE value) {
+inline void ExtensionRangeOptions_Declaration::set_allocated_type(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -14782,7 +14782,7 @@ inline void FieldDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FieldDescriptorProto::name() const
+inline const ::std::string& FieldDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.name)
   return _internal_name();
@@ -14794,27 +14794,27 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg, Args_... 
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.name)
   return _s;
 }
-inline const std::string& FieldDescriptorProto::_internal_name() const {
+inline const ::std::string& FieldDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void FieldDescriptorProto::_internal_set_name(const std::string& value) {
+inline void FieldDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -14827,7 +14827,7 @@ inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_name() {
   }
   return released;
 }
-inline void FieldDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -14941,7 +14941,7 @@ inline void FieldDescriptorProto::clear_type_name() {
   _impl_.type_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& FieldDescriptorProto::type_name() const
+inline const ::std::string& FieldDescriptorProto::type_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.type_name)
   return _internal_type_name();
@@ -14953,27 +14953,27 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg, Args
   _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type_name)
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_type_name()
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_type_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_type_name();
+  ::std::string* _s = _internal_mutable_type_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.type_name)
   return _s;
 }
-inline const std::string& FieldDescriptorProto::_internal_type_name() const {
+inline const ::std::string& FieldDescriptorProto::_internal_type_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.type_name_.Get();
 }
-inline void FieldDescriptorProto::_internal_set_type_name(const std::string& value) {
+inline void FieldDescriptorProto::_internal_set_type_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.type_name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_type_name() {
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_type_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.type_name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_type_name() {
+inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_type_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -14986,7 +14986,7 @@ inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_type_name() 
   }
   return released;
 }
-inline void FieldDescriptorProto::set_allocated_type_name(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldDescriptorProto::set_allocated_type_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -15010,7 +15010,7 @@ inline void FieldDescriptorProto::clear_extendee() {
   _impl_.extendee_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& FieldDescriptorProto::extendee() const
+inline const ::std::string& FieldDescriptorProto::extendee() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.extendee)
   return _internal_extendee();
@@ -15022,27 +15022,27 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg, Args_
   _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.extendee)
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_extendee()
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_extendee()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_extendee();
+  ::std::string* _s = _internal_mutable_extendee();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.extendee)
   return _s;
 }
-inline const std::string& FieldDescriptorProto::_internal_extendee() const {
+inline const ::std::string& FieldDescriptorProto::_internal_extendee() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.extendee_.Get();
 }
-inline void FieldDescriptorProto::_internal_set_extendee(const std::string& value) {
+inline void FieldDescriptorProto::_internal_set_extendee(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.extendee_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_extendee() {
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_extendee() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.extendee_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_extendee() {
+inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_extendee() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -15055,7 +15055,7 @@ inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_extendee() {
   }
   return released;
 }
-inline void FieldDescriptorProto::set_allocated_extendee(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldDescriptorProto::set_allocated_extendee(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -15079,7 +15079,7 @@ inline void FieldDescriptorProto::clear_default_value() {
   _impl_.default_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline const std::string& FieldDescriptorProto::default_value() const
+inline const ::std::string& FieldDescriptorProto::default_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.default_value)
   return _internal_default_value();
@@ -15091,27 +15091,27 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg, 
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.default_value)
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_default_value()
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_default_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_default_value();
+  ::std::string* _s = _internal_mutable_default_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.default_value)
   return _s;
 }
-inline const std::string& FieldDescriptorProto::_internal_default_value() const {
+inline const ::std::string& FieldDescriptorProto::_internal_default_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.default_value_.Get();
 }
-inline void FieldDescriptorProto::_internal_set_default_value(const std::string& value) {
+inline void FieldDescriptorProto::_internal_set_default_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_default_value() {
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.default_value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_default_value() {
+inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
   if ((_impl_._has_bits_[0] & 0x00000008u) == 0) {
@@ -15124,7 +15124,7 @@ inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_default_valu
   }
   return released;
 }
-inline void FieldDescriptorProto::set_allocated_default_value(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldDescriptorProto::set_allocated_default_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
@@ -15176,7 +15176,7 @@ inline void FieldDescriptorProto::clear_json_name() {
   _impl_.json_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
-inline const std::string& FieldDescriptorProto::json_name() const
+inline const ::std::string& FieldDescriptorProto::json_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.json_name)
   return _internal_json_name();
@@ -15188,27 +15188,27 @@ PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg, Args
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.json_name)
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_json_name()
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::mutable_json_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_json_name();
+  ::std::string* _s = _internal_mutable_json_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.json_name)
   return _s;
 }
-inline const std::string& FieldDescriptorProto::_internal_json_name() const {
+inline const ::std::string& FieldDescriptorProto::_internal_json_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.json_name_.Get();
 }
-inline void FieldDescriptorProto::_internal_set_json_name(const std::string& value) {
+inline void FieldDescriptorProto::_internal_set_json_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_json_name() {
+inline ::std::string* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   return _impl_.json_name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_json_name() {
+inline ::std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
   if ((_impl_._has_bits_[0] & 0x00000010u) == 0) {
@@ -15221,7 +15221,7 @@ inline std::string* PROTOBUF_NULLABLE FieldDescriptorProto::release_json_name() 
   }
   return released;
 }
-inline void FieldDescriptorProto::set_allocated_json_name(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldDescriptorProto::set_allocated_json_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000010u;
@@ -15375,7 +15375,7 @@ inline void OneofDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& OneofDescriptorProto::name() const
+inline const ::std::string& OneofDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.name)
   return _internal_name();
@@ -15387,27 +15387,27 @@ PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg, Args_... 
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.OneofDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL OneofDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL OneofDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.name)
   return _s;
 }
-inline const std::string& OneofDescriptorProto::_internal_name() const {
+inline const ::std::string& OneofDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void OneofDescriptorProto::_internal_set_name(const std::string& value) {
+inline void OneofDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE OneofDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE OneofDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -15420,7 +15420,7 @@ inline std::string* PROTOBUF_NULLABLE OneofDescriptorProto::release_name() {
   }
   return released;
 }
-inline void OneofDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void OneofDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -15606,7 +15606,7 @@ inline void EnumDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& EnumDescriptorProto::name() const
+inline const ::std::string& EnumDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.name)
   return _internal_name();
@@ -15618,27 +15618,27 @@ PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg, Args_... a
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL EnumDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.name)
   return _s;
 }
-inline const std::string& EnumDescriptorProto::_internal_name() const {
+inline const ::std::string& EnumDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void EnumDescriptorProto::_internal_set_name(const std::string& value) {
+inline void EnumDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE EnumDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE EnumDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -15651,7 +15651,7 @@ inline std::string* PROTOBUF_NULLABLE EnumDescriptorProto::release_name() {
   }
   return released;
 }
-inline void EnumDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void EnumDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -15874,26 +15874,26 @@ inline void EnumDescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL EnumDescriptorProto::add_reserved_name()
+inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_reserved_name()->Add();
+  ::std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
 }
-inline const std::string& EnumDescriptorProto::reserved_name(int index) const
+inline const ::std::string& EnumDescriptorProto::reserved_name(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.reserved_name)
   return _internal_reserved_name().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL EnumDescriptorProto::mutable_reserved_name(int index)
+inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::mutable_reserved_name(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _internal_mutable_reserved_name()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void EnumDescriptorProto::set_reserved_name(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_reserved_name()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
@@ -15901,27 +15901,27 @@ template <typename Arg_, typename... Args_>
 inline void EnumDescriptorProto::add_reserved_name(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& EnumDescriptorProto::reserved_name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& EnumDescriptorProto::reserved_name()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.EnumDescriptorProto.reserved_name)
   return _internal_reserved_name();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 EnumDescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_name)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 EnumDescriptorProto::_internal_reserved_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_name_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 EnumDescriptorProto::_internal_mutable_reserved_name() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_name_;
@@ -15972,7 +15972,7 @@ inline void EnumValueDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& EnumValueDescriptorProto::name() const
+inline const ::std::string& EnumValueDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.name)
   return _internal_name();
@@ -15984,27 +15984,27 @@ PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg, Args_
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.name)
   return _s;
 }
-inline const std::string& EnumValueDescriptorProto::_internal_name() const {
+inline const ::std::string& EnumValueDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void EnumValueDescriptorProto::_internal_set_name(const std::string& value) {
+inline void EnumValueDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -16017,7 +16017,7 @@ inline std::string* PROTOBUF_NULLABLE EnumValueDescriptorProto::release_name() {
   }
   return released;
 }
-inline void EnumValueDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void EnumValueDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -16171,7 +16171,7 @@ inline void ServiceDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& ServiceDescriptorProto::name() const
+inline const ::std::string& ServiceDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.name)
   return _internal_name();
@@ -16183,27 +16183,27 @@ PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg, Args_..
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL ServiceDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL ServiceDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.name)
   return _s;
 }
-inline const std::string& ServiceDescriptorProto::_internal_name() const {
+inline const ::std::string& ServiceDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void ServiceDescriptorProto::_internal_set_name(const std::string& value) {
+inline void ServiceDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE ServiceDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE ServiceDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -16216,7 +16216,7 @@ inline std::string* PROTOBUF_NULLABLE ServiceDescriptorProto::release_name() {
   }
   return released;
 }
-inline void ServiceDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void ServiceDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -16392,7 +16392,7 @@ inline void MethodDescriptorProto::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& MethodDescriptorProto::name() const
+inline const ::std::string& MethodDescriptorProto::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.name)
   return _internal_name();
@@ -16404,27 +16404,27 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg, Args_...
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.name)
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_name()
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
+  ::std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.name)
   return _s;
 }
-inline const std::string& MethodDescriptorProto::_internal_name() const {
+inline const ::std::string& MethodDescriptorProto::_internal_name() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
-inline void MethodDescriptorProto::_internal_set_name(const std::string& value) {
+inline void MethodDescriptorProto::_internal_set_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_name() {
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_name() {
+inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -16437,7 +16437,7 @@ inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_name() {
   }
   return released;
 }
-inline void MethodDescriptorProto::set_allocated_name(std::string* PROTOBUF_NULLABLE value) {
+inline void MethodDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -16461,7 +16461,7 @@ inline void MethodDescriptorProto::clear_input_type() {
   _impl_.input_type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& MethodDescriptorProto::input_type() const
+inline const ::std::string& MethodDescriptorProto::input_type() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.input_type)
   return _internal_input_type();
@@ -16473,27 +16473,27 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg, Ar
   _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.input_type)
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_input_type()
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_input_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_input_type();
+  ::std::string* _s = _internal_mutable_input_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.input_type)
   return _s;
 }
-inline const std::string& MethodDescriptorProto::_internal_input_type() const {
+inline const ::std::string& MethodDescriptorProto::_internal_input_type() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.input_type_.Get();
 }
-inline void MethodDescriptorProto::_internal_set_input_type(const std::string& value) {
+inline void MethodDescriptorProto::_internal_set_input_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.input_type_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_input_type() {
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_input_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.input_type_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_input_type() {
+inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_input_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -16506,7 +16506,7 @@ inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_input_type(
   }
   return released;
 }
-inline void MethodDescriptorProto::set_allocated_input_type(std::string* PROTOBUF_NULLABLE value) {
+inline void MethodDescriptorProto::set_allocated_input_type(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -16530,7 +16530,7 @@ inline void MethodDescriptorProto::clear_output_type() {
   _impl_.output_type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& MethodDescriptorProto::output_type() const
+inline const ::std::string& MethodDescriptorProto::output_type() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.output_type)
   return _internal_output_type();
@@ -16542,27 +16542,27 @@ PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg, A
   _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.output_type)
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_output_type()
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::mutable_output_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_output_type();
+  ::std::string* _s = _internal_mutable_output_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.output_type)
   return _s;
 }
-inline const std::string& MethodDescriptorProto::_internal_output_type() const {
+inline const ::std::string& MethodDescriptorProto::_internal_output_type() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.output_type_.Get();
 }
-inline void MethodDescriptorProto::_internal_set_output_type(const std::string& value) {
+inline void MethodDescriptorProto::_internal_set_output_type(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.output_type_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_output_type() {
+inline ::std::string* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_output_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.output_type_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_output_type() {
+inline ::std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_output_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -16575,7 +16575,7 @@ inline std::string* PROTOBUF_NULLABLE MethodDescriptorProto::release_output_type
   }
   return released;
 }
-inline void MethodDescriptorProto::set_allocated_output_type(std::string* PROTOBUF_NULLABLE value) {
+inline void MethodDescriptorProto::set_allocated_output_type(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -16757,7 +16757,7 @@ inline void FileOptions::clear_java_package() {
   _impl_.java_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FileOptions::java_package() const
+inline const ::std::string& FileOptions::java_package() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_package)
   return _internal_java_package();
@@ -16769,27 +16769,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg, Args_... a
   _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_package)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_java_package()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_java_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_java_package();
+  ::std::string* _s = _internal_mutable_java_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_package)
   return _s;
 }
-inline const std::string& FileOptions::_internal_java_package() const {
+inline const ::std::string& FileOptions::_internal_java_package() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_package_.Get();
 }
-inline void FileOptions::_internal_set_java_package(const std::string& value) {
+inline void FileOptions::_internal_set_java_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.java_package_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_package() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.java_package_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_java_package() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_java_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -16802,7 +16802,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_java_package() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_java_package(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_java_package(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -16826,7 +16826,7 @@ inline void FileOptions::clear_java_outer_classname() {
   _impl_.java_outer_classname_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& FileOptions::java_outer_classname() const
+inline const ::std::string& FileOptions::java_outer_classname() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_outer_classname)
   return _internal_java_outer_classname();
@@ -16838,27 +16838,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg, Ar
   _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_outer_classname)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_java_outer_classname()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_java_outer_classname()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_java_outer_classname();
+  ::std::string* _s = _internal_mutable_java_outer_classname();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_outer_classname)
   return _s;
 }
-inline const std::string& FileOptions::_internal_java_outer_classname() const {
+inline const ::std::string& FileOptions::_internal_java_outer_classname() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_outer_classname_.Get();
 }
-inline void FileOptions::_internal_set_java_outer_classname(const std::string& value) {
+inline void FileOptions::_internal_set_java_outer_classname(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.java_outer_classname_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_outer_classname() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_java_outer_classname() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.java_outer_classname_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_java_outer_classname() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_java_outer_classname() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -16871,7 +16871,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_java_outer_classname(
   }
   return released;
 }
-inline void FileOptions::set_allocated_java_outer_classname(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_java_outer_classname(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -17010,7 +17010,7 @@ inline void FileOptions::clear_go_package() {
   _impl_.go_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& FileOptions::go_package() const
+inline const ::std::string& FileOptions::go_package() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.go_package)
   return _internal_go_package();
@@ -17022,27 +17022,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg, Args_... arg
   _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.go_package)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_go_package()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_go_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_go_package();
+  ::std::string* _s = _internal_mutable_go_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.go_package)
   return _s;
 }
-inline const std::string& FileOptions::_internal_go_package() const {
+inline const ::std::string& FileOptions::_internal_go_package() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.go_package_.Get();
 }
-inline void FileOptions::_internal_set_go_package(const std::string& value) {
+inline void FileOptions::_internal_set_go_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.go_package_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_go_package() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_go_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.go_package_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_go_package() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_go_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -17055,7 +17055,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_go_package() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_go_package(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_go_package(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -17219,7 +17219,7 @@ inline void FileOptions::clear_objc_class_prefix() {
   _impl_.objc_class_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline const std::string& FileOptions::objc_class_prefix() const
+inline const ::std::string& FileOptions::objc_class_prefix() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.objc_class_prefix)
   return _internal_objc_class_prefix();
@@ -17231,27 +17231,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg, Args_
   _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.objc_class_prefix)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_objc_class_prefix()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_objc_class_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_objc_class_prefix();
+  ::std::string* _s = _internal_mutable_objc_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.objc_class_prefix)
   return _s;
 }
-inline const std::string& FileOptions::_internal_objc_class_prefix() const {
+inline const ::std::string& FileOptions::_internal_objc_class_prefix() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.objc_class_prefix_.Get();
 }
-inline void FileOptions::_internal_set_objc_class_prefix(const std::string& value) {
+inline void FileOptions::_internal_set_objc_class_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.objc_class_prefix_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_objc_class_prefix() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_objc_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.objc_class_prefix_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_objc_class_prefix() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_objc_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
   if ((_impl_._has_bits_[0] & 0x00000008u) == 0) {
@@ -17264,7 +17264,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_objc_class_prefix() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_objc_class_prefix(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_objc_class_prefix(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
@@ -17288,7 +17288,7 @@ inline void FileOptions::clear_csharp_namespace() {
   _impl_.csharp_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
-inline const std::string& FileOptions::csharp_namespace() const
+inline const ::std::string& FileOptions::csharp_namespace() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_namespace)
   return _internal_csharp_namespace();
@@ -17300,27 +17300,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg, Args_.
   _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_csharp_namespace()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_csharp_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_csharp_namespace();
+  ::std::string* _s = _internal_mutable_csharp_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_namespace)
   return _s;
 }
-inline const std::string& FileOptions::_internal_csharp_namespace() const {
+inline const ::std::string& FileOptions::_internal_csharp_namespace() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.csharp_namespace_.Get();
 }
-inline void FileOptions::_internal_set_csharp_namespace(const std::string& value) {
+inline void FileOptions::_internal_set_csharp_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.csharp_namespace_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_csharp_namespace() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_csharp_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   return _impl_.csharp_namespace_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_csharp_namespace() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_csharp_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
   if ((_impl_._has_bits_[0] & 0x00000010u) == 0) {
@@ -17333,7 +17333,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_csharp_namespace() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_csharp_namespace(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_csharp_namespace(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000010u;
@@ -17357,7 +17357,7 @@ inline void FileOptions::clear_swift_prefix() {
   _impl_.swift_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
-inline const std::string& FileOptions::swift_prefix() const
+inline const ::std::string& FileOptions::swift_prefix() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.swift_prefix)
   return _internal_swift_prefix();
@@ -17369,27 +17369,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg, Args_... a
   _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.swift_prefix)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_swift_prefix()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_swift_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_swift_prefix();
+  ::std::string* _s = _internal_mutable_swift_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.swift_prefix)
   return _s;
 }
-inline const std::string& FileOptions::_internal_swift_prefix() const {
+inline const ::std::string& FileOptions::_internal_swift_prefix() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.swift_prefix_.Get();
 }
-inline void FileOptions::_internal_set_swift_prefix(const std::string& value) {
+inline void FileOptions::_internal_set_swift_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.swift_prefix_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_swift_prefix() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_swift_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   return _impl_.swift_prefix_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_swift_prefix() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_swift_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
   if ((_impl_._has_bits_[0] & 0x00000020u) == 0) {
@@ -17402,7 +17402,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_swift_prefix() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_swift_prefix(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_swift_prefix(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000020u;
@@ -17426,7 +17426,7 @@ inline void FileOptions::clear_php_class_prefix() {
   _impl_.php_class_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
-inline const std::string& FileOptions::php_class_prefix() const
+inline const ::std::string& FileOptions::php_class_prefix() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_class_prefix)
   return _internal_php_class_prefix();
@@ -17438,27 +17438,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg, Args_.
   _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_class_prefix)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_php_class_prefix()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_class_prefix()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_php_class_prefix();
+  ::std::string* _s = _internal_mutable_php_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_class_prefix)
   return _s;
 }
-inline const std::string& FileOptions::_internal_php_class_prefix() const {
+inline const ::std::string& FileOptions::_internal_php_class_prefix() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_class_prefix_.Get();
 }
-inline void FileOptions::_internal_set_php_class_prefix(const std::string& value) {
+inline void FileOptions::_internal_set_php_class_prefix(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.php_class_prefix_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_class_prefix() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   return _impl_.php_class_prefix_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_class_prefix() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_class_prefix() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
   if ((_impl_._has_bits_[0] & 0x00000040u) == 0) {
@@ -17471,7 +17471,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_class_prefix() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_php_class_prefix(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_php_class_prefix(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000040u;
@@ -17495,7 +17495,7 @@ inline void FileOptions::clear_php_namespace() {
   _impl_.php_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000080u;
 }
-inline const std::string& FileOptions::php_namespace() const
+inline const ::std::string& FileOptions::php_namespace() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_namespace)
   return _internal_php_namespace();
@@ -17507,27 +17507,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg, Args_... 
   _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_namespace)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_php_namespace()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_php_namespace();
+  ::std::string* _s = _internal_mutable_php_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_namespace)
   return _s;
 }
-inline const std::string& FileOptions::_internal_php_namespace() const {
+inline const ::std::string& FileOptions::_internal_php_namespace() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_namespace_.Get();
 }
-inline void FileOptions::_internal_set_php_namespace(const std::string& value) {
+inline void FileOptions::_internal_set_php_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.php_namespace_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_namespace() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   return _impl_.php_namespace_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_namespace() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
   if ((_impl_._has_bits_[0] & 0x00000080u) == 0) {
@@ -17540,7 +17540,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_namespace() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_php_namespace(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_php_namespace(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000080u;
@@ -17564,7 +17564,7 @@ inline void FileOptions::clear_php_metadata_namespace() {
   _impl_.php_metadata_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
-inline const std::string& FileOptions::php_metadata_namespace() const
+inline const ::std::string& FileOptions::php_metadata_namespace() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_metadata_namespace)
   return _internal_php_metadata_namespace();
@@ -17576,27 +17576,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg, 
   _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_metadata_namespace)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_php_metadata_namespace()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_php_metadata_namespace()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_php_metadata_namespace();
+  ::std::string* _s = _internal_mutable_php_metadata_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_metadata_namespace)
   return _s;
 }
-inline const std::string& FileOptions::_internal_php_metadata_namespace() const {
+inline const ::std::string& FileOptions::_internal_php_metadata_namespace() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_metadata_namespace_.Get();
 }
-inline void FileOptions::_internal_set_php_metadata_namespace(const std::string& value) {
+inline void FileOptions::_internal_set_php_metadata_namespace(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.php_metadata_namespace_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_metadata_namespace() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_php_metadata_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   return _impl_.php_metadata_namespace_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_metadata_namespace() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_php_metadata_namespace() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
   if ((_impl_._has_bits_[0] & 0x00000100u) == 0) {
@@ -17609,7 +17609,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_php_metadata_namespac
   }
   return released;
 }
-inline void FileOptions::set_allocated_php_metadata_namespace(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_php_metadata_namespace(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000100u;
@@ -17633,7 +17633,7 @@ inline void FileOptions::clear_ruby_package() {
   _impl_.ruby_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
-inline const std::string& FileOptions::ruby_package() const
+inline const ::std::string& FileOptions::ruby_package() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.ruby_package)
   return _internal_ruby_package();
@@ -17645,27 +17645,27 @@ PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg, Args_... a
   _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.ruby_package)
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::mutable_ruby_package()
+inline ::std::string* PROTOBUF_NONNULL FileOptions::mutable_ruby_package()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_ruby_package();
+  ::std::string* _s = _internal_mutable_ruby_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.ruby_package)
   return _s;
 }
-inline const std::string& FileOptions::_internal_ruby_package() const {
+inline const ::std::string& FileOptions::_internal_ruby_package() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.ruby_package_.Get();
 }
-inline void FileOptions::_internal_set_ruby_package(const std::string& value) {
+inline void FileOptions::_internal_set_ruby_package(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.ruby_package_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_ruby_package() {
+inline ::std::string* PROTOBUF_NONNULL FileOptions::_internal_mutable_ruby_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   return _impl_.ruby_package_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FileOptions::release_ruby_package() {
+inline ::std::string* PROTOBUF_NULLABLE FileOptions::release_ruby_package() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
   if ((_impl_._has_bits_[0] & 0x00000200u) == 0) {
@@ -17678,7 +17678,7 @@ inline std::string* PROTOBUF_NULLABLE FileOptions::release_ruby_package() {
   }
   return released;
 }
-inline void FileOptions::set_allocated_ruby_package(std::string* PROTOBUF_NULLABLE value) {
+inline void FileOptions::set_allocated_ruby_package(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000200u;
@@ -18177,7 +18177,7 @@ inline void FieldOptions_EditionDefault::clear_value() {
   _impl_.value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FieldOptions_EditionDefault::value() const
+inline const ::std::string& FieldOptions_EditionDefault::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.EditionDefault.value)
   return _internal_value();
@@ -18189,27 +18189,27 @@ PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg, A
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.value)
 }
-inline std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::mutable_value()
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_value();
+  ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.EditionDefault.value)
   return _s;
 }
-inline const std::string& FieldOptions_EditionDefault::_internal_value() const {
+inline const ::std::string& FieldOptions_EditionDefault::_internal_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
-inline void FieldOptions_EditionDefault::_internal_set_value(const std::string& value) {
+inline void FieldOptions_EditionDefault::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::_internal_mutable_value() {
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_EditionDefault::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldOptions_EditionDefault::release_value() {
+inline ::std::string* PROTOBUF_NULLABLE FieldOptions_EditionDefault::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.EditionDefault.value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -18222,7 +18222,7 @@ inline std::string* PROTOBUF_NULLABLE FieldOptions_EditionDefault::release_value
   }
   return released;
 }
-inline void FieldOptions_EditionDefault::set_allocated_value(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldOptions_EditionDefault::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -18312,7 +18312,7 @@ inline void FieldOptions_FeatureSupport::clear_deprecation_warning() {
   _impl_.deprecation_warning_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FieldOptions_FeatureSupport::deprecation_warning() const
+inline const ::std::string& FieldOptions_FeatureSupport::deprecation_warning() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
   return _internal_deprecation_warning();
@@ -18324,27 +18324,27 @@ PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_deprecation_warning
   _impl_.deprecation_warning_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
 }
-inline std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::mutable_deprecation_warning()
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::mutable_deprecation_warning()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_deprecation_warning();
+  ::std::string* _s = _internal_mutable_deprecation_warning();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
   return _s;
 }
-inline const std::string& FieldOptions_FeatureSupport::_internal_deprecation_warning() const {
+inline const ::std::string& FieldOptions_FeatureSupport::_internal_deprecation_warning() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecation_warning_.Get();
 }
-inline void FieldOptions_FeatureSupport::_internal_set_deprecation_warning(const std::string& value) {
+inline void FieldOptions_FeatureSupport::_internal_set_deprecation_warning(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.deprecation_warning_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_deprecation_warning() {
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_deprecation_warning() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.deprecation_warning_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_deprecation_warning() {
+inline ::std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_deprecation_warning() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -18357,7 +18357,7 @@ inline std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_depre
   }
   return released;
 }
-inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(std::string* PROTOBUF_NULLABLE value) {
+inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -20114,7 +20114,7 @@ inline void UninterpretedOption_NamePart::clear_name_part() {
   _impl_.name_part_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& UninterpretedOption_NamePart::name_part() const
+inline const ::std::string& UninterpretedOption_NamePart::name_part() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.UninterpretedOption.NamePart.name_part)
   return _internal_name_part();
@@ -20126,27 +20126,27 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& a
   _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::mutable_name_part()
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::mutable_name_part()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name_part();
+  ::std::string* _s = _internal_mutable_name_part();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.NamePart.name_part)
   return _s;
 }
-inline const std::string& UninterpretedOption_NamePart::_internal_name_part() const {
+inline const ::std::string& UninterpretedOption_NamePart::_internal_name_part() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_part_.Get();
 }
-inline void UninterpretedOption_NamePart::_internal_set_name_part(const std::string& value) {
+inline void UninterpretedOption_NamePart::_internal_set_name_part(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_part_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::_internal_mutable_name_part() {
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption_NamePart::_internal_mutable_name_part() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_part_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE UninterpretedOption_NamePart::release_name_part() {
+inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption_NamePart::release_name_part() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -20159,7 +20159,7 @@ inline std::string* PROTOBUF_NULLABLE UninterpretedOption_NamePart::release_name
   }
   return released;
 }
-inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* PROTOBUF_NULLABLE value) {
+inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -20265,7 +20265,7 @@ inline void UninterpretedOption::clear_identifier_value() {
   _impl_.identifier_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& UninterpretedOption::identifier_value() const
+inline const ::std::string& UninterpretedOption::identifier_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.UninterpretedOption.identifier_value)
   return _internal_identifier_value();
@@ -20277,27 +20277,27 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg
   _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.identifier_value)
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_identifier_value()
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_identifier_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_identifier_value();
+  ::std::string* _s = _internal_mutable_identifier_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.identifier_value)
   return _s;
 }
-inline const std::string& UninterpretedOption::_internal_identifier_value() const {
+inline const ::std::string& UninterpretedOption::_internal_identifier_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.identifier_value_.Get();
 }
-inline void UninterpretedOption::_internal_set_identifier_value(const std::string& value) {
+inline void UninterpretedOption::_internal_set_identifier_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.identifier_value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_identifier_value() {
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_identifier_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.identifier_value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_identifier_value() {
+inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_identifier_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -20310,7 +20310,7 @@ inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_identifier_va
   }
   return released;
 }
-inline void UninterpretedOption::set_allocated_identifier_value(std::string* PROTOBUF_NULLABLE value) {
+inline void UninterpretedOption::set_allocated_identifier_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -20418,7 +20418,7 @@ inline void UninterpretedOption::clear_string_value() {
   _impl_.string_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& UninterpretedOption::string_value() const
+inline const ::std::string& UninterpretedOption::string_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.UninterpretedOption.string_value)
   return _internal_string_value();
@@ -20430,27 +20430,27 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg, Ar
   _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.string_value)
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_string_value()
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_string_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_string_value();
+  ::std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.string_value)
   return _s;
 }
-inline const std::string& UninterpretedOption::_internal_string_value() const {
+inline const ::std::string& UninterpretedOption::_internal_string_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.string_value_.Get();
 }
-inline void UninterpretedOption::_internal_set_string_value(const std::string& value) {
+inline void UninterpretedOption::_internal_set_string_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.string_value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_string_value() {
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.string_value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_string_value() {
+inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -20463,7 +20463,7 @@ inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_string_value(
   }
   return released;
 }
-inline void UninterpretedOption::set_allocated_string_value(std::string* PROTOBUF_NULLABLE value) {
+inline void UninterpretedOption::set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -20487,7 +20487,7 @@ inline void UninterpretedOption::clear_aggregate_value() {
   _impl_.aggregate_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& UninterpretedOption::aggregate_value() const
+inline const ::std::string& UninterpretedOption::aggregate_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.UninterpretedOption.aggregate_value)
   return _internal_aggregate_value();
@@ -20499,27 +20499,27 @@ PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
   _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.aggregate_value)
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_aggregate_value()
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::mutable_aggregate_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_aggregate_value();
+  ::std::string* _s = _internal_mutable_aggregate_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.aggregate_value)
   return _s;
 }
-inline const std::string& UninterpretedOption::_internal_aggregate_value() const {
+inline const ::std::string& UninterpretedOption::_internal_aggregate_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.aggregate_value_.Get();
 }
-inline void UninterpretedOption::_internal_set_aggregate_value(const std::string& value) {
+inline void UninterpretedOption::_internal_set_aggregate_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.aggregate_value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_aggregate_value() {
+inline ::std::string* PROTOBUF_NONNULL UninterpretedOption::_internal_mutable_aggregate_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.aggregate_value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_aggregate_value() {
+inline ::std::string* PROTOBUF_NULLABLE UninterpretedOption::release_aggregate_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
@@ -20532,7 +20532,7 @@ inline std::string* PROTOBUF_NULLABLE UninterpretedOption::release_aggregate_val
   }
   return released;
 }
-inline void UninterpretedOption::set_allocated_aggregate_value(std::string* PROTOBUF_NULLABLE value) {
+inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
@@ -21255,7 +21255,7 @@ inline void SourceCodeInfo_Location::clear_leading_comments() {
   _impl_.leading_comments_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& SourceCodeInfo_Location::leading_comments() const
+inline const ::std::string& SourceCodeInfo_Location::leading_comments() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.leading_comments)
   return _internal_leading_comments();
@@ -21267,27 +21267,27 @@ PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&&
   _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_leading_comments()
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_leading_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_leading_comments();
+  ::std::string* _s = _internal_mutable_leading_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_comments)
   return _s;
 }
-inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() const {
+inline const ::std::string& SourceCodeInfo_Location::_internal_leading_comments() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.leading_comments_.Get();
 }
-inline void SourceCodeInfo_Location::_internal_set_leading_comments(const std::string& value) {
+inline void SourceCodeInfo_Location::_internal_set_leading_comments(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.leading_comments_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_leading_comments() {
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_leading_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.leading_comments_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_leading_comments() {
+inline ::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_leading_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -21300,7 +21300,7 @@ inline std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_leading_c
   }
   return released;
 }
-inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string* PROTOBUF_NULLABLE value) {
+inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
@@ -21324,7 +21324,7 @@ inline void SourceCodeInfo_Location::clear_trailing_comments() {
   _impl_.trailing_comments_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& SourceCodeInfo_Location::trailing_comments() const
+inline const ::std::string& SourceCodeInfo_Location::trailing_comments() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   return _internal_trailing_comments();
@@ -21336,27 +21336,27 @@ PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&
   _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_trailing_comments()
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_trailing_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_trailing_comments();
+  ::std::string* _s = _internal_mutable_trailing_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   return _s;
 }
-inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments() const {
+inline const ::std::string& SourceCodeInfo_Location::_internal_trailing_comments() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.trailing_comments_.Get();
 }
-inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const std::string& value) {
+inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.trailing_comments_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.trailing_comments_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_trailing_comments() {
+inline ::std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_trailing_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
@@ -21369,7 +21369,7 @@ inline std::string* PROTOBUF_NULLABLE SourceCodeInfo_Location::release_trailing_
   }
   return released;
 }
-inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string* PROTOBUF_NULLABLE value) {
+inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
@@ -21394,26 +21394,26 @@ inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.leading_detached_comments_.Clear();
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::add_leading_detached_comments()
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::add_leading_detached_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  std::string* _s = _internal_mutable_leading_detached_comments()->Add();
+  ::std::string* _s = _internal_mutable_leading_detached_comments()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
 }
-inline const std::string& SourceCodeInfo_Location::leading_detached_comments(int index) const
+inline const ::std::string& SourceCodeInfo_Location::leading_detached_comments(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _internal_leading_detached_comments().Get(index);
 }
-inline std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_leading_detached_comments(int index)
+inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_leading_detached_comments(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _internal_mutable_leading_detached_comments()->Mutable(index);
 }
 template <typename Arg_, typename... Args_>
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_leading_detached_comments()->Mutable(index), std::forward<Arg_>(value),
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_leading_detached_comments()->Mutable(index), ::std::forward<Arg_>(value),
                         args... );
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
@@ -21421,27 +21421,27 @@ template <typename Arg_, typename... Args_>
 inline void SourceCodeInfo_Location::add_leading_detached_comments(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_leading_detached_comments(),
-                               std::forward<Arg_>(value),
+                               ::std::forward<Arg_>(value),
                                args... );
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>& SourceCodeInfo_Location::leading_detached_comments() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& SourceCodeInfo_Location::leading_detached_comments()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _internal_leading_detached_comments();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 SourceCodeInfo_Location::mutable_leading_detached_comments() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_leading_detached_comments();
 }
-inline const ::google::protobuf::RepeatedPtrField<std::string>&
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
 SourceCodeInfo_Location::_internal_leading_detached_comments() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.leading_detached_comments_;
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* PROTOBUF_NONNULL
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 SourceCodeInfo_Location::_internal_mutable_leading_detached_comments() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.leading_detached_comments_;
@@ -21561,7 +21561,7 @@ inline void GeneratedCodeInfo_Annotation::clear_source_file() {
   _impl_.source_file_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& GeneratedCodeInfo_Annotation::source_file() const
+inline const ::std::string& GeneratedCodeInfo_Annotation::source_file() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   return _internal_source_file();
@@ -21573,27 +21573,27 @@ PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&&
   _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
-inline std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::mutable_source_file()
+inline ::std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::mutable_source_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_source_file();
+  ::std::string* _s = _internal_mutable_source_file();
   // @@protoc_insertion_point(field_mutable:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   return _s;
 }
-inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() const {
+inline const ::std::string& GeneratedCodeInfo_Annotation::_internal_source_file() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.source_file_.Get();
 }
-inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const std::string& value) {
+inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.source_file_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
+inline ::std::string* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.source_file_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE GeneratedCodeInfo_Annotation::release_source_file() {
+inline ::std::string* PROTOBUF_NULLABLE GeneratedCodeInfo_Annotation::release_source_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
@@ -21606,7 +21606,7 @@ inline std::string* PROTOBUF_NULLABLE GeneratedCodeInfo_Annotation::release_sour
   }
   return released;
 }
-inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string* PROTOBUF_NULLABLE value) {
+inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;

@@ -475,8 +475,11 @@ class Duration(object):
 
   __radd__ = __add__
 
-  def __rsub__(self, dt) -> Union[datetime.datetime, datetime.timedelta]:
-    return dt - self.ToTimedelta()
+  def __sub__(self, value) -> datetime.timedelta:
+    return self.ToTimedelta() - value
+
+  def __rsub__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    return value - self.ToTimedelta()
 
 
 def _CheckDurationValid(seconds, nanos):

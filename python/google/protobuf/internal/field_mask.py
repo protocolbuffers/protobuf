@@ -293,8 +293,10 @@ def _MergeMessage(
           destination.ClearField(_StrConvert(name))
         if source.HasField(name):
           getattr(destination, name).MergeFrom(getattr(source, name))
-      else:
+      elif not field.has_presence or source.HasField(name):
         setattr(destination, name, getattr(source, name))
+      else:
+        destination.ClearField(_StrConvert(name))
 
 
 def _AddFieldPaths(node, prefix, field_mask):
