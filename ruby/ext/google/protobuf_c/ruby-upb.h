@@ -3744,8 +3744,8 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
 #ifndef UPB_REFLECTION_COMMON_H_
 #define UPB_REFLECTION_COMMON_H_
 
-#ifndef THIRD_PARTY_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H_
-#define THIRD_PARTY_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H_
+#ifndef GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
+#define GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
 
 // IWYU pragma: begin_exports
 
@@ -13361,7 +13361,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 // IWYU pragma: end_exports
 
-#endif  // THIRD_PARTY_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H_
+#endif  // GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
 
 typedef enum {
   kUpb_Syntax_Proto2 = 2,
@@ -13667,7 +13667,7 @@ bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
 bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
-bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
 bool upb_FieldDef_IsString(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
@@ -14784,8 +14784,8 @@ upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
 
 #endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */
 
-#ifndef THIRD_PARTY_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H_
-#define THIRD_PARTY_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H_
+#ifndef GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+#define GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14800,7 +14800,7 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
                                              upb_MessageValue* out_v,
                                              uintptr_t* iter);
 
-#endif  // THIRD_PARTY_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H_
+#endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
@@ -15074,8 +15074,8 @@ void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
 
 
 #endif  // UPB_MESSAGE_COPY_H_
-#ifndef THIRD_PARTY_UPB_UPB_MESSAGE_MERGE_H_
-#define THIRD_PARTY_UPB_UPB_MESSAGE_MERGE_H_
+#ifndef GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
+#define GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
 
 
 // Must be last.
@@ -15093,7 +15093,7 @@ UPB_API bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
 } /* extern "C" */
 #endif
 
-#endif  // THIRD_PARTY_UPB_UPB_MESSAGE_MERGE_H_
+#endif  // GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_

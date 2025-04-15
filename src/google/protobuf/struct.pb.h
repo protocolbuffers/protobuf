@@ -88,9 +88,9 @@ namespace protobuf {
 enum NullValue : int {
   NULL_VALUE = 0,
   NullValue_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<::int32_t>::min(),
+      ::std::numeric_limits<::int32_t>::min(),
   NullValue_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<::int32_t>::max(),
+      ::std::numeric_limits<::int32_t>::max(),
 };
 
 PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
@@ -104,19 +104,19 @@ inline bool NullValue_IsValid(int value) {
 inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor();
 template <typename T>
-const std::string& NullValue_Name(T value) {
-  static_assert(std::is_same<T, NullValue>::value ||
-                    std::is_integral<T>::value,
+const ::std::string& NullValue_Name(T value) {
+  static_assert(::std::is_same<T, NullValue>::value ||
+                    ::std::is_integral<T>::value,
                 "Incorrect type passed to NullValue_Name().");
   return NullValue_Name(static_cast<NullValue>(value));
 }
 template <>
-inline const std::string& NullValue_Name(NullValue value) {
+inline const ::std::string& NullValue_Name(NullValue value) {
   return ::google::protobuf::internal::NameOfDenseEnum<NullValue_descriptor, 0, 0>(
       static_cast<int>(value));
 }
 inline bool NullValue_Parse(
-    absl::string_view name, NullValue* PROTOBUF_NONNULL value) {
+    ::absl::string_view name, NullValue* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<NullValue>(NullValue_descriptor(), name,
                                            value);
 }
@@ -144,7 +144,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   inline ListValue(const ListValue& from) : ListValue(nullptr, from) {}
   inline ListValue(ListValue&& from) noexcept
-      : ListValue(nullptr, std::move(from)) {}
+      : ListValue(nullptr, ::std::move(from)) {}
   inline ListValue& operator=(const ListValue& from) {
     CopyFrom(from);
     return *this;
@@ -341,7 +341,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   inline Struct(const Struct& from) : Struct(nullptr, from) {}
   inline Struct(Struct&& from) noexcept
-      : Struct(nullptr, std::move(from)) {}
+      : Struct(nullptr, ::std::move(from)) {}
   inline Struct& operator=(const Struct& from) {
     CopyFrom(from);
     return *this;
@@ -578,7 +578,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   inline Value(const Value& from) : Value(nullptr, from) {}
   inline Value(Value&& from) noexcept
-      : Value(nullptr, std::move(from)) {}
+      : Value(nullptr, ::std::move(from)) {}
   inline Value& operator=(const Value& from) {
     CopyFrom(from);
     return *this;
@@ -744,17 +744,17 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   // string string_value = 3;
   bool has_string_value() const;
   void clear_string_value() ;
-  const std::string& string_value() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
+  const ::std::string& string_value() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
-  std::string* PROTOBUF_NONNULL mutable_string_value();
-  [[nodiscard]] std::string* PROTOBUF_NULLABLE release_string_value();
-  void set_allocated_string_value(std::string* PROTOBUF_NULLABLE value);
+  ::std::string* PROTOBUF_NONNULL mutable_string_value();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_string_value();
+  void set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  const std::string& _internal_string_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
-  std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
+  const ::std::string& _internal_string_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
 
   public:
   // bool bool_value = 4;
@@ -991,7 +991,7 @@ inline void Value::clear_string_value() {
     clear_has_kind();
   }
 }
-inline const std::string& Value::string_value() const
+inline const ::std::string& Value::string_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
@@ -1008,20 +1008,20 @@ PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg, Args_... args) {
   _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
-inline std::string* PROTOBUF_NONNULL Value::mutable_string_value()
+inline ::std::string* PROTOBUF_NONNULL Value::mutable_string_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_string_value();
+  ::std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
 }
-inline const std::string& Value::_internal_string_value() const {
+inline const ::std::string& Value::_internal_string_value() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   if (kind_case() != kStringValue) {
     return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
   }
   return _impl_.kind_.string_value_.Get();
 }
-inline void Value::_internal_set_string_value(const std::string& value) {
+inline void Value::_internal_set_string_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
@@ -1031,7 +1031,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   }
   _impl_.kind_.string_value_.Set(value, GetArena());
 }
-inline std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
+inline ::std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
@@ -1041,7 +1041,7 @@ inline std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
   }
   return _impl_.kind_.string_value_.Mutable( GetArena());
 }
-inline std::string* PROTOBUF_NULLABLE Value::release_string_value() {
+inline ::std::string* PROTOBUF_NULLABLE Value::release_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (kind_case() != kStringValue) {
@@ -1050,7 +1050,7 @@ inline std::string* PROTOBUF_NULLABLE Value::release_string_value() {
   clear_has_kind();
   return _impl_.kind_.string_value_.Release();
 }
-inline void Value::set_allocated_string_value(std::string* PROTOBUF_NULLABLE value) {
+inline void Value::set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (has_kind()) {
     clear_kind();

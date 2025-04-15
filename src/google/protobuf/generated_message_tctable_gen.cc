@@ -285,24 +285,16 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (options.is_string_inlined) {
+      if (options.use_micro_string &&
+          field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
+        // TODO: Add fast parsers.
+        return false;
+      } else if (options.is_string_inlined) {
         ABSL_CHECK(!field->is_repeated());
         // For inlined strings, the donation state index is stored in the
         // `aux_idx` field of the fast parsing info. We need to check the range
         // of that value instead of the auxiliary index.
         aux_idx = entry.inlined_string_idx;
-      }
-      break;
-    }
-
-    case FieldDescriptor::TYPE_ENUM: {
-      uint8_t rmax_value;
-      if (!message_options.uses_codegen &&
-          GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
-        // We can't use fast parsing for these entries because we can't specify
-        // the validator.
-        // TODO: Implement a fast parser for these enums.
-        return false;
       }
       break;
     }
@@ -696,7 +688,8 @@ uint16_t MakeTypeCardForField(
           type_card |= fl::kRepSString;
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
-          type_card |= fl::kRepAString;
+          type_card |=
+              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }
@@ -785,6 +778,142 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
   return true;
 }
 
+std::vector<TailCallTableInfo::FieldEntryInfo>
+TailCallTableInfo::BuildFieldEntries(
+    const Descriptor* descriptor, const MessageOptions& message_options,
+    absl::Span<const FieldOptions> ordered_fields,
+    std::vector<TailCallTableInfo::AuxEntry>& aux_entries) {
+  std::vector<FieldEntryInfo> field_entries;
+  field_entries.reserve(ordered_fields.size());
+
+  const auto is_non_cold = [](const FieldOptions& options) {
+    return options.presence_probability >= 0.005;
+  };
+  size_t num_non_cold_subtables = 0;
+  // We found that clustering non-cold subtables to the top of aux_entries
+  // achieves the best load tests results than other strategies (e.g.,
+  // clustering all non-cold entries).
+  const auto is_non_cold_subtable = [&](const FieldOptions& options) {
+    auto* field = options.field;
+    // In the following code where we assign kSubTable to aux entries, only
+    // the following typed fields are supported.
+    return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+            field->type() == FieldDescriptor::TYPE_GROUP) &&
+           !field->is_map() && !field->options().weak() &&
+           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
+           options.use_direct_tcparser_table && is_non_cold(options);
+  };
+  for (const FieldOptions& options : ordered_fields) {
+    if (is_non_cold_subtable(options)) {
+      num_non_cold_subtables++;
+    }
+  }
+
+  size_t subtable_aux_idx_begin = aux_entries.size();
+  size_t subtable_aux_idx = aux_entries.size();
+  aux_entries.resize(aux_entries.size() + num_non_cold_subtables);
+
+  // Fill in mini table entries.
+  for (const auto& options : ordered_fields) {
+    auto* field = options.field;
+    field_entries.push_back({field, options.has_bit_index});
+    auto& entry = field_entries.back();
+    entry.utf8_check_mode =
+        cpp::GetUtf8CheckMode(field, message_options.is_lite);
+    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
+                                           options, entry.utf8_check_mode);
+
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+        field->type() == FieldDescriptor::TYPE_GROUP) {
+      // Message-typed fields have a FieldAux with the default instance pointer.
+      if (field->is_map()) {
+        entry.aux_idx = aux_entries.size();
+        aux_entries.push_back({kMapAuxInfo, {field}});
+        if (message_options.uses_codegen) {
+          // If we don't use codegen we can't add these.
+          auto* map_value = field->message_type()->map_value();
+          if (map_value->message_type() != nullptr) {
+            aux_entries.push_back({kSubTable, {map_value}});
+          } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
+                     !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
+            aux_entries.push_back({kEnumValidator, {map_value}});
+          }
+        }
+      } else if (field->options().weak()) {
+        // Disable the type card for this entry to force the fallback.
+        entry.type_card = 0;
+      } else if (HasLazyRep(field, options)) {
+        if (message_options.uses_codegen) {
+          entry.aux_idx = aux_entries.size();
+          aux_entries.push_back({kSubMessage, {field}});
+          if (options.lazy_opt == field_layout::kTvEager) {
+            aux_entries.push_back({kMessageVerifyFunc, {field}});
+          } else {
+            aux_entries.push_back({kNothing});
+          }
+        } else {
+          entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
+        }
+      } else {
+        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
+                       : options.use_direct_tcparser_table ? kSubTable
+                                                           : kSubMessage;
+        if (type == kSubTable && is_non_cold(options)) {
+          aux_entries[subtable_aux_idx] = {type, {field}};
+          entry.aux_idx = subtable_aux_idx;
+          ++subtable_aux_idx;
+        } else {
+          entry.aux_idx = aux_entries.size();
+          aux_entries.push_back({type, {field}});
+        }
+      }
+    } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
+               !TreatEnumAsInt(field)) {
+      // Enum fields which preserve unknown values (proto3 behavior) are
+      // effectively int32 fields with respect to parsing -- i.e., the value
+      // does not need to be validated at parse time.
+      //
+      // Enum fields which do not preserve unknown values (proto2 behavior) use
+      // a FieldAux to store validation information. If the enum values are
+      // sequential (and within a range we can represent), then the FieldAux
+      // entry represents the range using the minimum value (which must fit in
+      // an int16_t) and count (a uint16_t). Otherwise, the entry holds a
+      // pointer to the generated Name_IsValid function.
+
+      entry.aux_idx = aux_entries.size();
+      aux_entries.push_back({});
+      auto& aux_entry = aux_entries.back();
+
+      if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.first,
+                                 aux_entry.enum_range.last)) {
+        aux_entry.type = kEnumRange;
+      } else {
+        aux_entry.type = kEnumValidator;
+        aux_entry.field = field;
+      }
+
+    } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
+                field->type() == FieldDescriptor::TYPE_BYTES) &&
+               options.is_string_inlined) {
+      ABSL_CHECK(!field->is_repeated());
+      // Inlined strings have an extra marker to represent their donation state.
+      int idx = options.inlined_string_index;
+      // For mini parsing, the donation state index is stored as an `offset`
+      // auxiliary entry.
+      entry.aux_idx = aux_entries.size();
+      aux_entries.push_back({kNumericOffset});
+      aux_entries.back().offset = idx;
+      // For fast table parsing, the donation state index is stored instead of
+      // the aux_idx (this will limit the range to 8 bits).
+      entry.inlined_string_idx = idx;
+    }
+  }
+  ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
+                num_non_cold_subtables);
+
+  return field_entries;
+}
+
 TailCallTableInfo::TailCallTableInfo(
     const Descriptor* descriptor, const MessageOptions& message_options,
     absl::Span<const FieldOptions> ordered_fields) {
@@ -849,133 +978,8 @@ TailCallTableInfo::TailCallTableInfo(
     aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
   }
 
-  const auto is_non_cold = [](const FieldOptions& options) {
-    return options.presence_probability >= 0.005;
-  };
-  size_t num_non_cold_subtables = 0;
-  if (message_options.should_profile_driven_cluster_aux_subtable) {
-    // We found that clustering non-cold subtables to the top of aux_entries
-    // achieves the best load tests results than other strategies (e.g.,
-    // clustering all non-cold entries).
-    const auto is_non_cold_subtable = [&](const FieldOptions& options) {
-      auto* field = options.field;
-      // In the following code where we assign kSubTable to aux entries, only
-      // the following typed fields are supported.
-      return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-              field->type() == FieldDescriptor::TYPE_GROUP) &&
-             !field->is_map() && !field->options().weak() &&
-             !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-             options.use_direct_tcparser_table && is_non_cold(options);
-    };
-    for (const FieldOptions& options : ordered_fields) {
-      if (is_non_cold_subtable(options)) {
-        num_non_cold_subtables++;
-      }
-    }
-  }
-
-  size_t subtable_aux_idx_begin = aux_entries.size();
-  size_t subtable_aux_idx = aux_entries.size();
-  aux_entries.resize(aux_entries.size() + num_non_cold_subtables);
-
-  // Fill in mini table entries.
-  for (const auto& options : ordered_fields) {
-    auto* field = options.field;
-    field_entries.push_back({field, options.has_bit_index});
-    auto& entry = field_entries.back();
-    entry.utf8_check_mode =
-        cpp::GetUtf8CheckMode(field, message_options.is_lite);
-    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
-                                           options, entry.utf8_check_mode);
-
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-        field->type() == FieldDescriptor::TYPE_GROUP) {
-      // Message-typed fields have a FieldAux with the default instance pointer.
-      if (field->is_map()) {
-        entry.aux_idx = aux_entries.size();
-        aux_entries.push_back({kMapAuxInfo, {field}});
-        if (message_options.uses_codegen) {
-          // If we don't use codegen we can't add these.
-          auto* map_value = field->message_type()->map_value();
-          if (map_value->message_type() != nullptr) {
-            aux_entries.push_back({kSubTable, {map_value}});
-          } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
-                     !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
-            aux_entries.push_back({kEnumValidator, {map_value}});
-          }
-        }
-      } else if (field->options().weak()) {
-        // Disable the type card for this entry to force the fallback.
-        entry.type_card = 0;
-      } else if (HasLazyRep(field, options)) {
-        if (message_options.uses_codegen) {
-          entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({kSubMessage, {field}});
-          if (options.lazy_opt == field_layout::kTvEager) {
-            aux_entries.push_back({kMessageVerifyFunc, {field}});
-          } else {
-            aux_entries.push_back({kNothing});
-          }
-        } else {
-          entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
-        }
-      } else {
-        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
-                       : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessage;
-        if (message_options.should_profile_driven_cluster_aux_subtable &&
-            type == kSubTable && is_non_cold(options)) {
-          aux_entries[subtable_aux_idx] = {type, {field}};
-          entry.aux_idx = subtable_aux_idx;
-          ++subtable_aux_idx;
-        } else {
-          entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({type, {field}});
-        }
-      }
-    } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
-               !TreatEnumAsInt(field)) {
-      // Enum fields which preserve unknown values (proto3 behavior) are
-      // effectively int32 fields with respect to parsing -- i.e., the value
-      // does not need to be validated at parse time.
-      //
-      // Enum fields which do not preserve unknown values (proto2 behavior) use
-      // a FieldAux to store validation information. If the enum values are
-      // sequential (and within a range we can represent), then the FieldAux
-      // entry represents the range using the minimum value (which must fit in
-      // an int16_t) and count (a uint16_t). Otherwise, the entry holds a
-      // pointer to the generated Name_IsValid function.
-
-      entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({});
-      auto& aux_entry = aux_entries.back();
-
-      if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.first,
-                                 aux_entry.enum_range.last)) {
-        aux_entry.type = kEnumRange;
-      } else {
-        aux_entry.type = kEnumValidator;
-        aux_entry.field = field;
-      }
-
-    } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
-                field->type() == FieldDescriptor::TYPE_BYTES) &&
-               options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      // Inlined strings have an extra marker to represent their donation state.
-      int idx = options.inlined_string_index;
-      // For mini parsing, the donation state index is stored as an `offset`
-      // auxiliary entry.
-      entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({kNumericOffset});
-      aux_entries.back().offset = idx;
-      // For fast table parsing, the donation state index is stored instead of
-      // the aux_idx (this will limit the range to 8 bits).
-      entry.inlined_string_idx = idx;
-    }
-  }
-  ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
-                num_non_cold_subtables);
+  field_entries = BuildFieldEntries(descriptor, message_options, ordered_fields,
+                                    aux_entries);
 
   auto end_group_tag = GetEndGroupTag(descriptor);
 

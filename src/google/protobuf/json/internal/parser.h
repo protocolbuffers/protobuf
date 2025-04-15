@@ -17,12 +17,13 @@
 namespace google {
 namespace protobuf {
 namespace json_internal {
-// Internal version of google::protobuf::util::JsonStreamToMessage; see json_util.h for
+// Internal version of google::protobuf::util::JsonStreamToMessage; see json.h for
 // details.
 absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
                                  Message* message,
                                  json_internal::ParseOptions options);
-// Internal version of google::protobuf::util::JsonToBinaryStream; see json_util.h for
+
+// Internal version of google::protobuf::util::JsonToBinaryStream; see json.h for
 // details.
 absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
                                 const std::string& type_url,

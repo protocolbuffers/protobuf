@@ -255,6 +255,13 @@ bool FileGenerator::Validate(std::string* error) {
            "lite.md";
   }
   google::protobuf::internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    if (CheckLargeEnum(&enm) && enm.is_closed()) {
+      absl::StrAppend(
+          error, enm.full_name(),
+          " is a closed enum and can not be used with the large_enum feature.  "
+          "Please migrate to an open enum first, which is a better fit for "
+          "extremely large enums.\n");
+    }
     absl::Status status = ValidateNestInFileClassFeature(enm);
     if (!status.ok()) {
       absl::StrAppend(error, status.message());

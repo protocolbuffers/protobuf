@@ -4170,6 +4170,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
+
 // Returns true if x is a prefix of y.
 bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
   return x.size() <= y.size() && x == y.subspan(0, x.size());
@@ -4214,6 +4215,155 @@ TEST_F(CommandLineInterfaceTest, SourceInfoOptionRetention) {
   for (const SourceCodeInfo::Location& location : source_code_info.location()) {
     EXPECT_FALSE(IsPrefix(declaration_option_path, location.path()));
   }
+}
+
+// ====== Visibility Tests =========
+
+TEST_F(CommandLineInterfaceTest, VisibilityFromSame) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+          LocalMessage foo = 1;
+        }
+        )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir vis.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, ExplicitVisibilityFromOther) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema");
+
+  CreateTempFile("importer.proto",
+                 R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.LocalMessage foo = 1;
+        }
+      )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol \"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible from \"importer.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Edition2024DefaultVisibilityFromOther) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        message TopLevelMessage {
+          message NestedMessage {
+          }
+        }
+        )schema");
+
+  CreateTempFile("good_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message GoodImport {
+          vis.test.TopLevelMessage foo = 1;
+        }
+        )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir good_importer.proto");
+
+  ExpectNoErrors();
+
+  CreateTempFile("bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.TopLevelMessage.NestedMessage foo = 1;
+        }
+        )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir bad_importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol "
+      "\"vis.test.TopLevelMessage.NestedMessage\", defined in \"vis.proto\"  "
+      "is not visible from \"bad_importer.proto\". It defaulted to local from "
+      "file-level 'option features.default_symbol_visibility = "
+      "'EXPORT_TOP_LEVEL'; and cannot be accessed outside its own file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, VisibilityFromLocalExtender) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalExtendee {
+          extensions 1 to 100;
+        }
+        )schema");
+
+  CreateTempFile("bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        extend vis.test.LocalExtendee {
+          string bar = 1;
+        }
+      )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir bad_importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol \"vis.test.LocalExtendee\", "
+      "defined in \"vis.proto\" target of extend is not visible from "
+      "\"bad_importer.proto\". It is explicitly marked 'local' and cannot be "
+      "accessed outside its own file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
+  CreateTempFile("vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir vis.proto");
+  ExpectErrorSubstring(
+      "vis.proto: \"Inner\" is a nested message and cannot be `export` with "
+      "STRICT "
+      "default_symbol_visibility");
 }
 
 // ===================================================================

@@ -33,6 +33,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -203,6 +204,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return AppendStringFallback(ptr, size, s);
   }
+
+  [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
+
+  [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
+                                            Arena* arena);
+  [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
+                                                    MicroString& str,
+                                                    Arena* arena);
+
   // Implemented in arenastring.cc
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
                                             Arena* arena);
@@ -216,6 +226,16 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return ReadCordFallback(ptr, size, cord);
   }
 
+
+  template <typename FuncT>
+  [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
+                                                 FuncT&& callback) {
+    if (size <= BytesAvailable(ptr)) {
+      callback(ptr, size);
+      return ptr + size;
+    }
+    return AppendSize(ptr, size, callback);
+  }
 
   template <typename Tag, typename T>
   [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Tag expected_tag,
@@ -378,6 +398,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   inline const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
+  const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
@@ -393,11 +414,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
+    // Some append functions may return false to bail out early.
+    constexpr bool kCheckReturn =
+        std::is_invocable_r_v<bool, decltype(append), const char*, int>;
+
     int chunk_size = BytesAvailable(ptr);
     do {
       ABSL_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
-      append(ptr, chunk_size);
+      if constexpr (kCheckReturn) {
+        if (!append(ptr, chunk_size)) return nullptr;
+      } else {
+        append(ptr, chunk_size);
+      }
       ptr += chunk_size;
       size -= chunk_size;
       // TODO Next calls NextBuffer which generates buffers with
@@ -409,7 +438,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr += kSlopBytes;
       chunk_size = BytesAvailable(ptr);
     } while (size > chunk_size);
-    append(ptr, size);
+
+    if constexpr (kCheckReturn) {
+      if (!append(ptr, size)) return nullptr;
+    } else {
+      append(ptr, size);
+    }
     return ptr + size;
   }
 
@@ -1143,6 +1177,19 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   *old_limit = PushLimit(ptr, size);
   --depth_;
   return ptr;
+}
+
+inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
+                                                       MicroString& str,
+                                                       Arena* arena) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+
+  if (size <= BytesAvailable(ptr)) {
+    str.Set(absl::string_view(ptr, size), arena);
+    return ptr + size;
+  }
+  return ReadMicroStringFallback(ptr, size, str, arena);
 }
 
 

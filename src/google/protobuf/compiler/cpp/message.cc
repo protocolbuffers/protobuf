@@ -882,7 +882,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
-                std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+                ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
       inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
@@ -893,7 +893,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
-                std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+                ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
       inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const
@@ -970,7 +970,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
-                std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+                ::std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
       inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
@@ -982,7 +982,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
                 bool _is_packed,
-                std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+                ::std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
       inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
@@ -1590,8 +1590,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                       using InternalArenaConstructable_ = void;
                       using DestructorSkippable_ = void;
                     };
-                    static_assert(std::is_trivially_copy_constructible<Split>::value);
-                    static_assert(std::is_trivially_destructible<Split>::value);
+                    static_assert(::std::is_trivially_copy_constructible<Split>::value);
+                    static_assert(::std::is_trivially_destructible<Split>::value);
                     Split* $nonnull$ _split_;
                   )cc");
         }},
@@ -2181,7 +2181,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           inline $classname$(const $classname$& from) : $classname$(nullptr, from) {}
           inline $classname$($classname$&& from) noexcept
-              : $classname$(nullptr, std::move(from)) {}
+              : $classname$(nullptr, ::std::move(from)) {}
           inline $classname$& operator=(const $classname$& from) {
             CopyFrom(from);
             return *this;
@@ -2427,7 +2427,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
           p->Emit(
               R"cc(
                 using HasBits =
-                    decltype(std::declval<$classname$>().$has_bits$);
+                    decltype(::std::declval<$classname$>().$has_bits$);
                 static constexpr ::int32_t kHasBitsOffset =
                     8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);
               )cc");
@@ -3795,7 +3795,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       "void $classname$::InternalSwap($classname$* PROTOBUF_RESTRICT "
       "$nonnull$ other) {\n");
   format.Indent();
-  format("using std::swap;\n");
+  format("using ::std::swap;\n");
   format("$WeakDescriptorSelfPin$");
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -4178,7 +4178,15 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pbi$::ClassDataFull $classname$_class_data_ =
                   $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $nonnull$ $classname$::GetClassData() const {
+          //~ This function needs to be marked as weak to avoid significantly
+          //~ slowing down compilation times.  This breaks up LLVM's SCC
+          //~ in the .pb.cc translation units. Large translation units see a
+          //~ reduction of roughly 50% of walltime for optimized builds.
+          //~ Without the weak attribute all the messages in the file, including
+          //~ all the vtables and everything they use become part of the same
+          //~ SCC.
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $classname$::GetClassData() const {
             $pin_weak_descriptor$;
             $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
             $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
@@ -4221,7 +4229,15 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
               $classname$::InternalGenerateClassData_();
 
-          const $pbi$::ClassData* $nonnull$ $classname$::GetClassData() const {
+          //~ This function needs to be marked as weak to avoid significantly
+          //~ slowing down compilation times.  This breaks up LLVM's SCC
+          //~ in the .pb.cc translation units. Large translation units see a
+          //~ reduction of roughly 50% of walltime for optimized builds.
+          //~ Without the weak attribute all the messages in the file, including
+          //~ all the vtables and everything they use become part of the same
+          //~ SCC.
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $classname$::GetClassData() const {
             return $classname$_class_data_.base();
           }
         )cc");
@@ -4327,7 +4343,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
         if (field->is_repeated()) {
           generator.GenerateMergingCode(p);
-        } else if (field->is_optional() && !HasHasbit(field)) {
+        } else if (!field->is_required() && !field->is_repeated() &&
+                   !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           MayEmitMutableIfNonDefaultCheck(
@@ -4608,7 +4625,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
             $body$;
           }
         )cc");
-  } else if (field->is_optional()) {
+  } else if (!field->is_required() && !field->is_repeated()) {
     MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
   } else {
@@ -5121,7 +5138,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
-        return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
+        return a->is_required() == b->is_required() &&
+               a->is_repeated() == b->is_repeated() &&
+               HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });

@@ -30,6 +30,9 @@ message TestConflictingSymbolNames {
   message BuildDescriptors {}
   message TypeTraits {}
 
+  // Use common namespaces to make sure we are properly qualifying
+  message std {}
+
   optional int32 input = 1;
   optional int32 output = 2;
   optional string length = 3;

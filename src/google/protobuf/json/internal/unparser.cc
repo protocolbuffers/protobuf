@@ -831,22 +831,19 @@ absl::Status WriteMessage(JsonWriter& writer, const Msg<Traits>& msg,
 }
 }  // namespace
 
-absl::Status MessageToJsonString(const Message& message, std::string* output,
+absl::Status MessageToJsonStream(const Message& message,
+                                 io::ZeroCopyOutputStream* json_output,
                                  json_internal::WriterOptions options) {
   if (PROTOBUF_DEBUG) {
     ABSL_DLOG(INFO) << "json2/input: " << message.DebugString();
   }
-  io::StringOutputStream out(output);
-  JsonWriter writer(&out, options);
+  JsonWriter writer(json_output, options);
   absl::Status s = WriteMessage<UnparseProto2Descriptor>(
       writer, message, *message.GetDescriptor(), /*is_top_level=*/true);
   if (PROTOBUF_DEBUG) ABSL_DLOG(INFO) << "json2/status: " << s;
   RETURN_IF_ERROR(s);
 
   writer.NewLine();
-  if (PROTOBUF_DEBUG) {
-    ABSL_DLOG(INFO) << "json2/output: " << absl::CHexEscape(*output);
-  }
   return absl::OkStatus();
 }
 

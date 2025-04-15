@@ -11,10 +11,10 @@
 #include <cfloat>
 #include <cstdint>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
@@ -27,7 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -539,13 +538,13 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 
   Value& slot = emplace_result.first->second;
   using value_type = std::decay_t<T>;
-  if (auto* extant = absl::get_if<value_type>(&slot)) {
+  if (auto* extant = std::get_if<value_type>(&slot)) {
     std::vector<value_type> repeated;
     repeated.push_back(std::move(*extant));
     repeated.push_back(std::forward<T>(value));
 
     slot = std::move(repeated);
-  } else if (auto* extant = absl::get_if<std::vector<value_type>>(&slot)) {
+  } else if (auto* extant = std::get_if<std::vector<value_type>>(&slot)) {
     extant->push_back(std::forward<T>(value));
   } else {
     absl::optional<absl::string_view> name =

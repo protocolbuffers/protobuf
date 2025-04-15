@@ -249,6 +249,14 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
+inline constexpr bool EnableExperimentalMicroString() {
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -323,6 +331,15 @@ inline constexpr bool IsLazyParsingSupported() {
   // We need 3 bits for pointer tagging in lazy parsing.
   return PtrIsAtLeast8BAligned();
 }
+
+#if defined(ABSL_IS_LITTLE_ENDIAN)
+constexpr bool IsLittleEndian() { return true; }
+#elif defined(ABSL_IS_BIG_ENDIAN)
+constexpr bool IsLittleEndian() { return false; }
+#else
+#error "Only little-endian and big-endian are supported"
+#endif
+constexpr bool IsBigEndian() { return !IsLittleEndian(); }
 
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were

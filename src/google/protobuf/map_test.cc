@@ -37,7 +37,6 @@
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/map_test_util.inc"
 #include "google/protobuf/map_test.inc"
 // clang-format on

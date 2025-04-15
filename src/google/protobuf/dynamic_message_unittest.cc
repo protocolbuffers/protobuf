@@ -34,6 +34,8 @@
 #include "google/protobuf/edition_unittest.pb.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"
 
 

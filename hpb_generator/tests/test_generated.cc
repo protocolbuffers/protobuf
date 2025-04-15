@@ -15,11 +15,12 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/set_alias.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_enum.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/no_package.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/set_alias.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_enum.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
+// purposely left as .upb.proto.h until we fully migrate to .hpb.h
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"

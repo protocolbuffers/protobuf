@@ -313,7 +313,7 @@ void ClearExtension(
  *  For rvalue references, if the arenas match, the extension is moved.
  *  If the arenas differ, a deep copy is performed.
  */
-template <int&... DeductionBlocker, typename T, typename Extension,
+template <int&... DeductionBarrier, typename T, typename Extension,
           typename Input>
 auto SetExtension(
     hpb::internal::PtrOrRawMutable<T> message,

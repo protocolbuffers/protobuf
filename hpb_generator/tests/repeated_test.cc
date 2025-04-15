@@ -7,9 +7,9 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
 #include "google/protobuf/hpb/requires.h"
 
 namespace {

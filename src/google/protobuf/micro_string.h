@@ -77,26 +77,31 @@ class PROTOBUF_EXPORT MicroString {
       ABSL_DCHECK_GE(capacity, kOwned);
       return reinterpret_cast<char*>(this + 1);
     }
+
+    void SetExternalBuffer(absl::string_view buffer) {
+      payload = const_cast<char*>(buffer.data());
+      size = buffer.size();
+    }
+
+    void SetInitialSize(size_t size) {
+      PoisonMemoryRegion(owned_head() + size, capacity - size);
+      this->size = size;
+    }
+
+    void Unpoison() { UnpoisonMemoryRegion(owned_head(), capacity); }
+
+    void ChangeSize(size_t new_size) {
+      PoisonMemoryRegion(owned_head() + new_size, capacity - new_size);
+      UnpoisonMemoryRegion(owned_head(), new_size);
+      size = new_size;
+    }
   };
 
  public:
-  // For the platforms supported, the inline representation will have an inline
-  // buffer that allows storing very small strings without allocating any
-  // memory.
-  // For other platforms, the "inline" representation will only support the
-  // empty case.
-#if defined(ABSL_IS_LITTLE_ENDIAN)
-  static constexpr bool kHasInlineBuffer = true;
-#else
-  // For now, disable the inline buffer if not in little endian.
-  // We can revisit this later if performance in such platforms is relevant.
-  // Note that MicroStringExtra depends on LITTLE_ENDIAN to put the extra bytes
-  // contiguously with the bytes from the base.
-  static constexpr bool kHasInlineBuffer = false;
-#endif
-
-  static constexpr size_t kInlineCapacity =
-      kHasInlineBuffer ? sizeof(uintptr_t) - 1 : 0;
+  // We don't allow extra capacity in big-endian because it is harder to manage
+  // the pointer to the MicroString "base".
+  static constexpr bool kAllowExtraCapacity = IsLittleEndian();
+  static constexpr size_t kInlineCapacity = sizeof(uintptr_t) - 1;
   static constexpr size_t kMaxMicroRepCapacity = 255;
 
   // Empty string.
@@ -141,12 +146,7 @@ class PROTOBUF_EXPORT MicroString {
   // Does not necessarily release any memory.
   void Clear() {
     if (is_inline()) {
-      if (kHasInlineBuffer) {
-        set_inline_size(0);
-      } else {
-        // Nothing to do. Already empty.
-        ABSL_DCHECK(Get().empty());
-      }
+      set_inline_size(0);
       return;
     }
     ClearSlow();
@@ -229,9 +229,7 @@ class PROTOBUF_EXPORT MicroString {
   size_t SpaceUsedExcludingSelfLong() const;
 
   absl::string_view Get() const {
-    if (!kHasInlineBuffer && rep_ == nullptr) {
-      return absl::string_view();
-    } else if (is_micro_rep()) {
+    if (is_micro_rep()) {
       return micro_rep()->view();
     } else if (is_inline()) {
       return inline_view();
@@ -251,14 +249,9 @@ class PROTOBUF_EXPORT MicroString {
 
   void InternalSwap(MicroString* other,
                     size_t inline_capacity = kInlineCapacity) {
-    if (kHasInlineBuffer) {
-      std::swap_ranges(reinterpret_cast<char*>(this),
-                       reinterpret_cast<char*>(this) + inline_capacity + 1,
-                       reinterpret_cast<char*>(other));
-    } else {
-      ABSL_DCHECK_EQ(inline_capacity, size_t{0});
-      std::swap(rep_, other->rep_);
-    }
+    std::swap_ranges(reinterpret_cast<char*>(this),
+                     reinterpret_cast<char*>(this) + inline_capacity + 1,
+                     reinterpret_cast<char*>(other));
   }
 
  protected:
@@ -266,10 +259,7 @@ class PROTOBUF_EXPORT MicroString {
 
   struct StringRep : LargeRep {
     std::string str;
-    void ResetBase() {
-      payload = str.data();
-      size = str.size();
-    }
+    void ResetBase() { SetExternalBuffer(str); }
   };
 
   static_assert(alignof(void*) >= 4, "We need two tag bits from pointers.");
@@ -304,9 +294,23 @@ class PROTOBUF_EXPORT MicroString {
   struct MicroRep {
     uint8_t size;
     uint8_t capacity;
+
     char* data() { return reinterpret_cast<char*>(this + 1); }
     const char* data() const { return reinterpret_cast<const char*>(this + 1); }
     absl::string_view view() const { return {data(), size}; }
+
+    void SetInitialSize(uint8_t size) {
+      PoisonMemoryRegion(data() + size, capacity - size);
+      this->size = size;
+    }
+
+    void Unpoison() { UnpoisonMemoryRegion(data(), capacity); }
+
+    void ChangeSize(uint8_t new_size) {
+      PoisonMemoryRegion(data() + new_size, capacity - new_size);
+      UnpoisonMemoryRegion(data(), new_size);
+      size = new_size;
+    }
   };
   // Micro-optimization: by using kIsMicroRepTag as 2, the MicroRep `rep_`
   // pointer (with the tag) is already pointing into the data buffer.
@@ -352,7 +356,6 @@ class PROTOBUF_EXPORT MicroString {
     return static_cast<uint8_t>(reinterpret_cast<uintptr_t>(rep_)) >> kTagShift;
   }
   void set_inline_size(size_t size) {
-    ABSL_DCHECK(kHasInlineBuffer);
     size <<= kTagShift;
     PROTOBUF_ASSUME(size <= 0xFF);
     // Only overwrite the size byte to avoid clobbering the char bytes in case
@@ -363,11 +366,16 @@ class PROTOBUF_EXPORT MicroString {
   }
   char* inline_head() {
     ABSL_DCHECK(is_inline());
-    return reinterpret_cast<char*>(&rep_) + 1;
+
+    // In little-endian the layout is
+    //    [ size ] [ chars... ]
+    // while in big endian it is
+    //    [ chars... ] [ size ]
+    return IsLittleEndian() ? reinterpret_cast<char*>(&rep_) + 1
+                            : reinterpret_cast<char*>(&rep_);
   }
   const char* inline_head() const {
-    ABSL_DCHECK(is_inline());
-    return reinterpret_cast<const char*>(&rep_) + 1;
+    return const_cast<MicroString*>(this)->inline_head();
   }
   absl::string_view inline_view() const {
     return {inline_head(), inline_size()};
@@ -415,13 +423,6 @@ class PROTOBUF_EXPORT MicroString {
     const size_t size = data.size();
     if (PROTOBUF_BUILTIN_CONSTANT_P(size <= Self::kInlineCapacity) &&
         size <= Self::kInlineCapacity && self.is_inline()) {
-      if (!Self::kHasInlineBuffer) {
-        // We can only come here if the value is inline-empty and the input is
-        // empty, so nothing to do.
-        ABSL_DCHECK_EQ(size, size_t{0});
-        ABSL_DCHECK_EQ(self.rep_, nullptr);
-        return;
-      }
       // Using a separate local variable allows the optimizer to merge the
       // writes better. We do a single write to memory on the assingment below.
       Self tmp;
@@ -438,13 +439,13 @@ class PROTOBUF_EXPORT MicroString {
 
   void DestroySlow();
 
-  // Allocate the corresponding rep, and sets its capacity.
+  // Allocate the corresponding rep, and sets its size and capacity.
   // The actual capacity might be larger than the requested one.
-  // The size and data bytes are uninitialized.
+  // The data bytes are uninitialized.
   // rep_ is updated to point to the new rep without any cleanup of the old
   // value.
-  MicroRep* AllocateMicroRep(size_t capacity, Arena* arena);
-  LargeRep* AllocateOwnedRep(size_t capacity, Arena* arena);
+  MicroRep* AllocateMicroRep(size_t size, Arena* arena);
+  LargeRep* AllocateOwnedRep(size_t size, Arena* arena);
   StringRep* AllocateStringRep(Arena* arena);
 
   void* rep_;
@@ -470,12 +471,12 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
 
   const auto do_micro = [&](MicroRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
-    r->size = invoke_setter(r->data());
+    r->ChangeSize(invoke_setter(r->data()));
   };
 
   const auto do_owned = [&](LargeRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
-    r->size = invoke_setter(r->owned_head());
+    r->ChangeSize(invoke_setter(r->owned_head()));
   };
 
   const auto do_string = [&](StringRep* r) {
@@ -529,6 +530,18 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
   }
 }
 
+// MicroStringExtra lays out the memory as:
+//
+//   [ MicroString ] [ extra char buffer ]
+//
+// which in little endian ends up as
+//
+//   [ char size/tag ] [ MicroStrings's inline space ] [ extra char buffer ]
+//
+// so from the inline_head() position we can access all the normal and extra
+// buffer bytes.
+//
+// This does not work on bigendian so we disable Extra for now there.
 template <size_t RequestedSpace>
 class MicroStringExtraImpl : private MicroString {
   static constexpr size_t RoundUp(size_t n) {
@@ -544,10 +557,10 @@ class MicroStringExtraImpl : private MicroString {
                 "Must fit with the tags.");
 
   constexpr MicroStringExtraImpl() {
-    // Some compilers don't like to assert kHasInlineBuffer directly, so make
+    // Some compilers don't like to assert kAllowExtraCapacity directly, so make
     // the expression dependent.
     static_assert(static_cast<int>(RequestedSpace != 0) &
-                  static_cast<int>(MicroString::kHasInlineBuffer));
+                  static_cast<int>(MicroString::kAllowExtraCapacity));
   }
   MicroStringExtraImpl(Arena* arena, const MicroStringExtraImpl& other)
       : MicroString(FromOtherTag{}, other, arena) {}
@@ -603,7 +616,7 @@ class MicroStringExtraImpl : private MicroString {
 // It could be rouneded up to prevent padding.
 template <size_t InlineCapacity>
 using MicroStringExtra =
-    std::conditional_t<(!MicroString::kHasInlineBuffer ||
+    std::conditional_t<(!MicroString::kAllowExtraCapacity ||
                         InlineCapacity <= MicroString::kInlineCapacity),
                        MicroString, MicroStringExtraImpl<InlineCapacity>>;
 

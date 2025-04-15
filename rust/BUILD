@@ -59,7 +59,6 @@ PROTOBUF_SHARED = [
     "optional.rs",
     "prelude.rs",
     "primitive.rs",
-    "proto_macro.rs",
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
@@ -89,6 +88,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["upb.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
+        "//rust/proto_proc_macro",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -135,6 +135,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
+        "//rust/proto_proc_macro",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -261,7 +262,7 @@ config_setting(
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = ALL_RUST_SRCS,
+    srcs = ALL_RUST_SRCS + ["proto_macro.rs"],
     strip_prefix = strip_prefix.from_root("rust"),
 )
 

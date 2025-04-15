@@ -65,6 +65,7 @@ static zend_object* Message_create(zend_class_entry* class_type) {
   Message_SuppressDefaultProperties(class_type);
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &message_object_handlers;
+  intern->desc = NULL;
   Arena_Init(&intern->arena);
   return &intern->std;
 }
@@ -89,6 +90,15 @@ static void Message_dtor(zend_object* obj) {
  * Helper function to look up a field given a member name (as a string).
  */
 static const upb_FieldDef* get_field(Message* msg, zend_string* member) {
+  if (!msg || !msg->desc || !msg->desc->msgdef) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Couldn't find descriptor. "
+                            "The message constructor was likely bypassed, "
+                            "resulting in an uninitialized descriptor.");
+
+    return NULL;
+  }
+
   const upb_MessageDef* m = msg->desc->msgdef;
   const upb_FieldDef* f = upb_MessageDef_FindFieldByNameWithSize(
       m, ZSTR_VAL(member), ZSTR_LEN(member));

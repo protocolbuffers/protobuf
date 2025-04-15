@@ -13,6 +13,7 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -26,7 +27,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -139,15 +139,15 @@ struct Value {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Value& v) {
-    if (absl::holds_alternative<Null>(v.value)) {
+    if (std::holds_alternative<Null>(v.value)) {
       os << "null";
-    } else if (const auto* x = absl::get_if<bool>(&v.value)) {
+    } else if (const auto* x = std::get_if<bool>(&v.value)) {
       os << "bool:" << (*x ? "true" : "false");
-    } else if (const auto* x = absl::get_if<double>(&v.value)) {
+    } else if (const auto* x = std::get_if<double>(&v.value)) {
       os << "num:" << *x;
-    } else if (const auto* x = absl::get_if<std::string>(&v.value)) {
+    } else if (const auto* x = std::get_if<std::string>(&v.value)) {
       os << "str:" << absl::CHexEscape(*x);
-    } else if (const auto* x = absl::get_if<Array>(&v.value)) {
+    } else if (const auto* x = std::get_if<Array>(&v.value)) {
       os << "arr:[";
       bool first = true;
       for (const auto& val : *x) {
@@ -157,7 +157,7 @@ struct Value {
         os << val;
       }
       os << "]";
-    } else if (const auto* x = absl::get_if<Object>(&v.value)) {
+    } else if (const auto* x = std::get_if<Object>(&v.value)) {
       os << "obj:[";
       bool first = true;
       for (const auto& kv : *x) {
@@ -175,7 +175,7 @@ struct Value {
   struct Null {};
   using Array = std::vector<Value>;
   using Object = std::vector<std::pair<std::string, Value>>;
-  absl::variant<Null, bool, double, std::string, Array, Object> value;
+  std::variant<Null, bool, double, std::string, Array, Object> value;
 };
 
 template <typename T, typename M>
@@ -693,7 +693,7 @@ TEST(LexerTest, ArrayRecursion) {
     Value* v = &*value;
     for (int i = 0; i < ParseOptions::kDefaultDepth - 1; ++i) {
       ASSERT_THAT(*v, ValueIs<Value::Array>(SizeIs(1)));
-      v = &absl::get<Value::Array>(v->value)[0];
+      v = &std::get<Value::Array>(v->value)[0];
     }
     ASSERT_THAT(*v, ValueIs<Value::Array>(IsEmpty()));
   }
@@ -722,7 +722,7 @@ TEST(LexerTest, ObjectRecursion) {
     Value* v = &*value;
     for (int i = 0; i < ParseOptions::kDefaultDepth - 1; ++i) {
       ASSERT_THAT(*v, ValueIs<Value::Object>(ElementsAre(Pair("k", _))));
-      v = &absl::get<Value::Object>(v->value)[0].second;
+      v = &std::get<Value::Object>(v->value)[0].second;
     }
     ASSERT_THAT(*v, ValueIs<Value::Object>(IsEmpty()));
   }

@@ -54,7 +54,7 @@ fn protoc_version(protoc_output: &str) -> String {
 // "X.Y.Z" with an optional suffix starting with a dash. We want to drop the
 // major version ("X.") and only keep the suffix if it starts with "-rc".
 fn expected_protoc_version(cargo_version: &str) -> String {
-    let mut s = cargo_version.to_string();
+    let mut s = cargo_version.replace("-rc.", "-rc");
     let is_release_candidate = s.find("-rc") != None;
     if !is_release_candidate {
         if let Some(i) = s.find('-') {
@@ -258,6 +258,6 @@ mod tests {
         assert_that!(expected_protoc_version("4.30.0-alpha"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
-        assert_that!(expected_protoc_version("4.30.0-rc1"), eq("30.0-rc1"));
+        assert_that!(expected_protoc_version("4.30.0-rc.1"), eq("30.0-rc1"));
     }
 }

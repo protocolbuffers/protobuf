@@ -359,6 +359,43 @@ TEST(IntTableTest, BoolKeys) {
   upb_inttable_clear(&t);
 }
 
+TEST(IntTableTest, EnumValues) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_int32(0), arena.ptr());
+  upb_inttable_insert(&t, -1, upb_value_int32(-1), arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  int32_t key_int32;
+
+  // First element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  memcpy(&key_int32, &key, sizeof(key_int32));
+  EXPECT_EQ(key_int32, 0);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), 0);
+  EXPECT_EQ(val.val, 0);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, 0);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Second element.
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  memcpy(&key_int32, &key, sizeof(key_int32));
+  EXPECT_EQ(key_int32, -1);
+  EXPECT_EQ(upb_inttable_iter_key(&t, iter), -1);
+  EXPECT_EQ(val.val, -1);
+  EXPECT_EQ(upb_inttable_iter_value(&t, iter).val, -1);
+  EXPECT_FALSE(upb_inttable_done(&t, iter));
+
+  // Done with the iteration.
+  EXPECT_FALSE(upb_inttable_next(&t, &key, &val, &iter));
+  EXPECT_TRUE(upb_inttable_done(&t, iter));
+
+  upb_inttable_clear(&t);
+}
+
 INSTANTIATE_TEST_SUITE_P(IntTableParams, IntTableTest,
                          testing::Values(8, 64, 512, -32));
 

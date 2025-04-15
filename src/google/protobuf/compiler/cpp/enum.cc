@@ -60,7 +60,7 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
                               .GetExtension(::pb::cpp)
                               .enum_name_uses_string_view()
                           ? "::absl::string_view"
-                          : "const std::string&"},
+                          : "const ::std::string&"},
   };
 }
 
@@ -169,9 +169,9 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                                     p->LookupVar("Msg_Enum_"))}},
                      R"cc(
                        $Msg_Enum_Msg_Enum_$INT_MIN_SENTINEL_DO_NOT_USE_ =
-                           std::numeric_limits<::int32_t>::min(),
+                           ::std::numeric_limits<::int32_t>::min(),
                        $Msg_Enum_Msg_Enum_$INT_MAX_SENTINEL_DO_NOT_USE_ =
-                           std::numeric_limits<::int32_t>::max(),
+                           ::std::numeric_limits<::int32_t>::max(),
                      )cc");
            }},
       },
@@ -221,8 +221,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   // directly. Because this includes $Enum$, it must be a callback.
   auto write_assert = [&] {
     p->Emit(R"cc(
-      static_assert(std::is_same<T, $Msg_Enum$>::value ||
-                        std::is_integral<T>::value,
+      static_assert(::std::is_same<T, $Msg_Enum$>::value ||
+                        ::std::is_integral<T>::value,
                     "Incorrect type passed to $Enum$_Name().");
     )cc");
   };
@@ -262,7 +262,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     p->Emit(R"cc(
       inline bool $Msg_Enum$_Parse(
           //~
-          absl::string_view name, $Msg_Enum$* $nonnull$ value) {
+          ::absl::string_view name, $Msg_Enum$* $nonnull$ value) {
         return $pbi$::ParseNamedEnum<$Msg_Enum$>($Msg_Enum$_descriptor(), name,
                                                  value);
       }
@@ -271,7 +271,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     p->Emit(R"cc(
       bool $Msg_Enum$_Parse(
           //~
-          absl::string_view name, $Msg_Enum$* $nonnull$ value);
+          ::absl::string_view name, $Msg_Enum$* $nonnull$ value);
     )cc");
   }
 }
@@ -356,7 +356,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
     }
     static inline bool $Enum$_Parse(
         //~
-        absl::string_view name, $Enum_$* $nonnull$ value) {
+        ::absl::string_view name, $Enum_$* $nonnull$ value) {
       return $Msg_Enum$_Parse(name, value);
     }
   )cc");
@@ -526,7 +526,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
              }},
         },
         R"cc(
-          static $pbi$::ExplicitlyConstructed<std::string>
+          static $pbi$::ExplicitlyConstructed<::std::string>
               $Msg_Enum$_strings[$num_unique$] = {};
 
           static const char $Msg_Enum$_names[] = {
@@ -553,7 +553,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             return idx == -1 ? $pbi$::GetEmptyString() : $Msg_Enum$_strings[idx].get();
           }
 
-          bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* $nonnull$ value) {
+          bool $Msg_Enum$_Parse(::absl::string_view name, $Msg_Enum$* $nonnull$ value) {
             int int_value;
             bool success = $pbi$::LookUpEnumValue(
                 $Msg_Enum$_entries, $num_declared$, name, &int_value);
