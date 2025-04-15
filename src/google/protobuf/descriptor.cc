@@ -1612,6 +1612,9 @@ class DescriptorPool::DeferredValidation {
   // reported errors won't be able to safely reference a location in the
   // original proto file.
   FileDescriptorProto& CreateProto() {
+    if (first_proto_ != nullptr) {
+      return *std::exchange(first_proto_, nullptr);
+    }
     return *Arena::Create<FileDescriptorProto>(&arena_);
   }
 
@@ -1660,7 +1663,16 @@ class DescriptorPool::DeferredValidation {
   }
 
  private:
-  Arena arena_;
+  // Pass an initial buffer to save the first memory allocation.
+  // This can speed up lookup misses because we fail fast and won't need extra
+  // memory.
+  char initial_buffer_[512];
+  Arena arena_{initial_buffer_, sizeof(initial_buffer_)};
+  // We create the first proto eagerly.
+  // We will need it and this way we do it outside the lock to reduce
+  // contention.
+  FileDescriptorProto* first_proto_ =
+      Arena::Create<FileDescriptorProto>(&arena_);
   const DescriptorPool* pool_;
   ErrorCollector* error_collector_;
   absl::flat_hash_map<const FileDescriptor*, std::vector<LifetimesInfo>>
