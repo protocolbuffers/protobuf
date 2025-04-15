@@ -397,30 +397,33 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__SANITIZE_THREAD__) || UPB_CLANG_TSAN
-// These annotations improve TSAN's ability to detect data races.  By
-// proactively accessing a non-atomic variable at the point where it is
-// "logically" accessed, we can trigger TSAN diagnostics that might have
-// otherwise been masked by subsequent atomic operations.
-#define UPB_TSAN_SYNTHETIC_MEMBER \
-  uintptr_t UPB_PRIVATE(upb_tsan_synthetic_member);
-#define UPB_TSAN_INIT(ptr) \
-  (ptr)->UPB_PRIVATE(upb_tsan_synthetic_member) = 0x5AFE
-#define UPB_TSAN_ACCESS_READONLY(ptr) \
-/* For performance we avoid using a volatile variable. */
-__asm__ volatile("" ::"r"((ptr)->UPB_PRIVATE(upb_tsan_synthetic_member)))
-#define UPB_TSAN_ACCESS_READWRITE(ptr) \
-  /* For performance we avoid using a volatile variable. */
-    __asm__ volatile(""
-                     : "+r"((ptr)->UPB_PRIVATE(upb_tsan_synthetic_member)))
-#define UPB_TSAN_PUBLISH 2
-#define UPB_TSAN 1
+#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published;
+#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE
+#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
+  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
+#define UPB_TSAN_PUBLISH 1
+#define UPB_TSAN_CHECK_READ(member) \
+  __asm__ volatile("" ::"r"(*(char *)&(member)))
+#define UPB_TSAN_CHECK_WRITE(member)                                   \
+  do {                                                                 \
+    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
+    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
+    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
+    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
+  } while (false)
 #else
-#define UPB_TSAN_SYNTHETIC_MEMBER
-#define UPB_TSAN_INIT(ptr) UPB_UNUSED(ptr)
-#define UPB_TSAN_ACCESS_READONLY(ptr) UPB_UNUSED(ptr)
-#define UPB_TSAN_ACCESS_READWRITE(ptr) UPB_UNUSED(ptr)
+#define UPB_TSAN_PUBLISHED_MEMBER
+#define UPB_TSAN_INIT_PUBLISHED(ptr)
+#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
+  do {                                \
+  } while (false && (ptr))
 #define UPB_TSAN_PUBLISH 0
-#define UPB_TSAN 0
+#define UPB_TSAN_CHECK_READ(member) \
+  do {                              \
+  } while (false && (member))
+#define UPB_TSAN_CHECK_WRITE(member) \
+  do {                               \
+  } while (false && (member))
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
