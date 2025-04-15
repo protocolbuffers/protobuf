@@ -316,11 +316,10 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
-        if self.float_format:
-          return float(format(value, self.float_format))
-        else:
-          return type_checkers.ToShortestFloat(value)
+      if self.float_format:
+        return float(format(value, self.float_format))
+      elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+        return type_checkers.ToShortestFloat(value)
 
     return value
 
