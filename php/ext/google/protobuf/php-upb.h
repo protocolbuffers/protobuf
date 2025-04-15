@@ -392,33 +392,30 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__SANITIZE_THREAD__) || UPB_CLANG_TSAN
-#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published;
-#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
-#define UPB_TSAN_PUBLISH 1
-#define UPB_TSAN_CHECK_READ(member) \
-  __asm__ volatile("" ::"r"(*(char *)&(member)))
-#define UPB_TSAN_CHECK_WRITE(member)                                   \
-  do {                                                                 \
-    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
-    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
-    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
-    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
-  } while (false)
+// These annotations improve TSAN's ability to detect data races.  By
+// proactively accessing a non-atomic variable at the point where it is
+// "logically" accessed, we can trigger TSAN diagnostics that might have
+// otherwise been masked by subsequent atomic operations.
+#define UPB_TSAN_SYNTHETIC_MEMBER \
+  uintptr_t UPB_PRIVATE(upb_tsan_synthetic_member);
+#define UPB_TSAN_INIT(ptr) \
+  (ptr)->UPB_PRIVATE(upb_tsan_synthetic_member) = 0x5AFE
+#define UPB_TSAN_ACCESS_READONLY(ptr) \
+/* For performance we avoid using a volatile variable. */
+__asm__ volatile("" ::"r"((ptr)->UPB_PRIVATE(upb_tsan_synthetic_member)))
+#define UPB_TSAN_ACCESS_READWRITE(ptr) \
+  /* For performance we avoid using a volatile variable. */
+    __asm__ volatile(""
+                     : "+r"((ptr)->UPB_PRIVATE(upb_tsan_synthetic_member)))
+#define UPB_TSAN_PUBLISH 2
+#define UPB_TSAN 1
 #else
-#define UPB_TSAN_PUBLISHED_MEMBER
-#define UPB_TSAN_INIT_PUBLISHED(ptr)
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  do {                                \
-  } while (false && (ptr))
+#define UPB_TSAN_SYNTHETIC_MEMBER
+#define UPB_TSAN_INIT(ptr) UPB_UNUSED(ptr)
+#define UPB_TSAN_ACCESS_READONLY(ptr) UPB_UNUSED(ptr)
+#define UPB_TSAN_ACCESS_READWRITE(ptr) UPB_UNUSED(ptr)
 #define UPB_TSAN_PUBLISH 0
-#define UPB_TSAN_CHECK_READ(member) \
-  do {                              \
-  } while (false && (member))
-#define UPB_TSAN_CHECK_WRITE(member) \
-  do {                               \
-  } while (false && (member))
+#define UPB_TSAN 0
 #endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
@@ -708,6 +705,7 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   char* UPB_ONLYBITS(end);
+  UPB_TSAN_SYNTHETIC_MEMBER  // Must be last, to avoid affecting ABI.
 };
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
@@ -726,7 +724,7 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
 }
 
 UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
 
   size = UPB_ALIGN_MALLOC(size);
@@ -748,7 +746,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   UPB_ASSERT(ptr);
   UPB_ASSERT(size <= oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
@@ -775,7 +773,7 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
 
 UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
                                         size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
   size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
@@ -796,7 +794,7 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
 
 UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
                                        size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
+  UPB_TSAN_ACCESS_READWRITE(a);
   if (ptr) {
     if (size == oldsize) {
       return ptr;
@@ -867,7 +865,7 @@ UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
 // Returns the upb_alloc used by the arena.
-UPB_API upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a);
+UPB_API upb_alloc* upb_Arena_GetUpbAlloc(const upb_Arena* a);
 
 // This operation is safe to use concurrently from multiple threads.
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
@@ -16445,12 +16443,10 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASAN
 #undef UPB_ASAN_GUARD_SIZE
 #undef UPB_CLANG_ASAN
-#undef UPB_TSAN_PUBLISHED_MEMBER
-#undef UPB_TSAN_INIT_PUBLISHED
-#undef UPB_TSAN_CHECK_PUBLISHED
-#undef UPB_TSAN_PUBLISH
-#undef UPB_TSAN_CHECK_READ
-#undef UPB_TSAN_CHECK_WRITE
+#undef UPB_TSAN_SYNTHETIC_MEMBER
+#undef UPB_TSAN_INIT
+#undef UPB_TSAN_ACCESS_READONLY
+#undef UPB_TSAN_ACCESS_READWRITE
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
