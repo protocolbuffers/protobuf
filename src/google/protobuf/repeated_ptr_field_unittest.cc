@@ -559,7 +559,7 @@ TEST(RepeatedPtrFieldTest, AddAllocated) {
   EXPECT_EQ(moo, &field.Get(index));
 }
 
-TEST(RepeatedPtrFieldTest, AddMethodsDontAcceptNull) {
+TEST(RepeatedPtrFieldDeathTest, AddMethodsDontAcceptNull) {
 #if !defined(NDEBUG)
   RepeatedPtrField<std::string> field;
   EXPECT_DEATH(field.AddAllocated(nullptr), "nullptr");
@@ -1112,7 +1112,7 @@ TEST(RepeatedPtrFieldTest, Cleanups) {
 }
 
 
-TEST(RepeatedPtrFieldTest, CheckedGetOrAbortTest) {
+TEST(RepeatedPtrFieldDeathTest, CheckedGetOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
@@ -1127,7 +1127,7 @@ TEST(RepeatedPtrFieldTest, CheckedGetOrAbortTest) {
   EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
 }
 
-TEST(RepeatedPtrFieldTest, CheckedMutableOrAbortTest) {
+TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
