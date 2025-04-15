@@ -1294,15 +1294,13 @@ set(common_test_hdrs
 
 # @//pkg:lite_test_util
 set(lite_test_util_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.cc
 )
 
 # @//pkg:lite_test_util
 set(lite_test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util_impl.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_lite_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
 )
@@ -1323,8 +1321,6 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/test_zero_copy_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.inc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest_legacy_apis.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
