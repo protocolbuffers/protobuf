@@ -399,8 +399,8 @@ DoubleValue::DoubleValue(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void DoubleValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -633,8 +633,8 @@ FloatValue::FloatValue(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void FloatValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -867,8 +867,8 @@ Int64Value::Int64Value(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void Int64Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -1102,8 +1102,8 @@ UInt64Value::UInt64Value(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void UInt64Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -1337,8 +1337,8 @@ Int32Value::Int32Value(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void Int32Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -1572,8 +1572,8 @@ UInt32Value::UInt32Value(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void UInt32Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -1807,8 +1807,8 @@ BoolValue::BoolValue(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void BoolValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -2030,9 +2030,9 @@ StringValue::StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
 PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::StringValue& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::StringValue& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         value_(arena, from.value_) {}
@@ -2054,8 +2054,8 @@ StringValue::StringValue(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
 PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         value_(arena) {}
 
@@ -2292,9 +2292,9 @@ BytesValue::BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
 PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::BytesValue& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::BytesValue& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         value_(arena, from.value_) {}
@@ -2316,8 +2316,8 @@ BytesValue::BytesValue(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
 PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         value_(arena) {}
 

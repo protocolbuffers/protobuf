@@ -340,15 +340,15 @@ struct BytesTag {
 // This overload set is used to implement `set_xxx()` methods for repeated
 // string fields in generated code.
 inline void AssignToString(std::string& dest, const std::string& value,
-                           BytesTag tag = BytesTag{}) {
+                           BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(value);
 }
 inline void AssignToString(std::string& dest, std::string&& value,
-                           BytesTag tag = BytesTag{}) {
+                           BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(std::move(value));
 }
 inline void AssignToString(std::string& dest, const char* value,
-                           BytesTag tag = BytesTag{}) {
+                           BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(value);
 }
 inline void AssignToString(std::string& dest, const char* value,
@@ -356,11 +356,11 @@ inline void AssignToString(std::string& dest, const char* value,
   dest.assign(value, size);
 }
 inline void AssignToString(std::string& dest, const void* value,
-                           std::size_t size, BytesTag tag) {
+                           std::size_t size, BytesTag /*tag*/) {
   dest.assign(reinterpret_cast<const char*>(value), size);
 }
 inline void AssignToString(std::string& dest, absl::string_view value,
-                           BytesTag tag = BytesTag{}) {
+                           BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(value.data(), value.size());
 }
 
@@ -374,7 +374,7 @@ void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest
 }
 inline void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
                                   std::string&& value,
-                                  BytesTag tag = BytesTag{}) {
+                                  BytesTag /*tag*/ = BytesTag{}) {
   dest.Add(std::move(value));
 }
 
