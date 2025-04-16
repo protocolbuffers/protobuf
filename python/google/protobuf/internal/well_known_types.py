@@ -181,7 +181,7 @@ class Timestamp(object):
 
   def GetCurrentTime(self):
     """Get the current UTC into Timestamp."""
-    self.FromDatetime(datetime.datetime.utcnow())
+    self.FromDatetime(datetime.datetime.now(tz=datetime.timezone.utc))
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
