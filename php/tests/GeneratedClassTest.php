@@ -51,7 +51,6 @@ class GeneratedClassTest extends TestBase
 
         $this->assertTrue(property_exists(TestMessage::class, 'optional_string'));
         $this->assertTrue(property_exists($message, 'optional_string'));
-        $this->assertFalse(isset($message->optional_string));
 
         $message->setOptionalString('bar');
 
@@ -63,6 +62,7 @@ class GeneratedClassTest extends TestBase
 
         // isset() should return false for attributes that are not public.
         $this->assertFalse(isset($message->optional_string));
+        // Should be false for attributes that are not part of the message.
         $this->assertFalse(isset($message->foo));
     }
 
