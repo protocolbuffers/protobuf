@@ -2617,3 +2617,21 @@ message MessageCreatorFunc {
     ctype = CORD
   ];
 }
+
+message FastParseTableCompression {
+  int32 important_field_1 = 1;
+  int32 important_field_2 = 2;
+  int32 unimportant_field_3 = 3;
+  int32 unimportant_field_4 = 4;
+  int32 unimportant_field_5 = 5;
+  reserved 6, 7, 8;
+
+  int32 unimportant_field_9 = 9;
+  reserved 10;
+  int32 important_field_11 = 11;
+  int32 unimportant_field_12 = 12;
+  reserved 13;
+  int32 important_field_14 = 14;
+  int32 unimportant_field_15 = 15;
+  reserved 16;
+}
