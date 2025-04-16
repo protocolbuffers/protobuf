@@ -82,7 +82,7 @@ failure:
 
 #ifdef UPB_LINKARR_DECLARE
 
-UPB_LINKARR_DECLARE(upb_AllExts, upb_MiniTableExtension);
+UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension);
 
 bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
   const upb_MiniTableExtension* start = UPB_LINKARR_START(upb_AllExts);
