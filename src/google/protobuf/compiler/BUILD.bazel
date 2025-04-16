@@ -17,6 +17,11 @@ load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
 
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
+
 proto_library(
     name = "plugin_proto",
     srcs = ["plugin.proto"],
@@ -213,7 +218,7 @@ cc_library(
     ],
 )
 
-cc_library(
+bootstrap_cc_library(
     name = "protoc_lib",
     srcs = [
         "main.cc",
@@ -224,6 +229,7 @@ cc_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+    bootstrap_deps = ["//upb_generator/minitable:generator"],
     deps = [
         ":code_generator",
         ":command_line_interface",
@@ -239,9 +245,21 @@ cc_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
-        "//upb_generator/minitable:generator_stage0",
         "@abseil-cpp//absl/log:initialize",
     ],
+)
+
+alias(
+    name = "protoc_lib_stage0_alias",
+    actual = "protoc_lib_stage0",
+    visibility = ["//:__pkg__"],
+)
+
+
+alias(
+    name = "protoc_lib_stage1_alias",
+    actual = "protoc_lib_stage1",
+    visibility = ["//:__pkg__"],
 )
 
 # This is a build of the protobuf compiler without code generators.
