@@ -1474,6 +1474,7 @@ class Proto2ReflectionTest(unittest.TestCase):
 
     self.assertListsEqual([m2, m1, m0], proto.repeated_nested_message)
 
+  @testing_refleaks.SkipReferenceLeakChecker('This leaks in pure python')
   def testHandWrittenReflection(self):
     # Hand written extensions are only supported by the pure-Python
     # implementation of the API.
