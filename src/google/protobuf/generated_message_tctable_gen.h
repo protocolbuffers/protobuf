@@ -43,6 +43,10 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
 
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  static constexpr int kMaxFastFieldHasbitIndex = 31;
+
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;
