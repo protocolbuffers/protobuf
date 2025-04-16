@@ -16,7 +16,7 @@ load(
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc_stage0"
 
-_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
+_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
