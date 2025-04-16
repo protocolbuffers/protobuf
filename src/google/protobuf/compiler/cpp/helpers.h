@@ -732,6 +732,10 @@ void ListAllFields(const Descriptor* d,
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 
+// Returns true if the field's position in the message is chosen by the layout
+// optimizer.
+bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options);
+
 // Collects all fields from the given descriptor, excluding weak fields and
 // fields in oneofs.
 //
