@@ -122,8 +122,10 @@ struct ChunkList::Chunk {
   // Cleanup nodes follow.
 };
 
-void ChunkList::AddFallback(void* elem, void (*destructor)(void*),
-                            SerialArena& arena) {
+void ChunkList::AddFallback(
+    void* PROTOBUF_NONNULL elem,
+    void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL),
+    SerialArena& arena) {
   ABSL_DCHECK_EQ(next_, limit_);
   SizedPtr mem = AllocateCleanupChunk(arena.parent_.AllocPolicy(),
                                       head_ == nullptr ? 0 : head_->size);
@@ -982,14 +984,17 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 
 }  // namespace internal
 
-void* Arena::Allocate(size_t n) { return impl_.AllocateAligned(n); }
+void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
+  return impl_.AllocateAligned(n);
+}
 
-void* Arena::AllocateForArray(size_t n) {
+void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*)) {
+void* PROTOBUF_NONNULL Arena::AllocateAlignedWithCleanup(
+    size_t n, size_t align,
+    void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
 }
 
