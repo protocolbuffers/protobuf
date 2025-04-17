@@ -35,14 +35,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Only call if at start of tag.
-bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
-                                               int depth) {
-  constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
-  ABSL_DCHECK_GE(overrun, 0);
-  ABSL_DCHECK_LE(overrun, kSlopBytes);
-  auto ptr = begin + overrun;
-  auto end = begin + kSlopBytes;
+namespace {
+bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
   while (ptr < end) {
     uint32_t tag;
     ptr = ReadTag(ptr, &tag);
@@ -85,7 +79,22 @@ bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
   }
   return false;
 }
+}  // namespace
 
+// Only call if at start of tag.
+template <bool kExperimentalV2>
+bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
+                                               int depth) {
+  constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
+  ABSL_DCHECK_GE(overrun, 0);
+  ABSL_DCHECK_LE(overrun, kSlopBytes);
+  auto ptr = begin + overrun;
+  auto end = begin + kSlopBytes;
+  return ParsingEndsInBuffer(ptr, end, depth);
+}
+
+
+template <bool kExperimentalV2>
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
   if (next_chunk_ != patch_buffer_) {
@@ -102,7 +111,8 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   // patch_buffer_.
   std::memmove(patch_buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (depth < 0 || !ParseEndsInSlopRegion(patch_buffer_, overrun, depth))) {
+      (depth < 0 || !ParseEndsInSlopRegion<kExperimentalV2>(patch_buffer_,
+                                                            overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
@@ -143,7 +153,7 @@ const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
 
 const char* EpsCopyInputStream::Next() {
   ABSL_DCHECK(limit_ > kSlopBytes);
-  auto p = NextBuffer(0 /* immaterial */, -1);
+  auto p = NextBuffer</*kExperimentalV2=*/false>(0 /* immaterial */, -1);
   if (p == nullptr) {
     limit_end_ = buffer_end_;
     // Distinguish ending on a pushed limit or ending on end-of-stream.
@@ -155,6 +165,7 @@ const char* EpsCopyInputStream::Next() {
   return p;
 }
 
+template <bool kExperimentalV2>
 std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
                                                               int depth) {
   // Did we exceeded the limit (parse error).
@@ -173,7 +184,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   do {
     // We are past the end of buffer_end_, in the slop region.
     ABSL_DCHECK_GE(overrun, 0);
-    p = NextBuffer(overrun, depth);
+    p = NextBuffer<kExperimentalV2>(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (ABSL_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
@@ -704,6 +715,11 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   });
   return ptr;
 }
+
+template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
+    int, int);
+template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
+    int, int);
 
 }  // namespace internal
 }  // namespace protobuf
