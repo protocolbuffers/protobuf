@@ -538,20 +538,25 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     }
 
     bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
-      auto p = rhs.package(index);
-      if (!p.empty()) {
-        absl::string_view lhs_part = lhs.substr(0, p.size());
-        lhs.remove_prefix(lhs_part.size());
-        if (int res = lhs_part.compare(p); res != 0) return res < 0;
-        // If compare returned 0 is because we consumed all of `p` and it
-        // matched.
-
+      if (auto package = rhs.package(index); !package.empty()) {
+        for (size_t i = 0, size = std::min(lhs.size(), package.size());
+             i < size; ++i) {
+          if (lhs[i] != package[i]) return lhs[i] < package[i];
+        }
+        if (lhs.size() <= package.size()) {
+          return true;
+        }
         // Compare the implicit `.`
-        if (lhs.empty() || lhs[0] < '.') return true;
-        if (lhs[0] > '.') return false;
-        lhs.remove_prefix(1);
+        if (lhs[package.size()] < '.') return true;
+        if (lhs[package.size()] > '.') return false;
+        lhs.remove_prefix(package.size() + 1);
       }
-      return lhs < rhs.symbol(index);
+      auto symbol = rhs.symbol(index);
+      for (size_t i = 0, size = std::min(lhs.size(), symbol.size()); i < size;
+           ++i) {
+        if (lhs[i] != symbol[i]) return lhs[i] < symbol[i];
+      }
+      return lhs.size() < symbol.size();
     }
   };
   absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
