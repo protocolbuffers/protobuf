@@ -49,17 +49,6 @@ typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
       arena.ptr());
 }
 
-// Deprecated; do not use. There is one extant caller which we plan to migrate.
-// Tracking deletion TODO: b/385138477
-template <typename T>
-[[deprecated("Use CloneMessage(Ptr<T>, hpb::Arena&) instead.")]]
-typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
-  return internal::PrivateAccess::Proxy<T>(
-      internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
-                          arena),
-      arena);
-}
-
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
