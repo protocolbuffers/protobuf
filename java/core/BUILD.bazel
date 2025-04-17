@@ -267,6 +267,7 @@ java_library(
     ],
     deps = [
         ":lite_runtime_only",
+        "@protobuf_maven//:com_google_code_findbugs_jsr305",
     ],
 )
 
@@ -281,6 +282,9 @@ protobuf_versioned_java_library(
     bundle_name = "Protocol Buffers [Core]",
     bundle_symbolic_name = "com.google.protobuf",
     visibility = ["//visibility:private"],
+    deps = [
+        "@protobuf_maven//:com_google_code_findbugs_jsr305",
+    ],
 )
 
 # Bazel users, don't depend on this target, use :core.
