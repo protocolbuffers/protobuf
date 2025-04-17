@@ -33,7 +33,10 @@ bootstrap_cc_library(
         "//upb_generator:plugin",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
     deps = [
         ":names",
         ":names_internal",

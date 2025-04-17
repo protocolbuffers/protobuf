@@ -350,7 +350,15 @@ cc_binary(
     copts = COPTS,
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib_stage1"],
+)
+
+cc_binary(
+    name = "protoc_stage0",
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    visibility = ["//:__subpackages__"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib_stage0"],
 )
 
 cc_binary(
@@ -365,7 +373,7 @@ cc_binary(
     }),
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib_stage1"],
 )
 
 ################################################################################

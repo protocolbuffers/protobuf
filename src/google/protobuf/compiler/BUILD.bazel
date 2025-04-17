@@ -15,6 +15,10 @@ load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
 load("test_plugin_injection.bzl", "inject_plugin_paths")
 
 proto_library(
@@ -213,13 +217,13 @@ cc_library(
     ],
 )
 
-cc_library(
+bootstrap_cc_library(
     name = "protoc_lib",
     srcs = [
         "main.cc",
     ],
+    bootstrap_deps = ["//upb_generator/minitable:generator"],
     copts = COPTS,
-    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -239,7 +243,6 @@ cc_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
-        "//upb_generator/minitable:generator_stage0",
         "@abseil-cpp//absl/log:initialize",
     ],
 )

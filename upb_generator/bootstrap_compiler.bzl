@@ -14,9 +14,10 @@ load(
 )
 
 _stages = ["_stage0", "_stage1", ""]
-_protoc = "//:protoc"
 
-_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
+_protoc = "//:protoc_stage0"
+
+_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
@@ -26,6 +27,7 @@ _bootstrap_visibility = [
     "//upb/reflection:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
+    "//:__pkg__",  # For protoc
 ]
 
 def _stage_visibility(stage, visibility):
