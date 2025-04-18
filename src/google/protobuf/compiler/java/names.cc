@@ -31,11 +31,6 @@ namespace compiler {
 namespace java {
 
 namespace {
-
-const char* DefaultPackage(Options options) {
-  return options.opensource_runtime ? "" : "com.google.protos";
-}
-
 bool IsReservedName(absl::string_view name) {
   static const auto& kReservedNames =
       *new absl::flat_hash_set<absl::string_view>({
@@ -122,19 +117,7 @@ std::string ClassName(const FileDescriptor* descriptor) {
 
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options) {
-  std::string result;
-
-  if (file->options().has_java_package()) {
-    result = file->options().java_package();
-  } else {
-    result = DefaultPackage(options);
-    if (!file->package().empty()) {
-      if (!result.empty()) result += '.';
-      absl::StrAppend(&result, file->package());
-    }
-  }
-
-  return result;
+  return ClassNameResolver(options).GetFileJavaPackage(file, immutable);
 }
 
 std::string FileJavaPackage(const FileDescriptor* file, Options options) {
