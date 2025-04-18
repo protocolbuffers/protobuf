@@ -27,25 +27,23 @@ exports_files(
 config_setting(
     name = "windows",
     constraint_values = ["@platforms//os:windows"],
-    visibility = ["//visibility:public"],
 )
 
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__pkg__"],
 )
 
 config_setting(
     name = "fasttable_enabled_setting",
     flag_values = {"//upb:fasttable_enabled": "true"},
-    visibility = ["//visibility:public"],
 )
 
 upb_proto_library_copts(
-    name = "upb_proto_library_copts__for_generated_code_only_do_not_use",
+    name = "upb_proto_library_copts",
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__pkg__"],
 )
 
 # Please update copy.bara.sky target = ":friends" if

@@ -42,7 +42,7 @@ def _get_upb_minitable_proto_library_aspect_provides():
 upb_minitable_proto_library_aspect = aspect(
     attrs = {
         "_copts": attr.label(
-            default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb:upb_proto_library_copts",
         ),
         "_upb_minitable_toolchain": attr.label(
             default = Label("//upb_generator/minitable:toolchain"),
