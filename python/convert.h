@@ -28,8 +28,9 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
 bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
                    upb_Arena* arena);
 
-// Returns true if the given messages (of type `m`) are equal.
-bool upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
-                              const upb_MessageDef* msgdef, int options);
+// Returns 1 if the given messages (of type `m`) are equal, 0 if they are not
+// equal, and -1 if an error occurred.
+int upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
+                             const upb_MessageDef* msgdef, int options);
 
 #endif  // PYUPB_CONVERT_H__

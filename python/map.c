@@ -143,6 +143,7 @@ static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
       self->version--;
       return true;
     case kUpb_MapInsertStatus_OutOfMemory:
+      PyErr_SetNone(PyErr_NoMemory());
       return false;
   }
   return false;  // Unreachable, silence compiler warning.

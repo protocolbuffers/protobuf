@@ -14,7 +14,6 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
-#include "upb/message/internal/compare_unknown.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/iterator.h"
 #include "upb/message/map.h"
@@ -183,9 +182,5 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m, options)) return false;
   if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m, options)) return false;
 
-  if (!(options & kUpb_CompareOption_IncludeUnknownFields)) return true;
-
-  // The wire encoder enforces a maximum depth of 100 so we match that here.
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(msg1, msg2, 100) ==
-         kUpb_UnknownCompareResult_Equal;
+  return true;
 }

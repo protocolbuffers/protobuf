@@ -270,10 +270,32 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
   }
 }
 
-bool upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
+int upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
                               const upb_MessageDef* msgdef, int options) {
   const upb_MiniTable* m = upb_MessageDef_MiniTable(msgdef);
-  return upb_Message_IsEqual(msg1, msg2, m, options);
+  if (!upb_Message_IsEqual(msg1, msg2, m, options)) {
+    return false;
+  }
+  upb_UnknownCompareResult result =
+      upb_Message_IsUnknownEqual(msg1, msg2, NULL, 0);
+  switch (result) {
+    case kUpb_UnknownCompareResult_Equal:
+      return 1;
+    case kUpb_UnknownCompareResult_NotEqual:
+      return 0;
+    case kUpb_UnknownCompareResult_OutOfMemory:
+      PyErr_SetNone(PyExc_MemoryError);
+      return -1;
+    case kUpb_UnknownCompareResult_MaxDepthExceeded: {
+      PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+      PyErr_SetString(state->decode_error_class,
+                      "Max depth exceeded comparing unknown fields.");
+      return -1;
+    }
+    default:
+      PyErr_Format(PyExc_ValueError, "unknown comparision result %d", result);
+      return -1;
+  }
 }
 
 #include "upb/port/undef.inc"

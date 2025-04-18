@@ -5,8 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/message/internal/compare_unknown.h"
-
 #include <stdint.h>
 
 #include <initializer_list>
@@ -19,6 +17,7 @@
 #include "upb/base/internal/endian.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/compare.h"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -119,8 +118,8 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(UnknownFields uf1,
                                        buf1.size(), arena1.ptr(), false);
   UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
                                        buf2.size(), arena2.ptr(), false);
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-      UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
+  return upb_Message_IsUnknownEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
+                                    &upb_alloc_global, max_depth);
 }
 
 upb_UnknownCompareResult CompareUnknown(UnknownFields uf1, UnknownFields uf2) {

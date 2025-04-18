@@ -5,13 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/message/internal/compare_unknown.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/message/compare.h"
 #include "upb/message/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -41,6 +40,7 @@ struct upb_UnknownFields {
 
 typedef struct {
   upb_EpsCopyInputStream stream;
+  upb_alloc* alloc;
   upb_Arena* arena;
   upb_UnknownField* tmp;
   size_t tmp_size;
@@ -123,7 +123,7 @@ static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
     while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
     const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
-    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    ctx->tmp = upb_realloc(ctx->alloc, ctx->tmp, oldsize, newsize);
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
@@ -316,19 +316,29 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   }
 
   upb_Arena_Free(ctx->arena);
-  upb_gfree(ctx->tmp);
+  upb_free(ctx->alloc, ctx->tmp);
   return ret;
 }
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-    const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
+upb_UnknownCompareResult upb_Message_IsUnknownEqual(const upb_Message* msg1,
+                                                    const upb_Message* msg2,
+                                                    upb_alloc* alloc,
+                                                    int max_depth) {
   bool msg1_empty = !upb_Message_HasUnknown(msg1);
   bool msg2_empty = !upb_Message_HasUnknown(msg2);
   if (msg1_empty && msg2_empty) return kUpb_UnknownCompareResult_Equal;
   if (msg1_empty || msg2_empty) return kUpb_UnknownCompareResult_NotEqual;
 
+  if (alloc == NULL) {
+    alloc = &upb_alloc_global;
+  }
+  if (!max_depth) {
+    max_depth = /*kUpb_WireFormat_DefaultDepthLimit*/ 100;
+  }
+
   upb_UnknownField_Context ctx = {
-      .arena = upb_Arena_New(),
+      .alloc = alloc,
+      .arena = upb_Arena_Init(NULL, 0, alloc),
       .depth = max_depth,
       .tmp = NULL,
       .tmp_size = 0,
