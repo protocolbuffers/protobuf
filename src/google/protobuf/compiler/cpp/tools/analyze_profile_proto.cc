@@ -242,7 +242,9 @@ const Descriptor* FindMessageTypeByCppName(const DescriptorPool& pool,
     min_length = pos + 1;
   }
 
-  ABSL_LOG(WARNING) << "Unknown c++ message name '" << name << "'";
+  if (ABSL_VLOG_IS_ON(1)) {
+    ABSL_LOG(WARNING) << "Unknown C++ message name '" << name << "'";
+  }
   return nullptr;
 }
 
@@ -364,8 +366,6 @@ void Aggregate(const FieldDescriptor* field, const PDProtoAnalysis& analysis,
     }
   }
   if (field->is_repeated() && analysis.element_stats.has_value()) {
-    ABSL_LOG(INFO) << "Repeated field: " << field->full_name()
-                   << " has element stats: " << analysis.element_stats->mean;
     stats.repeated_elem_stats += *analysis.element_stats;
   }
 }
