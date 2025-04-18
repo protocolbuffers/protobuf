@@ -3008,7 +3008,6 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
 
   if (tables_->known_bad_symbols_.contains(name)) return false;
 
-  std::string name_string(name);
   auto& file_proto = deferred_validation.CreateProto();
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
@@ -3029,7 +3028,8 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       IsSubSymbolOfBuiltType(name)
 
       // Look up file containing this symbol in fallback database.
-      || !fallback_database_->FindFileContainingSymbol(name_string, &file_proto)
+      || !fallback_database_->FindFileContainingSymbol(std::string(name),
+                                                       &file_proto)
 
       // Check if we've already built this file. If so, it apparently doesn't
       // contain the symbol we're looking for.  Some DescriptorDatabases
@@ -3038,7 +3038,6 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
 
       // Build the file.
       || BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
-    tables_->known_bad_symbols_.insert(std::move(name_string));
     return false;
   }
 
@@ -5300,9 +5299,12 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     // to build the file containing the symbol, and build_it will be set.
     // Also, build_it will be true when !lazily_build_dependencies_, to provide
     // better error reporting of missing dependencies.
-    if (build_it &&
-        pool->TryFindSymbolInFallbackDatabase(name, deferred_validation_)) {
-      result = pool->tables_->FindSymbol(name);
+    if (build_it) {
+      if (pool->TryFindSymbolInFallbackDatabase(name, deferred_validation_)) {
+        result = pool->tables_->FindSymbol(name);
+      } else if (pool->fallback_database_ != nullptr) {
+        tables_->known_bad_symbols_.emplace(name);
+      }
     }
   }
 
