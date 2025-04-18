@@ -218,6 +218,7 @@ void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
   ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
 }
 
+
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                    const internal::TcParseTableBase* tc_table,
