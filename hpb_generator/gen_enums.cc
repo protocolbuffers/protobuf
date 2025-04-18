@@ -8,6 +8,8 @@
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <limits>
 #include <string>
@@ -18,7 +20,6 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/descriptor.h"
 
