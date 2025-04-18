@@ -72,6 +72,7 @@ class ParseError(Error):
 
 class EnumStringValueParseError(ParseError):
   """Thrown if unknown string enum value is encountered.
+
   This exception is suppressed if ignore_unknown_fields is set.
   """
 
@@ -91,10 +92,10 @@ def MessageToJson(
 
   Args:
     message: The protocol buffers message instance to serialize.
-    always_print_fields_with_no_presence: If True, fields without
-      presence (implicit presence scalars, repeated fields, and map fields) will
-      always be serialized. Any field that supports presence is not affected by
-      this option (including singular message fields and oneof fields).
+    always_print_fields_with_no_presence: If True, fields without presence
+      (implicit presence scalars, repeated fields, and map fields) will always
+      be serialized. Any field that supports presence is not affected by this
+      option (including singular message fields and oneof fields).
     preserving_proto_field_name: If True, use the original proto field names as
       defined in the .proto file. If False, convert the field names to
       lowerCamelCase.
@@ -105,7 +106,8 @@ def MessageToJson(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: If set, use this to specify float field valid digits.
+    float_precision: Deprecated. If set, use this to specify float field valid
+      digits.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
 
@@ -117,7 +119,7 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       float_precision,
-      always_print_fields_with_no_presence
+      always_print_fields_with_no_presence,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -136,17 +138,18 @@ def MessageToDict(
 
   Args:
     message: The protocol buffers message instance to serialize.
-    always_print_fields_with_no_presence: If True, fields without
-      presence (implicit presence scalars, repeated fields, and map fields) will
-      always be serialized. Any field that supports presence is not affected by
-      this option (including singular message fields and oneof fields).
+    always_print_fields_with_no_presence: If True, fields without presence
+      (implicit presence scalars, repeated fields, and map fields) will always
+      be serialized. Any field that supports presence is not affected by this
+      option (including singular message fields and oneof fields).
     preserving_proto_field_name: If True, use the original proto field names as
       defined in the .proto file. If False, convert the field names to
       lowerCamelCase.
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: If set, use this to specify float field valid digits.
+    float_precision: Deprecated. If set, use this to specify float field valid
+      digits.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -251,10 +254,7 @@ class _Printer(object):
 
           # always_print_fields_with_no_presence doesn't apply to
           # any field which supports presence.
-          if (
-              self.always_print_fields_with_no_presence
-              and field.has_presence
-          ):
+          if self.always_print_fields_with_no_presence and field.has_presence:
             continue
 
           if self.preserving_proto_field_name:
@@ -674,7 +674,8 @@ class _Parser(object):
                     )
                 )
               self._ConvertAndAppendScalar(
-                message, field, item, '{0}.{1}[{2}]'.format(path, name, index))
+                  message, field, item, '{0}.{1}[{2}]'.format(path, name, index)
+              )
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
           if field.is_extension:
             sub_message = message.Extensions[field]
@@ -684,9 +685,13 @@ class _Parser(object):
           self.ConvertMessage(value, sub_message, '{0}.{1}'.format(path, name))
         else:
           if field.is_extension:
-            self._ConvertAndSetScalarExtension(message, field, value, '{0}.{1}'.format(path, name))
+            self._ConvertAndSetScalarExtension(
+                message, field, value, '{0}.{1}'.format(path, name)
+            )
           else:
-            self._ConvertAndSetScalar(message, field, value, '{0}.{1}'.format(path, name))
+            self._ConvertAndSetScalar(
+                message, field, value, '{0}.{1}'.format(path, name)
+            )
       except ParseError as e:
         if field and field.containing_oneof is None:
           raise ParseError(
@@ -801,7 +806,9 @@ class _Parser(object):
   def _ConvertWrapperMessage(self, value, message, path):
     """Convert a JSON representation into Wrapper message."""
     field = message.DESCRIPTOR.fields_by_name['value']
-    self._ConvertAndSetScalar(message, field, value, path='{0}.value'.format(path))
+    self._ConvertAndSetScalar(
+        message, field, value, path='{0}.value'.format(path)
+    )
 
   def _ConvertMapFieldValue(self, value, message, field, path):
     """Convert map field value for a message map field.
@@ -839,13 +846,17 @@ class _Parser(object):
             field,
             key_value,
             value[key],
-            path='{0}[{1}]'.format(path, key_value))
+            path='{0}[{1}]'.format(path, key_value),
+        )
 
-  def _ConvertAndSetScalarExtension(self, message, extension_field, js_value, path):
+  def _ConvertAndSetScalarExtension(
+      self, message, extension_field, js_value, path
+  ):
     """Convert scalar from js_value and assign it to message.Extensions[extension_field]."""
     try:
       message.Extensions[extension_field] = _ConvertScalarFieldValue(
-          js_value, extension_field, path)
+          js_value, extension_field, path
+      )
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
         raise
@@ -854,9 +865,8 @@ class _Parser(object):
     """Convert scalar from js_value and assign it to message.field."""
     try:
       setattr(
-          message,
-          field.name,
-          _ConvertScalarFieldValue(js_value, field, path))
+          message, field.name, _ConvertScalarFieldValue(js_value, field, path)
+      )
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
         raise
@@ -865,16 +875,23 @@ class _Parser(object):
     """Convert scalar from js_value and append it to message.repeated_field."""
     try:
       getattr(message, repeated_field.name).append(
-          _ConvertScalarFieldValue(js_value, repeated_field, path))
+          _ConvertScalarFieldValue(js_value, repeated_field, path)
+      )
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
         raise
 
-  def _ConvertAndSetScalarToMapKey(self, message, map_field, converted_key, js_value, path):
+  def _ConvertAndSetScalarToMapKey(
+      self, message, map_field, converted_key, js_value, path
+  ):
     """Convert scalar from 'js_value' and add it to message.map_field[converted_key]."""
     try:
-      getattr(message, map_field.name)[converted_key] = _ConvertScalarFieldValue(
-          js_value, map_field.message_type.fields_by_name['value'], path,
+      getattr(message, map_field.name)[converted_key] = (
+          _ConvertScalarFieldValue(
+              js_value,
+              map_field.message_type.fields_by_name['value'],
+              path,
+          )
       )
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
