@@ -56,7 +56,8 @@ TEST(PortDeathTest, UnreachableTrapsOnDebugMode) {
 #endif
 }
 
-#if PROTOBUF_GNUC_MIN(9, 1)
+#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
 // This test is only intended to ensure that `Prefetch()` continues to compile
 // and executes without crashing. It is difficult to programmatically verify the
 // correctness of the generated prefetch instruction sequences. However,
@@ -130,7 +131,8 @@ TEST(PortTest, PrefetchWorksWithValidOffsets) {
     Prefetch<kOpts>(base_ptr);
   }
 }
-#endif  // PROTOBUF_GNUC_MIN(9, 1)
+
+#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
 }  // namespace internal
 }  // namespace protobuf
