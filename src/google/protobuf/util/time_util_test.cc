@@ -14,6 +14,7 @@
 #include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/util/internal_timeval.h"  // IWYU pragma: keep for timeval
 
 namespace google {
 namespace protobuf {
