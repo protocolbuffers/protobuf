@@ -436,13 +436,11 @@ struct PrefetchOpts {
   const MemOp mem_op = kRead;
 };
 
-namespace detail {
-
-// NOTE: GCC fails to compile this with -O0 because inlining is off and it's
-// not smart enough to figure out that the 2nd and 3rd args of
-// `__builtin_prefetch` are propagated compile-time constants. To be on the safe
-// side, enable the whole thing for Clang only.
+// NOTE: Enable prefetching with Clang only: various problems with other
+// compilers, especially old ones.
 #if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+namespace detail {
 
 // Prefetches a single cache line. To form the address to prefetch, the base
 // `ptr` is first offset by `kOpts.from.num` bytes and furthermore by `line`
@@ -460,14 +458,6 @@ PROTOBUF_ALWAYS_INLINE void PrefetchLine(const void* ptr, size_t line) {
       reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(ptr) + offset);
   __builtin_prefetch(prefetch_ptr, kOpts.mem_op, kOpts.locality);
 }
-
-#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
-
-// A no-op for non-Clang compilers.
-template <const PrefetchOpts& kOpts>
-PROTOBUF_ALWAYS_INLINE void PrefetchLine(const void*, size_t) {}
-
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
 }  // namespace detail
 
@@ -511,11 +501,8 @@ PROTOBUF_ALWAYS_INLINE void Prefetch(const U* ptr) {
       kOpts.locality,
       kOpts.mem_op,
   };
-  // Unroll the loop iterations by blocks of 16 in Clang optimized builds. With
-  // other compilers, leave the decision to the compiler.
-#if defined(__clang__)
+  // Unroll the loop iterations by blocks of 16 in optimized builds.
 #pragma unroll 16
-#endif
   for (size_t line = 0; line < kScaledOpts.num.num; ++line) {
     detail::PrefetchLine<kScaledOpts>(ptr, line);
   }
@@ -561,6 +548,16 @@ inline void PrefetchToLocalCache(const void* ptr) {
   };
   Prefetch<kOpts>(ptr);
 }
+
+#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+template <const PrefetchOpts& kOpts, typename T, typename U>
+PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
+inline void PrefetchToLocalCache(const void* ptr) {}
+
+#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
