@@ -109,6 +109,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         ShouldSplit(field, options),
         index < inlined_string_indices.size() ? inlined_string_indices[index]
                                               : -1,
+        IsMicroString(field, options),
     });
   }
   return fields;

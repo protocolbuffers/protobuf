@@ -358,10 +358,8 @@ inline bool IsString(const FieldDescriptor* field) {
 }
 
 
-inline bool IsArenaStringPtr(const FieldDescriptor* field) {
-  return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
-}
+bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts);
+bool IsMicroString(const FieldDescriptor* field, const Options& opts);
 
 bool IsProfileDriven(const Options& options);
 

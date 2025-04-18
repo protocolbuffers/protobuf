@@ -287,6 +287,18 @@ void MicroString::SetUnowned(const UnownedPayload& unowned_input,
   ABSL_DCHECK_EQ(+large_rep_kind(), +kUnowned);
 }
 
+void MicroString::ClearToDefault(const UnownedPayload& unowned_input,
+                                 Arena* arena) {
+  auto input = unowned_input.get();
+  if (arena != nullptr && Capacity() >= input.size()) {
+    // If we are in an arena and the input fits in the existing capacity, use
+    // that instead.
+    Set(input, arena);
+  } else {
+    SetUnowned(unowned_input, arena);
+  }
+}
+
 size_t MicroString::Capacity() const {
   if (is_inline()) {
     return kInlineCapacity;
