@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = "protobuf@googlegroups.com"
   s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/#{git_tag}/ruby" }
   s.require_paths = ["lib"]
-  s.files       = Dir.glob('lib/**/*.{rb,rake}')
+  s.files       = Dir.glob('lib/**/*.{rb,rake}') + %w[../LICENSE]
   if RUBY_PLATFORM == "java"
     s.platform  = "java"
     s.files     += ["lib/google/protobuf_java.jar"] +
