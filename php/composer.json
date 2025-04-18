@@ -1,3 +1,6 @@
+#ifndef PROTO2_OPENSOURCE
+// LINT.IfChange 
+#endif // PROTO2_OPENSOURCE
 {
   "name": "google/protobuf",
   "type": "library",
@@ -38,3 +41,6 @@
     "process-timeout": 1200
   }
 }
+#ifndef PROTO2_OPENSOURCE
+// LINT.ThenChange(//third_party/protobuf/github/php/composer.json.dist)
+#endif // PROTO2_OPENSOURCE
