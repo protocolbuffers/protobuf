@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/descriptor.h"
 
 // Utilities that assist in writing tests for generator annotations.
 // See java/internal/annotation_unittest.cc for an example.
