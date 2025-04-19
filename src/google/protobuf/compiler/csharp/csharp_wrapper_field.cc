@@ -26,8 +26,8 @@ namespace csharp {
 WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
                                        int presenceIndex, const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
-  variables_["has_property_check"] = absl::StrCat(name(), "_ != null");
-  variables_["has_not_property_check"] = absl::StrCat(name(), "_ == null");
+  variables_["has_property_check"] = absl::StrCat(variables_["cs_field_name"], " != null");
+  variables_["has_not_property_check"] = absl::StrCat(variables_["cs_field_name"], " == null");
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
   is_value_type = wrapped_field->type() != FieldDescriptor::TYPE_STRING &&
       wrapped_field->type() != FieldDescriptor::TYPE_BYTES;
@@ -42,20 +42,28 @@ WrapperFieldGenerator::~WrapperFieldGenerator() {
 void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
         variables_,
-        "private static readonly pb::FieldCodec<$type_name$> _single_$name$_codec = ");
+        "private static readonly pb::FieldCodec<$value_type_name$> _single_$name$_codec = ");
   GenerateCodecCode(printer);
+  printer->Print(";\n");
+
+  if (!options()->use_properties) {
+    printer->Print(
+      variables_,
+      "$access_level$ $type_name$ $cs_field_name$;\n");
+    return;
+  }
+
   printer->Print(
     variables_,
-    ";\n"
-    "private $type_name$ $name$_;\n");
+    "private $type_name$ $cs_field_name$;\n");
   WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n"
+    "  get { return $cs_field_name$; }\n"
     "  set {\n"
-    "    $name$_ = value;\n"
+    "    $cs_field_name$ = value;\n"
     "  }\n"
     "}\n\n");
   if (SupportsPresenceApi(descriptor_)) {
@@ -66,7 +74,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "$access_level$ bool Has$property_name$ {\n"
-      "  get { return $name$_ != null; }\n"
+      "  get { return $cs_field_name$ != null; }\n"
       "}\n\n");
     printer->Print(
       variables_,
@@ -75,7 +83,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "$access_level$ void Clear$property_name$() {\n"
-      "  $name$_ = null;\n"
+      "  $cs_field_name$ = null;\n"
       "}\n");
   }
 }
@@ -133,12 +141,16 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  const char *text = "hash = 17 * hash + $property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "hash = 17 * hash + pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
   }
   else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "hash = 17 * hash + pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_STRING ||
+           descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_BYTES) {
+    text = "hash = 17 * hash + ($property_name$?.GetHashCode() ?? 0);\n";
   }
   printer->Print(variables_, text);
 }
@@ -171,7 +183,7 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   } else {
     printer->Print(
       variables_,
-      "pb::FieldCodec.ForClassWrapper<$type_name$>($tag$)");
+      "pb::FieldCodec.ForClassWrapper<$value_type_name$>($tag$)");
   }
 }
 
@@ -180,8 +192,8 @@ void WrapperFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "$access_level$ static readonly pb::Extension<$extended_type$, $type_name$> $property_name$ =\n"
-    "  new pb::Extension<$extended_type$, $type_name$>($number$, ");
+    "$access_level$ static readonly pb::Extension<$extended_type$, $value_type_name$> $property_name$ =\n"
+    "  new pb::Extension<$extended_type$, $value_type_name$>($number$, ");
   GenerateCodecCode(printer);
   printer->Print(");\n");
 }
@@ -199,15 +211,26 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   // Note: deliberately _oneof_$name$_codec, not _$oneof_name$_codec... we have one codec per field.
   printer->Print(
         variables_,
-        "private static readonly pb::FieldCodec<$type_name$> _oneof_$name$_codec = ");
+        "private static readonly pb::FieldCodec<$value_type_name$> _oneof_$name$_codec = ");
   GenerateCodecCode(printer);
   printer->Print(";\n");
   WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : ($type_name$) null; }\n"
+    "$access_level$ $type_name$ $property_name$ {\n");
+  if (options()->enable_nullable) {
+    printer->Print(
+      variables_,
+      "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_! : ($type_name$) null; }\n");
+  } else {
+    printer->Print(
+      variables_,
+      "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : ($type_name$) null; }\n");
+  }
+
+  printer->Print(
+    variables_,  
     "  set {\n"
     "    $oneof_name$_ = value;\n"
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$oneof_case_name$;\n"

@@ -70,8 +70,16 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
+  (*variables)["value_type_name"] = value_type_name();
   (*variables)["extended_type"] = GetClassName(descriptor_->containing_type());
   (*variables)["name"] = name();
+
+  if (options()->use_properties) {
+    (*variables)["cs_field_name"] = absl::StrCat((*variables)["name"], "_");
+  } else {
+    (*variables)["cs_field_name"] = (*variables)["property_name"];
+  }
+
   (*variables)["descriptor_name"] = std::string(descriptor_->name());
   (*variables)["default_value"] = default_value();
   (*variables)["capitalized_type_name"] = capitalized_type_name();
@@ -85,16 +93,21 @@ void FieldGeneratorBase::SetCommonFieldVariables(
         {"name_def_message", absl::StrCat((*variables)["name"], "_")});
   }
   if (SupportsPresenceApi(descriptor_)) {
-    variables->insert({"has_property_check",
-                       absl::StrCat("Has", (*variables)["property_name"])});
-    variables->insert(
-        {"other_has_property_check",
-         absl::StrCat("other.Has", (*variables)["property_name"])});
+    if (options()->use_properties) {
+      variables->insert({"has_property_check",
+                        absl::StrCat("Has", (*variables)["property_name"])});
+      variables->insert(
+          {"other_has_property_check",
+          absl::StrCat("other.Has", (*variables)["property_name"])});
+    } else {
+      variables->insert({"has_property_check", absl::StrCat((*variables)["cs_field_name"], " != default")});
+      variables->insert({"other_has_property_check", absl::StrCat("other.", (*variables)["cs_field_name"], " != default")});
+    }
     variables->insert({"has_not_property_check",
-                       absl::StrCat("!", (*variables)["has_property_check"])});
+                       absl::StrCat("!(", (*variables)["has_property_check"], ")")});
     variables->insert(
         {"other_has_not_property_check",
-         absl::StrCat("!", (*variables)["other_has_property_check"])});
+         absl::StrCat("!(", (*variables)["other_has_property_check"], ")")});
     if (presenceIndex_ != -1) {
         const int hasBitsNumber = presenceIndex_ / 32;
         const int hasBitsMask = 1 << (presenceIndex_ % 32);
@@ -205,6 +218,10 @@ std::string FieldGeneratorBase::type_name() {
   return type_name(descriptor_);
 }
 
+std::string FieldGeneratorBase::value_type_name() {
+  return value_type_name(descriptor_);
+}
+
 std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
@@ -223,6 +240,9 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
         } else {
           return absl::StrCat(wrapped_field_type_name, "?");
         }
+      }
+      if (options()->enable_nullable) {
+        return absl::StrCat(GetClassName(descriptor->message_type()), "?");
       }
       return GetClassName(descriptor->message_type());
     case FieldDescriptor::TYPE_DOUBLE:
@@ -259,6 +279,19 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
       ABSL_LOG(FATAL) << "Unknown field type.";
       return "";
   }
+}
+
+std::string FieldGeneratorBase::value_type_name(const FieldDescriptor* descriptor) {
+  if (options()->enable_nullable && ! IsWrapperType(descriptor)) {
+    switch (descriptor->type()) {
+      case FieldDescriptor::TYPE_MESSAGE:
+      case FieldDescriptor::TYPE_GROUP:
+        return GetClassName(descriptor->message_type());
+      default:
+        break;
+    }
+  }
+  return type_name(descriptor);
 }
 
 bool FieldGeneratorBase::has_default_value() {

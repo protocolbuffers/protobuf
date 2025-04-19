@@ -35,23 +35,35 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
 void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
-    "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
-    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);\n");
+    "private static readonly pb::FieldCodec<$value_type_name$> _repeated_$name$_codec\n"
+    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($value_type_name$) x);\n");
+
+  if (options()->emit_unity_attribs) {
+    printer->Print("[UnityEngine.SerializeField]\n");
+  }
+
+  if (!options()->use_properties) {
+    printer->Print(
+      variables_,
+      "$access_level$ pbc::RepeatedField<$value_type_name$> $cs_field_name$ = new pbc::RepeatedField<$value_type_name$>();\n");
+    return;
+  }
+
   printer->Print(variables_,
-    "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
+    "private readonly pbc::RepeatedField<$value_type_name$> $cs_field_name$ = new pbc::RepeatedField<$value_type_name$>();\n");
   WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
-    "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
-    "  get { return $name$_; }\n"
+    "$access_level$ pbc::RepeatedField<$value_type_name$> $property_name$ {\n"
+    "  get { return $cs_field_name$; }\n"
     "}\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "$name$_.Add(other.$name$_);\n");
+    "$cs_field_name$.Add(other.$cs_field_name$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
@@ -62,8 +74,8 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer, bool 
   printer->Print(
     variables_,
     use_parse_context
-    ? "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n"
-    : "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
+    ? "$cs_field_name$.AddEntriesFrom(ref input, _repeated_$name$_codec);\n"
+    : "$cs_field_name$.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -74,36 +86,36 @@ void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer,
   printer->Print(
     variables_,
     use_write_context
-    ? "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n"
-    : "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+    ? "$cs_field_name$.WriteTo(ref output, _repeated_$name$_codec);\n"
+    : "$cs_field_name$.WriteTo(output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
+    "size += $cs_field_name$.CalculateSize(_repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "hash ^= $name$_.GetHashCode();\n");
+    "hash = 17 * hash + $cs_field_name$.GetHashCode();\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$_)) return false;\n");
+    "if (!$cs_field_name$.Equals(other.$cs_field_name$)) return false;\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,
-    "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
+    "PrintField(\"$descriptor_name$\", $cs_field_name$, writer);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
-    "$name$_ = other.$name$_.Clone();\n");
+    "$cs_field_name$ = other.$cs_field_name$.Clone();\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
@@ -111,9 +123,9 @@ void RepeatedEnumFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "$access_level$ static readonly pb::RepeatedExtension<$extended_type$, $type_name$> $property_name$ =\n"
-    "  new pb::RepeatedExtension<$extended_type$, $type_name$>($number$, "
-    "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x));\n");
+    "$access_level$ static readonly pb::RepeatedExtension<$extended_type$, $value_type_name$> $property_name$ =\n"
+    "  new pb::RepeatedExtension<$extended_type$, $value_type_name$>($number$, "
+    "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($value_type_name$) x));\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateFreezingCode(io::Printer* printer) {

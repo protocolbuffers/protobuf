@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__
 
 #include <string>
+#include <unordered_set>
 
 namespace google {
 namespace protobuf {
@@ -23,7 +24,16 @@ struct Options {
         base_namespace_specified(false),
         internal_access(false),
         serializable(false),
-        strip_nonfunctional_codegen(false) {}
+        strip_nonfunctional_codegen(false),
+        emit_field_numbers(true),
+        emit_unity_attribs(false),
+        emit_descriptors(true),
+        use_properties(true),
+        use_properties_exceptions(),
+        enable_nullable(false),
+        handle_unknown_fields(true)
+        {}
+
   // Extension of the generated file. Defaults to ".cs"
   std::string file_extension;
   // Base namespace to use to create directory hierarchy. Defaults to "".
@@ -50,6 +60,20 @@ struct Options {
   bool serializable;
   // If true, strip out nonfunctional codegen.
   bool strip_nonfunctional_codegen;
+  // If true, add in field numbers to the generated code.
+  bool emit_field_numbers;
+  // If true, add in Unity serialied field attributes
+  bool emit_unity_attribs;
+  // If true, add in descriptors
+  bool emit_descriptors;
+  // If true, use properties instead of fields for all generated members.
+  bool use_properties;
+  // For classes in this set, flip the default use_properties setting.
+  std::unordered_set<std::string> use_properties_exceptions;
+  // If true, enable nullable reference types in generated code.
+  bool enable_nullable;
+  // If true, emit code to pass through unknown fields correctly
+  bool handle_unknown_fields;
 };
 
 }  // namespace csharp

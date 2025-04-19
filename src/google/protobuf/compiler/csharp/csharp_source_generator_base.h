@@ -12,6 +12,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
 
 namespace google {
 namespace protobuf {
@@ -29,14 +30,15 @@ class SourceGeneratorBase {
   SourceGeneratorBase& operator=(const SourceGeneratorBase&) = delete;
 
   std::string class_access_level();
-  const Options* options();
+  const Options* options() const;
+  Options* MutableOptions();
 
   // Write any attributes used to decorate generated function members (methods and properties).
   // Should not be used to decorate types.
   void WriteGeneratedCodeAttributes(io::Printer* printer);
 
  private:
-  const Options *options_;
+  Options options_;
 };
 
 }  // namespace csharp
