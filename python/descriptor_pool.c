@@ -255,10 +255,13 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    const int options = kUpb_CompareOption_IncludeUnknownFields;
-    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
-                                 options)) {
+    int equal =
+        upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m, 0);
+    if (equal == 1) {
       result = PyUpb_FileDescriptor_Get(file);
+      goto done;
+    }
+    if (equal == -1) {
       goto done;
     }
   }

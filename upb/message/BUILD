@@ -106,11 +106,10 @@ cc_library(
     name = "compare",
     srcs = [
         "compare.c",
-        "internal/compare_unknown.c",
+        "compare_unknown.c",
     ],
     hdrs = [
         "compare.h",
-        "internal/compare_unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -286,8 +285,21 @@ cc_test(
 )
 
 cc_test(
+    name = "compare_test",
+    srcs = ["compare_test.cc"],
+    deps = [
+        ":compare",
+        ":message",
+        "//upb:base",
+        "//upb:port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "compare_unknown_test",
-    srcs = ["internal/compare_unknown_test.cc"],
+    srcs = ["compare_unknown_test.cc"],
     deps = [
         ":compare",
         ":internal",

@@ -587,11 +587,11 @@ static bool PyUpb_Message_IsEmpty(const upb_Message* msg,
   return !upb_Message_HasUnknown(msg);
 }
 
-static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
+static int PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   PyUpb_Message* m2 = (void*)_m2;
   if (m1 == m2) return true;
   if (!PyObject_TypeCheck(_m2, m1->ob_base.ob_type)) {
-    return false;
+    return 0;
   }
   const upb_MessageDef* m1_msgdef = _PyUpb_Message_GetMsgdef(m1);
 #ifndef NDEBUG
@@ -606,8 +606,7 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   const bool e2 = PyUpb_Message_IsEmpty(m2_msg, m1_msgdef, symtab);
   if (e1 || e2) return e1 && e2;
 
-  const int options = kUpb_CompareOption_IncludeUnknownFields;
-  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef, options);
+  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef, 0);
 }
 
 static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,
@@ -798,7 +797,10 @@ static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
-  bool ret = PyUpb_Message_IsEqual(self, other);
+  int ret = PyUpb_Message_IsEqual(self, other);
+  if (ret == -1) {
+    return NULL;
+  }
   if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
 }
