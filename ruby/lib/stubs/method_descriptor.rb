@@ -1,0 +1,37 @@
+module Google
+  module Protobuf
+
+    # A MethodDescriptor provides information about the Protobuf definition of a method inside
+    # an RPC service.
+    class MethodDescriptor
+
+      # Returns the name of this method
+      # @return [String]
+      def name; end
+
+      # Returns the {MethodOptions} for this {MethodDescriptor}.
+      # @return [MethodOptions]
+      def options; end
+
+      # Returns the {Descriptor} for the request message type of this method
+      # @return [Descriptor]
+      def input_type; end
+
+      # Returns the {Descriptor} for the response message type of this method
+      # @return [Descriptor]
+      def output_type; end
+
+      # Returns whether or not this is a streaming request method
+      # @return [Boolean]
+      def client_streaming; end
+
+      # Returns the {MethodDescriptorProto} of this {MethodDescriptor}.
+      # @return [MethodDescriptorProto]
+      def to_proto; end
+
+      # Returns whether or not this is a streaming response method
+      # @return [Boolean]
+      def server_streaming; end
+    end
+  end
+end
