@@ -2785,7 +2785,7 @@ public final class TextFormat {
    * Thrown by {@link TextFormat#unescapeBytes} and {@link TextFormat#unescapeText} when an invalid
    * escape sequence is seen.
    */
-  public static class InvalidEscapeSequenceException extends IOException {
+  static class InvalidEscapeSequenceException extends IOException {
     private static final long serialVersionUID = -8164033650142593304L;
 
     InvalidEscapeSequenceException(final String description) {
