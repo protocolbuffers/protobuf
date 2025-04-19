@@ -1626,6 +1626,26 @@ class GeneratedClassTest extends TestBase
         $this->assertTrue(true);
     }
 
+    public function testOptionalValueConstructor()
+    {
+        $m = new TestMessage([
+            'optional_message' => new Sub([
+                'a' => 1
+            ]),
+            'true_optional_message' => null,
+            'repeated_message' => [
+                new Sub(['a' => 2]),
+                new Sub(['a' => 3])
+            ],
+        ]);
+
+        $this->assertFalse($m->hasTrueOptionalMessage());
+        $this->assertNull($m->getTrueOptionalMessage());
+
+        $this->assertEquals(1, $m->getOptionalMessage()->getA());
+        $this->assertCount(2, $m->getRepeatedMessage());
+    }
+
     #########################################################
     # Test clone.
     #########################################################
