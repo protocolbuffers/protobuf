@@ -24,7 +24,7 @@ namespace compiler {
 namespace csharp {
 
 SourceGeneratorBase::SourceGeneratorBase(
-    const Options *options) : options_(options) {
+    const Options *options) : options_(*options) {
 }
 
 SourceGeneratorBase::~SourceGeneratorBase() {
@@ -39,11 +39,15 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return this->options()->internal_access ? "internal" : "public";
+  return options()->internal_access ? "internal" : "public";
 }
 
-const Options* SourceGeneratorBase::options() {
-  return this->options_;
+const Options* SourceGeneratorBase::options() const {
+  return &options_;
+}
+
+Options* SourceGeneratorBase::MutableOptions() {
+  return &options_;
 }
 
 }  // namespace csharp

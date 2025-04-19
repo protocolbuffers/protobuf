@@ -36,7 +36,11 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   variables_["key_type_name"] = type_name(key_descriptor);
-  variables_["value_type_name"] = type_name(value_descriptor);
+  if (options()->enable_nullable) {
+    variables_["value_type_name"] = value_type_name(value_descriptor);
+  } else {
+    variables_["value_type_name"] = type_name(value_descriptor);
+  }
   std::unique_ptr<FieldGeneratorBase> key_generator(
       CreateFieldGenerator(key_descriptor, 1, this->options()));
   std::unique_ptr<FieldGeneratorBase> value_generator(
@@ -51,20 +55,28 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   value_generator->GenerateCodecCode(printer);
   printer->Print(
     variables_,
-    ", $tag$);\n"
-    "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $name$_ = new pbc::MapField<$key_type_name$, $value_type_name$>();\n");
+    ", $tag$);\n");
+
+  if (!options()->use_properties) {
+    printer->Print(variables_, 
+      "$access_level$ pbc::MapField<$key_type_name$, $value_type_name$> $cs_field_name$ = new pbc::MapField<$key_type_name$, $value_type_name$>();\n");
+    return;
+  }
+
+  printer->Print(variables_, 
+    "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $cs_field_name$ = new pbc::MapField<$key_type_name$, $value_type_name$>();\n");
   WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::MapField<$key_type_name$, $value_type_name$> $property_name$ {\n"
-    "  get { return $name$_; }\n"
+    "  get { return $cs_field_name$; }\n"
     "}\n");
 }
 
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(variables_,
-                 "$name$_.MergeFrom(other.$name$_);\n");
+                 "$cs_field_name$.MergeFrom(other.$cs_field_name$);\n");
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {
@@ -75,8 +87,8 @@ void MapFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_parse
   printer->Print(
     variables_,
     use_parse_context
-    ? "$name$_.AddEntriesFrom(ref input, _map_$name$_codec);\n"
-    : "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
+    ? "$cs_field_name$.AddEntriesFrom(ref input, _map_$name$_codec);\n"
+    : "$cs_field_name$.AddEntriesFrom(input, _map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -87,20 +99,20 @@ void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer, bool use
   printer->Print(
     variables_,
     use_write_context
-    ? "$name$_.WriteTo(ref output, _map_$name$_codec);\n"
-    : "$name$_.WriteTo(output, _map_$name$_codec);\n");
+    ? "$cs_field_name$.WriteTo(ref output, _map_$name$_codec);\n"
+    : "$cs_field_name$.WriteTo(output, _map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "size += $name$_.CalculateSize(_map_$name$_codec);\n");
+    "size += $cs_field_name$.CalculateSize(_map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "hash ^= $property_name$.GetHashCode();\n");
+    "hash = 17 * hash + $property_name$.GetHashCode();\n");
 }
 void MapFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
@@ -114,7 +126,7 @@ void MapFieldGenerator::WriteToString(io::Printer* printer) {
 
 void MapFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
-    "$name$_ = other.$name$_.Clone();\n");
+    "$cs_field_name$ = other.$cs_field_name$.Clone();\n");
 }
 
 void MapFieldGenerator::GenerateFreezingCode(io::Printer* printer) {

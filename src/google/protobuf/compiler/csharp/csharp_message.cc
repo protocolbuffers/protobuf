@@ -45,6 +45,13 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       descriptor_(descriptor),
       has_bit_field_count_(0),
       has_extension_ranges_(descriptor->extension_range_count() > 0) {
+  // cache use_properties
+  auto generate_class_name = std::string(descriptor_->name());
+  if (options->use_properties_exceptions.find(generate_class_name) !=
+      options->use_properties_exceptions.end()) {
+    MutableOptions()->use_properties = !options->use_properties;
+  }
+
   // fields by number
   for (int i = 0; i < descriptor_->field_count(); i++) {
     fields_by_number_.push_back(descriptor_->field(i));
@@ -86,7 +93,7 @@ void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
 }
 
 void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
-  if (this->options()->serializable) {
+  if (options()->serializable) {
     printer->Print("[global::System.SerializableAttribute]\n");
   }
 }
@@ -100,9 +107,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   AddSerializableAttribute(printer);
 
-  printer->Print(
-      "[global::System.Diagnostics.DebuggerDisplayAttribute(\"{ToString(),nq}"
-      "\")]\n");
+  if (options()->emit_descriptors) {
+    printer->Print("[global::System.Diagnostics.DebuggerDisplayAttribute(\"{ToString(),nq}\")]\n");
+  }
   printer->Print(vars, "$access_level$ sealed partial class $class_name$ : ");
 
   if (has_extension_ranges_) {
@@ -119,10 +126,12 @@ void MessageGenerator::Generate(io::Printer* printer) {
   // All static fields and properties
   printer->Print(
       vars,
-      "private static readonly pb::MessageParser<$class_name$> _parser = new "
-      "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
+      "public static readonly pb::MessageParser<$class_name$> Parser = new "
+      "pb::MessageParser<$class_name$>(() => new $class_name$());\n\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  if (options()->handle_unknown_fields) {
+    printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  }
 
   if (has_extension_ranges_) {
     if (IsDescriptorProto(descriptor_->file())) {
@@ -148,44 +157,44 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print("private int _hasBits$i$;\n", "i", absl::StrCat(i));
   }
 
-  WriteGeneratedCodeAttributes(printer);
+  if (options()->emit_descriptors) {
+    // Access the message descriptor via the relevant file descriptor or
+    // containing message descriptor.
+    if (!descriptor_->containing_type()) {
+      vars["descriptor_accessor"] =
+          absl::StrCat(GetReflectionClassName(descriptor_->file()),
+                      ".Descriptor.MessageTypes[", descriptor_->index(), "]");
+    } else {
+      vars["descriptor_accessor"] =
+          absl::StrCat(GetClassName(descriptor_->containing_type()),
+                      ".Descriptor.NestedTypes[", descriptor_->index(), "]");
+    }
 
-  printer->Print(vars,
-                 "public static pb::MessageParser<$class_name$> Parser { get { "
-                 "return _parser; } }\n\n");
-
-  // Access the message descriptor via the relevant file descriptor or
-  // containing message descriptor.
-  if (!descriptor_->containing_type()) {
-    vars["descriptor_accessor"] =
-        absl::StrCat(GetReflectionClassName(descriptor_->file()),
-                     ".Descriptor.MessageTypes[", descriptor_->index(), "]");
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print(vars,
+                  "public static pbr::MessageDescriptor Descriptor {\n"
+                  "  get { return $descriptor_accessor$; }\n"
+                  "}\n"
+                  "\n");
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print(vars,
+                  "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
+                  "  get { return Descriptor; }\n"
+                  "}\n"
+                  "\n");
   } else {
-    vars["descriptor_accessor"] =
-        absl::StrCat(GetClassName(descriptor_->containing_type()),
-                     ".Descriptor.NestedTypes[", descriptor_->index(), "]");
+    WriteGeneratedCodeAttributes(printer);
+    if (options()->enable_nullable) {
+      printer->Print("public pbr.MessageDescriptor? Descriptor => null;\n\n");
+    } else {
+      printer->Print("public pbr.MessageDescriptor Descriptor => null;\n\n");
+    }
   }
 
+  // Parameterless constructor.
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public static pbr::MessageDescriptor Descriptor {\n"
-                 "  get { return $descriptor_accessor$; }\n"
-                 "}\n"
-                 "\n");
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars,
-                 "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
-                 "  get { return Descriptor; }\n"
-                 "}\n"
-                 "\n");
-
-  // Parameterless constructor and partial OnConstruction method.
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars,
-                 "public $class_name$() {\n"
-                 "  OnConstruction();\n"
-                 "}\n\n"
-                 "partial void OnConstruction();\n\n");
+                 "public $class_name$() {}\n\n");
 
   GenerateCloningCode(printer);
   GenerateFreezingCode(printer);
@@ -195,12 +204,18 @@ void MessageGenerator::Generate(io::Printer* printer) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
 
     // Rats: we lose the debug comment here :(
-    printer->Print(
-        "/// <summary>Field number for the \"$field_name$\" field.</summary>\n"
-        "public const int $field_constant_name$ = $index$;\n",
-        "field_name", fieldDescriptor->name(), "field_constant_name",
-        GetFieldConstantName(fieldDescriptor), "index",
-        absl::StrCat(fieldDescriptor->number()));
+    if (options()->emit_field_numbers) {
+      printer->Print(
+          "/// <summary>Field number for the \"$field_name$\" field.</summary>\n"
+          "public const int $field_constant_name$ = $index$;\n",
+          "field_name", fieldDescriptor->name(), "field_constant_name",
+          GetFieldConstantName(fieldDescriptor), "index",
+          absl::StrCat(fieldDescriptor->number()));
+    } else {
+      printer->Print(
+          "/// <summary>the \"$field_name$\" field.</summary>\n",
+          "field_name", fieldDescriptor->name());
+    }
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(fieldDescriptor));
     generator->GenerateMembers(printer);
@@ -211,10 +226,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
     vars["name"] = UnderscoresToCamelCase(oneof->name(), false);
+    vars["cs_field_name"] = absl::StrCat(vars["name"], "_");
     vars["property_name"] = UnderscoresToCamelCase(oneof->name(), true);
     vars["original_name"] = std::string(oneof->name());
+    if (options()->enable_nullable) {
+      printer->Print(vars, "private object? $cs_field_name$;\n");
+    } else {
+      printer->Print(vars, "private object $cs_field_name$;\n");
+    }
     printer->Print(vars,
-                   "private object $name$_;\n"
                    "/// <summary>Enum of possible cases for the "
                    "\"$original_name$\" oneof.</summary>\n"
                    "public enum $property_name$OneofCase {\n");
@@ -242,7 +262,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
                    "public void Clear$property_name$() {\n"
                    "  $name$Case_ = $property_name$OneofCase.None;\n"
-                   "  $name$_ = null;\n"
+                   "  $cs_field_name$ = null;\n"
                    "}\n\n");
   }
 
@@ -396,9 +416,13 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
   }
-  // Clone unknown fields
-  printer->Print(
-      "_unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);\n");
+
+  if (options()->handle_unknown_fields) {
+    // Clone unknown fields
+    printer->Print(
+        "_unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);\n");
+  }
+
   if (has_extension_ranges_) {
     printer->Print(
         "_extensions = pb::ExtensionSet.Clone(other._extensions);\n");
@@ -427,8 +451,12 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
                  "  return Equals(other as $class_name$);\n"
                  "}\n\n");
   WriteGeneratedCodeAttributes(printer);
+  if (options()->enable_nullable) {
+    printer->Print(vars, "public bool Equals($class_name$? other) {\n");
+  } else {
+    printer->Print(vars, "public bool Equals($class_name$ other) {\n");
+  }
   printer->Print(vars,
-                 "public bool Equals($class_name$ other) {\n"
                  "  if (ReferenceEquals(other, null)) {\n"
                  "    return false;\n"
                  "  }\n"
@@ -454,9 +482,16 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
         "}\n");
   }
   printer->Outdent();
-  printer->Print(
+
+  if (options()->handle_unknown_fields) {
+    printer->Print(
       "  return Equals(_unknownFields, other._unknownFields);\n"
       "}\n\n");
+  } else {
+    printer->Print(
+      "  return true;\n"
+      "}\n\n");
+  }
 
   // GetHashCode
   // Start with a non-zero value to easily distinguish between null and "empty"
@@ -473,28 +508,50 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   }
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     printer->Print(
-        "hash ^= (int) $name$Case_;\n", "name",
+        "hash = 17 * hash + (int) $name$Case_;\n", "name",
         UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
   }
   if (has_extension_ranges_) {
     printer->Print(
-        "if (_extensions != null) {\n"
-        "  hash ^= _extensions.GetHashCode();\n"
-        "}\n");
+        "hash = 17 * hash + ((_extensions != null) ? _extensions.GetHashCode() : 0);\n");
   }
+
+  if (options()->handle_unknown_fields) {
+    printer->Print(
+      "hash = 17 * hash + (_unknownFields?.GetHashCode() ?? 0);\n");
+  }
+
   printer->Print(
-      "if (_unknownFields != null) {\n"
-      "  hash ^= _unknownFields.GetHashCode();\n"
-      "}\n"
       "return hash;\n");
   printer->Outdent();
   printer->Print("}\n\n");
 
   WriteGeneratedCodeAttributes(printer);
-  printer->Print(
+  if (options()->emit_descriptors) {
+    printer->Print(
       "public override string ToString() {\n"
       "  return pb::JsonFormatter.ToDiagnosticString(this);\n"
       "}\n\n");
+  } else {
+    printer->Print(
+        "public override string ToString() {\n"
+        "#if FLAG_DEBUG_PROTOS\n");
+
+    if (options()->emit_unity_attribs) {
+      printer->Print(
+          "  // this doesn't really work for nested messages, but it's better than nothing\n"
+          "  return UnityEngine.JsonUtility.ToJson(this);\n");
+    } else {
+      printer->Print(
+        "  return \"{}\";\n");
+    }
+
+    printer->Print(
+        "#else\n"
+        "  return \"{}\";\n"
+        "#endif // FLAG_DEBUG_PROTOS\n"
+        "}\n\n");
+  }
 }
 
 void MessageGenerator::GenerateMessageSerializationMethods(
@@ -540,11 +597,12 @@ void MessageGenerator::GenerateMessageSerializationMethods(
         "}\n");
   }
 
-  printer->Print(
-      "if (_unknownFields != null) {\n"
-      "  size += _unknownFields.CalculateSize();\n"
-      "}\n");
-
+  if (options()->handle_unknown_fields) {
+    printer->Print(
+        "if (_unknownFields != null) {\n"
+        "  size += _unknownFields.CalculateSize();\n"
+        "}\n");
+  }
   printer->Print("return size;\n");
   printer->Outdent();
   printer->Print("}\n\n");
@@ -569,14 +627,15 @@ void MessageGenerator::GenerateWriteToBody(io::Printer* printer,
                                        "}\n");
   }
 
-  // Serialize unknown fields
-  printer->Print(use_write_context ? "if (_unknownFields != null) {\n"
-                                     "  _unknownFields.WriteTo(ref output);\n"
-                                     "}\n"
-                                   : "if (_unknownFields != null) {\n"
-                                     "  _unknownFields.WriteTo(output);\n"
-                                     "}\n");
-
+  if (options()->handle_unknown_fields) {
+    // Serialize unknown fields
+    printer->Print(use_write_context ? "if (_unknownFields != null) {\n"
+                                      "  _unknownFields.WriteTo(ref output);\n"
+                                      "}\n"
+                                    : "if (_unknownFields != null) {\n"
+                                      "  _unknownFields.WriteTo(output);\n"
+                                      "}\n");
+  }
   // TODO: Memoize size of frozen messages?
 }
 
@@ -632,10 +691,12 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
         "pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);\n");
   }
 
-  // Merge unknown fields.
-  printer->Print(
-      "_unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, "
-      "other._unknownFields);\n");
+  if (options()->handle_unknown_fields) {
+    // Merge unknown fields.
+    printer->Print(
+        "_unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, "
+        "other._unknownFields);\n");
+  }
 
   printer->Outdent();
   printer->Print("}\n\n");
@@ -681,13 +742,22 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
   )csharp");
   printer->Indent();
   printer->Indent();
+
+  if (options()->handle_unknown_fields) {
+    vars["unknown_fields"] = "_unknownFields";
+    vars["prev_unknown_fields"] = "_unknownFields";
+  } else {
+    vars["unknown_fields"] = "var _unknownFields";
+    vars["prev_unknown_fields"] = "null";
+  }
+
   if (has_extension_ranges_) {
     printer->Print(vars,
                    "default:\n"
                    "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, "
                    "$maybe_ref_input$)) {\n"
-                   "    _unknownFields = "
-                   "pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, "
+                   "    $unknown_fields$ = "
+                   "pb::UnknownFieldSet.MergeFieldFrom($prev_unknown_fields$, "
                    "$maybe_ref_input$);\n"
                    "  }\n"
                    "  break;\n");
@@ -695,10 +765,11 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
     printer->Print(
         vars,
         "default:\n"
-        "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, "
+        "  $unknown_fields$ = pb::UnknownFieldSet.MergeFieldFrom($prev_unknown_fields$, "
         "$maybe_ref_input$);\n"
         "  break;\n");
   }
+
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =

@@ -46,23 +46,52 @@ bool Generator::Generate(const FileDescriptor* file,
   ParseGeneratorParameter(parameter, &options);
 
   struct Options cli_options;
+  bool bool_arg;
 
   for (size_t i = 0; i < options.size(); i++) {
+    if (options[i].second.empty()) {
+      bool_arg = true;
+    } else {
+      (void)absl::SimpleAtob(options[i].second, &bool_arg);
+    }
+
     if (options[i].first == "file_extension") {
       cli_options.file_extension = options[i].second;
     } else if (options[i].first == "base_namespace") {
       cli_options.base_namespace = options[i].second;
       cli_options.base_namespace_specified = true;
     } else if (options[i].first == "internal_access") {
-      cli_options.internal_access = true;
+      cli_options.internal_access = bool_arg;
     } else if (options[i].first == "serializable") {
-      cli_options.serializable = true;
+      cli_options.serializable = bool_arg;
     } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
-      cli_options.strip_nonfunctional_codegen = true;
+      cli_options.strip_nonfunctional_codegen = bool_arg;
+    } else if (options[i].first == "emit_field_numbers") {
+      cli_options.emit_field_numbers = bool_arg;
+    } else if (options[i].first == "emit_unity_attribs") {
+      cli_options.emit_unity_attribs = bool_arg;
+    } else if (options[i].first == "emit_descriptors") {
+      cli_options.emit_descriptors = bool_arg;
+    } else if (options[i].first == "use_properties") {
+      cli_options.use_properties = bool_arg;
+    } else if (options[i].first == "use_properties_exception") {
+      cli_options.use_properties_exceptions.insert(options[i].second);
+    } else if (options[i].first == "enable_nullable") {
+      cli_options.enable_nullable = bool_arg;
+    } else if (options[i].first == "handle_unknown_fields") {
+      cli_options.handle_unknown_fields = bool_arg;
     } else {
       *error = absl::StrCat("Unknown generator option: ", options[i].first);
       return false;
     }
+  }
+
+  // The descriptor code really needs the fields to be properties,
+  // basically you'd need to add a separate runtime library to change
+  // it to fields, since it uses C# reflection to get Properties
+  if (cli_options.emit_descriptors) {
+    cli_options.use_properties = true;
+    cli_options.use_properties_exceptions.clear();
   }
 
   std::string filename_error = "";
