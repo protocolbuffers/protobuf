@@ -143,7 +143,7 @@ enum { kSooSizeMask = kNotSooBit - 1 };
 // absl::Cord. We return 0 to disable SOO on 32-bit platforms.
 constexpr int SooCapacityElements(size_t element_size) {
   if (sizeof(void*) < 8) return 0;
-  return std::min<int>(kSooCapacityBytes / element_size, kSooSizeMask);
+  return std::min<int>(kSooCapacityBytes / static_cast<int>(element_size), kSooSizeMask);
 }
 
 struct LongSooRep {
