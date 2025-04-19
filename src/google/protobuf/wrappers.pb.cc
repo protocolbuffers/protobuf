@@ -522,7 +522,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   (void)cached_has_bits;
 
   // double value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (::absl::bit_cast<::uint64_t>(this_._internal_value()) != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteDoubleToArray(
@@ -556,7 +556,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
    {
     // double value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (::absl::bit_cast<::uint64_t>(this_._internal_value()) != 0) {
         total_size += 9;
       }
@@ -575,7 +575,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (::absl::bit_cast<::uint64_t>(from._internal_value()) != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -756,7 +756,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   (void)cached_has_bits;
 
   // float value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (::absl::bit_cast<::uint32_t>(this_._internal_value()) != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteFloatToArray(
@@ -790,7 +790,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
    {
     // float value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (::absl::bit_cast<::uint32_t>(this_._internal_value()) != 0) {
         total_size += 5;
       }
@@ -809,7 +809,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (::absl::bit_cast<::uint32_t>(from._internal_value()) != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -990,7 +990,7 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
   (void)cached_has_bits;
 
   // int64 value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (this_._internal_value() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
@@ -1024,7 +1024,7 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
    {
     // int64 value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (this_._internal_value() != 0) {
         total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
             this_._internal_value());
@@ -1044,7 +1044,7 @@ void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (from._internal_value() != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -1225,7 +1225,7 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
   (void)cached_has_bits;
 
   // uint64 value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (this_._internal_value() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
@@ -1259,7 +1259,7 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
    {
     // uint64 value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (this_._internal_value() != 0) {
         total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
             this_._internal_value());
@@ -1279,7 +1279,7 @@ void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (from._internal_value() != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -1460,7 +1460,7 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
   (void)cached_has_bits;
 
   // int32 value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (this_._internal_value() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
@@ -1494,7 +1494,7 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
    {
     // int32 value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (this_._internal_value() != 0) {
         total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
             this_._internal_value());
@@ -1514,7 +1514,7 @@ void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (from._internal_value() != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -1695,7 +1695,7 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
   (void)cached_has_bits;
 
   // uint32 value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (this_._internal_value() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteUInt32ToArray(
@@ -1729,7 +1729,7 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
    {
     // uint32 value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (this_._internal_value() != 0) {
         total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
             this_._internal_value());
@@ -1749,7 +1749,7 @@ void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (from._internal_value() != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -1930,7 +1930,7 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
   (void)cached_has_bits;
 
   // bool value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (this_._internal_value() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -1964,7 +1964,7 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
    {
     // bool value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (this_._internal_value() != 0) {
         total_size += 2;
       }
@@ -1983,7 +1983,7 @@ void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (from._internal_value() != 0) {
       _this->_impl_.value_ = from._impl_.value_;
     }
@@ -2161,7 +2161,7 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     _impl_.value_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
@@ -2184,7 +2184,7 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
   (void)cached_has_bits;
 
   // string value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (!this_._internal_value().empty()) {
       const ::std::string& _s = this_._internal_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -2219,7 +2219,7 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
    {
     // string value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (!this_._internal_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_value());
@@ -2239,7 +2239,7 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (!from._internal_value().empty()) {
       _this->_internal_set_value(from._internal_value());
     } else {
@@ -2420,7 +2420,7 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     _impl_.value_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
@@ -2443,7 +2443,7 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
   (void)cached_has_bits;
 
   // bytes value = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
     if (!this_._internal_value().empty()) {
       const ::std::string& _s = this_._internal_value();
       target = stream->WriteBytesMaybeAliased(1, _s, target);
@@ -2476,7 +2476,7 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
    {
     // bytes value = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
-    if ((cached_has_bits & 0x00000001u) != 0) {
+    if ((cached_has_bits & 0x00000001U) != 0) {
       if (!this_._internal_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
                                         this_._internal_value());
@@ -2496,7 +2496,7 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000001u) != 0) {
+  if ((cached_has_bits & 0x00000001U) != 0) {
     if (!from._internal_value().empty()) {
       _this->_internal_set_value(from._internal_value());
     } else {
