@@ -804,7 +804,7 @@ inline void RepeatedPtrFieldBase::MergeFrom<Message>(
 }
 
 // Appends all `std::string` values from `from` to this instance.
-template <>
+template <> PROTOBUF_EXPORT
 void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from);
 
