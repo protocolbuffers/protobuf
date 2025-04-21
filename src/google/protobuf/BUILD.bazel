@@ -1375,7 +1375,7 @@ cc_library(
         "repeated_field_reflection_unittest.inc",
         "test_util.h",
         "test_util_lite.h",
-        "wire_format_unittest.inc",
+        "wire_format_unittest.h",
     ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
@@ -1395,7 +1395,9 @@ cc_library(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:log_severity",
         "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/time",
@@ -2199,7 +2201,6 @@ cc_test(
     name = "wire_format_unittest",
     srcs = [
         "wire_format_unittest.cc",
-        "wire_format_unittest.inc",
     ],
     deps = [
         ":cc_test_protos",

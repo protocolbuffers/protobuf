@@ -16,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1397,28 +1398,63 @@ struct TestUtilTraits;
 // It connects all namespace scoped names together.
 // This is needed so that functions that take some type X can find
 // declarations from the same namespace.
-#define PROTOBUF_TEST_UTIL_DECLARE_INPUT(ns, import_ns)                 \
-  template <>                                                           \
-  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {    \
-    PROTOBUF_TEST_UTIL_DECLARE_INPUT_EXTS_(                             \
-        ::ns, PROTOBUF_TEST_UTIL_DECLARE_INPUT_EXT_VARIABLE_);          \
-    using TestAllTypes = ::ns::TestAllTypes;                            \
-    static constexpr auto FOREIGN_FOO = ::ns::FOREIGN_FOO;              \
-    static constexpr auto FOREIGN_BAR = ::ns::FOREIGN_BAR;              \
-    static constexpr auto FOREIGN_BAZ = ::ns::FOREIGN_BAZ;              \
-    static constexpr auto IMPORT_FOO = ::import_ns::IMPORT_FOO;         \
-    static constexpr auto IMPORT_BAR = ::import_ns::IMPORT_BAR;         \
-    static constexpr auto IMPORT_BAZ = ::import_ns::IMPORT_BAZ;         \
-  };                                                                    \
-  template <>                                                           \
-  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestFieldOrderings>     \
-      : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {};   \
-  template <>                                                           \
-  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestPackedExtensions>   \
-      : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {};   \
-  template <>                                                           \
-  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestUnpackedExtensions> \
+#define PROTOBUF_TEST_UTIL_DECLARE_INPUT_IMPL(ns, import_ns)                   \
+  template <>                                                                  \
+  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {           \
+    PROTOBUF_TEST_UTIL_DECLARE_INPUT_EXTS_(                                    \
+        ::ns, PROTOBUF_TEST_UTIL_DECLARE_INPUT_EXT_VARIABLE_);                 \
+    using TestAllTypes = ::ns::TestAllTypes;                                   \
+    using TestRequired = ::ns::TestRequired;                                   \
+    using NestedTestMessageSetContainer = ::ns::NestedTestMessageSetContainer; \
+    using OneBytes = ::ns::OneBytes;                                           \
+    using OneString = ::ns::OneString;                                         \
+    using MoreBytes = ::ns::MoreBytes;                                         \
+    using MoreString = ::ns::MoreString;                                       \
+    using TestEmptyMessage = ::ns::TestEmptyMessage;                           \
+    using TestRepeatedScalarDifferentTagSizes =                                \
+        ::ns::TestRepeatedScalarDifferentTagSizes;                             \
+    using TestRecursiveMessage = ::ns::TestRecursiveMessage;                   \
+    using Int32Message = ::ns::Int32Message;                                   \
+    using Uint32Message = ::ns::Uint32Message;                                 \
+    using Int64Message = ::ns::Int64Message;                                   \
+    using Uint64Message = ::ns::Uint64Message;                                 \
+    using BoolMessage = ::ns::BoolMessage;                                     \
+    using RawMessageSet = ::ns::RawMessageSet;                                 \
+    using TestFieldOrderings = ::ns::TestFieldOrderings;                       \
+    using TestMessageSetExtension1 = ::ns::TestMessageSetExtension1;           \
+    using TestMessageSetExtension2 = ::ns::TestMessageSetExtension2;           \
+    using TestMessageSet =                                                     \
+        decltype(TestMessageSetExtension1::message_set_extension)::Extendee;   \
+    using TestOneofBackwardsCompatible = ::ns::TestOneofBackwardsCompatible;   \
+    using TestOneof = ::ns::TestOneof;                                         \
+    using TestOneof2 = ::ns::TestOneof2;                                       \
+    using TestPackedExtensions = ::ns::TestPackedExtensions;                   \
+    using TestUnpackedTypes = ::ns::TestUnpackedTypes;                         \
+    using TestPackedTypes = ::ns::TestPackedTypes;                             \
+    using TestAllExtensions = ::ns::TestAllExtensions;                         \
+    static constexpr auto FOREIGN_FOO = ::ns::FOREIGN_FOO;                     \
+    static constexpr auto FOREIGN_BAR = ::ns::FOREIGN_BAR;                     \
+    static constexpr auto FOREIGN_BAZ = ::ns::FOREIGN_BAZ;                     \
+    static constexpr auto IMPORT_FOO = ::import_ns::IMPORT_FOO;                \
+    static constexpr auto IMPORT_BAR = ::import_ns::IMPORT_BAR;                \
+    static constexpr auto IMPORT_BAZ = ::import_ns::IMPORT_BAZ;                \
+  };                                                                           \
+  template <>                                                                  \
+  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestFieldOrderings>            \
+      : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {};          \
+  template <>                                                                  \
+  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllTypes>                  \
+      : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {};          \
+  template <>                                                                  \
+  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestPackedExtensions>          \
+      : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {};          \
+  template <>                                                                  \
+  struct google::protobuf::TestUtil::TestUtilTraits<::ns::TestUnpackedExtensions>        \
       : google::protobuf::TestUtil::TestUtilTraits<::ns::TestAllExtensions> {}
+
+#define PROTOBUF_TEST_UTIL_DECLARE_INPUT(ns_suffix)                 \
+  PROTOBUF_TEST_UTIL_DECLARE_INPUT_IMPL(proto2_unittest##ns_suffix, \
+                                        proto2_unittest_import##ns_suffix)
 
 // Set every field in the message to a unique value.
 template <typename TestAllTypes>
@@ -3859,7 +3895,7 @@ void ExpectLastRepeatedExtensionsReleased(const TestAllExtensions& message) {
 }  // namespace google
 
 // Declare the default trait so that most users don't need to do it.
-PROTOBUF_TEST_UTIL_DECLARE_INPUT(proto2_unittest, proto2_unittest_import);
+PROTOBUF_TEST_UTIL_DECLARE_INPUT();
 
 #include "google/protobuf/port_undef.inc"
 
