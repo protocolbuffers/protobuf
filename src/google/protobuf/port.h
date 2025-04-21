@@ -252,7 +252,8 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 enum { kMaxMessageAlignment = 8 };
 
 inline constexpr bool EnableExperimentalMicroString() {
-#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING) || \
+    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
 #else
   return false;
