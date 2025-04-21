@@ -27,7 +27,6 @@
 #include <cstdlib>
 #include <iterator>
 #include <limits>
-#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -38,6 +37,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
