@@ -32,17 +32,24 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
-uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field);
+PROTOBUF_EXPORT uint32_t
+GetRecodedTagForFastParsing(const FieldDescriptor* field);
 
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor);
+PROTOBUF_EXPORT absl::optional<uint32_t> GetEndGroupTag(
+    const Descriptor* descriptor);
 
-uint32_t FastParseTableSize(size_t num_fields,
-                            absl::optional<uint32_t> end_group_tag);
+PROTOBUF_EXPORT uint32_t
+FastParseTableSize(size_t num_fields, absl::optional<uint32_t> end_group_tag);
 
-bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
+PROTOBUF_EXPORT bool IsFieldTypeEligibleForFastParsing(
+    const FieldDescriptor* field);
 
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  static constexpr int kMaxFastFieldHasbitIndex = 31;
+
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;

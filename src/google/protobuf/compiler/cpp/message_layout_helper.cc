@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -11,7 +12,10 @@
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
 
 namespace google {
 namespace protobuf {
@@ -22,21 +26,19 @@ namespace {
 
 bool EndsWithMsgPtr(const std::vector<const FieldDescriptor*>& fields,
                     const Options& options, MessageSCCAnalyzer* scc_analyzer) {
-  const auto* last_field = fields.back();
+  auto* last_field = fields.back();
   return last_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
          !IsLazy(last_field, options, scc_analyzer) &&
          !last_field->is_repeated();
 }
 
-}  // namespace
-
-size_t FieldGroup::EstimateMemorySize() const {
-  size_t size = 0;
-  for (const auto* field : fields_) {
-    size += static_cast<size_t>(EstimateAlignmentSize(field));
-  }
-  return size;
+auto FindIncompleteBlock(std::vector<FieldGroup>& aligned_to_8) {
+  return absl::c_find_if(aligned_to_8, [](const FieldGroup& fg) {
+    return fg.estimated_memory_size() <= 4;
+  });
 }
+
+}  // namespace
 
 void FieldGroup::Append(const FieldGroup& other) {
   UpdatePreferredLocationAndInsertOtherFields(other);
@@ -57,6 +59,7 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
   preferred_location_ = (preferred_location_ * fields_.size() +
                          (other.preferred_location_ * other.fields_.size())) /
                         (fields_.size() + other.fields_.size());
+  estimated_memory_size_ += other.estimated_memory_size_;
 
   fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
 
@@ -91,16 +94,36 @@ MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
   }
 }
 
-MessageLayoutHelper::FieldHotness MessageLayoutHelper::GetFieldHotnessCategory(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) const {
-  if (ShouldSplit(field, options)) {
-    return kSplit;
-  } else if (field->is_repeated()) {
-    return kRepeated;
-  } else {
-    return GetFieldHotness(field, options, scc_analyzer);
+std::vector<internal::TailCallTableInfo::FastFieldInfo>
+MessageLayoutHelper::BuildFastParseTable(
+    const Options& options, MessageSCCAnalyzer* scc_analyzer) const {
+  FieldVector ordered_fields;
+  for (const auto* field : GetOrderedFields(descriptor_)) {
+    if (IsLayoutOptimized(field, options)) {
+      ordered_fields.push_back(field);
+    }
   }
+  auto field_options = ParseFunctionGenerator::BuildFieldOptions(
+      descriptor_, ordered_fields, options, scc_analyzer,
+      /*has_bit_indices=*/{}, /*inlined_string_indices=*/{});
+  auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
+      descriptor_, options, field_options);
+  return table_info.fast_path_fields;
+}
+
+bool MessageLayoutHelper::IsFastPathField(
+    const FieldDescriptor* field,
+    const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
+        fast_path_fields) {
+  if (!internal::IsFieldTypeEligibleForFastParsing(field)) {
+    return false;
+  }
+
+  const uint32_t coded_tag = GetRecodedTagForFastParsing(field);
+  const uint32_t fast_idx = internal::TcParseTableBase::TagToIdx(
+      coded_tag, static_cast<uint32_t>(fast_path_fields.size()));
+  const auto* fast_field = fast_path_fields[fast_idx].AsField();
+  return fast_field != nullptr && fast_field->field == field;
 }
 
 MessageLayoutHelper::FieldAlignmentGroups
@@ -108,12 +131,23 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
     const FieldVector& fields, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) const {
   FieldAlignmentGroups field_alignment_groups;
+  const auto fast_path_fields = BuildFastParseTable(options, scc_analyzer);
 
   for (const auto* field : fields) {
     FieldFamily f = GetFieldFamily(field, options, scc_analyzer);
 
-    FieldHotness hotness =
-        GetFieldHotnessCategory(field, options, scc_analyzer);
+    FieldHotness hotness;
+    if (ShouldSplit(field, options)) {
+      hotness = kSplit;
+    } else if (field->is_repeated()) {
+      hotness = kRepeated;
+    } else {
+      hotness = GetFieldHotness(field, options, scc_analyzer);
+
+      if (hotness != kCold && IsFastPathField(field, fast_path_fields)) {
+        hotness = kFastParse;
+      }
+    }
 
     FieldGroup fg = SingleFieldGroup(field);
     switch (EstimateAlignmentSize(field)) {
@@ -164,6 +198,8 @@ MessageLayoutHelper::MergeFieldAlignmentGroups(
     }
   }
 
+  MaybeMergeHotIntoFast(field_alignment_groups.aligned_to_8);
+
   return field_alignment_groups.aligned_to_8;
 }
 
@@ -192,14 +228,8 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
 
       // If there is an incomplete 4-byte block, it should be placed at the
       // beginning or end.
-      auto it = absl::c_find_if(partition, [](const FieldGroup& fg) {
-        return fg.EstimateMemorySize() <= 4;
-      });
+      auto it = FindIncompleteBlock(partition);
       if (it != partition.end()) {
-        // There should be at most one incomplete 4-byte block, and it will
-        // always be the last element.
-        ABSL_CHECK(it + 1 == partition.end());
-
         // The goal is to minimize padding, and only ZERO_INITIALIZABLE and
         // OTHER families can have primitive fields (alignment < 8). We lay
         // out ZERO_INITIALIZABLE then OTHER, so only hoist the incomplete
@@ -270,6 +300,91 @@ MessageLayoutHelper::ConsolidateAlignedFieldGroups(
   }
 
   return partitions_aligned_to_target;
+}
+
+void MessageLayoutHelper::FillPaddingFromPartition(
+    std::vector<FieldGroup>& dst_partition,
+    std::vector<FieldGroup>& src_partition, size_t alignment) {
+  // We want to combine as many field groups as possible into dst_partition to
+  // minimize padding. To do this, we sort the dst_partition by size in
+  // ascending order, and src_partition by size in descending order. Then, we
+  // iterate through the dst_partition and combine each group with the
+  // largest group from src_partition that fits. By sorting src_partition in
+  // descending order, when searching for a group from src_partition that fits
+  // the next largest group in dst_partition, we can resume iteration from where
+  // previously left off.
+
+  // Sort dst_partition by size in ascending order.
+  std::stable_sort(dst_partition.begin(), dst_partition.end(),
+                   [](const FieldGroup& fg1, const FieldGroup& fg2) {
+                     return fg1.estimated_memory_size() <
+                            fg2.estimated_memory_size();
+                   });
+  // Sort src_partition by size in descending order.
+  std::stable_sort(src_partition.begin(), src_partition.end(),
+                   [](const FieldGroup& fg1, const FieldGroup& fg2) {
+                     return fg1.estimated_memory_size() >
+                            fg2.estimated_memory_size();
+                   });
+
+  // Iterate through dst_partition and combine each group with the largest group
+  // from src_partition that fits.
+  for (auto dst_it = dst_partition.begin(), src_it = src_partition.begin();
+       dst_it != dst_partition.end() && src_it != src_partition.end();
+       ++dst_it) {
+    while (src_it != src_partition.end() &&
+           dst_it->estimated_memory_size() + src_it->estimated_memory_size() >
+               alignment) {
+      ++src_it;
+    }
+
+    if (src_it != src_partition.end()) {
+      dst_it->Append(*src_it);
+      src_it = src_partition.erase(src_it);
+    }
+  }
+
+  for (const auto& field_group : dst_partition) {
+    ABSL_CHECK(field_group.estimated_memory_size() <= alignment)
+        << "Field group of size " << field_group.estimated_memory_size()
+        << " should have been merged into a group at most " << alignment
+        << " bytes.";
+  }
+}
+
+void MessageLayoutHelper::MaybeMergeHotIntoFast(
+    FieldPartitionArray& field_groups) {
+  size_t num_fast_fields = 0;
+  for (size_t f = 0; f < kMaxFamily; ++f) {
+    for (const auto& group : field_groups[f][kFastParse]) {
+      num_fast_fields += group.num_fields();
+    }
+  }
+
+  size_t num_hot_fields = 0;
+  for (size_t f = 0; f < kMaxFamily; ++f) {
+    for (const auto& group : field_groups[f][kHot]) {
+      num_hot_fields += group.num_fields();
+    }
+  }
+
+  if (num_fast_fields + num_hot_fields <=
+      internal::TailCallTableInfo::kMaxFastFieldHasbitIndex + 1) {
+    for (size_t f = 0; f < kMaxFamily; ++f) {
+      if (field_groups[f][kHot].empty()) {
+        continue;
+      }
+
+      FillPaddingFromPartition(field_groups[f][kFastParse],
+                               field_groups[f][kHot], /*alignment=*/8);
+
+      // Append all remaining hot fields to the end of the fast parse group.
+      field_groups[f][kFastParse].insert(field_groups[f][kFastParse].end(),
+                                         field_groups[f][kHot].begin(),
+                                         field_groups[f][kHot].end());
+      field_groups[f][kHot].clear();
+    }
+  }
 }
 
 }  // namespace cpp

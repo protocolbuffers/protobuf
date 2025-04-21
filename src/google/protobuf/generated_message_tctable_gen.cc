@@ -303,9 +303,8 @@ bool IsFieldEligibleForFastParsing(
       break;
   }
 
-  // The tailcall parser can only update the first 32 hasbits. Fields with
-  // has-bits beyond the first 32 are handled by mini parsing/fallback.
-  if (entry.hasbit_idx >= 32) return false;
+  if (entry.hasbit_idx > TailCallTableInfo::kMaxFastFieldHasbitIndex)
+    return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
