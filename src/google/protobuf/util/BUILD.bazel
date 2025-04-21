@@ -151,6 +151,14 @@ cc_test(
 )
 
 cc_library(
+    name = "internal_timeval",
+    hdrs = ["internal_timeval.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+)
+
+cc_library(
     name = "json_util",
     hdrs = ["json_util.h"],
     copts = COPTS,
@@ -169,6 +177,7 @@ cc_library(
         "//visibility:public",
     ],
     deps = [
+        ":internal_timeval",
         "//src/google/protobuf",
         "//src/google/protobuf:duration_cc_proto",
         "//src/google/protobuf:port",
@@ -186,6 +195,7 @@ cc_test(
     name = "time_util_test",
     srcs = ["time_util_test.cc"],
     deps = [
+        ":internal_timeval",
         ":time_util",
         "//src/google/protobuf",
         "//src/google/protobuf:duration_cc_proto",
