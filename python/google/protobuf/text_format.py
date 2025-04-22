@@ -126,13 +126,13 @@ def MessageToString(
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format (str): If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, shortest float
-      that has same value in wire will be printed. Also affect double field
-      if double_format is not set but float_format is set.
-    double_format (str): If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, use ``str()``
+    float_format (str): Deprecated. If set, use this to specify float field
+      formatting (per the "Format Specification Mini-Language"); otherwise,
+      shortest float that has same value in wire will be printed. Also affect
+      double field if double_format is not set but float_format is set.
+    double_format (str): Deprecated. If set, use this to specify double field
+      formatting (per the "Format Specification Mini-Language"); if it is not
+      set but float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     indent (int): The initial indent level, in terms of spaces, for pretty
@@ -391,13 +391,13 @@ class _Printer(object):
       use_index_order: If True, print fields of a proto message using the order
         defined in source code instead of the field number. By default, use the
         field number order.
-      float_format: If set, use this to specify float field formatting
-        (per the "Format Specification Mini-Language"); otherwise, shortest
-        float that has same value in wire will be printed. Also affect double
-        field if double_format is not set but float_format is set.
-      double_format: If set, use this to specify double field formatting
-        (per the "Format Specification Mini-Language"); if it is not set but
-        float_format is set, use float_format. Otherwise, str() is used.
+      float_format: Deprecated. If set, use this to specify float field
+        formatting (per the "Format Specification Mini-Language"); otherwise,
+        shortest float that has same value in wire will be printed. Also affect
+        double field if double_format is not set but float_format is set.
+      double_format: Deprecated. If set, use this to specify double field
+        formatting (per the "Format Specification Mini-Language"); if it is not
+        set but float_format is set, use float_format. Otherwise, str() is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
