@@ -10,13 +10,15 @@
 // This file contains the implementation of classes GzipInputStream and
 // GzipOutputStream.
 
+#include <cstddef>
+#include <cstdint>
+
+#include "google/protobuf/io/zero_copy_stream.h"
 
 #if HAVE_ZLIB
-#include "google/protobuf/io/gzip_stream.h"
-
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/io/gzip_stream.h"
 #include "google/protobuf/port.h"
 
 namespace google {
