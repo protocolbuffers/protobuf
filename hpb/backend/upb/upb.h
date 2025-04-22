@@ -8,6 +8,9 @@
 #ifndef GOOGLE_PROTOBUF_HPB_BACKEND_UPB_UPB_H__
 #define GOOGLE_PROTOBUF_HPB_BACKEND_UPB_UPB_H__
 
+#include <string>
+#include <vector>
+
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
@@ -15,6 +18,7 @@
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
+#include "upb/text/debug_string.h"
 
 namespace hpb::internal::backend::upb {
 
@@ -31,6 +35,16 @@ absl::StatusOr<absl::string_view> Serialize(hpb::internal::PtrOrRaw<T> message,
   return hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
                                   ::hpb::interop::upb::GetMiniTable(message),
                                   arena.ptr(), 0);
+}
+
+template <typename T>
+std::string DebugString(hpb::internal::PtrOrRaw<T> message) {
+  auto msg = interop::upb::GetMessage(message);
+  auto minitable = interop::upb::GetMiniTable(message);
+  auto size = upb_DebugString(msg, minitable, 0, nullptr, 0);
+  std::vector<char> buf(size + 1);  // +1 for '\0'
+  upb_DebugString(msg, minitable, 0, &buf[0], size + 1);
+  return std::string(buf.data(), size);
 }
 
 }  // namespace hpb::internal::backend::upb
