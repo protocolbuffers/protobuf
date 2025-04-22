@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <string>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
