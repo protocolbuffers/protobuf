@@ -282,6 +282,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
+  template <bool kExperimentalV2>
   bool DoneWithCheck(const char** ptr, int d) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
@@ -294,7 +295,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;
     }
-    auto res = DoneFallback(overrun, d);
+    auto res = DoneFallback<kExperimentalV2>(overrun, d);
     *ptr = res.first;
     return res.second;
   }
@@ -383,6 +384,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // error. The invariant of this function is that it's guaranteed that
   // kSlopBytes bytes can be accessed from the returned ptr. This function might
   // advance more buffers than one in the underlying ZeroCopyInputStream.
+  template <bool kExperimentalV2>
   std::pair<const char*, bool> DoneFallback(int overrun, int depth);
   // Advances to the next buffer, at most one call to Next() on the underlying
   // ZeroCopyInputStream is made. This function DOES NOT match the returned
@@ -395,12 +397,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // the ZeroCopyInputStream in the case the parse will end in the last
   // kSlopBytes of the current buffer. depth is the current depth of nested
   // groups (or negative if the use case does not need careful tracking).
+  template <bool kExperimentalV2>
   inline const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
+  template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
@@ -528,7 +532,10 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
-  bool Done(const char** ptr) { return DoneWithCheck(ptr, group_depth_); }
+  bool Done(const char** ptr) {
+    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_);
+  }
+
 
   int depth() const { return depth_; }
 
@@ -1460,6 +1467,11 @@ template <typename T, typename Validator>
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
+
+extern template std::pair<const char*, bool>
+EpsCopyInputStream::DoneFallback<false>(int, int);
+extern template std::pair<const char*, bool>
+EpsCopyInputStream::DoneFallback<true>(int, int);
 
 }  // namespace internal
 }  // namespace protobuf
