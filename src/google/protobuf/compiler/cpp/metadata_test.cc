@@ -5,16 +5,19 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <memory>
+#include <string>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/compiler/cpp/generator.h"
-#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/annotation_test_util.h"
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 namespace google {
