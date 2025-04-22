@@ -100,12 +100,12 @@ class MessageLayoutHelper {
   // TODO: Merge kCold and kSplit once all field types can be
   // split.
   enum FieldHotness {
-    kRepeated,   // Non-split repeated fields.
-    kFastParse,  // Fast-parse eligible fields.
-    kHot,
-    kWarm,
-    kCold,
     kSplit,
+    kCold,
+    kWarm,
+    kHot,
+    kFastParse,  // Fast-parse eligible fields.
+    kRepeated,   // Non-split repeated fields.
     kMaxHotness,
   };
 

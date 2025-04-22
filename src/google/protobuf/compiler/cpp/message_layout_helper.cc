@@ -219,7 +219,9 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
   const bool has_profile = HasProfiledData();
   int recipe = kZeroLast;
   bool incomplete_block_at_end = false;
-  for (size_t h = 0; h < kMaxHotness; ++h) {
+  // Iterate from hottest to coldest partition, so the hottest fields are placed
+  // at the top of the message.
+  for (size_t h = kMaxHotness - 1; h < kMaxHotness; --h) {
     for (size_t family_order_idx = 0; family_order_idx < kMaxFamily;
          ++family_order_idx) {
       const size_t f = has_profile ? profiled_orders[recipe][family_order_idx]
