@@ -45,6 +45,25 @@ impl<'msg, T> Debug for RepeatedView<'msg, T> {
     }
 }
 
+impl<T: ProxiedInRepeated> Default for RepeatedView<'static, T> {
+    fn default() -> Self {
+        // TODO: Consider creating a static empty array in C.
+        // TODO: is this safe in C++?
+        // Use `i32` for a shared empty repeated for all repeated types in the program.
+        static EMPTY_REPEATED: std::sync::OnceLock<Repeated<i32>> = std::sync::OnceLock::new();
+
+        // SAFETY:
+        // - Because the repeated is never mutated, the repeated type is unused and
+        //   therefore valid for `T`.
+        unsafe {
+            RepeatedView::from_raw(
+                Private,
+                EMPTY_REPEATED.get_or_init(Repeated::new).as_view().as_raw(Private),
+            )
+        }
+    }
+}
+
 /// Mutates the elements in a `repeated` field of `T`.
 pub struct RepeatedMut<'msg, T> {
     pub(crate) inner: InnerRepeatedMut<'msg>,
@@ -359,6 +378,12 @@ pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
 pub struct RepeatedIter<'msg, T> {
     view: RepeatedView<'msg, T>,
     current_index: usize,
+}
+
+impl<T: ProxiedInRepeated> Default for RepeatedIter<'static, T> {
+    fn default() -> RepeatedIter<'static, T> {
+        RepeatedIter { view: Default::default(), current_index: 0 }
+    }
 }
 
 impl<'msg, T> Debug for RepeatedIter<'msg, T> {
@@ -691,5 +716,12 @@ mod tests {
     fn test_repeated_iter_into_proxied() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+    }
+
+    #[gtest]
+    fn test_repeated_iter_default() {
+        let mut r: RepeatedIter<'static, i64> = Default::default();
+        assert_that!(r.size_hint().0, eq(0));
+        assert_that!(r.next(), eq(None));
     }
 }
