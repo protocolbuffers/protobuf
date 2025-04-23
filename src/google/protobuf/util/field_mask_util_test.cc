@@ -9,12 +9,14 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/field_mask.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/util/message_differencer_unittest.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -251,6 +253,20 @@ TEST(FieldMaskUtilTest, TestGetFieldMaskForAllFields) {
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("repeated_nested_enum", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("repeated_foreign_enum", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("repeated_import_enum", mask));
+}
+
+TEST(FieldMaskUtilTest, TestExtractFieldMask) {
+  FieldMask mask;
+  proto2_unittest::TestField input_proto;
+  input_proto.set_a(50);
+  input_proto.set_b(100);
+  input_proto.add_rc(200);
+  input_proto.add_rc(300);
+  FieldMaskUtil::ExtractFieldMask(input_proto, &mask);
+  EXPECT_EQ(mask.paths_size(), 3);
+  EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("a", mask));
+  EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("b", mask));
+  EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("rc", mask));
 }
 
 TEST(FieldMaskUtilTest, TestToCanonicalForm) {

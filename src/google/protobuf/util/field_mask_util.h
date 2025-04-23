@@ -108,6 +108,11 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   static void GetFieldMaskForAllFields(const Descriptor* descriptor,
                                        FieldMask* out);
 
+  // Extracts the FieldMask from the given message - only fields set in the
+  // message are included in the FieldMask.
+  // For repeated fields, if they are populated they will be in the mask.
+  static void ExtractFieldMask(const Message& message, FieldMask* out);
+
   // Converts a FieldMask to the canonical form. It will:
   //   1. Remove paths that are covered by another path. For example,
   //      "foo.bar" is covered by "foo" and will be removed if "foo"
