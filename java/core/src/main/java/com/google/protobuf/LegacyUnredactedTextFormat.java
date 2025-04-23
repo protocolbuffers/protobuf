@@ -60,7 +60,8 @@ public final class LegacyUnredactedTextFormat {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String legacyUnredactedStringValueOf(Object object) {
+  public static String legacyUnredactedStringValueOf(
+          Object object) {
     return (object == null) ? String.valueOf(object) : legacyUnredactedToString(object);
   }
 }
