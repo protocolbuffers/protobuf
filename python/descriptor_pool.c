@@ -27,6 +27,8 @@ typedef struct {
   upb_DefPool* symtab;
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
+  // Implements the "weakref" protocol for this object.
+  PyObject* weakrefs;
 } PyUpb_DescriptorPool;
 
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
@@ -80,6 +82,9 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
+  if (self->weakrefs) {
+    PyObject_ClearWeakRefs((PyObject*)self);
+  }
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
@@ -735,6 +740,9 @@ bool PyUpb_InitDescriptorPool(PyObject* m) {
       PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
 
   if (!descriptor_pool_type) return false;
+
+  descriptor_pool_type->tp_weaklistoffset =
+      offsetof(PyUpb_DescriptorPool, weakrefs);
 
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
       descriptor_pool_type, NULL, state->obj_cache);
