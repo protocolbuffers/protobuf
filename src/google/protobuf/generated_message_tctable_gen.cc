@@ -149,10 +149,13 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
    : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
                           : PROTOBUF_PICK_FUNCTION(fn##S))
 
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                            \
-  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                              \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)      \
+#define PROTOBUF_PICK_STRING_FUNCTION(fn)                                 \
+  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
+       ? PROTOBUF_PICK_FUNCTION(fn##cS)                                   \
+   : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
+           options.use_micro_string                                       \
+       ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)           \
                                : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
@@ -285,11 +288,7 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (options.use_micro_string &&
-          field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-        // TODO: Add fast parsers.
-        return false;
-      } else if (options.is_string_inlined) {
+      if (options.is_string_inlined) {
         ABSL_CHECK(!field->is_repeated());
         // For inlined strings, the donation state index is stored in the
         // `aux_idx` field of the fast parsing info. We need to check the range

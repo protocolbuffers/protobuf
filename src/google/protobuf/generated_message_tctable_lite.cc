@@ -1529,6 +1529,24 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
 }
 
 
+PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(
+    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
+    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
+    MicroString& field, Arena* arena) {
+  return ctx->ReadMicroString(ptr, field, arena);
+}
+
+PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(
+    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
+    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
+    MicroString& field) {
+  return ctx->ReadMicroString(ptr, field, nullptr);
+}
+
+PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(const MicroString& field) {
+  return utf8_range::IsStructurallyValid(field.Get());
+}
+
 void EnsureArenaStringIsNotDefault(const MessageLite* msg,
                                    ArenaStringPtr* field) {
   // If we failed here we might have left the string in its IsDefault state, but
@@ -1651,6 +1669,34 @@ const char* TcParser::FastUcS1(PROTOBUF_TC_PARAM_DECL) {
 }
 const char* TcParser::FastUcS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
+// MicroString variants:
+PROTOBUF_NOINLINE const char* TcParser::FastBmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kNoUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastBmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kNoUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastSmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString,
+                                          kUtf8ValidateOnly>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastSmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString,
+                                          kUtf8ValidateOnly>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
 }
 
 template <typename TagType, typename FieldType, TcParser::Utf8Type utf8>

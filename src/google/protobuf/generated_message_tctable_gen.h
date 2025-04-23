@@ -61,11 +61,18 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
+    // Whether to use the InlinedStringField representation.
+    // This choice comes from the profile data.
+    // If on, inlined_string_index should be set.
+    // Incompatible with `use_micro_string`.
     bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
     int inlined_string_index;
+    // Whether to use the MicroString representation.
+    // This choice comes from the temporary opt-in data.
+    // Incompatible with `is_string_inlined`.
     bool use_micro_string;
   };
 
