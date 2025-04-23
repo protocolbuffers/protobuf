@@ -356,6 +356,7 @@ pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
 }
 
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
+#[derive(Clone)]
 pub struct RepeatedIter<'msg, T> {
     view: RepeatedView<'msg, T>,
     current_index: usize,
@@ -688,8 +689,14 @@ mod tests {
     }
 
     #[gtest]
-    fn test_repeated_iter_into_proxied() {
+    fn test_repeated_iter() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+
+        let mut iter = r.as_view().into_iter();
+        assert_that!(iter.next(), eq(Some(0)));
+        let mut clone = iter.clone();
+        assert_that!(clone.next(), eq(Some(1)));
+        assert_that!(iter.next(), eq(Some(1)));
     }
 }
