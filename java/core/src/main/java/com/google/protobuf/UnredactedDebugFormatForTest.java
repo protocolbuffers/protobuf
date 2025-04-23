@@ -56,7 +56,8 @@ public final class UnredactedDebugFormatForTest {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String unredactedStringValueOf(Object object) {
+  public static String unredactedStringValueOf(
+          Object object) {
     return LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(object);
   }
 }
