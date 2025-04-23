@@ -109,6 +109,7 @@ class PROTOC_EXPORT ClassNameResolver {
   // Gets the outer class and the actual class for downgraded mutable messages.
   std::string GetDowngradedFileClassName(const FileDescriptor* file);
   std::string GetDowngradedClassName(const Descriptor* descriptor);
+  std::string GetFileJavaPackage(const FileDescriptor* file, bool immutable);
 
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
@@ -131,6 +132,10 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetJavaClassFullName(absl::string_view name_without_package,
                                    const Descriptor& descriptor, bool immutable,
                                    bool kotlin);
+
+  template <typename Descriptor>
+  std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
+
   // Caches the result to provide better performance.
   absl::flat_hash_map<const FileDescriptor*, std::string>
       file_immutable_outer_class_names_;

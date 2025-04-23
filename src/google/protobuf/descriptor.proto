@@ -1182,6 +1182,11 @@ message FeatureSet {
       type: ".pb.PythonFeatures"
     },
     declaration = {
+      number: 9989,
+      full_name: ".pb.java_mutable",
+      type: ".pb.JavaMutableFeatures"
+    },
+    declaration = {
       number: 9990,
       full_name: ".pb.proto1",
       type: ".pb.Proto1Features"

@@ -103,7 +103,8 @@ bool ExtensionGenerator::IsScoped() const {
 
 namespace {
 bool ShouldGenerateFeatureSetDefaultData(absl::string_view extension) {
-  return extension == "pb.java" || extension == "pb.test";
+  return extension == "pb.java" || extension == "pb.java_mutable" ||
+         extension == "pb.test";
 }
 }  // namespace
 

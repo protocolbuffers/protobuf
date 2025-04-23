@@ -402,7 +402,6 @@ TEST_F(NameResolverTest, NestInFileClassEnumEdition2024) {
   EXPECT_EQ(resolver.GetJavaImmutableClassName(nested_in_enum_wrapper),
             PACKAGE_PREFIX "proto2_unittest.EnumWrapper$NestedInEnumWrapper");
 }
-
 }  // namespace
 }  // namespace java
 }  // namespace compiler

@@ -109,7 +109,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     protodesc_cold) = {
     "\n1google/protobuf/compiler/java/java_fea"
     "tures.proto\022\002pb\032 google/protobuf/descrip"
-    "tor.proto\"\375\007\n\014JavaFeatures\022\376\001\n\022legacy_cl"
+    "tor.proto\"\203\010\n\014JavaFeatures\022\376\001\n\022legacy_cl"
     "osed_enum\030\001 \001(\010B\341\001\210\001\001\230\001\004\230\001\001\242\001\t\022\004true\030\204\007\242"
     "\001\n\022\005false\030\347\007\262\001\273\001\010\350\007\020\350\007\032\262\001The legacy clos"
     "ed enum behavior in Java is deprecated a"
@@ -134,10 +134,10 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     "\022\036\n\032NEST_IN_FILE_CLASS_UNKNOWN\020\000\022\006\n\002NO\020\001"
     "\022\007\n\003YES\020\002\022\024\n\006LEGACY\020\003\032\010\"\006\010\351\007 \351\007J\010\010\001\020\200\200\200\200"
     "\002\"F\n\016Utf8Validation\022\033\n\027UTF8_VALIDATION_U"
-    "NKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002:<\n\004jav"
-    "a\022\033.google.protobuf.FeatureSet\030\351\007 \001(\0132\020."
-    "pb.JavaFeaturesB(\n\023com.google.protobufB\021"
-    "JavaFeaturesProto"
+    "NKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002J\004\010\006\020\007:"
+    "<\n\004java\022\033.google.protobuf.FeatureSet\030\351\007 "
+    "\001(\0132\020.pb.JavaFeaturesB(\n\023com.google.prot"
+    "obufB\021JavaFeaturesProto"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_deps[1] = {
@@ -147,7 +147,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2f
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto = {
     false,
     false,
-    1217,
+    1223,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
     "google/protobuf/compiler/java/java_features.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,

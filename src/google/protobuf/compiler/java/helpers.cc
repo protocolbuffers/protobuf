@@ -942,6 +942,7 @@ inline bool NestInFileClass(const Descriptor& descriptor) {
   return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
 }
 
+
 // Returns whether the type should be nested in the file class for the given
 // descriptor, depending on different Protobuf Java API versions.
 // TODO: b/372482046 - Implement `nest_in_file_class` feature for mutable API.
@@ -959,8 +960,8 @@ absl::Status ValidateNestInFileClassFeatureHelper(
         JavaGenerator::GetUnresolvedSourceFeatures(descriptor, pb::java);
     if (unresolved_features.has_nest_in_file_class()) {
       return absl::FailedPreconditionError(absl::StrCat(
-          "Feature next_in_file_class only applies to top-level types and is "
-          "not allowed to be set on the nexted type: ",
+          "Feature pb.java.nest_in_file_class only applies to top-level types "
+          "and is not allowed to be set on the nested type: ",
           descriptor.full_name()));
     }
   }

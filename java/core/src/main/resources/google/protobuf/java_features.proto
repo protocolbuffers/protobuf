@@ -127,4 +127,6 @@ message JavaFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
     edition_defaults = { edition: EDITION_2024, value: "NO" }
   ];
+
+  reserved 6;  // field `mutable_nest_in_file_class` removed.
 }

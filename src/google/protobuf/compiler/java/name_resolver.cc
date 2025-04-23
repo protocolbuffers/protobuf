@@ -226,7 +226,7 @@ std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
 
 std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
                                             bool immutable, bool kotlin) {
-  std::string result = FileJavaPackage(descriptor, immutable, options_);
+  std::string result = GetFileJavaPackage(descriptor, immutable);
   if (!result.empty()) result += '.';
   result += GetFileClassName(descriptor, immutable, kotlin);
   return result;
@@ -246,7 +246,7 @@ std::string ClassNameResolver::GetClassFullName(
     bool immutable, bool is_own_file, bool kotlin) {
   std::string result;
   if (is_own_file) {
-    result = FileJavaPackage(file, immutable, options_);
+    result = GetFileJavaPackage(file, immutable);
   } else {
     result = GetClassName(file, immutable, kotlin);
   }
@@ -313,7 +313,7 @@ std::string ClassNameResolver::GetJavaClassFullName(
     result = GetClassName(file, immutable, kotlin);
     if (!result.empty()) result += '$';
   } else {
-    result = FileJavaPackage(file, immutable, options_);
+    result = GetFileJavaPackage(file, immutable);
     if (!result.empty()) result += '.';
   }
   result += absl::StrReplaceAll(name_without_package, {{".", "$"}});
@@ -405,11 +405,27 @@ std::string ClassNameResolver::GetDowngradedFileClassName(
 
 std::string ClassNameResolver::GetDowngradedClassName(
     const Descriptor* descriptor) {
-  return absl::StrCat(FileJavaPackage(descriptor->file(), true, options_), ".",
+  return absl::StrCat(GetFileJavaPackage(descriptor->file(), true), ".",
                       GetDowngradedFileClassName(descriptor->file()), ".",
                       ClassNameWithoutPackage(descriptor, false));
 }
 
+std::string ClassNameResolver::GetFileJavaPackage(const FileDescriptor* file,
+                                                  bool immutable) {
+  std::string result;
+
+  if (file->options().has_java_package()) {
+    result = file->options().java_package();
+  } else {
+    result = options_.opensource_runtime ? "" : "com.google.protos";
+    if (!file->package().empty()) {
+      if (!result.empty()) result += '.';
+      absl::StrAppend(&result, file->package());
+    }
+  }
+
+  return result;
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
