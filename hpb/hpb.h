@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_HPB_HPB_H__
 #define GOOGLE_PROTOBUF_HPB_HPB_H__
 
+#include <string>
 #include <type_traits>
 
 #include "absl/base/attributes.h"
@@ -120,6 +121,11 @@ template <typename T>
 absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
                                             Arena& arena) {
   return backend::Serialize(message, arena);
+}
+
+template <typename T>
+std::string DebugString(internal::PtrOrRaw<T> message) {
+  return backend::DebugString(message);
 }
 
 }  // namespace hpb

@@ -8,6 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_HPB_BACKEND_CPP_CPP_H__
 #define GOOGLE_PROTOBUF_HPB_BACKEND_CPP_CPP_H__
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/internal/template_help.h"
@@ -17,13 +19,17 @@ namespace hpb::internal::backend::cpp {
 // hpb(cpp) backend stubs.
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
+void ClearMessage(internal::PtrOrRawMutable<T> message) {
   abort();
 }
 
 template <typename T>
-absl::string_view Serialize(hpb::internal::PtrOrRaw<T> message,
-                            hpb::Arena& arena) {
+absl::string_view Serialize(internal::PtrOrRaw<T> message, Arena& arena) {
+  abort();
+}
+
+template <typename T>
+std::string DebugString(internal::PtrOrRaw<T> message) {
   abort();
 }
 
