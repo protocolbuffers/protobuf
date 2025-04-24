@@ -17,13 +17,12 @@ namespace hpb::internal::backend::cpp {
 // hpb(cpp) backend stubs.
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
+void ClearMessage(PtrOrRawMutable<T> message) {
   abort();
 }
 
 template <typename T>
-absl::string_view Serialize(hpb::internal::PtrOrRaw<T> message,
-                            hpb::Arena& arena) {
+absl::string_view Serialize(PtrOrRaw<T> message, Arena& arena) {
   abort();
 }
 

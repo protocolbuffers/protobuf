@@ -19,17 +19,16 @@
 namespace hpb::internal::backend::upb {
 
 template <typename T>
-void ClearMessage(hpb::internal::PtrOrRawMutable<T> message) {
+void ClearMessage(PtrOrRawMutable<T> message) {
   auto ptr = Ptr(message);
-  auto minitable = hpb::interop::upb::GetMiniTable(ptr);
-  upb_Message_Clear(hpb::interop::upb::GetMessage(ptr), minitable);
+  auto minitable = interop::upb::GetMiniTable(ptr);
+  upb_Message_Clear(interop::upb::GetMessage(ptr), minitable);
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(hpb::internal::PtrOrRaw<T> message,
-                                            hpb::Arena& arena) {
-  return hpb::internal::Serialize(hpb::interop::upb::GetMessage(message),
-                                  ::hpb::interop::upb::GetMiniTable(message),
+absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message, Arena& arena) {
+  return hpb::internal::Serialize(interop::upb::GetMessage(message),
+                                  interop::upb::GetMiniTable(message),
                                   arena.ptr(), 0);
 }
 
