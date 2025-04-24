@@ -37,8 +37,6 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
-#include "upb/port/atomic.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
@@ -1376,6 +1374,7 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
              : ptr;
 }
 
+#if UPB_FASTTABLE
 const char* _upb_FastDecoder_DecodeGeneric(struct upb_Decoder* d,
                                            const char* ptr, upb_Message* msg,
                                            intptr_t table, uint64_t hasbits,
@@ -1384,6 +1383,7 @@ const char* _upb_FastDecoder_DecodeGeneric(struct upb_Decoder* d,
   *(uint32_t*)msg |= hasbits;
   return _upb_Decoder_DecodeMessage(d, ptr, msg, decode_totablep(table));
 }
+#endif
 
 static upb_DecodeStatus _upb_Decoder_DecodeTop(struct upb_Decoder* d,
                                                const char* buf,

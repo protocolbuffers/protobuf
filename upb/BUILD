@@ -84,7 +84,12 @@ cc_library(
         ":mini_table",
         ":wire",
         "//upb/message:internal",
-    ],
+    ] + select({
+        ":fasttable_enabled_setting": [
+            "//upb/wire:decode_fast",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 # Common support code for C++ generated code.

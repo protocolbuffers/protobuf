@@ -42,12 +42,14 @@
 #ifndef UPB_WIRE_INTERNAL_DECODE_FAST_H_
 #define UPB_WIRE_INTERNAL_DECODE_FAST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/message/message.h"
 
 // Must be last.
+#include "upb/mini_table/message.h"
 #include "upb/port/def.inc"
-
-#if UPB_FASTTABLE
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,8 +146,6 @@ TAGBYTES(r)
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
-#endif /* UPB_FASTTABLE */
 
 #include "upb/port/undef.inc"
 

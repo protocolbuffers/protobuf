@@ -10,18 +10,39 @@ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
+    name = "decode_fast",
+    srcs = [
+        "decode.h",
+        "internal/decode_fast.c",
+        "internal/decoder.h",
+    ],
+    hdrs = ["internal/decode_fast.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        ":eps_copy_input_stream",
+        "//third_party/utf8_range",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
     name = "wire",
     srcs = [
         "decode.c",
         "encode.c",
         "internal/constants.h",
-        "internal/decode_fast.c",
         "internal/decoder.h",
     ],
     hdrs = [
         "decode.h",
         "encode.h",
-        "internal/decode_fast.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
