@@ -700,7 +700,6 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
-  ${protobuf_SOURCE_DIR}/upb/wire/internal/decode_fast.c
   ${protobuf_SOURCE_DIR}/upb/wire/reader.c
 )
 
@@ -819,7 +818,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
-  ${protobuf_SOURCE_DIR}/upb/wire/internal/decode_fast.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/types.h
 )
