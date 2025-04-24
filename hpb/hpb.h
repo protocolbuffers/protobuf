@@ -38,8 +38,12 @@ namespace hpb {
 
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 namespace backend = internal::backend::upb;
+using ExtReg = hpb::UpbExtensionRegistry;
+constexpr auto* EmptyRegistry = hpb::UpbExtensionRegistry::EmptyRegistry;
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 namespace backend = internal::backend::cpp;
+using ExtReg = hpb::CppExtensionRegistry;
+constexpr auto* EmptyRegistry = hpb::CppExtensionRegistry::EmptyRegistry;
 #else
 #error hpb backend unknown
 #endif
@@ -84,10 +88,9 @@ void ClearMessage(internal::PtrOrRawMutable<T> message) {
 }
 
 template <typename T>
-ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
-                                absl::string_view bytes,
-                                const ExtensionRegistry& extension_registry =
-                                    ExtensionRegistry::EmptyRegistry()) {
+ABSL_MUST_USE_RESULT bool Parse(
+    internal::PtrOrRaw<T> message, absl::string_view bytes,
+    const ExtReg& extension_registry = EmptyRegistry()) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(interop::upb::GetMessage(message),
                     interop::upb::GetMiniTable(message));
@@ -101,8 +104,7 @@ ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ExtensionRegistry& extension_registry =
-                            ExtensionRegistry::EmptyRegistry()) {
+                        const ExtReg& extension_registry = EmptyRegistry()) {
   T message;
   auto* arena = interop::upb::GetArena(&message);
   upb_DecodeStatus status =

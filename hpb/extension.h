@@ -29,7 +29,7 @@
 #include "upb/mini_table/extension_registry.h"
 
 namespace hpb {
-class ExtensionRegistry;
+class UpbExtensionRegistry;
 
 template <typename T>
 class RepeatedField;
@@ -218,13 +218,13 @@ class ExtensionIdentifier {
 };
 
 upb_ExtensionRegistry* GetUpbExtensions(
-    const ExtensionRegistry& extension_registry);
+    const UpbExtensionRegistry& extension_registry);
 
 }  // namespace internal
 
-class ExtensionRegistry {
+class UpbExtensionRegistry {
  public:
-  explicit ExtensionRegistry(const upb::Arena& arena)
+  explicit UpbExtensionRegistry(const upb::Arena& arena)
       : registry_(upb_ExtensionRegistry_New(arena.ptr())) {}
 
   template <typename ExtensionIdentifier>
@@ -239,30 +239,30 @@ class ExtensionRegistry {
     }
   }
 
-  static const ExtensionRegistry& generated_registry() {
-    static const ExtensionRegistry* r = NewGeneratedRegistry();
+  static const UpbExtensionRegistry& generated_registry() {
+    static const UpbExtensionRegistry* r = NewGeneratedRegistry();
     return *r;
   }
 
-  static const ExtensionRegistry& EmptyRegistry() {
-    static const ExtensionRegistry* r = new ExtensionRegistry();
+  static const UpbExtensionRegistry& EmptyRegistry() {
+    static const UpbExtensionRegistry* r = new UpbExtensionRegistry();
     return *r;
   }
 
  private:
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
-      const ExtensionRegistry& extension_registry);
+      const UpbExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
 
   // TODO: b/379100963 - Introduce ShutdownHpbLibrary
-  static const ExtensionRegistry* NewGeneratedRegistry() {
+  static const UpbExtensionRegistry* NewGeneratedRegistry() {
     static upb::Arena* global_arena = new upb::Arena();
-    ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
+    UpbExtensionRegistry* registry = new UpbExtensionRegistry(*global_arena);
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;
   }
 
-  explicit ExtensionRegistry() = default;
+  explicit UpbExtensionRegistry() = default;
 };
 
 template <typename T, typename Extendee, typename Extension,
