@@ -72,7 +72,7 @@ class ParseFunctionGenerator {
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(Formatter& format);
-  void GenerateFieldEntries(Formatter& format);
+  void GenerateFieldEntries(io::Printer* p);
   void GenerateFieldNames(Formatter& format);
 
   const Descriptor* descriptor_;
