@@ -1407,7 +1407,6 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/debug_counter_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_visitor_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/drop_unknown_fields_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message_unittest.cc
@@ -1450,6 +1449,11 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/varint_shuffle_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.cc
+)
+
+# @//src/google/protobuf:lazily_build_dependencies_test_srcs
+set(lazily_build_dependencies_test_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_unittest.cc
 )
 
 # @//src/google/protobuf:test_proto_all_srcs

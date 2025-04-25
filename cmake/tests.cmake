@@ -175,6 +175,23 @@ add_test(NAME full-test
   COMMAND tests ${protobuf_GTEST_ARGS}
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
+add_executable(lazily-build-dependencies-test
+  ${lazily_build_dependencies_test_files}
+)
+
+target_link_libraries(lazily-build-dependencies-test
+  libtest_common
+  libtest_common_lite
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
+  GTest::gmock_main
+)
+
+add_test(NAME lazily-build-dependencies-test
+  COMMAND lazily-build-dependencies-test ${protobuf_GTEST_ARGS}
+  WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
+
 if (protobuf_BUILD_LIBUPB)
   set(upb_test_proto_genfiles)
   foreach(proto_file ${upb_test_protos_files} ${descriptor_proto_proto_srcs})
