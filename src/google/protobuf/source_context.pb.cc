@@ -237,8 +237,7 @@ SourceContext::_table_ = {
     65535, 65535
   }}, {{
     // string file_name = 1;
-    {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{

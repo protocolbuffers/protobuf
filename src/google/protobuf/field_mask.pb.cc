@@ -238,8 +238,7 @@ FieldMask::_table_ = {
     65535, 65535
   }}, {{
     // repeated string paths = 1;
-    {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), 0, 0,
-    (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
+    {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
   }},
   // no aux_entries
   {{
