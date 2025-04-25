@@ -114,7 +114,61 @@ Error, UINTPTR_MAX is undefined
 #define UPBC_API
 #endif
 
+/* ASAN poisoning (for arena).
+ * If using UPB from an interpreted language like Ruby, a build of the
+ * interpreter compiled with ASAN enabled must be used in order to get sane and
+ * expected behavior.
+ */
+
+/* Due to preprocessor limitations, the conditional logic for setting
+ * UPB_CLANG_ASAN below cannot be consolidated into a portable one-liner.
+ * See https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
+ */
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define UPB_CLANG_ASAN 1
+#else
+#define UPB_CLANG_ASAN 0
+#endif
+#if __has_feature(thread_sanitizer)
+#define UPB_CLANG_TSAN 1
+#else
+#define UPB_CLANG_TSAN 0
+#endif
+#if __has_feature(hwaddress_sanitizer)
+#define UPB_HWASAN 1
+#include "sanitizer/hwasan_interface.h"
+#else
+#define UPB_HWASAN 0
+#endif
+#else
+#define UPB_CLANG_ASAN 0
+#define UPB_HWASAN 0
+#define UPB_CLANG_TSAN 0
+#endif
+
+#if UPB_HWASAN
+
+// Values less than 16 are reserved for internal use
+#define UPB_HWASAN_POISON_TAG 17
+
+// HWASAN needs alignment higher than upb's normal requirements
+#define UPB_MALLOC_ALIGN 16
+#define UPB_HWASAN_TAG_MEMORY(p, tag, size)                             \
+  __hwasan_tag_memory((const volatile void *)(p), (unsigned char)(tag), \
+                      (size_t)(size))
+#define UPB_HWASAN_TAG_POINTER(p, tag) \
+  (void *)__hwasan_tag_pointer((const volatile void *)(p), (unsigned char)(tag))
+#define UPB_HWASAN_GET_TAG_FROM_POINTER(p) \
+  __hwasan_get_tag_from_pointer((const volatile void *)(p))
+#else
+#define UPB_HWASAN_POISON_TAG 0
 #define UPB_MALLOC_ALIGN 8
+#define UPB_HWASAN_TAG_MEMORY(p, tag, size)
+#define UPB_HWASAN_TAG_POINTER(p, tag) (tag ? (p) : (p))
+#define UPB_HWASAN_GET_TAG_FROM_POINTER(p) (0)
+#endif
+
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
@@ -348,32 +402,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* ASAN poisoning (for arena).
- * If using UPB from an interpreted language like Ruby, a build of the
- * interpreter compiled with ASAN enabled must be used in order to get sane and
- * expected behavior.
- */
-
-/* Due to preprocessor limitations, the conditional logic for setting
- * UPB_CLANG_ASAN below cannot be consolidated into a portable one-liner.
- * See https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
- */
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-#define UPB_CLANG_ASAN 1
-#else
-#define UPB_CLANG_ASAN 0
-#endif
-#if __has_feature(thread_sanitizer)
-#define UPB_CLANG_TSAN 1
-#else
-#define UPB_CLANG_TSAN 0
-#endif
-#else
-#define UPB_CLANG_ASAN 0
-#define UPB_CLANG_TSAN 0
-#endif
-
 #if defined(__SANITIZE_ADDRESS__) || UPB_CLANG_ASAN
 #define UPB_ASAN 1
 #define UPB_ASAN_GUARD_SIZE 32
@@ -392,7 +420,13 @@ Error, UINTPTR_MAX is undefined
 #else
 #define UPB_ASAN 0
 #define UPB_ASAN_GUARD_SIZE 0
+#if UPB_HWASAN
+#define UPB_POISON_MEMORY_REGION(addr, size)         \
+  UPB_HWASAN_TAG_MEMORY(addr, UPB_HWASAN_POISON_TAG, \
+                        UPB_ALIGN_DOWN(size, UPB_MALLOC_ALIGN))
+#else
 #define UPB_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#endif
 #define UPB_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 

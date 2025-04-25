@@ -844,5 +844,6 @@ bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   block = block->next;
   if (block == NULL) return false;
   char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+  ptr = UPB_HWASAN_TAG_POINTER(ptr, UPB_HWASAN_GET_TAG_FROM_POINTER(start));
   return ptr == start && oldsize == block->size_or_hint - kUpb_MemblockReserve;
 }

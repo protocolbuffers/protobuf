@@ -20,13 +20,16 @@
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK (9 + UPB_TSAN_PUBLISH)
+#define UPB_ARENA_SIZE_HACK (9 + UPB_TSAN_PUBLISH + UPB_HWASAN)
 
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   char* UPB_ONLYBITS(end);
+#if UPB_HWASAN
+  uint8_t hwasan_tag;
+#endif
 };
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
@@ -44,6 +47,24 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
+static uint8_t _upb_Arena_GetHwasanTag(struct upb_Arena* a) {
+  uint8_t tag = 0;
+#if UPB_HWASAN
+  tag = a->hwasan_tag + 1;
+  if (tag <= UPB_HWASAN_POISON_TAG) {
+    tag = 18;
+  }
+  a->hwasan_tag = tag;
+#endif
+  return tag;
+}
+
+// Use to compare pointers with different tags, such as an arena pointer and a
+// pointer from upb_Arena_Malloc which has a per-alloc tag.
+static bool _upb_Arena_TaggedPointerEq(void* a, void* b) {
+  return a == UPB_HWASAN_TAG_POINTER(b, UPB_HWASAN_GET_TAG_FROM_POINTER(a));
+}
+
 UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
@@ -59,7 +80,9 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)ret) == (uintptr_t)ret);
   UPB_ASSERT(UPB_ALIGN_MALLOC(size) == size);
   UPB_UNPOISON_MEMORY_REGION(ret, size);
-
+  uint8_t tag = _upb_Arena_GetHwasanTag(a);
+  UPB_HWASAN_TAG_MEMORY(ret, tag, span);
+  ret = UPB_HWASAN_TAG_POINTER(ret, tag);
   a->UPB_ONLYBITS(ptr) += span;
 
   return ret;
@@ -75,9 +98,8 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
   if (size == oldsize) {
     return;
   }
-  char* arena_ptr = a->UPB_ONLYBITS(ptr);
   // If it's the last alloc in the last block, we can resize.
-  if ((char*)ptr + oldsize == arena_ptr) {
+  if (_upb_Arena_TaggedPointerEq((char*)ptr + oldsize, a->UPB_ONLYBITS(ptr))) {
     a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
   } else {
     // If not, verify that it could have been a full-block alloc that did not
@@ -103,11 +125,13 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
     return true;
   }
   size_t extend = size - oldsize;
-  if ((char*)ptr + oldsize == a->UPB_ONLYBITS(ptr) &&
+  if (_upb_Arena_TaggedPointerEq((char*)ptr + oldsize, a->UPB_ONLYBITS(ptr)) &&
       UPB_PRIVATE(_upb_ArenaHas)(a) >= extend) {
     a->UPB_ONLYBITS(ptr) += extend;
     UPB_UNPOISON_MEMORY_REGION((char*)ptr + (oldsize - UPB_ASAN_GUARD_SIZE),
                                extend);
+    UPB_HWASAN_TAG_MEMORY((char*)ptr + (oldsize - UPB_ASAN_GUARD_SIZE),
+                          UPB_HWASAN_GET_TAG_FROM_POINTER(ptr), extend);
     return true;
   }
   return false;
@@ -121,7 +145,12 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
       return ptr;
     }
     if (size > oldsize) {
-      if (upb_Arena_TryExtend(a, ptr, oldsize, size)) return ptr;
+      if (upb_Arena_TryExtend(a, ptr, oldsize, size)) {
+        // Retag pointer, since reallocation invalidates the previous pointer
+        uint8_t tag = _upb_Arena_GetHwasanTag(a);
+        UPB_HWASAN_TAG_MEMORY(ptr, tag, UPB_ALIGN_MALLOC(size));
+        return UPB_HWASAN_TAG_POINTER(ptr, tag);
+      }
     } else {
       if ((char*)ptr + (UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE) ==
           a->UPB_ONLYBITS(ptr)) {

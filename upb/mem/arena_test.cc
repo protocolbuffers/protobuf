@@ -131,7 +131,13 @@ TEST(ArenaTest, ReallocFastPath) {
   uintptr_t initial_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
   void* extend = upb_Arena_Realloc(arena, initial, 512, 1024);
   uintptr_t extend_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+#if UPB_HWASAN
+  uint8_t initial_tag = UPB_HWASAN_GET_TAG_FROM_POINTER(initial);
+  EXPECT_NE(initial_tag, UPB_HWASAN_GET_TAG_FROM_POINTER(extend));
+  EXPECT_EQ(initial, UPB_HWASAN_TAG_POINTER(extend, initial_tag));
+#else
   EXPECT_EQ(initial, extend);
+#endif
   EXPECT_EQ(initial_allocated, extend_allocated);
   upb_Arena_Free(arena);
 }
