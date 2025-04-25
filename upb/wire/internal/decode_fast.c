@@ -20,11 +20,12 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/mini_table/sub.h"
-#include "upb/wire/decode.h"
 #include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#if UPB_FASTTABLE
 
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
@@ -995,3 +996,5 @@ TAGBYTES(r)
 #undef SIZES
 #undef F
 #undef FASTDECODE_SUBMSG
+
+#endif /* UPB_FASTTABLE */
