@@ -12,9 +12,9 @@
    }}, {{
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
-     {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0,
-     (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+     {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
    }},
+   // no aux_entries
 @@ @@
    (void)cached_has_bits;
  

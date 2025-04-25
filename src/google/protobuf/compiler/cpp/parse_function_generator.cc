@@ -534,12 +534,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
 
           p->Emit(
               {
-                  {"field_entries",
-                   [&] {
-                     // TODO: refactor this to use Emit.
-                     Formatter format(p, variables_);
-                     GenerateFieldEntries(format);
-                   }},
+                  {"field_entries", [&] { GenerateFieldEntries(p); }},
                   {"aux_entries",
                    [&] {
                      if (tc_table_info_->aux_entries.empty()) {
@@ -643,42 +638,58 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   }
 }
 
-void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
+void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
+    // TODO: refactor this to use Emit.
+    Formatter format(p, variables_);
     PrintFieldComment(format, field, options_);
-    format("{");
-    if (IsWeak(field, options_)) {
-      // Weak fields are handled by the reflection fallback function.
-      // (These are handled by legacy Google-internal logic.)
-      format("/* weak */ 0, 0, 0, 0");
-    } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
-      bool split = ShouldSplit(field, options_);
-      if (split) {
-        format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
-               absl::StrCat(FieldName(field), "_"));
-      } else {
-        format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
-               FieldMemberName(field, /*split=*/false));
-      }
-      if (oneof) {
-        format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
-      } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-        if (entry.hasbit_idx >= 0) {
-          format("_Internal::kHasBitsOffset + $1$, ", entry.hasbit_idx);
-        } else {
-          format("$1$, ", entry.hasbit_idx);
-        }
-      } else {
-        format("0, ");
-      }
-      format("$1$,\n ", entry.aux_idx);
-      // Use `0|` prefix to eagerly convert the enums to int to avoid enum-enum
-      // operations. They are deprecated in C++20.
-      format("(0 | $1$)", internal::TypeCardToString(entry.type_card));
-    }
-    format("},\n");
+
+    bool weak = IsWeak(field, options_);
+    bool split = ShouldSplit(field, options_);
+    const OneofDescriptor* oneof = field->real_containing_oneof();
+
+    auto v = p->WithVars(
+        {{"field_name", FieldName(field)},
+         {"field_member_name", FieldMemberName(field, /*split=*/false)}});
+
+    p->Emit(
+        {{"offset",
+          [&] {
+            if (weak) {
+              p->Emit("/* weak */ 0,");
+            } else if (split) {
+              p->Emit(
+                  "PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, "
+                  "$field_name$_),");
+            } else {
+              p->Emit(
+                  "PROTOBUF_FIELD_OFFSET($classname$, $field_member_name$),");
+            }
+          }},
+         {"has_idx",
+          [&] {
+            if (oneof) {
+              p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
+                                   4 * oneof->index(), ","));
+            } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+              std::string hb_content =
+                  entry.hasbit_idx >= 0
+                      ? absl::StrCat("_Internal::kHasBitsOffset + ",
+                                     entry.hasbit_idx, ",")
+                      : absl::StrCat(entry.hasbit_idx, ",");
+              p->Emit(hb_content);
+            } else {
+              p->Emit("0,");
+            }
+          }},
+         {"aux_idx", entry.aux_idx},
+         {"type_card", internal::TypeCardToString(entry.type_card)}},
+        // Use `0|` prefix to eagerly convert the enums to int to avoid
+        // enum-enum operations. They are deprecated in C++20.
+        R"cc(
+          {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
+        )cc");
   }
 }
 

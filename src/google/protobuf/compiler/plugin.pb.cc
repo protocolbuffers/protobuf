@@ -438,17 +438,13 @@ Version::_table_ = {
     65535, 65535
   }}, {{
     // optional int32 major = 1;
-    {PROTOBUF_FIELD_OFFSET(Version, _impl_.major_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(Version, _impl_.major_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional int32 minor = 2;
-    {PROTOBUF_FIELD_OFFSET(Version, _impl_.minor_), _Internal::kHasBitsOffset + 2, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(Version, _impl_.minor_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional int32 patch = 3;
-    {PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_), _Internal::kHasBitsOffset + 3, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional string suffix = 4;
-    {PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
@@ -812,20 +808,15 @@ CodeGeneratorRequest::_table_ = {
     65535, 65535
   }}, {{
     // repeated string file_to_generate = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), -1, 0,
-    (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
     // optional string parameter = 2;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.compiler.Version compiler_version = 3;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), -1, 1,
-    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), -1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2,
-    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
@@ -1214,17 +1205,13 @@ CodeGeneratorResponse_File::_table_ = {
     65535, 65535
   }}, {{
     // optional string name = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.name_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string insertion_point = 2;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.insertion_point_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.insertion_point_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional string content = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_), _Internal::kHasBitsOffset + 2, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_), _Internal::kHasBitsOffset + 3, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo>()},
@@ -1593,20 +1580,15 @@ CodeGeneratorResponse::_table_ = {
     65535, 65535
   }}, {{
     // optional string error = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional uint64 supported_features = 2;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
     // optional int32 minimum_edition = 3;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_), _Internal::kHasBitsOffset + 2, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional int32 maximum_edition = 4;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 3, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), -1, 0,
-    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
