@@ -175,6 +175,14 @@ namespace Pb {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestMessage);
     }
@@ -335,6 +343,14 @@ namespace Pb {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public Nested Clone() {
           return new Nested(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -540,6 +556,32 @@ namespace Pb {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestFeatures Clone() {
       return new TestFeatures(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      fileFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      extensionRangeFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      messageFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      fieldFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      oneofFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      enumFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      enumEntryFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      serviceFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      methodFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      multipleFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      boolFieldFeature_ = false;
+      sourceFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      sourceFeature2_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      removedFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      futureFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      legacyFeature_ = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+      valueLifetimeFeature_ = global::Pb.ValueLifetimeFeature.TestValueLifetimeUnknown;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "file_feature" field.</summary>

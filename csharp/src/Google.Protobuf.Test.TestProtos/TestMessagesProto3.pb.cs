@@ -483,6 +483,175 @@ namespace ProtobufTestMessages.Proto3 {
       return new TestAllTypesProto3(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      optionalInt32_ = 0;
+      optionalInt64_ = 0L;
+      optionalUint32_ = 0;
+      optionalUint64_ = 0UL;
+      optionalSint32_ = 0;
+      optionalSint64_ = 0L;
+      optionalFixed32_ = 0;
+      optionalFixed64_ = 0UL;
+      optionalSfixed32_ = 0;
+      optionalSfixed64_ = 0L;
+      optionalFloat_ = 0F;
+      optionalDouble_ = 0D;
+      optionalBool_ = false;
+      optionalString_ = "";
+      optionalBytes_ = pb::ByteString.Empty;
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (optionalForeignMessage_ != null) {
+        optionalForeignMessage_.Clear();
+      }
+      optionalNestedEnum_ = global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo;
+      optionalForeignEnum_ = global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo;
+      optionalAliasedEnum_ = global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo;
+      optionalStringPiece_ = "";
+      optionalCord_ = "";
+      if (recursiveMessage_ != null) {
+        recursiveMessage_.Clear();
+      }
+      repeatedInt32_.Clear();
+      repeatedInt64_.Clear();
+      repeatedUint32_.Clear();
+      repeatedUint64_.Clear();
+      repeatedSint32_.Clear();
+      repeatedSint64_.Clear();
+      repeatedFixed32_.Clear();
+      repeatedFixed64_.Clear();
+      repeatedSfixed32_.Clear();
+      repeatedSfixed64_.Clear();
+      repeatedFloat_.Clear();
+      repeatedDouble_.Clear();
+      repeatedBool_.Clear();
+      repeatedString_.Clear();
+      repeatedBytes_.Clear();
+      repeatedNestedMessage_.Clear();
+      repeatedForeignMessage_.Clear();
+      repeatedNestedEnum_.Clear();
+      repeatedForeignEnum_.Clear();
+      repeatedStringPiece_.Clear();
+      repeatedCord_.Clear();
+      packedInt32_.Clear();
+      packedInt64_.Clear();
+      packedUint32_.Clear();
+      packedUint64_.Clear();
+      packedSint32_.Clear();
+      packedSint64_.Clear();
+      packedFixed32_.Clear();
+      packedFixed64_.Clear();
+      packedSfixed32_.Clear();
+      packedSfixed64_.Clear();
+      packedFloat_.Clear();
+      packedDouble_.Clear();
+      packedBool_.Clear();
+      packedNestedEnum_.Clear();
+      unpackedInt32_.Clear();
+      unpackedInt64_.Clear();
+      unpackedUint32_.Clear();
+      unpackedUint64_.Clear();
+      unpackedSint32_.Clear();
+      unpackedSint64_.Clear();
+      unpackedFixed32_.Clear();
+      unpackedFixed64_.Clear();
+      unpackedSfixed32_.Clear();
+      unpackedSfixed64_.Clear();
+      unpackedFloat_.Clear();
+      unpackedDouble_.Clear();
+      unpackedBool_.Clear();
+      unpackedNestedEnum_.Clear();
+      mapInt32Int32_.Clear();
+      mapInt64Int64_.Clear();
+      mapUint32Uint32_.Clear();
+      mapUint64Uint64_.Clear();
+      mapSint32Sint32_.Clear();
+      mapSint64Sint64_.Clear();
+      mapFixed32Fixed32_.Clear();
+      mapFixed64Fixed64_.Clear();
+      mapSfixed32Sfixed32_.Clear();
+      mapSfixed64Sfixed64_.Clear();
+      mapInt32Float_.Clear();
+      mapInt32Double_.Clear();
+      mapBoolBool_.Clear();
+      mapStringString_.Clear();
+      mapStringBytes_.Clear();
+      mapStringNestedMessage_.Clear();
+      mapStringForeignMessage_.Clear();
+      mapStringNestedEnum_.Clear();
+      mapStringForeignEnum_.Clear();
+      optionalBoolWrapper_ = false;
+      optionalInt32Wrapper_ = 0;
+      optionalInt64Wrapper_ = 0L;
+      optionalUint32Wrapper_ = 0;
+      optionalUint64Wrapper_ = 0UL;
+      optionalFloatWrapper_ = 0F;
+      optionalDoubleWrapper_ = 0D;
+      optionalStringWrapper_ = "";
+      optionalBytesWrapper_ = pb::ByteString.Empty;
+      repeatedBoolWrapper_.Clear();
+      repeatedInt32Wrapper_.Clear();
+      repeatedInt64Wrapper_.Clear();
+      repeatedUint32Wrapper_.Clear();
+      repeatedUint64Wrapper_.Clear();
+      repeatedFloatWrapper_.Clear();
+      repeatedDoubleWrapper_.Clear();
+      repeatedStringWrapper_.Clear();
+      repeatedBytesWrapper_.Clear();
+      if (optionalDuration_ != null) {
+        optionalDuration_.Clear();
+      }
+      if (optionalTimestamp_ != null) {
+        optionalTimestamp_.Clear();
+      }
+      if (optionalFieldMask_ != null) {
+        optionalFieldMask_.Clear();
+      }
+      if (optionalStruct_ != null) {
+        optionalStruct_.Clear();
+      }
+      if (optionalAny_ != null) {
+        optionalAny_.Clear();
+      }
+      if (optionalValue_ != null) {
+        optionalValue_.Clear();
+      }
+      optionalNullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
+      repeatedDuration_.Clear();
+      repeatedTimestamp_.Clear();
+      repeatedFieldmask_.Clear();
+      repeatedStruct_.Clear();
+      repeatedAny_.Clear();
+      repeatedValue_.Clear();
+      repeatedListValue_.Clear();
+      fieldname1_ = 0;
+      fieldName2_ = 0;
+      FieldName3_ = 0;
+      fieldName4_ = 0;
+      field0Name5_ = 0;
+      field0Name6_ = 0;
+      fieldName7_ = 0;
+      fieldName8_ = 0;
+      fieldName9_ = 0;
+      fieldName10_ = 0;
+      fIELDNAME11_ = 0;
+      fIELDName12_ = 0;
+      FieldName13_ = 0;
+      FieldName14_ = 0;
+      fieldName15_ = 0;
+      fieldName16_ = 0;
+      fieldName17_ = 0;
+      fieldName18_ = 0;
+      oneofFieldCase_ = OneofFieldOneofCase.None;
+      oneofField_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
@@ -5619,6 +5788,18 @@ namespace ProtobufTestMessages.Proto3 {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          a_ = 0;
+          if (corecursive_ != null) {
+            corecursive_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private int a_;
@@ -5867,6 +6048,15 @@ namespace ProtobufTestMessages.Proto3 {
       return new ForeignMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      c_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
     private int c_;
@@ -6066,6 +6256,14 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as NullHypothesisProto3);
     }
@@ -6223,6 +6421,14 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public EnumOnlyProto3 Clone() {
       return new EnumOnlyProto3(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

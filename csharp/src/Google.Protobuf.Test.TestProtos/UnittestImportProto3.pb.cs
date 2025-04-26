@@ -96,6 +96,15 @@ namespace Google.Protobuf.TestProtos {
       return new ImportMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      d_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
     private int d_;

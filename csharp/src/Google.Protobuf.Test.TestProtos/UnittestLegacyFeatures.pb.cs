@@ -87,6 +87,19 @@ namespace LegacyFeaturesUnittest {
       return new TestEditionsMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      requiredField_ = 0;
+      if (delimitedField_ != null) {
+        delimitedField_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "required_field" field.</summary>
     public const int RequiredFieldFieldNumber = 1;
     private readonly static int RequiredFieldDefaultValue = 0;

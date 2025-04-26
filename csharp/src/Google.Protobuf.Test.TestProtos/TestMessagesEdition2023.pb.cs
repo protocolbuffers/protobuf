@@ -276,6 +276,16 @@ namespace ProtobufTestMessages.Editions {
       return new ComplexMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      d_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
     private readonly static int DDefaultValue = 0;
@@ -613,6 +623,122 @@ namespace ProtobufTestMessages.Editions {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestAllTypesEdition2023 Clone() {
       return new TestAllTypesEdition2023(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      optionalInt32_ = 0;
+      optionalInt64_ = 0L;
+      optionalUint32_ = 0;
+      optionalUint64_ = 0UL;
+      optionalSint32_ = 0;
+      optionalSint64_ = 0L;
+      optionalFixed32_ = 0;
+      optionalFixed64_ = 0UL;
+      optionalSfixed32_ = 0;
+      optionalSfixed64_ = 0L;
+      optionalFloat_ = 0F;
+      optionalDouble_ = 0D;
+      optionalBool_ = false;
+      optionalString_ = "";
+      optionalBytes_ = pb::ByteString.Empty;
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (optionalForeignMessage_ != null) {
+        optionalForeignMessage_.Clear();
+      }
+      optionalNestedEnum_ = global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Types.NestedEnum.Foo;
+      optionalForeignEnum_ = global::ProtobufTestMessages.Editions.ForeignEnumEdition2023.ForeignFoo;
+      optionalStringPiece_ = "";
+      optionalCord_ = "";
+      if (recursiveMessage_ != null) {
+        recursiveMessage_.Clear();
+      }
+      repeatedInt32_.Clear();
+      repeatedInt64_.Clear();
+      repeatedUint32_.Clear();
+      repeatedUint64_.Clear();
+      repeatedSint32_.Clear();
+      repeatedSint64_.Clear();
+      repeatedFixed32_.Clear();
+      repeatedFixed64_.Clear();
+      repeatedSfixed32_.Clear();
+      repeatedSfixed64_.Clear();
+      repeatedFloat_.Clear();
+      repeatedDouble_.Clear();
+      repeatedBool_.Clear();
+      repeatedString_.Clear();
+      repeatedBytes_.Clear();
+      repeatedNestedMessage_.Clear();
+      repeatedForeignMessage_.Clear();
+      repeatedNestedEnum_.Clear();
+      repeatedForeignEnum_.Clear();
+      repeatedStringPiece_.Clear();
+      repeatedCord_.Clear();
+      packedInt32_.Clear();
+      packedInt64_.Clear();
+      packedUint32_.Clear();
+      packedUint64_.Clear();
+      packedSint32_.Clear();
+      packedSint64_.Clear();
+      packedFixed32_.Clear();
+      packedFixed64_.Clear();
+      packedSfixed32_.Clear();
+      packedSfixed64_.Clear();
+      packedFloat_.Clear();
+      packedDouble_.Clear();
+      packedBool_.Clear();
+      packedNestedEnum_.Clear();
+      unpackedInt32_.Clear();
+      unpackedInt64_.Clear();
+      unpackedUint32_.Clear();
+      unpackedUint64_.Clear();
+      unpackedSint32_.Clear();
+      unpackedSint64_.Clear();
+      unpackedFixed32_.Clear();
+      unpackedFixed64_.Clear();
+      unpackedSfixed32_.Clear();
+      unpackedSfixed64_.Clear();
+      unpackedFloat_.Clear();
+      unpackedDouble_.Clear();
+      unpackedBool_.Clear();
+      unpackedNestedEnum_.Clear();
+      mapInt32Int32_.Clear();
+      mapInt64Int64_.Clear();
+      mapUint32Uint32_.Clear();
+      mapUint64Uint64_.Clear();
+      mapSint32Sint32_.Clear();
+      mapSint64Sint64_.Clear();
+      mapFixed32Fixed32_.Clear();
+      mapFixed64Fixed64_.Clear();
+      mapSfixed32Sfixed32_.Clear();
+      mapSfixed64Sfixed64_.Clear();
+      mapInt32Float_.Clear();
+      mapInt32Double_.Clear();
+      mapBoolBool_.Clear();
+      mapStringString_.Clear();
+      mapStringBytes_.Clear();
+      mapStringNestedMessage_.Clear();
+      mapStringForeignMessage_.Clear();
+      mapStringNestedEnum_.Clear();
+      mapStringForeignEnum_.Clear();
+      if (groupLikeType_ != null) {
+        groupLikeType_.Clear();
+      }
+      if (delimitedField_ != null) {
+        delimitedField_.Clear();
+      }
+      oneofFieldCase_ = OneofFieldOneofCase.None;
+      oneofField_ = null;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "optional_int32" field.</summary>
@@ -4338,6 +4464,19 @@ namespace ProtobufTestMessages.Editions {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (corecursive_ != null) {
+            corecursive_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private readonly static int ADefaultValue = 0;
@@ -4600,6 +4739,17 @@ namespace ProtobufTestMessages.Editions {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public GroupLikeType Clone() {
           return new GroupLikeType(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          groupInt32_ = 0;
+          groupUint32_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "group_int32" field.</summary>
@@ -4873,6 +5023,16 @@ namespace ProtobufTestMessages.Editions {
       return new ForeignMessageEdition2023(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      c_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
     private readonly static int CDefaultValue = 0;
@@ -5086,6 +5246,16 @@ namespace ProtobufTestMessages.Editions {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GroupLikeType Clone() {
       return new GroupLikeType(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      c_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "c" field.</summary>

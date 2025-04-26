@@ -160,6 +160,17 @@ namespace Conformance {
       return new TestStatus(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      failureMessage_ = "";
+      matchedName_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -439,6 +450,15 @@ namespace Conformance {
       return new FailureSet(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      test_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "test" field.</summary>
     public const int TestFieldNumber = 2;
     private static readonly pb::FieldCodec<global::Conformance.TestStatus> _repeated_test_codec
@@ -650,6 +670,23 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceRequest Clone() {
       return new ConformanceRequest(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      requestedOutputFormat_ = global::Conformance.WireFormat.Unspecified;
+      messageType_ = "";
+      testCategory_ = global::Conformance.TestCategory.UnspecifiedTest;
+      if (jspbEncodingOptions_ != null) {
+        jspbEncodingOptions_.Clear();
+      }
+      printUnknownFields_ = false;
+      payloadCase_ = PayloadOneofCase.None;
+      payload_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "protobuf_payload" field.</summary>
@@ -1287,6 +1324,16 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceResponse Clone() {
       return new ConformanceResponse(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      resultCase_ = ResultOneofCase.None;
+      result_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "parse_error" field.</summary>
@@ -1978,6 +2025,15 @@ namespace Conformance {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public JspbEncodingConfig Clone() {
       return new JspbEncodingConfig(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      useJspbArrayAnyFormat_ = false;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "use_jspb_array_any_format" field.</summary>

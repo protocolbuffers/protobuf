@@ -238,6 +238,31 @@ namespace Google.Protobuf.TestProtos {
       return new TestMap(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      mapInt32Int32_.Clear();
+      mapInt64Int64_.Clear();
+      mapUint32Uint32_.Clear();
+      mapUint64Uint64_.Clear();
+      mapSint32Sint32_.Clear();
+      mapSint64Sint64_.Clear();
+      mapFixed32Fixed32_.Clear();
+      mapFixed64Fixed64_.Clear();
+      mapSfixed32Sfixed32_.Clear();
+      mapSfixed64Sfixed64_.Clear();
+      mapInt32Float_.Clear();
+      mapInt32Double_.Clear();
+      mapBoolBool_.Clear();
+      mapStringString_.Clear();
+      mapInt32Bytes_.Clear();
+      mapInt32Enum_.Clear();
+      mapInt32ForeignMessage_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "map_int32_int32" field.</summary>
     public const int MapInt32Int32FieldNumber = 1;
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
@@ -825,6 +850,17 @@ namespace Google.Protobuf.TestProtos {
       return new TestMapSubmessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (testMap_ != null) {
+        testMap_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "test_map" field.</summary>
     public const int TestMapFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMap testMap_;
@@ -1032,6 +1068,15 @@ namespace Google.Protobuf.TestProtos {
       return new TestMessageMap(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      mapInt32Message_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "map_int32_message" field.</summary>
     public const int MapInt32MessageFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec _map_mapInt32Message_codec
@@ -1221,6 +1266,16 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestSameTypeMap Clone() {
       return new TestSameTypeMap(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      map1_.Clear();
+      map2_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "map1" field.</summary>
@@ -1447,6 +1502,29 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestArenaMap Clone() {
       return new TestArenaMap(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      mapInt32Int32_.Clear();
+      mapInt64Int64_.Clear();
+      mapUint32Uint32_.Clear();
+      mapUint64Uint64_.Clear();
+      mapSint32Sint32_.Clear();
+      mapSint64Sint64_.Clear();
+      mapFixed32Fixed32_.Clear();
+      mapFixed64Fixed64_.Clear();
+      mapSfixed32Sfixed32_.Clear();
+      mapSfixed64Sfixed64_.Clear();
+      mapInt32Float_.Clear();
+      mapInt32Double_.Clear();
+      mapBoolBool_.Clear();
+      mapInt32Enum_.Clear();
+      mapInt32ForeignMessage_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "map_int32_int32" field.</summary>
@@ -1990,6 +2068,15 @@ namespace Google.Protobuf.TestProtos {
       return new MessageContainingEnumCalledType(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      type_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec _map_type_codec
@@ -2190,6 +2277,15 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingMapCalledEntry Clone() {
       return new MessageContainingMapCalledEntry(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      entry_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "entry" field.</summary>

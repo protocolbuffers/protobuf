@@ -146,6 +146,40 @@ namespace ProtobufUnittest {
       return new TestProto3Optional(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      optionalInt32_ = 0;
+      optionalInt64_ = 0L;
+      optionalUint32_ = 0;
+      optionalUint64_ = 0UL;
+      optionalSint32_ = 0;
+      optionalSint64_ = 0L;
+      optionalFixed32_ = 0;
+      optionalFixed64_ = 0UL;
+      optionalSfixed32_ = 0;
+      optionalSfixed64_ = 0L;
+      optionalFloat_ = 0F;
+      optionalDouble_ = 0D;
+      optionalBool_ = false;
+      optionalString_ = "";
+      optionalBytes_ = pb::ByteString.Empty;
+      optionalCord_ = "";
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (lazyNestedMessage_ != null) {
+        lazyNestedMessage_.Clear();
+      }
+      optionalNestedEnum_ = global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum.Unspecified;
+      singularInt32_ = 0;
+      singularInt64_ = 0L;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private readonly static int OptionalInt32DefaultValue = 0;
@@ -1356,6 +1390,16 @@ namespace ProtobufUnittest {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          bb_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "bb" field.</summary>
         public const int BbFieldNumber = 1;
         private readonly static int BbDefaultValue = 0;
@@ -1578,6 +1622,20 @@ namespace ProtobufUnittest {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestProto3OptionalMessage Clone() {
       return new TestProto3OptionalMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (nestedMessage_ != null) {
+        nestedMessage_.Clear();
+      }
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "nested_message" field.</summary>
@@ -1835,6 +1893,15 @@ namespace ProtobufUnittest {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          s_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "s" field.</summary>
         public const int SFieldNumber = 1;
         private string s_ = "";
@@ -2035,6 +2102,14 @@ namespace ProtobufUnittest {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Proto3OptionalExtensions Clone() {
       return new Proto3OptionalExtensions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

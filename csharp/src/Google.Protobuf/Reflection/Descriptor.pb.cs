@@ -414,6 +414,18 @@ namespace Google.Protobuf.Reflection {
       return new FileDescriptorSet(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      file_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "file" field.</summary>
     public const int FileFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_file_codec
@@ -659,6 +671,33 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FileDescriptorProto Clone() {
       return new FileDescriptorProto(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      package_ = "";
+      dependency_.Clear();
+      publicDependency_.Clear();
+      weakDependency_.Clear();
+      optionDependency_.Clear();
+      messageType_.Clear();
+      enumType_.Clear();
+      service_.Clear();
+      extension_.Clear();
+      if (options_ != null) {
+        options_.Clear();
+      }
+      if (sourceCodeInfo_ != null) {
+        sourceCodeInfo_.Clear();
+      }
+      syntax_ = "";
+      edition_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -1377,6 +1416,28 @@ namespace Google.Protobuf.Reflection {
       return new DescriptorProto(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      field_.Clear();
+      extension_.Clear();
+      nestedType_.Clear();
+      enumType_.Clear();
+      extensionRange_.Clear();
+      oneofDecl_.Clear();
+      if (options_ != null) {
+        options_.Clear();
+      }
+      reservedRange_.Clear();
+      reservedName_.Clear();
+      visibility_ = global::Google.Protobuf.Reflection.SymbolVisibility.VisibilityUnset;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private readonly static string NameDefaultValue = "";
@@ -1899,6 +1960,20 @@ namespace Google.Protobuf.Reflection {
           return new ExtensionRange(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          start_ = 0;
+          end_ = 0;
+          if (options_ != null) {
+            options_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
         private readonly static int StartDefaultValue = 0;
@@ -2222,6 +2297,17 @@ namespace Google.Protobuf.Reflection {
           return new ReservedRange(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          start_ = 0;
+          end_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
         private readonly static int StartDefaultValue = 0;
@@ -2503,6 +2589,24 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ExtensionRangeOptions Clone() {
       return new ExtensionRangeOptions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      uninterpretedOption_.Clear();
+      declaration_.Clear();
+      if (features_ != null) {
+        features_.Clear();
+      }
+      verification_ = global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState.Unverified;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -2889,6 +2993,20 @@ namespace Google.Protobuf.Reflection {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public Declaration Clone() {
           return new Declaration(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          number_ = 0;
+          fullName_ = "";
+          type_ = "";
+          reserved_ = false;
+          repeated_ = false;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "number" field.</summary>
@@ -3345,6 +3463,28 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FieldDescriptorProto Clone() {
       return new FieldDescriptorProto(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      number_ = 0;
+      label_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.Optional;
+      type_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.Double;
+      typeName_ = "";
+      extendee_ = "";
+      defaultValue_ = "";
+      oneofIndex_ = 0;
+      jsonName_ = "";
+      if (options_ != null) {
+        options_.Clear();
+      }
+      proto3Optional_ = false;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -4191,6 +4331,18 @@ namespace Google.Protobuf.Reflection {
       return new OneofDescriptorProto(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      if (options_ != null) {
+        options_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private readonly static string NameDefaultValue = "";
@@ -4456,6 +4608,23 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public EnumDescriptorProto Clone() {
       return new EnumDescriptorProto(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      value_.Clear();
+      if (options_ != null) {
+        options_.Clear();
+      }
+      reservedRange_.Clear();
+      reservedName_.Clear();
+      visibility_ = global::Google.Protobuf.Reflection.SymbolVisibility.VisibilityUnset;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -4867,6 +5036,17 @@ namespace Google.Protobuf.Reflection {
           return new EnumReservedRange(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          start_ = 0;
+          end_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
         private readonly static int StartDefaultValue = 0;
@@ -5147,6 +5327,20 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public EnumValueDescriptorProto Clone() {
       return new EnumValueDescriptorProto(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      number_ = 0;
+      if (options_ != null) {
+        options_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -5462,6 +5656,19 @@ namespace Google.Protobuf.Reflection {
       return new ServiceDescriptorProto(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      method_.Clear();
+      if (options_ != null) {
+        options_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private readonly static string NameDefaultValue = "";
@@ -5752,6 +5959,23 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MethodDescriptorProto Clone() {
       return new MethodDescriptorProto(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_ = "";
+      inputType_ = "";
+      outputType_ = "";
+      if (options_ != null) {
+        options_.Clear();
+      }
+      clientStreaming_ = false;
+      serverStreaming_ = false;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -6246,6 +6470,41 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FileOptions Clone() {
       return new FileOptions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      javaPackage_ = "";
+      javaOuterClassname_ = "";
+      javaMultipleFiles_ = false;
+      javaGenerateEqualsAndHash_ = false;
+      javaStringCheckUtf8_ = false;
+      optimizeFor_ = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.Speed;
+      goPackage_ = "";
+      ccGenericServices_ = false;
+      javaGenericServices_ = false;
+      pyGenericServices_ = false;
+      deprecated_ = false;
+      ccEnableArenas_ = true;
+      objcClassPrefix_ = "";
+      csharpNamespace_ = "";
+      swiftPrefix_ = "";
+      phpClassPrefix_ = "";
+      phpNamespace_ = "";
+      phpMetadataNamespace_ = "";
+      rubyPackage_ = "";
+      if (features_ != null) {
+        features_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "java_package" field.</summary>
@@ -7628,6 +7887,27 @@ namespace Google.Protobuf.Reflection {
       return new MessageOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      messageSetWireFormat_ = false;
+      noStandardDescriptorAccessor_ = false;
+      deprecated_ = false;
+      mapEntry_ = false;
+      deprecatedLegacyJsonFieldConflicts_ = false;
+      if (features_ != null) {
+        features_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "message_set_wire_format" field.</summary>
     public const int MessageSetWireFormatFieldNumber = 1;
     private readonly static bool MessageSetWireFormatDefaultValue = false;
@@ -8251,6 +8531,36 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FieldOptions Clone() {
       return new FieldOptions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      ctype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.String;
+      packed_ = false;
+      jstype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JsNormal;
+      lazy_ = false;
+      unverifiedLazy_ = false;
+      deprecated_ = false;
+      weak_ = false;
+      debugRedact_ = false;
+      retention_ = global::Google.Protobuf.Reflection.FieldOptions.Types.OptionRetention.RetentionUnknown;
+      targets_.Clear();
+      editionDefaults_.Clear();
+      if (features_ != null) {
+        features_.Clear();
+      }
+      if (featureSupport_ != null) {
+        featureSupport_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "ctype" field.</summary>
@@ -9230,6 +9540,17 @@ namespace Google.Protobuf.Reflection {
           return new EditionDefault(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          edition_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+          value_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "edition" field.</summary>
         public const int EditionFieldNumber = 3;
         private readonly static global::Google.Protobuf.Reflection.Edition EditionDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
@@ -9502,6 +9823,19 @@ namespace Google.Protobuf.Reflection {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public FeatureSupport Clone() {
           return new FeatureSupport(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          editionIntroduced_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+          editionDeprecated_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+          deprecationWarning_ = "";
+          editionRemoved_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "edition_introduced" field.</summary>
@@ -9896,6 +10230,21 @@ namespace Google.Protobuf.Reflection {
       return new OneofOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (features_ != null) {
+        features_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 1;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
@@ -10186,6 +10535,25 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public EnumOptions Clone() {
       return new EnumOptions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      allowAlias_ = false;
+      deprecated_ = false;
+      deprecatedLegacyJsonFieldConflicts_ = false;
+      if (features_ != null) {
+        features_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "allow_alias" field.</summary>
@@ -10654,6 +11022,27 @@ namespace Google.Protobuf.Reflection {
       return new EnumValueOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      deprecated_ = false;
+      if (features_ != null) {
+        features_.Clear();
+      }
+      debugRedact_ = false;
+      if (featureSupport_ != null) {
+        featureSupport_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 1;
     private readonly static bool DeprecatedDefaultValue = false;
@@ -11105,6 +11494,23 @@ namespace Google.Protobuf.Reflection {
       return new ServiceOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      if (features_ != null) {
+        features_.Clear();
+      }
+      deprecated_ = false;
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 34;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
@@ -11451,6 +11857,24 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MethodOptions Clone() {
       return new MethodOptions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      deprecated_ = false;
+      idempotencyLevel_ = global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel.IdempotencyUnknown;
+      if (features_ != null) {
+        features_.Clear();
+      }
+      uninterpretedOption_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -11883,6 +12307,22 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public UninterpretedOption Clone() {
       return new UninterpretedOption(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      name_.Clear();
+      identifierValue_ = "";
+      positiveIntValue_ = 0UL;
+      negativeIntValue_ = 0L;
+      doubleValue_ = 0D;
+      stringValue_ = pb::ByteString.Empty;
+      aggregateValue_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -12392,6 +12832,17 @@ namespace Google.Protobuf.Reflection {
           return new NamePart(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          namePart_ = "";
+          isExtension_ = false;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "name_part" field.</summary>
         public const int NamePart_FieldNumber = 1;
         private readonly static string NamePart_DefaultValue = "";
@@ -12678,6 +13129,26 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FeatureSet Clone() {
       return new FeatureSet(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      fieldPresence_ = global::Google.Protobuf.Reflection.FeatureSet.Types.FieldPresence.Unknown;
+      enumType_ = global::Google.Protobuf.Reflection.FeatureSet.Types.EnumType.Unknown;
+      repeatedFieldEncoding_ = global::Google.Protobuf.Reflection.FeatureSet.Types.RepeatedFieldEncoding.Unknown;
+      utf8Validation_ = global::Google.Protobuf.Reflection.FeatureSet.Types.Utf8Validation.Unknown;
+      messageEncoding_ = global::Google.Protobuf.Reflection.FeatureSet.Types.MessageEncoding.Unknown;
+      jsonFormat_ = global::Google.Protobuf.Reflection.FeatureSet.Types.JsonFormat.Unknown;
+      enforceNamingStyle_ = global::Google.Protobuf.Reflection.FeatureSet.Types.EnforceNamingStyle.Unknown;
+      defaultSymbolVisibility_ = global::Google.Protobuf.Reflection.FeatureSet.Types.VisibilityFeature.Types.DefaultSymbolVisibility.Unknown;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "field_presence" field.</summary>
@@ -13339,6 +13810,14 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override bool Equals(object other) {
           return Equals(other as VisibilityFeature);
         }
@@ -13542,6 +14021,18 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FeatureSetDefaults Clone() {
       return new FeatureSetDefaults(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      defaults_.Clear();
+      minimumEdition_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+      maximumEdition_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "defaults" field.</summary>
@@ -13852,6 +14343,22 @@ namespace Google.Protobuf.Reflection {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public FeatureSetEditionDefault Clone() {
           return new FeatureSetEditionDefault(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          edition_ = global::Google.Protobuf.Reflection.Edition.Unknown;
+          if (overridableFeatures_ != null) {
+            overridableFeatures_.Clear();
+          }
+          if (fixedFeatures_ != null) {
+            fixedFeatures_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "edition" field.</summary>
@@ -14175,6 +14682,18 @@ namespace Google.Protobuf.Reflection {
       return new SourceCodeInfo(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      location_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "location" field.</summary>
     public const int LocationFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> _repeated_location_codec
@@ -14454,6 +14973,19 @@ namespace Google.Protobuf.Reflection {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public Location Clone() {
           return new Location(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          path_.Clear();
+          span_.Clear();
+          leadingComments_ = "";
+          trailingComments_ = "";
+          leadingDetachedComments_.Clear();
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "path" field.</summary>
@@ -14888,6 +15420,15 @@ namespace Google.Protobuf.Reflection {
       return new GeneratedCodeInfo(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      annotation_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "annotation" field.</summary>
     public const int AnnotationFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> _repeated_annotation_codec
@@ -15086,6 +15627,20 @@ namespace Google.Protobuf.Reflection {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public Annotation Clone() {
           return new Annotation(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          path_.Clear();
+          sourceFile_ = "";
+          begin_ = 0;
+          end_ = 0;
+          semantic_ = global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic.None;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "path" field.</summary>

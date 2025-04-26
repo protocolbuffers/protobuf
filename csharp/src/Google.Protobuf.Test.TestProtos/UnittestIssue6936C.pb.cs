@@ -85,6 +85,17 @@ namespace UnitTest.Issues.TestProtos {
       return new Bar(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (foo_ != null) {
+        foo_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "foo" field.</summary>
     public const int FooFieldNumber = 1;
     private global::UnitTest.Issues.TestProtos.Foo foo_;

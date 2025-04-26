@@ -241,6 +241,53 @@ namespace Google.Protobuf.TestProtos {
       return new TestWellKnownTypes(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (anyField_ != null) {
+        anyField_.Clear();
+      }
+      if (apiField_ != null) {
+        apiField_.Clear();
+      }
+      if (durationField_ != null) {
+        durationField_.Clear();
+      }
+      if (emptyField_ != null) {
+        emptyField_.Clear();
+      }
+      if (fieldMaskField_ != null) {
+        fieldMaskField_.Clear();
+      }
+      if (sourceContextField_ != null) {
+        sourceContextField_.Clear();
+      }
+      if (structField_ != null) {
+        structField_.Clear();
+      }
+      if (timestampField_ != null) {
+        timestampField_.Clear();
+      }
+      if (typeField_ != null) {
+        typeField_.Clear();
+      }
+      doubleField_ = 0D;
+      floatField_ = 0F;
+      int64Field_ = 0L;
+      uint64Field_ = 0UL;
+      int32Field_ = 0;
+      uint32Field_ = 0;
+      boolField_ = false;
+      stringField_ = "";
+      bytesField_ = pb::ByteString.Empty;
+      if (valueField_ != null) {
+        valueField_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Any anyField_;
@@ -1272,6 +1319,32 @@ namespace Google.Protobuf.TestProtos {
       return new RepeatedWellKnownTypes(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      anyField_.Clear();
+      apiField_.Clear();
+      durationField_.Clear();
+      emptyField_.Clear();
+      fieldMaskField_.Clear();
+      sourceContextField_.Clear();
+      structField_.Clear();
+      timestampField_.Clear();
+      typeField_.Clear();
+      doubleField_.Clear();
+      floatField_.Clear();
+      int64Field_.Clear();
+      uint64Field_.Clear();
+      int32Field_.Clear();
+      uint32Field_.Clear();
+      boolField_.Clear();
+      stringField_.Clear();
+      bytesField_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Any> _repeated_anyField_codec
@@ -1941,6 +2014,16 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OneofWellKnownTypes Clone() {
       return new OneofWellKnownTypes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      oneofFieldCase_ = OneofFieldOneofCase.None;
+      oneofField_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "any_field" field.</summary>
@@ -2923,6 +3006,32 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MapWellKnownTypes Clone() {
       return new MapWellKnownTypes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      anyField_.Clear();
+      apiField_.Clear();
+      durationField_.Clear();
+      emptyField_.Clear();
+      fieldMaskField_.Clear();
+      sourceContextField_.Clear();
+      structField_.Clear();
+      timestampField_.Clear();
+      typeField_.Clear();
+      doubleField_.Clear();
+      floatField_.Clear();
+      int64Field_.Clear();
+      uint64Field_.Clear();
+      int32Field_.Clear();
+      uint32Field_.Clear();
+      boolField_.Clear();
+      stringField_.Clear();
+      bytesField_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "any_field" field.</summary>

@@ -99,6 +99,21 @@ namespace Google.Protobuf.Examples.AddressBook {
       return new Person(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      id_ = 0;
+      email_ = "";
+      phones_.Clear();
+      if (lastUpdated_ != null) {
+        lastUpdated_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -452,6 +467,16 @@ namespace Google.Protobuf.Examples.AddressBook {
           return new PhoneNumber(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          number_ = "";
+          type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.Mobile;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "number" field.</summary>
         public const int NumberFieldNumber = 1;
         private string number_ = "";
@@ -692,6 +717,15 @@ namespace Google.Protobuf.Examples.AddressBook {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public AddressBook Clone() {
       return new AddressBook(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      people_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "people" field.</summary>
