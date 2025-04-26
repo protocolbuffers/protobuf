@@ -10,6 +10,8 @@
 
 #include "google/protobuf/pyext/descriptor_database.h"
 
+#include <Python.h>
+
 #include <cstdint>
 #include <string>
 #include <vector>
