@@ -162,6 +162,13 @@ void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
     "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");
 }
 
+void MessageFieldGenerator::GenerateClearCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "if ($name$_ != null) {\n"
+    "  $name$_.Clear();\n"
+    "}\n");
+}
+
 void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
@@ -258,6 +265,10 @@ void MessageOneofFieldGenerator::WriteToString(io::Printer* printer) {
 void MessageOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
     "$property_name$ = other.$property_name$.Clone();\n");
+}
+
+void MessageOneofFieldGenerator::GenerateClearCode(io::Printer* printer) {
+  // No-Op: Message fields in oneofs are correctly cleared by clearing the oneof
 }
 
 }  // namespace csharp

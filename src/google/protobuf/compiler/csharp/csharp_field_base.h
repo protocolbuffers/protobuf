@@ -36,6 +36,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
 
   virtual void GenerateCloningCode(io::Printer* printer) = 0;
+  virtual void GenerateClearCode(io::Printer* printer) = 0;
   virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateExtensionCode(io::Printer* printer);

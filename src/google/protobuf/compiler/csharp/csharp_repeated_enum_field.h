@@ -30,6 +30,7 @@ class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
       delete;
 
   void GenerateCloningCode(io::Printer* printer) override;
+  void GenerateClearCode(io::Printer* printer) override;
   void GenerateFreezingCode(io::Printer* printer) override;
   void GenerateMembers(io::Printer* printer) override;
   void GenerateMergingCode(io::Printer* printer) override;

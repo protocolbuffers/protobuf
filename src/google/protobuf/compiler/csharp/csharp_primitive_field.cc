@@ -232,6 +232,11 @@ void PrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) {
     "$name$_ = other.$name$_;\n");
 }
 
+void PrimitiveFieldGenerator::GenerateClearCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = $default_value$;\n");
+}
+
 void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   printer->Print(
     variables_,
@@ -322,6 +327,10 @@ void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 void PrimitiveOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
     "$property_name$ = other.$property_name$;\n");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateClearCode(io::Printer* printer) {
+  // No-Op: Primitive fields in oneofs are correctly cleared by clearing the oneof
 }
 
 }  // namespace csharp
