@@ -7,6 +7,8 @@
 
 #include <limits.h>
 
+#include <memory>
+
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
@@ -125,6 +127,102 @@ TEST_F(LazilyBuildDependenciesTest, Message) {
   // build the file where the message is defined, and get a valid descriptor
   EXPECT_TRUE(field->message_type() != nullptr);
   EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, UninterpretedCustomOption) {
+  ParseProtoAndAddToDb(R"pb(
+    name: 'foo.proto'
+    package: 'proto2_unittest'
+    option_dependency: 'bar.proto'
+    message_type {
+      name: 'Foo'
+      field { name: 'foo' number: 1 type: TYPE_INT32 }
+    }
+    options {
+      uninterpreted_option {
+        name { name_part: 'file_opt' is_extension: true }
+        positive_int_value: 1234
+      }
+    }
+  )pb");
+  ParseProtoAndAddToDb(R"pb(
+    name: 'bar.proto'
+    package: 'proto2_unittest'
+    dependency: 'google/protobuf/descriptor.proto'
+    extension {
+      extendee: "google.protobuf.FileOptions"
+      name: "file_opt"
+      number: 123456
+      type: TYPE_INT32
+    }
+  )pb");
+  FileDescriptorProto descriptor_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+  db_.Add(descriptor_proto);
+
+  // Verify neither has been built yet.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("google/protobuf/descriptor.proto"));
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify foo, bar, and descriptor.proto all get built even when lazy when
+  // asking for foo.proto due to options interpretation.
+  EXPECT_TRUE(file != nullptr);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("google/protobuf/descriptor.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, InterpretedCustomOption) {
+  ParseProtoAndAddToDb(R"pb(
+    name: 'foo.proto'
+    package: 'proto2_unittest'
+    option_dependency: 'bar.proto'
+    message_type {
+      name: 'Foo'
+      field { name: 'foo' number: 1 type: TYPE_INT32 }
+    }
+    options {
+      uninterpreted_option {
+        name { name_part: 'file_opt' is_extension: true }
+        positive_int_value: 1234
+      }
+    }
+  )pb");
+  ParseProtoAndAddToDb(R"pb(
+    name: 'bar.proto'
+    package: 'proto2_unittest'
+    dependency: 'google/protobuf/descriptor.proto'
+    extension {
+      extendee: "google.protobuf.FileOptions"
+      name: "file_opt"
+      number: 123456
+      type: TYPE_INT32
+    }
+  )pb");
+  FileDescriptorProto descriptor_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+  db_.Add(descriptor_proto);
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+  FileDescriptorProto file_proto;
+  file->CopyTo(&file_proto);
+
+  auto new_pool = std::make_unique<google::protobuf::DescriptorPool>();
+  new_pool->BuildFile(file_proto);
+
+  // New pool with options resolved without transitive dependencies
+  const FileDescriptor* file_from_new_pool =
+      new_pool->FindFileByName("foo.proto");
+  EXPECT_FALSE(new_pool->FindFileByName("bar.proto"));
+  EXPECT_FALSE(new_pool->FindFileByName("google/protobuf/descriptor.proto"));
+  EXPECT_FALSE(new_pool->FindExtensionByName(".proto2_unittest.file_opt"));
+  EXPECT_EQ(0, file_from_new_pool->options().uninterpreted_option_size());
+  FileDescriptorProto new_file_proto;
+  file_from_new_pool->CopyTo(&new_file_proto);
+  EXPECT_EQ(file_proto.DebugString(), new_file_proto.DebugString());
 }
 
 TEST_F(LazilyBuildDependenciesTest, Enum) {

@@ -675,7 +675,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
 
   file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("import_custom_unknown_options.proto");
-  file_descriptor_proto->add_dependency("custom_options.proto");
+  file_descriptor_proto->add_option_dependency("custom_options.proto");
   // Add custom message option to unknown field. This custom option is
   // not known in generated pool, thus option will be in unknown fields.
   file_descriptor_proto->add_message_type()->set_name("Bar");
@@ -735,6 +735,49 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {
 
   Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto bar.proto");
+
+  ExpectNoErrors();
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+}
+
+TEST_F(CommandLineInterfaceTest, MultipleInputsWithOptionImport) {
+  // Test parsing multiple input files with an option import of a separate file.
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      edition = "2024";
+                      message Foo {}
+                 )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                      edition = "2024";
+                      import option "baz.proto";
+                      message Bar {
+                        Bar a = 1 [(field_options) = { baz: 1 }];
+                      }
+                 )schema");
+  CreateTempFile("baz.proto",
+                 R"schema(
+                      edition = "2024";
+                      import "google/protobuf/descriptor.proto";
+                      message Baz {
+                        int64 baz = 1;
+                      }
+                      extend google.protobuf.FieldOptions {
+                        Baz field_options = 5000;
+                      }
+                 )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto bar.proto --experimental_editions");
 
   ExpectNoErrors();
   ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
@@ -1431,6 +1474,35 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
     })schema");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, ImportOptions) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("options.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    package test;
+                    import "google/protobuf/descriptor.proto";
+                    extend google.protobuf.FileOptions {
+                      optional TestOptions opt = 99990;
+                    }
+                    message TestOptions {
+                      repeated int32 a = 1;
+                    }
+                 )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "options.proto";
+
+                    option (test.opt).a = 1;
+                    option (.test.opt).a = 2;
+                 )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
+      "--experimental_editions");
   ExpectNoErrors();
 }
 
@@ -2644,6 +2716,51 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   // Source code info included.
   EXPECT_TRUE(descriptor_set.file(0).has_source_code_info());
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest, NoWriteTransitiveOptionImportDescriptorSet) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    import "google/protobuf/descriptor.proto";
+                    extend .google.protobuf.FileOptions {
+                      optional int32 file_opt = 5000;
+                    }
+                )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    message Foo {}
+                 )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                    edition = "2024";
+                    import "foo.proto";
+                    import option "custom_option.proto";
+                    option (file_opt) = 1;
+                    message Bar {
+                      Foo foo = 1;
+                    }
+                 )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, descriptor_set.file_size());
+  if (descriptor_set.file(0).name() == "bar.proto") {
+    std::swap(descriptor_set.mutable_file()->mutable_data()[0],
+              descriptor_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
 }
 
 TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {
