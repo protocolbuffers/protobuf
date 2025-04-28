@@ -284,7 +284,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceC
 inline void SourceContext::clear_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline const ::std::string& SourceContext::file_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -294,7 +294,7 @@ inline const ::std::string& SourceContext::file_name() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
@@ -310,21 +310,21 @@ inline const ::std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   _impl_.file_name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL SourceContext::_internal_mutable_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000001U;
   return _impl_.file_name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
-  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+  if ((_impl_._has_bits_[0] & 0x00000001U) == 0) {
     return nullptr;
   }
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000001U;
   auto* released = _impl_.file_name_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.file_name_.Set("", GetArena());
@@ -334,9 +334,9 @@ inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
 inline void SourceContext::set_allocated_file_name(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000001U;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000001U;
   }
   _impl_.file_name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
