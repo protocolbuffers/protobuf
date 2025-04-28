@@ -12,6 +12,9 @@
 
 namespace hpb {
 using Arena = upb::Arena;
+
+// abandoned
+// struct IExtensionRegistry{};
 }
 
 #endif  // GOOGLE_PROTOBUF_HPB_ARENA_H__

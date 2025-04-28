@@ -467,7 +467,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
 
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(bytes.value(),
-                              hpb::ExtensionRegistry::generated_registry())
+                              hpb::UpbExtensionRegistry::generated_registry())
           .value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
@@ -553,7 +553,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   // Test with ExtensionRegistry
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(data,
-                              hpb::ExtensionRegistry::generated_registry())
+                              hpb::UpbExtensionRegistry::generated_registry())
           .value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
@@ -565,7 +565,7 @@ TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
 TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
   TestModel model;
   upb::Arena arena;
-  hpb::ExtensionRegistry extensions(arena);
+  hpb::UpbExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int32_ext);
   // These bytes are the serialized form of a repeated int32 field
   // with two elements: [2, 3] @index 13004
@@ -581,7 +581,7 @@ TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
 TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
   TestModel model;
   upb::Arena arena;
-  hpb::ExtensionRegistry extensions(arena);
+  hpb::UpbExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int64_ext);
   // These bytes represent a repeated int64 field with one element: [322].
   auto bytes = "\352\254\006\002\302\002";
@@ -595,7 +595,7 @@ TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
 TEST(CppGeneratedCode, GetExtensionSingularString) {
   TestModel model;
   hpb::Arena arena;
-  hpb::ExtensionRegistry extensions(arena);
+  hpb::UpbExtensionRegistry extensions(arena);
   extensions.AddExtension(string_ext);
   // These bytes represent a singular string field: "todaraba" @index 13012.
   auto bytes = "\242\255\006\010todaraba";
@@ -607,7 +607,7 @@ TEST(CppGeneratedCode, GetExtensionSingularString) {
 TEST(CppGeneratedCode, GetExtensionRepeatedString) {
   TestModel model;
   upb::Arena arena;
-  hpb::ExtensionRegistry extensions(arena);
+  hpb::UpbExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_string_ext);
   // These bytes represent a repeated string field with two elements:
   // ["hello", "world"] @index 13006.

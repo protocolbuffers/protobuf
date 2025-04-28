@@ -20,7 +20,7 @@
 namespace hpb {
 namespace internal {
 upb_ExtensionRegistry* GetUpbExtensions(
-    const ExtensionRegistry& extension_registry) {
+    const UpbExtensionRegistry& extension_registry) {
   return extension_registry.registry_;
 }
 

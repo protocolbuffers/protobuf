@@ -18,6 +18,9 @@
 
 namespace hpb::internal::backend::upb {
 
+// Can also provide EmptyRegistry() helper func here, but do we really
+// want to provide this default arg from namespace hpb::internal::backend::upb?
+
 template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {
   auto ptr = Ptr(message);
