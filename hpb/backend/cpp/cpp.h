@@ -11,6 +11,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/ptr.h"
 
 namespace hpb::internal::backend::cpp {
 
@@ -18,6 +19,11 @@ namespace hpb::internal::backend::cpp {
 
 template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {
+  abort();
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   abort();
 }
 
