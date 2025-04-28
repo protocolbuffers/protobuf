@@ -37,6 +37,24 @@ extra_link_args = []
 if sys.platform.startswith('win'):
   extra_link_args = ['-static']
 
+# If at some point the fasttable decoder is ready for prime time, we could
+# enable it here. But even then we'll need to disable it on platforms where
+# it will not work (eg. 32-bit, MSVC).
+fasttable_decoder_enabled = False
+
+srcs = (
+    glob.glob('google/protobuf/*.c')
+    + glob.glob('python/*.c')
+    + glob.glob('upb/**/*.c', recursive=True)
+    + glob.glob('utf8_range/*.c')
+)
+
+if not fasttable_decoder_enabled:
+  # Our heuristic is to match any file that contains `decode_fast` in the name.
+  # If we change the file names of the fast decoder, we will have to update
+  # this heuristic.
+  srcs = list(filter(lambda src: 'decode_fast' not in src, srcs))
+
 setup(
     name='protobuf',
     version=GetVersion(),
@@ -64,10 +82,7 @@ setup(
     ext_modules=[
         Extension(
             'google._upb._message',
-            glob.glob('google/protobuf/*.c')
-            + glob.glob('python/*.c')
-            + glob.glob('upb/**/*.c', recursive=True)
-            + glob.glob('utf8_range/*.c'),
+            srcs,
             include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')],
             language='c',
             extra_link_args=extra_link_args,
