@@ -1458,6 +1458,11 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.cc
 )
 
+# @//src/google/protobuf:lazily_build_dependencies_test_srcs
+set(lazily_build_dependencies_test_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/lazily_build_dependencies_test.cc
+)
+
 # @//src/google/protobuf:test_proto_all_srcs
 set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto
