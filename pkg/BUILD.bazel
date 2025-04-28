@@ -132,6 +132,7 @@ gen_file_lists(
         "//upb:test_protos": "upb_test_protos",
         "//upb:test_srcs": "upb_test",
         "//src/google/protobuf:full_test_srcs": "protobuf_test",
+        "//src/google/protobuf:lazily_build_dependencies_test_srcs": "lazily_build_dependencies_test",
         "//src/google/protobuf:test_proto_all_srcs": "protobuf_test_protos",
         "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
         "//src/google/protobuf:lite_test_proto_srcs": "protobuf_lite_test_protos",

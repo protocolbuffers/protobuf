@@ -1572,6 +1572,30 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "lazily_build_dependencies_test",
+    srcs = ["lazily_build_dependencies_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":any_cc_proto",
+        ":cc_test_protos",
+        ":descriptor_legacy",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "test_textproto",
     testonly = True,
@@ -2387,10 +2411,17 @@ filegroup(
             "*unittest.cc",
         ],
         exclude = [
+            "lazily_build_dependencies_test.cc",
             "lite_unittest.cc",
             "lite_arena_unittest.cc",
         ],
     ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "lazily_build_dependencies_test_srcs",
+    srcs = ["lazily_build_dependencies_test.cc"],
     visibility = ["//pkg:__pkg__"],
 )
 
