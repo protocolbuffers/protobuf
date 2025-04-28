@@ -638,6 +638,13 @@ MessageGenerator::MessageGenerator(
   optimized_order_ = message_layout_helper_->OptimizeLayout(
       optimized_order_, options_, scc_analyzer_);
   ABSL_CHECK_EQ(initial_size, optimized_order_.size());
+  // Verify that all split fields are placed at the end in the optimized order.
+  ABSL_CHECK(std::is_sorted(
+      optimized_order_.begin(), optimized_order_.end(),
+      [this](const FieldDescriptor* a, const FieldDescriptor* b) {
+        return static_cast<int>(ShouldSplit(a, options_)) <
+               static_cast<int>(ShouldSplit(b, options_));
+      }));
 
   // This message has hasbits iff one or more fields need one.
   for (auto field : optimized_order_) {
