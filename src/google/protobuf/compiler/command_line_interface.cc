@@ -1248,6 +1248,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
+  descriptor_pool->EnforceOptionDependencies(true);
   descriptor_pool->EnforceNamingStyle(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {

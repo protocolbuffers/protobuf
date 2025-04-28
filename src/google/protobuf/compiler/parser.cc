@@ -731,6 +731,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
         FileDescriptorProto::kMessageTypeFieldNumber, location, file);
   } else if (LookingAt("import")) {
     return ParseImport(file->mutable_dependency(),
+                       file->mutable_option_dependency(),
                        file->mutable_public_dependency(),
                        file->mutable_weak_dependency(), root_location, file);
   } else if (LookingAt("package")) {
@@ -2498,16 +2499,42 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
 }
 
 bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
+                         RepeatedPtrField<std::string>* option_dependency,
                          RepeatedField<int32_t>* public_dependency,
                          RepeatedField<int32_t>* weak_dependency,
                          const LocationRecorder& root_location,
                          const FileDescriptorProto* containing_file) {
-  LocationRecorder location(root_location,
-                            FileDescriptorProto::kDependencyFieldNumber,
-                            dependency->size());
-
+  io::Tokenizer::Token import_start = input_->current();
   DO(Consume("import"));
+  std::string import_file;
+  if (LookingAt("option")) {
+    LocationRecorder option_import_location(
+        root_location, FileDescriptorProto::kOptionDependencyFieldNumber,
+        option_dependency->size());
+    option_import_location.StartAt(import_start);
+    if (edition_ < Edition::EDITION_2024) {
+      RecordError("option import is not supported before edition 2024.");
+    }
+    DO(Consume("option"));
+    DO(ConsumeString(&import_file,
+                     "Expected a string naming the file to import."));
+    *option_dependency->Add() = import_file;
 
+    option_import_location.RecordLegacyImportLocation(containing_file,
+                                                      import_file);
+    DO(ConsumeEndOfDeclaration(";", &option_import_location));
+    return true;
+  }
+
+  LocationRecorder import_location(root_location,
+                                   FileDescriptorProto::kDependencyFieldNumber,
+                                   dependency->size());
+  import_location.StartAt(import_start);
+  if (!option_dependency->empty()) {
+    RecordError(
+        "imports should precede any option imports to ensure proto files "
+        "can roundtrip.");
+  }
   if (LookingAt("public")) {
     LocationRecorder public_location(
         root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
@@ -2522,15 +2549,12 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
   }
-
-  std::string import_file;
   DO(ConsumeString(&import_file,
                    "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
-  location.RecordLegacyImportLocation(containing_file, import_file);
 
-  DO(ConsumeEndOfDeclaration(";", &location));
-
+  import_location.RecordLegacyImportLocation(containing_file, import_file);
+  DO(ConsumeEndOfDeclaration(";", &import_location));
   return true;
 }
 
@@ -2540,7 +2564,7 @@ bool Parser::ParseVisibility(const FileDescriptorProto* containing_file,
     return false;
   }
 
-  // Bail out of visiblity checks if < 2024
+  // Bail out of visibility checks if < 2024
   if (containing_file->edition() <= Edition::EDITION_2023) {
     return true;
   }

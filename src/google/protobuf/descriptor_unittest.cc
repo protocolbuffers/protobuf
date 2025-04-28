@@ -273,6 +273,9 @@ class FileDescriptorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Build descriptors for the following definitions:
+    //   // in "custom_option.proto"
+    //   import "google/protobuf/descriptor.proto";
+    //   extend google.protobuf.FileOptions { optional int32 file_opt = 5000; }
     //
     //   // in "foo.proto"
     //   message FooMessage { extensions 1; }
@@ -281,6 +284,8 @@ class FileDescriptorTest : public testing::Test {
     //   extend FooMessage { optional int32 foo_extension = 1; }
     //
     //   // in "bar.proto"
+    //   import "foo.proto";
+    //   import option "custom_option.proto";
     //   package bar_package;
     //   message BarMessage { extensions 1; }
     //   enum BarEnum {BAR_ENUM_VALUE = 1;}
@@ -290,6 +295,13 @@ class FileDescriptorTest : public testing::Test {
     // Also, we have an empty file "baz.proto".  This file's purpose is to
     // make sure that even though it has the same package as foo.proto,
     // searching it for members of foo.proto won't work.
+
+    FileDescriptorProto custom_option_file;
+    custom_option_file.set_name("custom_option.proto");
+    custom_option_file.add_dependency("google/protobuf/descriptor.proto");
+    AddExtension(&custom_option_file, "google.protobuf.FileOptions", "file_opt", 5000,
+                 FieldDescriptorProto::LABEL_OPTIONAL,
+                 FieldDescriptorProto::TYPE_INT32);
 
     FileDescriptorProto foo_file;
     foo_file.set_name("foo.proto");
@@ -304,6 +316,7 @@ class FileDescriptorTest : public testing::Test {
     bar_file.set_name("bar.proto");
     bar_file.set_package("bar_package");
     bar_file.add_dependency("foo.proto");
+    bar_file.add_option_dependency("custom_option.proto");
     AddExtensionRange(AddMessage(&bar_file, "BarMessage"), 1, 2);
     AddEnumValue(AddEnum(&bar_file, "BarEnum"), "BAR_ENUM_VALUE", 1);
     AddService(&bar_file, "BarService");
@@ -315,6 +328,13 @@ class FileDescriptorTest : public testing::Test {
     baz_file.set_name("baz.proto");
 
     // Build the descriptors and get the pointers.
+    FileDescriptorProto descriptor_proto;
+    google::protobuf::DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+    pool_.BuildFile(descriptor_proto);
+
+    custom_option_file_ = pool_.BuildFile(custom_option_file);
+    ASSERT_TRUE(custom_option_file_ != nullptr);
+
     foo_file_ = pool_.BuildFile(foo_file);
     ASSERT_TRUE(foo_file_ != nullptr);
 
@@ -349,6 +369,7 @@ class FileDescriptorTest : public testing::Test {
 
   DescriptorPool pool_;
 
+  const FileDescriptor* custom_option_file_;
   const FileDescriptor* foo_file_;
   const FileDescriptor* bar_file_;
   const FileDescriptor* baz_file_;
@@ -381,6 +402,12 @@ TEST_F(FileDescriptorTest, Dependencies) {
   EXPECT_EQ(0, foo_file_->dependency_count());
   EXPECT_EQ(1, bar_file_->dependency_count());
   EXPECT_EQ(foo_file_, bar_file_->dependency(0));
+}
+
+TEST_F(FileDescriptorTest, OptionDependencies) {
+  EXPECT_EQ(0, foo_file_->option_dependency_count());
+  EXPECT_EQ(1, bar_file_->option_dependency_count());
+  EXPECT_EQ(custom_option_file_->name(), bar_file_->option_dependency_name(0));
 }
 
 TEST_F(FileDescriptorTest, FindMessageTypeByName) {
@@ -4003,7 +4030,7 @@ TEST(CustomOptions, ComplexExtensionOptions) {
   EXPECT_EQ(24, options->GetExtension(proto2_unittest::complexopt6).xyzzy());
 }
 
-TEST(CustomOptions, OptionsFromOtherFile) {
+TEST(CustomOptions, OptionsFromDependency) {
   // Test that to use a custom option, we only need to import the file
   // defining the option; we do not also have to import descriptor.proto.
   DescriptorPool pool;
@@ -4065,6 +4092,87 @@ TEST(CustomOptions, OptionsFromOtherFile) {
   EXPECT_EQ(FileOptions::SPEED, file->options().optimize_for());
 }
 
+TEST(CustomOptions, OptionsFromOptionDependency) {
+  // Test that to use a custom option, we only need to import the file
+  // defining the option; we do not also have to import descriptor.proto.
+  DescriptorPool pool;
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    // We have to import the Any dependency.
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
+  FileDescriptorProto file_proto;
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+      &file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(name: "custom_options_import.proto"
+           package: "proto2_unittest"
+           option_dependency: "google/protobuf/unittest_custom_options.proto"
+           options {
+             uninterpreted_option {
+               name { name_part: "file_opt1" is_extension: true }
+               positive_int_value: 1234
+             }
+           })pb",
+      &file_proto));
+
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_TRUE(file != nullptr);
+  EXPECT_EQ(1234, file->options().GetExtension(proto2_unittest::file_opt1));
+  EXPECT_EQ(FileOptions::SPEED, file->options().optimize_for());
+}
+
+TEST(CustomOptions, OptionExtensionFromOptionDependency) {
+  DescriptorPool pool;
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    // We have to import the Any dependency.
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
+  FileDescriptorProto file_proto;
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+      &file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(name: "custom_options_import.proto"
+           syntax: "editions"
+           edition: EDITION_2024
+           package: "proto2_unittest"
+           option_dependency: "google/protobuf/unittest_custom_options.proto"
+           message_type {
+             name: "Foo"
+             options {
+               uninterpreted_option {
+                 name { name_part: "complex_opt1" is_extension: true }
+                 aggregate_value: "[proto2_unittest.mooo]: 1234"
+               }
+             }
+           })pb",
+      &file_proto));
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_TRUE(file != nullptr);
+  EXPECT_EQ(1, file->message_type_count());
+  EXPECT_EQ(1234, file->message_type(0)
+                      ->options()
+                      .GetExtension(proto2_unittest::complex_opt1)
+                      .GetExtension(proto2_unittest::mooo));
+}
+
 TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   // This tests a bug which previously existed in custom options parsing.  The
   // bug occurred when you defined a custom option with message type and then
@@ -4100,7 +4208,8 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
       "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/unittest_custom_options.proto\" "
+      "option_dependency: "
+      "\"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
       "  options { "
@@ -4184,7 +4293,8 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
       "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/unittest_custom_options.proto\" "
+      "option_dependency: "
+      "\"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
       "  options { "
@@ -4271,7 +4381,8 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
       "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/unittest_custom_options.proto\" "
+      "option_dependency: "
+      "\"google/protobuf/unittest_custom_options.proto\" "
       "message_type { "
       "  name: \"Foo\" "
       "  options { "
@@ -4397,6 +4508,42 @@ TEST(CustomOptions, UnusedImportError) {
       "name: \"custom_options_import.proto\" "
       "package: \"proto2_unittest\" "
       "dependency: \"google/protobuf/unittest_custom_options.proto\" ",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(
+      "custom_options_import.proto: "
+      "google/protobuf/unittest_custom_options.proto: IMPORT: Import "
+      "google/protobuf/unittest_custom_options.proto is unused.\n",
+      error_collector.text_);
+}
+
+TEST(CustomOptions, UnusedOptionImportError) {
+  DescriptorPool pool;
+
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
+  FileDescriptorProto file_proto;
+  proto2_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
+      &file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  pool.AddDirectInputFile("custom_options_import.proto", true);
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "custom_options_import.proto"
+        package: "proto2_unittest"
+        option_dependency: "google/protobuf/unittest_custom_options.proto"
+      )pb",
       &file_proto));
 
   MockErrorCollector error_collector;
@@ -5925,6 +6072,155 @@ TEST_F(ValidationErrorTest,
       "necessary import.\n");
 }
 
+class ImportOptionValidationErrorTest : public ValidationErrorTest {};
+
+TEST_F(ImportOptionValidationErrorTest, OptionDefinedInOptionDependency) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    message Bar {
+      optional int32 baz = 1;
+    }
+    extend google.protobuf.FieldOptions {
+      optional Bar bar = 5000;
+    })schema");
+  // Correct. "bar.proto" is option imported so bar is defined.
+  ParseAndBuildFile("foo.proto",
+                    R"schema(
+    edition = "2024";
+    import option "bar.proto";
+    message Foo {
+      int32 foo = 1 [(bar) = {baz: 1}];
+    })schema");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       OptionDefinedInTransitivePublicOptionDependency) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    message Bar {
+      optional int32 baz = 1;
+    }
+    extend google.protobuf.FieldOptions {
+      optional Bar bar = 5000;
+    })schema");
+  ParseAndBuildFile("forward.proto",
+                    R"schema(
+    edition = "2024";
+    import option "bar.proto";
+    )schema");
+  ParseAndBuildFile("forward2.proto",
+                    R"schema(
+    syntax = "proto2";
+    import public "forward.proto";
+    )schema");
+  // Incorrect. option imports of public imports are not transitive.
+  ParseAndBuildFileWithErrors(
+      "foo.proto",
+      R"schema(
+    syntax = "proto2";
+    import public "forward2.proto";
+    message Foo {
+      optional int32 foo = 1 [(bar) = {baz: 1}];
+    })schema",
+      "foo.proto: Foo.foo: OPTION_NAME: Option \"(bar)\" unknown. Ensure that "
+      "your proto "
+      "definition file imports the proto which defines the option (i.e. via "
+      "import option).\n");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       OptionDefinedInTransitiveOptionPublicDependency) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    message Bar {
+      optional int32 baz = 1;
+    }
+    extend google.protobuf.FieldOptions {
+      optional Bar bar = 5000;
+    })schema");
+  ParseAndBuildFile("forward.proto",
+                    R"schema(
+    syntax = "proto2";
+    import public "bar.proto";
+    )schema");
+  ParseAndBuildFile("forward2.proto",
+                    R"schema(
+    syntax = "proto2";
+    import public "forward.proto";
+    )schema");
+  // Correct. public imports of option imports are transitive.
+  ParseAndBuildFile("foo.proto",
+                    R"schema(
+    edition = "2024";
+    import option "forward2.proto";
+    message Foo {
+      int32 foo = 1 [(bar) = {baz: 1}];
+    })schema");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       FieldMessageTypeDefinedInOptionDependencyErrors) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    message Bar {
+      optional int32 baz = 1;
+    }
+    extend google.protobuf.FieldOptions {
+      optional Bar bar = 5000;
+    })schema");
+  // Incorrect. "bar.proto" is option imported, so Bar is not defined.
+  ParseAndBuildFileWithErrors(
+      "foo.proto",
+      R"schema(
+      edition = "2024";
+      import option "bar.proto";
+      message Foo {
+        Bar foo = 1;
+      })schema",
+      "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
+      "which is not imported by \"foo.proto\".  To use it here, please add the "
+      "necessary import.\n");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       FieldEnumTypeDefinedInOptionDependencyErrors) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    enum Bar {
+      BAR = 1;
+    }
+    extend google.protobuf.FieldOptions {
+      optional Bar bar = 5000;
+    })schema");
+  // Incorrect. "bar.proto" is option imported, so Bar is not defined.
+  ParseAndBuildFileWithErrors(
+      "foo.proto",
+      R"schema(
+      edition = "2024";
+      import option "bar.proto";
+      message Foo {
+        Bar foo = 1;
+      })schema",
+      "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
+      "which is not imported by \"foo.proto\".  To use it here, please add the "
+      "necessary import.\n");
+}
+
 
 TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
   // The following should produce an error that Bar.Baz is resolved but
@@ -5994,11 +6290,11 @@ TEST_F(ValidationErrorTest, PackageOriginallyDeclaredInTransitiveDependent) {
   //
   // When validating baz.proto, we will look up "bar.Bar".  As part of this
   // lookup, we first lookup "bar" then try to find "Bar" within it.  "bar"
-  // should resolve to "foo.bar".  Note, though, that "foo.bar" was originally
+  // should resolve to "foo.bar".  Note, though, that "foo.bar" was first
   // defined in foo.proto, which is not a direct dependency of baz.proto.  The
   // implementation of FindSymbol() normally only returns symbols in direct
-  // dependencies, not indirect ones.  This test insures that this does not
-  // prevent it from finding "foo.bar".
+  // dependencies, not indirect ones, for non-package symbols.  This test
+  // insures that this does not prevent it from finding "foo.bar".
 
   BuildFile(
       "name: \"foo.proto\" "
@@ -6017,6 +6313,64 @@ TEST_F(ValidationErrorTest, PackageOriginallyDeclaredInTransitiveDependent) {
       "  field { name:\"moo\" number:1 label:LABEL_OPTIONAL "
       "          type_name:\"bar.Bar\" }"
       "}");
+}
+
+TEST_F(ValidationErrorTest,
+       PackageOriginallyDeclaredInOptionTransitiveDependent) {
+  // Imagine we have the following:
+  //
+  // foo.proto:
+  //   package foo.bar;
+  // bar.proto:
+  //   package foo.bar;
+  //   import "foo.proto";
+  //   extend google.protobuf.FileOptions {
+  //     optional uint64 file_opt1 = 7736974;
+  //   }
+  // baz.proto:
+  //   package foo;
+  //   import option "bar.proto"
+  //   option (bar.file_opt1) = 1234;
+  //
+  //
+  // When validating baz.proto, we will look up "bar.file_opt1".  As part of
+  // this lookup, we first lookup "bar" then try to find "file_opt1" within it.
+  // "bar" should resolve to "foo.bar".  Note, though, that "foo.bar" was first
+  // defined in foo.proto, which is not a direct dependency of
+  // baz.proto.  The implementation of FindSymbol() normally only returns
+  // symbols in direct dependencies, not indirect ones, for non-package symbols.
+  // This test insures that this does not prevent it from finding "foo.bar".
+  BuildDescriptorMessagesInTestPool();
+  BuildFile(
+      R"pb(
+        name: "foo.proto" package: "foo.bar"
+      )pb");
+  BuildFile(
+      R"pb(
+        name: "bar.proto"
+        package: "foo.bar"
+        dependency: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "file_opt1"
+          number: 7736974
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT64
+          extendee: ".google.protobuf.FileOptions"
+        }
+      )pb");
+  BuildFile(
+      R"pb(
+        name: "baz.proto"
+        package: "foo"
+        option_dependency: "bar.proto"
+        options {
+          uninterpreted_option {
+            name { name_part: "bar.file_opt1" is_extension: true }
+            positive_int_value: 1234
+          }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, FieldTypeNotAType) {
@@ -6410,7 +6764,7 @@ TEST_F(ValidationErrorTest, UnknownOption) {
       "moo.proto: moo.proto: OPTION_NAME: Option \"(baaz.bar)\" unknown. "
       "Ensure "
       "that your proto definition file imports the proto which defines the "
-      "option.\n");
+      "option (i.e. via import option).\n");
 }
 
 TEST_F(ValidationErrorTest, CustomOptionConflictingFieldNumber) {
@@ -10597,6 +10951,52 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
             pb::VALUE9);
 }
 
+TEST_F(FeaturesTest, OptionDependencyFeaturesOverride) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_99998_TEST_ONLY
+    option_dependency: "google/protobuf/unittest_features.proto"
+    options {
+      features {
+        field_presence: IMPLICIT
+        [pb.test] { file_feature: VALUE7 }
+      }
+    }
+    message_type {
+      name: "Foo"
+      options {
+        features {
+          [pb.test] { message_feature: VALUE8 }
+        }
+      }
+      field {
+        name: "bar"
+        number: 1
+        type: TYPE_STRING
+        options {
+          features {
+            [pb.test] { field_feature: VALUE9 }
+          }
+        }
+      }
+    }
+  )pb");
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE7);
+  EXPECT_EQ(GetFeatures(file->message_type(0))
+                .GetExtension(pb::test)
+                .message_feature(),
+            pb::VALUE8);
+  EXPECT_EQ(GetFeatures(file->message_type(0)->field(0))
+                .GetExtension(pb::test)
+                .field_feature(),
+            pb::VALUE9);
+}
+
 TEST_F(FeaturesTest, FieldFeatureHelpers) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = BuildFile(R"pb(
@@ -13813,7 +14213,8 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
   EXPECT_EQ(error_collector.text_,
             "use_option.proto: FooMessage: OPTION_NAME: Option "
             "\"(foo_extension)\" unknown. Ensure that your proto definition "
-            "file imports the proto which defines the option.\n");
+            "file imports the proto which defines the option (i.e. via import "
+            "option).\n");
 
   // Verify that the extension does trigger a lifetime error.
   error_collector.text_.clear();

@@ -30,6 +30,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -1364,16 +1365,16 @@ TEST_F(ParseServiceTest, MethodsAndStreams) {
 
 
 // ===================================================================
-// imports and packages
+// imports
 
-typedef ParserTest ParseMiscTest;
+typedef ParserTest ParseImportTest;
 
-TEST_F(ParseMiscTest, ParseImport) {
+TEST_F(ParseImportTest, ParseImport) {
   ExpectParsesTo("import \"foo/bar/baz.proto\";\n",
                  "dependency: \"foo/bar/baz.proto\"");
 }
 
-TEST_F(ParseMiscTest, ParseMultipleImports) {
+TEST_F(ParseImportTest, ParseMultipleImports) {
   ExpectParsesTo(
       "import \"foo.proto\";\n"
       "import \"bar.proto\";\n"
@@ -1383,7 +1384,7 @@ TEST_F(ParseMiscTest, ParseMultipleImports) {
       "dependency: \"baz.proto\"");
 }
 
-TEST_F(ParseMiscTest, ParsePublicImports) {
+TEST_F(ParseImportTest, ParsePublicImports) {
   ExpectParsesTo(
       "import \"foo.proto\";\n"
       "import public \"bar.proto\";\n"
@@ -1397,6 +1398,85 @@ TEST_F(ParseMiscTest, ParsePublicImports) {
       "public_dependency: 3 ");
 }
 
+TEST_F(ParseImportTest, ParseOptionImports) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        import "foo.proto";
+        import "bar.proto";
+        import option "baz.proto";
+        import option "qux.proto";
+      )schema",
+      R"pb(
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "foo.proto"
+        dependency: "bar.proto"
+        option_dependency: "baz.proto"
+        option_dependency: "qux.proto"
+      )pb");
+}
+
+TEST_F(ParseImportTest, ParseOptionAndPublicImports) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        import "foo.proto";
+        import public "bar.proto";
+        import option "baz.proto";
+        import option "qux.proto";
+      )schema",
+      R"pb(
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "foo.proto"
+        dependency: "bar.proto"
+        public_dependency: 1
+        option_dependency: "baz.proto"
+        option_dependency: "qux.proto"
+      )pb");
+}
+
+TEST_F(ParseImportTest, ParseOptionImportBeforeImportBadOrder) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        import option "baz.proto";
+        import "foo.proto";
+      )schema",
+      "3:15: imports should precede any option imports to ensure proto files "
+      "can roundtrip.\n");
+}
+
+TEST_F(ParseImportTest, ParseOptionImportBeforePublicImportBadOrder) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        import option "baz.proto";
+        import public "bar.proto";
+      )schema",
+      "3:15: imports should precede any option imports to ensure proto files "
+      "can roundtrip.\n");
+}
+
+TEST_F(ParseImportTest, ParseOptionImportBeforeMultipleImportsBadOrder) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        import option "baz.proto";
+        import "foo.proto";
+        import public "bar.proto";
+      )schema",
+      "3:15: imports should precede any option imports to ensure proto files "
+      "can roundtrip.\n"
+      "4:15: imports should precede any option imports to ensure proto files "
+      "can roundtrip.\n");
+}
+
+// ===================================================================
+// packages and options
+
+typedef ParserTest ParseMiscTest;
 TEST_F(ParseMiscTest, ParsePackage) {
   ExpectParsesTo("package foo.bar.baz;\n", "package: \"foo.bar.baz\"");
 }
@@ -2114,6 +2194,15 @@ TEST_F(ParseErrorTest, MultiplePackagesInFile) {
       "1:0: Multiple package definitions.\n");
 }
 
+TEST_F(ParseErrorTest, OptionImportBefore2024) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        import option "foo.proto";
+      )schema",
+      "2:15: option import is not supported before edition 2024.\n");
+}
+
 // ===================================================================
 // Test that errors detected by DescriptorPool correctly report line and
 // column numbers.  We have one test for every call to RecordLocation() in
@@ -2143,6 +2232,29 @@ TEST_F(ParserValidationErrorTest, ImportUnloadedError) {
       "2:0: Import \"unloaded.proto\" has not been loaded.\n");
 }
 
+TEST_F(ParserValidationErrorTest, ImportOptionUnloadedNoError) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "2024";
+        package test;
+
+        import option "unloaded.proto";
+        option (file_opt1) = 1;
+      )schema",
+      R"pb(
+        syntax: "editions"
+        edition: EDITION_2024
+        option_dependency: "unloaded.proto"
+        package: "test"
+        options {
+          uninterpreted_option {
+            name { name_part: "file_opt1" is_extension: true }
+            positive_int_value: 1
+          }
+        }
+      )pb");
+}
+
 TEST_F(ParserValidationErrorTest, ImportTwice) {
   FileDescriptorProto other_file;
   other_file.set_name("bar.proto");
@@ -2155,6 +2267,60 @@ TEST_F(ParserValidationErrorTest, ImportTwice) {
       "import \"bar.proto\";\n"
       "  import \"bar.proto\";",
       "3:2: Import \"bar.proto\" was listed twice.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ImportOptionTwice) {
+  // Build descriptor message in test pool
+  FileDescriptorProto descriptor_proto;
+  DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+  ASSERT_TRUE(pool_.BuildFile(descriptor_proto) != nullptr);
+
+  FileDescriptorProto other_file;
+  other_file.set_name("bar.proto");
+  other_file.add_dependency("google/protobuf/descriptor.proto");
+  FieldDescriptorProto* ext = other_file.add_extension();
+  ext->set_name("ext");
+  ext->set_number(5000);
+  ext->set_type(FieldDescriptorProto::TYPE_INT64);
+  ext->set_extendee("google.protobuf.FieldOptions");
+  EXPECT_TRUE(pool_.BuildFile(other_file) != nullptr);
+
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2024";
+        package test;
+        import option "bar.proto";
+          import option "bar.proto";
+      )schema",
+      "4:10: Import \"bar.proto\" was listed twice.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ImportAndImportOptionTwice) {
+  // Build descriptor message in test pool
+  FileDescriptorProto descriptor_proto;
+  DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
+  ASSERT_TRUE(pool_.BuildFile(descriptor_proto) != nullptr);
+
+  FileDescriptorProto other_file;
+  other_file.set_name("bar.proto");
+  other_file.add_dependency("google/protobuf/descriptor.proto");
+  other_file.add_message_type()->set_name("foo");
+  FieldDescriptorProto* ext = other_file.add_extension();
+  ext->set_name("ext");
+  ext->set_number(5000);
+  ext->set_type(FieldDescriptorProto::TYPE_INT64);
+  ext->set_extendee("google.protobuf.FieldOptions");
+  EXPECT_TRUE(pool_.BuildFile(other_file) != nullptr);
+
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2024";
+        package test;
+
+        import "bar.proto";
+          import option "bar.proto";
+        )schema",
+      "5:10: Import \"bar.proto\" was listed twice.\n");
 }
 
 TEST_F(ParserValidationErrorTest, DuplicateFileError) {
@@ -2244,7 +2410,7 @@ TEST_F(ParserValidationErrorTest, FileOptionNameError) {
   ExpectHasValidationErrors(
       "option foo = 5;",
       "0:7: Option \"foo\" unknown. Ensure that your proto definition file "
-      "imports the proto which defines the option.\n");
+      "imports the proto which defines the option (i.e. via import option).\n");
 }
 
 TEST_F(ParserValidationErrorTest, FileOptionValueError) {
@@ -2260,7 +2426,7 @@ TEST_F(ParserValidationErrorTest, FieldOptionNameError) {
       "  optional bool bar = 1 [foo=1];\n"
       "}\n",
       "1:25: Option \"foo\" unknown. Ensure that your proto definition file "
-      "imports the proto which defines the option.\n");
+      "imports the proto which defines the option (i.e. via import option).\n");
 }
 
 TEST_F(ParserValidationErrorTest, FieldOptionValueError) {
@@ -2608,8 +2774,7 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedOptionError) {
   FileDescriptorProto other_file;
   other_file.set_name("base2.proto");
   other_file.set_package("baz");
-  other_file.add_dependency();
-  other_file.set_dependency(0, descriptor_proto.name());
+  *other_file.add_dependency() = descriptor_proto.name();
 
   DescriptorProto* message(other_file.add_message_type());
   message->set_name("Bar");
@@ -2637,10 +2802,13 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedOptionError) {
   // "qux.baz.bar", since it's the match from the innermost scope,
   // which will cause a symbol not defined error.
   ExpectHasValidationErrors(
-      "package qux.baz;\n"
-      "import \"base2.proto\";\n"
-      "option (baz.bar).foo = 1;\n",
-      "2:7: Option \"(baz.bar)\" is resolved to \"(qux.baz.bar)\","
+      R"schema(
+        edition = "2024";
+        package qux.baz;
+        import option "base2.proto";
+        option (baz.bar).foo = 1;
+      )schema",
+      "4:15: Option \"(baz.bar)\" is resolved to \"(qux.baz.bar)\","
       " which is not defined. The innermost scope is searched first "
       "in name resolution. Consider using a leading '.'(i.e., \"(.baz.bar)\")"
       " to start from the outermost scope.\n");
@@ -2649,7 +2817,7 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedOptionError) {
 // ===================================================================
 // Test that the output from FileDescriptor::DebugString() (and all other
 // descriptor types) is parseable, and results in the same Descriptor
-// definitions again afoter parsing (note, however, that the order of messages
+// definitions again after parsing (note, however, that the order of messages
 // cannot be guaranteed to be the same)
 
 typedef ParserTest ParseDescriptorDebugTest;
@@ -2742,10 +2910,6 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
   ASSERT_EQ("", error_collector_.text_) << "Failed to parse:\n" << debug_string;
 
-  // We now have a FileDescriptorProto, but to compare with the expected we
-  // need to link to a FileDescriptor, then output back to a proto. We'll
-  // also need to give it the same name as the original.
-  parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
       proto2_unittest_import::PublicImportMessage::descriptor()->file();
@@ -2757,6 +2921,11 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
   ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
+
+  // We now have a FileDescriptorProto, but to compare with the expected we
+  // need to link to a FileDescriptor, then output back to a proto. We'll
+  // also need to give it the same name as the original.
+  parsed.set_name("google/protobuf/unittest.proto");
   const FileDescriptor* actual = pool_.BuildFile(parsed);
   parsed.Clear();
   ASSERT_TRUE(actual != nullptr) << "Failed to validate:\n" << debug_string;
@@ -2769,9 +2938,94 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   SortMessages(&expected);
   SortMessages(&parsed);
 
-  // I really wanted to use StringDiff here for the debug output on fail,
-  // but the strings are too long for it, and if I increase its max size,
-  // we get a memory allocation failure :(
+  // Strings are too long for StringDiff for the debug output on fail, and
+  // results in a memory allocation failure if max size is increased.
+  EXPECT_EQ(expected.DebugString(), parsed.DebugString());
+}
+
+TEST_F(ParseDescriptorDebugTest, TestImportOptions) {
+  FileDescriptorProto expected;
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        name: "google/protobuf/unittest_import_option.proto"
+        package: "proto2_unittest_import"
+        syntax: "editions"
+        edition: EDITION_2024
+        option_dependency: "google/protobuf/unittest_custom_options.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "field1"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              [proto2_unittest.field_opt1]: 3
+            }
+          }
+          options {
+            [proto2_unittest.message_opt1]: 2
+          }
+        }
+        options {
+          [proto2_unittest.file_opt1]: 1
+        }
+      )pb",
+      &expected));
+
+  // Get the DebugString of the unittest.proto FileDescriptor, which includes
+  // all other descriptor types
+  std::string input = R"schema(
+      edition = "2024";
+      package proto2_unittest_import;
+      import option "google/protobuf/unittest_custom_options.proto";
+      option (proto2_unittest.file_opt1) = 1;
+      message TestMessage {
+        option (proto2_unittest.message_opt1) = 2;
+        int32 field1 = 1 [(proto2_unittest.field_opt1) = 3];
+      }
+      )schema";
+  SetupParser(input);
+  FileDescriptorProto parsed;
+  parser_->Parse(input_.get(), &parsed);
+  EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+  ASSERT_EQ("", error_collector_.text_) << "Failed to parse:\n" << input;
+
+  // unittest_custom_options.proto depends on descriptor.proto and any.proto
+  const FileDescriptor* any_import =
+      google::protobuf::Any::descriptor()->file();
+  FileDescriptorProto any_import_proto;
+  any_import->CopyTo(&any_import_proto);
+  ASSERT_TRUE(pool_.BuildFile(any_import_proto) != nullptr);
+  const FileDescriptor* descriptor_import =
+      google::protobuf::FileDescriptorProto::descriptor()->file();
+  FileDescriptorProto descriptor_import_proto;
+  descriptor_import->CopyTo(&descriptor_import_proto);
+  ASSERT_TRUE(pool_.BuildFile(descriptor_import_proto) != nullptr);
+  const FileDescriptor* option_import =
+      proto2_unittest::TestMessageWithCustomOptions::descriptor()->file();
+  FileDescriptorProto option_import_proto;
+  option_import->CopyTo(&option_import_proto);
+  ASSERT_TRUE(pool_.BuildFile(option_import_proto) != nullptr);
+
+  // We now have a FileDescriptorProto, but to compare with the expected we
+  // need to link to a FileDescriptor, then output back to a proto. We'll
+  // also need to give it the same name as the original.
+  parsed.set_name("google/protobuf/unittest_import_option.proto");
+  const FileDescriptor* actual = pool_.BuildFile(parsed);
+  parsed.Clear();
+  ASSERT_TRUE(actual != nullptr) << "Failed to validate:\n" << input;
+  actual->CopyTo(&parsed);
+  ASSERT_TRUE(actual != nullptr);
+
+  // The messages might be in different orders, making them hard to compare.
+  // So, sort the messages in the descriptor protos (including nested messages,
+  // recursively).
+  SortMessages(&expected);
+  SortMessages(&parsed);
+
+  // Strings are too long for StringDiff for the debug output on fail, and
+  // results in a memory allocation failure if max size is increased.
   EXPECT_EQ(expected.DebugString(), parsed.DebugString());
 }
 
@@ -2795,12 +3049,11 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   // also need to give it the same name as the original.
   parsed.set_name(original_file->name());
 
-  // unittest_custom_options.proto depends on descriptor.proto.
+  // unittest_custom_options.proto depends on descriptor.proto and any.proto
   const FileDescriptor* import = FileDescriptorProto::descriptor()->file();
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
   ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
-
   FileDescriptorProto any_import;
   google::protobuf::Any::descriptor()->file()->CopyTo(&any_import);
   ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
@@ -3300,16 +3553,17 @@ class SourceInfoTest : public ParserTest {
 
 TEST_F(SourceInfoTest, BasicFileDecls) {
   EXPECT_TRUE(
-      Parse("$a$syntax = \"proto2\";$i$\n"
+      Parse("$a$edition = \"2024\";$i$\n"
             "$b$package foo.bar;$c$\n"
             "$d$import \"baz.proto\";$e$\n"
             "$f$import\"qux.proto\";$h$\n"
             "$j$import $k$public$l$ \"bar.proto\";$m$\n"
             "$n$import $o$weak$p$ \"bar.proto\";$q$\n"
+            "$r$import option \"bar.proto\";$s$\n"
             "\n"
             "// comment ignored\n"));
 
-  EXPECT_TRUE(HasSpan('a', 'q', file_));
+  EXPECT_TRUE(HasSpan('a', 's', file_));
   EXPECT_TRUE(HasSpan('b', 'c', file_, "package"));
   EXPECT_TRUE(HasSpan('d', 'e', file_, "dependency", 0));
   EXPECT_TRUE(HasSpan('f', 'h', file_, "dependency", 1));
@@ -3317,6 +3571,7 @@ TEST_F(SourceInfoTest, BasicFileDecls) {
   EXPECT_TRUE(HasSpan('k', 'l', file_, "public_dependency", 0));
   EXPECT_TRUE(HasSpan('n', 'q', file_, "dependency", 3));
   EXPECT_TRUE(HasSpan('o', 'p', file_, "weak_dependency", 0));
+  EXPECT_TRUE(HasSpan('r', 's', file_, "option_dependency", 0));
   EXPECT_TRUE(HasSpan('a', 'i', file_, "syntax"));
 }
 
