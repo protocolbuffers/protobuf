@@ -685,8 +685,10 @@ static void PyUpb_Message_SyncSubobjs(PyUpb_Message* self);
  * the set state (having a non-owning pointer to self->ptr.msg).
  */
 static void PyUpb_Message_Reify(PyUpb_Message* self, const upb_FieldDef* f,
-                                upb_Message* msg) {
+                                upb_Message* msg, PyUpb_WeakMap* subobj_map,
+                                intptr_t iter) {
   assert(f == PyUpb_Message_GetFieldDef(self));
+  PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
   if (!msg) {
     const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef((PyObject*)self);
     const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
@@ -738,17 +740,18 @@ static void PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
     if (upb_FieldDef_HasPresence(f) && !upb_Message_HasFieldByDef(msg, f))
       continue;
     upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, f);
-    PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
     if (upb_FieldDef_IsMap(f)) {
       if (!msgval.map_val) continue;
-      PyUpb_MapContainer_Reify(obj, (upb_Map*)msgval.map_val);
+      PyUpb_MapContainer_Reify(obj, (upb_Map*)msgval.map_val, subobj_map, iter);
     } else if (upb_FieldDef_IsRepeated(f)) {
       if (!msgval.array_val) continue;
-      PyUpb_RepeatedContainer_Reify(obj, (upb_Array*)msgval.array_val);
+      PyUpb_RepeatedContainer_Reify(obj, (upb_Array*)msgval.array_val,
+                                    subobj_map, iter);
     } else {
       PyUpb_Message* sub = (void*)obj;
       assert(self == sub->ptr.parent);
-      PyUpb_Message_Reify(sub, f, (upb_Message*)msgval.msg_val);
+      PyUpb_Message_Reify(sub, f, (upb_Message*)msgval.msg_val, subobj_map,
+                          iter);
     }
   }
 
@@ -1404,18 +1407,17 @@ static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
 
     while (PyUpb_WeakMap_Next(subobj_map, &key, &obj, &iter)) {
       const upb_FieldDef* f = key;
-      PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
       if (upb_FieldDef_IsMap(f)) {
         assert(upb_Message_GetFieldByDef(msg, f).map_val == NULL);
-        PyUpb_MapContainer_Reify(obj, NULL);
+        PyUpb_MapContainer_Reify(obj, NULL, subobj_map, iter);
       } else if (upb_FieldDef_IsRepeated(f)) {
         assert(upb_Message_GetFieldByDef(msg, f).array_val == NULL);
-        PyUpb_RepeatedContainer_Reify(obj, NULL);
+        PyUpb_RepeatedContainer_Reify(obj, NULL, subobj_map, iter);
       } else {
         assert(!upb_Message_HasFieldByDef(msg, f));
         PyUpb_Message* sub = (void*)obj;
         assert(self == sub->ptr.parent);
-        PyUpb_Message_Reify(sub, f, NULL);
+        PyUpb_Message_Reify(sub, f, NULL, subobj_map, iter);
       }
     }
   }

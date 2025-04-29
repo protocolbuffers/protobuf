@@ -2699,6 +2699,20 @@ class Proto3Test(unittest.TestCase):
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
 
+  def testMapStubReferenceSubMessageDestructor(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    # A reference on map stub in sub message
+    map_ref = msg.test_map.map_int32_int32
+    # Make sure destructor after Clear the original message not crash
+    msg.Clear()
+
+  def testRepeatedStubReferenceSubMessageDestructor(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # A reference on repeated stub in sub message
+    repeated_ref = msg.payload.repeated_int32
+    # Make sure destructor after Clear the original message not crash
+    msg.Clear()
+
   @unittest.skipIf(sys.maxunicode == UCS2_MAXUNICODE, 'Skip for ucs2')
   def testStrictUtf8Check(self):
     # Test u'\ud801' is rejected at parser in both python2 and python3.
