@@ -25,6 +25,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -347,6 +348,7 @@ class PROTOBUF_EXPORT Parser final {
                     const LocationRecorder& root_location,
                     const FileDescriptorProto* containing_file);
   bool ParseImport(RepeatedPtrField<std::string>* dependency,
+                   RepeatedPtrField<std::string>* option_dependency,
                    RepeatedField<int32_t>* public_dependency,
                    RepeatedField<int32_t>* weak_dependency,
                    const LocationRecorder& root_location,
