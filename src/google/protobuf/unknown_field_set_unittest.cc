@@ -354,7 +354,7 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
 TEST_F(UnknownFieldSetTest, CopyFrom) {
   unittest::TestEmptyMessage message;
 
-  message.CopyFrom(empty_message_);
+  message = empty_message_;
 
   EXPECT_EQ(empty_message_.DebugString(), message.DebugString());
 }
