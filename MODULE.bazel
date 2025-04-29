@@ -67,6 +67,7 @@ single_version_override(
     patch_strip = 1,
     patches = [
         "@com_google_protobuf//:Disable_bundle_install.patch",
+        "@com_google_protobuf//:Neverlink_jruby_jars.patch",
     ],
     version = "0.17.3",
 )
