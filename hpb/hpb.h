@@ -103,7 +103,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
   T message;
   auto* arena = interop::upb::GetArena(&message);
   upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), message.msg(),
+      upb_Decode(bytes.data(), bytes.size(), interop::upb::GetMessage(&message),
                  interop::upb::GetMiniTable(&message),
                  internal::GetUpbExtensions(extension_registry),
                  /* options= */ 0, arena);
