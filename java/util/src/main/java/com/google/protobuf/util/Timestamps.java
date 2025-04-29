@@ -525,16 +525,33 @@ public final class Timestamps {
     return checkValid(timestamp);
   }
 
+  /**
+   * Parses a UTC offset string into a long.
+   *
+   * <p>The timezone offset string can be in the format of "HH:MM", "HHMM", or "HH".
+   *
+   * @throws ParseException if the string is invalid
+   */
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
   @J2ktIncompatible
   @J2ObjCIncompatible
   private static long parseTimezoneOffset(String value) throws ParseException {
+    String hours;
+    String minutes;
+
     int pos = value.indexOf(':');
-    if (pos == -1) {
+    if (pos == -1 && value.length() != 2 && value.length() != 4) {
       throw new ParseException("Invalid offset value: " + value, 0);
+    } else if (pos == -1) {
+      hours = value.substring(0, 2);
+      minutes = value.substring(2);
+      if (minutes.isEmpty()) {
+        minutes = "00";
+      }
+    } else {
+      hours = value.substring(0, pos);
+      minutes = value.substring(pos + 1);
     }
-    String hours = value.substring(0, pos);
-    String minutes = value.substring(pos + 1);
     try {
       return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
     } catch (NumberFormatException e) {
