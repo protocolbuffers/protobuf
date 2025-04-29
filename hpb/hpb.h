@@ -46,8 +46,7 @@ namespace backend = internal::backend::cpp;
 
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
-  return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
-                           arena.ptr());
+  return backend::CreateMessage<T>(arena);
 }
 
 template <typename T>

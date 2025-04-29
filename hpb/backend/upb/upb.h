@@ -12,11 +12,17 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/internal/internal.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 
 namespace hpb::internal::backend::upb {
+
+template <typename T>
+typename T::Proxy CreateMessage(Arena& arena) {
+  return PrivateAccess::CreateMessage<T>(arena.ptr());
+}
 
 template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {

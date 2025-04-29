@@ -18,6 +18,11 @@ namespace hpb::internal::backend::cpp {
 // hpb(cpp) backend stubs.
 
 template <typename T>
+typename T::Proxy CreateMessage(Arena& arena) {
+  abort();
+}
+
+template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {
   abort();
 }
