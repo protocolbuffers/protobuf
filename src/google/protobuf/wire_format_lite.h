@@ -1043,11 +1043,13 @@ inline bool WireFormatLite::ReadPackedPrimitive(io::CodedInputStream* input,
                                                 RepeatedField<CType>* values) {
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
+  
+  values->Reserve(length);
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     CType value;
     if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
-    values->Add(value);
+    values->AddAlreadyReserved(value);
   }
   input->PopLimit(limit);
   return true;
