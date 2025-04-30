@@ -34,5 +34,10 @@ package com.google.protobuf.kotlin
 @DslMarker
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
+// copybara:strip_begin(removing ObjC DSL is breaking needs to wait for breaking release)
+// TOODO(b/414604376): Remove the strip for next breaking release.
+@OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+@kotlin.native.HidesFromObjC
+// copybara:strip_end
 @OnlyForUseByGeneratedProtoCode
 annotation class ProtoDslMarker
