@@ -2635,3 +2635,47 @@ message FastParseTableCompression {
   int32 unimportant_field_15 = 15;
   reserved 16;
 }
+
+message TestMessageForMove_Small {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message TestMessageForMove_Large {
+  int32 a1 = 1;
+  int32 a2 = 2;
+  int32 a3 = 3;
+  int32 a4 = 4;
+  int32 a5 = 5;
+  int32 a6 = 6;
+  int32 a7 = 7;
+  int32 a8 = 8;
+  int32 a9 = 9;
+  repeated int32 a11 = 11;
+  repeated int32 a12 = 12;
+  repeated int32 a13 = 13;
+  repeated int32 a14 = 14;
+  repeated int32 a15 = 15;
+  repeated int32 a16 = 16;
+  repeated int32 a17 = 17;
+  repeated int32 a18 = 18;
+  repeated int32 a19 = 19;
+  string s101 = 101;
+  string s102 = 102;
+  string s103 = 103;
+  string s104 = 104;
+  string s105 = 105;
+  string s106 = 106;
+  string s107 = 107;
+  string s108 = 108;
+  string s109 = 109;
+  repeated string s111 = 111;
+  repeated string s112 = 112;
+  repeated string s113 = 113;
+  repeated string s114 = 114;
+  repeated string s115 = 115;
+  repeated string s116 = 116;
+  repeated string s117 = 117;
+  repeated string s118 = 118;
+  repeated string s119 = 119;
+}

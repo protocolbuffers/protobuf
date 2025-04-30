@@ -80,6 +80,8 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestMixedFieldsAndExtensions",
       "TestMessageWithManyRepeatedPtrFields",
       "TestMessageSize",
+      "TestMessageForMove_Small",
+      "TestMessageForMove_Large",
       "TestJsonName",
       "TestIsInitialized.SubMessage.SubGroup",
       "TestHugeFieldNumbers.StringStringMapEntry",
