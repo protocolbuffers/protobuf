@@ -107,7 +107,7 @@ inline bool CanMoveWithInternalSwap(Arena* PROTOBUF_NULLABLE lhs,
 
 // ArenaOptions provides optional additional parameters to arena construction
 // that control its block-allocation behavior.
-struct ArenaOptions {
+struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // This defines the size of the first block requested from the system malloc.
   // Subsequent block sizes will increase in a geometric series up to a maximum.
   size_t start_block_size = internal::AllocationPolicy::kDefaultStartBlockSize;
