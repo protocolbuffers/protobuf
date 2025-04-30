@@ -89,7 +89,7 @@ class Context final {
 
   io::ZeroCopyOutputStream* stream_;
   io::Printer printer_;
-  const Options& options_;
+  Options options_;
   upb::DefPool pool_;
 };
 

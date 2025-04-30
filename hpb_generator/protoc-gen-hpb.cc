@@ -34,7 +34,6 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
                  bool fasttable_enabled, bool strip_feature_includes);
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
                  bool strip_feature_includes);
-void WriteForwardingHeader(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Context& ctx);
 void WriteTypedefForwardingHeader(
@@ -64,6 +63,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
                          std::string* error) const {
   bool fasttable_enabled = false;
   bool strip_nonfunctional_codegen = false;
+  Backend backend = Backend::UPB;
   std::vector<std::pair<std::string, std::string>> params;
   google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
 
@@ -72,6 +72,8 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
       fasttable_enabled = true;
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       strip_nonfunctional_codegen = true;
+    } else if (pair.first == "backend" && pair.second == "cpp") {
+      backend = Backend::CPP;
     } else {
       *error = "Unknown parameter: " + pair.first;
       return false;
@@ -79,17 +81,16 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   }
 
   // Write model.hpb.h
+  Options options = {.backend = backend};
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
-  Context hdr_ctx(file, header_output_stream.get(),
-                  Options{.backend = Backend::UPB});
+  Context hdr_ctx(file, header_output_stream.get(), options);
   WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
   // Write model.hpb.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
-  auto cc_ctx =
-      Context(file, cc_output_stream.get(), Options{.backend = Backend::UPB});
+  auto cc_ctx = Context(file, cc_output_stream.get(), options);
   WriteSource(file, cc_ctx, fasttable_enabled, strip_nonfunctional_codegen);
   return true;
 }
@@ -107,6 +108,9 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
 
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
                  bool strip_feature_includes) {
+  if (ctx.options().backend == Backend::CPP) {
+    abort();
+  }
   EmitFileWarning(file, ctx);
   ctx.EmitLegacy(
       R"cc(
@@ -170,9 +174,12 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
   ctx.EmitLegacy("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
 }
 
-// Writes a .upb.cc source file.
+// Writes a .hpb.cc source file.
 void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
                  bool fasttable_enabled, bool strip_feature_includes) {
+  if (ctx.options().backend == Backend::CPP) {
+    abort();
+  }
   EmitFileWarning(file, ctx);
 
   ctx.EmitLegacy(
@@ -194,9 +201,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
   }
   ctx.EmitLegacy("#include \"upb/port/def.inc\"\n");
 
-  WrapNamespace(file, ctx, [&]() {
-    WriteMessageImplementations(file, ctx);
-  });
+  WrapNamespace(file, ctx, [&]() { WriteMessageImplementations(file, ctx); });
 
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
 }
