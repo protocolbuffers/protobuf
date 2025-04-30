@@ -159,7 +159,7 @@ UPB_INLINE size_t upb_EpsCopyInputStream_BytesAvailable(
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size) {
   UPB_ASSERT(size >= 0);
-  return ptr - e->end + size <= e->limit;
+  return size <= e->limit - (ptr - e->end);
 }
 
 UPB_INLINE bool _upb_EpsCopyInputStream_CheckSizeAvailable(
