@@ -7,6 +7,7 @@
 
 #include "google/protobuf/io/test_zero_copy_stream.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/types/optional.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
