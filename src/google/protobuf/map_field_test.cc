@@ -5,13 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/synchronization/blocking_counter.h"
@@ -19,12 +26,12 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "util/random/random_base.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

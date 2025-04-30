@@ -6,8 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include <gtest/gtest.h>
 #include "google/protobuf/arena.h"
