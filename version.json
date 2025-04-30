@@ -2,7 +2,7 @@
     "31.x": {
         "protoc_version": "31.0-dev",
         "lts": false,
-        "date": "2025-04-17",
+        "date": "2025-04-30",
         "languages": {
             "cpp": "6.31.0-dev",
             "csharp": "3.31.0-dev",
