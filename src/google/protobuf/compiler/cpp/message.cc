@@ -2689,6 +2689,8 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
       format(" | ::_pbi::kLazyMask");
     } else if (IsStringInlined(field, options_)) {
       format(" | ::_pbi::kInlinedMask");
+    } else if (IsMicroString(field, options_)) {
+      format(" | ::_pbi::kMicroStringMask");
     }
     format(",\n");
   }

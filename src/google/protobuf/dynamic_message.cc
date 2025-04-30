@@ -259,6 +259,17 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
   return 0;
 }
 
+uint32_t FieldFlags(const FieldDescriptor* field) {
+  if (internal::EnableExperimentalMicroString() &&   //
+      !field->is_repeated() &&                       //
+      !field->is_extension() &&                      //
+      field->cpp_type() == field->CPPTYPE_STRING &&  //
+      field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
+    return internal::kMicroStringMask;
+  }
+  return 0;
+}
+
 inline int DivideRoundingUp(int i, int j) { return (i + (j - 1)) / j; }
 
 static const int kSafeAlignment = sizeof(uint64_t);
@@ -903,7 +914,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     if (!InRealOneof(type->field(i))) {
       int field_size = FieldSpaceUsed(type->field(i));
       size = AlignTo(size, std::min(kSafeAlignment, field_size));
-      offsets[i] = size;
+      offsets[i] = size | FieldFlags(type->field(i));
       size += field_size;
     }
   }
@@ -931,7 +942,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       // entry for each.
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
-      offsets[field->index()] = internal::kInvalidFieldOffsetTag;
+      offsets[field->index()] =
+          internal::kInvalidFieldOffsetTag | FieldFlags(field);
     }
   }
 
