@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "absl/functional/overload.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
