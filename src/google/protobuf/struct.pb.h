@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   ~ListValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ListValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(ListValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ListValue));
   }
@@ -330,7 +330,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   ~Struct() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Struct* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Struct* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Struct));
   }
@@ -475,12 +475,12 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   public:
   void clear_fields() ;
-  const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& fields() const;
-  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
+  const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& fields() const;
+  ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
 
   private:
-  const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& _internal_fields() const;
-  ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_fields();
+  const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& _internal_fields() const;
+  ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_fields();
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
@@ -507,7 +507,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const Struct& from_msg);
-    ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
+    ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, ::std::string, ::google::protobuf::Value,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
         fields_;
@@ -522,12 +522,12 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Struct_
 // -------------------------------------------------------------------
 
 class Struct_FieldsEntry_DoNotUse final
-    : public ::google::protobuf::internal::MapEntry<std::string, ::google::protobuf::Message,
+    : public ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                              ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
  public:
   using SuperType =
-      ::google::protobuf::internal::MapEntry<std::string, ::google::protobuf::Message,
+      ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
   Struct_FieldsEntry_DoNotUse();
@@ -567,7 +567,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   ~Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Value));
   }
@@ -889,19 +889,19 @@ inline void Struct::clear_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.fields_.Clear();
 }
-inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
+inline const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.fields_.GetMap();
 }
-inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& Struct::fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return _internal_fields();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::_internal_mutable_fields() {
+inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::_internal_mutable_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.fields_.MutableMap();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::mutable_fields()
+inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::mutable_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();

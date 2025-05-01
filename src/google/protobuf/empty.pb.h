@@ -76,7 +76,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   inline Empty() : Empty(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Empty* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Empty* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Empty));
   }

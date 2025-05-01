@@ -238,7 +238,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
   ~Option() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Option* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Option* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Option));
   }
@@ -451,7 +451,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   ~Field() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Field* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Field* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Field));
   }
@@ -836,7 +836,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
   ~EnumValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumValue));
   }
@@ -1063,7 +1063,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   ~Type() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Type* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Type* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Type));
   }
@@ -1367,7 +1367,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   ~Enum() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Enum* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Enum* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Enum));
   }

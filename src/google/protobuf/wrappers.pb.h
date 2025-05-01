@@ -108,7 +108,7 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   ~UInt64Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UInt64Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(UInt64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt64Value));
   }
@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   ~UInt32Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UInt32Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(UInt32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt32Value));
   }
@@ -490,7 +490,7 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   ~StringValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(StringValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(StringValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(StringValue));
   }
@@ -686,7 +686,7 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   ~Int64Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Int64Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Int64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Int64Value));
   }
@@ -877,7 +877,7 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   ~Int32Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Int32Value* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Int32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Int32Value));
   }
@@ -1068,7 +1068,7 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   ~FloatValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FloatValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FloatValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FloatValue));
   }
@@ -1259,7 +1259,7 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   ~DoubleValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(DoubleValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(DoubleValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(DoubleValue));
   }
@@ -1450,7 +1450,7 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   ~BytesValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(BytesValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(BytesValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(BytesValue));
   }
@@ -1646,7 +1646,7 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   ~BoolValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(BoolValue* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(BoolValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(BoolValue));
   }

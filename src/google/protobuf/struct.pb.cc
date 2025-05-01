@@ -488,8 +488,8 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 
   // map<string, .google.protobuf.Value> fields = 1;
   if (!this_._internal_fields().empty()) {
-    using MapType = ::google::protobuf::Map<std::string, ::google::protobuf::Value>;
-    using WireHelper = _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
+    using MapType = ::google::protobuf::Map<::std::string, ::google::protobuf::Value>;
+    using WireHelper = _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
                                    _pbi::WireFormatLite::TYPE_STRING,
                                    _pbi::WireFormatLite::TYPE_MESSAGE>;
     const auto& field = this_._internal_fields();
@@ -543,7 +543,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_fields_size());
       for (const auto& entry : this_._internal_fields()) {
-        total_size += _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
+        total_size += _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
                                        _pbi::WireFormatLite::TYPE_STRING,
                                        _pbi::WireFormatLite::TYPE_MESSAGE>::ByteSizeLong(entry.first, entry.second);
       }

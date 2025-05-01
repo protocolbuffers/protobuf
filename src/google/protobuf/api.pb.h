@@ -86,7 +86,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   ~Mixin() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Mixin* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Mixin* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Mixin));
   }
@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   ~Method() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Method* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Method* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Method));
   }
@@ -584,7 +584,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   ~Api() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Api* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Api* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Api));
   }

@@ -76,7 +76,7 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   ~Timestamp() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Timestamp* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Timestamp* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Timestamp));
   }
