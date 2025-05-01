@@ -1132,7 +1132,9 @@ bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
   return !field->is_repeated() && !field->is_extension() &&
          field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          field->cpp_string_type() == FieldDescriptor::CppStringType::kView &&
-         opts.experimental_use_micro_string;
+         opts.experimental_use_micro_string &&
+         // map entry fields don't use MicroString right now
+         !field->containing_type()->options().map_entry();
 }
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
