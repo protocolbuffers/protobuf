@@ -2061,30 +2061,29 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
-    std::string value_split = value;
 #if defined(__CYGWIN__) || defined(__MSYS_) || defined(__MSYS2__)
-    if (IsWindowsAbsolutePath(value_split)) {
-      value_split[1] = value_split[0];
-      value_split[0] = '/';
-    }
+    std::string separator = ";";
+#else
+    std::string separator = CommandLineInterface::kPathSeparator;
 #endif
 
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
     std::vector<std::string> parts = absl::StrSplit(
-        value_split, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        value, absl::ByAnyChar(separator.c_str()),
         absl::SkipEmpty());
+#if defined(__CYGWIN__) || defined(__MSYS_) || defined(__MSYS2__)
+    if (parts.empty() || !IsWindowsAbsolutePath(parts[0])) {
+        parts = absl::StrSplit(
+            value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+            absl::SkipEmpty());
+    }
+#endif
 
     for (size_t i = 0; i < parts.size(); ++i) {
       std::string virtual_path;
       std::string disk_path;
-
-#if defined(__CYGWIN__) || defined(__MSYS_) || defined(__MSYS2__)
-      if (parts[i] == value_split) {
-        parts[i] = value;
-      }
-#endif
 
       std::string::size_type equals_pos = parts[i].find_first_of('=');
       if (equals_pos == std::string::npos) {
